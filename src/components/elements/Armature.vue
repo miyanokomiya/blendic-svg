@@ -1,6 +1,6 @@
 <template>
   <g
-    :id="armature.name"
+    :id="editedArmature.name"
     stroke="black"
     :fill="fill"
     :transform="transform"
@@ -13,16 +13,16 @@
     />
     <circle
       r="10"
-      :cx="armature.head.x"
-      :cy="armature.head.y"
+      :cx="head.x"
+      :cy="head.y"
       :fill="fillHead"
       @click.exact="click('head')"
       @click.shift.exact="shiftClick('head')"
     ></circle>
     <circle
       r="10"
-      :cx="armature.tail.x"
-      :cy="armature.tail.y"
+      :cx="tail.x"
+      :cy="tail.y"
       :fill="fillTail"
       @click.exact="click('tail')"
       @click.shift.exact="shiftClick('tail')"
@@ -32,8 +32,9 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from "vue";
-import { Armature, ArmatureSelectedState } from "../../models/index";
+import { Transform, Armature, ArmatureSelectedState } from "../../models/index";
 import { transform, d } from "../../utils/helpers";
+import { editTransform } from "../../utils/armatures";
 import { IVec2, add, sub, multi, rotate } from "okageo";
 import { useSettings } from "../../composables/settings";
 
@@ -55,20 +56,33 @@ export default defineComponent({
       type: String as PropType<ArmatureSelectedState>,
       default: "",
     },
+    editTransforms: {
+      type: Object as PropType<Transform[]>,
+      default: () => [],
+    },
   },
   emits: ["select", "shift-select"],
   setup(props, { emit }) {
     const { settings } = useSettings();
 
+    const editedArmature = computed(() =>
+      editTransform(props.armature, props.editTransforms, props.selectedState)
+    );
+    const head = computed(() => editedArmature.value.head);
+    const tail = computed(() => editedArmature.value.tail);
+
     return {
-      transform: computed(() => transform(props.armature.transform)),
+      editedArmature,
+      transform: computed(() => transform(editedArmature.value.transform)),
+      head,
+      tail,
       d: computed(() =>
         d(
           [
-            props.armature.head,
-            d1(props.armature.head, props.armature.tail),
-            props.armature.tail,
-            d1(props.armature.head, props.armature.tail, true),
+            head.value,
+            d1(head.value, tail.value),
+            tail.value,
+            d1(head.value, tail.value, true),
           ],
           true
         )

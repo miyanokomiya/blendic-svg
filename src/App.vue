@@ -1,6 +1,10 @@
 <template>
   <div>
-    <AppCanvas @complete="complete" @g="setEditMode('grab')">
+    <AppCanvas
+      @mousemove="mousemove"
+      @complete="complete"
+      @g="setEditMode('grab')"
+    >
       <rect id="rect1" x="20" y="40" width="100" height="40"></rect>
       <circle id="circle1" cx="150" cy="60" r="20"></circle>
       <g>
@@ -9,29 +13,35 @@
           :key="armature.name"
           :armature="armature"
           :selected-state="selectedArmatures[armature.name] ?? ''"
+          :edit-transforms="editTransforms[armature.name]"
           @select="(state) => selectArmature(armature.name, state)"
           @shift-select="(state) => shiftSelectArmature(armature.name, state)"
         />
       </g>
     </AppCanvas>
     <div>
-      <p>EditMode: {{ editMode }}</p>
+      <p>EditMode: {{ editMode || "none" }}</p>
+      <p>EditMovement: {{ JSON.stringify(editMovement, null, " ") }}</p>
       <pre>Selected: {{ JSON.stringify(selectedArmatures, null, " ") }}</pre>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from "vue";
+import { defineComponent, ref, reactive, computed } from "vue";
 import AppCanvas from "./components/AppCanvas.vue";
 import Armature from "./components/elements/Armature.vue";
 import {
+  Transform,
   ArmatureRoot,
+  getTransform,
   getArmature,
   getArmatureRoot,
   ArmatureSelectedState,
   EditMode,
 } from "./models/index";
+import { editTransform } from "./utils/armatures";
+import { IVec2, sub } from "okageo";
 
 export default defineComponent({
   components: {
@@ -56,7 +66,38 @@ export default defineComponent({
       })
     );
 
+    const editMovement = ref<{ current: IVec2; start: IVec2 }>();
+
+    const isAnySelected = computed(
+      () => Object.keys(selectedArmatures.value).length > 0
+    );
+
+    const editTransforms = computed(() => {
+      if (!editMovement.value) return {};
+
+      const translate = sub(
+        editMovement.value.current,
+        editMovement.value.start
+      );
+      return Object.keys(selectedArmatures.value).reduce<{
+        [name: string]: Transform[];
+      }>((map, name) => {
+        map[name] = [getTransform({ translate })];
+        return map;
+      }, {});
+    });
+
     function completeEdit() {
+      Object.keys(editTransforms.value).forEach((name) => {
+        const index = armatureRoot.armatures.findIndex((a) => a.name === name);
+        if (index === -1) return;
+        armatureRoot.armatures[index] = editTransform(
+          armatureRoot.armatures[index],
+          editTransforms.value[name],
+          selectedArmatures.value[name]
+        );
+      });
+      editMovement.value = undefined;
       editMode.value = "";
     }
 
@@ -64,9 +105,19 @@ export default defineComponent({
       armatureRoot,
       selectedArmatures,
       editMode,
+      editMovement,
+      editTransforms,
+      mousemove(arg: { current: IVec2; start: IVec2 }) {
+        if (editMode.value === "grab") {
+          editMovement.value = arg;
+        }
+      },
       complete() {
-        completeEdit();
-        selectedArmatures.value = {};
+        if (editMode.value) {
+          completeEdit();
+        } else {
+          selectedArmatures.value = {};
+        }
       },
       selectArmature(name: string, state: ArmatureSelectedState) {
         if (editMode.value) {
@@ -83,7 +134,9 @@ export default defineComponent({
         selectedArmatures.value[name] = state;
       },
       setEditMode(mode: EditMode) {
-        editMode.value = mode;
+        if (isAnySelected.value) {
+          editMode.value = mode;
+        }
       },
     };
   },

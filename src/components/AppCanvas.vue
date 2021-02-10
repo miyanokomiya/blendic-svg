@@ -10,6 +10,7 @@
       :width="canvasSize.width"
       :height="canvasSize.height"
       @mouseenter="focus"
+      @mousemove="mousemove"
       @click.self="complete"
       @keydown.g="keyDownG"
     >
@@ -20,13 +21,17 @@
 
 <script lang="ts">
 import { defineComponent, ref, reactive } from "vue";
+import { getPagePosition } from "okanvas";
+import { IVec2 } from "okageo";
 
 export default defineComponent({
   props: {},
-  emits: ["complete", "g"],
+  emits: ["mousemove", "complete", "g"],
   setup(_props, { emit }) {
     const canvasSize = reactive({ width: 600, height: 400 });
-    const svg = ref<SVGElement | null>(null);
+    const svg = ref<SVGElement>();
+    const editStartPoint = ref<IVec2>();
+    const mousePoint = ref<IVec2>();
 
     return {
       canvasSize,
@@ -34,8 +39,22 @@ export default defineComponent({
       focus() {
         if (svg.value) svg.value.focus();
       },
-      complete: () => emit("complete"),
-      keyDownG: () => emit("g"),
+      mousemove: (e: MouseEvent) => {
+        mousePoint.value = getPagePosition(e);
+        emit("mousemove", {
+          current: mousePoint.value,
+          start: editStartPoint.value,
+        });
+      },
+      complete: () => {
+        editStartPoint.value = undefined;
+        emit("complete");
+      },
+      keyDownG: () => {
+        if (!mousePoint.value) return;
+        editStartPoint.value = mousePoint.value;
+        emit("g");
+      },
     };
   },
 });

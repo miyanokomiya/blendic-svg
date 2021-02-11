@@ -9,6 +9,7 @@
     "lint-json": "yarn prettier -c ./*.json"
   },
   "dependencies": {
+    "just-merge": "^1.1.0",
     "okageo": "^2.0.0",
     "okanvas": "^0.0.4",
     "vue": "^3.0.5"

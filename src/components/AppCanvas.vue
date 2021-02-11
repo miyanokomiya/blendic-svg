@@ -12,7 +12,6 @@
       @mouseenter="focus"
       @mousemove="mousemove"
       @click="clickAny"
-      @click.self="complete"
       @keydown.tab.prevent="keyDownTab"
       @keydown.g.prevent="editKeyDown('g')"
       @keydown.e.prevent="editKeyDown('e')"
@@ -29,7 +28,7 @@ import { IVec2 } from "okageo";
 
 export default defineComponent({
   props: {},
-  emits: ["mousemove", "click-any", "complete", "tab", "g", "e"],
+  emits: ["mousemove", "click-any", "click-empty", "tab", "g", "e"],
   setup(_props, { emit }) {
     const canvasSize = reactive({ width: 600, height: 400 });
     const svg = ref<SVGElement>();
@@ -49,12 +48,13 @@ export default defineComponent({
           start: editStartPoint.value,
         });
       },
-      clickAny() {
-        emit("click-any");
-      },
-      complete: () => {
-        editStartPoint.value = undefined;
-        emit("complete");
+      clickAny(e: any) {
+        if (e.target === svg.value) {
+          editStartPoint.value = undefined;
+          emit("click-empty");
+        } else {
+          emit("click-any");
+        }
       },
       keyDownTab: () => {
         emit("tab");

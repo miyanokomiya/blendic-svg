@@ -3,7 +3,7 @@
     <AppCanvas
       @mousemove="mousemove"
       @click-any="clickAny"
-      @complete="complete"
+      @click-empty="clickEmpty"
       @tab="toggleCanvasMode"
       @g="setEditMode('grab')"
       @e="setEditMode('extrude')"
@@ -11,14 +11,12 @@
       <rect id="rect1" x="20" y="40" width="100" height="40"></rect>
       <circle id="circle1" cx="150" cy="60" r="20"></circle>
       <g>
-        <Born
-          v-for="born in armature.borns"
+        <BornElm
+          v-for="born in editBornMap"
           :key="born.name"
           :born="born"
-          :selected-state="
-            armatureEditMode.state.selectedBorns[born.name] ?? ''
-          "
-          :edit-transforms="armatureEditMode.getEditTransforms(born.name)"
+          :parent="editBornMap[born.parentKey]"
+          :selected-state="armatureEditMode.state.selectedBorns[born.name]"
           @select="(state) => selectBorn(born.name, state)"
           @shift-select="(state) => shiftSelectBorn(born.name, state)"
         />
@@ -42,11 +40,12 @@ Selected: {{
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from "vue";
+import { defineComponent, ref, reactive, computed } from "vue";
 import AppCanvas from "./components/AppCanvas.vue";
-import Born from "./components/elements/Born.vue";
+import BornElm from "./components/elements/Born.vue";
 import {
   Armature,
+  Born,
   getBorn,
   getArmature,
   BornSelectedState,
@@ -54,12 +53,13 @@ import {
   CanvasMode,
 } from "./models/index";
 import { useBornEditMode } from "./composables/armatureEditMode";
+import { editTransform } from "./utils/armatures";
 import { IVec2 } from "okageo";
 
 export default defineComponent({
   components: {
     AppCanvas,
-    Born,
+    BornElm,
   },
   setup() {
     const canvasMode = ref<CanvasMode>("object");
@@ -77,9 +77,24 @@ export default defineComponent({
     );
     const armatureEditMode = useBornEditMode();
 
+    const editBornMap = computed(() =>
+      armature.borns.reduce<{ [name: string]: Born }>(
+        (m, b) => ({
+          ...m,
+          [b.name]: editTransform(
+            b,
+            armatureEditMode.getEditTransforms(b.name),
+            armatureEditMode.state.selectedBorns[b.name] || []
+          ),
+        }),
+        {}
+      )
+    );
+
     return {
       armature,
-      armatureEditMode: armatureEditMode,
+      editBornMap,
+      armatureEditMode,
       canvasMode,
       mousemove(arg: { current: IVec2; start: IVec2 }) {
         if (canvasMode.value === "edit") {
@@ -91,9 +106,9 @@ export default defineComponent({
           armatureEditMode.clickAny();
         }
       },
-      complete() {
+      clickEmpty() {
         if (canvasMode.value === "edit") {
-          armatureEditMode.complete();
+          armatureEditMode.clickEmpty();
         }
       },
       selectBorn(name: string, state: BornSelectedState) {

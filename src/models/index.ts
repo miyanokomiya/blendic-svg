@@ -63,6 +63,9 @@ export function getArmature(arg: Partial<Armature> = {}): Armature {
   };
 }
 
-export type BornSelectedState = "" | "all" | "head" | "tail";
+export interface BornSelectedState {
+  head?: boolean;
+  tail?: boolean;
+}
 export type CanvasMode = "object" | "edit" | "pose";
 export type EditMode = "" | "grab" | "rotate" | "scale" | "extrude";

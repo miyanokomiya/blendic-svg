@@ -8,8 +8,6 @@
       @g="setEditMode('grab')"
       @e="setEditMode('extrude')"
     >
-      <rect id="rect1" x="20" y="40" width="100" height="40"></rect>
-      <circle id="circle1" cx="150" cy="60" r="20"></circle>
       <g>
         <BornElm
           v-for="born in editBornMap"

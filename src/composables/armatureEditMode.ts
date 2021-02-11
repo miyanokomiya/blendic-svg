@@ -38,9 +38,13 @@ export function useArmatureEditMode() {
     }
   }
 
+  function cancelEdit() {
+    state.editMode = "";
+    state.editMovement = undefined;
+  }
+
   function cancel() {
-    state.selectedArmatures = {};
-    state.lastSelectedArmatureName = "";
+    cancelEdit();
     state.editMode = "";
     state.editMovement = undefined;
   }
@@ -50,6 +54,7 @@ export function useArmatureEditMode() {
   }
 
   function setEditMode(mode: EditMode) {
+    cancelEdit();
     if (isAnySelected.value) {
       state.editMode = mode;
     }
@@ -122,7 +127,6 @@ export function useArmatureEditMode() {
     shiftSelect,
     mousemove,
     clickAny,
-    cancel,
     complete,
   };
 }

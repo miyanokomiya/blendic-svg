@@ -1,9 +1,9 @@
 import {
   Transform,
-  Armature,
-  ArmatureSelectedState,
+  Born,
+  BornSelectedState,
   getTransform,
-  getArmature,
+  getBorn,
 } from "../models/index";
 import { IVec2, add, sub, multi, rotate } from "okageo";
 
@@ -17,9 +17,9 @@ function convoluteTransforms(transforms: Transform[]): Transform {
 }
 
 export function editTransform(
-  armature: Armature,
+  armature: Born,
   transforms: Transform[],
-  selectedState: ArmatureSelectedState
+  selectedState: BornSelectedState
 ) {
   const convoluted = convoluteTransforms(transforms);
   const head = ["all", "head"].includes(selectedState)
@@ -37,11 +37,11 @@ export function editTransform(
 }
 
 export function extrudeFromParent(
-  parent: Armature,
+  parent: Born,
   fromHead = false
-): Armature {
+): Born {
   const head = fromHead ? parent.head : parent.tail;
-  return getArmature({
+  return getBorn({
     head,
     tail: head,
     parentKey: fromHead ? parent.parentKey : parent.name,

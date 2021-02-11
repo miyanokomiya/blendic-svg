@@ -7,7 +7,7 @@ export interface Transform {
   scale: IVec2;
 }
 
-export interface Armature {
+export interface Born {
   name: string;
   transform: Transform;
   parentKey: string;
@@ -16,14 +16,14 @@ export interface Armature {
   tail: IVec2;
 }
 
-export interface ArmatureRoot {
+export interface Armature {
   name: string;
   transform: Transform;
-  armatures: Armature[];
+  borns: Born[];
 }
 
 export interface Actor {
-  parent: ArmatureRoot;
+  parent: Armature;
   svgElements: SvgElement[];
 }
 
@@ -42,7 +42,7 @@ export function getTransform(arg: Partial<Transform> = {}): Transform {
   };
 }
 
-export function getArmature(arg: Partial<Armature> = {}): Armature {
+export function getBorn(arg: Partial<Born> = {}): Born {
   return {
     name: "",
     transform: getTransform(),
@@ -54,15 +54,15 @@ export function getArmature(arg: Partial<Armature> = {}): Armature {
   };
 }
 
-export function getArmatureRoot(arg: Partial<ArmatureRoot> = {}): ArmatureRoot {
+export function getArmature(arg: Partial<Armature> = {}): Armature {
   return {
     name: "",
     transform: getTransform(),
-    armatures: [],
+    borns: [],
     ...arg,
   };
 }
 
-export type ArmatureSelectedState = "" | "all" | "head" | "tail";
+export type BornSelectedState = "" | "all" | "head" | "tail";
 export type CanvasMode = "object" | "edit" | "pose";
 export type EditMode = "" | "grab" | "rotate" | "scale" | "extrude";

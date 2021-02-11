@@ -11,21 +11,21 @@
       <rect id="rect1" x="20" y="40" width="100" height="40"></rect>
       <circle id="circle1" cx="150" cy="60" r="20"></circle>
       <g>
-        <Armature
-          v-for="armature in armatureRoot.armatures"
-          :key="armature.name"
-          :armature="armature"
+        <Born
+          v-for="born in armature.borns"
+          :key="born.name"
+          :born="born"
           :selected-state="
-            armatureEditMode.state.selectedArmatures[armature.name] ?? ''
+            armatureEditMode.state.selectedBorns[born.name] ?? ''
           "
-          :edit-transforms="armatureEditMode.getEditTransforms(armature.name)"
-          @select="(state) => selectArmature(armature.name, state)"
-          @shift-select="(state) => shiftSelectArmature(armature.name, state)"
+          :edit-transforms="armatureEditMode.getEditTransforms(born.name)"
+          @select="(state) => selectBorn(born.name, state)"
+          @shift-select="(state) => shiftSelectBorn(born.name, state)"
         />
       </g>
     </AppCanvas>
     <div>
-      <p>{{ armatureRoot.armatures.length }}</p>
+      <p>{{ armature.borns.length }}</p>
       <p>Mode: {{ canvasMode }}</p>
       <p>EditMode: {{ armatureEditMode.state.editMode || "none" }}</p>
       <p>
@@ -34,7 +34,7 @@
       </p>
       <pre>
 Selected: {{
-          JSON.stringify(armatureEditMode.state.selectedArmatures, null, " ")
+          JSON.stringify(armatureEditMode.state.selectedBorns, null, " ")
         }}</pre
       >
     </div>
@@ -44,30 +44,30 @@ Selected: {{
 <script lang="ts">
 import { defineComponent, ref, reactive } from "vue";
 import AppCanvas from "./components/AppCanvas.vue";
-import Armature from "./components/elements/Armature.vue";
+import Born from "./components/elements/Born.vue";
 import {
-  ArmatureRoot,
+  Armature,
+  getBorn,
   getArmature,
-  getArmatureRoot,
-  ArmatureSelectedState,
+  BornSelectedState,
   EditMode,
   CanvasMode,
 } from "./models/index";
-import { useArmatureEditMode } from "./composables/armatureEditMode";
+import { useBornEditMode } from "./composables/armatureEditMode";
 import { IVec2 } from "okageo";
 
 export default defineComponent({
   components: {
     AppCanvas,
-    Armature,
+    Born,
   },
   setup() {
     const canvasMode = ref<CanvasMode>("object");
-    const armatureRoot = reactive<ArmatureRoot>(
-      getArmatureRoot({
+    const armature = reactive<Armature>(
+      getArmature({
         name: "1",
-        armatures: [
-          getArmature({
+        borns: [
+          getBorn({
             name: "1",
             head: { x: 20, y: 200 },
             tail: { x: 220, y: 200 },
@@ -75,10 +75,10 @@ export default defineComponent({
         ],
       })
     );
-    const armatureEditMode = useArmatureEditMode();
+    const armatureEditMode = useBornEditMode();
 
     return {
-      armatureRoot,
+      armature,
       armatureEditMode: armatureEditMode,
       canvasMode,
       mousemove(arg: { current: IVec2; start: IVec2 }) {
@@ -96,12 +96,12 @@ export default defineComponent({
           armatureEditMode.complete();
         }
       },
-      selectArmature(name: string, state: ArmatureSelectedState) {
+      selectBorn(name: string, state: BornSelectedState) {
         if (canvasMode.value === "edit") {
           armatureEditMode.select(name, state);
         }
       },
-      shiftSelectArmature(name: string, state: ArmatureSelectedState) {
+      shiftSelectBorn(name: string, state: BornSelectedState) {
         if (canvasMode.value === "edit") {
           armatureEditMode.shiftSelect(name, state);
         }
@@ -109,7 +109,7 @@ export default defineComponent({
       toggleCanvasMode() {
         if (canvasMode.value === "object") {
           canvasMode.value = "edit";
-          armatureEditMode.begin(armatureRoot);
+          armatureEditMode.begin(armature);
         } else {
           canvasMode.value = "object";
           armatureEditMode.end();

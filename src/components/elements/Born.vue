@@ -1,6 +1,6 @@
 <template>
   <g
-    :id="editedArmature.name"
+    :id="editedBorn.name"
     stroke="black"
     :fill="fill"
     :transform="transform"
@@ -32,7 +32,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from "vue";
-import { Transform, Armature, ArmatureSelectedState } from "../../models/index";
+import { Transform, Born, BornSelectedState } from "../../models/index";
 import { transform, d } from "../../utils/helpers";
 import { editTransform } from "../../utils/armatures";
 import { IVec2, add, sub, multi, rotate } from "okageo";
@@ -47,13 +47,13 @@ function d1(head: IVec2, tail: IVec2, invert = false): IVec2 {
 
 export default defineComponent({
   props: {
-    armature: {
-      type: Object as PropType<Armature>,
+    born: {
+      type: Object as PropType<Born>,
       required: true,
     },
     opacity: { type: Number, default: 0.5 },
     selectedState: {
-      type: String as PropType<ArmatureSelectedState>,
+      type: String as PropType<BornSelectedState>,
       default: "",
     },
     editTransforms: {
@@ -65,15 +65,15 @@ export default defineComponent({
   setup(props, { emit }) {
     const { settings } = useSettings();
 
-    const editedArmature = computed(() =>
-      editTransform(props.armature, props.editTransforms, props.selectedState)
+    const editedBorn = computed(() =>
+      editTransform(props.born, props.editTransforms, props.selectedState)
     );
-    const head = computed(() => editedArmature.value.head);
-    const tail = computed(() => editedArmature.value.tail);
+    const head = computed(() => editedBorn.value.head);
+    const tail = computed(() => editedBorn.value.tail);
 
     return {
-      editedArmature,
-      transform: computed(() => transform(editedArmature.value.transform)),
+      editedBorn,
+      transform: computed(() => transform(editedBorn.value.transform)),
       head,
       tail,
       d: computed(() =>
@@ -96,8 +96,8 @@ export default defineComponent({
       fillTail: computed(() =>
         props.selectedState === "tail" ? settings.selectedColor : ""
       ),
-      click: (state: ArmatureSelectedState) => emit("select", state),
-      shiftClick: (state: ArmatureSelectedState) => {
+      click: (state: BornSelectedState) => emit("select", state),
+      shiftClick: (state: BornSelectedState) => {
         if (state === "head") {
           if (props.selectedState === "head") emit("shift-select", "");
           else if (props.selectedState === "tail") emit("shift-select", "all");

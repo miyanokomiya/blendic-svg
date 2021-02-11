@@ -1,5 +1,6 @@
 import { reactive, computed } from "vue";
-import { Armature, getBorn, getArmature } from "../models/index";
+import { Armature, getBorn, getArmature } from "/@/models/index";
+import { fixConnections } from "/@/utils/armatures";
 
 const armature = reactive<Armature>(
   getArmature({
@@ -37,6 +38,17 @@ function selectArmature(name: string = "") {
 function selectBorn(name: string = "") {
   state.lastSelectedBornName = name;
 }
+function setBornConnection(connected: boolean) {
+  if (!lastSelectedArmature.value) return;
+  if (!lastSelectedBorn.value) return;
+
+  lastSelectedBorn.value.connected = connected;
+  if (connected) {
+    lastSelectedArmature.value.borns = fixConnections(
+      lastSelectedArmature.value.borns
+    );
+  }
+}
 
 export function useStore() {
   return {
@@ -45,5 +57,6 @@ export function useStore() {
     lastSelectedBorn,
     selectArmature,
     selectBorn,
+    setBornConnection,
   };
 }

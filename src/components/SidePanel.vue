@@ -7,12 +7,13 @@
     <form v-if="lastSelectedBorn" @submit.prevent>
       <label>Name</label>
       <input v-model="draftName" type="text" />
+      <input v-model="connected" type="checkbox" />
     </form>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch } from "vue";
+import { defineComponent, ref, watch, computed } from "vue";
 import { useStore } from "/@/store/index";
 
 export default defineComponent({
@@ -33,6 +34,14 @@ export default defineComponent({
       draftName,
       lastSelectedArmature: store.lastSelectedArmature,
       lastSelectedBorn: store.lastSelectedBorn,
+      connected: computed({
+        get(): boolean {
+          return store.lastSelectedBorn.value?.connected ?? false;
+        },
+        set(val: boolean) {
+          store.setBornConnection(val);
+        },
+      }),
     };
   },
 });

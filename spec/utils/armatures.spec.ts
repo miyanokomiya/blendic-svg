@@ -2,6 +2,43 @@ import * as target from "../../src/utils/armatures";
 import { getArmature, getBorn } from "../../src/models/index";
 
 describe("utils/armatures", () => {
+  describe("extrudeFromParent", () => {
+    const parent = getBorn({ name: "parent", tail: { x: 1, y: 2 } });
+
+    it("fromHead: false => extrude from parent's tail", () => {
+      expect(target.extrudeFromParent(parent)).toEqual(
+        getBorn({
+          head: parent.tail,
+          tail: parent.tail,
+          parentKey: parent.name,
+          connected: true,
+        })
+      );
+    });
+    it("fromHead: true => extrude from parent's head & extends parent's connection", () => {
+      expect(
+        target.extrudeFromParent({ ...parent, connected: false }, true)
+      ).toEqual(
+        getBorn({
+          head: parent.head,
+          tail: parent.head,
+          parentKey: parent.parentKey,
+          connected: false,
+        })
+      );
+      expect(
+        target.extrudeFromParent({ ...parent, connected: true }, true)
+      ).toEqual(
+        getBorn({
+          head: parent.head,
+          tail: parent.head,
+          parentKey: parent.parentKey,
+          connected: true,
+        })
+      );
+    });
+  });
+
   describe("adjustConnectedPosition", () => {
     const parent = getBorn({ name: "parent", tail: { x: 1, y: 2 } });
 
@@ -104,6 +141,49 @@ describe("utils/armatures", () => {
           child: { head: true },
         });
       });
+    });
+  });
+
+  describe("fixConnections", () => {
+    it("connected: true => connect child's head to parent's tail", () => {
+      const parent = getBorn({ name: "parent", tail: { x: 1, y: 2 } });
+      const connected = getBorn({
+        name: "connected",
+        parentKey: "parent",
+        connected: true,
+        head: { x: 10, y: 20 },
+      });
+      const unconnected = getBorn({
+        name: "unconnected",
+        parentKey: "parent",
+        connected: false,
+      });
+      expect(target.fixConnections([parent, connected, unconnected])).toEqual([
+        parent,
+        { ...connected, head: { x: 1, y: 2 } },
+        unconnected,
+      ]);
+    });
+  });
+
+  describe("updateConnections", () => {
+    it("parent's tail != child's head => connected is false", () => {
+      const parent = getBorn({ name: "parent", tail: { x: 1, y: 2 } });
+      const connected = getBorn({
+        name: "connected",
+        parentKey: "parent",
+        connected: true,
+        head: { x: 10, y: 20 },
+      });
+      const unconnected = getBorn({
+        name: "unconnected",
+        parentKey: "parent",
+        connected: true,
+        head: { x: 1, y: 2 },
+      });
+      expect(
+        target.updateConnections([parent, connected, unconnected])
+      ).toEqual([parent, { ...connected, connected: false }, unconnected]);
     });
   });
 });

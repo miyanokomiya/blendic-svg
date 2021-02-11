@@ -103,6 +103,17 @@ export function selectBorn(
   return ret;
 }
 
+export function fixConnections(borns: Born[]): Born[] {
+  return borns.map((b) => {
+    if (!b.connected) return b;
+
+    const parent = findBorn(borns, b.parentKey);
+    if (!parent) return { ...b, connected: false, parentKey: "" };
+
+    return { ...b, head: parent.tail };
+  });
+}
+
 export function updateConnections(borns: Born[]): Born[] {
   return borns.map((b) => {
     if (!b.connected) return b;

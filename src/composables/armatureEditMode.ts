@@ -40,9 +40,7 @@ export function useBornEditMode() {
 
   const isAnySelected = computed(() => !!state.lastSelectedBornName);
 
-  const allNames = computed(
-    () => target.value?.borns.map((a) => a.name) ?? []
-  );
+  const allNames = computed(() => target.value?.borns.map((a) => a.name) ?? []);
 
   function clickAny() {
     if (state.editMode) {

@@ -36,10 +36,7 @@ export function editTransform(
   };
 }
 
-export function extrudeFromParent(
-  parent: Born,
-  fromHead = false
-): Born {
+export function extrudeFromParent(parent: Born, fromHead = false): Born {
   const head = fromHead ? parent.head : parent.tail;
   return getBorn({
     head,

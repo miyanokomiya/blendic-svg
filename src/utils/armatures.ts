@@ -3,6 +3,7 @@ import {
   Armature,
   ArmatureSelectedState,
   getTransform,
+  getArmature,
 } from "../models/index";
 import { IVec2, add, sub, multi, rotate } from "okageo";
 
@@ -33,4 +34,16 @@ export function editTransform(
     head,
     tail,
   };
+}
+
+export function extrudeFromParent(
+  parent: Armature,
+  fromHead = false
+): Armature {
+  const head = fromHead ? parent.head : parent.tail;
+  return getArmature({
+    head,
+    tail: head,
+    parentKey: fromHead ? parent.parentKey : parent.name,
+  });
 }

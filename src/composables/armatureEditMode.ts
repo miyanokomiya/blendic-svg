@@ -3,11 +3,14 @@ import { IVec2, sub } from "okageo";
 import {
   Transform,
   ArmatureRoot,
+  Armature,
   getTransform,
+  getArmature,
   ArmatureSelectedState,
   EditMode,
 } from "../models/index";
-import { editTransform } from "../utils/armatures";
+import { editTransform, extrudeFromParent } from "/@/utils/armatures";
+import { getNextName } from "/@/utils/relations";
 
 type EditMovement = { current: IVec2; start: IVec2 };
 
@@ -28,19 +31,43 @@ export function useArmatureEditMode() {
     editMovement: undefined,
   });
 
+  const newArmatureNames = ref<string[]>([]);
+  const pastSelectedArmatures = ref<{
+    [name: string]: ArmatureSelectedState;
+  }>();
+
   const target = ref<ArmatureRoot>();
 
   const isAnySelected = computed(() => !!state.lastSelectedArmatureName);
 
+  const allNames = computed(
+    () => target.value?.armatures.map((a) => a.name) ?? []
+  );
+
   function clickAny() {
-    if (state.editMode === "grab") {
+    if (state.editMode) {
       completeEdit();
     }
   }
 
   function cancelEdit() {
+    if (state.editMode === "extrude") {
+      if (target.value) {
+        // revert extruded armatures
+        target.value.armatures = target.value.armatures.filter(
+          (a) => !state.selectedArmatures[a.name]
+        );
+      }
+      state.selectedArmatures = pastSelectedArmatures.value
+        ? { ...pastSelectedArmatures.value }
+        : {};
+    }
+
     state.editMode = "";
     state.editMovement = undefined;
+    newArmatureNames.value = [];
+
+    pastSelectedArmatures.value = undefined;
   }
 
   function cancel() {
@@ -53,10 +80,43 @@ export function useArmatureEditMode() {
     completeEdit();
   }
 
+  function getArmature(name: string): Armature | undefined {
+    return target.value?.armatures.find((a) => a.name === name);
+  }
+
+  function extrude(parent: Armature, fromHead = false) {
+    const extruded = {
+      ...extrudeFromParent(parent, fromHead),
+      name: getNextName(parent.name, allNames.value),
+    };
+    target.value!.armatures.push(extruded);
+    newArmatureNames.value.push(extruded.name);
+    state.selectedArmatures[extruded.name] = "tail";
+  }
+
   function setEditMode(mode: EditMode) {
+    if (!target.value) return;
+
     cancelEdit();
     if (isAnySelected.value) {
       state.editMode = mode;
+      if (mode === "extrude") {
+        pastSelectedArmatures.value = { ...state.selectedArmatures };
+        state.selectedArmatures = {};
+        Object.keys(pastSelectedArmatures.value).forEach((name) => {
+          const selectedState = pastSelectedArmatures.value![name];
+          const parent = getArmature(name)!;
+
+          if (selectedState === "tail") {
+            extrude(parent);
+          } else if (selectedState === "head") {
+            extrude(parent, true);
+          } else {
+            extrude(parent);
+            extrude(parent, true);
+          }
+        });
+      }
     }
   }
 
@@ -86,6 +146,7 @@ export function useArmatureEditMode() {
     });
     state.editMovement = undefined;
     state.editMode = "";
+    pastSelectedArmatures.value = undefined;
   }
 
   function select(name: string, selectedState: ArmatureSelectedState) {
@@ -107,7 +168,7 @@ export function useArmatureEditMode() {
   }
 
   function mousemove(arg: EditMovement) {
-    if (state.editMode === "grab") {
+    if (state.editMode) {
       state.editMovement = arg;
     }
   }
@@ -119,8 +180,8 @@ export function useArmatureEditMode() {
     },
     begin: (armatureRoot: ArmatureRoot) => (target.value = armatureRoot),
     end() {
-      target.value = undefined;
       cancel();
+      target.value = undefined;
     },
     setEditMode,
     select,

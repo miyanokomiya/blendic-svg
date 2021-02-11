@@ -25,6 +25,7 @@
       </g>
     </AppCanvas>
     <div>
+      <p>{{ armatureRoot.armatures.length }}</p>
       <p>Mode: {{ canvasMode }}</p>
       <p>EditMode: {{ armatureEditMode.state.editMode || "none" }}</p>
       <p>

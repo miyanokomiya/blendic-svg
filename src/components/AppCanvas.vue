@@ -12,7 +12,9 @@
       @mouseenter="focus"
       @mousemove="mousemove"
       @click.self="complete"
-      @keydown.g="keyDownG"
+      @keydown.tab.prevent="keyDownTab"
+      @keydown.g.prevent="editKeyDown('g')"
+      @keydown.e.prevent="editKeyDown('e')"
     >
       <slot />
     </svg>
@@ -26,7 +28,7 @@ import { IVec2 } from "okageo";
 
 export default defineComponent({
   props: {},
-  emits: ["mousemove", "complete", "g"],
+  emits: ["mousemove", "complete", "tab", "g", "e"],
   setup(_props, { emit }) {
     const canvasSize = reactive({ width: 600, height: 400 });
     const svg = ref<SVGElement>();
@@ -50,10 +52,13 @@ export default defineComponent({
         editStartPoint.value = undefined;
         emit("complete");
       },
-      keyDownG: () => {
+      keyDownTab: () => {
+        emit("tab");
+      },
+      editKeyDown(key: "g" | "e") {
         if (!mousePoint.value) return;
         editStartPoint.value = mousePoint.value;
-        emit("g");
+        emit(key);
       },
     };
   },

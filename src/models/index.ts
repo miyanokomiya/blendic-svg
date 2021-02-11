@@ -64,4 +64,5 @@ export function getArmatureRoot(arg: Partial<ArmatureRoot> = {}): ArmatureRoot {
 }
 
 export type ArmatureSelectedState = "" | "all" | "head" | "tail";
-export type EditMode = "" | "grab" | "rotate" | "scale";
+export type CanvasMode = "object" | "edit" | "pose";
+export type EditMode = "" | "grab" | "rotate" | "scale" | "extrude";

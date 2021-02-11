@@ -69,3 +69,15 @@ export interface BornSelectedState {
 }
 export type CanvasMode = "object" | "edit" | "pose";
 export type EditMode = "" | "grab" | "rotate" | "scale" | "extrude";
+
+export function toMap<T extends { name: string }>(
+  list: T[]
+): { [name: string]: T } {
+  return list.reduce<{ [name: string]: T }>(
+    (m, item) => ({
+      ...m,
+      [item.name]: item,
+    }),
+    {}
+  );
+}

@@ -5,6 +5,7 @@
       :key="born.name"
       :born="born"
       :selected-state="bornSelectedState"
+      :parent="bornMap[born.parentKey]"
       @select="click"
       @shift-select="shiftClick"
     />
@@ -13,8 +14,8 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from "vue";
-import { Armature } from "../../models/index";
-import { transform } from "../../utils/helpers";
+import { Armature, toMap } from "/@/models/index";
+import { transform } from "/@/utils/helpers";
 import BornElm from "/@/components/elements/Born.vue";
 
 export default defineComponent({
@@ -33,6 +34,7 @@ export default defineComponent({
   emits: ["select", "shift-select"],
   setup(props, { emit }) {
     return {
+      bornMap: computed(() => toMap(props.armature.borns)),
       transform: computed(() => transform(props.armature.transform)),
       bornSelectedState: computed(() =>
         props.selected ? { head: true, tail: true } : undefined

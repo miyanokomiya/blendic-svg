@@ -7,6 +7,7 @@
     <form v-if="lastSelectedBorn" @submit.prevent>
       <label>Name</label>
       <input v-model="draftName" type="text" />
+      <label>Connect</label>
       <input v-model="connected" type="checkbox" />
     </form>
   </div>

@@ -54,7 +54,13 @@ import AppCanvas from "./components/AppCanvas.vue";
 import SidePanel from "./components/SidePanel.vue";
 import ArmatureElm from "./components/elements/ArmatureElm.vue";
 import BornElm from "./components/elements/Born.vue";
-import { Born, BornSelectedState, EditMode, CanvasMode } from "./models/index";
+import {
+  Born,
+  BornSelectedState,
+  EditMode,
+  CanvasMode,
+  toMap,
+} from "./models/index";
 import { useBornEditMode } from "./composables/armatureEditMode";
 import { editTransform } from "./utils/armatures";
 import { IVec2 } from "okageo";
@@ -74,16 +80,14 @@ export default defineComponent({
     const armature = computed(() => store.state.armatures[0]);
 
     const editBornMap = computed(() =>
-      armature.value.borns.reduce<{ [name: string]: Born }>(
-        (m, b) => ({
-          ...m,
-          [b.name]: editTransform(
+      toMap(
+        armature.value.borns.map((b) =>
+          editTransform(
             b,
             armatureEditMode.getEditTransforms(b.name),
             armatureEditMode.state.selectedBorns[b.name] || []
-          ),
-        }),
-        {}
+          )
+        )
       )
     );
 

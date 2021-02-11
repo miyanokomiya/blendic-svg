@@ -4,26 +4,12 @@ import {
   Transform,
   ArmatureRoot,
   getTransform,
-  getArmature,
-  getArmatureRoot,
   ArmatureSelectedState,
   EditMode,
-  CanvasMode,
 } from "../models/index";
 import { editTransform } from "../utils/armatures";
 
 type EditMovement = { current: IVec2; start: IVec2 };
-
-interface EditModeMethods {
-  setEditMode: (mode: EditMode) => void;
-  mousemove: (arg: { current: IVec2; start: IVec2 }) => void;
-  grab: () => void;
-  rotate: () => void;
-  scale: () => void;
-  extrude: () => void;
-  complete: () => void;
-  cancel: () => void;
-}
 
 interface State {
   selectedArmatures: {
@@ -46,6 +32,12 @@ export function useArmatureEditMode() {
 
   const isAnySelected = computed(() => !!state.lastSelectedArmatureName);
 
+  function clickAny() {
+    if (state.editMode === "grab") {
+      completeEdit();
+    }
+  }
+
   function cancel() {
     state.selectedArmatures = {};
     state.lastSelectedArmatureName = "";
@@ -55,8 +47,6 @@ export function useArmatureEditMode() {
 
   function complete() {
     completeEdit();
-    state.editMode = "";
-    state.editMovement = undefined;
   }
 
   function setEditMode(mode: EditMode) {
@@ -131,11 +121,8 @@ export function useArmatureEditMode() {
     select,
     shiftSelect,
     mousemove,
-    grab: () => {},
-    rotate: () => {},
-    scale: () => {},
-    extrude: () => {},
-    complete,
+    clickAny,
     cancel,
+    complete,
   };
 }

@@ -2,6 +2,7 @@
   <div>
     <AppCanvas
       @mousemove="mousemove"
+      @click-any="clickAny"
       @complete="complete"
       @tab="toggleCanvasMode"
       @g="setEditMode('grab')"
@@ -82,6 +83,11 @@ export default defineComponent({
       mousemove(arg: { current: IVec2; start: IVec2 }) {
         if (canvasMode.value === "edit") {
           armatureEditMode.mousemove(arg);
+        }
+      },
+      clickAny() {
+        if (canvasMode.value === "edit") {
+          armatureEditMode.clickAny();
         }
       },
       complete() {

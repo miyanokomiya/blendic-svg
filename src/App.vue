@@ -10,7 +10,19 @@
         @g="setEditMode('grab')"
         @e="setEditMode('extrude')"
       >
-        <g>
+        <g v-if="canvasMode === 'object'">
+          <ArmatureElm
+            v-for="armature in armatures"
+            :key="armature.name"
+            :armature="armature"
+            :selected="lastSelectedArmatureName === armature.name"
+            @select="(selected) => selectArmature(armature.name, selected)"
+            @shift-select="
+              (selected) => shiftSelectArmature(armature.name, selected)
+            "
+          />
+        </g>
+        <g v-if="canvasMode === 'edit'">
           <BornElm
             v-for="born in editBornMap"
             :key="born.name"
@@ -40,6 +52,7 @@
 import { defineComponent, ref, computed, watch } from "vue";
 import AppCanvas from "./components/AppCanvas.vue";
 import SidePanel from "./components/SidePanel.vue";
+import ArmatureElm from "./components/elements/ArmatureElm.vue";
 import BornElm from "./components/elements/Born.vue";
 import { Born, BornSelectedState, EditMode, CanvasMode } from "./models/index";
 import { useBornEditMode } from "./composables/armatureEditMode";
@@ -50,6 +63,7 @@ import { useStore } from "/@/store/index";
 export default defineComponent({
   components: {
     AppCanvas,
+    ArmatureElm,
     BornElm,
     SidePanel,
   },
@@ -79,6 +93,10 @@ export default defineComponent({
     );
 
     return {
+      armatures: computed(() => store.state.armatures),
+      lastSelectedArmatureName: computed(
+        () => store.state.lastSelectedArmatureName
+      ),
       armature,
       editBornMap,
       armatureEditMode,
@@ -96,6 +114,8 @@ export default defineComponent({
       clickEmpty() {
         if (canvasMode.value === "edit") {
           armatureEditMode.clickEmpty();
+        } else {
+          store.selectArmature();
         }
       },
       selectBorn(name: string, state: BornSelectedState) {
@@ -111,6 +131,12 @@ export default defineComponent({
         } else {
           store.selectArmature(armature.value.name);
         }
+      },
+      selectArmature(name: string, selected: boolean) {
+        store.selectArmature(selected ? name : "");
+      },
+      shiftSelectArmature(name: string, selected: boolean) {
+        store.selectArmature(selected ? name : "");
       },
       toggleCanvasMode() {
         if (canvasMode.value === "object" && store.lastSelectedArmature.value) {

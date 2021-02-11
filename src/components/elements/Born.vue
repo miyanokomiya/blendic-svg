@@ -1,11 +1,5 @@
 <template>
-  <g
-    :id="born.name"
-    stroke="black"
-    :fill="fill"
-    :transform="transform"
-    :opacity="opacity"
-  >
+  <g stroke="black" :fill="fill" :transform="transform" :opacity="opacity">
     <path
       :d="d"
       @click.exact="click({ head: true, tail: true })"

@@ -1,10 +1,12 @@
 <template>
   <g stroke="black" :fill="fill" :transform="transform" :opacity="opacity">
-    <path
-      :d="d"
+    <g
       @click.exact="click({ head: true, tail: true })"
       @click.shift.exact="shiftClick({ head: true, tail: true })"
-    />
+    >
+      <path :d="headPath" :fill="fillDark" />
+      <path :d="tailPath" />
+    </g>
     <circle
       r="10"
       :cx="head.x"
@@ -49,7 +51,7 @@ import { useSettings } from "../../composables/settings";
 function d1(head: IVec2, tail: IVec2, invert = false): IVec2 {
   return add(
     head,
-    rotate(multi(sub(tail, head), 0.3), (Math.PI / 6) * (invert ? -1 : 1))
+    rotate(multi(sub(tail, head), 0.15), (Math.PI / 4) * (invert ? -1 : 1))
   );
 }
 
@@ -63,7 +65,7 @@ export default defineComponent({
       type: Object as PropType<Born | undefined>,
       default: undefined,
     },
-    opacity: { type: Number, default: 0.5 },
+    opacity: { type: Number, default: 1 },
     selectedState: {
       type: Object as PropType<BornSelectedState>,
       default: () => ({ head: false, tail: false }),
@@ -75,26 +77,24 @@ export default defineComponent({
 
     const head = computed(() => props.born.head);
     const tail = computed(() => props.born.tail);
+    const side1 = computed(() => d1(head.value, tail.value));
+    const side2 = computed(() => d1(head.value, tail.value, true));
 
     return {
       transform: computed(() => transform(props.born.transform)),
       head,
       tail,
-      d: computed(() =>
-        d(
-          [
-            head.value,
-            d1(head.value, tail.value),
-            tail.value,
-            d1(head.value, tail.value, true),
-          ],
-          true
-        )
-      ),
+      headPath: computed(() => d([head.value, side1.value, side2.value], true)),
+      tailPath: computed(() => d([tail.value, side1.value, side2.value], true)),
       fill: computed(() =>
         props.selectedState.head && props.selectedState.tail
           ? settings.selectedColor
-          : "#aaa"
+          : "#ddd"
+      ),
+      fillDark: computed(() =>
+        props.selectedState.head && props.selectedState.tail
+          ? settings.selectedColor
+          : "#bbb"
       ),
       fillHead: computed(() =>
         props.selectedState.head ? settings.selectedColor : ""

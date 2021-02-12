@@ -101,6 +101,7 @@ export function useBornEditMode() {
     target.value!.borns.push(born);
     newBornNames.value.push(born.name);
     state.selectedBorns[born.name] = { tail: true };
+    state.lastSelectedBornName = born.name;
   }
 
   function setEditMode(mode: EditMode) {

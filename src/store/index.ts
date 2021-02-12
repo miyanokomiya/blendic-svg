@@ -49,6 +49,17 @@ function setBornConnection(connected: boolean) {
     );
   }
 }
+function setBornParent(parentKey?: string) {
+  if (!lastSelectedArmature.value) return;
+  if (!lastSelectedBorn.value) return;
+
+  lastSelectedBorn.value.parentKey = parentKey;
+  if (lastSelectedBorn.value.connected) {
+    lastSelectedArmature.value.borns = fixConnections(
+      lastSelectedArmature.value.borns
+    );
+  }
+}
 
 export function useStore() {
   return {
@@ -58,5 +69,6 @@ export function useStore() {
     selectArmature,
     selectBorn,
     setBornConnection,
+    setBornParent,
   };
 }

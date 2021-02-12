@@ -1,14 +1,31 @@
 <template>
   <div class="root">
-    <form v-if="lastSelectedArmature && !lastSelectedBorn" @submit.prevent>
-      <label>Name</label>
-      <input v-model="draftName" type="text" />
+    <form v-if="selectedObjectType === 'armature'" @submit.prevent>
+      <h2>Armature</h2>
+      <div class="field inline">
+        <label>Name</label>
+        <input v-model="draftName" type="text" @change="changeName" />
+      </div>
     </form>
-    <form v-if="lastSelectedBorn" @submit.prevent>
-      <label>Name</label>
-      <input v-model="draftName" type="text" />
-      <label>Connect</label>
-      <input v-model="connected" type="checkbox" />
+    <form v-if="selectedObjectType === 'born'" @submit.prevent>
+      <h2>Born</h2>
+      <div class="field inline">
+        <label>Name</label>
+        <input v-model="draftName" type="text" />
+      </div>
+      <div class="field inline">
+        <label>Parent</label>
+        <select v-model="parentKey">
+          <option value="">-- None --</option>
+          <option v-for="name in otherNames" :key="name" :value="name">
+            {{ name }}
+          </option>
+        </select>
+      </div>
+      <div class="field inline">
+        <label>Connect</label>
+        <input v-model="connected" type="checkbox" />
+      </div>
     </form>
   </div>
 </template>
@@ -22,19 +39,36 @@ export default defineComponent({
     const store = useStore();
     const draftName = ref("");
 
-    watch(
-      store.lastSelectedArmature,
-      () => (draftName.value = store.lastSelectedArmature.value?.name ?? "")
-    );
-    watch(
-      store.lastSelectedBorn,
-      () => (draftName.value = store.lastSelectedBorn.value?.name ?? "")
-    );
+    const otherNames = computed(() => {
+      if (!store.lastSelectedArmature.value) return [];
+      return store.lastSelectedArmature.value.borns
+        .map((b) => b.name)
+        .filter((n) => n !== store.state.lastSelectedBornName);
+    });
+
+    const selectedObjectType = computed((): "born" | "armature" | "" => {
+      if (store.lastSelectedBorn.value) return "born";
+      if (store.lastSelectedArmature.value) return "armature";
+      return "";
+    });
+
+    function initDraftName() {
+      if (store.lastSelectedBorn.value)
+        draftName.value = store.lastSelectedBorn.value.name;
+      else if (store.lastSelectedArmature.value)
+        draftName.value = store.lastSelectedArmature.value.name;
+      else draftName.value = "";
+    }
+
+    watch(store.lastSelectedArmature, initDraftName);
+    watch(store.lastSelectedBorn, initDraftName);
 
     return {
       draftName,
       lastSelectedArmature: store.lastSelectedArmature,
       lastSelectedBorn: store.lastSelectedBorn,
+      otherNames,
+      selectedObjectType,
       connected: computed({
         get(): boolean {
           return store.lastSelectedBorn.value?.connected ?? false;
@@ -43,6 +77,17 @@ export default defineComponent({
           store.setBornConnection(val);
         },
       }),
+      parentKey: computed({
+        get(): string {
+          return store.lastSelectedBorn.value?.parentKey ?? "";
+        },
+        set(val: string) {
+          store.setBornParent(val || undefined);
+        },
+      }),
+      changeName() {
+        // console.log(this.draftName);
+      },
     };
   },
 });
@@ -50,6 +95,35 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .root {
+  padding: 10px;
   border: solid 1px black;
+}
+h2 {
+  margin: 0 0 10px;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  .field {
+    margin-bottom: 10px;
+    width: 100%;
+    &:last-child {
+      margin-bottom: 0;
+    }
+    &.inline {
+      display: flex;
+      align-items: center;
+      > label {
+        margin-right: 10px;
+        min-width: 60px;
+        text-align: left;
+      }
+      > label + * {
+        flex: 1;
+        min-width: 50px; // a magic to fix flex width
+      }
+    }
+  }
 }
 </style>

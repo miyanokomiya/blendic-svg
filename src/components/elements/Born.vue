@@ -43,17 +43,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from "vue";
-import { Born, BornSelectedState } from "../../models/index";
-import { transform, d } from "../../utils/helpers";
-import { IVec2, add, sub, multi, rotate } from "okageo";
-import { useSettings } from "../../composables/settings";
+import { defineComponent, PropType, computed } from 'vue'
+import { Born, BornSelectedState } from '../../models/index'
+import { transform, d } from '../../utils/helpers'
+import { IVec2, add, sub, multi, rotate } from 'okageo'
+import { useSettings } from '../../composables/settings'
 
 function d1(head: IVec2, tail: IVec2, invert = false): IVec2 {
   return add(
     head,
     rotate(multi(sub(tail, head), 0.15), (Math.PI / 4) * (invert ? -1 : 1))
-  );
+  )
 }
 
 export default defineComponent({
@@ -72,14 +72,14 @@ export default defineComponent({
       default: () => ({ head: false, tail: false }),
     },
   },
-  emits: ["select", "shift-select"],
+  emits: ['select', 'shift-select'],
   setup(props, { emit }) {
-    const { settings } = useSettings();
+    const { settings } = useSettings()
 
-    const head = computed(() => props.born.head);
-    const tail = computed(() => props.born.tail);
-    const side1 = computed(() => d1(head.value, tail.value));
-    const side2 = computed(() => d1(head.value, tail.value, true));
+    const head = computed(() => props.born.head)
+    const tail = computed(() => props.born.tail)
+    const side1 = computed(() => d1(head.value, tail.value))
+    const side2 = computed(() => d1(head.value, tail.value, true))
 
     return {
       transform: computed(() => transform(props.born.transform)),
@@ -90,36 +90,36 @@ export default defineComponent({
       fill: computed(() =>
         props.selectedState.head && props.selectedState.tail
           ? settings.selectedColor
-          : "#ddd"
+          : '#ddd'
       ),
       fillDark: computed(() =>
         props.selectedState.head && props.selectedState.tail
           ? settings.selectedColor
-          : "#bbb"
+          : '#bbb'
       ),
       fillHead: computed(() =>
-        props.selectedState.head ? settings.selectedColor : ""
+        props.selectedState.head ? settings.selectedColor : ''
       ),
       fillTail: computed(() =>
-        props.selectedState.tail ? settings.selectedColor : ""
+        props.selectedState.tail ? settings.selectedColor : ''
       ),
-      click: (state: BornSelectedState) => emit("select", state),
+      click: (state: BornSelectedState) => emit('select', state),
       shiftClick: (state: BornSelectedState) => {
         if (state.head) {
-          emit("shift-select", {
+          emit('shift-select', {
             ...props.selectedState,
             head: !props.selectedState.head,
-          });
+          })
         } else if (state.tail) {
-          emit("shift-select", {
+          emit('shift-select', {
             ...props.selectedState,
             tail: !props.selectedState.tail,
-          });
+          })
         }
       },
-    };
+    }
   },
-});
+})
 </script>
 
 <style lang="scss" scoped>

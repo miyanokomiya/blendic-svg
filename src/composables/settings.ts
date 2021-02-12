@@ -1,9 +1,9 @@
-import { reactive } from "vue";
+import { reactive } from 'vue'
 
 const settings = reactive({
-  selectedColor: "orange",
-});
+  selectedColor: 'orange',
+})
 
 export function useSettings() {
-  return { settings };
+  return { settings }
 }

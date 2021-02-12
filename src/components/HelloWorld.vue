@@ -55,9 +55,9 @@
 </template>
 
 <script lang="ts">
-import { ref, defineComponent } from "vue";
+import { ref, defineComponent } from 'vue'
 export default defineComponent({
-  name: "HelloWorld",
+  name: 'HelloWorld',
   props: {
     msg: {
       type: String,
@@ -65,12 +65,12 @@ export default defineComponent({
     },
   },
   setup: () => {
-    const count = ref(0);
-    const useScriptSetup = ref(false);
-    const useTsPlugin = ref(false);
-    return { count, useScriptSetup, useTsPlugin };
+    const count = ref(0)
+    const useScriptSetup = ref(false)
+    const useTsPlugin = ref(false)
+    return { count, useScriptSetup, useTsPlugin }
   },
-});
+})
 </script>
 
 <style scoped>

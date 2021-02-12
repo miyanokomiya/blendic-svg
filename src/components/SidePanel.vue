@@ -31,37 +31,37 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, computed } from "vue";
-import { useStore } from "/@/store/index";
+import { defineComponent, ref, watch, computed } from 'vue'
+import { useStore } from '/@/store/index'
 
 export default defineComponent({
   setup() {
-    const store = useStore();
-    const draftName = ref("");
+    const store = useStore()
+    const draftName = ref('')
 
     const otherNames = computed(() => {
-      if (!store.lastSelectedArmature.value) return [];
+      if (!store.lastSelectedArmature.value) return []
       return store.lastSelectedArmature.value.borns
         .map((b) => b.name)
-        .filter((n) => n !== store.state.lastSelectedBornName);
-    });
+        .filter((n) => n !== store.state.lastSelectedBornName)
+    })
 
-    const selectedObjectType = computed((): "born" | "armature" | "" => {
-      if (store.lastSelectedBorn.value) return "born";
-      if (store.lastSelectedArmature.value) return "armature";
-      return "";
-    });
+    const selectedObjectType = computed((): 'born' | 'armature' | '' => {
+      if (store.lastSelectedBorn.value) return 'born'
+      if (store.lastSelectedArmature.value) return 'armature'
+      return ''
+    })
 
     function initDraftName() {
       if (store.lastSelectedBorn.value)
-        draftName.value = store.lastSelectedBorn.value.name;
+        draftName.value = store.lastSelectedBorn.value.name
       else if (store.lastSelectedArmature.value)
-        draftName.value = store.lastSelectedArmature.value.name;
-      else draftName.value = "";
+        draftName.value = store.lastSelectedArmature.value.name
+      else draftName.value = ''
     }
 
-    watch(store.lastSelectedArmature, initDraftName);
-    watch(store.lastSelectedBorn, initDraftName);
+    watch(store.lastSelectedArmature, initDraftName)
+    watch(store.lastSelectedBorn, initDraftName)
 
     return {
       draftName,
@@ -71,26 +71,26 @@ export default defineComponent({
       selectedObjectType,
       connected: computed({
         get(): boolean {
-          return store.lastSelectedBorn.value?.connected ?? false;
+          return store.lastSelectedBorn.value?.connected ?? false
         },
         set(val: boolean) {
-          store.setBornConnection(val);
+          store.setBornConnection(val)
         },
       }),
       parentKey: computed({
         get(): string {
-          return store.lastSelectedBorn.value?.parentKey ?? "";
+          return store.lastSelectedBorn.value?.parentKey ?? ''
         },
         set(val: string) {
-          store.setBornParent(val || undefined);
+          store.setBornParent(val || undefined)
         },
       }),
       changeName() {
         // console.log(this.draftName);
       },
-    };
+    }
   },
-});
+})
 </script>
 
 <style lang="scss" scoped>

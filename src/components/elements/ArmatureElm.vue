@@ -13,10 +13,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from "vue";
-import { Armature, toMap } from "/@/models/index";
-import { transform } from "/@/utils/helpers";
-import BornElm from "/@/components/elements/Born.vue";
+import { defineComponent, PropType, computed } from 'vue'
+import { Armature, toMap } from '/@/models/index'
+import { transform } from '/@/utils/helpers'
+import BornElm from '/@/components/elements/Born.vue'
 
 export default defineComponent({
   components: { BornElm },
@@ -31,7 +31,7 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ["select", "shift-select"],
+  emits: ['select', 'shift-select'],
   setup(props, { emit }) {
     return {
       bornMap: computed(() => toMap(props.armature.borns)),
@@ -39,11 +39,11 @@ export default defineComponent({
       bornSelectedState: computed(() =>
         props.selected ? { head: true, tail: true } : undefined
       ),
-      click: () => emit("select", !props.selected),
-      shiftClick: () => emit("shift-select", !props.selected),
-    };
+      click: () => emit('select', !props.selected),
+      shiftClick: () => emit('shift-select', !props.selected),
+    }
   },
-});
+})
 </script>
 
 <style lang="scss" scoped>

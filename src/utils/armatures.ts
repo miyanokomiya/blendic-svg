@@ -124,3 +124,15 @@ export function updateConnections(borns: Born[]): Born[] {
     return { ...b, connected: isSame(parent.tail, b.head) }
   })
 }
+
+export function updateBornName(
+  borns: Born[],
+  from: string,
+  to: string
+): Born[] {
+  return borns.map((b) => ({
+    ...b,
+    name: b.name === from ? to : b.name,
+    parentKey: b.parentKey === from ? to : b.parentKey,
+  }))
+}

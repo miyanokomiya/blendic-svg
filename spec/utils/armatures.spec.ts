@@ -186,4 +186,19 @@ describe('utils/armatures', () => {
       ).toEqual([parent, { ...connected, connected: false }, unconnected])
     })
   })
+
+  describe('updateBornName', () => {
+    it("rename born's name, parentKey", () => {
+      const borns = [
+        getBorn({ name: '1', parentKey: '' }),
+        getBorn({ name: '2', parentKey: '1' }),
+        getBorn({ name: '3', parentKey: '2' }),
+      ]
+      expect(target.updateBornName(borns, '1', '10')).toEqual([
+        getBorn({ name: '10', parentKey: '' }),
+        getBorn({ name: '2', parentKey: '10' }),
+        getBorn({ name: '3', parentKey: '2' }),
+      ])
+    })
+  })
 })

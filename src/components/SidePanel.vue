@@ -86,7 +86,10 @@ export default defineComponent({
         },
       }),
       changeName() {
-        // console.log(this.draftName);
+        if (selectedObjectType.value === 'born')
+          store.updateBornName(draftName.value)
+        if (selectedObjectType.value === 'armature')
+          store.updateArmatureName(draftName.value)
       },
     }
   },

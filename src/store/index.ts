@@ -1,6 +1,6 @@
 import { reactive, computed } from 'vue'
 import { Armature, getBorn, getArmature } from '/@/models/index'
-import { fixConnections } from '/@/utils/armatures'
+import * as armatureUtils from '/@/utils/armatures'
 
 const armature = reactive<Armature>(
   getArmature({
@@ -44,21 +44,37 @@ function setBornConnection(connected: boolean) {
 
   lastSelectedBorn.value.connected = connected
   if (connected) {
-    lastSelectedArmature.value.borns = fixConnections(
+    lastSelectedArmature.value.borns = armatureUtils.fixConnections(
       lastSelectedArmature.value.borns
     )
   }
 }
-function setBornParent(parentKey?: string) {
+function setBornParent(parentKey: string = '') {
   if (!lastSelectedArmature.value) return
   if (!lastSelectedBorn.value) return
 
   lastSelectedBorn.value.parentKey = parentKey
   if (lastSelectedBorn.value.connected) {
-    lastSelectedArmature.value.borns = fixConnections(
+    lastSelectedArmature.value.borns = armatureUtils.fixConnections(
       lastSelectedArmature.value.borns
     )
   }
+}
+function updateBornName(name: string) {
+  if (!lastSelectedArmature.value) return
+  if (!lastSelectedBorn.value) return
+
+  lastSelectedArmature.value.borns = armatureUtils.updateBornName(
+    lastSelectedArmature.value.borns,
+    lastSelectedBorn.value.name,
+    name
+  )
+}
+function updateArmatureName(name: string) {
+  if (!lastSelectedArmature.value) return
+
+  lastSelectedArmature.value.name = name
+  state.lastSelectedArmatureName = name
 }
 
 export function useStore() {
@@ -70,5 +86,7 @@ export function useStore() {
     selectBorn,
     setBornConnection,
     setBornParent,
+    updateBornName,
+    updateArmatureName,
   }
 }

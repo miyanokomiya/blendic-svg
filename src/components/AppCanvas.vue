@@ -53,6 +53,7 @@ import { getPointInTarget } from 'okanvas'
 import { IVec2, IRectangle, multi, sub, add, getRectCenter } from 'okageo'
 import { CanvasCommand } from '/@/models'
 import * as helpers from '/@/utils/helpers'
+import { useStore } from '../store'
 
 export default defineComponent({
   props: {
@@ -86,6 +87,8 @@ export default defineComponent({
     const viewMovingInfo = ref<{ origin: IVec2; downAt: IVec2 }>()
     const axisGrid = ref<'' | 'x' | 'y'>('')
 
+    const store = useStore()
+
     function viewToCanvas(v: IVec2): IVec2 {
       return multi(v, scale.value)
     }
@@ -113,7 +116,7 @@ export default defineComponent({
         scale.value,
         axisGrid.value,
         viewCanvasRect.value,
-        editStartPoint.value
+        store.selectedBornsOrigin.value
       )
     })
 

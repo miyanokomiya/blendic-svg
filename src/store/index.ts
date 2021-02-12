@@ -52,6 +52,10 @@ const lastSelectedBorn = computed(() => {
 
 const bornMap = computed(() => toMap(lastSelectedArmature.value?.borns ?? []))
 
+const selectedBornsOrigin = computed(() =>
+  armatureUtils.getSelectedBornsOrigin(bornMap.value, state.selectedBorns)
+)
+
 watch(
   () => state.selectedBorns,
   () => {
@@ -191,6 +195,8 @@ export function useStore() {
     state,
     lastSelectedArmature,
     lastSelectedBorn,
+    bornMap,
+    selectedBornsOrigin,
     selectArmature,
     selectBorn,
     shiftSelectBorn,

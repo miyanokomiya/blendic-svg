@@ -217,4 +217,29 @@ describe('utils/armatures', () => {
       ])
     })
   })
+
+  describe('getSelectedBornsOrigin', () => {
+    it('retuns selected borns origin', () => {
+      const bornMap = {
+        1: getBorn({ id: '1', head: { x: 0, y: 1 }, tail: { x: 2, y: 3 } }),
+        2: getBorn({ id: '2', head: { x: 10, y: 11 }, tail: { x: 12, y: 13 } }),
+        3: getBorn({ id: '3', head: { x: 20, y: 21 }, tail: { x: 24, y: 25 } }),
+        4: getBorn({
+          id: '4',
+          head: { x: 100, y: 100 },
+          tail: { x: 100, y: 100 },
+        }),
+      }
+      const selectedState = {
+        1: { head: true, tail: true },
+        2: { head: true, tail: false },
+        3: { head: false, tail: true },
+        4: { head: false, tail: false },
+      }
+      expect(target.getSelectedBornsOrigin(bornMap, selectedState)).toEqual({
+        x: 12,
+        y: 13,
+      })
+    })
+  })
 })

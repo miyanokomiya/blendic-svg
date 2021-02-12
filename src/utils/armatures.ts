@@ -6,7 +6,7 @@ import {
   getTransform,
   getBorn,
 } from '../models/index'
-import { add, isSame } from 'okageo'
+import { add, getOuterRectangle, getRectCenter, isSame, IVec2 } from 'okageo'
 
 function convoluteTransforms(transforms: Transform[]): Transform {
   return transforms.reduce((ret, t) => {
@@ -136,4 +136,20 @@ export function updateBornName(
     name: b.name === from ? to : b.name,
     parentId: b.parentId === from ? to : b.parentId,
   }))
+}
+
+export function getSelectedBornsOrigin(
+  bornMap: { [id: string]: Born },
+  selectedState: { [id: string]: BornSelectedState }
+): IVec2 {
+  return getRectCenter(
+    getOuterRectangle(
+      Object.keys(selectedState).map((id) => {
+        const selected = []
+        if (selectedState[id].head) selected.push(bornMap[id].head)
+        if (selectedState[id].tail) selected.push(bornMap[id].tail)
+        return selected
+      })
+    )
+  )
 }

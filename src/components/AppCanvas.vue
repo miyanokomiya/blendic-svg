@@ -16,9 +16,11 @@
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
       @mouseleave="leave"
-      @keydown.tab.prevent="keyDownTab"
-      @keydown.g.prevent="editKeyDown('g')"
-      @keydown.e.prevent="editKeyDown('e')"
+      @keydown.tab.exact.prevent="keyDownTab"
+      @keydown.g.exact.prevent="editKeyDown('g')"
+      @keydown.e.exact.prevent="editKeyDown('e')"
+      @keydown.x.exact.prevent="editKeyDown('x')"
+      @keydown.a.shift.exact.prevent="editKeyDown('shift-a')"
     >
       <rect
         :x="originalViewBox.x"
@@ -47,7 +49,16 @@ export default defineComponent({
       default: () => ({ x: 0, y: 0, width: 600, height: 400 }),
     },
   },
-  emits: ['mousemove', 'click-any', 'click-empty', 'tab', 'g', 'e'],
+  emits: [
+    'mousemove',
+    'click-any',
+    'click-empty',
+    'tab',
+    'g',
+    'e',
+    'x',
+    'shift-a',
+  ],
   setup(_props, { emit }) {
     const viewSize = reactive({ width: 600, height: 400 })
     const svg = ref<SVGElement>()
@@ -123,7 +134,7 @@ export default defineComponent({
       keyDownTab: () => {
         emit('tab')
       },
-      editKeyDown(key: 'g' | 'e') {
+      editKeyDown(key: 'g' | 'e' | 'x' | 'shift-a') {
         if (!mousePoint.value) return
         editStartPoint.value = mousePoint.value
         emit(key)

@@ -9,6 +9,8 @@
         @tab="toggleCanvasMode"
         @g="setEditMode('grab')"
         @e="setEditMode('extrude')"
+        @x="execDelete"
+        @shift-a="addItem"
       >
         <g v-if="canvasMode === 'object'">
           <ArmatureElm
@@ -23,6 +25,12 @@
           />
         </g>
         <g v-if="canvasMode === 'edit'">
+          <ArmatureElm
+            v-for="armature in otherArmatures"
+            :key="armature.id"
+            :armature="armature"
+            :opacity="0.3"
+          />
           <BornElm
             v-for="born in editBornMap"
             :key="born.id"
@@ -34,10 +42,9 @@
           />
         </g>
       </AppCanvas>
-      <SidePanel class="side-panel" :armature="armature" />
+      <SidePanel class="side-panel" />
     </div>
     <div>
-      <p>{{ armature.borns.length }}</p>
       <p>Mode: {{ canvasMode }}</p>
       <p>EditMode: {{ armatureEditMode.state.editMode || 'none' }}</p>
     </div>
@@ -67,18 +74,28 @@ export default defineComponent({
     const canvasMode = ref<CanvasMode>('object')
     const store = useStore()
     const armatureEditMode = useBornEditMode()
-    const armature = computed(() => store.state.armatures[0])
+
+    const lastSelectedArmature = computed(
+      () => store.lastSelectedArmature.value
+    )
+    const otherArmatures = computed(() =>
+      store.state.armatures.filter(
+        (a) => a.id !== store.state.lastSelectedArmatureId
+      )
+    )
 
     const editBornMap = computed(() =>
-      toMap(
-        armature.value.borns.map((b) =>
-          editTransform(
-            b,
-            armatureEditMode.getEditTransforms(b.id),
-            armatureEditMode.state.selectedBorns[b.id] || []
+      lastSelectedArmature.value
+        ? toMap(
+            lastSelectedArmature.value.borns.map((b) =>
+              editTransform(
+                b,
+                armatureEditMode.getEditTransforms(b.id),
+                armatureEditMode.state.selectedBorns[b.id] || []
+              )
+            )
           )
-        )
-      )
+        : {}
     )
 
     watch(
@@ -88,10 +105,10 @@ export default defineComponent({
 
     return {
       armatures: computed(() => store.state.armatures),
+      otherArmatures,
       lastSelectedArmatureId: computed(
         () => store.state.lastSelectedArmatureId
       ),
-      armature,
       editBornMap,
       armatureEditMode,
       canvasMode,
@@ -113,18 +130,10 @@ export default defineComponent({
         }
       },
       selectBorn(id: string, state: BornSelectedState) {
-        if (canvasMode.value === 'edit') {
-          armatureEditMode.select(id, state)
-        } else {
-          store.selectArmature(armature.value.id)
-        }
+        armatureEditMode.select(id, state)
       },
       shiftSelectBorn(id: string, state: BornSelectedState) {
-        if (canvasMode.value === 'edit') {
-          armatureEditMode.shiftSelect(id, state)
-        } else {
-          store.selectArmature(armature.value.id)
-        }
+        armatureEditMode.shiftSelect(id, state)
       },
       selectArmature(id: string, selected: boolean) {
         store.selectArmature(selected ? id : '')
@@ -144,6 +153,18 @@ export default defineComponent({
       setEditMode(mode: EditMode) {
         if (canvasMode.value === 'edit') {
           armatureEditMode.setEditMode(mode)
+        }
+      },
+      execDelete() {
+        if (canvasMode.value === 'object') {
+          store.deleteArmature()
+        } else {
+        }
+      },
+      addItem() {
+        if (canvasMode.value === 'object') {
+          store.addArmature()
+        } else {
         }
       },
     }

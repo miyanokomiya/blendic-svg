@@ -1,4 +1,5 @@
-import { reactive, computed } from 'vue'
+import { reactive, computed, watch } from 'vue'
+import { getNextName } from '/@/utils/relations'
 import { Armature, getBorn, getArmature } from '/@/models/index'
 import * as armatureUtils from '/@/utils/armatures'
 
@@ -36,6 +37,11 @@ const lastSelectedBorn = computed(() => {
     (b) => b.id === state.lastSelectedBornId
   )
 })
+
+watch(
+  () => state.lastSelectedArmatureId,
+  () => (state.lastSelectedBornId = '')
+)
 
 function selectArmature(id: string = '') {
   state.lastSelectedArmatureId = id
@@ -77,6 +83,25 @@ function updateArmatureName(name: string) {
 
   lastSelectedArmature.value.name = name
 }
+function deleteArmature() {
+  state.armatures = state.armatures.filter(
+    (a) => a.id !== state.lastSelectedArmatureId
+  )
+}
+function addArmature() {
+  state.armatures.push(
+    getArmature(
+      {
+        name: getNextName(
+          'armature',
+          state.armatures.map((a) => a.name)
+        ),
+        borns: [getBorn({ name: 'born', tail: { x: 100, y: 0 } }, true)],
+      },
+      true
+    )
+  )
+}
 
 export function useStore() {
   return {
@@ -89,5 +114,7 @@ export function useStore() {
     setBornParent,
     updateBornName,
     updateArmatureName,
+    deleteArmature,
+    addArmature,
   }
 }

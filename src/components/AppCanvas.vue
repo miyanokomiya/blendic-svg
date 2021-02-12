@@ -10,9 +10,9 @@
       :width="viewSize.width"
       :height="viewSize.height"
       @wheel.prevent="wheel"
-      @mouseenter="focus"
-      @mousemove="mousemove"
       @click.left="clickAny"
+      @mouseenter="focus"
+      @mousemove.prevent="mousemove"
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
       @mouseleave="leave"
@@ -41,12 +41,17 @@
 import { defineComponent, PropType, ref, reactive, computed } from 'vue'
 import { getPointInTarget } from 'okanvas'
 import { IVec2, IRectangle, multi, sub, add, getRectCenter } from 'okageo'
+import { CanvasCommand } from '/@/models'
 
 export default defineComponent({
   props: {
     originalViewBox: {
       type: Object as PropType<IRectangle>,
       default: () => ({ x: 0, y: 0, width: 600, height: 400 }),
+    },
+    currentCommand: {
+      type: String as PropType<CanvasCommand>,
+      default: '',
     },
   },
   emits: [
@@ -59,7 +64,7 @@ export default defineComponent({
     'x',
     'shift-a',
   ],
-  setup(_props, { emit }) {
+  setup(props, { emit }) {
     const viewSize = reactive({ width: 600, height: 400 })
     const svg = ref<SVGElement>()
     const editStartPoint = ref<IVec2>()
@@ -136,8 +141,10 @@ export default defineComponent({
       },
       editKeyDown(key: 'g' | 'e' | 'x' | 'shift-a') {
         if (!mousePoint.value) return
-        editStartPoint.value = mousePoint.value
-        emit(key)
+        if (([''] as CanvasCommand[]).includes(props.currentCommand)) {
+          editStartPoint.value = mousePoint.value
+          emit(key)
+        }
       },
     }
   },
@@ -147,5 +154,6 @@ export default defineComponent({
 <style lang="scss" scoped>
 svg {
   border: solid 1px black;
+  user-select: none;
 }
 </style>

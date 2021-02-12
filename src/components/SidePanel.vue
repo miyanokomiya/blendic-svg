@@ -24,7 +24,7 @@
       </div>
       <div class="field inline">
         <label>Connect</label>
-        <input v-model="connected" type="checkbox" />
+        <input v-model="connected" type="checkbox" :disabled="!parentId" />
       </div>
     </form>
   </div>

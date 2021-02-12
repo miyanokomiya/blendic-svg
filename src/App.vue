@@ -3,6 +3,7 @@
     <div class="main">
       <AppCanvas
         class="canvas"
+        :current-command="canvasCommand"
         @mousemove="mousemove"
         @click-any="clickAny"
         @click-empty="clickEmpty"
@@ -57,7 +58,13 @@ import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import BornElm from './components/elements/Born.vue'
-import { BornSelectedState, EditMode, CanvasMode, toMap } from './models/index'
+import {
+  BornSelectedState,
+  EditMode,
+  CanvasMode,
+  toMap,
+  editModeToCanvasCommand,
+} from './models/index'
 import { useBornEditMode } from './composables/armatureEditMode'
 import { editTransform } from './utils/armatures'
 import { IVec2 } from 'okageo'
@@ -98,6 +105,10 @@ export default defineComponent({
         : {}
     )
 
+    const canvasCommand = computed(() =>
+      editModeToCanvasCommand(armatureEditMode.state.editMode)
+    )
+
     return {
       armatures: computed(() => store.state.armatures),
       otherArmatures,
@@ -108,6 +119,7 @@ export default defineComponent({
       selectedBorns: computed(() => store.state.selectedBorns),
       armatureEditMode,
       canvasMode,
+      canvasCommand,
       mousemove(arg: { current: IVec2; start: IVec2 }) {
         if (canvasMode.value === 'edit') {
           armatureEditMode.mousemove(arg)
@@ -154,13 +166,15 @@ export default defineComponent({
       execDelete() {
         if (canvasMode.value === 'object') {
           store.deleteArmature()
-        } else {
+        } else if (armatureEditMode.state.editMode === '') {
+          store.deleteBorn()
         }
       },
       addItem() {
         if (canvasMode.value === 'object') {
           store.addArmature()
-        } else {
+        } else if (armatureEditMode.state.editMode === '') {
+          store.addBorn()
         }
       },
     }

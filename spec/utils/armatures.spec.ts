@@ -190,6 +190,17 @@ describe('utils/armatures', () => {
         target.updateConnections([parent, connected, unconnected])
       ).toEqual([parent, { ...connected, connected: false }, unconnected])
     })
+    it('cannot find parent => set no parent', () => {
+      const connected = getBorn({
+        id: 'connected',
+        parentId: 'parent',
+        connected: true,
+        head: { x: 10, y: 20 },
+      })
+      expect(target.updateConnections([connected])).toEqual([
+        { ...connected, connected: false, parentId: '' },
+      ])
+    })
   })
 
   describe('updateBornName', () => {

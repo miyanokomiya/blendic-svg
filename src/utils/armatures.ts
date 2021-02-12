@@ -119,11 +119,9 @@ export function fixConnections(borns: Born[]): Born[] {
 
 export function updateConnections(borns: Born[]): Born[] {
   return borns.map((b) => {
-    if (!b.connected) return b
-
     const parent = findBorn(borns, b.parentId)
     if (!parent) return { ...b, connected: false, parentId: '' }
-
+    if (!b.connected) return b
     return { ...b, connected: isSame(parent.tail, b.head) }
   })
 }

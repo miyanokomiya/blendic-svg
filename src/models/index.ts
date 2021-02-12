@@ -76,7 +76,16 @@ export interface BornSelectedState {
   tail?: boolean
 }
 export type CanvasMode = 'object' | 'edit' | 'pose'
+export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
 export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude'
+
+export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {
+  if (editMode === 'grab') return 'grab'
+  if (editMode === 'extrude') return 'grab'
+  if (editMode === 'rotate') return 'rotate'
+  if (editMode === 'scale') return 'scale'
+  return ''
+}
 
 export function toMap<T extends { id: string }>(
   list: T[]

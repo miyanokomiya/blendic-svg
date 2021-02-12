@@ -5,8 +5,10 @@ import {
   BornSelectedState,
   getBorn,
   getArmature,
+  toMap,
 } from '/@/models/index'
 import * as armatureUtils from '/@/utils/armatures'
+// @ts-ignore
 import merge from 'just-merge'
 
 type IdMap = { [id: string]: boolean }
@@ -48,10 +50,7 @@ const lastSelectedBorn = computed(() => {
   )
 })
 
-watch(
-  () => state.lastSelectedArmatureId,
-  () => (state.lastSelectedBornId = '')
-)
+const bornMap = computed(() => toMap(lastSelectedArmature.value?.borns ?? []))
 
 watch(
   () => state.selectedBorns,
@@ -62,10 +61,25 @@ watch(
   }
 )
 
+watch(
+  () => bornMap.value,
+  () => {
+    // unselect unexisted borns
+    state.selectedBorns = Object.keys(state.selectedBorns).reduce<{
+      [id: string]: BornSelectedState
+    }>((m, id) => {
+      return bornMap.value[id]
+        ? {
+            ...m,
+            [id]: state.selectedBorns[id],
+          }
+        : m
+    }, {})
+  }
+)
+
 function selectArmature(id: string = '') {
   state.lastSelectedArmatureId = id
-  state.lastSelectedBornId = ''
-  state.selectedBorns = {}
 }
 function selectBorn(
   id: string = '',
@@ -148,6 +162,29 @@ function addArmature() {
     )
   )
 }
+function deleteBorn() {
+  if (!lastSelectedArmature.value) return
+
+  lastSelectedArmature.value.borns = armatureUtils.updateConnections(
+    lastSelectedArmature.value.borns.filter((b) => !state.selectedBorns[b.id])
+  )
+}
+function addBorn() {
+  if (!lastSelectedArmature.value) return
+
+  lastSelectedArmature.value.borns.push(
+    getBorn(
+      {
+        name: getNextName(
+          'born',
+          lastSelectedArmature.value.borns.map((a) => a.name)
+        ),
+        tail: { x: 100, y: 0 },
+      },
+      true
+    )
+  )
+}
 
 export function useStore() {
   return {
@@ -164,5 +201,7 @@ export function useStore() {
     updateArmatureName,
     deleteArmature,
     addArmature,
+    deleteBorn,
+    addBorn,
   }
 }

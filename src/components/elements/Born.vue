@@ -36,6 +36,8 @@
       :x="(head.x + tail.x) / 2"
       :y="(head.y + tail.y) / 2"
       text-anchor="middle"
+      fill="black"
+      stroke="none"
       class="view-only"
       >{{ born.name }}</text
     >

@@ -4,14 +4,14 @@
       <h2>Armature</h2>
       <div class="field inline">
         <label>Name</label>
-        <input v-model="draftName" type="text" @change="changeName" />
+        <input v-model="draftName" type="text" @change="changeArmatureName" />
       </div>
     </form>
     <form v-if="selectedObjectType === 'born'" @submit.prevent>
       <h2>Born</h2>
       <div class="field inline">
         <label>Name</label>
-        <input v-model="draftName" type="text" />
+        <input v-model="draftName" type="text" @change="changeBornName" />
       </div>
       <div class="field inline">
         <label>Parent</label>
@@ -85,11 +85,11 @@ export default defineComponent({
           store.setBornParent(val || undefined)
         },
       }),
-      changeName() {
-        if (selectedObjectType.value === 'born')
-          store.updateBornName(draftName.value)
-        if (selectedObjectType.value === 'armature')
-          store.updateArmatureName(draftName.value)
+      changeArmatureName() {
+        store.updateArmatureName(draftName.value)
+      },
+      changeBornName() {
+        store.updateBornName(draftName.value)
       },
     }
   },

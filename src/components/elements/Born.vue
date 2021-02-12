@@ -107,7 +107,13 @@ export default defineComponent({
       ),
       click: (state: BornSelectedState) => emit('select', state),
       shiftClick: (state: BornSelectedState) => {
-        if (state.head) {
+        if (state.head && state.tail) {
+          if (props.selectedState.head && props.selectedState.tail) {
+            emit('shift-select', { head: false, tail: false })
+          } else {
+            emit('shift-select', { head: true, tail: true })
+          }
+        } else if (state.head) {
           emit('shift-select', {
             ...props.selectedState,
             head: !props.selectedState.head,

@@ -5,7 +5,7 @@
       :key="born.name"
       :born="born"
       :selected-state="bornSelectedState"
-      :parent="bornMap[born.parentKey]"
+      :parent="bornMap[born.parentId]"
       @select="click"
       @shift-select="shiftClick"
     />

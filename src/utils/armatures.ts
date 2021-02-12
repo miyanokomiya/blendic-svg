@@ -39,25 +39,28 @@ export function editTransform(
 
 export function extrudeFromParent(parent: Born, fromHead = false): Born {
   const head = fromHead ? parent.head : parent.tail
-  return getBorn({
-    head,
-    tail: head,
-    parentKey: fromHead ? parent.parentKey : parent.name,
-    connected: fromHead ? parent.connected : true,
-  })
+  return getBorn(
+    {
+      head,
+      tail: head,
+      parentId: fromHead ? parent.parentId : parent.id,
+      connected: fromHead ? parent.connected : true,
+    },
+    true
+  )
 }
 
-export function findBorn(borns: Born[], name: string): Born | undefined {
-  return borns.find((b) => b.name === name)
+export function findBorn(borns: Born[], id: string): Born | undefined {
+  return borns.find((b) => b.id === id)
 }
 
 export function findChildren(
   armature: Armature,
-  name: string,
+  id: string,
   onlyConnected = false
 ): Born[] {
   return armature.borns.filter(
-    (b) => b.parentKey === name && (!onlyConnected || b.connected)
+    (b) => b.parentId === id && (!onlyConnected || b.connected)
   )
 }
 
@@ -66,37 +69,37 @@ export function adjustConnectedPosition(borns: Born[]): Born[] {
     if (!b.connected) return b
     return {
       ...b,
-      head: b.connected ? findBorn(borns, b.parentKey)?.tail ?? b.head : b.head,
+      head: b.connected ? findBorn(borns, b.parentId)?.tail ?? b.head : b.head,
     }
   })
 }
 
 export function selectBorn(
   armature: Armature,
-  name: string,
+  id: string,
   selectedState: BornSelectedState
 ): {
-  [name: string]: Partial<BornSelectedState>
+  [id: string]: Partial<BornSelectedState>
 } {
-  const target = findBorn(armature.borns, name)
+  const target = findBorn(armature.borns, id)
   if (!target) return {}
 
-  let ret: { [name: string]: Partial<BornSelectedState> } = {
-    [name]: selectedState,
+  let ret: { [id: string]: Partial<BornSelectedState> } = {
+    [id]: selectedState,
   }
 
   if (selectedState.head && target.connected) {
-    const parent = findBorn(armature.borns, target.parentKey)
+    const parent = findBorn(armature.borns, target.parentId)
     if (parent) {
       ret = {
-        ...selectBorn(armature, parent.name, { tail: true }),
+        ...selectBorn(armature, parent.id, { tail: true }),
         ...ret,
       }
     }
   }
   if (selectedState.tail) {
-    findChildren(armature, target.name, true).forEach((b) => {
-      ret[b.name] = { head: true }
+    findChildren(armature, target.id, true).forEach((b) => {
+      ret[b.id] = { head: true }
     })
   }
 
@@ -107,8 +110,8 @@ export function fixConnections(borns: Born[]): Born[] {
   return borns.map((b) => {
     if (!b.connected) return b
 
-    const parent = findBorn(borns, b.parentKey)
-    if (!parent) return { ...b, connected: false, parentKey: '' }
+    const parent = findBorn(borns, b.parentId)
+    if (!parent) return { ...b, connected: false, parentId: '' }
 
     return { ...b, head: parent.tail }
   })
@@ -118,8 +121,8 @@ export function updateConnections(borns: Born[]): Born[] {
   return borns.map((b) => {
     if (!b.connected) return b
 
-    const parent = findBorn(borns, b.parentKey)
-    if (!parent) return { ...b, connected: false, parentKey: '' }
+    const parent = findBorn(borns, b.parentId)
+    if (!parent) return { ...b, connected: false, parentId: '' }
 
     return { ...b, connected: isSame(parent.tail, b.head) }
   })
@@ -133,6 +136,6 @@ export function updateBornName(
   return borns.map((b) => ({
     ...b,
     name: b.name === from ? to : b.name,
-    parentKey: b.parentKey === from ? to : b.parentKey,
+    parentId: b.parentId === from ? to : b.parentId,
   }))
 }

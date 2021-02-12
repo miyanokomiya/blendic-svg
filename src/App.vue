@@ -13,32 +13,28 @@
         <g v-if="canvasMode === 'object'">
           <ArmatureElm
             v-for="armature in armatures"
-            :key="armature.name"
+            :key="armature.id"
             :armature="armature"
-            :selected="lastSelectedArmatureName === armature.name"
-            @select="(selected) => selectArmature(armature.name, selected)"
+            :selected="lastSelectedArmatureId === armature.id"
+            @select="(selected) => selectArmature(armature.id, selected)"
             @shift-select="
-              (selected) => shiftSelectArmature(armature.name, selected)
+              (selected) => shiftSelectArmature(armature.id, selected)
             "
           />
         </g>
         <g v-if="canvasMode === 'edit'">
           <BornElm
             v-for="born in editBornMap"
-            :key="born.name"
+            :key="born.id"
             :born="born"
-            :parent="editBornMap[born.parentKey]"
-            :selected-state="armatureEditMode.state.selectedBorns[born.name]"
-            @select="(state) => selectBorn(born.name, state)"
-            @shift-select="(state) => shiftSelectBorn(born.name, state)"
+            :parent="editBornMap[born.parentId]"
+            :selected-state="armatureEditMode.state.selectedBorns[born.id]"
+            @select="(state) => selectBorn(born.id, state)"
+            @shift-select="(state) => shiftSelectBorn(born.id, state)"
           />
         </g>
       </AppCanvas>
-      <SidePanel
-        class="side-panel"
-        :armature="armature"
-        :last-selected-born-name="armatureEditMode.state.lastSelectedBornName"
-      />
+      <SidePanel class="side-panel" :armature="armature" />
     </div>
     <div>
       <p>{{ armature.borns.length }}</p>
@@ -54,13 +50,7 @@ import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import BornElm from './components/elements/Born.vue'
-import {
-  Born,
-  BornSelectedState,
-  EditMode,
-  CanvasMode,
-  toMap,
-} from './models/index'
+import { BornSelectedState, EditMode, CanvasMode, toMap } from './models/index'
 import { useBornEditMode } from './composables/armatureEditMode'
 import { editTransform } from './utils/armatures'
 import { IVec2 } from 'okageo'
@@ -84,22 +74,22 @@ export default defineComponent({
         armature.value.borns.map((b) =>
           editTransform(
             b,
-            armatureEditMode.getEditTransforms(b.name),
-            armatureEditMode.state.selectedBorns[b.name] || []
+            armatureEditMode.getEditTransforms(b.id),
+            armatureEditMode.state.selectedBorns[b.id] || []
           )
         )
       )
     )
 
     watch(
-      () => armatureEditMode.state.lastSelectedBornName,
+      () => armatureEditMode.state.lastSelectedBornId,
       (to) => store.selectBorn(to)
     )
 
     return {
       armatures: computed(() => store.state.armatures),
-      lastSelectedArmatureName: computed(
-        () => store.state.lastSelectedArmatureName
+      lastSelectedArmatureId: computed(
+        () => store.state.lastSelectedArmatureId
       ),
       armature,
       editBornMap,
@@ -122,25 +112,25 @@ export default defineComponent({
           store.selectArmature()
         }
       },
-      selectBorn(name: string, state: BornSelectedState) {
+      selectBorn(id: string, state: BornSelectedState) {
         if (canvasMode.value === 'edit') {
-          armatureEditMode.select(name, state)
+          armatureEditMode.select(id, state)
         } else {
-          store.selectArmature(armature.value.name)
+          store.selectArmature(armature.value.id)
         }
       },
-      shiftSelectBorn(name: string, state: BornSelectedState) {
+      shiftSelectBorn(id: string, state: BornSelectedState) {
         if (canvasMode.value === 'edit') {
-          armatureEditMode.shiftSelect(name, state)
+          armatureEditMode.shiftSelect(id, state)
         } else {
-          store.selectArmature(armature.value.name)
+          store.selectArmature(armature.value.id)
         }
       },
-      selectArmature(name: string, selected: boolean) {
-        store.selectArmature(selected ? name : '')
+      selectArmature(id: string, selected: boolean) {
+        store.selectArmature(selected ? id : '')
       },
-      shiftSelectArmature(name: string, selected: boolean) {
-        store.selectArmature(selected ? name : '')
+      shiftSelectArmature(id: string, selected: boolean) {
+        store.selectArmature(selected ? id : '')
       },
       toggleCanvasMode() {
         if (canvasMode.value === 'object' && store.lastSelectedArmature.value) {

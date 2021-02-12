@@ -3,36 +3,41 @@ import { getArmature, getBorn } from '../../src/models/index'
 
 describe('utils/armatures', () => {
   describe('extrudeFromParent', () => {
-    const parent = getBorn({ name: 'parent', tail: { x: 1, y: 2 } })
+    const parent = getBorn({ id: 'parent', tail: { x: 1, y: 2 } })
 
     it("fromHead: false => extrude from parent's tail", () => {
-      expect(target.extrudeFromParent(parent)).toEqual(
+      expect({ ...target.extrudeFromParent(parent), id: '1' }).toEqual(
         getBorn({
+          id: '1',
           head: parent.tail,
           tail: parent.tail,
-          parentKey: parent.name,
+          parentId: parent.id,
           connected: true,
         })
       )
     })
     it("fromHead: true => extrude from parent's head & extends parent's connection", () => {
-      expect(
-        target.extrudeFromParent({ ...parent, connected: false }, true)
-      ).toEqual(
+      expect({
+        ...target.extrudeFromParent({ ...parent, connected: false }, true),
+        id: '1',
+      }).toEqual(
         getBorn({
+          id: '1',
           head: parent.head,
           tail: parent.head,
-          parentKey: parent.parentKey,
+          parentId: parent.parentId,
           connected: false,
         })
       )
-      expect(
-        target.extrudeFromParent({ ...parent, connected: true }, true)
-      ).toEqual(
+      expect({
+        ...target.extrudeFromParent({ ...parent, connected: true }, true),
+        id: '1',
+      }).toEqual(
         getBorn({
+          id: '1',
           head: parent.head,
           tail: parent.head,
-          parentKey: parent.parentKey,
+          parentId: parent.parentId,
           connected: true,
         })
       )
@@ -40,13 +45,13 @@ describe('utils/armatures', () => {
   })
 
   describe('adjustConnectedPosition', () => {
-    const parent = getBorn({ name: 'parent', tail: { x: 1, y: 2 } })
+    const parent = getBorn({ id: 'parent', tail: { x: 1, y: 2 } })
 
     it("connected: true => connect child's head to parent's tail", () => {
       const child = getBorn({
-        name: 'child',
+        id: 'child',
         head: { x: 0, y: 0 },
-        parentKey: 'parent',
+        parentId: 'parent',
         connected: true,
       })
       expect(target.adjustConnectedPosition([parent, child])).toEqual([
@@ -56,9 +61,9 @@ describe('utils/armatures', () => {
     })
     it('connected: false => do nothing', () => {
       const child = getBorn({
-        name: 'child',
+        id: 'child',
         head: { x: 0, y: 0 },
-        parentKey: 'parent',
+        parentId: 'parent',
         connected: false,
       })
       expect(target.adjustConnectedPosition([parent, child])).toEqual([
@@ -69,30 +74,30 @@ describe('utils/armatures', () => {
   })
 
   describe('selectBorn', () => {
-    const parent = getBorn({ name: 'parent' })
+    const parent = getBorn({ id: 'parent' })
     const selecgted = getBorn({
-      name: 'selecgted',
-      parentKey: 'parent',
+      id: 'selecgted',
+      parentId: 'parent',
       connected: true,
     })
     const brother = getBorn({
-      name: 'brother',
-      parentKey: 'parent',
+      id: 'brother',
+      parentId: 'parent',
       connected: true,
     })
     const unconnectedBrother = getBorn({
-      name: 'unconnectedBrother',
-      parentKey: 'parent',
+      id: 'unconnectedBrother',
+      parentId: 'parent',
       connected: false,
     })
     const child = getBorn({
-      name: 'child',
-      parentKey: 'selecgted',
+      id: 'child',
+      parentId: 'selecgted',
       connected: true,
     })
     const unconnectedChild = getBorn({
-      name: 'unconnectedChild',
-      parentKey: 'selecgted',
+      id: 'unconnectedChild',
+      parentId: 'selecgted',
       connected: false,
     })
 
@@ -103,7 +108,7 @@ describe('utils/armatures', () => {
             getArmature({
               borns: [parent, selecgted, brother, unconnectedBrother, child],
             }),
-            selecgted.name,
+            selecgted.id,
             { head: true, tail: false }
           )
         ).toEqual({
@@ -118,7 +123,7 @@ describe('utils/armatures', () => {
             getArmature({
               borns: [parent, { ...selecgted, connected: false }, child],
             }),
-            selecgted.name,
+            selecgted.id,
             { head: true, tail: false }
           )
         ).toEqual({
@@ -133,7 +138,7 @@ describe('utils/armatures', () => {
             getArmature({
               borns: [parent, selecgted, child, unconnectedChild],
             }),
-            selecgted.name,
+            selecgted.id,
             { head: false, tail: true }
           )
         ).toEqual({
@@ -146,16 +151,16 @@ describe('utils/armatures', () => {
 
   describe('fixConnections', () => {
     it("connected: true => connect child's head to parent's tail", () => {
-      const parent = getBorn({ name: 'parent', tail: { x: 1, y: 2 } })
+      const parent = getBorn({ id: 'parent', tail: { x: 1, y: 2 } })
       const connected = getBorn({
-        name: 'connected',
-        parentKey: 'parent',
+        id: 'connected',
+        parentId: 'parent',
         connected: true,
         head: { x: 10, y: 20 },
       })
       const unconnected = getBorn({
-        name: 'unconnected',
-        parentKey: 'parent',
+        id: 'unconnected',
+        parentId: 'parent',
         connected: false,
       })
       expect(target.fixConnections([parent, connected, unconnected])).toEqual([
@@ -168,16 +173,16 @@ describe('utils/armatures', () => {
 
   describe('updateConnections', () => {
     it("parent's tail != child's head => connected is false", () => {
-      const parent = getBorn({ name: 'parent', tail: { x: 1, y: 2 } })
+      const parent = getBorn({ id: 'parent', tail: { x: 1, y: 2 } })
       const connected = getBorn({
-        name: 'connected',
-        parentKey: 'parent',
+        id: 'connected',
+        parentId: 'parent',
         connected: true,
         head: { x: 10, y: 20 },
       })
       const unconnected = getBorn({
-        name: 'unconnected',
-        parentKey: 'parent',
+        id: 'unconnected',
+        parentId: 'parent',
         connected: true,
         head: { x: 1, y: 2 },
       })
@@ -188,16 +193,16 @@ describe('utils/armatures', () => {
   })
 
   describe('updateBornName', () => {
-    it("rename born's name, parentKey", () => {
+    it("rename born's name, parentId", () => {
       const borns = [
-        getBorn({ name: '1', parentKey: '' }),
-        getBorn({ name: '2', parentKey: '1' }),
-        getBorn({ name: '3', parentKey: '2' }),
+        getBorn({ name: '1', parentId: '' }),
+        getBorn({ name: '2', parentId: '1' }),
+        getBorn({ name: '3', parentId: '2' }),
       ]
       expect(target.updateBornName(borns, '1', '10')).toEqual([
-        getBorn({ name: '10', parentKey: '' }),
-        getBorn({ name: '2', parentKey: '10' }),
-        getBorn({ name: '3', parentKey: '2' }),
+        getBorn({ name: '10', parentId: '' }),
+        getBorn({ name: '2', parentId: '10' }),
+        getBorn({ name: '3', parentId: '2' }),
       ])
     })
   })

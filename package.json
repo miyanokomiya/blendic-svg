@@ -12,6 +12,7 @@
     "just-merge": "^1.1.0",
     "okageo": "^2.0.0",
     "okanvas": "^0.0.4",
+    "uuid": "^8.3.2",
     "vue": "^3.0.5"
   },
   "devDependencies": {
@@ -19,6 +20,7 @@
     "@babel/preset-env": "^7.12.13",
     "@babel/preset-typescript": "^7.12.13",
     "@types/jest": "^26.0.20",
+    "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.15.0",
     "@typescript-eslint/parser": "^4.15.0",
     "@vitejs/plugin-vue": "^1.1.4",

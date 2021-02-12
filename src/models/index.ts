@@ -1,4 +1,5 @@
 import { IVec2 } from 'okageo'
+import { v4 } from 'uuid'
 
 export interface Transform {
   translate: IVec2
@@ -8,15 +9,17 @@ export interface Transform {
 }
 
 export interface Born {
+  id: string
   name: string
   transform: Transform
-  parentKey: string
+  parentId: string
   connected: boolean
   head: IVec2
   tail: IVec2
 }
 
 export interface Armature {
+  id: string
   name: string
   transform: Transform
   borns: Born[]
@@ -42,11 +45,12 @@ export function getTransform(arg: Partial<Transform> = {}): Transform {
   }
 }
 
-export function getBorn(arg: Partial<Born> = {}): Born {
+export function getBorn(arg: Partial<Born> = {}, generateId = false): Born {
   return {
+    id: generateId ? v4() : '',
     name: '',
     transform: getTransform(),
-    parentKey: '',
+    parentId: '',
     connected: false,
     head: { x: 0, y: 0 },
     tail: { x: 0, y: 0 },
@@ -54,8 +58,12 @@ export function getBorn(arg: Partial<Born> = {}): Born {
   }
 }
 
-export function getArmature(arg: Partial<Armature> = {}): Armature {
+export function getArmature(
+  arg: Partial<Armature> = {},
+  generateId = false
+): Armature {
   return {
+    id: generateId ? v4() : '',
     name: '',
     transform: getTransform(),
     borns: [],
@@ -70,13 +78,13 @@ export interface BornSelectedState {
 export type CanvasMode = 'object' | 'edit' | 'pose'
 export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude'
 
-export function toMap<T extends { name: string }>(
+export function toMap<T extends { id: string }>(
   list: T[]
-): { [name: string]: T } {
-  return list.reduce<{ [name: string]: T }>(
+): { [id: string]: T } {
+  return list.reduce<{ [id: string]: T }>(
     (m, item) => ({
       ...m,
-      [item.name]: item,
+      [item.id]: item,
     }),
     {}
   )

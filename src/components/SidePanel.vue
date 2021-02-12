@@ -15,10 +15,10 @@
       </div>
       <div class="field inline">
         <label>Parent</label>
-        <select v-model="parentKey">
+        <select v-model="parentId">
           <option value="">-- None --</option>
-          <option v-for="name in otherNames" :key="name" :value="name">
-            {{ name }}
+          <option v-for="born in otherBorns" :key="born.id" :value="born.id">
+            {{ born.name }}
           </option>
         </select>
       </div>
@@ -39,11 +39,11 @@ export default defineComponent({
     const store = useStore()
     const draftName = ref('')
 
-    const otherNames = computed(() => {
+    const otherBorns = computed(() => {
       if (!store.lastSelectedArmature.value) return []
-      return store.lastSelectedArmature.value.borns
-        .map((b) => b.name)
-        .filter((n) => n !== store.state.lastSelectedBornName)
+      return store.lastSelectedArmature.value.borns.filter(
+        (b) => b.id !== store.state.lastSelectedBornId
+      )
     })
 
     const selectedObjectType = computed((): 'born' | 'armature' | '' => {
@@ -67,7 +67,7 @@ export default defineComponent({
       draftName,
       lastSelectedArmature: store.lastSelectedArmature,
       lastSelectedBorn: store.lastSelectedBorn,
-      otherNames,
+      otherBorns,
       selectedObjectType,
       connected: computed({
         get(): boolean {
@@ -77,9 +77,9 @@ export default defineComponent({
           store.setBornConnection(val)
         },
       }),
-      parentKey: computed({
+      parentId: computed({
         get(): string {
-          return store.lastSelectedBorn.value?.parentKey ?? ''
+          return store.lastSelectedBorn.value?.parentId ?? ''
         },
         set(val: string) {
           store.setBornParent(val || undefined)

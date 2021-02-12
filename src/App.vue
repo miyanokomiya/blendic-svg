@@ -36,7 +36,7 @@
             :key="born.id"
             :born="born"
             :parent="editBornMap[born.parentId]"
-            :selected-state="armatureEditMode.state.selectedBorns[born.id]"
+            :selected-state="selectedBorns[born.id]"
             @select="(state) => selectBorn(born.id, state)"
             @shift-select="(state) => shiftSelectBorn(born.id, state)"
           />
@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch } from 'vue'
+import { defineComponent, ref, computed } from 'vue'
 import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
@@ -91,16 +91,11 @@ export default defineComponent({
               editTransform(
                 b,
                 armatureEditMode.getEditTransforms(b.id),
-                armatureEditMode.state.selectedBorns[b.id] || []
+                store.state.selectedBorns[b.id] || []
               )
             )
           )
         : {}
-    )
-
-    watch(
-      () => armatureEditMode.state.lastSelectedBornId,
-      (to) => store.selectBorn(to)
     )
 
     return {
@@ -110,6 +105,7 @@ export default defineComponent({
         () => store.state.lastSelectedArmatureId
       ),
       editBornMap,
+      selectedBorns: computed(() => store.state.selectedBorns),
       armatureEditMode,
       canvasMode,
       mousemove(arg: { current: IVec2; start: IVec2 }) {

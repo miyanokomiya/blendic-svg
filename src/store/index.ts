@@ -1,7 +1,15 @@
 import { reactive, computed, watch } from 'vue'
 import { getNextName } from '/@/utils/relations'
-import { Armature, getBorn, getArmature } from '/@/models/index'
+import {
+  Armature,
+  BornSelectedState,
+  getBorn,
+  getArmature,
+} from '/@/models/index'
 import * as armatureUtils from '/@/utils/armatures'
+import merge from 'just-merge'
+
+type IdMap = { [id: string]: boolean }
 
 const armature = reactive<Armature>(
   getArmature(
@@ -26,6 +34,8 @@ const state = reactive({
   armatures: [armature],
   lastSelectedArmatureId: '',
   lastSelectedBornId: '',
+  selectedArmatures: {} as IdMap,
+  selectedBorns: {} as { [id: string]: BornSelectedState },
 })
 
 const lastSelectedArmature = computed(() =>
@@ -43,12 +53,48 @@ watch(
   () => (state.lastSelectedBornId = '')
 )
 
+watch(
+  () => state.selectedBorns,
+  () => {
+    if (!(state.lastSelectedBornId in state.selectedBorns)) {
+      state.lastSelectedBornId = ''
+    }
+  }
+)
+
 function selectArmature(id: string = '') {
   state.lastSelectedArmatureId = id
   state.lastSelectedBornId = ''
+  state.selectedBorns = {}
 }
-function selectBorn(id: string = '') {
+function selectBorn(
+  id: string = '',
+  selectedState: BornSelectedState = { head: true, tail: true }
+) {
+  if (!lastSelectedArmature.value) return
+
   state.lastSelectedBornId = id
+  state.selectedBorns = { [id]: selectedState }
+  state.selectedBorns = merge(
+    state.selectedBorns,
+    armatureUtils.selectBorn(lastSelectedArmature.value, id, selectedState)
+  )
+}
+function shiftSelectBorn(
+  id: string = '',
+  selectedState: BornSelectedState = { head: true, tail: true }
+) {
+  if (!lastSelectedArmature.value) return
+
+  state.lastSelectedBornId = id
+  state.selectedBorns[id] = selectedState
+  state.selectedBorns = merge(
+    state.selectedBorns,
+    armatureUtils.selectBorn(lastSelectedArmature.value, id, selectedState)
+  )
+}
+function setSelectedBorns(data: { [id: string]: BornSelectedState }) {
+  state.selectedBorns = data
 }
 function setBornConnection(connected: boolean) {
   if (!lastSelectedArmature.value) return
@@ -110,6 +156,8 @@ export function useStore() {
     lastSelectedBorn,
     selectArmature,
     selectBorn,
+    shiftSelectBorn,
+    setSelectedBorns,
     setBornConnection,
     setBornParent,
     updateBornName,

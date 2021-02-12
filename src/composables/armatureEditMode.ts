@@ -12,32 +12,27 @@ import {
   findBorn,
   editTransform,
   extrudeFromParent,
-  selectBorn,
   updateConnections,
 } from '/@/utils/armatures'
 import { getNextName } from '/@/utils/relations'
-
-// @ts-ignore
-import merge from 'just-merge'
+import { useStore } from '/@/store/index'
 
 type EditMovement = { current: IVec2; start: IVec2 }
 
 interface State {
-  selectedBorns: {
-    [id: string]: BornSelectedState
-  }
-  lastSelectedBornId: string
   editMode: EditMode
   editMovement: EditMovement | undefined
 }
 
 export function useBornEditMode() {
   const state = reactive<State>({
-    selectedBorns: {},
-    lastSelectedBornId: '',
     editMode: '',
     editMovement: undefined,
   })
+
+  const store = useStore()
+  const selectedBorns = computed(() => store.state.selectedBorns)
+  const lastSelectedBornId = computed(() => store.state.lastSelectedBornId)
 
   const newBornIds = ref<string[]>([])
   const pastSelectedBorns = ref<{
@@ -46,7 +41,7 @@ export function useBornEditMode() {
 
   const target = ref<Armature>()
 
-  const isAnySelected = computed(() => !!state.lastSelectedBornId)
+  const isAnySelected = computed(() => !!lastSelectedBornId.value)
 
   const allNames = computed(() => target.value?.borns.map((a) => a.name) ?? [])
 
@@ -55,12 +50,12 @@ export function useBornEditMode() {
       if (target.value) {
         // revert extruded borns
         target.value.borns = target.value.borns.filter(
-          (a) => !state.selectedBorns[a.id]
+          (b) => !selectedBorns.value[b.id]
         )
       }
-      state.selectedBorns = pastSelectedBorns.value
-        ? { ...pastSelectedBorns.value }
-        : {}
+      store.setSelectedBorns(
+        pastSelectedBorns.value ? { ...pastSelectedBorns.value } : {}
+      )
     }
 
     state.editMode = ''
@@ -86,8 +81,7 @@ export function useBornEditMode() {
     if (state.editMode) {
       completeEdit()
     } else {
-      state.selectedBorns = {}
-      state.lastSelectedBornId = ''
+      store.setSelectedBorns({})
     }
   }
 
@@ -100,8 +94,7 @@ export function useBornEditMode() {
   function addBorn(born: Born) {
     target.value!.borns.push(born)
     newBornIds.value.push(born.id)
-    state.selectedBorns[born.id] = { tail: true }
-    state.lastSelectedBornId = born.id
+    store.shiftSelectBorn(born.id, { tail: true })
   }
 
   function setEditMode(mode: EditMode) {
@@ -111,8 +104,8 @@ export function useBornEditMode() {
     if (isAnySelected.value) {
       state.editMode = mode
       if (mode === 'extrude') {
-        pastSelectedBorns.value = { ...state.selectedBorns }
-        state.selectedBorns = {}
+        pastSelectedBorns.value = { ...selectedBorns.value }
+        store.setSelectedBorns({})
         const shouldSkipBorns: { [id: string]: boolean } = {}
         Object.keys(pastSelectedBorns.value).forEach((id) => {
           const selectedState = pastSelectedBorns.value![id]
@@ -142,7 +135,7 @@ export function useBornEditMode() {
     if (!state.editMovement) return {}
 
     const translate = sub(state.editMovement.current, state.editMovement.start)
-    return Object.keys(state.selectedBorns).reduce<{
+    return Object.keys(selectedBorns.value).reduce<{
       [id: string]: Transform[]
     }>((map, id) => {
       map[id] = [getTransform({ translate })]
@@ -159,7 +152,7 @@ export function useBornEditMode() {
       target.value!.borns[index] = editTransform(
         target.value!.borns[index],
         editTransforms.value[id],
-        state.selectedBorns[id]
+        selectedBorns.value[id]
       )
     })
     target.value.borns = updateConnections(target.value.borns)
@@ -173,10 +166,7 @@ export function useBornEditMode() {
       completeEdit()
       return
     }
-    if (!target.value) return
-
-    state.selectedBorns = selectBorn(target.value, id, selectedState)
-    state.lastSelectedBornId = id
+    store.selectBorn(id, selectedState)
   }
 
   function shiftSelect(id: string, selectedState: BornSelectedState) {
@@ -184,13 +174,7 @@ export function useBornEditMode() {
       completeEdit()
       return
     }
-    if (!target.value) return
-
-    state.selectedBorns = merge(
-      state.selectedBorns,
-      selectBorn(target.value, id, selectedState)
-    )
-    state.lastSelectedBornId = id
+    store.shiftSelectBorn(id, selectedState)
   }
 
   function mousemove(arg: EditMovement) {

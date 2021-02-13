@@ -62,6 +62,7 @@ import { CanvasCommand } from '/@/models'
 import * as helpers from '/@/utils/helpers'
 import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
+import { useCanvasStore } from '/@/store/canvas'
 
 export default defineComponent({
   components: { ScaleMarker },
@@ -95,9 +96,9 @@ export default defineComponent({
     const scale = ref(1)
     const viewOrigin = ref<IVec2>({ x: 0, y: 0 })
     const viewMovingInfo = ref<{ origin: IVec2; downAt: IVec2 }>()
-    const axisGrid = ref<'' | 'x' | 'y'>('')
 
     const store = useStore()
+    const canvasStore = useCanvasStore()
 
     function viewToCanvas(v: IVec2): IVec2 {
       return add(viewOrigin.value, multi(v, scale.value))
@@ -120,11 +121,11 @@ export default defineComponent({
     )
 
     const gridLineElm = computed(() => {
-      if (axisGrid.value === '') return
+      if (canvasStore.state.axisGrid === '') return
       if (!editStartPoint.value) return
       return helpers.gridLineElm(
         scale.value,
-        axisGrid.value,
+        canvasStore.state.axisGrid,
         viewCanvasRect.value,
         store.selectedBornsOrigin.value
       )
@@ -143,7 +144,7 @@ export default defineComponent({
       (to) => {
         if (to === '') {
           editStartPoint.value = undefined
-          axisGrid.value = ''
+          canvasStore.setAxisGrid('')
         }
       }
     )
@@ -191,19 +192,6 @@ export default defineComponent({
           )
         } else {
           if (!editStartPoint.value) return
-
-          if (axisGrid.value === 'x') {
-            mousePoint.value = {
-              x: mousePoint.value.x,
-              y: editStartPoint.value.y,
-            }
-          } else if (axisGrid.value === 'y') {
-            mousePoint.value = {
-              x: editStartPoint.value.x,
-              y: mousePoint.value.y,
-            }
-          }
-
           emit('mousemove', {
             current: viewToCanvas(mousePoint.value),
             start: viewToCanvas(editStartPoint.value),
@@ -229,9 +217,7 @@ export default defineComponent({
         } else if (
           (['grab', 'scale'] as CanvasCommand[]).includes(props.currentCommand)
         ) {
-          if (key === 'x') axisGrid.value = axisGrid.value === 'x' ? '' : 'x'
-          else if (key === 'y')
-            axisGrid.value = axisGrid.value === 'y' ? '' : 'y'
+          if (key === 'x' || key === 'y') canvasStore.switchAxisGrid(key)
         }
       },
     }

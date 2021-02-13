@@ -17,6 +17,7 @@ import {
 } from '/@/utils/armatures'
 import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
+import { useCanvasStore } from '/@/store/canvas'
 
 type EditMovement = { current: IVec2; start: IVec2 }
 
@@ -32,6 +33,7 @@ export function useBornEditMode() {
   })
 
   const store = useStore()
+  const canvasStore = useCanvasStore()
   const selectedBorns = computed(() => store.state.selectedBorns)
   const lastSelectedBornId = computed(() => store.state.lastSelectedBornId)
 
@@ -133,8 +135,6 @@ export function useBornEditMode() {
   const editTransforms = computed(() => {
     if (!state.editMovement) return {}
 
-    const translate = sub(state.editMovement.current, state.editMovement.start)
-
     if (state.editMode === 'scale') {
       const origin = store.selectedBornsOrigin.value
       const scale = multi(
@@ -142,18 +142,21 @@ export function useBornEditMode() {
         getDistance(state.editMovement.current, origin) /
           getDistance(state.editMovement.start, origin)
       )
+      const snappedScale = canvasStore.snapScale(scale)
       return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
         (map, id) => {
-          map[id] = [getTransform({ origin, scale })]
+          map[id] = [getTransform({ origin, scale: snappedScale })]
           return map
         },
         {}
       )
     }
 
+    const translate = sub(state.editMovement.current, state.editMovement.start)
+    const snappedTranslate = canvasStore.snapTranslate(translate)
     return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
       (map, id) => {
-        map[id] = [getTransform({ translate })]
+        map[id] = [getTransform({ translate: snappedTranslate })]
         return map
       },
       {}

@@ -16,11 +16,11 @@ type IdMap = { [id: string]: boolean }
 const armature = reactive<Armature>(
   getArmature(
     {
-      name: '1',
+      name: 'armature',
       borns: [
         getBorn(
           {
-            name: '1',
+            name: 'born',
             head: { x: 20, y: 200 },
             tail: { x: 220, y: 200 },
           },

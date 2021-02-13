@@ -1,7 +1,10 @@
 <template>
   <g fill="black" stroke="black">
-    <circle :cx="origin.x" :cy="origin.y" :r="2 * scale" />
-    <circle :cx="current.x" :cy="current.y" :r="2 * scale" />
+    <g
+      :transform="`translate(${origin.x}, ${origin.y}) rotate(${rotate}) scale(${scale})`"
+    >
+      <circle r="2" />
+    </g>
     <line
       :x1="origin.x"
       :y1="origin.y"
@@ -13,6 +16,7 @@
     <g
       :transform="`translate(${current.x}, ${current.y}) rotate(${rotate}) scale(${scale})`"
     >
+      <circle r="2" />
       <path d="M-20,0L-10,-10L-10,10z" />
       <path d="M20,0L10,-10L10,10z" />
     </g>

@@ -137,8 +137,13 @@ export function useBornEditMode() {
 
     if (state.editMode === 'scale') {
       const origin = store.selectedBornsOrigin.value
+      const isOppositeSide = canvasStore.isOppositeSide(
+        origin,
+        state.editMovement.start,
+        state.editMovement.current
+      )
       const scale = multi(
-        { x: 1, y: 1 },
+        multi({ x: 1, y: 1 }, isOppositeSide ? -1 : 1),
         getDistance(state.editMovement.current, origin) /
           getDistance(state.editMovement.start, origin)
       )

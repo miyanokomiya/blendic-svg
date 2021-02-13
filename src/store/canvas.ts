@@ -1,4 +1,4 @@
-import { IVec2 } from 'okageo'
+import { getInner, getRadian, IVec2, sub } from 'okageo'
 import { reactive } from 'vue'
 
 export type AxisGrid = '' | 'x' | 'y'
@@ -25,7 +25,17 @@ function snapTranslate(translate: IVec2): IVec2 {
     y: state.axisGrid === 'x' ? 0 : translate.y,
   }
 }
+function isOppositeSide(origin: IVec2, from: IVec2, current: IVec2): boolean {
+  return getInner(sub(from, origin), sub(current, origin)) < 0
+}
 
 export function useCanvasStore() {
-  return { state, setAxisGrid, switchAxisGrid, snapScale, snapTranslate }
+  return {
+    state,
+    setAxisGrid,
+    switchAxisGrid,
+    snapScale,
+    snapTranslate,
+    isOppositeSide,
+  }
 }

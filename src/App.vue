@@ -97,7 +97,7 @@ export default defineComponent({
     )
     const otherArmatures = computed(() =>
       store.state.armatures.filter(
-        (a) => a.id !== store.state.lastSelectedArmatureId
+        (a) => a.id !== store.lastSelectedArmature.value?.id
       )
     )
 
@@ -148,7 +148,7 @@ export default defineComponent({
       armatures: computed(() => store.state.armatures),
       otherArmatures,
       lastSelectedArmatureId: computed(
-        () => store.state.lastSelectedArmatureId
+        () => store.lastSelectedArmature.value?.id
       ),
       editBornMap,
       selectedBorns: computed(() => store.state.selectedBorns),

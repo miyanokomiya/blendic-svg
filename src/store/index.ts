@@ -45,15 +45,23 @@ const state = reactive({
 })
 
 const lastSelectedArmatureIndex = computed(() =>
-  state.armatures.findIndex((a) => a.id === state.lastSelectedArmatureId)
+  state.armatures.findIndex(
+    (a) =>
+      a.id === state.lastSelectedArmatureId &&
+      state.selectedArmatures[state.lastSelectedArmatureId]
+  )
 )
-const lastSelectedArmature = computed(
-  () => state.armatures[lastSelectedArmatureIndex.value]
+const lastSelectedArmature = computed(() =>
+  lastSelectedArmatureIndex.value !== -1
+    ? state.armatures[lastSelectedArmatureIndex.value]
+    : undefined
 )
 const lastSelectedBorn = computed(() => {
   if (!lastSelectedArmature.value) return
   return lastSelectedArmature.value.borns.find(
-    (b) => b.id === state.lastSelectedBornId
+    (b) =>
+      b.id === state.lastSelectedBornId &&
+      state.selectedBorns[state.lastSelectedBornId]
   )
 })
 
@@ -68,10 +76,11 @@ const selectedBornsOrigin = computed(
 watch(
   () => state.selectedArmatures,
   () => {
-    if (!(state.lastSelectedArmatureId in state.selectedArmatures)) {
+    if (!state.selectedArmatures[state.lastSelectedArmatureId]) {
       state.lastSelectedArmatureId = ''
     }
-  }
+  },
+  { immediate: true }
 )
 watch(
   () => armatureMap.value,

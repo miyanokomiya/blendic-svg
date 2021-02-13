@@ -35,7 +35,7 @@ export function useBornEditMode() {
   const store = useStore()
   const canvasStore = useCanvasStore()
   const selectedBorns = computed(() => store.state.selectedBorns)
-  const lastSelectedBornId = computed(() => store.state.lastSelectedBornId)
+  const lastSelectedBornId = computed(() => store.lastSelectedBorn.value?.id)
 
   const newBornIds = ref<string[]>([])
   const pastSelectedBorns = ref<IdMap<BornSelectedState>>()

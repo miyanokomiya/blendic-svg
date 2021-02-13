@@ -42,7 +42,7 @@ export default defineComponent({
     const otherBorns = computed(() => {
       if (!store.lastSelectedArmature.value) return []
       return store.lastSelectedArmature.value.borns.filter(
-        (b) => b.id !== store.state.lastSelectedBornId
+        (b) => b.id !== store.lastSelectedBorn.value?.id
       )
     })
 

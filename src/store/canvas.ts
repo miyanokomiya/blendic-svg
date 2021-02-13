@@ -1,12 +1,17 @@
 import { getInner, getRadian, IVec2, sub } from 'okageo'
 import { reactive } from 'vue'
+import { CanvasMode } from '/@/models'
 
 export type AxisGrid = '' | 'x' | 'y'
 
 const state = reactive({
+  canvasMode: 'object' as CanvasMode,
   axisGrid: '' as AxisGrid,
 })
 
+function setCanvasMode(canvasMode: CanvasMode) {
+  state.canvasMode = canvasMode
+}
 function setAxisGrid(val: AxisGrid) {
   state.axisGrid = val
 }
@@ -32,6 +37,7 @@ function isOppositeSide(origin: IVec2, from: IVec2, current: IVec2): boolean {
 export function useCanvasStore() {
   return {
     state,
+    setCanvasMode,
     setAxisGrid,
     switchAxisGrid,
     snapScale,

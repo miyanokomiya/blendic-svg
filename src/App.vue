@@ -56,7 +56,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue'
+import { defineComponent, computed } from 'vue'
 import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
@@ -64,7 +64,6 @@ import BornElm from './components/elements/Born.vue'
 import {
   BornSelectedState,
   EditMode,
-  CanvasMode,
   toMap,
   editModeToCanvasCommand,
 } from './models/index'
@@ -72,6 +71,7 @@ import { useBornEditMode } from './composables/armatureEditMode'
 import { editTransform } from './utils/armatures'
 import { IVec2 } from 'okageo'
 import { useStore } from '/@/store/index'
+import { useCanvasStore } from './store/canvas'
 
 export default defineComponent({
   components: {
@@ -81,9 +81,11 @@ export default defineComponent({
     SidePanel,
   },
   setup() {
-    const canvasMode = ref<CanvasMode>('object')
     const store = useStore()
+    const canvasStore = useCanvasStore()
     const armatureEditMode = useBornEditMode()
+
+    const canvasMode = computed(() => canvasStore.state.canvasMode)
 
     const lastSelectedArmature = computed(
       () => store.lastSelectedArmature.value
@@ -159,10 +161,10 @@ export default defineComponent({
       },
       toggleCanvasMode() {
         if (canvasMode.value === 'object' && store.lastSelectedArmature.value) {
-          canvasMode.value = 'edit'
+          canvasStore.setCanvasMode('edit')
           armatureEditMode.begin(store.lastSelectedArmature.value)
         } else {
-          canvasMode.value = 'object'
+          canvasStore.setCanvasMode('object')
           armatureEditMode.end()
         }
       },

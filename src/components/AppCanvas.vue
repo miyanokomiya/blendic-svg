@@ -11,6 +11,7 @@
       :height="viewSize.height"
       @wheel.prevent="wheel"
       @click.left="clickAny"
+      @click.right.prevent="keyDownEscape"
       @mouseenter="focus"
       @mousemove.prevent="mousemove"
       @mousedown.middle.prevent="downMiddle"

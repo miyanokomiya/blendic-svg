@@ -1,6 +1,10 @@
 import { IVec2 } from 'okageo'
 import { v4 } from 'uuid'
 
+export type IdMap<T> = {
+  [id: string]: T
+}
+
 export interface Transform {
   translate: IVec2
   origin: IVec2
@@ -87,10 +91,8 @@ export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {
   return ''
 }
 
-export function toMap<T extends { id: string }>(
-  list: T[]
-): { [id: string]: T } {
-  return list.reduce<{ [id: string]: T }>(
+export function toMap<T extends { id: string }>(list: T[]): IdMap<T> {
+  return list.reduce<IdMap<T>>(
     (m, item) => ({
       ...m,
       [item.id]: item,

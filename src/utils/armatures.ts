@@ -5,33 +5,59 @@ import {
   BornSelectedState,
   getTransform,
   getBorn,
+  IdMap,
 } from '../models/index'
-import { add, getOuterRectangle, getRectCenter, isSame, IVec2 } from 'okageo'
+import {
+  add,
+  getOuterRectangle,
+  getRectCenter,
+  isSame,
+  IVec2,
+  sub,
+  multi,
+} from 'okageo'
 
-function convoluteTransforms(transforms: Transform[]): Transform {
+export function convoluteTransforms(transforms: Transform[]): Transform {
   return transforms.reduce((ret, t) => {
     return {
       ...ret,
-      translate: add(ret.translate, t.translate),
+      scale: { x: ret.scale.x * t.scale.x, y: ret.scale.y * t.scale.y },
+      translate: add(add(ret.translate, t.translate), {
+        x: t.origin.x * (1 - t.scale.x),
+        y: t.origin.y * (1 - t.scale.y),
+      }),
     }
   }, getTransform())
 }
 
+function scale(p: IVec2, scale: IVec2, origin: IVec2): IVec2 {
+  return {
+    x: origin.x + (p.x - origin.x) * scale.x,
+    y: origin.y + (p.y - origin.y) * scale.y,
+  }
+}
+
 export function editTransform(
-  armature: Born,
+  born: Born,
   transforms: Transform[],
   selectedState: BornSelectedState
 ) {
   const convoluted = convoluteTransforms(transforms)
   const head = selectedState.head
-    ? add(armature.head, convoluted.translate)
-    : armature.head
+    ? add(
+        scale(born.head, convoluted.scale, convoluted.origin),
+        convoluted.translate
+      )
+    : born.head
   const tail = selectedState.tail
-    ? add(armature.tail, convoluted.translate)
-    : armature.tail
+    ? add(
+        scale(born.tail, convoluted.scale, convoluted.origin),
+        convoluted.translate
+      )
+    : born.tail
 
   return {
-    ...armature,
+    ...born,
     head,
     tail,
   }
@@ -78,13 +104,11 @@ export function selectBorn(
   armature: Armature,
   id: string,
   selectedState: BornSelectedState
-): {
-  [id: string]: Partial<BornSelectedState>
-} {
+): IdMap<Partial<BornSelectedState>> {
   const target = findBorn(armature.borns, id)
   if (!target) return {}
 
-  let ret: { [id: string]: Partial<BornSelectedState> } = {
+  let ret: IdMap<Partial<BornSelectedState>> = {
     [id]: selectedState,
   }
 
@@ -139,8 +163,8 @@ export function updateBornName(
 }
 
 export function getSelectedBornsOrigin(
-  bornMap: { [id: string]: Born },
-  selectedState: { [id: string]: BornSelectedState }
+  bornMap: IdMap<Born>,
+  selectedState: IdMap<BornSelectedState>
 ): IVec2 {
   return getRectCenter(
     getOuterRectangle(

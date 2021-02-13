@@ -6,12 +6,13 @@ import {
   getBorn,
   getArmature,
   toMap,
+  Born,
+  IdMap,
 } from '/@/models/index'
 import * as armatureUtils from '/@/utils/armatures'
 // @ts-ignore
 import merge from 'just-merge'
-
-type IdMap = { [id: string]: boolean }
+import { IVec2 } from 'okageo'
 
 const armature = reactive<Armature>(
   getArmature(
@@ -36,8 +37,8 @@ const state = reactive({
   armatures: [armature],
   lastSelectedArmatureId: '',
   lastSelectedBornId: '',
-  selectedArmatures: {} as IdMap,
-  selectedBorns: {} as { [id: string]: BornSelectedState },
+  selectedArmatures: {} as IdMap<boolean>,
+  selectedBorns: {} as IdMap<BornSelectedState>,
 })
 
 const lastSelectedArmature = computed(() =>
@@ -52,8 +53,9 @@ const lastSelectedBorn = computed(() => {
 
 const bornMap = computed(() => toMap(lastSelectedArmature.value?.borns ?? []))
 
-const selectedBornsOrigin = computed(() =>
-  armatureUtils.getSelectedBornsOrigin(bornMap.value, state.selectedBorns)
+const selectedBornsOrigin = computed(
+  (): IVec2 =>
+    armatureUtils.getSelectedBornsOrigin(bornMap.value, state.selectedBorns)
 )
 
 watch(
@@ -69,9 +71,9 @@ watch(
   () => bornMap.value,
   () => {
     // unselect unexisted borns
-    state.selectedBorns = Object.keys(state.selectedBorns).reduce<{
-      [id: string]: BornSelectedState
-    }>((m, id) => {
+    state.selectedBorns = Object.keys(state.selectedBorns).reduce<
+      IdMap<BornSelectedState>
+    >((m, id) => {
       return bornMap.value[id]
         ? {
             ...m,
@@ -111,7 +113,7 @@ function shiftSelectBorn(
     armatureUtils.selectBorn(lastSelectedArmature.value, id, selectedState)
   )
 }
-function setSelectedBorns(data: { [id: string]: BornSelectedState }) {
+function setSelectedBorns(data: IdMap<BornSelectedState>) {
   state.selectedBorns = data
 }
 function setBornConnection(connected: boolean) {
@@ -189,6 +191,21 @@ function addBorn() {
     )
   )
 }
+function updateBorns(diffMap: IdMap<Born>) {
+  if (!lastSelectedArmature.value) return
+
+  lastSelectedArmature.value.borns = Object.values({
+    ...bornMap.value,
+    ...diffMap,
+  }).sort((a, b) => (a.name >= b.name ? 1 : -1))
+}
+function updateBornConnections() {
+  if (!lastSelectedArmature.value) return
+
+  lastSelectedArmature.value.borns = armatureUtils.updateConnections(
+    lastSelectedArmature.value.borns
+  )
+}
 
 export function useStore() {
   return {
@@ -209,5 +226,7 @@ export function useStore() {
     addArmature,
     deleteBorn,
     addBorn,
+    updateBorns,
+    updateBornConnections,
   }
 }

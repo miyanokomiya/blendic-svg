@@ -1,7 +1,45 @@
 import * as target from '../../src/utils/armatures'
-import { getArmature, getBorn } from '../../src/models/index'
+import { getArmature, getBorn, getTransform } from '../../src/models/index'
 
 describe('utils/armatures', () => {
+  describe('convoluteTransforms', () => {
+    it('convolute translate', () => {
+      expect(
+        target.convoluteTransforms([
+          getTransform({
+            translate: { x: 1, y: 2 },
+          }),
+          getTransform({
+            translate: { x: 10, y: 20 },
+          }),
+        ])
+      ).toEqual(
+        getTransform({
+          translate: { x: 11, y: 22 },
+        })
+      )
+    })
+    it('convolute scale', () => {
+      expect(
+        target.convoluteTransforms([
+          getTransform({
+            scale: { x: 2, y: 3 },
+            origin: { x: 3, y: 4 },
+          }),
+          getTransform({
+            scale: { x: 10, y: 20 },
+          }),
+        ])
+      ).toEqual(
+        getTransform({
+          translate: { x: -3, y: -8 },
+          scale: { x: 20, y: 60 },
+          origin: { x: 0, y: 0 },
+        })
+      )
+    })
+  })
+
   describe('extrudeFromParent', () => {
     const parent = getBorn({ id: 'parent', tail: { x: 1, y: 2 } })
 

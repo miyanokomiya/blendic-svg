@@ -9,6 +9,7 @@
         @click-empty="clickEmpty"
         @tab="toggleCanvasMode"
         @g="setEditMode('grab')"
+        @s="setEditMode('scale')"
         @e="setEditMode('extrude')"
         @x="execDelete"
         @shift-a="addItem"

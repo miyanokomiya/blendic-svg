@@ -18,6 +18,7 @@
       @mouseleave="leave"
       @keydown.tab.exact.prevent="keyDownTab"
       @keydown.g.exact.prevent="editKeyDown('g')"
+      @keydown.s.exact.prevent="editKeyDown('s')"
       @keydown.e.exact.prevent="editKeyDown('e')"
       @keydown.x.exact.prevent="editKeyDown('x')"
       @keydown.y.exact.prevent="editKeyDown('y')"
@@ -43,6 +44,12 @@
         :stroke-width="gridLineElm.strokeWidth"
       ></line>
       <slot />
+      <ScaleMarker
+        v-if="scaleNaviElm"
+        :origin="scaleNaviElm.origin"
+        :current="scaleNaviElm.current"
+        :scale="scale"
+      />
     </svg>
   </div>
 </template>
@@ -54,8 +61,10 @@ import { IVec2, IRectangle, multi, sub, add, getRectCenter } from 'okageo'
 import { CanvasCommand } from '/@/models'
 import * as helpers from '/@/utils/helpers'
 import { useStore } from '../store'
+import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
 
 export default defineComponent({
+  components: { ScaleMarker },
   props: {
     originalViewBox: {
       type: Object as PropType<IRectangle>,
@@ -72,6 +81,7 @@ export default defineComponent({
     'click-empty',
     'tab',
     'g',
+    's',
     'e',
     'x',
     'y',
@@ -90,7 +100,7 @@ export default defineComponent({
     const store = useStore()
 
     function viewToCanvas(v: IVec2): IVec2 {
-      return multi(v, scale.value)
+      return add(viewOrigin.value, multi(v, scale.value))
     }
 
     const viewCanvasRect = computed(() => ({
@@ -120,6 +130,14 @@ export default defineComponent({
       )
     })
 
+    const scaleNaviElm = computed(() => {
+      if (props.currentCommand !== 'scale' || !mousePoint.value) return
+      return {
+        origin: store.selectedBornsOrigin.value,
+        current: viewToCanvas(mousePoint.value),
+      }
+    })
+
     watch(
       () => props.currentCommand,
       (to) => {
@@ -131,10 +149,12 @@ export default defineComponent({
     )
 
     return {
+      scale,
       viewSize,
       svg,
       viewBox,
       gridLineElm,
+      scaleNaviElm,
       focus() {
         if (svg.value) svg.value.focus()
       },
@@ -164,7 +184,10 @@ export default defineComponent({
         if (viewMovingInfo.value) {
           viewOrigin.value = add(
             viewMovingInfo.value.origin,
-            viewToCanvas(sub(viewMovingInfo.value.downAt, mousePoint.value))
+            multi(
+              sub(viewMovingInfo.value.downAt, mousePoint.value),
+              scale.value
+            )
           )
         } else {
           if (!editStartPoint.value) return
@@ -198,13 +221,13 @@ export default defineComponent({
       keyDownTab: () => {
         emit('tab')
       },
-      editKeyDown(key: 'g' | 'e' | 'x' | 'y' | 'shift-a') {
+      editKeyDown(key: 'g' | 's' | 'e' | 'x' | 'y' | 'shift-a') {
         if (!mousePoint.value) return
         if (([''] as CanvasCommand[]).includes(props.currentCommand)) {
           editStartPoint.value = mousePoint.value
           emit(key)
         } else if (
-          (['grab'] as CanvasCommand[]).includes(props.currentCommand)
+          (['grab', 'scale'] as CanvasCommand[]).includes(props.currentCommand)
         ) {
           if (key === 'x') axisGrid.value = axisGrid.value === 'x' ? '' : 'x'
           else if (key === 'y')

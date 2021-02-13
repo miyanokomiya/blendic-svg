@@ -3,9 +3,9 @@ import { Transform } from '../models/index'
 
 export function transform(transform: Transform): string {
   return [
-    `scale(${transform.scale.x},${transform.scale.y})`,
-    `rotate(${transform.rotate})`,
     `translate(${transform.translate.x},${transform.translate.y})`,
+    `rotate(${transform.rotate})`,
+    `scale(${transform.scale.x},${transform.scale.y})`,
   ].join(' ')
 }
 

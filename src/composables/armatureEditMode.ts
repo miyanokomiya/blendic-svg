@@ -1,5 +1,5 @@
 import { ref, reactive, computed } from 'vue'
-import { IVec2, sub } from 'okageo'
+import { getDistance, IVec2, multi, sub } from 'okageo'
 import {
   Transform,
   Armature,
@@ -7,6 +7,7 @@ import {
   getTransform,
   BornSelectedState,
   EditMode,
+  IdMap,
 } from '../models/index'
 import {
   findBorn,
@@ -35,9 +36,7 @@ export function useBornEditMode() {
   const lastSelectedBornId = computed(() => store.state.lastSelectedBornId)
 
   const newBornIds = ref<string[]>([])
-  const pastSelectedBorns = ref<{
-    [id: string]: BornSelectedState
-  }>()
+  const pastSelectedBorns = ref<IdMap<BornSelectedState>>()
 
   const target = ref<Armature>()
 
@@ -106,7 +105,7 @@ export function useBornEditMode() {
       if (mode === 'extrude') {
         pastSelectedBorns.value = { ...selectedBorns.value }
         store.setSelectedBorns({})
-        const shouldSkipBorns: { [id: string]: boolean } = {}
+        const shouldSkipBorns: IdMap<boolean> = {}
         Object.keys(pastSelectedBorns.value).forEach((id) => {
           const selectedState = pastSelectedBorns.value![id]
           const parent = findBorn(target.value!.borns, id)!
@@ -135,27 +134,49 @@ export function useBornEditMode() {
     if (!state.editMovement) return {}
 
     const translate = sub(state.editMovement.current, state.editMovement.start)
-    return Object.keys(selectedBorns.value).reduce<{
-      [id: string]: Transform[]
-    }>((map, id) => {
-      map[id] = [getTransform({ translate })]
-      return map
-    }, {})
+
+    if (state.editMode === 'scale') {
+      const origin = store.selectedBornsOrigin.value
+      const scale = multi(
+        { x: 1, y: 1 },
+        getDistance(state.editMovement.current, origin) /
+          getDistance(state.editMovement.start, origin)
+      )
+      return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
+        (map, id) => {
+          map[id] = [getTransform({ origin, scale })]
+          return map
+        },
+        {}
+      )
+    }
+
+    return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
+      (map, id) => {
+        map[id] = [getTransform({ translate })]
+        return map
+      },
+      {}
+    )
   })
+
+  const editedBornMap = computed(
+    (): IdMap<Born> =>
+      Object.keys(editTransforms.value).reduce<IdMap<Born>>((m, id) => {
+        m[id] = editTransform(
+          store.bornMap.value[id],
+          editTransforms.value[id],
+          selectedBorns.value[id]
+        )
+        return m
+      }, {})
+  )
 
   function completeEdit() {
     if (!target.value) return
 
-    Object.keys(editTransforms.value).forEach((id) => {
-      const index = target.value!.borns.findIndex((a) => a.id === id)
-      if (index === -1) return
-      target.value!.borns[index] = editTransform(
-        target.value!.borns[index],
-        editTransforms.value[id],
-        selectedBorns.value[id]
-      )
-    })
-    target.value.borns = updateConnections(target.value.borns)
+    store.updateBorns(editedBornMap.value)
+    store.updateBornConnections()
     state.editMovement = undefined
     state.editMode = ''
     pastSelectedBorns.value = undefined

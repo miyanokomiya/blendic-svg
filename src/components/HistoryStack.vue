@@ -7,7 +7,7 @@
         :key="i"
         :class="{ current: i === currentItemIndex }"
       >
-        {{ item.command.name }}
+        {{ item.name }}
       </li>
     </ul>
   </div>

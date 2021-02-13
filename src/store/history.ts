@@ -14,7 +14,7 @@ const state = reactive({
 const allStack = computed(() => {
   return state.undoStack.concat(state.redoStack.concat().reverse())
 })
-const currentItemIndex = computed(() => state.undoStack.length)
+const currentItemIndex = computed(() => state.undoStack.length - 1)
 
 function clearHistory() {
   state.undoStack = []

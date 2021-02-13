@@ -13,6 +13,9 @@ import * as armatureUtils from '/@/utils/armatures'
 // @ts-ignore
 import merge from 'just-merge'
 import { IVec2 } from 'okageo'
+import { HistoryItem, useHistoryStore } from './history'
+
+const historyStore = useHistoryStore()
 
 const armature = reactive<Armature>(
   getArmature(
@@ -41,8 +44,11 @@ const state = reactive({
   selectedBorns: {} as IdMap<BornSelectedState>,
 })
 
-const lastSelectedArmature = computed(() =>
-  state.armatures.find((a) => a.id === state.lastSelectedArmatureId)
+const lastSelectedArmatureIndex = computed(() =>
+  state.armatures.findIndex((a) => a.id === state.lastSelectedArmatureId)
+)
+const lastSelectedArmature = computed(
+  () => state.armatures[lastSelectedArmatureIndex.value]
 )
 const lastSelectedBorn = computed(() => {
   if (!lastSelectedArmature.value) return
@@ -51,11 +57,37 @@ const lastSelectedBorn = computed(() => {
   )
 })
 
+const armatureMap = computed(() => toMap(state.armatures))
 const bornMap = computed(() => toMap(lastSelectedArmature.value?.borns ?? []))
 
 const selectedBornsOrigin = computed(
   (): IVec2 =>
     armatureUtils.getSelectedBornsOrigin(bornMap.value, state.selectedBorns)
+)
+
+watch(
+  () => state.selectedArmatures,
+  () => {
+    if (!(state.lastSelectedArmatureId in state.selectedArmatures)) {
+      state.lastSelectedArmatureId = ''
+    }
+  }
+)
+watch(
+  () => armatureMap.value,
+  () => {
+    // unselect unexisted armatures
+    state.selectedArmatures = Object.keys(state.selectedArmatures).reduce<
+      IdMap<boolean>
+    >((m, id) => {
+      return armatureMap.value[id]
+        ? {
+            ...m,
+            [id]: state.selectedArmatures[id],
+          }
+        : m
+    }, {})
+  }
 )
 
 watch(
@@ -66,7 +98,6 @@ watch(
     }
   }
 )
-
 watch(
   () => bornMap.value,
   () => {
@@ -85,7 +116,11 @@ watch(
 )
 
 function selectArmature(id: string = '') {
-  state.lastSelectedArmatureId = id
+  if (state.lastSelectedArmatureId === id) return
+
+  const item = getSelectArmatureItem(id)
+  item.redo()
+  historyStore.push(item)
 }
 function selectBorn(
   id: string = '',
@@ -151,15 +186,17 @@ function updateBornName(name: string) {
 function updateArmatureName(name: string) {
   if (!lastSelectedArmature.value) return
 
-  lastSelectedArmature.value.name = name
+  const item = getUpdateArmatureItem({ name })
+  item.redo()
+  historyStore.push(item)
 }
 function deleteArmature() {
-  state.armatures = state.armatures.filter(
-    (a) => a.id !== state.lastSelectedArmatureId
-  )
+  const item = getDeleteArmatureItem()
+  item.redo()
+  historyStore.push(item)
 }
 function addArmature() {
-  state.armatures.push(
+  const item = getAddArmatureItem(
     getArmature(
       {
         name: getNextName(
@@ -171,6 +208,8 @@ function addArmature() {
       true
     )
   )
+  item.redo()
+  historyStore.push(item)
 }
 function deleteBorn() {
   if (!lastSelectedArmature.value) return
@@ -232,5 +271,78 @@ export function useStore() {
     addBorn,
     updateBorns,
     updateBornConnections,
+  }
+}
+
+function getSelectArmatureItem(id: string): HistoryItem {
+  const current = { ...state.selectedArmatures }
+  const currentLast = state.lastSelectedArmatureId
+  const redo = () => {
+    state.selectedArmatures = id ? { [id]: true } : {}
+    state.lastSelectedArmatureId = id
+  }
+  return {
+    name: 'Select Armature',
+    undo: () => {
+      state.selectedArmatures = { ...current }
+      state.lastSelectedArmatureId = currentLast
+    },
+    redo,
+  }
+}
+function getUpdateArmatureItem(updated: Partial<Armature>): HistoryItem {
+  const current = Object.keys(lastSelectedArmature.value!).reduce<
+    Partial<Armature>
+  >((p, c) => {
+    // @ts-ignore
+    if (c in updated) p[c] = lastSelectedArmature.value![c]
+    return p
+  }, {})
+
+  const redo = () => {
+    const index = lastSelectedArmatureIndex.value
+    state.armatures[index] = { ...state.armatures[index], ...updated }
+  }
+  return {
+    name: 'Update Armature',
+    undo: () => {
+      const index = lastSelectedArmatureIndex.value
+      state.armatures[index] = { ...state.armatures[index], ...current }
+    },
+    redo,
+  }
+}
+function getDeleteArmatureItem(): HistoryItem {
+  const current = { ...lastSelectedArmature.value }
+  const index = lastSelectedArmatureIndex.value
+  const selectItem = getSelectArmatureItem('')
+
+  const redo = () => {
+    state.armatures.splice(index, 1)
+  }
+  return {
+    name: 'Delete Armature',
+    undo: () => {
+      state.armatures.splice(index, 0, current)
+      selectItem.undo()
+    },
+    redo,
+  }
+}
+function getAddArmatureItem(armatures: Armature): HistoryItem {
+  const index = state.armatures.length
+  const selectItem = getSelectArmatureItem(armatures.id)
+
+  const redo = () => {
+    state.armatures.push(armatures)
+    selectItem.redo()
+  }
+  return {
+    name: 'Add Armature',
+    undo: () => {
+      state.armatures.splice(index, 1)
+      selectItem.undo()
+    },
+    redo,
   }
 }

@@ -7,6 +7,7 @@
         @mousemove="mousemove"
         @click-any="clickAny"
         @click-empty="clickEmpty"
+        @escape="escape"
         @tab="toggleCanvasMode"
         @g="setEditMode('grab')"
         @s="setEditMode('scale')"
@@ -150,6 +151,11 @@ export default defineComponent({
       },
       shiftSelectArmature(id: string, selected: boolean) {
         store.selectArmature(selected ? id : '')
+      },
+      escape() {
+        if (canvasMode.value === 'edit') {
+          armatureEditMode.cancel()
+        }
       },
       toggleCanvasMode() {
         if (canvasMode.value === 'object' && store.lastSelectedArmature.value) {

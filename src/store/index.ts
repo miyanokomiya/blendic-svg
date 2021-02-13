@@ -113,8 +113,12 @@ function shiftSelectBorn(
     armatureUtils.selectBorn(lastSelectedArmature.value, id, selectedState)
   )
 }
-function setSelectedBorns(data: IdMap<BornSelectedState>) {
+function setSelectedBorns(
+  data: IdMap<BornSelectedState>,
+  lastSelectedBornId: string = ''
+) {
   state.selectedBorns = data
+  state.lastSelectedBornId = lastSelectedBornId
 }
 function setBornConnection(connected: boolean) {
   if (!lastSelectedArmature.value) return

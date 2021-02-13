@@ -39,6 +39,7 @@ export function useBornEditMode() {
 
   const newBornIds = ref<string[]>([])
   const pastSelectedBorns = ref<IdMap<BornSelectedState>>()
+  const pastLastSelectedBornId = ref('')
 
   const target = ref<Armature>()
 
@@ -55,7 +56,8 @@ export function useBornEditMode() {
         )
       }
       store.setSelectedBorns(
-        pastSelectedBorns.value ? { ...pastSelectedBorns.value } : {}
+        pastSelectedBorns.value ? { ...pastSelectedBorns.value } : {},
+        pastLastSelectedBornId.value
       )
     }
 
@@ -64,6 +66,7 @@ export function useBornEditMode() {
     newBornIds.value = []
 
     pastSelectedBorns.value = undefined
+    pastLastSelectedBornId.value = ''
   }
 
   function cancel() {
@@ -106,6 +109,7 @@ export function useBornEditMode() {
       state.editMode = mode
       if (mode === 'extrude') {
         pastSelectedBorns.value = { ...selectedBorns.value }
+        pastLastSelectedBornId.value = lastSelectedBornId.value
         store.setSelectedBorns({})
         const shouldSkipBorns: IdMap<boolean> = {}
         Object.keys(pastSelectedBorns.value).forEach((id) => {
@@ -164,7 +168,6 @@ export function useBornEditMode() {
           getRadian(state.editMovement.start, origin)) /
           Math.PI) *
         180
-      console.log(rotate)
       return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
         (map, id) => {
           map[id] = [
@@ -244,6 +247,7 @@ export function useBornEditMode() {
       cancel()
       target.value = undefined
     },
+    cancel,
     setEditMode,
     select,
     shiftSelect,

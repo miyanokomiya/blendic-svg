@@ -16,6 +16,7 @@
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
       @mouseleave="leave"
+      @keydown.escape.exact.prevent="keyDownEscape"
       @keydown.tab.exact.prevent="keyDownTab"
       @keydown.g.exact.prevent="editKeyDown('g')"
       @keydown.s.exact.prevent="editKeyDown('s')"
@@ -82,6 +83,7 @@ export default defineComponent({
     'mousemove',
     'click-any',
     'click-empty',
+    'escape',
     'tab',
     'g',
     's',
@@ -147,9 +149,9 @@ export default defineComponent({
     watch(
       () => props.currentCommand,
       (to) => {
+        canvasStore.setAxisGrid('')
         if (to === '') {
           editStartPoint.value = undefined
-          canvasStore.setAxisGrid('')
         }
       }
     )
@@ -214,16 +216,23 @@ export default defineComponent({
       keyDownTab: () => {
         emit('tab')
       },
+      keyDownEscape: () => {
+        emit('escape')
+      },
       editKeyDown(key: 'g' | 's' | 'r' | 'e' | 'x' | 'y' | 'shift-a') {
         if (!mousePoint.value) return
-        if (([''] as CanvasCommand[]).includes(props.currentCommand)) {
-          editStartPoint.value = mousePoint.value
-          emit(key)
-        } else if (
+
+        if (
           (['grab', 'scale'] as CanvasCommand[]).includes(props.currentCommand)
         ) {
-          if (key === 'x' || key === 'y') canvasStore.switchAxisGrid(key)
+          if (key === 'x' || key === 'y') {
+            canvasStore.switchAxisGrid(key)
+            return
+          }
         }
+
+        editStartPoint.value = mousePoint.value
+        emit(key)
       },
     }
   },

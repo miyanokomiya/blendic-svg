@@ -176,7 +176,7 @@ export function updateBornName(
   }))
 }
 
-export function getSelectedBornsOrigin(
+export function getSelectedBornsBoundingOrigin(
   bornMap: IdMap<Born>,
   selectedState: IdMap<BornSelectedState>
 ): IVec2 {
@@ -189,5 +189,26 @@ export function getSelectedBornsOrigin(
         return selected
       })
     )
+  )
+}
+
+export function getSelectedBornsOrigin(
+  bornMap: IdMap<Born>,
+  selectedState: IdMap<BornSelectedState>
+): IVec2 {
+  const selectedPoints = Object.keys(selectedState)
+    .map((id) => {
+      const selected = []
+      if (selectedState[id].head) selected.push(bornMap[id].head)
+      if (selectedState[id].tail) selected.push(bornMap[id].tail)
+      return selected
+    })
+    .flat()
+
+  if (selectedPoints.length === 0) return { x: 0, y: 0 }
+
+  return multi(
+    selectedPoints.reduce((p, c) => add(p, c), { x: 0, y: 0 }),
+    1 / selectedPoints.length
   )
 }

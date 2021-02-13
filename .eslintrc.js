@@ -5,18 +5,18 @@ module.exports = {
     es2021: true,
   },
   extends: [
-    "eslint:recommended",
-    "plugin:vue/vue3-recommended",
-    "@vue/typescript",
-    "plugin:prettier/recommended",
-    "prettier/vue",
-    "prettier/@typescript-eslint",
+    'eslint:recommended',
+    'plugin:vue/vue3-recommended',
+    '@vue/typescript',
+    'plugin:prettier/recommended',
+    'prettier/vue',
+    'prettier/@typescript-eslint',
   ],
   parserOptions: {
     ecmaVersion: 12,
-    parser: "@typescript-eslint/parser",
-    sourceType: "module",
+    parser: '@typescript-eslint/parser',
+    sourceType: 'module',
   },
-  plugins: ["vue", "@typescript-eslint"],
+  plugins: ['vue', '@typescript-eslint'],
   rules: {},
-};
+}

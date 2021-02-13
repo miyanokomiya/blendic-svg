@@ -5,7 +5,7 @@
     "dev": "vite",
     "build": "vuedx-typecheck . && vite build",
     "serve": "vite preview",
-    "lint": "yarn eslint --ext vue,ts ./",
+    "lint": "yarn eslint --ext vue,ts,js ./",
     "lint-json": "yarn prettier -c ./*.json"
   },
   "dependencies": {

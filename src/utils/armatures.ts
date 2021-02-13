@@ -15,17 +15,27 @@ import {
   IVec2,
   sub,
   multi,
+  rotate,
 } from 'okageo'
 
 export function convoluteTransforms(transforms: Transform[]): Transform {
   return transforms.reduce((ret, t) => {
+    const scaleConstant = {
+      x: t.origin.x * (1 - t.scale.x),
+      y: t.origin.y * (1 - t.scale.y),
+    }
+    const rotateConstant = sub(
+      t.origin,
+      rotate(t.origin, (t.rotate / 180) * Math.PI)
+    )
     return {
       ...ret,
       scale: { x: ret.scale.x * t.scale.x, y: ret.scale.y * t.scale.y },
-      translate: add(add(ret.translate, t.translate), {
-        x: t.origin.x * (1 - t.scale.x),
-        y: t.origin.y * (1 - t.scale.y),
-      }),
+      rotate: ret.rotate + t.rotate,
+      translate: add(
+        add(add(ret.translate, t.translate), scaleConstant),
+        rotateConstant
+      ),
     }
   }, getTransform())
 }
@@ -37,6 +47,16 @@ function scale(p: IVec2, scale: IVec2, origin: IVec2): IVec2 {
   }
 }
 
+function applyTransform(p: IVec2, transform: Transform): IVec2 {
+  return add(
+    rotate(
+      scale(p, transform.scale, transform.origin),
+      (transform.rotate / 180) * Math.PI
+    ),
+    transform.translate
+  )
+}
+
 export function editTransform(
   born: Born,
   transforms: Transform[],
@@ -44,16 +64,10 @@ export function editTransform(
 ) {
   const convoluted = convoluteTransforms(transforms)
   const head = selectedState.head
-    ? add(
-        scale(born.head, convoluted.scale, convoluted.origin),
-        convoluted.translate
-      )
+    ? applyTransform(born.head, convoluted)
     : born.head
   const tail = selectedState.tail
-    ? add(
-        scale(born.tail, convoluted.scale, convoluted.origin),
-        convoluted.translate
-      )
+    ? applyTransform(born.tail, convoluted)
     : born.tail
 
   return {

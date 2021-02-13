@@ -19,6 +19,7 @@
       @keydown.tab.exact.prevent="keyDownTab"
       @keydown.g.exact.prevent="editKeyDown('g')"
       @keydown.s.exact.prevent="editKeyDown('s')"
+      @keydown.r.exact.prevent="editKeyDown('r')"
       @keydown.e.exact.prevent="editKeyDown('e')"
       @keydown.x.exact.prevent="editKeyDown('x')"
       @keydown.y.exact.prevent="editKeyDown('y')"
@@ -49,6 +50,7 @@
         :origin="scaleNaviElm.origin"
         :current="scaleNaviElm.current"
         :scale="scale"
+        :side="scaleNaviElm.side"
       />
     </svg>
   </div>
@@ -83,6 +85,7 @@ export default defineComponent({
     'tab',
     'g',
     's',
+    'r',
     'e',
     'x',
     'y',
@@ -132,10 +135,12 @@ export default defineComponent({
     })
 
     const scaleNaviElm = computed(() => {
-      if (props.currentCommand !== 'scale' || !mousePoint.value) return
+      if (!mousePoint.value) return
+      if (!['scale', 'rotate'].includes(props.currentCommand)) return
       return {
         origin: store.selectedBornsOrigin.value,
         current: viewToCanvas(mousePoint.value),
+        side: props.currentCommand === 'rotate',
       }
     })
 
@@ -209,7 +214,7 @@ export default defineComponent({
       keyDownTab: () => {
         emit('tab')
       },
-      editKeyDown(key: 'g' | 's' | 'e' | 'x' | 'y' | 'shift-a') {
+      editKeyDown(key: 'g' | 's' | 'r' | 'e' | 'x' | 'y' | 'shift-a') {
         if (!mousePoint.value) return
         if (([''] as CanvasCommand[]).includes(props.currentCommand)) {
           editStartPoint.value = mousePoint.value

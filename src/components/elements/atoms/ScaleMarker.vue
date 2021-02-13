@@ -17,8 +17,10 @@
       :transform="`translate(${current.x}, ${current.y}) rotate(${rotate}) scale(${scale})`"
     >
       <circle r="2" />
-      <path d="M-20,0L-10,-10L-10,10z" />
-      <path d="M20,0L10,-10L10,10z" />
+      <g :transform="`rotate(${side ? 90 : 0})`">
+        <path d="M-20,0L-10,-10L-10,10z" />
+        <path d="M20,0L10,-10L10,10z" />
+      </g>
     </g>
   </g>
 </template>
@@ -40,6 +42,10 @@ export default defineComponent({
     scale: {
       type: Number,
       required: true,
+    },
+    side: {
+      type: Boolean,
+      default: false,
     },
   },
   setup(props) {

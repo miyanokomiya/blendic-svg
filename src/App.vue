@@ -10,6 +10,7 @@
         @tab="toggleCanvasMode"
         @g="setEditMode('grab')"
         @s="setEditMode('scale')"
+        @r="setEditMode('rotate')"
         @e="setEditMode('extrude')"
         @x="execDelete"
         @shift-a="addItem"

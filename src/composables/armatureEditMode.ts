@@ -1,5 +1,5 @@
 import { ref, reactive, computed } from 'vue'
-import { getDistance, IVec2, multi, sub } from 'okageo'
+import { getDistance, getRadian, IVec2, multi, sub } from 'okageo'
 import {
   Transform,
   Armature,
@@ -151,6 +151,28 @@ export function useBornEditMode() {
       return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
         (map, id) => {
           map[id] = [getTransform({ origin, scale: snappedScale })]
+          return map
+        },
+        {}
+      )
+    }
+
+    if (state.editMode === 'rotate') {
+      const origin = store.selectedBornsOrigin.value
+      const rotate =
+        ((getRadian(state.editMovement.current, origin) -
+          getRadian(state.editMovement.start, origin)) /
+          Math.PI) *
+        180
+      console.log(rotate)
+      return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
+        (map, id) => {
+          map[id] = [
+            getTransform({
+              origin,
+              rotate,
+            }),
+          ]
           return map
         },
         {}

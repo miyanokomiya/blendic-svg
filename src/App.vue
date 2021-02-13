@@ -52,13 +52,15 @@
       <p>Mode: {{ canvasMode }}</p>
       <p>EditMode: {{ armatureEditMode.state.editMode || 'none' }}</p>
     </div>
+    <HistoryStack />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, onMounted, onUnmounted } from 'vue'
 import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
+import HistoryStack from './components/HistoryStack.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import BornElm from './components/elements/Born.vue'
 import {
@@ -72,6 +74,7 @@ import { editTransform } from './utils/armatures'
 import { IVec2 } from 'okageo'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
+import { useHistoryStore } from './store/history'
 
 export default defineComponent({
   components: {
@@ -79,11 +82,13 @@ export default defineComponent({
     ArmatureElm,
     BornElm,
     SidePanel,
+    HistoryStack,
   },
   setup() {
     const store = useStore()
     const canvasStore = useCanvasStore()
     const armatureEditMode = useBornEditMode()
+    const historyStore = useHistoryStore()
 
     const canvasMode = computed(() => canvasStore.state.canvasMode)
 
@@ -113,6 +118,31 @@ export default defineComponent({
     const canvasCommand = computed(() =>
       editModeToCanvasCommand(armatureEditMode.state.editMode)
     )
+
+    function onGlobalKeyDown(e: KeyboardEvent) {
+      if (
+        ['input', 'textarea'].includes(
+          (e.target as Element)?.tagName.toLowerCase()
+        )
+      )
+        return
+
+      if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault()
+        if (e.shiftKey) {
+          historyStore.redo()
+        } else {
+          historyStore.undo()
+        }
+      }
+    }
+
+    onMounted(() => {
+      document.addEventListener('keydown', onGlobalKeyDown)
+    })
+    onUnmounted(() => {
+      document.removeEventListener('keydown', onGlobalKeyDown)
+    })
 
     return {
       armatures: computed(() => store.state.armatures),

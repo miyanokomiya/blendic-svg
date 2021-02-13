@@ -1,8 +1,11 @@
 import { getInner, getRadian, IVec2, sub } from 'okageo'
 import { reactive } from 'vue'
+import { HistoryItem, useHistoryStore } from './history'
 import { CanvasMode } from '/@/models'
 
 export type AxisGrid = '' | 'x' | 'y'
+
+const historyStore = useHistoryStore()
 
 const state = reactive({
   canvasMode: 'object' as CanvasMode,
@@ -10,7 +13,9 @@ const state = reactive({
 })
 
 function setCanvasMode(canvasMode: CanvasMode) {
-  state.canvasMode = canvasMode
+  const item = getChangeCanvasModeItem(canvasMode)
+  historyStore.push(item)
+  item.redo()
 }
 function setAxisGrid(val: AxisGrid) {
   state.axisGrid = val
@@ -43,5 +48,15 @@ export function useCanvasStore() {
     snapScale,
     snapTranslate,
     isOppositeSide,
+  }
+}
+
+function getChangeCanvasModeItem(canvasMode: CanvasMode): HistoryItem {
+  const currentMode = state.canvasMode
+  const redo = () => (state.canvasMode = canvasMode)
+  return {
+    name: 'Change Mode',
+    undo: () => (state.canvasMode = currentMode),
+    redo,
   }
 }

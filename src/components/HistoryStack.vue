@@ -31,14 +31,11 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 h3 {
-  margin: 0 0 8px;
+  margin-bottom: 8px;
   padding-left: 8px;
   text-align: left;
 }
 ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
   display: flex;
   align-items: flex-start;
   flex-direction: column-reverse;

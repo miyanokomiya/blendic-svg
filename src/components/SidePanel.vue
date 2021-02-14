@@ -1,14 +1,14 @@
 <template>
   <div class="root">
     <form v-if="selectedObjectType === 'armature'" @submit.prevent>
-      <h2>Armature</h2>
+      <h3>Armature</h3>
       <div class="field inline">
         <label>Name</label>
         <input v-model="draftName" type="text" @change="changeArmatureName" />
       </div>
     </form>
     <form v-if="selectedObjectType === 'born'" @submit.prevent>
-      <h2>Born</h2>
+      <h3>Born</h3>
       <div class="field inline">
         <label>Name</label>
         <input v-model="draftName" type="text" @change="changeBornName" />
@@ -101,8 +101,8 @@ export default defineComponent({
   padding: 10px;
   border: solid 1px black;
 }
-h2 {
-  margin: 0 0 10px;
+h3 {
+  margin-bottom: 10px;
 }
 form {
   display: flex;

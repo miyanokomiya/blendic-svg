@@ -1,5 +1,5 @@
 <template>
-  <div class="app-canvas-root">
+  <div ref="wrapper" class="app-canvas-root">
     <svg
       ref="svg"
       tabindex="-1"
@@ -62,7 +62,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, reactive, computed, watch } from 'vue'
+import {
+  defineComponent,
+  PropType,
+  ref,
+  reactive,
+  computed,
+  watch,
+  onMounted,
+} from 'vue'
 import { getPointInTarget } from 'okanvas'
 import { IVec2, IRectangle, multi, sub, add, getRectCenter } from 'okageo'
 import { CanvasCommand } from '/@/models'
@@ -70,6 +78,7 @@ import * as helpers from '/@/utils/helpers'
 import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
 import { useCanvasStore } from '/@/store/canvas'
+import { useWindow } from '../composables/window'
 
 export default defineComponent({
   components: { ScaleMarker },
@@ -100,6 +109,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const viewSize = reactive({ width: 600, height: 400 })
     const svg = ref<SVGElement>()
+    const wrapper = ref<SVGElement>()
     const editStartPoint = ref<IVec2>()
     const mousePoint = ref<IVec2>()
     const scale = ref(1)
@@ -120,10 +130,7 @@ export default defineComponent({
       height: viewSize.height * scale.value,
     }))
 
-    const viewBox = computed(
-      () =>
-        `${viewCanvasRect.value.x} ${viewCanvasRect.value.y} ${viewCanvasRect.value.width} ${viewCanvasRect.value.height}`
-    )
+    const viewBox = computed(() => helpers.viewbox(viewCanvasRect.value))
 
     const viewCenter = computed(() =>
       getRectCenter({ x: 0, y: 0, ...viewSize })
@@ -160,10 +167,22 @@ export default defineComponent({
       }
     )
 
+    function adjustSvgSize() {
+      if (!wrapper.value) return
+      const rect = wrapper.value.getBoundingClientRect()
+      viewSize.width = rect.width
+      viewSize.height = rect.height
+    }
+
+    const windowState = useWindow()
+    onMounted(adjustSvgSize)
+    watch(() => windowState.state.size, adjustSvgSize)
+
     return {
       scale,
       viewSize,
       svg,
+      wrapper,
       viewBox,
       gridLineElm,
       scaleNaviElm,

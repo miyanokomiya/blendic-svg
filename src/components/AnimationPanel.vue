@@ -8,6 +8,11 @@
       <button class="add-action" @click="addAction">+</button>
       <button class="delete-action" @click="deleteAction">x</button>
     </div>
+    <div class="middle">
+      <TimelineCanvas>
+        <text>aaaa</text>
+      </TimelineCanvas>
+    </div>
   </div>
 </template>
 
@@ -16,9 +21,10 @@ import { computed, defineComponent, ref, watch } from 'vue'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/Animation'
 import SelectField from './atoms/SelectField.vue'
+import TimelineCanvas from './TimelineCanvas.vue'
 
 export default defineComponent({
-  components: { SelectField },
+  components: { SelectField, TimelineCanvas },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
@@ -59,7 +65,15 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.animation-panel-root {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  height: 100%;
+}
 .top {
+  margin-bottom: 4px;
+  flex: 0;
   display: flex;
   align-items: center;
   > * {
@@ -73,5 +87,9 @@ export default defineComponent({
     height: 20px;
     border: solid 1px #000;
   }
+}
+.middle {
+  flex: 1;
+  min-height: 0; // for flex grow
 }
 </style>

@@ -48,3 +48,7 @@ export function gridLineElm(
       stroke: 'green',
     }
 }
+
+export function viewbox(rect: IRectangle): string {
+  return `${rect.x} ${rect.y} ${rect.width} ${rect.height}`
+}

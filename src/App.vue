@@ -239,12 +239,13 @@ input[type='text'] {
   margin: 10px 0;
   padding: 0 10px;
   min-height: 400px;
-  height: calc(100vh - 300px);
+  height: calc(100vh - 330px);
   display: flex;
   justify-content: center;
   align-items: stretch;
   .canvas {
-    width: calc(100% - 200px);
+    margin-right: auto;
+    width: calc(100% - 210px);
   }
   .side-panel {
     width: 200px;

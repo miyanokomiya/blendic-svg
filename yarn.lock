@@ -5157,6 +5157,11 @@ resolve@^1.18.1:
     is-core-module "^2.2.0"
     path-parse "^1.0.6"
 
+ress@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/ress/-/ress-3.0.0.tgz#45ec8304b67ea114b0cec733bf2628083f35aa9c"
+  integrity sha512-MTPto7t44AawqmSbEmvMKoSMWPnxjaTuHf94s7RjWxuSGFN0o8/b+6yOwkaC50+Vihjsu6ODUEQR397gTMn57w==
+
 ret@~0.1.10:
   version "0.1.15"
   resolved "https://registry.yarnpkg.com/ret/-/ret-0.1.15.tgz#b8a4825d5bdb1fc3f6f53c2bc33f81388681c7bc"

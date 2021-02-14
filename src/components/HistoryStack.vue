@@ -32,15 +32,17 @@ export default defineComponent({
 <style lang="scss" scoped>
 h3 {
   margin-bottom: 8px;
-  padding-left: 8px;
   text-align: left;
 }
 ul {
+  list-style: none;
   display: flex;
   align-items: flex-start;
   flex-direction: column-reverse;
   > li {
+    width: 100%;
     padding: 4px 8px;
+    text-align: left;
     border-bottom: solid 1px #aaa;
     &.current {
       background-color: lime;

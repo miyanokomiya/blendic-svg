@@ -1,42 +1,63 @@
 <template>
-  <div class="root">
-    <form v-if="selectedObjectType === 'armature'" @submit.prevent>
-      <h3>Armature</h3>
-      <div class="field inline">
-        <label>Name</label>
-        <input v-model="draftName" type="text" @change="changeArmatureName" />
-      </div>
-    </form>
-    <form v-if="selectedObjectType === 'born'" @submit.prevent>
-      <h3>Born</h3>
-      <div class="field inline">
-        <label>Name</label>
-        <input v-model="draftName" type="text" @change="changeBornName" />
-      </div>
-      <div class="field inline">
-        <label>Parent</label>
-        <span class="select">
-          <select v-model="parentId">
-            <option value="">-- None --</option>
-            <option v-for="born in otherBorns" :key="born.id" :value="born.id">
-              {{ born.name }}
-            </option>
-          </select>
-        </span>
-      </div>
-      <div class="field inline">
-        <label>Connect</label>
-        <input v-model="connected" type="checkbox" :disabled="!parentId" />
-      </div>
-    </form>
+  <div>
+    <TabPanel
+      :tabs="[
+        { key: 'detail', label: 'Detail' },
+        { key: 'history', label: 'History' },
+      ]"
+    >
+      <template #detail>
+        <form v-if="selectedObjectType === 'armature'" @submit.prevent>
+          <h3>Armature</h3>
+          <div class="field inline">
+            <label>Name</label>
+            <input
+              v-model="draftName"
+              type="text"
+              @change="changeArmatureName"
+            />
+          </div>
+        </form>
+        <form v-if="selectedObjectType === 'born'" @submit.prevent>
+          <h3>Born</h3>
+          <div class="field inline">
+            <label>Name</label>
+            <input v-model="draftName" type="text" @change="changeBornName" />
+          </div>
+          <div class="field inline">
+            <label>Parent</label>
+            <span class="select">
+              <select v-model="parentId">
+                <option value="">-- None --</option>
+                <option
+                  v-for="born in otherBorns"
+                  :key="born.id"
+                  :value="born.id"
+                >
+                  {{ born.name }}
+                </option>
+              </select>
+            </span>
+          </div>
+          <div class="field inline">
+            <label>Connect</label>
+            <input v-model="connected" type="checkbox" :disabled="!parentId" />
+          </div>
+        </form>
+      </template>
+      <template #history><HistoryStack /></template>
+    </TabPanel>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, watch, computed } from 'vue'
 import { useStore } from '/@/store/index'
+import TabPanel from './TabPanel.vue'
+import HistoryStack from './HistoryStack.vue'
 
 export default defineComponent({
+  components: { TabPanel, HistoryStack },
   setup() {
     const store = useStore()
     const draftName = ref('')
@@ -99,10 +120,6 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.root {
-  padding: 10px;
-  border: solid 1px black;
-}
 h3 {
   margin-bottom: 10px;
 }

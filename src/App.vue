@@ -52,7 +52,6 @@
       <p>Mode: {{ canvasMode }}</p>
       <p>EditMode: {{ armatureEditMode.state.editMode || 'none' }}</p>
     </div>
-    <HistoryStack />
   </div>
 </template>
 
@@ -60,7 +59,6 @@
 import { defineComponent, computed, onMounted, onUnmounted } from 'vue'
 import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
-import HistoryStack from './components/HistoryStack.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import BornElm from './components/elements/Born.vue'
 import {
@@ -82,7 +80,6 @@ export default defineComponent({
     ArmatureElm,
     BornElm,
     SidePanel,
-    HistoryStack,
   },
   setup() {
     const store = useStore()
@@ -229,14 +226,17 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
 
 <style lang="scss" scoped>
 .main {
+  margin: 10px 0;
+  padding: 0 10px;
+  height: 400px;
   display: flex;
   justify-content: center;
+  align-items: stretch;
   .canvas {
     width: calc(100% - 200px);
   }

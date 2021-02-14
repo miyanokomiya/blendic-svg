@@ -48,9 +48,8 @@
       </AppCanvas>
       <SidePanel class="side-panel" />
     </div>
-    <div>
-      <p>Mode: {{ canvasMode }}</p>
-      <p>EditMode: {{ armatureEditMode.state.editMode || 'none' }}</p>
+    <div class="bottom">
+      <AnimationPanel />
     </div>
   </div>
 </template>
@@ -59,6 +58,7 @@
 import { defineComponent, computed, onMounted, onUnmounted } from 'vue'
 import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
+import AnimationPanel from './components/AnimationPanel.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import BornElm from './components/elements/Born.vue'
 import {
@@ -80,6 +80,7 @@ export default defineComponent({
     ArmatureElm,
     BornElm,
     SidePanel,
+    AnimationPanel,
   },
   setup() {
     const store = useStore()
@@ -227,13 +228,18 @@ export default defineComponent({
   text-align: center;
   color: #2c3e50;
 }
+input[type='text'] {
+  padding: 2px 4px;
+  border: solid 1px #000;
+}
 </style>
 
 <style lang="scss" scoped>
 .main {
   margin: 10px 0;
   padding: 0 10px;
-  height: 400px;
+  min-height: 400px;
+  height: calc(100vh - 300px);
   display: flex;
   justify-content: center;
   align-items: stretch;
@@ -244,5 +250,9 @@ export default defineComponent({
     width: 200px;
     flex-shrink: 0;
   }
+}
+.bottom {
+  padding: 0 10px;
+  height: 300px;
 }
 </style>

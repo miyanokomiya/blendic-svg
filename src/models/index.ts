@@ -12,6 +12,20 @@ export interface Transform {
   scale: IVec2
 }
 
+export interface Action {
+  id: string
+  name: string
+  totalFrame: number
+  keyframes: Keyframe[]
+}
+
+export interface Keyframe {
+  id: string
+  frame: number
+  transform: Transform
+  bornId: string
+}
+
 export interface Born {
   id: string
   name: string
@@ -45,6 +59,32 @@ export function getTransform(arg: Partial<Transform> = {}): Transform {
     origin: { x: 0, y: 0 },
     rotate: 0,
     scale: { x: 1, y: 1 },
+    ...arg,
+  }
+}
+
+export function getAction(
+  arg: Partial<Action> = {},
+  generateId = false
+): Action {
+  return {
+    id: generateId ? v4() : '',
+    name: '',
+    totalFrame: 60,
+    keyframes: [],
+    ...arg,
+  }
+}
+
+export function getKeyframe(
+  arg: Partial<Keyframe> = {},
+  generateId = false
+): Keyframe {
+  return {
+    id: generateId ? v4() : '',
+    frame: 0,
+    bornId: '',
+    transform: getTransform(),
     ...arg,
   }
 }
@@ -117,10 +157,10 @@ export function getOriginPartial<T>(src: T, partial: Partial<T>): Partial<T> {
 }
 
 export function isSameBornSelectedState(
-  a: BornSelectedState,
-  b: BornSelectedState
+  a?: BornSelectedState,
+  b?: BornSelectedState
 ): boolean {
-  return !!a.head === !!b.head && !!a.tail === !!b.tail
+  return !!a?.head === !!b?.head && !!a?.tail === !!b?.tail
 }
 
 export function isBornSelected(selectedState?: BornSelectedState): boolean {

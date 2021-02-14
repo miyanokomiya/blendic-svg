@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="app-canvas-root">
     <svg
       ref="svg"
       tabindex="-1"
@@ -55,6 +55,9 @@
         :side="scaleNaviElm.side"
       />
     </svg>
+    <div class="help">
+      <p>Mode: {{ canvasMode }}</p>
+    </div>
   </div>
 </template>
 
@@ -164,6 +167,7 @@ export default defineComponent({
       viewBox,
       gridLineElm,
       scaleNaviElm,
+      canvasMode: computed(() => canvasStore.state.canvasMode),
       focus() {
         if (svg.value) svg.value.focus()
       },
@@ -241,6 +245,15 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.app-canvas-root {
+  position: relative;
+}
+.help {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
 svg {
   border: solid 1px black;
   user-select: none;

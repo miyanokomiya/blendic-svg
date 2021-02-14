@@ -89,8 +89,7 @@ watch(
     if (!state.selectedArmatures[state.lastSelectedArmatureId]) {
       state.lastSelectedArmatureId = ''
     }
-  },
-  { immediate: true }
+  }
 )
 watch(
   () => armatureMap.value,

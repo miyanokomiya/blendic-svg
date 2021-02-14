@@ -26,18 +26,7 @@
           </div>
           <div class="field inline">
             <label>Parent</label>
-            <span class="select">
-              <select v-model="parentId">
-                <option value="">-- None --</option>
-                <option
-                  v-for="born in otherBorns"
-                  :key="born.id"
-                  :value="born.id"
-                >
-                  {{ born.name }}
-                </option>
-              </select>
-            </span>
+            <SelectField v-model="parentId" :options="parentOptions" />
           </div>
           <div class="field inline">
             <label>Connect</label>
@@ -55,18 +44,19 @@ import { defineComponent, ref, watch, computed } from 'vue'
 import { useStore } from '/@/store/index'
 import TabPanel from './TabPanel.vue'
 import HistoryStack from './HistoryStack.vue'
+import SelectField from './atoms/SelectField.vue'
 
 export default defineComponent({
-  components: { TabPanel, HistoryStack },
+  components: { TabPanel, HistoryStack, SelectField },
   setup() {
     const store = useStore()
     const draftName = ref('')
 
-    const otherBorns = computed(() => {
+    const parentOptions = computed(() => {
       if (!store.lastSelectedArmature.value) return []
-      return store.lastSelectedArmature.value.borns.filter(
-        (b) => b.id !== store.lastSelectedBorn.value?.id
-      )
+      return store.lastSelectedArmature.value.borns
+        .filter((b) => b.id !== store.lastSelectedBorn.value?.id)
+        .map((b) => ({ value: b.id, label: b.name }))
     })
 
     const selectedObjectType = computed((): 'born' | 'armature' | '' => {
@@ -90,7 +80,7 @@ export default defineComponent({
       draftName,
       lastSelectedArmature: store.lastSelectedArmature,
       lastSelectedBorn: store.lastSelectedBorn,
-      otherBorns,
+      parentOptions,
       selectedObjectType,
       connected: computed({
         get(): boolean {
@@ -109,9 +99,11 @@ export default defineComponent({
         },
       }),
       changeArmatureName() {
+        if (!draftName.value) return
         store.updateArmatureName(draftName.value)
       },
       changeBornName() {
+        if (!draftName.value) return
         store.updateBorn({ name: draftName.value })
       },
     }
@@ -122,31 +114,6 @@ export default defineComponent({
 <style lang="scss" scoped>
 h3 {
   margin-bottom: 10px;
-}
-input[type='text'] {
-  padding: 2px 4px;
-  border: solid 1px #000;
-}
-.select {
-  position: relative;
-  select {
-    width: 100%;
-    padding: 1px 12px 0 0;
-    border: solid 1px #000;
-  }
-  &::after {
-    display: block;
-    content: ' ';
-    position: absolute;
-    top: 8px;
-    right: 4px;
-    width: 0;
-    height: 0;
-    pointer-events: none;
-    border-top: solid 8px #000;
-    border-left: solid 6px transparent;
-    border-right: solid 6px transparent;
-  }
 }
 form {
   display: flex;

@@ -144,15 +144,16 @@ export function selectBorn(
   return ret
 }
 
+export function fixConnection(borns: Born[], b: Born): Born {
+  if (!b.connected) return b
+
+  const parent = findBorn(borns, b.parentId)
+  if (!parent) return { ...b, connected: false, parentId: '' }
+
+  return { ...b, head: parent.tail }
+}
 export function fixConnections(borns: Born[]): Born[] {
-  return borns.map((b) => {
-    if (!b.connected) return b
-
-    const parent = findBorn(borns, b.parentId)
-    if (!parent) return { ...b, connected: false, parentId: '' }
-
-    return { ...b, head: parent.tail }
-  })
+  return borns.map((b) => fixConnection(borns, b))
 }
 
 export function updateConnections(borns: Born[]): Born[] {
@@ -162,6 +163,17 @@ export function updateConnections(borns: Born[]): Born[] {
     if (!b.connected) return b
     return { ...b, connected: isSame(parent.tail, b.head) }
   })
+}
+export function _updateConnections(borns: Born[]): IdMap<Partial<Born>> {
+  return borns.reduce<IdMap<Partial<Born>>>((p, b) => {
+    const parent = findBorn(borns, b.parentId)
+    if (!parent) {
+      p[b.id] = { connected: false, parentId: '' }
+    } else if (b.connected) {
+      p[b.id] = { connected: isSame(parent.tail, b.head) }
+    }
+    return p
+  }, {})
 }
 
 export function updateBornName(

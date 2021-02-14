@@ -9,12 +9,7 @@ import {
   EditMode,
   IdMap,
 } from '../models/index'
-import {
-  findBorn,
-  editTransform,
-  extrudeFromParent,
-  updateConnections,
-} from '/@/utils/armatures'
+import { editTransform, extrudeFromParent } from '/@/utils/armatures'
 import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from '/@/store/canvas'
@@ -37,40 +32,13 @@ export function useBornEditMode() {
   const selectedBorns = computed(() => store.state.selectedBorns)
   const lastSelectedBornId = computed(() => store.lastSelectedBorn.value?.id)
 
-  const newBornIds = ref<string[]>([])
-  const pastSelectedBorns = ref<IdMap<BornSelectedState>>()
-  const pastLastSelectedBornId = ref('')
-
   const target = ref<Armature>()
 
   const isAnySelected = computed(() => !!lastSelectedBornId.value)
 
   const allNames = computed(() => target.value?.borns.map((a) => a.name) ?? [])
 
-  function cancelEdit() {
-    if (state.editMode === 'extrude') {
-      if (target.value) {
-        // revert extruded borns
-        target.value.borns = target.value.borns.filter(
-          (b) => !selectedBorns.value[b.id]
-        )
-      }
-      store.setSelectedBorns(
-        pastSelectedBorns.value ? { ...pastSelectedBorns.value } : {},
-        pastLastSelectedBornId.value
-      )
-    }
-
-    state.editMode = ''
-    state.editMovement = undefined
-    newBornIds.value = []
-
-    pastSelectedBorns.value = undefined
-    pastLastSelectedBornId.value = ''
-  }
-
   function cancel() {
-    cancelEdit()
     state.editMode = ''
     state.editMovement = undefined
   }
@@ -85,7 +53,7 @@ export function useBornEditMode() {
     if (state.editMode) {
       completeEdit()
     } else {
-      store.setSelectedBorns({})
+      store.selectBorn()
     }
   }
 
@@ -95,43 +63,38 @@ export function useBornEditMode() {
     }
   }
 
-  function addBorn(born: Born) {
-    target.value!.borns.push(born)
-    newBornIds.value.push(born.id)
-    store.shiftSelectBorn(born.id, { tail: true })
-  }
-
   function setEditMode(mode: EditMode) {
     if (!target.value) return
 
-    cancelEdit()
+    cancel()
+
     if (isAnySelected.value) {
       state.editMode = mode
       if (mode === 'extrude') {
-        pastSelectedBorns.value = { ...selectedBorns.value }
-        pastLastSelectedBornId.value = lastSelectedBornId.value
-        store.setSelectedBorns({})
         const shouldSkipBorns: IdMap<boolean> = {}
-        Object.keys(pastSelectedBorns.value).forEach((id) => {
-          const selectedState = pastSelectedBorns.value![id]
-          const parent = findBorn(target.value!.borns, id)!
+        const names = allNames.value.concat()
+        const extrudedBorns: Born[] = []
+
+        Object.keys(selectedBorns.value).forEach((id) => {
+          const selectedState = selectedBorns.value[id]
+          const parent = store.bornMap.value[id]
 
           const borns: Born[] = []
-          if (selectedState.tail) {
-            borns.push(extrude(parent))
-          }
-          if (selectedState.head) {
-            borns.push(extrude(parent, true))
-          }
+          if (selectedState.tail) borns.push(extrude(parent))
+          if (selectedState.head) borns.push(extrude(parent, true))
+
           borns.forEach((b) => {
             // prevent to extruding from same parent
             if (!shouldSkipBorns[b.parentId]) {
-              b.name = getNextName(parent.name, allNames.value)
-              addBorn(b)
+              b.name = getNextName(parent.name, names)
+              extrudedBorns.push(b)
+              names.push(b.name)
               shouldSkipBorns[b.parentId] = true
             }
           })
         })
+
+        store.addBorns(extrudedBorns, { tail: true })
       }
     }
   }
@@ -209,10 +172,8 @@ export function useBornEditMode() {
     if (!target.value) return
 
     store.updateBorns(editedBornMap.value)
-    store.updateBornConnections()
     state.editMovement = undefined
     state.editMode = ''
-    pastSelectedBorns.value = undefined
   }
 
   function select(id: string, selectedState: BornSelectedState) {
@@ -228,7 +189,7 @@ export function useBornEditMode() {
       completeEdit()
       return
     }
-    store.shiftSelectBorn(id, selectedState)
+    store.selectBorn(id, selectedState, true)
   }
 
   function mousemove(arg: EditMovement) {

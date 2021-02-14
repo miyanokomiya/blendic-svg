@@ -100,3 +100,32 @@ export function toMap<T extends { id: string }>(list: T[]): IdMap<T> {
     {}
   )
 }
+
+export function mergeMap<T>(src: IdMap<T>, override: IdMap<T>): IdMap<T> {
+  return Object.keys({ ...src, ...override }).reduce<IdMap<T>>((p, c) => {
+    p[c] = { ...(src[c] ?? {}), ...(override[c] ?? {}) } as T
+    return p
+  }, {})
+}
+
+export function getOriginPartial<T>(src: T, partial: Partial<T>): Partial<T> {
+  return Object.keys(partial).reduce<Partial<T>>((p, c) => {
+    // @ts-ignore
+    p[c] = src[c]
+    return p
+  }, {})
+}
+
+export function isSameBornSelectedState(
+  a: BornSelectedState,
+  b: BornSelectedState
+): boolean {
+  return !!a.head === !!b.head && !!a.tail === !!b.tail
+}
+
+export function isBornSelected(selectedState?: BornSelectedState): boolean {
+  if (!selectedState) return false
+  if (selectedState.head) return true
+  if (selectedState.tail) return true
+  return false
+}

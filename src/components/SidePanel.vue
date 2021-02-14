@@ -15,12 +15,14 @@
       </div>
       <div class="field inline">
         <label>Parent</label>
-        <select v-model="parentId">
-          <option value="">-- None --</option>
-          <option v-for="born in otherBorns" :key="born.id" :value="born.id">
-            {{ born.name }}
-          </option>
-        </select>
+        <span class="select">
+          <select v-model="parentId">
+            <option value="">-- None --</option>
+            <option v-for="born in otherBorns" :key="born.id" :value="born.id">
+              {{ born.name }}
+            </option>
+          </select>
+        </span>
       </div>
       <div class="field inline">
         <label>Connect</label>
@@ -74,7 +76,7 @@ export default defineComponent({
           return store.lastSelectedBorn.value?.connected ?? false
         },
         set(val: boolean) {
-          store.setBornConnection(val)
+          store.updateBorn({ connected: val })
         },
       }),
       parentId: computed({
@@ -82,14 +84,14 @@ export default defineComponent({
           return store.lastSelectedBorn.value?.parentId ?? ''
         },
         set(val: string) {
-          store.setBornParent(val || undefined)
+          store.updateBorn({ parentId: val })
         },
       }),
       changeArmatureName() {
         store.updateArmatureName(draftName.value)
       },
       changeBornName() {
-        store.updateBornName(draftName.value)
+        store.updateBorn({ name: draftName.value })
       },
     }
   },
@@ -103,6 +105,31 @@ export default defineComponent({
 }
 h3 {
   margin-bottom: 10px;
+}
+input[type='text'] {
+  padding: 2px 4px;
+  border: solid 1px #000;
+}
+.select {
+  position: relative;
+  select {
+    width: 100%;
+    padding: 1px 12px 0 0;
+    border: solid 1px #000;
+  }
+  &::after {
+    display: block;
+    content: ' ';
+    position: absolute;
+    top: 8px;
+    right: 4px;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    border-top: solid 8px #000;
+    border-left: solid 6px transparent;
+    border-right: solid 6px transparent;
+  }
 }
 form {
   display: flex;

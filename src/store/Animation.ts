@@ -1,11 +1,16 @@
 import { reactive, computed, watch } from 'vue'
+import { useStore } from '.'
 import { useListState } from '../composables/listState'
 import { getNextName } from '../utils/relations'
 import { Action, getAction } from '/@/models'
 
 const actions = useListState<Action>('Action')
 
+const store = useStore()
+
 function addAction() {
+  if (!store.lastSelectedArmature.value) return
+
   actions.addItem(
     getAction(
       {
@@ -13,6 +18,7 @@ function addAction() {
           'action',
           actions.state.list.map((a) => a.name)
         ),
+        armatureId: store.lastSelectedArmature.value.id,
       },
       true
     )

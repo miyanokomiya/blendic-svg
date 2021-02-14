@@ -13,12 +13,14 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref, watch } from 'vue'
+import { useStore } from '../store'
 import { useAnimationStore } from '../store/Animation'
 import SelectField from './atoms/SelectField.vue'
 
 export default defineComponent({
   components: { SelectField },
   setup() {
+    const store = useStore()
     const animationStore = useAnimationStore()
 
     const draftName = ref('')
@@ -40,7 +42,12 @@ export default defineComponent({
       addAction: animationStore.addAction,
       deleteAction: animationStore.deleteAction,
       actionOptions: computed(() =>
-        animationStore.actions.map((a) => ({ value: a.id, label: a.name }))
+        animationStore.actions.map((a) => ({
+          value: a.id,
+          label: `${
+            store.lastSelectedArmature.value?.id !== a.armatureId ? '(x)' : ''
+          } ${a.name}`,
+        }))
       ),
       selectedActionId: computed({
         get: () => selectedAction.value?.id ?? '',

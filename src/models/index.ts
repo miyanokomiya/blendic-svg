@@ -16,6 +16,7 @@ export interface Action {
   id: string
   name: string
   totalFrame: number
+  armatureId: string
   keyframes: Keyframe[]
 }
 
@@ -71,6 +72,7 @@ export function getAction(
     id: generateId ? v4() : '',
     name: '',
     totalFrame: 60,
+    armatureId: '',
     keyframes: [],
     ...arg,
   }

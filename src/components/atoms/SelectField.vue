@@ -32,7 +32,6 @@ export default defineComponent({
     return {
       value: computed({
         get() {
-          console.log(props.modelValue)
           return props.modelValue
         },
         set(val: number | string) {

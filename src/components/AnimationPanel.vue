@@ -10,7 +10,44 @@
     </div>
     <div class="middle">
       <TimelineCanvas>
-        <text>aaaa</text>
+        <template #default="{ scale, viewOrigin }">
+          <g :transform="`translate(0, ${viewOrigin.y}) scale(${scale}) `">
+            <g transform="translate(100, 0)">
+              <TimelineAxis :scale="scale" />
+            </g>
+          </g>
+          <g
+            :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale}) `"
+          >
+            <g transform="`translate(${viewOrigin.x}, 0)`">
+              <rect
+                :width="labelWidth"
+                height="10000"
+                stroke="none"
+                fill="#fff"
+              />
+              <line
+                :x1="labelWidth"
+                y1="0"
+                :x2="labelWidth"
+                y2="10000"
+                stroke="black"
+              />
+              <TimelineRow
+                :index="1"
+                :label-width="labelWidth"
+                label="Summary"
+              />
+              <TimelineRow
+                v-for="(born, i) in selectedBorns"
+                :key="born.id"
+                :index="i + 2"
+                :label-width="labelWidth"
+                :label="born.name"
+              />
+            </g>
+          </g>
+        </template>
       </TimelineCanvas>
     </div>
   </div>
@@ -22,9 +59,11 @@ import { useStore } from '../store'
 import { useAnimationStore } from '../store/Animation'
 import SelectField from './atoms/SelectField.vue'
 import TimelineCanvas from './TimelineCanvas.vue'
+import TimelineRow from './elements/atoms/TimelineRow.vue'
+import TimelineAxis from './elements/atoms/TimelineAxis.vue'
 
 export default defineComponent({
-  components: { SelectField, TimelineCanvas },
+  components: { SelectField, TimelineCanvas, TimelineRow, TimelineAxis },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
@@ -33,6 +72,10 @@ export default defineComponent({
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
 
+    const selectedBorns = computed(
+      () => store.lastSelectedArmature.value?.borns ?? []
+    )
+
     watch(
       selectedAction,
       () => (draftName.value = selectedAction.value?.name ?? '')
@@ -40,7 +83,9 @@ export default defineComponent({
 
     return {
       actions: animationStore.actions,
+      selectedBorns,
       draftName,
+      labelWidth: 140,
       changeActionName: () => {
         if (!draftName.value) return
         animationStore.updateAction({ name: draftName.value })

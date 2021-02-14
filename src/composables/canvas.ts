@@ -34,8 +34,9 @@ export function useCanvas() {
     viewCenter,
     viewBox,
     viewToCanvas,
-    wheel(e: WheelEvent) {
-      const origin = mousePoint.value ? mousePoint.value : viewCenter.value
+    wheel(e: WheelEvent, center = false) {
+      const origin =
+        !center && mousePoint.value ? mousePoint.value : viewCenter.value
       const beforeOrigin = viewToCanvas(origin)
       scale.value = scale.value * Math.pow(1.1, e.deltaY > 0 ? 1 : -1)
       const afterOrigin = viewToCanvas(origin)

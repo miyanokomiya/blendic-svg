@@ -21,13 +21,13 @@
       @keydown.g.exact.prevent="editKeyDown('g')"
       @keydown.x.exact.prevent="editKeyDown('x')"
     >
-      <slot />
+      <slot :scale="scale" :view-origin="viewOrigin" />
     </svg>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted, watch } from 'vue'
+import { defineComponent, ref, onMounted, watch } from 'vue'
 import { getPointInTarget } from 'okanvas'
 import { useWindow } from '../composables/window'
 import { useCanvas } from '../composables/canvas'
@@ -52,7 +52,8 @@ export default defineComponent({
     watch(() => windowState.state.size, adjustSvgSize)
 
     return {
-      scale: computed(() => canvas.scale),
+      scale: canvas.scale,
+      viewOrigin: canvas.viewOrigin,
       viewSize: canvas.viewSize,
       wrapper,
       svg,
@@ -60,7 +61,7 @@ export default defineComponent({
       focus() {
         if (svg.value) svg.value.focus()
       },
-      wheel: canvas.wheel,
+      wheel: (e: WheelEvent) => canvas.wheel(e, true),
       downMiddle: canvas.downMiddle,
       upMiddle: canvas.upMiddle,
       leave: canvas.leave,

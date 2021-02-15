@@ -1,9 +1,10 @@
-import { reactive, computed, watch } from 'vue'
+import { reactive, computed, watch, ref } from 'vue'
 import { useStore } from '.'
 import { useListState } from '../composables/listState'
 import { getNextName } from '../utils/relations'
 import { Action, getAction } from '/@/models'
 
+const currentFrame = ref(0)
 const actions = useListState<Action>('Action')
 
 const store = useStore()
@@ -27,6 +28,7 @@ function addAction() {
 
 export function useAnimationStore() {
   return {
+    currentFrame,
     actions: actions.state.list,
     selectedAction: actions.lastSelectedItem,
     selectAction: actions.selectItem,

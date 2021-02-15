@@ -13,6 +13,8 @@
       @click.left="clickAny"
       @click.right.prevent="keyDownEscape"
       @mouseenter="focus"
+      @mousedown.left.prevent="downLeft"
+      @mouseup.left.prevent="upLeft"
       @mousemove.prevent="mousemove"
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
@@ -33,7 +35,17 @@ import { useWindow } from '../composables/window'
 import { useCanvas } from '../composables/canvas'
 
 export default defineComponent({
-  emits: ['mousemove', 'click-any', 'click-empty', 'escape', 'g', 'x'],
+  emits: [
+    'down-left',
+    'up-left',
+    'mousemove',
+    'drag',
+    'click-any',
+    'click-empty',
+    'escape',
+    'g',
+    'x',
+  ],
   setup(props, { emit }) {
     const svg = ref<SVGElement>()
     const wrapper = ref<SVGElement>()
@@ -62,13 +74,24 @@ export default defineComponent({
         if (svg.value) svg.value.focus()
       },
       wheel: (e: WheelEvent) => canvas.wheel(e, true),
+      downLeft: () => {
+        if (!canvas.mousePoint.value) return
+        canvas.downLeft()
+        emit('down-left', canvas.viewToCanvas(canvas.mousePoint.value))
+      },
+      upLeft: () => {
+        canvas.upLeft()
+        emit('up-left')
+      },
       downMiddle: canvas.downMiddle,
       upMiddle: canvas.upMiddle,
       leave: canvas.leave,
       mousemove: (e: MouseEvent) => {
         canvas.mousePoint.value = getPointInTarget(e)
 
-        if (canvas.viewMovingInfo.value) {
+        if (canvas.dragInfo.value) {
+          emit('drag', canvas.viewToCanvas(canvas.mousePoint.value))
+        } else if (canvas.viewMovingInfo.value) {
           canvas.viewMove()
         } else if (canvas.editStartPoint.value) {
           emit('mousemove', {

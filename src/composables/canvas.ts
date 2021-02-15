@@ -2,6 +2,11 @@ import { defineComponent, ref, reactive, computed, onMounted, watch } from 'vue'
 import { IVec2, multi, sub, add, getRectCenter } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 
+export interface MoveInfo {
+  origin: IVec2
+  downAt: IVec2
+}
+
 export function useCanvas(
   options: { scaleMin?: number; scaleMax?: number } = {}
 ) {
@@ -10,7 +15,8 @@ export function useCanvas(
   const mousePoint = ref<IVec2>()
   const scale = ref(1)
   const viewOrigin = ref<IVec2>({ x: 0, y: 0 })
-  const viewMovingInfo = ref<{ origin: IVec2; downAt: IVec2 }>()
+  const viewMovingInfo = ref<MoveInfo>()
+  const dragInfo = ref<{}>()
 
   const viewCanvasRect = computed(() => ({
     x: viewOrigin.value.x,
@@ -32,6 +38,7 @@ export function useCanvas(
     mousePoint,
     scale,
     viewOrigin,
+    dragInfo,
     viewMovingInfo,
     viewCenter,
     viewBox,
@@ -49,6 +56,13 @@ export function useCanvas(
       )
       const afterOrigin = viewToCanvas(origin)
       viewOrigin.value = add(viewOrigin.value, sub(beforeOrigin, afterOrigin))
+    },
+    downLeft() {
+      if (!mousePoint.value) return
+      dragInfo.value = {}
+    },
+    upLeft() {
+      dragInfo.value = undefined
     },
     downMiddle() {
       if (!mousePoint.value) return

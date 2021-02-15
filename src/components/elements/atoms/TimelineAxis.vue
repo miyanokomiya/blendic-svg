@@ -11,26 +11,27 @@
     </g>
     <g>
       <g
-        v-for="(f, i) in frames"
+        v-for="f in frames"
         :key="f"
-        :transform="`translate(${f * frameWidth}, 0)`"
+        :transform="`translate(${f.f * frameWidth}, 0)`"
       >
         <g :transform="`scale(${scale})`">
           <text
-            v-if="i % 2 === 0"
+            v-if="f.labelSize > 0"
             :y="headerHeight - 4"
-            :font-size="f % 10 === 0 ? 14 : 11"
+            :font-size="f.labelSize"
             dominant-baseline="text-after-edge"
             text-anchor="middle"
-            >{{ f }}</text
+            >{{ f.f }}</text
           >
           <line
+            v-if="f.strokeWidth > 0"
             x1="0"
             :y1="headerHeight"
             x2="0"
             y2="20000"
             stroke="#aaa"
-            :stroke-width="f % 10 === 0 ? 2 : 1"
+            :stroke-width="f.strokeWidth"
           />
         </g>
       </g>
@@ -75,10 +76,19 @@ export default defineComponent({
     const count = computed(() => {
       return Math.floor(visibledFrameRange.value / frameInterval.value)
     })
-    const frames = computed(() => {
-      return [...Array(count.value)].map(
-        (_, i) => i * frameInterval.value + visibledFrameStart.value
-      )
+    const frames = computed((): {
+      f: number
+      labelSize: number
+      strokeWidth: number
+    }[] => {
+      return [...Array(count.value)].map((_, i) => {
+        const f = i * frameInterval.value + visibledFrameStart.value
+        return {
+          f,
+          labelSize: i % 10 === 0 ? 14 : i % 2 === 0 ? 11 : 0,
+          strokeWidth: i % 10 === 0 ? 2 : 1,
+        }
+      })
     })
 
     return {

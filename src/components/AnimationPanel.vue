@@ -5,9 +5,12 @@
         <SelectField v-model="selectedActionId" :options="actionOptions" />
       </div>
       <input v-model="draftName" type="text" @change="changeActionName" />
-      <input v-model="draftEndFrame" type="number" @change="changeEndFrame" />
       <button class="add-action" @click="addAction">+</button>
       <button class="delete-action" @click="deleteAction">x</button>
+      <label class="end-frame-field"
+        >End:
+        <input v-model="draftEndFrame" type="number" @change="changeEndFrame" />
+      </label>
     </div>
     <div class="middle">
       <TimelineCanvas @up-left="upLeft" @drag="drag" @down-left="downLeft">
@@ -64,7 +67,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watch } from 'vue'
+import { computed, defineComponent, ref, watchEffect } from 'vue'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/Animation'
 import SelectField from './atoms/SelectField.vue'
@@ -85,7 +88,7 @@ export default defineComponent({
 
     const editMode = ref<'' | 'move-current-frame'>('')
     const draftName = ref('')
-    const draftEndFrame = ref(animationStore.endFrame.value.toString())
+    const draftEndFrame = ref('')
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
     const selectedBorns = computed(
@@ -119,10 +122,12 @@ export default defineComponent({
       editMode.value = ''
     }
 
-    watch(
-      selectedAction,
-      () => (draftName.value = selectedAction.value?.name ?? '')
-    )
+    watchEffect(() => {
+      draftName.value = selectedAction.value?.name ?? ''
+    })
+    watchEffect(() => {
+      draftEndFrame.value = animationStore.endFrame.value.toString()
+    })
 
     return {
       actions: animationStore.actions,
@@ -178,6 +183,12 @@ export default defineComponent({
   }
   .select-action {
     width: 160px;
+  }
+  .end-frame-field {
+    margin: 0 0 0 auto;
+    input {
+      width: 4rem;
+    }
   }
   button {
     width: 20px;

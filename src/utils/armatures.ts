@@ -117,7 +117,8 @@ export function adjustConnectedPosition(borns: Born[]): Born[] {
 export function selectBorn(
   armature: Armature,
   id: string,
-  selectedState: BornSelectedState
+  selectedState: BornSelectedState,
+  ignoreConnection = false
 ): IdMap<Partial<BornSelectedState>> {
   const target = findBorn(armature.borns, id)
   if (!target) return {}
@@ -126,19 +127,21 @@ export function selectBorn(
     [id]: selectedState,
   }
 
-  if (selectedState.head && target.connected) {
-    const parent = findBorn(armature.borns, target.parentId)
-    if (parent) {
-      ret = {
-        ...selectBorn(armature, parent.id, { tail: true }),
-        ...ret,
+  if (!ignoreConnection) {
+    if (selectedState.head && target.connected) {
+      const parent = findBorn(armature.borns, target.parentId)
+      if (parent) {
+        ret = {
+          ...selectBorn(armature, parent.id, { tail: true }, ignoreConnection),
+          ...ret,
+        }
       }
     }
-  }
-  if (selectedState.tail) {
-    findChildren(armature, target.id, true).forEach((b) => {
-      ret[b.id] = { head: true }
-    })
+    if (selectedState.tail) {
+      findChildren(armature, target.id, true).forEach((b) => {
+        ret[b.id] = { head: true }
+      })
+    }
   }
 
   return ret

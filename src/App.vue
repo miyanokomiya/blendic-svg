@@ -3,12 +3,12 @@
     <div class="main">
       <AppCanvas
         class="canvas"
-        :current-command="canvasCommand"
         @mousemove="mousemove"
         @click-any="clickAny"
         @click-empty="clickEmpty"
         @escape="escape"
         @tab="toggleCanvasMode"
+        @ctrl-tab="ctrlToggleCanvasMode"
         @g="setEditMode('grab')"
         @s="setEditMode('scale')"
         @r="setEditMode('rotate')"
@@ -45,6 +45,24 @@
             @shift-select="(state) => shiftSelectBorn(born.id, state)"
           />
         </g>
+        <g v-if="canvasMode === 'pose'">
+          <ArmatureElm
+            v-for="armature in otherArmatures"
+            :key="armature.id"
+            :armature="armature"
+            :opacity="0.3"
+          />
+          <BornElm
+            v-for="born in editBornMap"
+            :key="born.id"
+            :born="born"
+            :parent="editBornMap[born.parentId]"
+            :selected-state="selectedBorns[born.id]"
+            pose-mode
+            @select="(state) => selectBorn(born.id, state)"
+            @shift-select="(state) => shiftSelectBorn(born.id, state)"
+          />
+        </g>
       </AppCanvas>
       <SidePanel class="side-panel" />
     </div>
@@ -61,18 +79,14 @@ import SidePanel from './components/SidePanel.vue'
 import AnimationPanel from './components/AnimationPanel.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import BornElm from './components/elements/Born.vue'
-import {
-  BornSelectedState,
-  EditMode,
-  toMap,
-  editModeToCanvasCommand,
-} from './models/index'
+import { BornSelectedState, EditMode, toMap } from './models/index'
 import { useBornEditMode } from './composables/armatureEditMode'
 import { editTransform } from './utils/armatures'
 import { IVec2 } from 'okageo'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
+import { useBornPoseMode } from './composables/armaturePoseMode'
 
 export default defineComponent({
   components: {
@@ -86,6 +100,7 @@ export default defineComponent({
     const store = useStore()
     const canvasStore = useCanvasStore()
     const armatureEditMode = useBornEditMode()
+    const armaturePoseMode = useBornPoseMode()
     const historyStore = useHistoryStore()
 
     const canvasMode = computed(() => canvasStore.state.canvasMode)
@@ -111,10 +126,6 @@ export default defineComponent({
             )
           )
         : {}
-    )
-
-    const canvasCommand = computed(() =>
-      editModeToCanvasCommand(armatureEditMode.state.editMode)
     )
 
     function onGlobalKeyDown(e: KeyboardEvent) {
@@ -152,29 +163,42 @@ export default defineComponent({
       selectedBorns: computed(() => store.state.selectedBorns),
       armatureEditMode,
       canvasMode,
-      canvasCommand,
       mousemove(arg: { current: IVec2; start: IVec2 }) {
         if (canvasMode.value === 'edit') {
           armatureEditMode.mousemove(arg)
+        } else if (canvasMode.value === 'pose') {
+          armaturePoseMode.mousemove(arg)
         }
       },
       clickAny() {
         if (canvasMode.value === 'edit') {
           armatureEditMode.clickAny()
+        } else if (canvasMode.value === 'pose') {
+          armaturePoseMode.clickAny()
         }
       },
       clickEmpty() {
-        if (canvasMode.value === 'edit') {
-          armatureEditMode.clickEmpty()
-        } else {
+        if (canvasMode.value === 'object') {
           store.selectArmature()
+        } else if (canvasMode.value === 'edit') {
+          armatureEditMode.clickEmpty()
+        } else if (canvasMode.value === 'pose') {
+          armaturePoseMode.clickEmpty()
         }
       },
       selectBorn(id: string, state: BornSelectedState) {
-        armatureEditMode.select(id, state)
+        if (canvasMode.value === 'edit') {
+          armatureEditMode.select(id, state)
+        } else if (canvasMode.value === 'pose') {
+          armaturePoseMode.select(id, state)
+        }
       },
       shiftSelectBorn(id: string, state: BornSelectedState) {
-        armatureEditMode.shiftSelect(id, state)
+        if (canvasMode.value === 'edit') {
+          armatureEditMode.shiftSelect(id, state)
+        } else if (canvasMode.value === 'pose') {
+          armaturePoseMode.shiftSelect(id, state)
+        }
       },
       selectArmature(id: string, selected: boolean) {
         store.selectArmature(selected ? id : '')
@@ -185,34 +209,58 @@ export default defineComponent({
       escape() {
         if (canvasMode.value === 'edit') {
           armatureEditMode.cancel()
+        } else if (canvasMode.value === 'pose') {
+          armaturePoseMode.cancel()
         }
       },
       toggleCanvasMode() {
-        if (canvasMode.value === 'object' && store.lastSelectedArmature.value) {
+        if (!store.lastSelectedArmature.value) return
+
+        if (canvasMode.value !== 'edit') {
+          armatureEditMode.end()
+          armaturePoseMode.end()
           canvasStore.setCanvasMode('edit')
           armatureEditMode.begin(store.lastSelectedArmature.value)
         } else {
-          canvasStore.setCanvasMode('object')
           armatureEditMode.end()
+          canvasStore.toggleCanvasMode()
+        }
+      },
+      ctrlToggleCanvasMode() {
+        if (!store.lastSelectedArmature.value) return
+
+        if (canvasMode.value === 'object') {
+          canvasStore.setCanvasMode('pose')
+          armaturePoseMode.begin(store.lastSelectedArmature.value)
+        } else {
+          armatureEditMode.end()
+          armaturePoseMode.end()
+          canvasStore.ctrlToggleCanvasMode()
         }
       },
       setEditMode(mode: EditMode) {
         if (canvasMode.value === 'edit') {
           armatureEditMode.setEditMode(mode)
+        } else if (canvasMode.value === 'pose') {
+          armaturePoseMode.setEditMode(mode)
         }
       },
       execDelete() {
         if (canvasMode.value === 'object') {
           store.deleteArmature()
-        } else if (armatureEditMode.state.editMode === '') {
-          store.deleteBorn()
+        } else if (canvasMode.value === 'edit') {
+          if (armatureEditMode.state.editMode === '') {
+            store.deleteBorn()
+          }
         }
       },
       addItem() {
         if (canvasMode.value === 'object') {
           store.addArmature()
-        } else if (armatureEditMode.state.editMode === '') {
-          store.addBorn()
+        } else if (canvasMode.value === 'edit') {
+          if (armatureEditMode.state.editMode === '') {
+            store.addBorn()
+          }
         }
       },
     }

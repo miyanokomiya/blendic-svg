@@ -173,7 +173,8 @@ function addArmature() {
 function selectBorn(
   id: string = '',
   selectedState: BornSelectedState = { head: true, tail: true },
-  shift = false
+  shift = false,
+  ignoreConnection = false
 ) {
   if (!lastSelectedArmature.value) return
   // skip same selected state
@@ -183,7 +184,7 @@ function selectBorn(
   )
     return
 
-  const item = getSelectBornItem(id, selectedState, shift)
+  const item = getSelectBornItem(id, selectedState, shift, ignoreConnection)
   item.redo()
   historyStore.push(item)
 }
@@ -334,7 +335,8 @@ function getAddArmatureItem(armature: Armature): HistoryItem {
 function getSelectBornItem(
   id: string,
   selectedState: BornSelectedState = { head: true, tail: true },
-  shift = false
+  shift = false,
+  ignoreConnection = false
 ): HistoryItem {
   const current = { ...state.selectedBorns }
   const currentLast = state.lastSelectedBornId
@@ -346,7 +348,8 @@ function getSelectBornItem(
           armatureUtils.selectBorn(
             lastSelectedArmature.value!,
             id,
-            selectedState
+            selectedState,
+            ignoreConnection
           )
         )
       : {}

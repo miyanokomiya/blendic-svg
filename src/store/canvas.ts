@@ -9,9 +9,30 @@ const historyStore = useHistoryStore()
 
 const state = reactive({
   canvasMode: 'object' as CanvasMode,
+  pastCanvasMode: 'edit' as CanvasMode,
   axisGrid: '' as AxisGrid,
 })
 
+function toggleCanvasMode() {
+  if (state.canvasMode === 'edit') {
+    setCanvasMode(state.pastCanvasMode)
+  } else {
+    setCanvasMode('edit')
+  }
+}
+function ctrlToggleCanvasMode() {
+  if (state.canvasMode === 'edit') {
+    if (state.pastCanvasMode === 'object') {
+      setCanvasMode('pose')
+    } else {
+      setCanvasMode('object')
+    }
+  } else if (state.canvasMode === 'object') {
+    setCanvasMode('pose')
+  } else {
+    setCanvasMode('object')
+  }
+}
 function setCanvasMode(canvasMode: CanvasMode) {
   const item = getChangeCanvasModeItem(canvasMode)
   historyStore.push(item)
@@ -42,6 +63,8 @@ function isOppositeSide(origin: IVec2, from: IVec2, current: IVec2): boolean {
 export function useCanvasStore() {
   return {
     state,
+    toggleCanvasMode,
+    ctrlToggleCanvasMode,
     setCanvasMode,
     setAxisGrid,
     switchAxisGrid,
@@ -53,10 +76,17 @@ export function useCanvasStore() {
 
 function getChangeCanvasModeItem(canvasMode: CanvasMode): HistoryItem {
   const currentMode = state.canvasMode
-  const redo = () => (state.canvasMode = canvasMode)
+  const currentPastMode = state.pastCanvasMode
+  const redo = () => {
+    state.pastCanvasMode = state.canvasMode
+    state.canvasMode = canvasMode
+  }
   return {
     name: 'Change Mode',
-    undo: () => (state.canvasMode = currentMode),
+    undo: () => {
+      state.canvasMode = currentMode
+      state.pastCanvasMode = currentPastMode
+    },
     redo,
   }
 }

@@ -73,6 +73,10 @@ export default defineComponent({
       type: Object as PropType<BornSelectedState>,
       default: () => ({ head: false, tail: false }),
     },
+    poseMode: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['select', 'shift-select'],
   setup(props, { emit }) {
@@ -83,6 +87,14 @@ export default defineComponent({
     const side1 = computed(() => d1(head.value, tail.value))
     const side2 = computed(() => d1(head.value, tail.value, true))
 
+    const selectedAll = computed(() => {
+      if (props.poseMode) {
+        return props.selectedState.head || props.selectedState.tail
+      } else {
+        return props.selectedState.head && props.selectedState.tail
+      }
+    })
+
     return {
       transform: computed(() => transform(props.born.transform)),
       head,
@@ -90,14 +102,10 @@ export default defineComponent({
       headPath: computed(() => d([head.value, side1.value, side2.value], true)),
       tailPath: computed(() => d([tail.value, side1.value, side2.value], true)),
       fill: computed(() =>
-        props.selectedState.head && props.selectedState.tail
-          ? settings.selectedColor
-          : '#ddd'
+        selectedAll.value ? settings.selectedColor : '#ddd'
       ),
       fillDark: computed(() =>
-        props.selectedState.head && props.selectedState.tail
-          ? settings.selectedColor
-          : '#bbb'
+        selectedAll.value ? settings.selectedColor : '#bbb'
       ),
       fillHead: computed(() =>
         props.selectedState.head ? settings.selectedColor : ''
@@ -105,24 +113,42 @@ export default defineComponent({
       fillTail: computed(() =>
         props.selectedState.tail ? settings.selectedColor : ''
       ),
-      click: (state: BornSelectedState) => emit('select', state),
+      click: (state: BornSelectedState) => {
+        if (props.poseMode) {
+          if (selectedAll.value) {
+            emit('select', { head: false, tail: false })
+          } else {
+            emit('select', { head: true, tail: true })
+          }
+        } else {
+          emit('select', state)
+        }
+      },
       shiftClick: (state: BornSelectedState) => {
-        if (state.head && state.tail) {
-          if (props.selectedState.head && props.selectedState.tail) {
+        if (props.poseMode) {
+          if (selectedAll.value) {
             emit('shift-select', { head: false, tail: false })
           } else {
             emit('shift-select', { head: true, tail: true })
           }
-        } else if (state.head) {
-          emit('shift-select', {
-            ...props.selectedState,
-            head: !props.selectedState.head,
-          })
-        } else if (state.tail) {
-          emit('shift-select', {
-            ...props.selectedState,
-            tail: !props.selectedState.tail,
-          })
+        } else {
+          if (state.head && state.tail) {
+            if (selectedAll.value) {
+              emit('shift-select', { head: false, tail: false })
+            } else {
+              emit('shift-select', { head: true, tail: true })
+            }
+          } else if (state.head) {
+            emit('shift-select', {
+              ...props.selectedState,
+              head: !props.selectedState.head,
+            })
+          } else if (state.tail) {
+            emit('shift-select', {
+              ...props.selectedState,
+              tail: !props.selectedState.tail,
+            })
+          }
         }
       },
     }

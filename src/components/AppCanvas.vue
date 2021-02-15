@@ -1,5 +1,6 @@
 <template>
   <div ref="wrapper" class="app-canvas-root">
+    <!-- ctrl+tab cannot work -->
     <svg
       ref="svg"
       tabindex="-1"
@@ -19,6 +20,7 @@
       @mouseleave="leave"
       @keydown.escape.exact.prevent="keyDownEscape"
       @keydown.tab.exact.prevent="keyDownTab"
+      @keydown.tab.shift.exact.prevent="keyDownCtrlTab"
       @keydown.g.exact.prevent="editKeyDown('g')"
       @keydown.s.exact.prevent="editKeyDown('s')"
       @keydown.r.exact.prevent="editKeyDown('r')"
@@ -98,6 +100,7 @@ export default defineComponent({
     'click-empty',
     'escape',
     'tab',
+    'ctrl-tab',
     'g',
     's',
     'r',
@@ -240,6 +243,7 @@ export default defineComponent({
       keyDownTab: () => {
         emit('tab')
       },
+      keyDownCtrlTab: () => emit('ctrl-tab'),
       keyDownEscape: () => {
         emit('escape')
       },

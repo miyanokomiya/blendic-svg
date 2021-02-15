@@ -5,6 +5,7 @@
         <SelectField v-model="selectedActionId" :options="actionOptions" />
       </div>
       <input v-model="draftName" type="text" @change="changeActionName" />
+      <input v-model="draftEndFrame" type="number" @change="changeEndFrame" />
       <button class="add-action" @click="addAction">+</button>
       <button class="delete-action" @click="deleteAction">x</button>
     </div>
@@ -21,6 +22,7 @@
               :origin-x="viewOrigin.x"
               :view-width="viewSize.width"
               :current-frame="currentFrame"
+              :end-frame="endFrame"
               @down-current-frame="downCurrentFrame"
             />
           </g>
@@ -83,6 +85,7 @@ export default defineComponent({
 
     const editMode = ref<'' | 'move-current-frame'>('')
     const draftName = ref('')
+    const draftEndFrame = ref(animationStore.endFrame.value.toString())
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
     const selectedBorns = computed(
@@ -125,12 +128,22 @@ export default defineComponent({
       actions: animationStore.actions,
       selectedBorns,
       draftName,
+      draftEndFrame,
       labelWidth,
       axisPadding,
       currentFrame: animationStore.currentFrame,
+      endFrame: animationStore.endFrame,
       changeActionName: () => {
         if (!draftName.value) return
         animationStore.updateAction({ name: draftName.value })
+      },
+      changeEndFrame: () => {
+        const val = parseInt(draftEndFrame.value, 10)
+        if (!isNaN(val) && val >= 0) {
+          animationStore.setEndFrame(val)
+        } else {
+          draftEndFrame.value = animationStore.endFrame.value.toString()
+        }
       },
       addAction: animationStore.addAction,
       deleteAction: animationStore.deleteAction,

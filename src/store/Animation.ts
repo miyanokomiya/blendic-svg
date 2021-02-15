@@ -5,6 +5,7 @@ import { getNextName } from '../utils/relations'
 import { Action, getAction } from '/@/models'
 
 const currentFrame = ref(0)
+const endFrame = ref(60)
 const actions = useListState<Action>('Action')
 
 const store = useStore()
@@ -26,10 +27,16 @@ function addAction() {
   )
 }
 
+function setEndFrame(val: number) {
+  endFrame.value = val
+}
+
 export function useAnimationStore() {
   return {
     currentFrame,
+    endFrame,
     actions: actions.state.list,
+    setEndFrame,
     selectedAction: actions.lastSelectedItem,
     selectAction: actions.selectItem,
     addAction,

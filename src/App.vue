@@ -232,6 +232,10 @@ input[type='text'] {
   padding: 2px 4px;
   border: solid 1px #000;
 }
+input[type='number'] {
+  padding: 2px 0 2px 4px;
+  border: solid 1px #000;
+}
 </style>
 
 <style lang="scss" scoped>

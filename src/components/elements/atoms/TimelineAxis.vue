@@ -37,6 +37,14 @@
           </g>
         </g>
       </g>
+      <g fill="#aaa" stroke="none" fill-opacity="0.5">
+        <g transform="scale(-1, 1)">
+          <rect width="200000" height="200000" />
+        </g>
+        <g :transform="`translate(${endFrameX}, 0)`">
+          <rect width="200000" height="200000" />
+        </g>
+      </g>
       <g :transform="`translate(${currentFrameX}, 0) scale(${scale})`">
         <rect
           :x="-currentFrameLabelWidth / 2"
@@ -91,6 +99,10 @@ export default defineComponent({
       type: Number,
       default: 0,
     },
+    endFrame: {
+      type: Number,
+      default: 60,
+    },
   },
   emits: ['down-current-frame', 'up-current-frame'],
   setup(props, { emit }) {
@@ -128,12 +140,16 @@ export default defineComponent({
     const currentFrameLabelWidth = computed(() => {
       return Math.max(props.currentFrame.toString().length, 2) * 10 + 2
     })
+    const endFrameX = computed(() => {
+      return props.endFrame * frameWidth
+    })
 
     return {
       headerHeight: 24,
       frames,
       frameWidth,
       currentFrameX,
+      endFrameX,
       currentFrameLabelWidth,
       downCurrentFrame: () => emit('down-current-frame'),
     }

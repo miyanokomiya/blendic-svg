@@ -10,16 +10,18 @@
     </div>
     <div class="middle">
       <TimelineCanvas>
-        <template #default="{ scale, viewOrigin }">
-          <g :transform="`translate(0, ${viewOrigin.y}) scale(${scale}) `">
-            <g transform="translate(100, 0)">
-              <TimelineAxis :scale="scale" />
-            </g>
+        <template #default="{ scale, viewOrigin, viewSize }">
+          <g :transform="`translate(${labelWidth + 20}, ${viewOrigin.y})`">
+            <TimelineAxis
+              :scale="scale"
+              :origin-x="viewOrigin.x"
+              :view-width="viewSize.width"
+            />
           </g>
           <g
-            :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale}) `"
+            :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
           >
-            <g transform="`translate(${viewOrigin.x}, 0)`">
+            <g>
               <rect
                 :width="labelWidth"
                 height="10000"

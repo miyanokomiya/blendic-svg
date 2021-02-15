@@ -2,7 +2,9 @@ import { defineComponent, ref, reactive, computed, onMounted, watch } from 'vue'
 import { IVec2, multi, sub, add, getRectCenter } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 
-export function useCanvas() {
+export function useCanvas(
+  options: { scaleMin?: number; scaleMax?: number } = {}
+) {
   const viewSize = reactive({ width: 600, height: 100 })
   const editStartPoint = ref<IVec2>()
   const mousePoint = ref<IVec2>()
@@ -38,7 +40,13 @@ export function useCanvas() {
       const origin =
         !center && mousePoint.value ? mousePoint.value : viewCenter.value
       const beforeOrigin = viewToCanvas(origin)
-      scale.value = scale.value * Math.pow(1.1, e.deltaY > 0 ? 1 : -1)
+      scale.value = Math.min(
+        Math.max(
+          scale.value * Math.pow(1.1, e.deltaY > 0 ? 1 : -1),
+          options.scaleMin ?? 0
+        ),
+        options.scaleMax ?? 10
+      )
       const afterOrigin = viewToCanvas(origin)
       viewOrigin.value = add(viewOrigin.value, sub(beforeOrigin, afterOrigin))
     },

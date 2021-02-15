@@ -2,6 +2,7 @@
   <div>
     <div class="main">
       <AppCanvas
+        :current-command="canvasCommand"
         class="canvas"
         @mousemove="mousemove"
         @click-any="clickAny"
@@ -79,7 +80,12 @@ import SidePanel from './components/SidePanel.vue'
 import AnimationPanel from './components/AnimationPanel.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import BornElm from './components/elements/Born.vue'
-import { BornSelectedState, EditMode, toMap } from './models/index'
+import {
+  BornSelectedState,
+  EditMode,
+  editModeToCanvasCommand,
+  toMap,
+} from './models/index'
 import { useBornEditMode } from './composables/armatureEditMode'
 import { editTransform } from './utils/armatures'
 import { IVec2 } from 'okageo'
@@ -128,6 +134,16 @@ export default defineComponent({
         : {}
     )
 
+    const canvasCommand = computed(() => {
+      if (canvasMode.value === 'edit') {
+        return editModeToCanvasCommand(armatureEditMode.state.editMode)
+      } else if (canvasMode.value === 'pose') {
+        return editModeToCanvasCommand(armaturePoseMode.state.editMode)
+      } else {
+        return ''
+      }
+    })
+
     function onGlobalKeyDown(e: KeyboardEvent) {
       if (
         ['input', 'textarea'].includes(
@@ -163,6 +179,7 @@ export default defineComponent({
       selectedBorns: computed(() => store.state.selectedBorns),
       armatureEditMode,
       canvasMode,
+      canvasCommand,
       mousemove(arg: { current: IVec2; start: IVec2 }) {
         if (canvasMode.value === 'edit') {
           armatureEditMode.mousemove(arg)

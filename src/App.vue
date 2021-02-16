@@ -86,11 +86,12 @@ import {
   editModeToCanvasCommand,
   toMap,
 } from './models/index'
-import { editTransform } from './utils/armatures'
+import { posedTransform } from './utils/armatures'
 import { IVec2 } from 'okageo'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
+import { useAnimationStore } from './store/Animation'
 
 export default defineComponent({
   components: {
@@ -103,6 +104,7 @@ export default defineComponent({
   setup() {
     const store = useStore()
     const canvasStore = useCanvasStore()
+    const animationStore = useAnimationStore()
     const historyStore = useHistoryStore()
 
     const canvasMode = computed(() => canvasStore.state.canvasMode)
@@ -119,13 +121,22 @@ export default defineComponent({
     const editBornMap = computed(() =>
       lastSelectedArmature.value
         ? toMap(
-            lastSelectedArmature.value.borns.map((b) =>
-              editTransform(
+            lastSelectedArmature.value.borns.map((b) => {
+              console.log(
+                posedTransform(
+                  b,
+                  animationStore.getBornCurrentTransforms(b.id),
+                  canvasStore.getEditTransforms(b.id),
+                  store.state.selectedBorns[b.id] || []
+                ).transform
+              )
+              return posedTransform(
                 b,
+                animationStore.getBornCurrentTransforms(b.id),
                 canvasStore.getEditTransforms(b.id),
                 store.state.selectedBorns[b.id] || []
               )
-            )
+            })
           )
         : {}
     )

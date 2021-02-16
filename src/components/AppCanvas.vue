@@ -126,6 +126,14 @@ export default defineComponent({
       return add(viewOrigin.value, multi(v, scale.value))
     }
 
+    const selectedBornsOrigin = computed(() => {
+      if (canvasStore.state.canvasMode === 'edit') {
+        return store.selectedPoseBornsOrigin.value
+      } else {
+        return store.selectedPoseBornsOrigin.value
+      }
+    })
+
     const viewCanvasRect = computed(() => ({
       x: viewOrigin.value.x,
       y: viewOrigin.value.y,
@@ -146,7 +154,7 @@ export default defineComponent({
         scale.value,
         canvasStore.state.axisGrid,
         viewCanvasRect.value,
-        store.selectedBornsOrigin.value
+        selectedBornsOrigin.value
       )
     })
 
@@ -154,7 +162,7 @@ export default defineComponent({
       if (!mousePoint.value) return
       if (!['scale', 'rotate'].includes(props.currentCommand)) return
       return {
-        origin: store.selectedBornsOrigin.value,
+        origin: selectedBornsOrigin.value,
         current: viewToCanvas(mousePoint.value),
         side: props.currentCommand === 'rotate',
       }

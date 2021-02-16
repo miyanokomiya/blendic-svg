@@ -160,6 +160,15 @@ export function toMap<T extends { id: string }>(list: T[]): IdMap<T> {
     {}
   )
 }
+export function toBornIdMap<T extends { bornId: string }>(list: T[]): IdMap<T> {
+  return list.reduce<IdMap<T>>(
+    (m, item) => ({
+      ...m,
+      [item.bornId]: item,
+    }),
+    {}
+  )
+}
 
 export function mergeMap<T>(src: IdMap<T>, override: IdMap<T>): IdMap<T> {
   return Object.keys({ ...src, ...override }).reduce<IdMap<T>>((p, c) => {

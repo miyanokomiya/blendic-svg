@@ -38,6 +38,57 @@ describe('utils/armatures', () => {
         })
       )
     })
+    it('convolute rotate', () => {
+      const c1 = target.convoluteTransforms([
+        getTransform({
+          translate: { x: 1, y: 0 },
+        }),
+        getTransform({
+          rotate: 180,
+          origin: { x: 1, y: 1 },
+        }),
+      ])
+      expect(c1).toEqual(
+        getTransform({
+          translate: { x: 1, y: 2 },
+          rotate: 180,
+        })
+      )
+      const ret = target.applyTransform({ x: 3, y: 5 }, c1)
+      const ex = target.applyTransform(
+        { x: 3, y: 5 },
+        getTransform({
+          translate: { x: 1, y: 2 },
+          rotate: 180,
+        })
+      )
+      expect(ret.x).toBeCloseTo(ex.x)
+      expect(ret.y).toBeCloseTo(ex.y)
+    })
+  })
+
+  describe('applyTransform', () => {
+    it('apply transform to vec', () => {
+      const ret = target.applyTransform(
+        { x: 1, y: 0 },
+        target.convoluteTransforms([
+          getTransform({ scale: { x: 2, y: 3 }, origin: { x: 1, y: 1 } }),
+          getTransform({ rotate: 180, origin: { x: 1, y: 1 } }),
+          getTransform({ translate: { x: 1, y: 2 } }),
+        ])
+      )
+      const ex = target.applyTransform(
+        { x: 1, y: 0 },
+        getTransform({
+          translate: { x: 1, y: 2 },
+          rotate: 180,
+          scale: { x: 2, y: 3 },
+          origin: { x: 1, y: 1 },
+        })
+      )
+      expect(ret.x).toBeCloseTo(ex.x)
+      expect(ret.y).toBeCloseTo(ex.y)
+    })
   })
 
   describe('extrudeFromParent', () => {

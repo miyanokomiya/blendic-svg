@@ -24,18 +24,16 @@ export function convoluteTransforms(transforms: Transform[]): Transform {
       x: t.origin.x * (1 - t.scale.x),
       y: t.origin.y * (1 - t.scale.y),
     }
-    const rotateConstant = sub(
-      t.origin,
-      rotate(t.origin, (t.rotate / 180) * Math.PI)
+    const rad = (t.rotate / 180) * Math.PI
+    const rotateConstant = add(
+      rotate(ret.translate, rad),
+      sub(t.origin, rotate(t.origin, rad))
     )
     return {
       ...ret,
       scale: { x: ret.scale.x * t.scale.x, y: ret.scale.y * t.scale.y },
       rotate: ret.rotate + t.rotate,
-      translate: add(
-        add(add(ret.translate, t.translate), scaleConstant),
-        rotateConstant
-      ),
+      translate: add(add(t.translate, scaleConstant), rotateConstant),
     }
   }, getTransform())
 }
@@ -47,11 +45,12 @@ function scale(p: IVec2, scale: IVec2, origin: IVec2): IVec2 {
   }
 }
 
-function applyTransform(p: IVec2, transform: Transform): IVec2 {
+export function applyTransform(p: IVec2, transform: Transform): IVec2 {
   return add(
     rotate(
       scale(p, transform.scale, transform.origin),
-      (transform.rotate / 180) * Math.PI
+      (transform.rotate / 180) * Math.PI,
+      transform.origin
     ),
     transform.translate
   )
@@ -61,7 +60,7 @@ export function editTransform(
   born: Born,
   transforms: Transform[],
   selectedState: BornSelectedState
-) {
+): Born {
   const convoluted = convoluteTransforms(transforms)
   const head = selectedState.head
     ? applyTransform(born.head, convoluted)
@@ -75,6 +74,19 @@ export function editTransform(
     head,
     tail,
   }
+}
+
+export function posedTransform(
+  born: Born,
+  poseTransforms: Transform[],
+  editTransforms: Transform[],
+  selectedState: BornSelectedState
+): Born {
+  return editTransform(
+    editTransform(born, poseTransforms, { head: true, tail: true }),
+    editTransforms,
+    selectedState
+  )
 }
 
 export function extrudeFromParent(parent: Born, fromHead = false): Born {
@@ -209,13 +221,14 @@ export function getSelectedBornsBoundingOrigin(
 
 export function getSelectedBornsOrigin(
   bornMap: IdMap<Born>,
-  selectedState: IdMap<BornSelectedState>
+  selectedState: IdMap<BornSelectedState>,
+  onlyHead = false
 ): IVec2 {
   const selectedPoints = Object.keys(selectedState)
     .map((id) => {
       const selected = []
       if (selectedState[id].head) selected.push(bornMap[id].head)
-      if (selectedState[id].tail) selected.push(bornMap[id].tail)
+      if (!onlyHead && selectedState[id].tail) selected.push(bornMap[id].tail)
       return selected
     })
     .flat()

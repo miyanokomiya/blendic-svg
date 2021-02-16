@@ -10,10 +10,10 @@ import {
   EditMovement,
   CanvasEditModeBase,
 } from '../models/index'
-import { editTransform, extrudeFromParent } from '/@/utils/armatures'
-import { getNextName } from '/@/utils/relations'
+import { convoluteTransforms, editTransform } from '/@/utils/armatures'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
+import { useAnimationStore } from '../store/Animation'
 
 interface State {
   command: EditMode
@@ -31,6 +31,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
   })
 
   const store = useStore()
+  const animationStore = useAnimationStore()
   const selectedBorns = computed(() => store.state.selectedBorns)
   const lastSelectedBornId = computed(() => store.lastSelectedBorn.value?.id)
 
@@ -38,7 +39,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
 
   const isAnySelected = computed(() => !!lastSelectedBornId.value)
 
-  const allNames = computed(() => target.value?.borns.map((a) => a.name) ?? [])
+  const bornIds = computed(() => target.value?.borns.map((b) => b.id) ?? [])
 
   function cancel() {
     state.command = ''
@@ -59,12 +60,6 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     }
   }
 
-  function extrude(parent: Born, fromHead = false): Born {
-    return {
-      ...extrudeFromParent(parent, fromHead),
-    }
-  }
-
   function setEditMode(mode: EditMode) {
     if (!target.value) return
 
@@ -72,32 +67,6 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
 
     if (isAnySelected.value) {
       state.command = mode
-      if (mode === 'extrude') {
-        const shouldSkipBorns: IdMap<boolean> = {}
-        const names = allNames.value.concat()
-        const extrudedBorns: Born[] = []
-
-        Object.keys(selectedBorns.value).forEach((id) => {
-          const selectedState = selectedBorns.value[id]
-          const parent = store.bornMap.value[id]
-
-          const borns: Born[] = []
-          if (selectedState.tail) borns.push(extrude(parent))
-          if (selectedState.head) borns.push(extrude(parent, true))
-
-          borns.forEach((b) => {
-            // prevent to extruding from same parent
-            if (!shouldSkipBorns[b.parentId]) {
-              b.name = getNextName(parent.name, names)
-              extrudedBorns.push(b)
-              names.push(b.name)
-              shouldSkipBorns[b.parentId] = true
-            }
-          })
-        })
-
-        store.addBorns(extrudedBorns, { tail: true })
-      }
     }
   }
 
@@ -127,7 +96,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     }
 
     if (state.command === 'rotate') {
-      const origin = store.selectedBornsOrigin.value
+      const origin = store.selectedPoseBornsOrigin.value
       const rotate =
         ((getRadian(state.editMovement.current, origin) -
           getRadian(state.editMovement.start, origin)) /
@@ -158,22 +127,10 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     )
   })
 
-  const editedBornMap = computed(
-    (): IdMap<Born> =>
-      Object.keys(editTransforms.value).reduce<IdMap<Born>>((m, id) => {
-        m[id] = editTransform(
-          store.bornMap.value[id],
-          editTransforms.value[id],
-          selectedBorns.value[id]
-        )
-        return m
-      }, {})
-  )
-
   function completeEdit() {
     if (!target.value) return
 
-    store.updateBorns(editedBornMap.value)
+    animationStore.applyEditedTransforms(editTransforms.value)
     state.editMovement = undefined
     state.command = ''
   }
@@ -203,7 +160,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
-      return editTransforms.value[id] || []
+      return editTransforms.value[id] ?? []
     },
     end: () => cancel(),
     cancel,

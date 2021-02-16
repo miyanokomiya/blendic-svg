@@ -83,6 +83,15 @@ const selectedBornsOrigin = computed(
     armatureUtils.getSelectedBornsOrigin(bornMap.value, state.selectedBorns)
 )
 
+const selectedPoseBornsOrigin = computed(
+  (): IVec2 =>
+    armatureUtils.getSelectedBornsOrigin(
+      bornMap.value,
+      state.selectedBorns,
+      true
+    )
+)
+
 watch(
   () => state.selectedArmatures,
   () => {
@@ -252,6 +261,7 @@ export function useStore() {
     lastSelectedBorn,
     bornMap,
     selectedBornsOrigin,
+    selectedPoseBornsOrigin,
     selectArmature,
     updateArmatureName,
     deleteArmature,

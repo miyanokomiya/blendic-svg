@@ -1,16 +1,10 @@
 import { getInner, IVec2, sub } from 'okageo'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import { useBornEditMode } from '../composables/armatureEditMode'
 import { useBornPoseMode } from '../composables/armaturePoseMode'
 import { useObjectMode } from '../composables/objectMode'
 import { HistoryItem, useHistoryStore } from './history'
-import {
-  BornSelectedState,
-  CanvasEditModeBase,
-  CanvasMode,
-  EditMode,
-  Transform,
-} from '/@/models'
+import { BornSelectedState, CanvasMode, EditMode, Transform } from '/@/models'
 
 export type AxisGrid = '' | 'x' | 'y'
 

@@ -125,6 +125,21 @@ export type CanvasMode = 'object' | 'edit' | 'pose'
 export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
 export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude'
 
+export type EditMovement = { current: IVec2; start: IVec2 }
+
+export interface CanvasEditModeBase {
+  end: () => void
+  cancel: () => void
+  setEditMode: (mode: EditMode) => void
+  select: (id: string, selectedState: BornSelectedState) => void
+  shiftSelect: (id: string, selectedState: BornSelectedState) => void
+  mousemove: (arg: EditMovement) => void
+  clickAny: () => void
+  clickEmpty: () => void
+  execDelete: () => void
+  execAdd: () => void
+}
+
 export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {
   if (editMode === 'grab') return 'grab'
   if (editMode === 'extrude') return 'grab'

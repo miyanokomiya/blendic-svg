@@ -1,27 +1,31 @@
-import { ref, reactive, computed } from 'vue'
-import { getDistance, getRadian, IVec2, multi, sub } from 'okageo'
+import { reactive, computed } from 'vue'
+import { getDistance, getRadian, multi, sub } from 'okageo'
 import {
   Transform,
-  Armature,
   Born,
   getTransform,
   BornSelectedState,
   EditMode,
   IdMap,
+  EditMovement,
+  CanvasEditModeBase,
 } from '../models/index'
 import { editTransform, extrudeFromParent } from '/@/utils/armatures'
 import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from '/@/store/canvas'
 
-type EditMovement = { current: IVec2; start: IVec2 }
-
 interface State {
   editMode: EditMode
   editMovement: EditMovement | undefined
 }
 
-export function useBornPoseMode() {
+export interface BornPoseMode extends CanvasEditModeBase {
+  state: State
+  getEditTransforms: (id: string) => Transform[]
+}
+
+export function useBornPoseMode(): BornPoseMode {
   const state = reactive<State>({
     editMode: '',
     editMovement: undefined,
@@ -32,7 +36,7 @@ export function useBornPoseMode() {
   const selectedBorns = computed(() => store.state.selectedBorns)
   const lastSelectedBornId = computed(() => store.lastSelectedBorn.value?.id)
 
-  const target = ref<Armature>()
+  const target = computed(() => store.lastSelectedArmature.value)
 
   const isAnySelected = computed(() => !!lastSelectedBornId.value)
 
@@ -203,11 +207,7 @@ export function useBornPoseMode() {
     getEditTransforms(id: string) {
       return editTransforms.value[id] || []
     },
-    begin: (armature: Armature) => (target.value = armature),
-    end() {
-      cancel()
-      target.value = undefined
-    },
+    end: () => cancel(),
     cancel,
     setEditMode,
     select,
@@ -215,5 +215,7 @@ export function useBornPoseMode() {
     mousemove,
     clickAny,
     clickEmpty,
+    execDelete: () => {},
+    execAdd: () => {},
   }
 }

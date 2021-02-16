@@ -8,20 +8,25 @@ import {
   BornSelectedState,
   EditMode,
   IdMap,
+  CanvasEditModeBase,
+  EditMovement,
 } from '../models/index'
 import { editTransform, extrudeFromParent } from '/@/utils/armatures'
 import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from '/@/store/canvas'
 
-type EditMovement = { current: IVec2; start: IVec2 }
-
 interface State {
   editMode: EditMode
   editMovement: EditMovement | undefined
 }
 
-export function useBornEditMode() {
+export interface BornEditMode extends CanvasEditModeBase {
+  state: State
+  getEditTransforms: (id: string) => Transform[]
+}
+
+export function useBornEditMode(): BornEditMode {
   const state = reactive<State>({
     editMode: '',
     editMovement: undefined,
@@ -32,7 +37,7 @@ export function useBornEditMode() {
   const selectedBorns = computed(() => store.state.selectedBorns)
   const lastSelectedBornId = computed(() => store.lastSelectedBorn.value?.id)
 
-  const target = ref<Armature>()
+  const target = computed(() => store.lastSelectedArmature.value)
 
   const isAnySelected = computed(() => !!lastSelectedBornId.value)
 
@@ -198,16 +203,24 @@ export function useBornEditMode() {
     }
   }
 
+  function execDelete() {
+    if (canvasStore.canvasEditMode.value?.state.editMode === '') {
+      store.deleteBorn()
+    }
+  }
+
+  function execAdd() {
+    if (canvasStore.canvasEditMode.value?.state.editMode === '') {
+      store.addBorn()
+    }
+  }
+
   return {
     state,
     getEditTransforms(id: string) {
       return editTransforms.value[id] || []
     },
-    begin: (armature: Armature) => (target.value = armature),
-    end() {
-      cancel()
-      target.value = undefined
-    },
+    end: () => cancel(),
     cancel,
     setEditMode,
     select,
@@ -215,5 +228,7 @@ export function useBornEditMode() {
     mousemove,
     clickAny,
     clickEmpty,
+    execDelete,
+    execAdd,
   }
 }

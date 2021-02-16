@@ -86,13 +86,11 @@ import {
   editModeToCanvasCommand,
   toMap,
 } from './models/index'
-import { useBornEditMode } from './composables/armatureEditMode'
 import { editTransform } from './utils/armatures'
 import { IVec2 } from 'okageo'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
-import { useBornPoseMode } from './composables/armaturePoseMode'
 
 export default defineComponent({
   components: {
@@ -105,8 +103,6 @@ export default defineComponent({
   setup() {
     const store = useStore()
     const canvasStore = useCanvasStore()
-    const armatureEditMode = useBornEditMode()
-    const armaturePoseMode = useBornPoseMode()
     const historyStore = useHistoryStore()
 
     const canvasMode = computed(() => canvasStore.state.canvasMode)
@@ -126,7 +122,7 @@ export default defineComponent({
             lastSelectedArmature.value.borns.map((b) =>
               editTransform(
                 b,
-                armatureEditMode.getEditTransforms(b.id),
+                canvasStore.getEditTransforms(b.id),
                 store.state.selectedBorns[b.id] || []
               )
             )
@@ -136,9 +132,9 @@ export default defineComponent({
 
     const canvasCommand = computed(() => {
       if (canvasMode.value === 'edit') {
-        return editModeToCanvasCommand(armatureEditMode.state.editMode)
+        return editModeToCanvasCommand(canvasStore.editMode.value)
       } else if (canvasMode.value === 'pose') {
-        return editModeToCanvasCommand(armaturePoseMode.state.editMode)
+        return editModeToCanvasCommand(canvasStore.editMode.value)
       } else {
         return ''
       }
@@ -177,45 +173,26 @@ export default defineComponent({
       ),
       editBornMap,
       selectedBorns: computed(() => store.state.selectedBorns),
-      armatureEditMode,
       canvasMode,
       canvasCommand,
       mousemove(arg: { current: IVec2; start: IVec2 }) {
-        if (canvasMode.value === 'edit') {
-          armatureEditMode.mousemove(arg)
-        } else if (canvasMode.value === 'pose') {
-          armaturePoseMode.mousemove(arg)
-        }
+        canvasStore.canvasEditMode.value?.mousemove(arg)
       },
       clickAny() {
-        if (canvasMode.value === 'edit') {
-          armatureEditMode.clickAny()
-        } else if (canvasMode.value === 'pose') {
-          armaturePoseMode.clickAny()
-        }
+        canvasStore.canvasEditMode.value?.clickAny()
       },
       clickEmpty() {
         if (canvasMode.value === 'object') {
           store.selectArmature()
-        } else if (canvasMode.value === 'edit') {
-          armatureEditMode.clickEmpty()
-        } else if (canvasMode.value === 'pose') {
-          armaturePoseMode.clickEmpty()
+        } else {
+          canvasStore.canvasEditMode.value?.clickEmpty()
         }
       },
       selectBorn(id: string, state: BornSelectedState) {
-        if (canvasMode.value === 'edit') {
-          armatureEditMode.select(id, state)
-        } else if (canvasMode.value === 'pose') {
-          armaturePoseMode.select(id, state)
-        }
+        canvasStore.canvasEditMode.value?.select(id, state)
       },
       shiftSelectBorn(id: string, state: BornSelectedState) {
-        if (canvasMode.value === 'edit') {
-          armatureEditMode.shiftSelect(id, state)
-        } else if (canvasMode.value === 'pose') {
-          armaturePoseMode.shiftSelect(id, state)
-        }
+        canvasStore.canvasEditMode.value?.shiftSelect(id, state)
       },
       selectArmature(id: string, selected: boolean) {
         store.selectArmature(selected ? id : '')
@@ -224,60 +201,31 @@ export default defineComponent({
         store.selectArmature(selected ? id : '')
       },
       escape() {
-        if (canvasMode.value === 'edit') {
-          armatureEditMode.cancel()
-        } else if (canvasMode.value === 'pose') {
-          armaturePoseMode.cancel()
-        }
+        canvasStore.canvasEditMode.value?.cancel()
       },
       toggleCanvasMode() {
         if (!store.lastSelectedArmature.value) return
-
-        if (canvasMode.value !== 'edit') {
-          armatureEditMode.end()
-          armaturePoseMode.end()
-          canvasStore.setCanvasMode('edit')
-          armatureEditMode.begin(store.lastSelectedArmature.value)
-        } else {
-          armatureEditMode.end()
-          canvasStore.toggleCanvasMode()
-        }
+        canvasStore.toggleCanvasMode()
       },
       ctrlToggleCanvasMode() {
         if (!store.lastSelectedArmature.value) return
-
-        if (canvasMode.value === 'object') {
-          canvasStore.setCanvasMode('pose')
-          armaturePoseMode.begin(store.lastSelectedArmature.value)
-        } else {
-          armatureEditMode.end()
-          armaturePoseMode.end()
-          canvasStore.ctrlToggleCanvasMode()
-        }
+        canvasStore.ctrlToggleCanvasMode()
       },
       setEditMode(mode: EditMode) {
-        if (canvasMode.value === 'edit') {
-          armatureEditMode.setEditMode(mode)
-        } else if (canvasMode.value === 'pose') {
-          armaturePoseMode.setEditMode(mode)
-        }
+        canvasStore.canvasEditMode.value?.setEditMode(mode)
       },
       execDelete() {
         if (canvasMode.value === 'object') {
           store.deleteArmature()
-        } else if (canvasMode.value === 'edit') {
-          if (armatureEditMode.state.editMode === '') {
-            store.deleteBorn()
-          }
+        } else {
+          canvasStore.canvasEditMode.value?.execDelete()
         }
       },
       addItem() {
         if (canvasMode.value === 'object') {
           store.addArmature()
-        } else if (canvasMode.value === 'edit') {
-          if (armatureEditMode.state.editMode === '') {
-            store.addBorn()
-          }
+        } else {
+          canvasStore.canvasEditMode.value?.execAdd()
         }
       },
     }

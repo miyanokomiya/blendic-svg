@@ -1,8 +1,7 @@
-import { ref, reactive, computed } from 'vue'
-import { getDistance, getRadian, IVec2, multi, sub } from 'okageo'
+import { reactive, computed, toRef, ref } from 'vue'
+import { getDistance, getRadian, multi, sub } from 'okageo'
 import {
   Transform,
-  Armature,
   Born,
   getTransform,
   BornSelectedState,
@@ -14,26 +13,24 @@ import {
 import { editTransform, extrudeFromParent } from '/@/utils/armatures'
 import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
-import { useCanvasStore } from '/@/store/canvas'
+import { CanvasStore } from '/@/store/canvas'
 
 interface State {
-  editMode: EditMode
+  command: EditMode
   editMovement: EditMovement | undefined
 }
 
 export interface BornEditMode extends CanvasEditModeBase {
-  state: State
   getEditTransforms: (id: string) => Transform[]
 }
 
-export function useBornEditMode(): BornEditMode {
+export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
   const state = reactive<State>({
-    editMode: '',
+    command: '',
     editMovement: undefined,
   })
 
   const store = useStore()
-  const canvasStore = useCanvasStore()
   const selectedBorns = computed(() => store.state.selectedBorns)
   const lastSelectedBornId = computed(() => store.lastSelectedBorn.value?.id)
 
@@ -44,18 +41,18 @@ export function useBornEditMode(): BornEditMode {
   const allNames = computed(() => target.value?.borns.map((a) => a.name) ?? [])
 
   function cancel() {
-    state.editMode = ''
+    state.command = ''
     state.editMovement = undefined
   }
 
   function clickAny() {
-    if (state.editMode) {
+    if (state.command) {
       completeEdit()
     }
   }
 
   function clickEmpty() {
-    if (state.editMode) {
+    if (state.command) {
       completeEdit()
     } else {
       store.selectBorn()
@@ -74,7 +71,7 @@ export function useBornEditMode(): BornEditMode {
     cancel()
 
     if (isAnySelected.value) {
-      state.editMode = mode
+      state.command = mode
       if (mode === 'extrude') {
         const shouldSkipBorns: IdMap<boolean> = {}
         const names = allNames.value.concat()
@@ -107,7 +104,7 @@ export function useBornEditMode(): BornEditMode {
   const editTransforms = computed(() => {
     if (!state.editMovement) return {}
 
-    if (state.editMode === 'scale') {
+    if (state.command === 'scale') {
       const origin = store.selectedBornsOrigin.value
       const isOppositeSide = canvasStore.isOppositeSide(
         origin,
@@ -129,7 +126,7 @@ export function useBornEditMode(): BornEditMode {
       )
     }
 
-    if (state.editMode === 'rotate') {
+    if (state.command === 'rotate') {
       const origin = store.selectedBornsOrigin.value
       const rotate =
         ((getRadian(state.editMovement.current, origin) -
@@ -178,11 +175,11 @@ export function useBornEditMode(): BornEditMode {
 
     store.updateBorns(editedBornMap.value)
     state.editMovement = undefined
-    state.editMode = ''
+    state.command = ''
   }
 
   function select(id: string, selectedState: BornSelectedState) {
-    if (state.editMode) {
+    if (state.command) {
       completeEdit()
       return
     }
@@ -190,7 +187,7 @@ export function useBornEditMode(): BornEditMode {
   }
 
   function shiftSelect(id: string, selectedState: BornSelectedState) {
-    if (state.editMode) {
+    if (state.command) {
       completeEdit()
       return
     }
@@ -198,25 +195,25 @@ export function useBornEditMode(): BornEditMode {
   }
 
   function mousemove(arg: EditMovement) {
-    if (state.editMode) {
+    if (state.command) {
       state.editMovement = arg
     }
   }
 
   function execDelete() {
-    if (canvasStore.canvasEditMode.value?.state.editMode === '') {
+    if (state.command === '') {
       store.deleteBorn()
     }
   }
 
   function execAdd() {
-    if (canvasStore.canvasEditMode.value?.state.editMode === '') {
+    if (state.command === '') {
       store.addBorn()
     }
   }
 
   return {
-    state,
+    command: computed(() => state.command),
     getEditTransforms(id: string) {
       return editTransforms.value[id] || []
     },

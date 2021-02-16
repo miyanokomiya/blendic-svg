@@ -1,5 +1,6 @@
 import { IVec2 } from 'okageo'
 import { v4 } from 'uuid'
+import { ComputedRef } from 'vue'
 
 export type IdMap<T> = {
   [id: string]: T
@@ -128,6 +129,8 @@ export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude'
 export type EditMovement = { current: IVec2; start: IVec2 }
 
 export interface CanvasEditModeBase {
+  command: ComputedRef<EditMode>
+  getEditTransforms: (id: string) => Transform[]
   end: () => void
   cancel: () => void
   setEditMode: (mode: EditMode) => void

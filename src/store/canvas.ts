@@ -1,39 +1,40 @@
 import { getInner, IVec2, sub } from 'okageo'
-import { computed, reactive, ref } from 'vue'
-import { BornEditMode, useBornEditMode } from '../composables/armatureEditMode'
-import { BornPoseMode, useBornPoseMode } from '../composables/armaturePoseMode'
+import { computed, reactive, ref, watch } from 'vue'
+import { useBornEditMode } from '../composables/armatureEditMode'
+import { useBornPoseMode } from '../composables/armaturePoseMode'
+import { useObjectMode } from '../composables/objectMode'
 import { HistoryItem, useHistoryStore } from './history'
-import { CanvasMode, EditMode, Transform } from '/@/models'
+import {
+  BornSelectedState,
+  CanvasEditModeBase,
+  CanvasMode,
+  EditMode,
+  Transform,
+} from '/@/models'
 
 export type AxisGrid = '' | 'x' | 'y'
 
 const historyStore = useHistoryStore()
-
 const state = reactive({
   canvasMode: 'object' as CanvasMode,
   pastCanvasMode: 'edit' as CanvasMode,
   axisGrid: '' as AxisGrid,
 })
 
-const canvasEditMode = ref<BornEditMode | BornPoseMode>()
-
-const editMode = computed(
-  (): EditMode => {
-    return canvasEditMode.value?.state.editMode ?? ''
-  }
-)
-
-function initEditMode() {
-  if (canvasEditMode.value) canvasEditMode.value?.end()
-
+const canvasEditMode = computed(() => {
   if (state.canvasMode === 'edit') {
-    canvasEditMode.value = useBornEditMode()
+    return useBornEditMode(useCanvasStore())
   } else if (state.canvasMode === 'pose') {
-    canvasEditMode.value = useBornPoseMode()
+    return useBornPoseMode(useCanvasStore())
   } else {
-    canvasEditMode.value = undefined
+    return useObjectMode()
   }
-}
+})
+watch(canvasEditMode, (_to, from) => {
+  if (from) from.end()
+})
+
+const command = computed((): EditMode => canvasEditMode.value.command.value)
 
 function toggleCanvasMode() {
   if (state.canvasMode === 'edit') {
@@ -83,14 +84,13 @@ function isOppositeSide(origin: IVec2, from: IVec2, current: IVec2): boolean {
 }
 
 function getEditTransforms(id: string): Transform[] {
-  return canvasEditMode.value?.getEditTransforms(id) ?? []
+  return canvasEditMode.value.getEditTransforms(id) ?? []
 }
 
 export function useCanvasStore() {
   return {
     state,
-    canvasEditMode,
-    editMode,
+    command,
     toggleCanvasMode,
     ctrlToggleCanvasMode,
     setCanvasMode,
@@ -100,8 +100,21 @@ export function useCanvasStore() {
     snapTranslate,
     isOppositeSide,
     getEditTransforms,
+    mousemove: (arg: { current: IVec2; start: IVec2 }) =>
+      canvasEditMode.value.mousemove(arg),
+    clickAny: () => canvasEditMode.value.clickAny(),
+    clickEmpty: () => canvasEditMode.value.clickEmpty(),
+    cancel: () => canvasEditMode.value.cancel(),
+    setEditMode: (mode: EditMode) => canvasEditMode.value.setEditMode(mode),
+    execDelete: () => canvasEditMode.value.execDelete(),
+    execAdd: () => canvasEditMode.value.execAdd(),
+    select: (id: string, selectedState: BornSelectedState) =>
+      canvasEditMode.value.select(id, selectedState),
+    shiftSelect: (id: string, selectedState: BornSelectedState) =>
+      canvasEditMode.value.shiftSelect(id, selectedState),
   }
 }
+export type CanvasStore = ReturnType<typeof useCanvasStore>
 
 function getChangeCanvasModeItem(canvasMode: CanvasMode): HistoryItem {
   const currentMode = state.canvasMode
@@ -109,14 +122,12 @@ function getChangeCanvasModeItem(canvasMode: CanvasMode): HistoryItem {
   const redo = () => {
     state.pastCanvasMode = state.canvasMode
     state.canvasMode = canvasMode
-    initEditMode()
   }
   return {
     name: 'Change Mode',
     undo: () => {
       state.canvasMode = currentMode
       state.pastCanvasMode = currentPastMode
-      initEditMode()
     },
     redo,
   }

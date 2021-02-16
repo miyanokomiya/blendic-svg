@@ -131,13 +131,7 @@ export default defineComponent({
     )
 
     const canvasCommand = computed(() => {
-      if (canvasMode.value === 'edit') {
-        return editModeToCanvasCommand(canvasStore.editMode.value)
-      } else if (canvasMode.value === 'pose') {
-        return editModeToCanvasCommand(canvasStore.editMode.value)
-      } else {
-        return ''
-      }
+      return editModeToCanvasCommand(canvasStore.command.value)
     })
 
     function onGlobalKeyDown(e: KeyboardEvent) {
@@ -176,23 +170,19 @@ export default defineComponent({
       canvasMode,
       canvasCommand,
       mousemove(arg: { current: IVec2; start: IVec2 }) {
-        canvasStore.canvasEditMode.value?.mousemove(arg)
+        canvasStore.mousemove(arg)
       },
       clickAny() {
-        canvasStore.canvasEditMode.value?.clickAny()
+        canvasStore.clickAny()
       },
       clickEmpty() {
-        if (canvasMode.value === 'object') {
-          store.selectArmature()
-        } else {
-          canvasStore.canvasEditMode.value?.clickEmpty()
-        }
+        canvasStore.clickEmpty()
       },
       selectBorn(id: string, state: BornSelectedState) {
-        canvasStore.canvasEditMode.value?.select(id, state)
+        canvasStore.select(id, state)
       },
       shiftSelectBorn(id: string, state: BornSelectedState) {
-        canvasStore.canvasEditMode.value?.shiftSelect(id, state)
+        canvasStore.shiftSelect(id, state)
       },
       selectArmature(id: string, selected: boolean) {
         store.selectArmature(selected ? id : '')
@@ -201,7 +191,7 @@ export default defineComponent({
         store.selectArmature(selected ? id : '')
       },
       escape() {
-        canvasStore.canvasEditMode.value?.cancel()
+        canvasStore.cancel()
       },
       toggleCanvasMode() {
         if (!store.lastSelectedArmature.value) return
@@ -212,21 +202,13 @@ export default defineComponent({
         canvasStore.ctrlToggleCanvasMode()
       },
       setEditMode(mode: EditMode) {
-        canvasStore.canvasEditMode.value?.setEditMode(mode)
+        canvasStore.setEditMode(mode)
       },
       execDelete() {
-        if (canvasMode.value === 'object') {
-          store.deleteArmature()
-        } else {
-          canvasStore.canvasEditMode.value?.execDelete()
-        }
+        canvasStore.execDelete()
       },
       addItem() {
-        if (canvasMode.value === 'object') {
-          store.addArmature()
-        } else {
-          canvasStore.canvasEditMode.value?.execAdd()
-        }
+        canvasStore.execAdd()
       },
     }
   },

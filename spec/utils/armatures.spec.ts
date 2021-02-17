@@ -281,9 +281,16 @@ describe('utils/armatures', () => {
       expect(target.getTree(bornMap)).toEqual([
         {
           id: 'a',
-          children: [{ id: 'aa', children: [{ id: 'aaa', children: [] }] }],
+          parentId: '',
+          children: [
+            {
+              id: 'aa',
+              children: [{ id: 'aaa', children: [], parentId: 'aa' }],
+              parentId: 'a',
+            },
+          ],
         },
-        { id: 'b', children: [] },
+        { id: 'b', children: [], parentId: '' },
       ])
     })
     it('get nodes tree', () => {
@@ -295,9 +302,10 @@ describe('utils/armatures', () => {
       expect(target.getTree(bornMap)).toEqual([
         {
           id: 'a',
+          parentId: '',
           children: [
-            { id: 'aa', children: [] },
-            { id: 'ab', children: [] },
+            { id: 'aa', children: [], parentId: 'a' },
+            { id: 'ab', children: [], parentId: 'a' },
           ],
         },
       ])
@@ -358,6 +366,56 @@ describe('utils/armatures', () => {
           }),
         })
       )
+    })
+  })
+
+  describe('getTransformedBornMap', () => {
+    it('get transformed born map', () => {
+      expect(
+        target.getTransformedBornMap({
+          a: getBorn({
+            id: 'a',
+            parentId: '',
+            transform: getTransform({ rotate: 10 }),
+          }),
+          aa: getBorn({
+            id: 'aa',
+            parentId: 'a',
+            transform: getTransform({ rotate: 20 }),
+          }),
+          aaa: getBorn({
+            id: 'aaa',
+            parentId: 'aa',
+            transform: getTransform({ rotate: 30 }),
+          }),
+          b: getBorn({
+            id: 'b',
+            parentId: '',
+            transform: getTransform({ rotate: 30 }),
+          }),
+        })
+      ).toEqual({
+        a: getBorn({
+          id: 'a',
+          parentId: '',
+          transform: getTransform({ rotate: 10 }),
+        }),
+        aa: getBorn({
+          id: 'aa',
+          parentId: 'a',
+          transform: getTransform({ rotate: 30 }),
+        }),
+        aaa: getBorn({
+          id: 'aaa',
+          parentId: 'aa',
+          transform: getTransform({ rotate: 60 }),
+        }),
+        b: getBorn({
+          id: 'b',
+          parentId: '',
+          transform: getTransform({ rotate: 30 }),
+        }),
+      })
     })
   })
 })

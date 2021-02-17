@@ -266,7 +266,7 @@ export function getTree<T extends { id: string; parentId: string }>(
   )
 
   return noParents.map((b) => {
-    return { id: b.id, children: getChildNodes(parentMap, b.id) }
+    return { ...b, children: getChildNodes(parentMap, b.id) }
   })
 }
 
@@ -276,7 +276,7 @@ function getChildNodes<T extends { id: string; parentId: string }>(
 ): TreeNode[] {
   return (
     parentMap[parentId]?.map((b) => {
-      return { id: b.id, children: getChildNodes(parentMap, b.id) }
+      return { ...b, children: getChildNodes(parentMap, b.id) }
     }) ?? []
   )
 }
@@ -286,7 +286,18 @@ interface BornNode extends Born, TreeNode {
 }
 
 export function getTransformedBornMap(bornMap: IdMap<Born>): IdMap<Born> {
-  return toMap(getTransformBornTree(bornMap))
+  return toMap(
+    flatTree(getTransformBornTree(bornMap)).map((b) => {
+      const { children, ...born } = b
+      return born
+    })
+  )
+}
+
+function flatTree<T extends TreeNode>(children: T[]): T[] {
+  return children.concat(
+    children.flatMap((c) => flatTree<T>(c.children as T[]))
+  )
 }
 
 function getTransformBornTree(bornMap: IdMap<Born>): BornNode[] {
@@ -298,10 +309,11 @@ function getTransformBornTree(bornMap: IdMap<Born>): BornNode[] {
 function getChildTransforms(parent: BornNode): BornNode[] {
   return (
     parent.children.map((b) => {
+      const extended = extendTransform(parent, b)
       return {
-        ...b,
+        ...extended,
         children: getChildTransforms({
-          ...extendTransform(parent, b),
+          ...extended,
           children: b.children,
         }),
       }

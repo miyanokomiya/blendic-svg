@@ -134,7 +134,7 @@ export default defineComponent({
         return toMap(
           lastSelectedArmature.value.borns.map((b) => {
             return posedTransform(b, [
-              ...animationStore.getBornCurrentTransforms(b.id),
+              animationStore.getBornCurrentTransforms(b.id),
               canvasStore.getEditTransforms(b.id),
             ])
           })

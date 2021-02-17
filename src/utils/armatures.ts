@@ -13,36 +13,9 @@ import {
   getRectCenter,
   isSame,
   IVec2,
-  sub,
   multi,
   rotate,
 } from 'okageo'
-
-export function dissolveOrigin(t: Transform): Transform {
-  const rad = (t.rotate / 180) * Math.PI
-  const constant = sub(t.origin, rotate(scale(t.origin, t.scale), rad))
-  return {
-    ...t,
-    translate: add(t.translate, constant),
-    origin: { x: 0, y: 0 },
-  }
-}
-
-export function multiTransform(a: Transform, b: Transform): Transform {
-  const da = dissolveOrigin(a)
-  const db = dissolveOrigin(b)
-  return getTransform({
-    scale: { x: da.scale.x * db.scale.x, y: da.scale.y * db.scale.y },
-    rotate: da.rotate + db.rotate,
-    translate: add(da.translate, db.translate),
-  })
-}
-
-export function convoluteTransforms(transforms: Transform[]): Transform {
-  return transforms.reduce((ret, t) => {
-    return multiTransform(ret, t)
-  }, getTransform())
-}
 
 export function multiPoseTransform(a: Transform, b: Transform): Transform {
   return getTransform({

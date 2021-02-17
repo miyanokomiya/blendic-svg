@@ -12,6 +12,7 @@ import {
   Action,
   Born,
   getAction,
+  getTransform,
   IdMap,
   isBornSelected,
   Keyframe,
@@ -51,13 +52,13 @@ const posedBornIds = computed(() => {
 })
 
 const currentTransforms = computed(
-  (): IdMap<Transform[]> => {
-    return posedBornIds.value.reduce<IdMap<Transform[]>>((p, id) => {
+  (): IdMap<Transform> => {
+    return posedBornIds.value.reduce<IdMap<Transform>>((p, id) => {
       if (currentKeyFrameMap.value[id]) {
-        p[id] = [
+        p[id] = convolutePoseTransforms([
           currentKeyFrameMap.value[id].transform,
-          ...getBornEditedTransforms(id),
-        ]
+          getBornEditedTransforms(id),
+        ])
       } else {
         p[id] = getBornEditedTransforms(id)
       }
@@ -73,7 +74,7 @@ const currentPosedBorns = computed(
       store.lastSelectedArmature.value.borns.map((b) => {
         return {
           ...b,
-          transform: convolutePoseTransforms(getBornCurrentTransforms(b.id)),
+          transform: getBornCurrentTransforms(b.id),
         }
       })
     )
@@ -137,18 +138,19 @@ function applyEditedTransforms(map: IdMap<Transform>) {
   )
   setEditedTransforms(
     ids.reduce<IdMap<Transform>>((p, id) => {
-      p[id] = convolutePoseTransforms(
-        getBornEditedTransforms(id).concat(map[id] ? [map[id]] : [])
-      )
+      p[id] = convolutePoseTransforms([
+        getBornEditedTransforms(id),
+        map[id] ?? getTransform(),
+      ])
       return p
     }, {})
   )
 }
-function getBornEditedTransforms(id: string): Transform[] {
-  return editTransforms.value[id] ? [editTransforms.value[id]] : []
+function getBornEditedTransforms(id: string): Transform {
+  return editTransforms.value[id] ?? getTransform()
 }
-function getBornCurrentTransforms(id: string): Transform[] {
-  return currentTransforms.value[id] ?? []
+function getBornCurrentTransforms(id: string): Transform {
+  return currentTransforms.value[id] ?? getTransform()
 }
 
 export function useAnimationStore() {
@@ -160,7 +162,6 @@ export function useAnimationStore() {
     currentPosedBorns,
     currentTransforms,
     selectedPosedBornOrigin,
-    getBornEditedTransforms,
     getBornCurrentTransforms,
     setEndFrame,
     selectedAction: actions.lastSelectedItem,

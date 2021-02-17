@@ -20,9 +20,7 @@ interface State {
   editMovement: EditMovement | undefined
 }
 
-export interface BornEditMode extends CanvasEditModeBase {
-  getEditTransforms: (id: string) => Transform[]
-}
+export interface BornEditMode extends CanvasEditModeBase {}
 
 export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
   const state = reactive<State>({
@@ -117,9 +115,9 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
           getDistance(state.editMovement.start, origin)
       )
       const snappedScale = canvasStore.snapScale(scale)
-      return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
+      return Object.keys(selectedBorns.value).reduce<IdMap<Transform>>(
         (map, id) => {
-          map[id] = [getTransform({ origin, scale: snappedScale })]
+          map[id] = getTransform({ origin, scale: snappedScale })
           return map
         },
         {}
@@ -133,14 +131,12 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
           getRadian(state.editMovement.start, origin)) /
           Math.PI) *
         180
-      return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
+      return Object.keys(selectedBorns.value).reduce<IdMap<Transform>>(
         (map, id) => {
-          map[id] = [
-            getTransform({
-              origin,
-              rotate,
-            }),
-          ]
+          map[id] = getTransform({
+            origin,
+            rotate,
+          })
           return map
         },
         {}
@@ -149,9 +145,9 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
 
     const translate = sub(state.editMovement.current, state.editMovement.start)
     const snappedTranslate = canvasStore.snapTranslate(translate)
-    return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
+    return Object.keys(selectedBorns.value).reduce<IdMap<Transform>>(
       (map, id) => {
-        map[id] = [getTransform({ translate: snappedTranslate })]
+        map[id] = getTransform({ translate: snappedTranslate })
         return map
       },
       {}
@@ -215,7 +211,7 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
-      return editTransforms.value[id] || []
+      return editTransforms.value[id] || getTransform()
     },
     end: () => cancel(),
     cancel,

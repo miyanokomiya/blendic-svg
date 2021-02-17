@@ -77,8 +77,8 @@ function isOppositeSide(origin: IVec2, from: IVec2, current: IVec2): boolean {
   return getInner(sub(from, origin), sub(current, origin)) < 0
 }
 
-function getEditTransforms(id: string): Transform[] {
-  return canvasEditMode.value.getEditTransforms(id) ?? []
+function getEditTransforms(id: string): Transform {
+  return canvasEditMode.value.getEditTransforms(id)
 }
 
 export function useCanvasStore() {

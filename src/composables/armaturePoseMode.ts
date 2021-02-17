@@ -10,7 +10,6 @@ import {
   EditMovement,
   CanvasEditModeBase,
 } from '../models/index'
-import { convoluteTransforms, editTransform } from '/@/utils/armatures'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '../store/Animation'
@@ -20,9 +19,7 @@ interface State {
   editMovement: EditMovement | undefined
 }
 
-export interface BornPoseMode extends CanvasEditModeBase {
-  getEditTransforms: (id: string) => Transform[]
-}
+export interface BornPoseMode extends CanvasEditModeBase {}
 
 export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
   const state = reactive<State>({
@@ -36,10 +33,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
   const lastSelectedBornId = computed(() => store.lastSelectedBorn.value?.id)
 
   const target = computed(() => store.lastSelectedArmature.value)
-
   const isAnySelected = computed(() => !!lastSelectedBornId.value)
-
-  const bornIds = computed(() => target.value?.borns.map((b) => b.id) ?? [])
 
   function cancel() {
     state.command = ''
@@ -73,43 +67,18 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
   const editTransforms = computed(() => {
     if (!state.editMovement) return {}
 
-    if (state.command === 'scale') {
-      const origin = store.selectedBornsOrigin.value
-      const isOppositeSide = canvasStore.isOppositeSide(
-        origin,
-        state.editMovement.start,
-        state.editMovement.current
-      )
-      const scale = multi(
-        multi({ x: 1, y: 1 }, isOppositeSide ? -1 : 1),
-        getDistance(state.editMovement.current, origin) /
-          getDistance(state.editMovement.start, origin)
-      )
-      const snappedScale = canvasStore.snapScale(scale)
-      return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
-        (map, id) => {
-          map[id] = [getTransform({ origin, scale: snappedScale })]
-          return map
-        },
-        {}
-      )
-    }
-
     if (state.command === 'rotate') {
-      const origin = store.selectedPoseBornsOrigin.value
+      const origin = animationStore.selectedPosedBornOrigin.value
       const rotate =
         ((getRadian(state.editMovement.current, origin) -
           getRadian(state.editMovement.start, origin)) /
           Math.PI) *
         180
-      return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
+      return Object.keys(selectedBorns.value).reduce<IdMap<Transform>>(
         (map, id) => {
-          map[id] = [
-            getTransform({
-              origin,
-              rotate,
-            }),
-          ]
+          map[id] = getTransform({
+            rotate,
+          })
           return map
         },
         {}
@@ -118,9 +87,9 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
 
     const translate = sub(state.editMovement.current, state.editMovement.start)
     const snappedTranslate = canvasStore.snapTranslate(translate)
-    return Object.keys(selectedBorns.value).reduce<IdMap<Transform[]>>(
+    return Object.keys(selectedBorns.value).reduce<IdMap<Transform>>(
       (map, id) => {
-        map[id] = [getTransform({ translate: snappedTranslate })]
+        map[id] = getTransform({ translate: snappedTranslate })
         return map
       },
       {}
@@ -160,7 +129,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
-      return editTransforms.value[id] ?? []
+      return editTransforms.value[id] ?? getTransform()
     },
     end: () => cancel(),
     cancel,

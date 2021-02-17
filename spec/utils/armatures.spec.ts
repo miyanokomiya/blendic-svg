@@ -2,6 +2,63 @@ import * as target from '../../src/utils/armatures'
 import { getArmature, getBorn, getTransform } from '../../src/models/index'
 
 describe('utils/armatures', () => {
+  describe('dissolveOrigin', () => {
+    it('dissolve origin', () => {
+      expect(
+        target.dissolveOrigin(
+          getTransform({
+            origin: { x: 1, y: 2 },
+          })
+        )
+      ).toEqual(
+        getTransform({
+          translate: { x: 0, y: 0 },
+        })
+      )
+      expect(
+        target.dissolveOrigin(
+          getTransform({
+            scale: { x: 2, y: 3 },
+            origin: { x: 1, y: 2 },
+          })
+        )
+      ).toEqual(
+        getTransform({
+          scale: { x: 2, y: 3 },
+          translate: { x: -1, y: -4 },
+        })
+      )
+      expect(
+        target.dissolveOrigin(
+          getTransform({
+            rotate: 90,
+            origin: { x: 1, y: 1 },
+          })
+        )
+      ).toEqual(
+        getTransform({
+          rotate: 90,
+          translate: { x: 2, y: 0 },
+        })
+      )
+      expect(
+        target.dissolveOrigin(
+          getTransform({
+            scale: { x: 2, y: 3 },
+            rotate: 90,
+            origin: { x: 1, y: 1 },
+          })
+        )
+      ).toEqual(
+        getTransform({
+          scale: { x: 2, y: 3 },
+          rotate: 90,
+          translate: { x: 4, y: -1 },
+        })
+      )
+    })
+  })
+
   describe('convoluteTransforms', () => {
     it('convolute translate', () => {
       expect(
@@ -24,16 +81,55 @@ describe('utils/armatures', () => {
         target.convoluteTransforms([
           getTransform({
             scale: { x: 2, y: 3 },
-            origin: { x: 3, y: 4 },
           }),
           getTransform({
             scale: { x: 10, y: 20 },
+            origin: { x: 1, y: 1 },
           }),
         ])
       ).toEqual(
         getTransform({
-          translate: { x: -3, y: -8 },
+          translate: { x: -9, y: -19 },
           scale: { x: 20, y: 60 },
+        })
+      )
+      expect(
+        target.convoluteTransforms([
+          getTransform({
+            scale: { x: 2, y: 3 },
+            origin: { x: 1, y: 1 },
+          }),
+          getTransform({
+            scale: { x: 10, y: 20 },
+            origin: { x: 1, y: 1 },
+          }),
+        ])
+      ).toEqual(
+        getTransform({
+          translate: { x: -19, y: -59 },
+          scale: { x: 20, y: 60 },
+          origin: { x: 0, y: 0 },
+        })
+      )
+      expect(
+        target.convoluteTransforms([
+          getTransform({
+            scale: { x: 2, y: 3 },
+            origin: { x: 1, y: 1 },
+          }),
+          getTransform({
+            scale: { x: 10, y: 20 },
+            origin: { x: 1, y: 1 },
+          }),
+          getTransform({
+            scale: { x: 2, y: 1 },
+            origin: { x: 1, y: 1 },
+          }),
+        ])
+      ).toEqual(
+        getTransform({
+          translate: { x: -39, y: -59 },
+          scale: { x: 40, y: 60 },
           origin: { x: 0, y: 0 },
         })
       )
@@ -62,6 +158,61 @@ describe('utils/armatures', () => {
           rotate: 180,
         })
       )
+      expect(ret.x).toBeCloseTo(ex.x)
+      expect(ret.y).toBeCloseTo(ex.y)
+    })
+    it('convolute translate & rotate & scale', () => {
+      const c1 = target.convoluteTransforms([
+        getTransform({
+          translate: { x: 1, y: 0 },
+          rotate: 180,
+          scale: { x: 2, y: 1 },
+          origin: { x: 1, y: 1 },
+        }),
+      ])
+      const ret = target.applyTransform({ x: 0, y: 0 }, c1)
+      const ex = target.applyTransform(
+        { x: 0, y: 0 },
+        getTransform({
+          translate: { x: 1, y: 0 },
+          rotate: 180,
+          scale: { x: 2, y: 1 },
+          origin: { x: 1, y: 1 },
+        })
+      )
+      expect(ret.x).toBeCloseTo(ex.x)
+      expect(ret.y).toBeCloseTo(ex.y)
+    })
+    it('extra test', () => {
+      const list = [
+        getTransform({
+          translate: { x: 1, y: 2 },
+          rotate: 45,
+          scale: { x: -2, y: -3 },
+          origin: { x: -1, y: 1 },
+        }),
+        getTransform({
+          translate: { x: 1, y: 2 },
+          rotate: 180,
+          scale: { x: -2, y: -3 },
+          origin: { x: -1, y: 1 },
+        }),
+        //getTransform({
+        //  translate: { x: 11, y: -21 },
+        //  rotate: -45,
+        //  scale: { x: -2, y: 3 },
+        //  origin: { x: -1, y: 2 },
+        //}),
+        //getTransform({
+        //  translate: { x: 11, y: -21 },
+        //  rotate: -45,
+        //  scale: { x: -2, y: 3 },
+        //  origin: { x: -1, y: 2 },
+        //}),
+      ]
+      const v = { x: -1, y: 3 }
+      const ret = target.applyTransform(v, target.convoluteTransforms(list))
+      const ex = list.reduce((p, t) => target.applyTransform(p, t), v)
       expect(ret.x).toBeCloseTo(ex.x)
       expect(ret.y).toBeCloseTo(ex.y)
     })

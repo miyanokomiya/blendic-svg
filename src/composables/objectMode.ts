@@ -6,6 +6,7 @@ import {
   IdMap,
   CanvasEditModeBase,
   EditMovement,
+  getTransform,
 } from '../models/index'
 import { useStore } from '/@/store/index'
 
@@ -14,9 +15,7 @@ interface State {
   editMovement: EditMovement | undefined
 }
 
-export interface ObjectMode extends CanvasEditModeBase {
-  getEditTransforms: (id: string) => Transform[]
-}
+export interface ObjectMode extends CanvasEditModeBase {}
 
 export function useObjectMode(): ObjectMode {
   const state = reactive<State>({
@@ -54,7 +53,7 @@ export function useObjectMode(): ObjectMode {
   }
 
   const editTransforms = computed(
-    (): IdMap<Transform[]> => {
+    (): IdMap<Transform> => {
       return {}
     }
   )
@@ -103,7 +102,7 @@ export function useObjectMode(): ObjectMode {
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
-      return editTransforms.value[id] || []
+      return editTransforms.value[id] || getTransform()
     },
     end: () => cancel(),
     cancel,

@@ -18,27 +18,47 @@ import {
   rotate,
 } from 'okageo'
 
+export function dissolveOrigin(t: Transform): Transform {
+  const rad = (t.rotate / 180) * Math.PI
+  const constant = sub(t.origin, rotate(scale(t.origin, t.scale), rad))
+  return {
+    ...t,
+    translate: add(t.translate, constant),
+    origin: { x: 0, y: 0 },
+  }
+}
+
+export function multiTransform(a: Transform, b: Transform): Transform {
+  const da = dissolveOrigin(a)
+  const db = dissolveOrigin(b)
+  return getTransform({
+    scale: { x: da.scale.x * db.scale.x, y: da.scale.y * db.scale.y },
+    rotate: da.rotate + db.rotate,
+    translate: add(da.translate, db.translate),
+  })
+}
+
 export function convoluteTransforms(transforms: Transform[]): Transform {
   return transforms.reduce((ret, t) => {
-    const scaleConstant = {
-      x: t.origin.x * (1 - t.scale.x),
-      y: t.origin.y * (1 - t.scale.y),
-    }
-    const rad = (t.rotate / 180) * Math.PI
-    const rotateConstant = add(
-      rotate(ret.translate, rad),
-      sub(t.origin, rotate(t.origin, rad))
-    )
-    return {
-      ...ret,
-      scale: { x: ret.scale.x * t.scale.x, y: ret.scale.y * t.scale.y },
-      rotate: ret.rotate + t.rotate,
-      translate: add(add(t.translate, scaleConstant), rotateConstant),
-    }
+    return multiTransform(ret, t)
   }, getTransform())
 }
 
-function scale(p: IVec2, scale: IVec2, origin: IVec2): IVec2 {
+export function multiPoseTransform(a: Transform, b: Transform): Transform {
+  return getTransform({
+    scale: { x: a.scale.x * b.scale.x, y: a.scale.y * b.scale.y },
+    rotate: a.rotate + b.rotate,
+    translate: add(a.translate, b.translate),
+  })
+}
+
+export function convolutePoseTransforms(transforms: Transform[]): Transform {
+  return transforms.reduce((ret, t) => {
+    return multiPoseTransform(ret, t)
+  }, getTransform())
+}
+
+function scale(p: IVec2, scale: IVec2, origin: IVec2 = { x: 0, y: 0 }): IVec2 {
   return {
     x: origin.x + (p.x - origin.x) * scale.x,
     y: origin.y + (p.y - origin.y) * scale.y,
@@ -58,15 +78,14 @@ export function applyTransform(p: IVec2, transform: Transform): IVec2 {
 
 export function editTransform(
   born: Born,
-  transforms: Transform[],
+  transform: Transform,
   selectedState: BornSelectedState
 ): Born {
-  const convoluted = convoluteTransforms(transforms)
   const head = selectedState.head
-    ? applyTransform(born.head, convoluted)
+    ? applyTransform(born.head, transform)
     : born.head
   const tail = selectedState.tail
-    ? applyTransform(born.tail, convoluted)
+    ? applyTransform(born.tail, transform)
     : born.tail
 
   return {
@@ -76,17 +95,22 @@ export function editTransform(
   }
 }
 
-export function posedTransform(
-  born: Born,
-  poseTransforms: Transform[],
-  editTransforms: Transform[],
-  selectedState: BornSelectedState
-): Born {
-  return editTransform(
-    editTransform(born, poseTransforms, { head: true, tail: true }),
-    editTransforms,
-    selectedState
+export function posedTransform(born: Born, transforms: Transform[]): Born {
+  const convoluted = convolutePoseTransforms(transforms)
+  const head = applyTransform(
+    born.head,
+    getTransform({ translate: convoluted.translate })
   )
+  const tail = applyTransform(
+    born.tail,
+    getTransform({ ...convoluted, origin: born.head })
+  )
+
+  return {
+    ...born,
+    head,
+    tail,
+  }
 }
 
 export function extrudeFromParent(parent: Born, fromHead = false): Born {
@@ -227,8 +251,9 @@ export function getSelectedBornsOrigin(
   const selectedPoints = Object.keys(selectedState)
     .map((id) => {
       const selected = []
-      if (selectedState[id].head) selected.push(bornMap[id].head)
-      if (!onlyHead && selectedState[id].tail) selected.push(bornMap[id].tail)
+      const posed = posedTransform(bornMap[id], [bornMap[id].transform])
+      if (selectedState[id].head) selected.push(posed.head)
+      if (!onlyHead && selectedState[id].tail) selected.push(posed.tail)
       return selected
     })
     .flat()

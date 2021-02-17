@@ -81,6 +81,7 @@ import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import { useWindow } from '../composables/window'
+import { useAnimationStore } from '../store/Animation'
 
 export default defineComponent({
   components: { ScaleMarker },
@@ -121,6 +122,7 @@ export default defineComponent({
 
     const store = useStore()
     const canvasStore = useCanvasStore()
+    const animationStore = useAnimationStore()
 
     function viewToCanvas(v: IVec2): IVec2 {
       return add(viewOrigin.value, multi(v, scale.value))
@@ -128,9 +130,9 @@ export default defineComponent({
 
     const selectedBornsOrigin = computed(() => {
       if (canvasStore.state.canvasMode === 'edit') {
-        return store.selectedPoseBornsOrigin.value
+        return store.selectedBornsOrigin.value
       } else {
-        return store.selectedPoseBornsOrigin.value
+        return animationStore.selectedPosedBornOrigin.value
       }
     })
 

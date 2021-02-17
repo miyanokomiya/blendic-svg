@@ -130,7 +130,7 @@ export type EditMovement = { current: IVec2; start: IVec2 }
 
 export interface CanvasEditModeBase {
   command: ComputedRef<EditMode>
-  getEditTransforms: (id: string) => Transform[]
+  getEditTransforms: (id: string) => Transform
   end: () => void
   cancel: () => void
   setEditMode: (mode: EditMode) => void

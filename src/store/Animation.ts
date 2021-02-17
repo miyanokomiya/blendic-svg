@@ -1,22 +1,29 @@
-import { reactive, computed, watch, ref } from 'vue'
+import { IVec2 } from 'okageo'
+import { computed, watch, ref } from 'vue'
 import { useStore } from '.'
 import { useListState } from '../composables/listState'
-import { convoluteTransforms } from '../utils/armatures'
+import {
+  convolutePoseTransforms,
+  getSelectedBornsOrigin,
+} from '../utils/armatures'
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
 import {
   Action,
+  Born,
   getAction,
   IdMap,
+  isBornSelected,
   Keyframe,
   toBornIdMap,
+  toMap,
   Transform,
 } from '/@/models'
 
 const currentFrame = ref(0)
 const endFrame = ref(60)
 const actions = useListState<Action>('Action')
-const editTransforms = ref<IdMap<Transform[]>>({})
+const editTransforms = ref<IdMap<Transform>>({})
 
 const historyStore = useHistoryStore()
 const store = useStore()
@@ -59,6 +66,42 @@ const currentTransforms = computed(
   }
 )
 
+const currentPosedBorns = computed(
+  (): IdMap<Born> => {
+    if (!store.lastSelectedArmature.value) return {}
+    return toMap(
+      store.lastSelectedArmature.value.borns.map((b) => {
+        return {
+          ...b,
+          transform: convolutePoseTransforms(getBornCurrentTransforms(b.id)),
+        }
+      })
+    )
+  }
+)
+const currentSelectedPosedBorns = computed(
+  (): IdMap<Born> => {
+    return toMap(
+      Object.keys(currentPosedBorns.value)
+        .filter((id) => {
+          return isBornSelected(store.state.selectedBorns[id])
+        })
+        .map((id) => currentPosedBorns.value[id])
+    )
+  }
+)
+
+const selectedPosedBornOrigin = computed(
+  (): IVec2 => {
+    if (!store.lastSelectedArmature.value) return { x: 0, y: 0 }
+    return getSelectedBornsOrigin(
+      currentPosedBorns.value,
+      store.state.selectedBorns,
+      true
+    )
+  }
+)
+
 function addAction() {
   if (!store.lastSelectedArmature.value) return
 
@@ -83,31 +126,26 @@ function setEndFrame(val: number) {
   historyStore.push(item)
 }
 
-function setEditedTransforms(map: IdMap<Transform[]>) {
+function setEditedTransforms(map: IdMap<Transform>) {
   const item = getUpdateEditedTransformsItem(map)
   item.redo()
   historyStore.push(item)
 }
-function applyEditedTransforms(map: IdMap<Transform[]>) {
+function applyEditedTransforms(map: IdMap<Transform>) {
   const ids = Array.from(
     new Set(Object.keys(editTransforms.value).concat(Object.keys(map)))
   )
   setEditedTransforms(
-    ids.reduce<IdMap<Transform[]>>((p, id) => {
-      console.log(getBornEditedTransforms(id))
-      // p[id] = [
-      //   convoluteTransforms(getBornEditedTransforms(id).concat(map[id] ?? [])),
-      // ]
-      p[id] = getBornEditedTransforms(id).concat(map[id] ?? [])
-      // p[id] = [
-      //   convoluteTransforms([].concat(map[id] ?? [])),
-      // ]
+    ids.reduce<IdMap<Transform>>((p, id) => {
+      p[id] = convolutePoseTransforms(
+        getBornEditedTransforms(id).concat(map[id] ? [map[id]] : [])
+      )
       return p
     }, {})
   )
 }
 function getBornEditedTransforms(id: string): Transform[] {
-  return editTransforms.value[id] ?? []
+  return editTransforms.value[id] ? [editTransforms.value[id]] : []
 }
 function getBornCurrentTransforms(id: string): Transform[] {
   return currentTransforms.value[id] ?? []
@@ -119,7 +157,9 @@ export function useAnimationStore() {
     endFrame,
     actions: actions.state.list,
     posedBornIds,
+    currentPosedBorns,
     currentTransforms,
+    selectedPosedBornOrigin,
     getBornEditedTransforms,
     getBornCurrentTransforms,
     setEndFrame,
@@ -147,7 +187,7 @@ function getUpdateEndFrameItem(val: number): HistoryItem {
   }
 }
 
-function getUpdateEditedTransformsItem(val: IdMap<Transform[]>): HistoryItem {
+function getUpdateEditedTransformsItem(val: IdMap<Transform>): HistoryItem {
   const current = { ...editTransforms.value }
 
   const redo = () => {

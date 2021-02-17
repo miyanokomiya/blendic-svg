@@ -269,4 +269,38 @@ describe('utils/armatures', () => {
       })
     })
   })
+
+  describe('getTree', () => {
+    it('get nodes tree', () => {
+      const bornMap = {
+        a: { id: 'a', parentId: '' },
+        aa: { id: 'aa', parentId: 'a' },
+        aaa: { id: 'aaa', parentId: 'aa' },
+        b: { id: 'b', parentId: '' },
+      }
+      expect(target.getTree(bornMap)).toEqual([
+        {
+          id: 'a',
+          children: [{ id: 'aa', children: [{ id: 'aaa', children: [] }] }],
+        },
+        { id: 'b', children: [] },
+      ])
+    })
+    it('get nodes tree', () => {
+      const bornMap = {
+        a: { id: 'a', parentId: '' },
+        aa: { id: 'aa', parentId: 'a' },
+        ab: { id: 'ab', parentId: 'a' },
+      }
+      expect(target.getTree(bornMap)).toEqual([
+        {
+          id: 'a',
+          children: [
+            { id: 'aa', children: [] },
+            { id: 'ab', children: [] },
+          ],
+        },
+      ])
+    })
+  })
 })

@@ -238,3 +238,45 @@ export function getSelectedBornsOrigin(
     1 / selectedPoints.length
   )
 }
+
+interface TreeNode {
+  id: string
+  children: TreeNode[]
+}
+
+export function getTree<T extends { id: string; parentId: string }>(
+  bornMap: IdMap<T>
+): TreeNode[] {
+  const noParents: T[] = []
+  const parentMap: IdMap<T[]> = Object.keys(bornMap).reduce<IdMap<T[]>>(
+    (p, c) => {
+      const b = bornMap[c]
+      if (!b.parentId) {
+        noParents.push(b)
+      } else if (p[b.parentId]) {
+        p[b.parentId].push(b)
+      } else {
+        p[b.parentId] = [b]
+      }
+      return p
+    },
+    {}
+  )
+
+  return noParents.map((b) => {
+    const children = getChildNodes(parentMap, b.id)
+    return { id: b.id, children }
+  })
+}
+
+function getChildNodes<T extends { id: string; parentId: string }>(
+  parentMap: IdMap<T[]>,
+  parentId: string
+): TreeNode[] {
+  return (
+    parentMap[parentId]?.map((b) => {
+      const children = getChildNodes(parentMap, b.id)
+      return { id: b.id, children }
+    }) ?? []
+  )
+}

@@ -303,4 +303,61 @@ describe('utils/armatures', () => {
       ])
     })
   })
+
+  describe('extendTransform', () => {
+    it('scale', () => {
+      expect(target.extendTransform(getBorn(), getBorn())).toEqual(getBorn())
+      expect(
+        target.extendTransform(
+          getBorn({
+            head: { x: 1, y: 1 },
+            tail: { x: 2, y: 3 },
+            transform: getTransform({
+              scale: { x: 2, y: 3 },
+            }),
+          }),
+          getBorn({
+            transform: getTransform({
+              scale: { x: 2, y: 3 },
+              rotate: 45,
+            }),
+          })
+        )
+      ).toEqual(
+        getBorn({
+          transform: getTransform({
+            translate: { x: 1, y: 4 },
+            scale: { x: 4, y: 9 },
+            rotate: 45,
+          }),
+        })
+      )
+    })
+    it('rotate', () => {
+      expect(target.extendTransform(getBorn(), getBorn())).toEqual(getBorn())
+      expect(
+        target.extendTransform(
+          getBorn({
+            head: { x: 1, y: 1 },
+            tail: { x: 2, y: 3 },
+            transform: getTransform({
+              rotate: 90,
+            }),
+          }),
+          getBorn({
+            transform: getTransform({
+              rotate: 45,
+            }),
+          })
+        )
+      ).toEqual(
+        getBorn({
+          transform: getTransform({
+            translate: { x: -3, y: -1 },
+            rotate: 135,
+          }),
+        })
+      )
+    })
+  })
 })

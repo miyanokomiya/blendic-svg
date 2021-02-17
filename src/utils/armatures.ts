@@ -6,6 +6,7 @@ import {
   getTransform,
   getBorn,
   IdMap,
+  toMap,
 } from '../models/index'
 import {
   add,
@@ -15,6 +16,7 @@ import {
   IVec2,
   multi,
   rotate,
+  sub,
 } from 'okageo'
 
 export function multiPoseTransform(a: Transform, b: Transform): Transform {
@@ -245,12 +247,12 @@ interface TreeNode {
 }
 
 export function getTree<T extends { id: string; parentId: string }>(
-  bornMap: IdMap<T>
+  idMap: IdMap<T>
 ): TreeNode[] {
   const noParents: T[] = []
-  const parentMap: IdMap<T[]> = Object.keys(bornMap).reduce<IdMap<T[]>>(
+  const parentMap: IdMap<T[]> = Object.keys(idMap).reduce<IdMap<T[]>>(
     (p, c) => {
-      const b = bornMap[c]
+      const b = idMap[c]
       if (!b.parentId) {
         noParents.push(b)
       } else if (p[b.parentId]) {
@@ -264,8 +266,7 @@ export function getTree<T extends { id: string; parentId: string }>(
   )
 
   return noParents.map((b) => {
-    const children = getChildNodes(parentMap, b.id)
-    return { id: b.id, children }
+    return { id: b.id, children: getChildNodes(parentMap, b.id) }
   })
 }
 
@@ -275,8 +276,52 @@ function getChildNodes<T extends { id: string; parentId: string }>(
 ): TreeNode[] {
   return (
     parentMap[parentId]?.map((b) => {
-      const children = getChildNodes(parentMap, b.id)
-      return { id: b.id, children }
+      return { id: b.id, children: getChildNodes(parentMap, b.id) }
     }) ?? []
   )
+}
+
+interface BornNode extends Born, TreeNode {
+  children: BornNode[]
+}
+
+export function getTransformedBornMap(bornMap: IdMap<Born>): IdMap<Born> {
+  return toMap(getTransformBornTree(bornMap))
+}
+
+function getTransformBornTree(bornMap: IdMap<Born>): BornNode[] {
+  return (getTree<Born>(bornMap) as BornNode[]).map((b) => {
+    return { ...b, children: getChildTransforms(b) }
+  })
+}
+
+function getChildTransforms(parent: BornNode): BornNode[] {
+  return (
+    parent.children.map((b) => {
+      return {
+        ...b,
+        children: getChildTransforms({
+          ...extendTransform(parent, b),
+          children: b.children,
+        }),
+      }
+    }) ?? []
+  )
+}
+
+export function extendTransform(parent: Born, child: Born): Born {
+  const applied = posedTransform(parent, [parent.transform])
+  const tailDiff = sub(applied.tail, parent.tail)
+  return {
+    ...child,
+    transform: {
+      translate: add(child.transform.translate, tailDiff),
+      rotate: child.transform.rotate + parent.transform.rotate,
+      scale: {
+        x: child.transform.scale.x * parent.transform.scale.x,
+        y: child.transform.scale.y * parent.transform.scale.y,
+      },
+      origin: { x: 0, y: 0 },
+    },
+  }
 }

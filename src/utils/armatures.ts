@@ -7,6 +7,7 @@ import {
   getBorn,
   IdMap,
   toMap,
+  isBornSelected,
 } from '../models/index'
 import {
   add,
@@ -221,15 +222,14 @@ export function getSelectedBornsBoundingOrigin(
 
 export function getSelectedBornsOrigin(
   bornMap: IdMap<Born>,
-  selectedState: IdMap<BornSelectedState>,
-  onlyHead = false
+  selectedState: IdMap<BornSelectedState>
 ): IVec2 {
   const selectedPoints = Object.keys(selectedState)
     .map((id) => {
       const selected = []
       const posed = posedTransform(bornMap[id], [bornMap[id].transform])
       if (selectedState[id].head) selected.push(posed.head)
-      if (!onlyHead && selectedState[id].tail) selected.push(posed.tail)
+      if (selectedState[id].tail) selected.push(posed.tail)
       return selected
     })
     .flat()
@@ -239,6 +239,18 @@ export function getSelectedBornsOrigin(
   return multi(
     selectedPoints.reduce((p, c) => add(p, c), { x: 0, y: 0 }),
     1 / selectedPoints.length
+  )
+}
+
+export function getPosedBornHeadsOrigin(bornMap: IdMap<Born>): IVec2 {
+  const points = Object.keys(bornMap).map(
+    (id) => posedTransform(bornMap[id], [bornMap[id].transform]).head
+  )
+
+  if (points.length === 0) return { x: 0, y: 0 }
+  return multi(
+    points.reduce((p, c) => add(p, c), { x: 0, y: 0 }),
+    1 / points.length
   )
 }
 
@@ -287,12 +299,7 @@ interface BornNode extends Born, TreeNode {
 }
 
 export function getTransformedBornMap(bornMap: IdMap<Born>): IdMap<Born> {
-  return toMap(
-    flatTree(getTransformBornTree(bornMap)).map((b) => {
-      const { children, ...born } = b
-      return born
-    })
-  )
+  return toMap(flatBornTree(getTransformBornTree(bornMap)))
 }
 
 function flatTree<T extends TreeNode>(children: T[]): T[] {
@@ -340,4 +347,36 @@ export function extendTransform(parent: Born, child: Born): Born {
       origin: { x: 0, y: 0 },
     },
   }
+}
+
+function flatBornTree(children: BornNode[]): Born[] {
+  return children
+    .map((b) => {
+      const { children, ...born } = b
+      return born
+    })
+    .concat(children.flatMap((c) => flatBornTree(c.children)))
+}
+
+export function getPoseSelectedBorns(
+  bornMap: IdMap<Born>,
+  selectedState: IdMap<BornSelectedState>
+): IdMap<Born> {
+  return toMap(
+    filterPoseSelectedBorn(getTree(bornMap) as BornNode[], selectedState)
+  )
+}
+
+function filterPoseSelectedBorn(
+  bornTree: BornNode[],
+  selectedState: IdMap<BornSelectedState>
+): Born[] {
+  return bornTree.flatMap((node) => {
+    if (isBornSelected(selectedState[node.id])) {
+      const { children, ...born } = node
+      return [born]
+    } else {
+      return filterPoseSelectedBorn(node.children, selectedState)
+    }
+  })
 }

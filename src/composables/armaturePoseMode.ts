@@ -29,7 +29,6 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
 
   const store = useStore()
   const animationStore = useAnimationStore()
-  const selectedBorns = computed(() => store.state.selectedBorns)
   const lastSelectedBornId = computed(() => store.lastSelectedBorn.value?.id)
 
   const target = computed(() => store.lastSelectedArmature.value)
@@ -74,26 +73,24 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
           getRadian(state.editMovement.start, origin)) /
           Math.PI) *
         180
-      return Object.keys(selectedBorns.value).reduce<IdMap<Transform>>(
-        (map, id) => {
-          map[id] = getTransform({
-            rotate,
-          })
-          return map
-        },
-        {}
-      )
+      return Object.keys(animationStore.selectedBorns.value).reduce<
+        IdMap<Transform>
+      >((map, id) => {
+        map[id] = getTransform({
+          rotate,
+        })
+        return map
+      }, {})
     }
 
     const translate = sub(state.editMovement.current, state.editMovement.start)
     const snappedTranslate = canvasStore.snapTranslate(translate)
-    return Object.keys(selectedBorns.value).reduce<IdMap<Transform>>(
-      (map, id) => {
-        map[id] = getTransform({ translate: snappedTranslate })
-        return map
-      },
-      {}
-    )
+    return Object.keys(animationStore.selectedBorns.value).reduce<
+      IdMap<Transform>
+    >((map, id) => {
+      map[id] = getTransform({ translate: snappedTranslate })
+      return map
+    }, {})
   })
 
   function completeEdit() {

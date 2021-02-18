@@ -4,6 +4,8 @@ import { useStore } from '.'
 import { useListState } from '../composables/listState'
 import {
   convolutePoseTransforms,
+  getPosedBornHeadsOrigin,
+  getPoseSelectedBorns,
   getSelectedBornsOrigin,
   getTransformedBornMap,
   posedTransform,
@@ -85,14 +87,17 @@ const currentPosedBorns = computed(
   }
 )
 
+const selectedBorns = computed(() => {
+  return getPoseSelectedBorns(
+    currentPosedBorns.value,
+    store.state.selectedBorns
+  )
+})
+
 const selectedPosedBornOrigin = computed(
   (): IVec2 => {
     if (!store.lastSelectedArmature.value) return { x: 0, y: 0 }
-    return getSelectedBornsOrigin(
-      currentPosedBorns.value,
-      store.state.selectedBorns,
-      true
-    )
+    return getPosedBornHeadsOrigin(selectedBorns.value)
   }
 )
 
@@ -152,6 +157,7 @@ export function useAnimationStore() {
     endFrame,
     actions: actions.state.list,
     posedBornIds,
+    selectedBorns,
     currentPosedBorns,
     currentTransforms,
     selectedPosedBornOrigin,

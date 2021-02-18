@@ -270,6 +270,20 @@ describe('utils/armatures', () => {
     })
   })
 
+  describe('getPosedBornHeadsOrigin', () => {
+    it('retuns selected borns origin', () => {
+      const bornMap = {
+        1: getBorn({ id: '1', head: { x: 0, y: 2 }, tail: { x: 2, y: 3 } }),
+        2: getBorn({ id: '2', head: { x: 10, y: 12 }, tail: { x: 12, y: 13 } }),
+        3: getBorn({ id: '3', head: { x: 5, y: 7 }, tail: { x: 24, y: 25 } }),
+      }
+      expect(target.getPosedBornHeadsOrigin(bornMap)).toEqual({
+        x: 5,
+        y: 7,
+      })
+    })
+  })
+
   describe('getTree', () => {
     it('get nodes tree', () => {
       const bornMap = {
@@ -416,6 +430,47 @@ describe('utils/armatures', () => {
           id: 'b',
           parentId: '',
           transform: getTransform({ rotate: 30 }),
+        }),
+      })
+    })
+  })
+
+  describe('getPoseSelectedBorns', () => {
+    it('if parent is selected the children are ignored', () => {
+      expect(
+        target.getPoseSelectedBorns(
+          {
+            a: getBorn({
+              id: 'a',
+              parentId: '',
+            }),
+            aa: getBorn({
+              id: 'aa',
+              parentId: 'a',
+            }),
+            aaa: getBorn({
+              id: 'aaa',
+              parentId: 'aa',
+            }),
+            b: getBorn({
+              id: 'b',
+              parentId: '',
+            }),
+          },
+          {
+            aa: { head: true },
+            aaa: { head: true },
+            b: { head: true },
+          }
+        )
+      ).toEqual({
+        aa: getBorn({
+          id: 'aa',
+          parentId: 'a',
+        }),
+        b: getBorn({
+          id: 'b',
+          parentId: '',
         }),
       })
     })

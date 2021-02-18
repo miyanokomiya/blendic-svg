@@ -302,12 +302,6 @@ export function getTransformedBornMap(bornMap: IdMap<Born>): IdMap<Born> {
   return toMap(flatBornTree(getTransformBornTree(bornMap)))
 }
 
-function flatTree<T extends TreeNode>(children: T[]): T[] {
-  return children.concat(
-    children.flatMap((c) => flatTree<T>(c.children as T[]))
-  )
-}
-
 function getTransformBornTree(bornMap: IdMap<Born>): BornNode[] {
   return (getTree<Born>(bornMap) as BornNode[]).map((b) => {
     return { ...b, children: getChildTransforms(b) }
@@ -330,15 +324,16 @@ function getChildTransforms(parent: BornNode): BornNode[] {
 }
 
 export function extendTransform(parent: Born, child: Born): Born {
-  const appliedChildHead = applyTransform(child.head, {
+  const childPosedHead = add(child.head, child.transform.translate)
+  const appliedChildHead = applyTransform(childPosedHead, {
     ...parent.transform,
     origin: parent.head,
   })
-  const tailDiff = sub(appliedChildHead, child.head)
+  const headDiff = sub(appliedChildHead, childPosedHead)
   return {
     ...child,
     transform: {
-      translate: add(child.transform.translate, tailDiff),
+      translate: add(child.transform.translate, headDiff),
       rotate: child.transform.rotate + parent.transform.rotate,
       scale: {
         x: child.transform.scale.x * parent.transform.scale.x,

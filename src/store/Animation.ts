@@ -1,14 +1,12 @@
 import { IVec2 } from 'okageo'
-import { computed, watch, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useStore } from '.'
 import { useListState } from '../composables/listState'
 import {
   convolutePoseTransforms,
   getPosedBornHeadsOrigin,
   getPoseSelectedBorns,
-  getSelectedBornsOrigin,
   getTransformedBornMap,
-  posedTransform,
 } from '../utils/armatures'
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
@@ -18,7 +16,6 @@ import {
   getAction,
   getTransform,
   IdMap,
-  isBornSelected,
   Keyframe,
   toBornIdMap,
   toMap,
@@ -55,7 +52,7 @@ const posedBornIds = computed(() => {
   )
 })
 
-const currentTransforms = computed(
+const currentSelfTransforms = computed(
   (): IdMap<Transform> => {
     return posedBornIds.value.reduce<IdMap<Transform>>((p, id) => {
       if (currentKeyFrameMap.value[id]) {
@@ -79,7 +76,7 @@ const currentPosedBorns = computed(
         store.lastSelectedArmature.value.borns.map((b) => {
           return {
             ...b,
-            transform: getBornCurrentTransforms(b.id),
+            transform: getCurrentSelfTransforms(b.id),
           }
         })
       )
@@ -147,8 +144,8 @@ function applyEditedTransforms(map: IdMap<Transform>) {
 function getBornEditedTransforms(id: string): Transform {
   return editTransforms.value[id] ?? getTransform()
 }
-function getBornCurrentTransforms(id: string): Transform {
-  return currentTransforms.value[id] ?? getTransform()
+function getCurrentSelfTransforms(id: string): Transform {
+  return currentSelfTransforms.value[id] ?? getTransform()
 }
 
 export function useAnimationStore() {
@@ -157,11 +154,10 @@ export function useAnimationStore() {
     endFrame,
     actions: actions.state.list,
     posedBornIds,
-    selectedBorns,
     currentPosedBorns,
-    currentTransforms,
+    selectedBorns,
     selectedPosedBornOrigin,
-    getBornCurrentTransforms,
+    getCurrentSelfTransforms,
     setEndFrame,
     selectedAction: actions.lastSelectedItem,
     selectAction: actions.selectItem,

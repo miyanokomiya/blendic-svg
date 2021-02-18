@@ -1,8 +1,7 @@
 import { reactive, computed } from 'vue'
-import { getDistance, getRadian, multi, sub } from 'okageo'
+import { getRadian, IVec2, multi, rotate, sub } from 'okageo'
 import {
   Transform,
-  Born,
   getTransform,
   BornSelectedState,
   EditMode,
@@ -63,6 +62,16 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     }
   }
 
+  function convertToPosedSpace(vec: IVec2, bornId: string): IVec2 {
+    const born = animationStore.currentPosedBorns.value[bornId]
+    const parent = animationStore.currentPosedBorns.value[born.parentId]
+    if (parent) {
+      return rotate(vec, (-parent.transform.rotate / 180) * Math.PI)
+    } else {
+      return vec
+    }
+  }
+
   const editTransforms = computed(() => {
     if (!state.editMovement) return {}
 
@@ -76,9 +85,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
       return Object.keys(animationStore.selectedBorns.value).reduce<
         IdMap<Transform>
       >((map, id) => {
-        map[id] = getTransform({
-          rotate,
-        })
+        map[id] = getTransform({ rotate })
         return map
       }, {})
     }
@@ -89,7 +96,9 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
       IdMap<Transform>
     >((map, id) => {
       if (!animationStore.selectedBorns.value[id].connected) {
-        map[id] = getTransform({ translate: snappedTranslate })
+        map[id] = getTransform({
+          translate: convertToPosedSpace(snappedTranslate, id),
+        })
       }
       return map
     }, {})

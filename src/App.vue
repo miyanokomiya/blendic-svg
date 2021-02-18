@@ -81,12 +81,19 @@ import AnimationPanel from './components/AnimationPanel.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import BornElm from './components/elements/Born.vue'
 import {
+  Born,
   BornSelectedState,
   EditMode,
   editModeToCanvasCommand,
+  IdMap,
   toMap,
 } from './models/index'
-import { editTransform, posedTransform } from './utils/armatures'
+import {
+  convolutePoseTransforms,
+  editTransform,
+  getTransformedBornMap,
+  posedTransform,
+} from './utils/armatures'
 import { IVec2 } from 'okageo'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
@@ -131,14 +138,24 @@ export default defineComponent({
           })
         )
       } else {
-        return toMap(
-          lastSelectedArmature.value.borns.map((b) => {
-            return posedTransform(b, [
-              animationStore.getBornCurrentTransforms(b.id),
-              canvasStore.getEditTransforms(b.id),
-            ])
-          })
+        const posedMap = getTransformedBornMap(
+          toMap(
+            lastSelectedArmature.value.borns.map((b) => {
+              return {
+                ...b,
+                transform: convolutePoseTransforms([
+                  animationStore.getBornCurrentTransforms(b.id),
+                  canvasStore.getEditTransforms(b.id),
+                ]),
+              }
+            })
+          )
         )
+        return Object.keys(posedMap).reduce<IdMap<Born>>((p, id) => {
+          const b = posedMap[id]
+          p[id] = posedTransform(b, [b.transform])
+          return p
+        }, {})
       }
     })
 

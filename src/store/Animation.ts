@@ -5,6 +5,8 @@ import { useListState } from '../composables/listState'
 import {
   convolutePoseTransforms,
   getSelectedBornsOrigin,
+  getTransformedBornMap,
+  posedTransform,
 } from '../utils/armatures'
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
@@ -70,24 +72,15 @@ const currentTransforms = computed(
 const currentPosedBorns = computed(
   (): IdMap<Born> => {
     if (!store.lastSelectedArmature.value) return {}
-    return toMap(
-      store.lastSelectedArmature.value.borns.map((b) => {
-        return {
-          ...b,
-          transform: getBornCurrentTransforms(b.id),
-        }
-      })
-    )
-  }
-)
-const currentSelectedPosedBorns = computed(
-  (): IdMap<Born> => {
-    return toMap(
-      Object.keys(currentPosedBorns.value)
-        .filter((id) => {
-          return isBornSelected(store.state.selectedBorns[id])
+    return getTransformedBornMap(
+      toMap(
+        store.lastSelectedArmature.value.borns.map((b) => {
+          return {
+            ...b,
+            transform: getBornCurrentTransforms(b.id),
+          }
         })
-        .map((id) => currentPosedBorns.value[id])
+      )
     )
   }
 )

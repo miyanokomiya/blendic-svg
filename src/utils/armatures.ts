@@ -85,6 +85,7 @@ export function posedTransform(born: Born, transforms: Transform[]): Born {
     ...born,
     head,
     tail,
+    transform: getTransform(),
   }
 }
 

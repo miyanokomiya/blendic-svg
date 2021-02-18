@@ -69,7 +69,7 @@
 <script lang="ts">
 import { computed, defineComponent, ref, watchEffect } from 'vue'
 import { useStore } from '../store'
-import { useAnimationStore } from '../store/Animation'
+import { useAnimationStore } from '../store/animation'
 import SelectField from './atoms/SelectField.vue'
 import TimelineCanvas from './TimelineCanvas.vue'
 import TimelineRow from './elements/atoms/TimelineRow.vue'

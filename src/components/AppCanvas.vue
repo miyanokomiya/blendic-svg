@@ -81,7 +81,7 @@ import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import { useWindow } from '../composables/window'
-import { useAnimationStore } from '../store/Animation'
+import { useAnimationStore } from '../store/animation'
 
 export default defineComponent({
   components: { ScaleMarker },

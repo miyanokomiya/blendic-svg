@@ -1,5 +1,5 @@
 import { IVec2 } from 'okageo'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useStore } from '.'
 import { useListState } from '../composables/listState'
 import {
@@ -97,6 +97,10 @@ const selectedPosedBornOrigin = computed(
     return getPosedBornHeadsOrigin(selectedBorns.value)
   }
 )
+
+watch(currentFrame, () => {
+  editTransforms.value = {}
+})
 
 function addAction() {
   if (!store.lastSelectedArmature.value) return

@@ -11,7 +11,7 @@ import {
 } from '../models/index'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
-import { useAnimationStore } from '../store/Animation'
+import { useAnimationStore } from '../store/animation'
 
 interface State {
   command: EditMode

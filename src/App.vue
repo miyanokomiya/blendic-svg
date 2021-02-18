@@ -98,7 +98,7 @@ import { IVec2 } from 'okageo'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
-import { useAnimationStore } from './store/Animation'
+import { useAnimationStore } from './store/animation'
 
 export default defineComponent({
   components: {

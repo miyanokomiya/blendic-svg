@@ -88,7 +88,9 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     return Object.keys(animationStore.selectedBorns.value).reduce<
       IdMap<Transform>
     >((map, id) => {
-      map[id] = getTransform({ translate: snappedTranslate })
+      if (!animationStore.selectedBorns.value[id].connected) {
+        map[id] = getTransform({ translate: snappedTranslate })
+      }
       return map
     }, {})
   })

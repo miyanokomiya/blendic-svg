@@ -319,12 +319,12 @@ describe('utils/armatures', () => {
         target.extendTransform(
           getBorn({
             head: { x: 1, y: 1 },
-            tail: { x: 2, y: 3 },
             transform: getTransform({
               scale: { x: 2, y: 3 },
             }),
           }),
           getBorn({
+            head: { x: 2, y: 3 },
             transform: getTransform({
               scale: { x: 2, y: 3 },
               rotate: 45,
@@ -333,6 +333,7 @@ describe('utils/armatures', () => {
         )
       ).toEqual(
         getBorn({
+          head: { x: 2, y: 3 },
           transform: getTransform({
             translate: { x: 1, y: 4 },
             scale: { x: 4, y: 9 },
@@ -347,12 +348,12 @@ describe('utils/armatures', () => {
         target.extendTransform(
           getBorn({
             head: { x: 1, y: 1 },
-            tail: { x: 2, y: 3 },
             transform: getTransform({
               rotate: 90,
             }),
           }),
           getBorn({
+            head: { x: 2, y: 3 },
             transform: getTransform({
               rotate: 45,
             }),
@@ -360,6 +361,7 @@ describe('utils/armatures', () => {
         )
       ).toEqual(
         getBorn({
+          head: { x: 2, y: 3 },
           transform: getTransform({
             translate: { x: -3, y: -1 },
             rotate: 135,

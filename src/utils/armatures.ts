@@ -323,8 +323,11 @@ function getChildTransforms(parent: BornNode): BornNode[] {
 }
 
 export function extendTransform(parent: Born, child: Born): Born {
-  const applied = posedTransform(parent, [parent.transform])
-  const tailDiff = sub(applied.tail, parent.tail)
+  const appliedChildHead = applyTransform(child.head, {
+    ...parent.transform,
+    origin: parent.head,
+  })
+  const tailDiff = sub(appliedChildHead, child.head)
   return {
     ...child,
     transform: {

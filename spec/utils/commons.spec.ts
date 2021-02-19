@@ -1,4 +1,4 @@
-import { dropKeys, toKeyMap, toList } from '/@/utils/commons'
+import { dropKeys, mapReduce, toKeyMap, toList } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
   describe('dropKeys', () => {
@@ -40,6 +40,35 @@ describe('utils/commons.ts', () => {
         { a: 1, b: 20 },
         { a: 2, b: 21 },
       ])
+    })
+  })
+
+  describe('mapReduce', () => {
+    it('map operation for object', () => {
+      expect(
+        mapReduce(
+          {
+            id_a: {
+              a: 1,
+              b: 2,
+            },
+            id_b: {
+              a: 4,
+              b: 8,
+            },
+          },
+          (obj: { a: number; b: number }) => ({ a: obj.b, b: obj.a })
+        )
+      ).toEqual({
+        id_a: {
+          a: 2,
+          b: 1,
+        },
+        id_b: {
+          a: 8,
+          b: 4,
+        },
+      })
     })
   })
 })

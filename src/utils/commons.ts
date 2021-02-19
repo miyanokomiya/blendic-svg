@@ -24,3 +24,13 @@ export function toKeyMap<T extends object>(
 export function toList<T>(map: { [key: string]: T }): T[] {
   return Object.keys(map).map((key) => map[key])
 }
+
+export function mapReduce<T>(
+  map: { [key: string]: T },
+  fn: (t: T) => T
+): { [key: string]: T } {
+  return Object.keys(map).reduce<{ [key: string]: T }>((p, c) => {
+    p[c] = fn(map[c])
+    return p
+  }, {})
+}

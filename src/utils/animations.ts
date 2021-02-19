@@ -1,3 +1,4 @@
+import { mapReduce } from './commons'
 import { IdMap, Keyframe } from '/@/models'
 
 const scaleRate = 1.1
@@ -53,4 +54,28 @@ export function getKeyframeMapByBornId(
     }
   })
   return map
+}
+
+export function sortKeyframes(keyframes: Keyframe[]): Keyframe[] {
+  return keyframes.concat().sort((a, b) => a.frame - b.frame)
+}
+
+export function sortKeyframeMap(
+  keyframeMap: IdMap<Keyframe[]>
+): IdMap<Keyframe[]> {
+  return mapReduce(keyframeMap, sortKeyframes)
+}
+
+export function getNeighborKeyframes(
+  sortedKeyframes: Keyframe[],
+  frame: number
+): Keyframe[] | undefined {
+  if (sortedKeyframes.length === 0) return
+  const afterIndex = sortedKeyframes.findIndex((k) => frame <= k.frame)
+  if (afterIndex === -1) return [sortedKeyframes[sortedKeyframes.length - 1]]
+  const after = sortedKeyframes[afterIndex]
+  if (after.frame === frame || afterIndex === 0) return [after]
+  const before = sortedKeyframes[afterIndex - 1]
+  if (before.frame === frame) return [before]
+  return [before, after]
 }

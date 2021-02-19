@@ -22,12 +22,10 @@ import {
   Born,
   getAction,
   getKeyframe,
-  getOriginPartial,
   getTransform,
   IdMap,
   Keyframe,
   toBornIdMap,
-  toFrameMap,
   toMap,
   Transform,
 } from '/@/models'

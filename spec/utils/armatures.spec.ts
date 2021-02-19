@@ -520,4 +520,33 @@ describe('utils/armatures', () => {
       })
     })
   })
+
+  describe('interpolateTransform', () => {
+    it('interpolate scale', () => {
+      const ret = target.interpolateTransform(
+        getTransform({ scale: { x: 1, y: 2 } }),
+        getTransform({ scale: { x: 2, y: 4 } }),
+        0.2
+      )
+      expect(ret.scale.x).toBeCloseTo(1.2)
+      expect(ret.scale.y).toBeCloseTo(2.4)
+    })
+    it('interpolate translate', () => {
+      const ret = target.interpolateTransform(
+        getTransform({ translate: { x: 1, y: 2 } }),
+        getTransform({ translate: { x: 2, y: 4 } }),
+        0.2
+      )
+      expect(ret.translate.x).toBeCloseTo(1.2)
+      expect(ret.translate.y).toBeCloseTo(2.4)
+    })
+    it('interpolate rotate', () => {
+      const ret = target.interpolateTransform(
+        getTransform({ rotate: 20 }),
+        getTransform({ rotate: 30 }),
+        0.2
+      )
+      expect(ret.rotate).toBeCloseTo(22)
+    })
+  })
 })

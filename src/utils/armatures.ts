@@ -386,3 +386,25 @@ function filterPoseSelectedBorn(
     }
   })
 }
+
+export function interpolateTransform(
+  a: Transform,
+  b: Transform,
+  rate: number
+): Transform {
+  return getTransform({
+    scale: interpolateVector(a.scale, b.scale, rate),
+    rotate: interpolateScaler(a.rotate, b.rotate, rate),
+    translate: interpolateVector(a.translate, b.translate, rate),
+  })
+}
+
+export function interpolateScaler(a: number, b: number, rate: number): number {
+  return a * (1 - rate) + b * rate
+}
+export function interpolateVector(a: IVec2, b: IVec2, rate: number): IVec2 {
+  return {
+    x: interpolateScaler(a.x, b.x, rate),
+    y: interpolateScaler(a.y, b.y, rate),
+  }
+}

@@ -1,5 +1,6 @@
+import { interpolateTransform } from './armatures'
 import { mapReduce } from './commons'
-import { IdMap, Keyframe } from '/@/models'
+import { getTransform, IdMap, Keyframe, Transform } from '/@/models'
 
 const scaleRate = 1.1
 export const frameWidth = 20
@@ -69,8 +70,8 @@ export function sortKeyframeMap(
 export function getNeighborKeyframes(
   sortedKeyframes: Keyframe[],
   frame: number
-): Keyframe[] | undefined {
-  if (sortedKeyframes.length === 0) return
+): [before?: Keyframe, after?: Keyframe] {
+  if (sortedKeyframes.length === 0) return []
   const afterIndex = sortedKeyframes.findIndex((k) => frame <= k.frame)
   if (afterIndex === -1) return [sortedKeyframes[sortedKeyframes.length - 1]]
   const after = sortedKeyframes[afterIndex]
@@ -78,4 +79,20 @@ export function getNeighborKeyframes(
   const before = sortedKeyframes[afterIndex - 1]
   if (before.frame === frame) return [before]
   return [before, after]
+}
+
+type InterpolateCurve = (val: number) => number
+
+export function interpolateKeyframeTransform(
+  keyframes: [before?: Keyframe, after?: Keyframe],
+  frame: number,
+  interpolateFn: InterpolateCurve = (x) => x
+): Transform {
+  if (keyframes.length === 0) return getTransform()
+  if (keyframes.length === 1) return keyframes[0]!.transform
+
+  const a = keyframes[0]!
+  const b = keyframes[1]!
+  const rate = interpolateFn((frame - a.frame) / (b.frame - a.frame))
+  return interpolateTransform(a.transform, b.transform, rate)
 }

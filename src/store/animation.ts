@@ -250,28 +250,32 @@ function getUpdateEditedTransformsItem(val: IdMap<Transform>): HistoryItem {
 
 function getExecInsertKeyframeItem(keyframes: Keyframe[]) {
   const bornIds = toBornIdMap(keyframes)
-  const preKeyframeMap = { ...currentKeyframeMap.value }
   const preFrame = currentFrame.value
   const preEditTransforms = { ...editTransforms.value }
-  const updated = actions.lastSelectedItem
-    .value!.keyframes.filter((k) => {
-      return !(k.frame === preFrame && bornIds[k.bornId])
-    })
-    .concat(keyframes)
+  const preKeyframes = actions.lastSelectedItem.value!.keyframes.filter((k) => {
+    return k.frame === preFrame && bornIds[k.bornId]
+  })
 
   const redo = () => {
+    const updated = actions.lastSelectedItem
+      .value!.keyframes.filter((k) => {
+        return !(k.frame === preFrame && bornIds[k.bornId])
+      })
+      .concat(keyframes)
     currentFrame.value = preFrame
     actions.lastSelectedItem.value!.keyframes = updated
     editTransforms.value = dropKeys(editTransforms.value, bornIds)
   }
   return {
-    name: 'Update Pose',
+    name: 'Insert Keyframe',
     undo: () => {
-      const reverted = { ...preKeyframeMap }
+      const reverted = actions.lastSelectedItem
+        .value!.keyframes.filter((k) => {
+          return !(k.frame === preFrame && bornIds[k.bornId])
+        })
+        .concat(preKeyframes)
       currentFrame.value = preFrame
-      actions.lastSelectedItem.value!.keyframes = Object.keys(reverted).map(
-        (key) => reverted[key]
-      )
+      actions.lastSelectedItem.value!.keyframes = reverted
       editTransforms.value = preEditTransforms
     },
     redo,

@@ -27,6 +27,7 @@
       @keydown.e.exact.prevent="editKeyDown('e')"
       @keydown.x.exact.prevent="editKeyDown('x')"
       @keydown.y.exact.prevent="editKeyDown('y')"
+      @keydown.a.exact.prevent="editKeyDown('a')"
       @keydown.a.shift.exact.prevent="editKeyDown('shift-a')"
       @keydown.i.exact.prevent="editKeyDown('i')"
     >
@@ -109,6 +110,7 @@ export default defineComponent({
     'e',
     'x',
     'y',
+    'a',
     'shift-a',
     'i',
   ],
@@ -259,7 +261,9 @@ export default defineComponent({
       keyDownEscape: () => {
         emit('escape')
       },
-      editKeyDown(key: 'g' | 's' | 'r' | 'e' | 'x' | 'y' | 'shift-a' | 'i') {
+      editKeyDown(
+        key: 'g' | 's' | 'r' | 'e' | 'x' | 'y' | 'a' | 'shift-a' | 'i'
+      ) {
         if (!mousePoint.value) return
 
         if (

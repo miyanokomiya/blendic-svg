@@ -137,6 +137,7 @@ export interface CanvasEditModeBase {
   setEditMode: (mode: EditMode) => void
   select: (id: string, selectedState: BornSelectedState) => void
   shiftSelect: (id: string, selectedState: BornSelectedState) => void
+  selectAll: () => void
   mousemove: (arg: EditMovement) => void
   clickAny: () => void
   clickEmpty: () => void

@@ -15,6 +15,7 @@
         @r="setEditMode('rotate')"
         @e="setEditMode('extrude')"
         @x="execDelete"
+        @a="selectAll"
         @shift-a="addItem"
         @i="saveKeyframe"
       >
@@ -236,6 +237,9 @@ export default defineComponent({
       },
       execDelete() {
         canvasStore.execDelete()
+      },
+      selectAll() {
+        canvasStore.selectAll()
       },
       addItem() {
         canvasStore.execAdd()

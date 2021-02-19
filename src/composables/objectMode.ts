@@ -81,6 +81,14 @@ export function useObjectMode(): ObjectMode {
     store.selectBorn(id, selectedState, true)
   }
 
+  function selectAll() {
+    if (state.command) {
+      completeEdit()
+      return
+    }
+    store.selectAllArmature()
+  }
+
   function mousemove(arg: EditMovement) {
     if (state.command) {
       state.editMovement = arg
@@ -109,6 +117,7 @@ export function useObjectMode(): ObjectMode {
     setEditMode,
     select,
     shiftSelect,
+    selectAll,
     mousemove,
     clickAny,
     clickEmpty,

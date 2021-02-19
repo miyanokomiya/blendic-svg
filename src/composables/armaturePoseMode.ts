@@ -128,6 +128,14 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     store.selectBorn(id, selectedState, true, true)
   }
 
+  function selectAll() {
+    if (state.command) {
+      completeEdit()
+      return
+    }
+    store.selectAllBorn()
+  }
+
   function mousemove(arg: EditMovement) {
     if (state.command) {
       state.editMovement = arg
@@ -144,6 +152,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     setEditMode,
     select,
     shiftSelect,
+    selectAll,
     mousemove,
     clickAny,
     clickEmpty,

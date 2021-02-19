@@ -134,6 +134,14 @@ watch(
   }
 )
 
+function selectAllArmature() {
+  if (state.lastSelectedArmatureId) return
+
+  const armature = state.armatures[0]
+  if (!armature) return
+
+  selectArmature(armature.id)
+}
 function selectArmature(id: string = '') {
   if (state.lastSelectedArmatureId === id) return
 
@@ -170,6 +178,13 @@ function addArmature() {
   historyStore.push(item)
 }
 
+function selectAllBorn() {
+  if (!lastSelectedArmature.value) return
+
+  const item = getSelectAllBornItem()
+  item.redo()
+  historyStore.push(item)
+}
 function selectBorn(
   id: string = '',
   selectedState: BornSelectedState = { head: true, tail: true },
@@ -252,10 +267,12 @@ export function useStore() {
     lastSelectedBorn,
     bornMap,
     selectedBornsOrigin,
+    selectAllArmature,
     selectArmature,
     updateArmatureName,
     deleteArmature,
     addArmature,
+    selectAllBorn,
     selectBorn,
     deleteBorn,
     addBorn,
@@ -357,6 +374,35 @@ function getSelectBornItem(
   }
   return {
     name: 'Select Born',
+    undo: () => {
+      state.selectedBorns = { ...current }
+      state.lastSelectedBornId = currentLast
+    },
+    redo,
+  }
+}
+
+function getAllBornSelectedStateMap(): IdMap<BornSelectedState> {
+  if (!lastSelectedArmature.value) return {}
+
+  return lastSelectedArmature.value.borns.reduce<IdMap<BornSelectedState>>(
+    (p, b) => {
+      p[b.id] = { head: true, tail: true }
+      return p
+    },
+    {}
+  )
+}
+
+function getSelectAllBornItem(): HistoryItem {
+  const current = { ...state.selectedBorns }
+  const currentLast = state.lastSelectedBornId
+
+  const redo = () => {
+    state.selectedBorns = getAllBornSelectedStateMap()
+  }
+  return {
+    name: 'Select All Born',
     undo: () => {
       state.selectedBorns = { ...current }
       state.lastSelectedBornId = currentLast

@@ -1,7 +1,12 @@
 import { IVec2 } from 'okageo'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useStore } from '.'
 import { useListState } from '../composables/listState'
+import {
+  getKeyframeMapByBornId,
+  getKeyframeMapByFrame,
+  getKeyframesAt,
+} from '../utils/animations'
 import {
   convolutePoseTransforms,
   getAnySelectedBorns,
@@ -9,16 +14,20 @@ import {
   getPoseSelectedBorns,
   getTransformedBornMap,
 } from '../utils/armatures'
+import { dropKeys } from '../utils/commons'
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
 import {
   Action,
   Born,
   getAction,
+  getKeyframe,
+  getOriginPartial,
   getTransform,
   IdMap,
   Keyframe,
   toBornIdMap,
+  toFrameMap,
   toMap,
   Transform,
 } from '/@/models'
@@ -31,23 +40,30 @@ const editTransforms = ref<IdMap<Transform>>({})
 const historyStore = useHistoryStore()
 const store = useStore()
 
-const currentKeyFrames = computed((): Keyframe[] => {
-  return (
-    actions.lastSelectedItem.value?.keyframes.filter(
-      (k) => k.frame === currentFrame.value
-    ) ?? []
+const keyframeMapByFrame = computed(() => {
+  return getKeyframeMapByFrame(actions.lastSelectedItem.value?.keyframes ?? [])
+})
+
+const keyframeMapByBornId = computed(() => {
+  return getKeyframeMapByBornId(actions.lastSelectedItem.value?.keyframes ?? [])
+})
+
+const currentKeyframes = computed((): Keyframe[] => {
+  return getKeyframesAt(
+    actions.lastSelectedItem.value?.keyframes ?? [],
+    currentFrame.value
   )
 })
 
-const currentKeyFrameMap = computed(
-  (): IdMap<Keyframe> => toBornIdMap(currentKeyFrames.value)
+const currentKeyframeMap = computed(
+  (): IdMap<Keyframe> => toBornIdMap(currentKeyframes.value)
 )
 
 const posedBornIds = computed(() => {
   return Array.from(
     new Set(
       Object.keys(editTransforms.value).concat(
-        Object.keys(currentKeyFrameMap.value)
+        Object.keys(currentKeyframeMap.value)
       )
     )
   )
@@ -56,9 +72,9 @@ const posedBornIds = computed(() => {
 const currentSelfTransforms = computed(
   (): IdMap<Transform> => {
     return posedBornIds.value.reduce<IdMap<Transform>>((p, id) => {
-      if (currentKeyFrameMap.value[id]) {
+      if (currentKeyframeMap.value[id]) {
         p[id] = convolutePoseTransforms([
-          currentKeyFrameMap.value[id].transform,
+          currentKeyframeMap.value[id].transform,
           getBornEditedTransforms(id),
         ])
       } else {
@@ -103,10 +119,6 @@ const selectedPosedBornOrigin = computed(
   }
 )
 
-watch(currentFrame, () => {
-  editTransforms.value = {}
-})
-
 function addAction() {
   if (!store.lastSelectedArmature.value) return
 
@@ -150,11 +162,35 @@ function applyEditedTransforms(map: IdMap<Transform>) {
     }, {})
   )
 }
-function getBornEditedTransforms(id: string): Transform {
-  return editTransforms.value[id] ?? getTransform()
+function getBornEditedTransforms(bornId: string): Transform {
+  return editTransforms.value[bornId] ?? getTransform()
 }
-function getCurrentSelfTransforms(id: string): Transform {
-  return currentSelfTransforms.value[id] ?? getTransform()
+function getCurrentSelfTransforms(bornId: string): Transform {
+  return currentSelfTransforms.value[bornId] ?? getTransform()
+}
+
+function execInsertKeyframe() {
+  if (!actions.lastSelectedItem.value) return
+
+  const keyframes = Object.keys(selectedAllBorns.value).map((bornId) => {
+    return getKeyframe(
+      {
+        frame: currentFrame.value,
+        bornId,
+        transform: getCurrentSelfTransforms(bornId),
+      },
+      true
+    )
+  })
+
+  const item = getExecInsertKeyframeItem(keyframes)
+  item.redo()
+  historyStore.push(item)
+}
+
+function setCurrentFrame(val: number) {
+  currentFrame.value = val
+  editTransforms.value = {}
 }
 
 export function useAnimationStore() {
@@ -162,6 +198,8 @@ export function useAnimationStore() {
     currentFrame,
     endFrame,
     actions: actions.state.list,
+    keyframeMapByFrame,
+    keyframeMapByBornId,
     posedBornIds,
     currentPosedBorns,
     selectedAllBorns,
@@ -175,6 +213,8 @@ export function useAnimationStore() {
     deleteAction: actions.deleteItem,
     updateAction: (action: Partial<Action>) => actions.updateItem(action),
     applyEditedTransforms,
+    execInsertKeyframe,
+    setCurrentFrame,
   }
 }
 
@@ -203,6 +243,36 @@ function getUpdateEditedTransformsItem(val: IdMap<Transform>): HistoryItem {
     name: 'Update Pose',
     undo: () => {
       editTransforms.value = current
+    },
+    redo,
+  }
+}
+
+function getExecInsertKeyframeItem(keyframes: Keyframe[]) {
+  const bornIds = toBornIdMap(keyframes)
+  const preKeyframeMap = { ...currentKeyframeMap.value }
+  const preFrame = currentFrame.value
+  const preEditTransforms = { ...editTransforms.value }
+  const updated = actions.lastSelectedItem
+    .value!.keyframes.filter((k) => {
+      return !(k.frame === preFrame && bornIds[k.bornId])
+    })
+    .concat(keyframes)
+
+  const redo = () => {
+    currentFrame.value = preFrame
+    actions.lastSelectedItem.value!.keyframes = updated
+    editTransforms.value = dropKeys(editTransforms.value, bornIds)
+  }
+  return {
+    name: 'Update Pose',
+    undo: () => {
+      const reverted = { ...preKeyframeMap }
+      currentFrame.value = preFrame
+      actions.lastSelectedItem.value!.keyframes = Object.keys(reverted).map(
+        (key) => reverted[key]
+      )
+      editTransforms.value = preEditTransforms
     },
     redo,
   }

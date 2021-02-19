@@ -28,6 +28,11 @@
               :end-frame="endFrame"
               @down-current-frame="downCurrentFrame"
             />
+            <Keyframes
+              :scale="scale"
+              :keyframe-map-by-frame="keyframeMapByFrame"
+              :born-ids="selectedAllBornIdList"
+            />
           </g>
           <g
             :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
@@ -52,8 +57,8 @@
                 label="Summary"
               />
               <TimelineRow
-                v-for="(born, id, i) in selectedAllBorns"
-                :key="id"
+                v-for="(born, i) in selectedAllBornList"
+                :key="born.id"
                 :index="i + 2"
                 :label-width="labelWidth"
                 :label="born.name"
@@ -74,11 +79,19 @@ import SelectField from './atoms/SelectField.vue'
 import TimelineCanvas from './TimelineCanvas.vue'
 import TimelineRow from './elements/atoms/TimelineRow.vue'
 import TimelineAxis from './elements/atoms/TimelineAxis.vue'
+import Keyframes from './elements/Keyframes.vue'
 import { getNearestFrameAtPoint } from '../utils/animations'
 import { IVec2 } from 'okageo'
+import { toList } from '/@/utils/commons'
 
 export default defineComponent({
-  components: { SelectField, TimelineCanvas, TimelineRow, TimelineAxis },
+  components: {
+    SelectField,
+    TimelineCanvas,
+    TimelineRow,
+    TimelineAxis,
+    Keyframes,
+  },
   setup() {
     const labelWidth = 140
     const axisPadding = 20
@@ -91,8 +104,14 @@ export default defineComponent({
     const draftEndFrame = ref('')
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
-    const selectedAllBorns = computed(
-      () => animationStore.selectedAllBorns.value
+    const selectedAllBornList = computed(() =>
+      toList(animationStore.selectedAllBorns.value)
+    )
+    const selectedAllBornIdList = computed(() =>
+      selectedAllBornList.value.map((b) => b.id)
+    )
+    const keyframeMapByFrame = computed(
+      () => animationStore.keyframeMapByFrame.value
     )
 
     const actionOptions = computed(() =>
@@ -113,8 +132,8 @@ export default defineComponent({
     }
     function drag(current: IVec2) {
       if (editMode.value === 'move-current-frame') {
-        animationStore.currentFrame.value = getNearestFrameAtPoint(
-          current.x - labelWidth - axisPadding
+        animationStore.setCurrentFrame(
+          getNearestFrameAtPoint(current.x - labelWidth - axisPadding)
         )
       }
     }
@@ -131,7 +150,9 @@ export default defineComponent({
 
     return {
       actions: animationStore.actions,
-      selectedAllBorns,
+      selectedAllBornList,
+      selectedAllBornIdList,
+      keyframeMapByFrame,
       draftName,
       draftEndFrame,
       labelWidth,

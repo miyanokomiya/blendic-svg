@@ -106,7 +106,7 @@ export default defineComponent({
   },
   emits: ['down-current-frame', 'up-current-frame'],
   setup(props, { emit }) {
-    const frameWidth = 20
+    const frameWidth = animations.frameWidth
 
     const frameInterval = computed(() => {
       return animations.getFrameInterval(props.scale)

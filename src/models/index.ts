@@ -1,6 +1,7 @@
 import { IVec2 } from 'okageo'
 import { v4 } from 'uuid'
 import { ComputedRef } from 'vue'
+import { toKeyMap } from '../utils/commons'
 
 export type IdMap<T> = {
   [id: string]: T
@@ -152,22 +153,13 @@ export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {
 }
 
 export function toMap<T extends { id: string }>(list: T[]): IdMap<T> {
-  return list.reduce<IdMap<T>>(
-    (m, item) => ({
-      ...m,
-      [item.id]: item,
-    }),
-    {}
-  )
+  return toKeyMap(list, 'id')
 }
 export function toBornIdMap<T extends { bornId: string }>(list: T[]): IdMap<T> {
-  return list.reduce<IdMap<T>>(
-    (m, item) => ({
-      ...m,
-      [item.bornId]: item,
-    }),
-    {}
-  )
+  return toKeyMap(list, 'bornId')
+}
+export function toFrameMap<T extends { frame: number }>(list: T[]): IdMap<T> {
+  return toKeyMap(list, 'frame')
 }
 
 export function mergeMap<T>(src: IdMap<T>, override: IdMap<T>): IdMap<T> {

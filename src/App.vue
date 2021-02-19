@@ -16,6 +16,7 @@
         @e="setEditMode('extrude')"
         @x="execDelete"
         @shift-a="addItem"
+        @i="saveKeyframe"
       >
         <g v-if="canvasMode === 'object'">
           <ArmatureElm
@@ -238,6 +239,9 @@ export default defineComponent({
       },
       addItem() {
         canvasStore.execAdd()
+      },
+      saveKeyframe() {
+        animationStore.execInsertKeyframe()
       },
     }
   },

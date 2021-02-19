@@ -52,8 +52,8 @@
                 label="Summary"
               />
               <TimelineRow
-                v-for="(born, i) in selectedBorns"
-                :key="born.id"
+                v-for="(born, id, i) in selectedAllBorns"
+                :key="id"
                 :index="i + 2"
                 :label-width="labelWidth"
                 :label="born.name"
@@ -91,8 +91,8 @@ export default defineComponent({
     const draftEndFrame = ref('')
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
-    const selectedBorns = computed(
-      () => store.lastSelectedArmature.value?.borns ?? []
+    const selectedAllBorns = computed(
+      () => animationStore.selectedAllBorns.value
     )
 
     const actionOptions = computed(() =>
@@ -131,7 +131,7 @@ export default defineComponent({
 
     return {
       actions: animationStore.actions,
-      selectedBorns,
+      selectedAllBorns,
       draftName,
       draftEndFrame,
       labelWidth,

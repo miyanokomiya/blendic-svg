@@ -353,6 +353,17 @@ function flatBornTree(children: BornNode[]): Born[] {
     .concat(children.flatMap((c) => flatBornTree(c.children)))
 }
 
+export function getAnySelectedBorns(
+  bornMap: IdMap<Born>,
+  selectedState: IdMap<BornSelectedState>
+): IdMap<Born> {
+  return toMap(
+    Object.keys(bornMap)
+      .filter((id) => isBornSelected(selectedState[id]))
+      .map((id) => bornMap[id])
+  )
+}
+
 export function getPoseSelectedBorns(
   bornMap: IdMap<Born>,
   selectedState: IdMap<BornSelectedState>

@@ -4,6 +4,7 @@ import { useStore } from '.'
 import { useListState } from '../composables/listState'
 import {
   convolutePoseTransforms,
+  getAnySelectedBorns,
   getPosedBornHeadsOrigin,
   getPoseSelectedBorns,
   getTransformedBornMap,
@@ -84,6 +85,10 @@ const currentPosedBorns = computed(
   }
 )
 
+const selectedAllBorns = computed(() => {
+  return getAnySelectedBorns(currentPosedBorns.value, store.state.selectedBorns)
+})
+
 const selectedBorns = computed(() => {
   return getPoseSelectedBorns(
     currentPosedBorns.value,
@@ -159,6 +164,7 @@ export function useAnimationStore() {
     actions: actions.state.list,
     posedBornIds,
     currentPosedBorns,
+    selectedAllBorns,
     selectedBorns,
     selectedPosedBornOrigin,
     getCurrentSelfTransforms,

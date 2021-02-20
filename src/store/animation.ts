@@ -232,6 +232,7 @@ function stepFrame(tickFrame: number, reverse = false) {
     const val = currentFrame.value + tickFrame
     currentFrame.value = endFrame.value <= val ? 0 : val
   }
+  editTransforms.value = {}
 }
 
 function selectAction(id: string) {

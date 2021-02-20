@@ -152,7 +152,13 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     }
   }
 
-  function execDelete() {}
+  function execDelete() {
+    if (state.command) {
+      completeEdit()
+      return
+    }
+    animationStore.execDeleteKeyframes()
+  }
 
   function getEditFrames(id: string) {
     return editFrames.value[id] ?? allKeyframes.value[id].frame

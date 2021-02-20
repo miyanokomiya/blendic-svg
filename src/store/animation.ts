@@ -298,6 +298,13 @@ function execInsertKeyframe() {
   item.redo()
   historyStore.push(item)
 }
+function execDeleteKeyframes() {
+  if (!isAnyVisibledSelectedKeyframe.value) return
+
+  const item = getExecDeleteKeyframesItem()
+  item.redo()
+  historyStore.push(item)
+}
 function execUpdateKeyFrames(keyframes: IdMap<Keyframe>) {
   const item = getExecUpdateKeyframeItem(keyframes)
   item.redo()
@@ -343,6 +350,7 @@ export function useAnimationStore() {
     selectKeyframeByFrame,
     selectAllKeyframes,
     execInsertKeyframe,
+    execDeleteKeyframes,
     execUpdateKeyFrames,
   }
 }
@@ -515,6 +523,30 @@ function getExecInsertKeyframeItem(keyframes: Keyframe[]) {
   }
 }
 
+function getExecDeleteKeyframesItem() {
+  const deletedFrames = { ...visibledSelectedKeyframeMap.value }
+  const selectItem = getSelectKeyframesItem([])
+
+  const redo = () => {
+    const updated = actions.lastSelectedItem.value!.keyframes.filter((k) => {
+      return !deletedFrames[k.id]
+    })
+    selectItem.redo()
+    actions.lastSelectedItem.value!.keyframes = updated
+  }
+  return {
+    name: 'Delete Keyframes',
+    undo: () => {
+      const reverted = actions.lastSelectedItem.value!.keyframes.concat(
+        toList(deletedFrames)
+      )
+      actions.lastSelectedItem.value!.keyframes = reverted
+      selectItem.undo()
+    },
+    redo,
+  }
+}
+
 function getSrameFrameAndBornIdKeyframe(
   frame: number,
   bornId: string
@@ -545,7 +577,6 @@ function getExecUpdateKeyframeItem(keyframes: IdMap<Keyframe>) {
       ...keyframes,
     })
     actions.lastSelectedItem.value!.keyframes = updated
-    console.log(actions.lastSelectedItem.value!.keyframes)
   }
   return {
     name: 'Update Keyframe',
@@ -556,7 +587,6 @@ function getExecUpdateKeyframeItem(keyframes: IdMap<Keyframe>) {
         ...toMap(overridedKeyframeList),
       })
       actions.lastSelectedItem.value!.keyframes = reverted
-      console.log(actions.lastSelectedItem.value!.keyframes)
     },
     redo,
   }

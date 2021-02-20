@@ -31,6 +31,7 @@
         @click-empty="clickEmpty"
         @escape="escape"
         @a="selectAll"
+        @x="deleteKeyframes"
         @g="grag"
       >
         <template #default="{ scale, viewOrigin, viewSize }">
@@ -229,6 +230,7 @@ export default defineComponent({
       shiftSelectKeyframeByFrame: keyframeEditMode.shiftSelectFrame,
       selectAll: keyframeEditMode.selectAll,
       grag: () => keyframeEditMode.setEditMode('grab'),
+      deleteKeyframes: keyframeEditMode.execDelete,
       clickEmpty: keyframeEditMode.clickEmpty,
       downCurrentFrame,
       downLeft,

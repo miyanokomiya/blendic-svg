@@ -6,7 +6,6 @@ import {
   getInterpolatedTransformMapByBornId,
   getKeyframeMapByBornId,
   getKeyframeMapByFrame,
-  getKeyframesAt,
 } from '../utils/animations'
 import {
   convolutePoseTransforms,
@@ -15,7 +14,7 @@ import {
   getPoseSelectedBorns,
   getTransformedBornMap,
 } from '../utils/armatures'
-import { dropKeys, mapReduce } from '../utils/commons'
+import { dropKeys } from '../utils/commons'
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
 import {
@@ -49,13 +48,6 @@ const keyframeMapByBornId = computed(() => {
   return getKeyframeMapByBornId(actions.lastSelectedItem.value?.keyframes ?? [])
 })
 
-const currentKeyframes = computed((): Keyframe[] => {
-  return getKeyframesAt(
-    actions.lastSelectedItem.value?.keyframes ?? [],
-    currentFrame.value
-  )
-})
-
 const currentInterpolatedTransformMapByBornId = computed(
   (): IdMap<Transform> => {
     return getInterpolatedTransformMapByBornId(
@@ -63,10 +55,6 @@ const currentInterpolatedTransformMapByBornId = computed(
       currentFrame.value
     )
   }
-)
-
-const currentKeyframeMap = computed(
-  (): IdMap<Keyframe> => toBornIdMap(currentKeyframes.value)
 )
 
 const posedBornIds = computed(() => {
@@ -86,14 +74,6 @@ const currentSelfTransforms = computed(
         currentInterpolatedTransform(id),
         getBornEditedTransforms(id),
       ])
-      // if (currentKeyframeMap.value[id]) {
-      //   p[id] = convolutePoseTransforms([
-      //     currentKeyframeMap.value[id].transform,
-      //     getBornEditedTransforms(id),
-      //   ])
-      // } else {
-      //   p[id] = getBornEditedTransforms(id)
-      // }
       return p
     }, {})
   }

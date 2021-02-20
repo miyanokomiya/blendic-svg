@@ -26,13 +26,6 @@ export function getNearestFrameAtPoint(x: number): number {
   return Math.round(Math.max(x, 0) / frameWidth)
 }
 
-export function getKeyframesAt(
-  keyframes: Keyframe[],
-  frame: number
-): Keyframe[] {
-  return keyframes.filter((k) => k.frame === frame)
-}
-
 export function getKeyframeMapByFrame(
   keyframes: Keyframe[]
 ): IdMap<Keyframe[]> {
@@ -42,7 +35,7 @@ export function getKeyframeMapByFrame(
 export function getKeyframeMapByBornId(
   keyframes: Keyframe[]
 ): IdMap<Keyframe[]> {
-  return toKeyListMap(keyframes, 'bornId')
+  return sortKeyframeMap(toKeyListMap(keyframes, 'bornId'))
 }
 
 export function sortKeyframes(keyframes: Keyframe[]): Keyframe[] {

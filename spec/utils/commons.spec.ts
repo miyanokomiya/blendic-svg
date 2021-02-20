@@ -1,5 +1,4 @@
 import {
-  dropKeys,
   dropMap,
   dropMapIf,
   extractMap,
@@ -11,17 +10,6 @@ import {
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
-  describe('dropKeys', () => {
-    it('drop target keys', () => {
-      expect(
-        dropKeys({ a: 1, b: 2, c: 3, d: 4 }, { b: true, c: undefined })
-      ).toEqual({
-        a: 1,
-        d: 4,
-      })
-    })
-  })
-
   describe('toKeyMap', () => {
     it('list to map', () => {
       expect(

@@ -20,7 +20,6 @@ import {
   getTransformedBornMap,
 } from '../utils/armatures'
 import {
-  dropKeys,
   dropMap,
   dropMapIf,
   extractMap,
@@ -485,7 +484,7 @@ function getExecInsertKeyframeItem(keyframes: Keyframe[]) {
       .concat(keyframes)
     currentFrame.value = preFrame
     actions.lastSelectedItem.value!.keyframes = updated
-    editTransforms.value = dropKeys(editTransforms.value, bornIds)
+    editTransforms.value = dropMap(editTransforms.value, bornIds)
   }
   return {
     name: 'Insert Keyframe',

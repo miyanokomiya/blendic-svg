@@ -1,15 +1,3 @@
-export function dropKeys<T>(
-  src: { [key: string]: T },
-  keyMap: { [key: string]: any }
-): { [key: string]: T } {
-  return Object.keys(src).reduce<{ [key: string]: T }>((p, c) => {
-    if (!(c in keyMap)) {
-      p[c] = src[c]
-    }
-    return p
-  }, {})
-}
-
 export function toKeyMap<T extends object>(
   list: T[],
   key: string | number

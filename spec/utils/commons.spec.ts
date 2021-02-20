@@ -1,4 +1,10 @@
-import { dropKeys, mapReduce, toKeyMap, toList } from '/@/utils/commons'
+import {
+  dropKeys,
+  mapReduce,
+  toKeyListMap,
+  toKeyMap,
+  toList,
+} from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
   describe('dropKeys', () => {
@@ -25,6 +31,29 @@ describe('utils/commons.ts', () => {
       ).toEqual({
         1: { a: 1, b: 20 },
         2: { a: 2, b: 21 },
+      })
+    })
+  })
+
+  describe('toKeyListMap', () => {
+    it('list to list map having the same key value', () => {
+      expect(
+        toKeyListMap(
+          [
+            { a: 1, b: 20 },
+            { a: 2, b: 21 },
+            { a: 2, b: 22 },
+            { a: 3, b: 23 },
+          ],
+          'a'
+        )
+      ).toEqual({
+        1: [{ a: 1, b: 20 }],
+        2: [
+          { a: 2, b: 21 },
+          { a: 2, b: 22 },
+        ],
+        3: [{ a: 3, b: 23 }],
       })
     })
   })

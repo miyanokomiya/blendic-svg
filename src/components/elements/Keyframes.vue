@@ -32,8 +32,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
-import { IdMap, Keyframe } from '/@/models'
-import * as animations from '/@/utils/animations'
+import { IdMap, Keyframe, frameWidth } from '/@/models'
 
 export default defineComponent({
   props: {
@@ -52,8 +51,6 @@ export default defineComponent({
   },
   emits: [],
   setup(props) {
-    const frameWidth = animations.frameWidth
-
     const bornIndexMap = computed(
       (): IdMap<number> => {
         return props.bornIds.reduce<IdMap<number>>((p, id, i) => {

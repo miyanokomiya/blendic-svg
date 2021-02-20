@@ -1,9 +1,13 @@
 import { interpolateTransform } from './armatures'
-import { mapReduce } from './commons'
-import { getTransform, IdMap, Keyframe, Transform } from '/@/models'
-
-const scaleRate = 1.1
-export const frameWidth = 20
+import { mapReduce, toKeyListMap } from './commons'
+import {
+  frameWidth,
+  getTransform,
+  IdMap,
+  Keyframe,
+  scaleRate,
+  Transform,
+} from '/@/models'
 
 export function getScaleLog(scale: number): number {
   return Math.round(Math.log(scale) / Math.log(scaleRate))
@@ -32,29 +36,13 @@ export function getKeyframesAt(
 export function getKeyframeMapByFrame(
   keyframes: Keyframe[]
 ): IdMap<Keyframe[]> {
-  const map: IdMap<Keyframe[]> = {}
-  keyframes.forEach((kf) => {
-    if (map[kf.frame]) {
-      map[kf.frame].push(kf)
-    } else {
-      map[kf.frame] = [kf]
-    }
-  })
-  return map
+  return toKeyListMap(keyframes, 'frame')
 }
 
 export function getKeyframeMapByBornId(
   keyframes: Keyframe[]
 ): IdMap<Keyframe[]> {
-  const map: IdMap<Keyframe[]> = {}
-  keyframes.forEach((kf) => {
-    if (map[kf.frame]) {
-      map[kf.bornId].push(kf)
-    } else {
-      map[kf.bornId] = [kf]
-    }
-  })
-  return map
+  return toKeyListMap(keyframes, 'bornId')
 }
 
 export function sortKeyframes(keyframes: Keyframe[]): Keyframe[] {
@@ -67,10 +55,33 @@ export function sortKeyframeMap(
   return mapReduce(keyframeMap, sortKeyframes)
 }
 
+export function getInterpolatedTransformMapByBornId(
+  sortedKeyframes: IdMap<Keyframe[]>,
+  frame: number,
+  curveFn?: InterpolateCurve
+): IdMap<Transform> {
+  return mapReduce(
+    getgetNeighborKeyframeMapByBornId(sortedKeyframes, frame),
+    (neighbors) => interpolateKeyframeTransform(neighbors, frame, curveFn)
+  )
+}
+
+export function getgetNeighborKeyframeMapByBornId(
+  sortedKeyframes: IdMap<Keyframe[]>,
+  frame: number
+): IdMap<NeighborKeyframes> {
+  return mapReduce(sortedKeyframes, (list) => getNeighborKeyframes(list, frame))
+}
+
+type NeighborKeyframes =
+  | []
+  | [same: Keyframe]
+  | [before: Keyframe, after: Keyframe]
+
 export function getNeighborKeyframes(
   sortedKeyframes: Keyframe[],
   frame: number
-): [before?: Keyframe, after?: Keyframe] {
+): NeighborKeyframes {
   if (sortedKeyframes.length === 0) return []
   const afterIndex = sortedKeyframes.findIndex((k) => frame <= k.frame)
   if (afterIndex === -1) return [sortedKeyframes[sortedKeyframes.length - 1]]
@@ -84,15 +95,15 @@ export function getNeighborKeyframes(
 type InterpolateCurve = (val: number) => number
 
 export function interpolateKeyframeTransform(
-  keyframes: [before?: Keyframe, after?: Keyframe],
+  keyframes: NeighborKeyframes,
   frame: number,
-  interpolateFn: InterpolateCurve = (x) => x
+  curveFn: InterpolateCurve = (x) => x
 ): Transform {
   if (keyframes.length === 0) return getTransform()
   if (keyframes.length === 1) return keyframes[0]!.transform
 
   const a = keyframes[0]!
   const b = keyframes[1]!
-  const rate = interpolateFn((frame - a.frame) / (b.frame - a.frame))
+  const rate = curveFn((frame - a.frame) / (b.frame - a.frame))
   return interpolateTransform(a.transform, b.transform, rate)
 }

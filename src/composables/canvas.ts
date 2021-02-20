@@ -1,6 +1,7 @@
 import { defineComponent, ref, reactive, computed, onMounted, watch } from 'vue'
 import { IVec2, multi, sub, add, getRectCenter } from 'okageo'
 import * as helpers from '/@/utils/helpers'
+import { scaleRate } from '../models'
 
 export interface MoveInfo {
   origin: IVec2
@@ -49,7 +50,7 @@ export function useCanvas(
       const beforeOrigin = viewToCanvas(origin)
       scale.value = Math.min(
         Math.max(
-          scale.value * Math.pow(1.1, e.deltaY > 0 ? 1 : -1),
+          scale.value * Math.pow(scaleRate, e.deltaY > 0 ? 1 : -1),
           options.scaleMin ?? 0
         ),
         options.scaleMax ?? 10

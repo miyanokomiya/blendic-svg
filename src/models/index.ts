@@ -191,3 +191,6 @@ export function isBornSelected(selectedState?: BornSelectedState): boolean {
   if (selectedState.tail) return true
   return false
 }
+
+export const scaleRate = 1.1
+export const frameWidth = 20

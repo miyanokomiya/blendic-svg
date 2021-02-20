@@ -77,7 +77,7 @@ import {
 } from 'vue'
 import { getPointInTarget } from 'okanvas'
 import { IVec2, IRectangle, multi, sub, add, getRectCenter } from 'okageo'
-import { CanvasCommand } from '/@/models'
+import { CanvasCommand, scaleRate } from '/@/models'
 import * as helpers from '/@/utils/helpers'
 import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
@@ -210,7 +210,7 @@ export default defineComponent({
       wheel(e: WheelEvent) {
         const origin = mousePoint.value ? mousePoint.value : viewCenter.value
         const beforeOrigin = viewToCanvas(origin)
-        scale.value = scale.value * Math.pow(1.1, e.deltaY > 0 ? 1 : -1)
+        scale.value = scale.value * Math.pow(scaleRate, e.deltaY > 0 ? 1 : -1)
         const afterOrigin = viewToCanvas(origin)
         viewOrigin.value = add(viewOrigin.value, sub(beforeOrigin, afterOrigin))
       },

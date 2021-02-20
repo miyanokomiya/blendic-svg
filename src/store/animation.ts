@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useStore } from '.'
 import { useListState } from '../composables/listState'
 import {
+  getInterpolatedTransformMapByBornId,
   getKeyframeMapByBornId,
   getKeyframeMapByFrame,
   getKeyframesAt,
@@ -14,7 +15,7 @@ import {
   getPoseSelectedBorns,
   getTransformedBornMap,
 } from '../utils/armatures'
-import { dropKeys } from '../utils/commons'
+import { dropKeys, mapReduce } from '../utils/commons'
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
 import {
@@ -53,6 +54,15 @@ const currentKeyframes = computed((): Keyframe[] => {
   )
 })
 
+const currentInterpolatedTransformMapByBornId = computed(
+  (): IdMap<Transform> => {
+    return getInterpolatedTransformMapByBornId(
+      keyframeMapByBornId.value,
+      currentFrame.value
+    )
+  }
+)
+
 const currentKeyframeMap = computed(
   (): IdMap<Keyframe> => toBornIdMap(currentKeyframes.value)
 )
@@ -61,7 +71,7 @@ const posedBornIds = computed(() => {
   return Array.from(
     new Set(
       Object.keys(editTransforms.value).concat(
-        Object.keys(currentKeyframeMap.value)
+        Object.keys(keyframeMapByBornId.value)
       )
     )
   )
@@ -70,14 +80,18 @@ const posedBornIds = computed(() => {
 const currentSelfTransforms = computed(
   (): IdMap<Transform> => {
     return posedBornIds.value.reduce<IdMap<Transform>>((p, id) => {
-      if (currentKeyframeMap.value[id]) {
-        p[id] = convolutePoseTransforms([
-          currentKeyframeMap.value[id].transform,
-          getBornEditedTransforms(id),
-        ])
-      } else {
-        p[id] = getBornEditedTransforms(id)
-      }
+      p[id] = convolutePoseTransforms([
+        currentInterpolatedTransform(id),
+        getBornEditedTransforms(id),
+      ])
+      // if (currentKeyframeMap.value[id]) {
+      //   p[id] = convolutePoseTransforms([
+      //     currentKeyframeMap.value[id].transform,
+      //     getBornEditedTransforms(id),
+      //   ])
+      // } else {
+      //   p[id] = getBornEditedTransforms(id)
+      // }
       return p
     }, {})
   }
@@ -159,6 +173,10 @@ function applyEditedTransforms(map: IdMap<Transform>) {
       return p
     }, {})
   )
+}
+
+function currentInterpolatedTransform(bornId: string): Transform {
+  return currentInterpolatedTransformMapByBornId.value[bornId] ?? getTransform()
 }
 function getBornEditedTransforms(bornId: string): Transform {
   return editTransforms.value[bornId] ?? getTransform()

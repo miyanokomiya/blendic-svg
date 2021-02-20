@@ -21,15 +21,30 @@ export function toKeyMap<T extends object>(
   }, {})
 }
 
+export function toKeyListMap<T extends object>(
+  list: T[],
+  key: string | number
+): { [key: string]: T[] } {
+  const map: { [key: string]: T[] } = {}
+  list.forEach((c: any) => {
+    if (map[c[key]]) {
+      map[c[key]].push(c)
+    } else {
+      map[c[key]] = [c]
+    }
+  })
+  return map
+}
+
 export function toList<T>(map: { [key: string]: T }): T[] {
   return Object.keys(map).map((key) => map[key])
 }
 
-export function mapReduce<T>(
+export function mapReduce<T, R>(
   map: { [key: string]: T },
-  fn: (t: T) => T
-): { [key: string]: T } {
-  return Object.keys(map).reduce<{ [key: string]: T }>((p, c) => {
+  fn: (t: T) => R
+): { [key: string]: R } {
+  return Object.keys(map).reduce<{ [key: string]: R }>((p, c) => {
     p[c] = fn(map[c])
     return p
   }, {})

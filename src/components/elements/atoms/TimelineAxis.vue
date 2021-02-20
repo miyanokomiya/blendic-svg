@@ -79,6 +79,7 @@
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
+import { frameWidth } from '/@/models'
 import * as animations from '/@/utils/animations'
 
 export default defineComponent({
@@ -106,8 +107,6 @@ export default defineComponent({
   },
   emits: ['down-current-frame', 'up-current-frame'],
   setup(props, { emit }) {
-    const frameWidth = animations.frameWidth
-
     const frameInterval = computed(() => {
       return animations.getFrameInterval(props.scale)
     })

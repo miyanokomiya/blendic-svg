@@ -39,10 +39,10 @@
             :opacity="0.3"
           />
           <BornElm
-            v-for="born in editBornMap"
+            v-for="born in visibledBornMap"
             :key="born.id"
             :born="born"
-            :parent="editBornMap[born.parentId]"
+            :parent="visibledBornMap[born.parentId]"
             :selected-state="selectedBorns[born.id]"
             @select="(state) => selectBorn(born.id, state)"
             @shift-select="(state) => shiftSelectBorn(born.id, state)"
@@ -56,10 +56,10 @@
             :opacity="0.3"
           />
           <BornElm
-            v-for="born in editBornMap"
+            v-for="born in visibledBornMap"
             :key="born.id"
             :born="born"
-            :parent="editBornMap[born.parentId]"
+            :parent="visibledBornMap[born.parentId]"
             :selected-state="selectedBorns[born.id]"
             pose-mode
             @select="(state) => selectBorn(born.id, state)"
@@ -127,7 +127,7 @@ export default defineComponent({
       )
     )
 
-    const editBornMap = computed(() => {
+    const visibledBornMap = computed(() => {
       if (!lastSelectedArmature.value) return {}
       if (canvasMode.value === 'edit') {
         return toMap(
@@ -196,7 +196,7 @@ export default defineComponent({
       lastSelectedArmatureId: computed(
         () => store.lastSelectedArmature.value?.id
       ),
-      editBornMap,
+      visibledBornMap,
       selectedBorns: computed(() => store.state.selectedBorns),
       canvasMode,
       canvasCommand,

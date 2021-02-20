@@ -14,6 +14,8 @@
               r="4"
               stroke="#000"
               fill="#fff"
+              @click.left.exact="selectFrame(f)"
+              @click.left.shift.exact="shiftSelectFrame(f)"
             />
             <circle
               v-for="(k, i) in keyframes"
@@ -56,7 +58,7 @@ export default defineComponent({
       default: () => ({}),
     },
   },
-  emits: ['select', 'shift-select'],
+  emits: ['select', 'shift-select', 'select-frame', 'shift-select-frame'],
   setup(props, { emit }) {
     const { settings } = useSettings()
 
@@ -95,6 +97,12 @@ export default defineComponent({
     function shiftSelect(keyframeId: string) {
       emit('shift-select', keyframeId)
     }
+    function selectFrame(keyframeId: string) {
+      emit('select-frame', keyframeId)
+    }
+    function shiftSelectFrame(keyframeId: string) {
+      emit('shift-select-frame', keyframeId)
+    }
 
     return {
       headerHeight: 24,
@@ -103,6 +111,8 @@ export default defineComponent({
       sortedKeyframeMapByFrame,
       select,
       shiftSelect,
+      selectFrame,
+      shiftSelectFrame,
       selectedColor: settings.selectedColor,
     }
   },

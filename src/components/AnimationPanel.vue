@@ -54,6 +54,8 @@
               :selected-keyframe-map="selectedKeyframeMap"
               @select="selectKeyframe"
               @shift-select="shiftSelectKeyframe"
+              @select-frame="selectKeyframeByFrame"
+              @shift-select-frame="shiftSelectKeyframeByFrame"
             />
           </g>
           <g
@@ -223,6 +225,8 @@ export default defineComponent({
       escape: keyframeEditMode.cancel,
       selectKeyframe: keyframeEditMode.select,
       shiftSelectKeyframe: keyframeEditMode.shiftSelect,
+      selectKeyframeByFrame: keyframeEditMode.selectFrame,
+      shiftSelectKeyframeByFrame: keyframeEditMode.shiftSelectFrame,
       selectAll: keyframeEditMode.selectAll,
       grag: () => keyframeEditMode.setEditMode('grab'),
       clickEmpty: keyframeEditMode.clickEmpty,

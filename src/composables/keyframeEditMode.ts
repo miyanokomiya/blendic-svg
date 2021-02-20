@@ -20,6 +20,8 @@ interface State {
 
 export interface KeyframeEditMode extends CanvasEditModeBase {
   getEditFrames: (id: string) => number
+  selectFrame: (frame: number) => void
+  shiftSelectFrame: (frame: number) => void
 }
 
 export function useKeyframeEditMode(): KeyframeEditMode {
@@ -117,7 +119,23 @@ export function useKeyframeEditMode(): KeyframeEditMode {
       completeEdit()
       return
     }
-    animationStore.shiftSelectKeyframe(id)
+    animationStore.selectKeyframe(id, true)
+  }
+
+  function selectFrame(frame: number) {
+    if (state.command) {
+      completeEdit()
+      return
+    }
+    animationStore.selectKeyframeByFrame(frame)
+  }
+
+  function shiftSelectFrame(frame: number) {
+    if (state.command) {
+      completeEdit()
+      return
+    }
+    animationStore.selectKeyframeByFrame(frame, true)
   }
 
   function selectAll() {
@@ -151,6 +169,8 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     setEditMode,
     select,
     shiftSelect,
+    selectFrame,
+    shiftSelectFrame,
     selectAll,
     mousemove,
     clickAny,

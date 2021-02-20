@@ -21,7 +21,6 @@ import {
 } from '../utils/armatures'
 import {
   dropMap,
-  dropMapIf,
   extractMap,
   flatKeyListMap,
   mapReduce,
@@ -246,17 +245,21 @@ function deleteAction() {
   historyStore.push(item)
 }
 
-function selectKeyframe(keyframeId: string) {
+function selectKeyframe(keyframeId: string, shift = false) {
   if (!keyframeId && !isAnyVisibledSelectedKeyframe.value) return
 
-  const item = getSelectKeyframeItem(keyframeId)
+  const item = getSelectKeyframesItem([keyframeId], shift)
   item.redo()
   historyStore.push(item)
 }
-function shiftSelectKeyframe(keyframeId: string) {
-  if (!keyframeId) return
+function selectKeyframeByFrame(frame: number, shift = false) {
+  const frames = keyframeMapByFrame.value[frame]
+  if (frames.length === 0) return
 
-  const item = getSelectKeyframeItem(keyframeId, true)
+  const item = getSelectKeyframesItem(
+    frames.map((f) => f.id),
+    shift
+  )
   item.redo()
   historyStore.push(item)
 }
@@ -337,7 +340,7 @@ export function useAnimationStore() {
     updateAction: (action: Partial<Action>) => actions.updateItem(action),
 
     selectKeyframe,
-    shiftSelectKeyframe,
+    selectKeyframeByFrame,
     selectAllKeyframes,
     execInsertKeyframe,
     execUpdateKeyFrames,
@@ -376,7 +379,7 @@ function getUpdateEditedTransformsItem(val: IdMap<Transform>): HistoryItem {
 
 function getSelectActionItem(id: string): HistoryItem {
   const actionItem = getSelectItem(actions.state, id)
-  const selectItem = getSelectKeyframeItem('')
+  const selectItem = getSelectKeyframesItem([])
 
   return {
     name: 'Select Action',
@@ -392,7 +395,7 @@ function getSelectActionItem(id: string): HistoryItem {
 }
 export function getAddActionItem(item: Action): HistoryItem {
   const actionItem = getAddItem(actions.state, item)
-  const selectItem = getSelectKeyframeItem('')
+  const selectItem = getSelectKeyframesItem([])
 
   return {
     name: 'Add Action',
@@ -411,7 +414,7 @@ export function getDeleteActionItem(): HistoryItem {
     actions.state,
     actions.lastSelectedIndex.value
   )
-  const selectItem = getSelectKeyframeItem('')
+  const selectItem = getSelectKeyframesItem([])
 
   return {
     name: 'Delete Action',
@@ -426,31 +429,6 @@ export function getDeleteActionItem(): HistoryItem {
   }
 }
 
-function getSelectKeyframeItem(id: string, shift = false): HistoryItem {
-  const current = { ...selectedKeyframeMap.value }
-  const redo = () => {
-    if (shift) {
-      selectedKeyframeMap.value = {
-        ...selectedKeyframeMap.value,
-        [id]: !selectedKeyframeMap.value[id],
-      }
-    } else {
-      selectedKeyframeMap.value = id
-        ? {
-            ...dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value),
-            [id]: true,
-          }
-        : dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value)
-    }
-  }
-  return {
-    name: 'Select Keyframe',
-    undo: () => {
-      selectedKeyframeMap.value = { ...current }
-    },
-    redo,
-  }
-}
 function getSelectAllKeyframesItem(): HistoryItem {
   const current = { ...selectedKeyframeMap.value }
   const redo = () => {
@@ -461,6 +439,41 @@ function getSelectAllKeyframesItem(): HistoryItem {
   }
   return {
     name: 'Select All Keyframe',
+    undo: () => {
+      selectedKeyframeMap.value = { ...current }
+    },
+    redo,
+  }
+}
+function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
+  const current = { ...selectedKeyframeMap.value }
+
+  const redo = () => {
+    if (shift) {
+      const idMap = ids.reduce<IdMap<boolean>>((p, id) => {
+        p[id] = !selectedKeyframeMap.value[id]
+        return p
+      }, {})
+      selectedKeyframeMap.value = {
+        ...selectedKeyframeMap.value,
+        ...idMap,
+      }
+    } else {
+      const idMap = ids.reduce<IdMap<boolean>>((p, id) => {
+        p[id] = true
+        return p
+      }, {})
+      selectedKeyframeMap.value =
+        ids.length > 0
+          ? {
+              ...dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value),
+              ...idMap,
+            }
+          : dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value)
+    }
+  }
+  return {
+    name: 'Select Keyframe',
     undo: () => {
       selectedKeyframeMap.value = { ...current }
     },

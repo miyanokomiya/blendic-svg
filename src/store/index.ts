@@ -16,7 +16,6 @@ import {
 import * as armatureUtils from '/@/utils/armatures'
 import { IVec2 } from 'okageo'
 import { HistoryItem, useHistoryStore } from './history'
-import { dropMapIf, mapReduce } from '../utils/commons'
 
 const historyStore = useHistoryStore()
 
@@ -85,7 +84,7 @@ const selectedBornsOrigin = computed(
 )
 
 const allSelectedBorns = computed(() => {
-  return dropMapIf(state.selectedBorns, (s) => isBornSelected(s, true))
+  return armatureUtils.getAllSelectedBorns(bornMap.value, state.selectedBorns)
 })
 
 watch(
@@ -140,12 +139,15 @@ watch(
 )
 
 function selectAllArmature() {
-  if (state.lastSelectedArmatureId) return
+  // TODO: multi select armatures
+  if (state.lastSelectedArmatureId) {
+    selectArmature()
+  } else {
+    const armature = state.armatures[0]
+    if (!armature) return
 
-  const armature = state.armatures[0]
-  if (!armature) return
-
-  selectArmature(armature.id)
+    selectArmature(armature.id)
+  }
 }
 function selectArmature(id: string = '') {
   if (state.lastSelectedArmatureId === id) return

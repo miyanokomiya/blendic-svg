@@ -25,7 +25,6 @@ import {
   extractMap,
   flatKeyListMap,
   mapReduce,
-  toList,
 } from '../utils/commons'
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
@@ -179,7 +178,10 @@ function getCurrentSelfTransforms(bornId: string): Transform {
 }
 
 function execInsertKeyframe() {
-  if (!actions.lastSelectedItem.value) return
+  if (Object.keys(selectedAllBorns.value).length === 0) return
+  if (!actions.lastSelectedItem.value) {
+    addAction()
+  }
 
   const keyframes = Object.keys(selectedAllBorns.value).map((bornId) => {
     return getKeyframe(
@@ -483,7 +485,7 @@ function getSelectAllKeyframesItem(): HistoryItem {
     }
   }
   return {
-    name: 'Select Keyframe',
+    name: 'Select All Keyframe',
     undo: () => {
       selectedKeyframeMap.value = { ...current }
     },

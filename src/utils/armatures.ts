@@ -20,6 +20,7 @@ import {
   rotate,
   sub,
 } from 'okageo'
+import { dropMapIf } from './commons'
 
 export function multiPoseTransform(a: Transform, b: Transform): Transform {
   return getTransform({
@@ -313,11 +314,14 @@ export function getAnySelectedBorns(
   bornMap: IdMap<Born>,
   selectedState: IdMap<BornSelectedState>
 ): IdMap<Born> {
-  return toMap(
-    Object.keys(bornMap)
-      .filter((id) => isBornSelected(selectedState[id]))
-      .map((id) => bornMap[id])
-  )
+  return dropMapIf(bornMap, (b) => isBornSelected(selectedState[b.id]))
+}
+
+export function getAllSelectedBorns(
+  bornMap: IdMap<Born>,
+  selectedState: IdMap<BornSelectedState>
+): IdMap<Born> {
+  return dropMapIf(bornMap, (b) => isBornSelected(selectedState[b.id], true))
 }
 
 export function getPoseSelectedBorns(

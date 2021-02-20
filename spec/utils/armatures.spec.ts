@@ -441,6 +441,43 @@ describe('utils/armatures', () => {
     })
   })
 
+  describe('getAllSelectedBorns', () => {
+    it('get all selected borns', () => {
+      expect(
+        target.getAllSelectedBorns(
+          {
+            a: getBorn({
+              id: 'a',
+              parentId: '',
+            }),
+            aa: getBorn({
+              id: 'aa',
+              parentId: 'a',
+            }),
+            aaa: getBorn({
+              id: 'aaa',
+              parentId: 'aa',
+            }),
+            b: getBorn({
+              id: 'b',
+              parentId: '',
+            }),
+          },
+          {
+            aa: { head: true, tail: true },
+            aaa: { head: true },
+            b: { head: true },
+          }
+        )
+      ).toEqual({
+        aa: getBorn({
+          id: 'aa',
+          parentId: 'a',
+        }),
+      })
+    })
+  })
+
   describe('getPoseSelectedBorns', () => {
     it('if parent is selected the children are ignored', () => {
       expect(

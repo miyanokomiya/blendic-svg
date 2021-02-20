@@ -1,10 +1,13 @@
 import { reactive, computed } from 'vue'
+import { useSettings } from '../composables/settings'
 
 export interface HistoryItem {
   name: string
   undo: () => void
   redo: () => void
 }
+
+const { settings } = useSettings()
 
 const state = reactive({
   undoStack: [] as HistoryItem[],
@@ -22,6 +25,11 @@ function clearHistory() {
 }
 function push(item: HistoryItem) {
   state.undoStack.push(item)
+  if (state.undoStack.length > settings.historyMax) {
+    state.undoStack = state.undoStack.slice(
+      state.undoStack.length - settings.historyMax
+    )
+  }
   state.redoStack = []
 }
 function undo() {

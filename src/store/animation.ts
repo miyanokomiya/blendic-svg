@@ -1,7 +1,12 @@
 import { IVec2 } from 'okageo'
 import { computed, ref } from 'vue'
 import { useStore } from '.'
-import { useListState } from '../composables/listState'
+import {
+  getAddItem,
+  getDeleteItem,
+  getSelectItem,
+  useListState,
+} from '../composables/listState'
 import {
   getInterpolatedTransformMapByBornId,
   getKeyframeMapByBornId,
@@ -14,7 +19,14 @@ import {
   getPoseSelectedBorns,
   getTransformedBornMap,
 } from '../utils/armatures'
-import { dropKeys } from '../utils/commons'
+import {
+  dropKeys,
+  dropMap,
+  extractMap,
+  flatKeyListMap,
+  mapReduce,
+  toList,
+} from '../utils/commons'
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
 import {
@@ -36,6 +48,7 @@ const currentFrame = ref(0)
 const endFrame = ref(60)
 const actions = useListState<Action>('Action')
 const editTransforms = ref<IdMap<Transform>>({})
+const selectedKeyframeMap = ref<IdMap<boolean>>({})
 
 const historyStore = useHistoryStore()
 const store = useStore()
@@ -46,6 +59,22 @@ const keyframeMapByFrame = computed(() => {
 
 const keyframeMapByBornId = computed(() => {
   return getKeyframeMapByBornId(actions.lastSelectedItem.value?.keyframes ?? [])
+})
+
+const visibledKeyframeMapByBornId = computed(() => {
+  return extractMap(keyframeMapByBornId.value, selectedAllBorns.value)
+})
+
+const visibledKeyframeMap = computed(() => {
+  return toMap(flatKeyListMap(visibledKeyframeMapByBornId.value))
+})
+
+const visibledSelectedKeyframeMap = computed(() => {
+  return extractMap(selectedKeyframeMap.value, visibledKeyframeMap.value)
+})
+
+const isAnyKeyframeSelected = computed(() => {
+  return Object.keys(selectedKeyframeMap.value).length > 0
 })
 
 const currentInterpolatedTransformMapByBornId = computed(
@@ -112,23 +141,6 @@ const selectedPosedBornOrigin = computed(
     return getPosedBornHeadsOrigin(selectedBorns.value)
   }
 )
-
-function addAction() {
-  if (!store.lastSelectedArmature.value) return
-
-  actions.addItem(
-    getAction(
-      {
-        name: getNextName(
-          'action',
-          actions.state.list.map((a) => a.name)
-        ),
-        armatureId: store.lastSelectedArmature.value.id,
-      },
-      true
-    )
-  )
-}
 
 function setEndFrame(val: number) {
   if (endFrame.value === val) return
@@ -221,12 +233,71 @@ function stepFrame(tickFrame: number, reverse = false) {
   }
 }
 
+function selectAction(id: string) {
+  if (actions.state.lastSelectedId === id) return
+
+  const item = getSelectActionItem(id)
+  item.redo()
+  historyStore.push(item)
+}
+function addAction() {
+  if (!store.lastSelectedArmature.value) return
+
+  const action = getAction(
+    {
+      name: getNextName(
+        'action',
+        actions.state.list.map((a) => a.name)
+      ),
+      armatureId: store.lastSelectedArmature.value.id,
+    },
+    true
+  )
+  const item = getAddActionItem(action)
+  item.redo()
+  historyStore.push(item)
+}
+function deleteAction() {
+  if (!actions.lastSelectedItem.value) return
+
+  const item = getDeleteActionItem()
+  item.redo()
+  historyStore.push(item)
+}
+
+function selectKeyframe(keyframeId: string) {
+  if (!keyframeId && !isAnyKeyframeSelected.value) return
+
+  const item = getSelectKeyframeItem(keyframeId)
+  item.redo()
+  historyStore.push(item)
+}
+function shiftSelectKeyframe(keyframeId: string) {
+  if (!keyframeId) return
+
+  const item = getSelectKeyframeItem(keyframeId, true)
+  item.redo()
+  historyStore.push(item)
+}
+function selectAllKeyframes() {
+  if (
+    Object.keys(visibledSelectedKeyframeMap.value).length ===
+    Object.keys(visibledKeyframeMap.value).length
+  )
+    return
+
+  const item = getSelectAllKeyframesItem()
+  item.redo()
+  historyStore.push(item)
+}
+
 export function useAnimationStore() {
   return {
     playing,
     currentFrame,
     endFrame,
     actions: actions.state.list,
+    selectedKeyframeMap,
     keyframeMapByFrame,
     keyframeMapByBornId,
     posedBornIds,
@@ -236,11 +307,7 @@ export function useAnimationStore() {
     selectedPosedBornOrigin,
     getCurrentSelfTransforms,
     setEndFrame,
-    selectedAction: actions.lastSelectedItem,
-    selectAction: actions.selectItem,
-    addAction,
-    deleteAction: actions.deleteItem,
-    updateAction: (action: Partial<Action>) => actions.updateItem(action),
+
     applyEditedTransforms,
     execInsertKeyframe,
     setCurrentFrame,
@@ -251,6 +318,16 @@ export function useAnimationStore() {
     jumpNextKey,
     jumpPrevKey,
     stepFrame,
+
+    selectedAction: actions.lastSelectedItem,
+    selectAction,
+    addAction,
+    deleteAction,
+    updateAction: (action: Partial<Action>) => actions.updateItem(action),
+
+    selectKeyframe,
+    shiftSelectKeyframe,
+    selectAllKeyframes,
   }
 }
 
@@ -313,6 +390,100 @@ function getExecInsertKeyframeItem(keyframes: Keyframe[]) {
       currentFrame.value = preFrame
       actions.lastSelectedItem.value!.keyframes = reverted
       editTransforms.value = preEditTransforms
+    },
+    redo,
+  }
+}
+
+function getSelectActionItem(id: string): HistoryItem {
+  const actionItem = getSelectItem(actions.state, id)
+  const selectItem = getSelectKeyframeItem('')
+
+  return {
+    name: 'Select Action',
+    undo: () => {
+      actionItem.undo()
+      selectItem.undo()
+    },
+    redo: () => {
+      selectItem.redo()
+      actionItem.redo()
+    },
+  }
+}
+export function getAddActionItem(item: Action): HistoryItem {
+  const actionItem = getAddItem(actions.state, item)
+  const selectItem = getSelectKeyframeItem('')
+
+  return {
+    name: 'Add Action',
+    undo: () => {
+      actionItem.undo()
+      selectItem.undo()
+    },
+    redo: () => {
+      selectItem.redo()
+      actionItem.redo()
+    },
+  }
+}
+export function getDeleteActionItem(): HistoryItem {
+  const actionItem = getDeleteItem(
+    actions.state,
+    actions.lastSelectedIndex.value
+  )
+  const selectItem = getSelectKeyframeItem('')
+
+  return {
+    name: 'Delete Action',
+    undo: () => {
+      actionItem.undo()
+      selectItem.undo()
+    },
+    redo: () => {
+      selectItem.redo()
+      actionItem.redo()
+    },
+  }
+}
+
+function getSelectKeyframeItem(id: string, shift = false): HistoryItem {
+  const current = { ...selectedKeyframeMap.value }
+  const redo = () => {
+    if (shift) {
+      selectedKeyframeMap.value = {
+        ...selectedKeyframeMap.value,
+        [id]: !selectedKeyframeMap.value[id],
+      }
+    } else {
+      selectedKeyframeMap.value = id
+        ? {
+            ...dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value),
+            [id]: true,
+          }
+        : dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value)
+    }
+  }
+  return {
+    name: 'Select Keyframe',
+    undo: () => {
+      selectedKeyframeMap.value = { ...current }
+    },
+    redo,
+  }
+}
+function getSelectAllKeyframesItem(): HistoryItem {
+  const current = { ...selectedKeyframeMap.value }
+  const redo = () => {
+    selectedKeyframeMap.value = {
+      ...selectedKeyframeMap.value,
+      ...mapReduce(visibledKeyframeMap.value, () => true),
+    }
+  }
+  return {
+    name: 'Select Keyframe',
+    undo: () => {
+      selectedKeyframeMap.value = { ...current }
     },
     redo,
   }

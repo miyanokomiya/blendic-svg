@@ -193,6 +193,7 @@ function selectBorn(
 ) {
   if (!lastSelectedArmature.value) return
   // skip same selected state
+  if (!lastSelectedBorn.value && !id) return
   if (
     state.lastSelectedBornId === id &&
     isSameBornSelectedState(state.selectedBorns[id], selectedState)

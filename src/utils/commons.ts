@@ -36,6 +36,10 @@ export function toKeyListMap<T extends object>(
   return map
 }
 
+export function flatKeyListMap<T>(map: { [key: string]: T[] }): T[] {
+  return Object.keys(map).flatMap((k) => map[k])
+}
+
 export function toList<T>(map: { [key: string]: T }): T[] {
   return Object.keys(map).map((key) => map[key])
 }
@@ -46,6 +50,30 @@ export function mapReduce<T, R>(
 ): { [key: string]: R } {
   return Object.keys(map).reduce<{ [key: string]: R }>((p, c) => {
     p[c] = fn(map[c])
+    return p
+  }, {})
+}
+
+export function extractMap<T>(
+  origin: { [key: string]: T },
+  keyMap: { [key: string]: any }
+): { [key: string]: T } {
+  return Object.keys(keyMap).reduce<{ [key: string]: T }>((p, c) => {
+    if (origin[c] !== undefined) {
+      p[c] = origin[c]
+    }
+    return p
+  }, {})
+}
+
+export function dropMap<T>(
+  origin: { [key: string]: T },
+  keyMap: { [key: string]: any }
+): { [key: string]: T } {
+  return Object.keys(origin).reduce<{ [key: string]: T }>((p, c) => {
+    if (keyMap[c] === undefined) {
+      p[c] = origin[c]
+    }
     return p
   }, {})
 }

@@ -1,6 +1,6 @@
 <template>
   <g>
-    <g class="view-only">
+    <g>
       <g>
         <g
           v-for="(keyframes, f) in sortedKeyframeMapByFrame"
@@ -21,7 +21,9 @@
               :cy="(i + 1) * 24"
               r="4"
               stroke="#000"
-              fill="#fff"
+              :fill="selectedKeyframeMap[k.id] ? selectedColor : '#fff'"
+              @click.left.exact="select(k.id)"
+              @click.left.shift.exact="shiftSelect(k.id)"
             />
           </g>
         </g>
@@ -32,6 +34,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
+import { useSettings } from '/@/composables/settings'
 import { IdMap, Keyframe, frameWidth } from '/@/models'
 
 export default defineComponent({
@@ -42,15 +45,21 @@ export default defineComponent({
     },
     keyframeMapByFrame: {
       type: Object as PropType<IdMap<Keyframe[]>>,
-      default: 0,
+      default: () => ({}),
     },
     bornIds: {
       type: Array as PropType<string[]>,
       default: () => [],
     },
+    selectedKeyframeMap: {
+      type: Object as PropType<IdMap<boolean>>,
+      default: () => ({}),
+    },
   },
-  emits: [],
-  setup(props) {
+  emits: ['select', 'shift-select'],
+  setup(props, { emit }) {
+    const { settings } = useSettings()
+
     const bornIndexMap = computed(
       (): IdMap<number> => {
         return props.bornIds.reduce<IdMap<number>>((p, id, i) => {
@@ -80,18 +89,22 @@ export default defineComponent({
         )
     }
 
+    function select(keyframeId: string) {
+      emit('select', keyframeId)
+    }
+    function shiftSelect(keyframeId: string) {
+      emit('shift-select', keyframeId)
+    }
+
     return {
       headerHeight: 24,
       frameWidth,
       bornIndexMap,
       sortedKeyframeMapByFrame,
+      select,
+      shiftSelect,
+      selectedColor: settings.selectedColor,
     }
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.view-only {
-  pointer-events: none;
-}
-</style>

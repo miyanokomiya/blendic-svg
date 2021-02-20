@@ -10,7 +10,7 @@
       :width="viewSize.width"
       :height="viewSize.height"
       @wheel.prevent="wheel"
-      @click.left="clickAny"
+      @click.left.exact="clickAny"
       @click.right.prevent="keyDownEscape"
       @mouseenter="focus"
       @mousedown.left.prevent="downLeft"
@@ -22,6 +22,7 @@
       @keydown.escape.exact.prevent="keyDownEscape"
       @keydown.g.exact.prevent="editKeyDown('g')"
       @keydown.x.exact.prevent="editKeyDown('x')"
+      @keydown.a.exact.prevent="editKeyDown('a')"
     >
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
     </svg>
@@ -45,6 +46,7 @@ export default defineComponent({
     'escape',
     'g',
     'x',
+    'a',
   ],
   setup(props, { emit }) {
     const svg = ref<SVGElement>()
@@ -111,7 +113,7 @@ export default defineComponent({
       keyDownEscape: () => {
         emit('escape')
       },
-      editKeyDown(key: 'g' | 'x') {
+      editKeyDown(key: 'g' | 'x' | 'a') {
         if (!canvas.mousePoint.value) return
 
         canvas.editStartPoint.value = canvas.mousePoint.value

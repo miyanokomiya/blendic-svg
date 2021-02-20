@@ -1,5 +1,8 @@
 import {
   dropKeys,
+  dropMap,
+  extractMap,
+  flatKeyListMap,
   mapReduce,
   toKeyListMap,
   toKeyMap,
@@ -58,6 +61,26 @@ describe('utils/commons.ts', () => {
     })
   })
 
+  describe('flatKeyListMap', () => {
+    it('flat key list map', () => {
+      expect(
+        flatKeyListMap({
+          1: [{ a: 1, b: 20 }],
+          2: [
+            { a: 2, b: 21 },
+            { a: 2, b: 22 },
+          ],
+          3: [{ a: 3, b: 23 }],
+        })
+      ).toEqual([
+        { a: 1, b: 20 },
+        { a: 2, b: 21 },
+        { a: 2, b: 22 },
+        { a: 3, b: 23 },
+      ])
+    })
+  })
+
   describe('toList', () => {
     it('map to list', () => {
       expect(
@@ -97,6 +120,44 @@ describe('utils/commons.ts', () => {
           a: 8,
           b: 4,
         },
+      })
+    })
+  })
+
+  describe('extractMap', () => {
+    it('extract origin by keys', () => {
+      expect(
+        extractMap(
+          {
+            1: { a: 1 },
+            2: { a: 2 },
+            3: { a: 3 },
+            4: { a: 4 },
+          },
+          { 2: true, 3: false, 5: true }
+        )
+      ).toEqual({
+        2: { a: 2 },
+        3: { a: 3 },
+      })
+    })
+  })
+
+  describe('dropMap', () => {
+    it('drop origin by keys', () => {
+      expect(
+        dropMap(
+          {
+            1: { a: 1 },
+            2: { a: 2 },
+            3: { a: 3 },
+            4: { a: 4 },
+          },
+          { 2: true, 3: false, 5: true }
+        )
+      ).toEqual({
+        1: { a: 1 },
+        4: { a: 4 },
       })
     })
   })

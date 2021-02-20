@@ -91,6 +91,7 @@ export function useListState<T extends { id: string }>(label: string) {
   return {
     state,
     itemMap,
+    lastSelectedIndex,
     lastSelectedItem,
     selectItem,
     addItem,
@@ -99,7 +100,7 @@ export function useListState<T extends { id: string }>(label: string) {
   }
 }
 
-function getSelectItem<T extends { id: string }>(
+export function getSelectItem<T extends { id: string }>(
   state: State<T>,
   id: string
 ): HistoryItem {
@@ -119,7 +120,7 @@ function getSelectItem<T extends { id: string }>(
   }
 }
 
-function getAddItem<T extends { id: string }>(
+export function getAddItem<T extends { id: string }>(
   state: State<T>,
   item: T
 ): HistoryItem {
@@ -140,7 +141,7 @@ function getAddItem<T extends { id: string }>(
   }
 }
 
-function getDeleteItem<T extends { id: string }>(
+export function getDeleteItem<T extends { id: string }>(
   state: State<T>,
   lastSelectedIndex: number
 ): HistoryItem {

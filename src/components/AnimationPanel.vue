@@ -23,7 +23,13 @@
       </label>
     </div>
     <div class="middle">
-      <TimelineCanvas @up-left="upLeft" @drag="drag" @down-left="downLeft">
+      <TimelineCanvas
+        @up-left="upLeft"
+        @drag="drag"
+        @down-left="downLeft"
+        @click-empty="clickEmpty"
+        @a="selectAll"
+      >
         <template #default="{ scale, viewOrigin, viewSize }">
           <g
             :transform="`translate(${labelWidth + axisPadding}, ${
@@ -42,38 +48,18 @@
               :scale="scale"
               :keyframe-map-by-frame="keyframeMapByFrame"
               :born-ids="selectedAllBornIdList"
+              :selected-keyframe-map="selectedKeyframeMap"
+              @select="selectKeyframe"
+              @shift-select="shiftSelectKeyframe"
             />
           </g>
           <g
             :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
           >
-            <g>
-              <rect
-                :width="labelWidth"
-                height="10000"
-                stroke="none"
-                fill="#fff"
-              />
-              <line
-                :x1="labelWidth"
-                y1="0"
-                :x2="labelWidth"
-                y2="10000"
-                stroke="black"
-              />
-              <TimelineRow
-                :index="1"
-                :label-width="labelWidth"
-                label="Summary"
-              />
-              <TimelineRow
-                v-for="(born, i) in selectedAllBornList"
-                :key="born.id"
-                :index="i + 2"
-                :label-width="labelWidth"
-                :label="born.name"
-              />
-            </g>
+            <TimelineBorns
+              :selected-all-born-list="selectedAllBornList"
+              :label-width="labelWidth"
+            />
           </g>
         </template>
       </TimelineCanvas>
@@ -87,8 +73,8 @@ import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import SelectField from './atoms/SelectField.vue'
 import TimelineCanvas from './TimelineCanvas.vue'
-import TimelineRow from './elements/atoms/TimelineRow.vue'
 import TimelineAxis from './elements/atoms/TimelineAxis.vue'
+import TimelineBorns from './elements/TimelineBorns.vue'
 import Keyframes from './elements/Keyframes.vue'
 import AnimationController from './molecules/AnimationController.vue'
 import { getNearestFrameAtPoint } from '../utils/animations'
@@ -100,8 +86,8 @@ export default defineComponent({
   components: {
     SelectField,
     TimelineCanvas,
-    TimelineRow,
     TimelineAxis,
+    TimelineBorns,
     Keyframes,
     AnimationController,
   },
@@ -183,6 +169,7 @@ export default defineComponent({
       selectedAllBornList,
       selectedAllBornIdList,
       keyframeMapByFrame,
+      selectedKeyframeMap: animationStore.selectedKeyframeMap,
       draftName,
       draftEndFrame,
       labelWidth,
@@ -213,6 +200,10 @@ export default defineComponent({
         get: () => selectedAction.value?.id ?? '',
         set: (id: string) => animationStore.selectAction(id),
       }),
+      selectKeyframe: animationStore.selectKeyframe,
+      shiftSelectKeyframe: animationStore.shiftSelectKeyframe,
+      selectAll: animationStore.selectAllKeyframes,
+      clickEmpty: () => animationStore.selectKeyframe(''),
       downCurrentFrame,
       downLeft,
       drag,

@@ -13,7 +13,7 @@
               key="all"
               r="4"
               stroke="#000"
-              fill="#fff"
+              :fill="selectedFrameMap[f] ? selectedColor : '#fff'"
               @click.left.exact="selectFrame(f)"
               @click.left.shift.exact="shiftSelectFrame(f)"
             />
@@ -38,6 +38,7 @@
 import { computed, defineComponent, PropType } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { IdMap, Keyframe, frameWidth } from '/@/models'
+import { mapReduce } from '/@/utils/commons'
 
 export default defineComponent({
   props: {
@@ -83,6 +84,14 @@ export default defineComponent({
       )
     })
 
+    const selectedFrameMap = computed(() => {
+      return mapReduce(props.keyframeMapByFrame, (keyframes) => {
+        return keyframes.some(
+          (keyframe) => props.selectedKeyframeMap[keyframe.id]
+        )
+      })
+    })
+
     function sortAndFilterKeyframesByBornId(keyframes: Keyframe[]): Keyframe[] {
       return keyframes
         .filter((k) => bornIndexMap.value[k.bornId] > -1)
@@ -109,6 +118,7 @@ export default defineComponent({
       frameWidth,
       bornIndexMap,
       sortedKeyframeMapByFrame,
+      selectedFrameMap,
       select,
       shiftSelect,
       selectFrame,

@@ -26,6 +26,10 @@ export function getNearestFrameAtPoint(x: number): number {
   return Math.round(Math.max(x, 0) / frameWidth)
 }
 
+export function getFrameX(frame: number): number {
+  return frame * frameWidth
+}
+
 export function getKeyframeMapByFrame(
   keyframes: Keyframe[]
 ): IdMap<Keyframe[]> {

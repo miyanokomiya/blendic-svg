@@ -27,6 +27,7 @@
         @up-left="upLeft"
         @drag="drag"
         @down-left="downLeft"
+        @mousemove="mousemove"
         @click-empty="clickEmpty"
         @escape="escape"
         @a="selectAll"
@@ -79,9 +80,12 @@ import TimelineAxis from './elements/atoms/TimelineAxis.vue'
 import TimelineBorns from './elements/TimelineBorns.vue'
 import Keyframes from './elements/Keyframes.vue'
 import AnimationController from './molecules/AnimationController.vue'
-import { getNearestFrameAtPoint } from '../utils/animations'
+import {
+  getKeyframeMapByFrame,
+  getNearestFrameAtPoint,
+} from '../utils/animations'
 import { IVec2 } from 'okageo'
-import { toList } from '/@/utils/commons'
+import { mapReduce, toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
 import { useKeyframeEditMode } from '../composables/keyframeEditMode'
 
@@ -114,9 +118,20 @@ export default defineComponent({
     const selectedAllBornIdList = computed(() =>
       selectedAllBornList.value.map((b) => b.id)
     )
-    const keyframeMapByFrame = computed(
-      () => animationStore.keyframeMapByFrame.value
-    )
+    const keyframeMapByFrame = computed(() => {
+      // animationStore.keyframeMapByFrame.value
+      return getKeyframeMapByFrame(
+        toList(
+          mapReduce(
+            animationStore.visibledKeyframeMap.value,
+            (keyframe, id) => ({
+              ...keyframe,
+              frame: keyframeEditMode.getEditFrames(id),
+            })
+          )
+        )
+      )
+    })
 
     const actionOptions = computed(() =>
       animationStore.actions.map((a) => {
@@ -209,12 +224,13 @@ export default defineComponent({
       selectKeyframe: keyframeEditMode.select,
       shiftSelectKeyframe: keyframeEditMode.shiftSelect,
       selectAll: keyframeEditMode.selectAll,
-      grag: keyframeEditMode.setEditMode('grab'),
+      grag: () => keyframeEditMode.setEditMode('grab'),
       clickEmpty: keyframeEditMode.clickEmpty,
       downCurrentFrame,
       downLeft,
       drag,
       upLeft,
+      mousemove: keyframeEditMode.mousemove,
     }
   },
 })

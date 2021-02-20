@@ -9,13 +9,18 @@ import {
   CanvasEditModeBase,
 } from '../models/index'
 import { useAnimationStore } from '../store/animation'
+import { mapReduce } from '../utils/commons'
+import { getFrameX, getNearestFrameAtPoint } from '../utils/animations'
+import { applyTransform } from '../utils/armatures'
 
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
 }
 
-export interface KeyframeEditMode extends CanvasEditModeBase {}
+export interface KeyframeEditMode extends CanvasEditModeBase {
+  getEditFrames: (id: string) => number
+}
 
 export function useKeyframeEditMode(): KeyframeEditMode {
   const state = reactive<State>({
@@ -24,9 +29,13 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   })
 
   const animationStore = useAnimationStore()
+
+  const allKeyframes = computed(() => animationStore.visibledKeyframeMap.value)
+  const editTargets = computed(
+    () => animationStore.visibledSelectedKeyframeMap.value
+  )
   const isAnySelected = computed(
-    () =>
-      Object.keys(animationStore.visibledSelectedKeyframeMap.value).length > 0
+    () => Object.keys(editTargets.value).length > 0
   )
 
   function cancel() {
@@ -58,23 +67,39 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   const editTransforms = computed(() => {
     if (!state.editMovement) return {}
 
-    const translate = sub(state.editMovement.current, state.editMovement.start)
-    return Object.keys(animationStore.selectedBorns.value).reduce<
-      IdMap<Transform>
-    >((map, id) => {
-      if (!animationStore.selectedBorns.value[id].connected) {
-        map[id] = getTransform({
-          translate,
-        })
-      }
-      return map
-    }, {})
+    const translate = {
+      x: state.editMovement.current.x - state.editMovement.start.x,
+      y: 0,
+    }
+    return Object.keys(editTargets.value).reduce<IdMap<Transform>>(
+      (map, id) => {
+        map[id] = getTransform({ translate })
+        return map
+      },
+      {}
+    )
+  })
+
+  const editFrames = computed(() => {
+    return mapReduce(editTransforms.value, (transform, id) => {
+      const keyframe = allKeyframes.value[id]
+      const nextX = applyTransform(
+        { x: getFrameX(keyframe.frame), y: 0 },
+        transform
+      ).x
+      return getNearestFrameAtPoint(nextX)
+    })
   })
 
   function completeEdit() {
     if (!isAnySelected.value) return
 
-    // animationStore.applyEditedTransforms(editTransforms.value)
+    animationStore.execUpdateKeyFrames(
+      mapReduce(editTargets.value, (keyframe, id) => ({
+        ...keyframe,
+        frame: getEditFrames(id),
+      }))
+    )
     state.editMovement = undefined
     state.command = ''
   }
@@ -111,11 +136,16 @@ export function useKeyframeEditMode(): KeyframeEditMode {
 
   function execDelete() {}
 
+  function getEditFrames(id: string) {
+    return editFrames.value[id] ?? allKeyframes.value[id].frame
+  }
+
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
       return editTransforms.value[id] ?? getTransform()
     },
+    getEditFrames,
     end: () => cancel(),
     cancel,
     setEditMode,

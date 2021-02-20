@@ -46,10 +46,10 @@ export function toList<T>(map: { [key: string]: T }): T[] {
 
 export function mapReduce<T, R>(
   map: { [key: string]: T },
-  fn: (t: T) => R
+  fn: (t: T, key: string) => R
 ): { [key: string]: R } {
   return Object.keys(map).reduce<{ [key: string]: R }>((p, c) => {
-    p[c] = fn(map[c])
+    p[c] = fn(map[c], c)
     return p
   }, {})
 }

@@ -70,8 +70,15 @@ export function dropMap<T>(
   origin: { [key: string]: T },
   keyMap: { [key: string]: any }
 ): { [key: string]: T } {
+  return dropMapIf(origin, (_t, key) => keyMap[key] === undefined)
+}
+
+export function dropMapIf<T>(
+  origin: { [key: string]: T },
+  checkFn: (t: T, key: string) => boolean
+): { [key: string]: T } {
   return Object.keys(origin).reduce<{ [key: string]: T }>((p, c) => {
-    if (keyMap[c] === undefined) {
+    if (checkFn(origin[c], c)) {
       p[c] = origin[c]
     }
     return p

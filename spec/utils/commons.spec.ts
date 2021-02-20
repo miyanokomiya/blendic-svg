@@ -1,6 +1,7 @@
 import {
   dropKeys,
   dropMap,
+  dropMapIf,
   extractMap,
   flatKeyListMap,
   mapReduce,
@@ -157,6 +158,25 @@ describe('utils/commons.ts', () => {
         )
       ).toEqual({
         1: { a: 1 },
+        4: { a: 4 },
+      })
+    })
+  })
+
+  describe('dropMapIf', () => {
+    it('drop origin if returns false', () => {
+      expect(
+        dropMapIf(
+          {
+            1: { a: 1 },
+            2: { a: 2 },
+            3: { a: 3 },
+            4: { a: 4 },
+          },
+          (val) => val.a % 2 === 0
+        )
+      ).toEqual({
+        2: { a: 2 },
         4: { a: 4 },
       })
     })

@@ -72,9 +72,8 @@ const visibledKeyframeMap = computed(() => {
 const visibledSelectedKeyframeMap = computed(() => {
   return extractMap(selectedKeyframeMap.value, visibledKeyframeMap.value)
 })
-
-const isAnyKeyframeSelected = computed(() => {
-  return Object.keys(selectedKeyframeMap.value).length > 0
+const isAnyVisibledSelectedKeyframe = computed(() => {
+  return Object.keys(visibledSelectedKeyframeMap).length > 0
 })
 
 const currentInterpolatedTransformMapByBornId = computed(
@@ -266,7 +265,7 @@ function deleteAction() {
 }
 
 function selectKeyframe(keyframeId: string) {
-  if (!keyframeId && !isAnyKeyframeSelected.value) return
+  if (!keyframeId && !isAnyVisibledSelectedKeyframe.value) return
 
   const item = getSelectKeyframeItem(keyframeId)
   item.redo()
@@ -283,12 +282,15 @@ function selectAllKeyframes() {
   if (
     Object.keys(visibledSelectedKeyframeMap.value).length ===
     Object.keys(visibledKeyframeMap.value).length
-  )
-    return
-
-  const item = getSelectAllKeyframesItem()
-  item.redo()
-  historyStore.push(item)
+  ) {
+    if (isAnyVisibledSelectedKeyframe.value) {
+      selectKeyframe('')
+    }
+  } else {
+    const item = getSelectAllKeyframesItem()
+    item.redo()
+    historyStore.push(item)
+  }
 }
 
 export function useAnimationStore() {

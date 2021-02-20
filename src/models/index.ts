@@ -185,11 +185,15 @@ export function isSameBornSelectedState(
   return !!a?.head === !!b?.head && !!a?.tail === !!b?.tail
 }
 
-export function isBornSelected(selectedState?: BornSelectedState): boolean {
+export function isBornSelected(
+  selectedState?: BornSelectedState,
+  all = false
+): boolean {
   if (!selectedState) return false
-  if (selectedState.head) return true
-  if (selectedState.tail) return true
-  return false
+
+  return all
+    ? !!selectedState.head && !!selectedState.tail
+    : !!selectedState.head || !!selectedState.tail
 }
 
 export const scaleRate = 1.1

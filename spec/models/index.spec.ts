@@ -58,13 +58,25 @@ describe('models/index.ts', () => {
   })
 
   describe('isBornSelected', () => {
-    it.each([
-      [{ head: false, tail: false }, false],
-      [{ head: true, tail: false }, true],
-      [{ head: false, tail: true }, true],
-      [{ head: true, tail: true }, true],
-    ])('add(%s, %s) => %s', (a, expected) => {
-      expect(isBornSelected(a)).toBe(expected)
+    describe('partial', () => {
+      it.each([
+        [{ head: false, tail: false }, false],
+        [{ head: true, tail: false }, true],
+        [{ head: false, tail: true }, true],
+        [{ head: true, tail: true }, true],
+      ])('add(%s, %s) => %s', (a, expected) => {
+        expect(isBornSelected(a)).toBe(expected)
+      })
+    })
+    describe('all', () => {
+      it.each([
+        [{ head: false, tail: false }, false],
+        [{ head: true, tail: false }, false],
+        [{ head: false, tail: true }, false],
+        [{ head: true, tail: true }, true],
+      ])('add(%s, %s) => %s', (a, expected) => {
+        expect(isBornSelected(a, true)).toBe(expected)
+      })
     })
   })
 })

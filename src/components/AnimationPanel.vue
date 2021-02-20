@@ -94,6 +94,7 @@ import AnimationController from './molecules/AnimationController.vue'
 import { getNearestFrameAtPoint } from '../utils/animations'
 import { IVec2 } from 'okageo'
 import { toList } from '/@/utils/commons'
+import { useAnimationLoop } from '../composables/animationLoop'
 
 export default defineComponent({
   components: {
@@ -153,11 +154,27 @@ export default defineComponent({
       editMode.value = ''
     }
 
+    function animationCallback(tickFrame: number) {
+      animationStore.stepFrame(
+        tickFrame,
+        animationStore.playing.value === 'reverse'
+      )
+    }
+
     watchEffect(() => {
       draftName.value = selectedAction.value?.name ?? ''
     })
     watchEffect(() => {
       draftEndFrame.value = animationStore.endFrame.value.toString()
+    })
+
+    let animationLoop: ReturnType<typeof useAnimationLoop>
+    watchEffect(() => {
+      animationLoop?.stop()
+      if (animationStore.playing.value === 'pause') return
+
+      animationLoop = useAnimationLoop(animationCallback, 60)
+      animationLoop.begin()
     })
 
     return {

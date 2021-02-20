@@ -229,6 +229,17 @@ function jumpNextKey() {
 function jumpPrevKey() {
   console.log('TODO jumpPrevKey')
 }
+function stepFrame(tickFrame: number, reverse = false) {
+  if (endFrame.value === 0) return
+
+  if (reverse) {
+    const val = currentFrame.value - tickFrame
+    currentFrame.value = val <= 0 ? endFrame.value : val
+  } else {
+    const val = currentFrame.value + tickFrame
+    currentFrame.value = endFrame.value <= val ? 0 : val
+  }
+}
 
 export function useAnimationStore() {
   return {
@@ -259,6 +270,7 @@ export function useAnimationStore() {
     jumpEndFrame,
     jumpNextKey,
     jumpPrevKey,
+    stepFrame,
   }
 }
 

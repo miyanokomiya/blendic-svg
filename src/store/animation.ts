@@ -305,6 +305,7 @@ export function useAnimationStore() {
     selectedKeyframeMap,
     keyframeMapByFrame,
     keyframeMapByBornId,
+    visibledSelectedKeyframeMap,
     posedBornIds,
     currentPosedBorns,
     selectedAllBorns,

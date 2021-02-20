@@ -28,7 +28,9 @@
         @drag="drag"
         @down-left="downLeft"
         @click-empty="clickEmpty"
+        @escape="escape"
         @a="selectAll"
+        @g="grag"
       >
         <template #default="{ scale, viewOrigin, viewSize }">
           <g
@@ -81,6 +83,7 @@ import { getNearestFrameAtPoint } from '../utils/animations'
 import { IVec2 } from 'okageo'
 import { toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
+import { useKeyframeEditMode } from '../composables/keyframeEditMode'
 
 export default defineComponent({
   components: {
@@ -97,6 +100,8 @@ export default defineComponent({
 
     const store = useStore()
     const animationStore = useAnimationStore()
+
+    const keyframeEditMode = useKeyframeEditMode()
 
     const editMode = ref<'' | 'move-current-frame'>('')
     const draftName = ref('')
@@ -200,10 +205,12 @@ export default defineComponent({
         get: () => selectedAction.value?.id ?? '',
         set: (id: string) => animationStore.selectAction(id),
       }),
-      selectKeyframe: animationStore.selectKeyframe,
-      shiftSelectKeyframe: animationStore.shiftSelectKeyframe,
-      selectAll: animationStore.selectAllKeyframes,
-      clickEmpty: () => animationStore.selectKeyframe(''),
+      escape: keyframeEditMode.cancel,
+      selectKeyframe: keyframeEditMode.select,
+      shiftSelectKeyframe: keyframeEditMode.shiftSelect,
+      selectAll: keyframeEditMode.selectAll,
+      grag: keyframeEditMode.setEditMode('grab'),
+      clickEmpty: keyframeEditMode.clickEmpty,
       downCurrentFrame,
       downLeft,
       drag,

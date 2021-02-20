@@ -1,5 +1,5 @@
 import { reactive, computed } from 'vue'
-import { getRadian, IVec2, multi, rotate, sub } from 'okageo'
+import { getRadian, IVec2, rotate, sub } from 'okageo'
 import {
   Transform,
   getTransform,

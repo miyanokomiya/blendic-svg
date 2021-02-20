@@ -33,6 +33,8 @@
         @a="selectAll"
         @x="deleteKeyframes"
         @g="grag"
+        @ctrl-c="clipKeyframes"
+        @ctrl-v="pasteKeyframes"
       >
         <template #default="{ scale, viewOrigin, viewSize }">
           <g
@@ -231,6 +233,8 @@ export default defineComponent({
       selectAll: keyframeEditMode.selectAll,
       grag: () => keyframeEditMode.setEditMode('grab'),
       deleteKeyframes: keyframeEditMode.execDelete,
+      clipKeyframes: keyframeEditMode.clip,
+      pasteKeyframes: keyframeEditMode.paste,
       clickEmpty: keyframeEditMode.clickEmpty,
       downCurrentFrame,
       downLeft,

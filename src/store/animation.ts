@@ -305,8 +305,19 @@ function execDeleteKeyframes() {
   item.redo()
   historyStore.push(item)
 }
-function execUpdateKeyFrames(keyframes: IdMap<Keyframe>) {
+function execUpdateKeyframes(keyframes: IdMap<Keyframe>) {
   const item = getExecUpdateKeyframeItem(keyframes)
+  item.redo()
+  historyStore.push(item)
+}
+function pasteKeyframes(keyframeList: Keyframe[]) {
+  const item = getExecPasteKeyframeItem(
+    toMap(
+      keyframeList
+        .filter((k) => store.bornMap.value[k.bornId])
+        .map((k) => getKeyframe({ ...k, frame: currentFrame.value }, true))
+    )
+  )
   item.redo()
   historyStore.push(item)
 }
@@ -351,7 +362,8 @@ export function useAnimationStore() {
     selectAllKeyframes,
     execInsertKeyframe,
     execDeleteKeyframes,
-    execUpdateKeyFrames,
+    execUpdateKeyframes,
+    pasteKeyframes,
   }
 }
 
@@ -558,24 +570,32 @@ function getSrameFrameAndBornIdKeyframe(
   return sameFrameAndBorn
 }
 
-function getExecUpdateKeyframeItem(keyframes: IdMap<Keyframe>) {
-  const preKeyframes = extractMap(visibledSelectedKeyframeMap.value, keyframes)
-
+function getOverridedKeyframeList(keyframes: IdMap<Keyframe>): Keyframe[] {
   const overridedKeyframeList: Keyframe[] = []
   Object.keys(keyframes).forEach((id) => {
     const keyframe = keyframes[id]
     const same = getSrameFrameAndBornIdKeyframe(keyframe.frame, keyframe.bornId)
     if (same) overridedKeyframeList.push(same)
   })
+  return overridedKeyframeList
+}
+
+function overridedKeyframeList(keyframes: IdMap<Keyframe>): Keyframe[] {
+  const overridedKeyframeList = getOverridedKeyframeList(keyframes)
+  return toList({
+    ...dropMap(
+      toMap(actions.lastSelectedItem.value!.keyframes),
+      toMap(overridedKeyframeList)
+    ),
+    ...keyframes,
+  })
+}
+
+function getExecUpdateKeyframeItem(keyframes: IdMap<Keyframe>) {
+  const preKeyframes = extractMap(visibledSelectedKeyframeMap.value, keyframes)
 
   const redo = () => {
-    const updated = toList({
-      ...dropMap(
-        toMap(actions.lastSelectedItem.value!.keyframes),
-        toMap(overridedKeyframeList)
-      ),
-      ...keyframes,
-    })
+    const updated = overridedKeyframeList(keyframes)
     actions.lastSelectedItem.value!.keyframes = updated
   }
   return {
@@ -584,7 +604,25 @@ function getExecUpdateKeyframeItem(keyframes: IdMap<Keyframe>) {
       const reverted = toList({
         ...dropMap(toMap(actions.lastSelectedItem.value!.keyframes), keyframes),
         ...preKeyframes,
-        ...toMap(overridedKeyframeList),
+        ...toMap(overridedKeyframeList(keyframes)),
+      })
+      actions.lastSelectedItem.value!.keyframes = reverted
+    },
+    redo,
+  }
+}
+
+function getExecPasteKeyframeItem(keyframes: IdMap<Keyframe>) {
+  const redo = () => {
+    const updated = overridedKeyframeList(keyframes)
+    actions.lastSelectedItem.value!.keyframes = updated
+  }
+  return {
+    name: 'Paste Keyframe',
+    undo: () => {
+      const reverted = toList({
+        ...dropMap(toMap(actions.lastSelectedItem.value!.keyframes), keyframes),
+        ...toMap(overridedKeyframeList(keyframes)),
       })
       actions.lastSelectedItem.value!.keyframes = reverted
     },

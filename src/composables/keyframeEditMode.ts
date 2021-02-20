@@ -7,27 +7,32 @@ import {
   IdMap,
   EditMovement,
   CanvasEditModeBase,
+  Keyframe,
 } from '../models/index'
 import { useAnimationStore } from '../store/animation'
-import { mapReduce } from '../utils/commons'
+import { mapReduce, toList } from '../utils/commons'
 import { getFrameX, getNearestFrameAtPoint } from '../utils/animations'
 import { applyTransform } from '../utils/armatures'
 
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
+  clipboard: Keyframe[]
 }
 
 export interface KeyframeEditMode extends CanvasEditModeBase {
   getEditFrames: (id: string) => number
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
+  clip: () => void
+  paste: () => void
 }
 
 export function useKeyframeEditMode(): KeyframeEditMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
+    clipboard: [],
   })
 
   const animationStore = useAnimationStore()
@@ -96,7 +101,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   function completeEdit() {
     if (!isAnySelected.value) return
 
-    animationStore.execUpdateKeyFrames(
+    animationStore.execUpdateKeyframes(
       mapReduce(editTargets.value, (keyframe, id) => ({
         ...keyframe,
         frame: getEditFrames(id),
@@ -164,6 +169,15 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     return editFrames.value[id] ?? allKeyframes.value[id].frame
   }
 
+  function clip() {
+    state.clipboard = toList(editTargets.value)
+  }
+
+  function paste() {
+    if (state.clipboard.length === 0) return
+    animationStore.pasteKeyframes(state.clipboard)
+  }
+
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
@@ -183,5 +197,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     clickEmpty,
     execDelete,
     execAdd: () => {},
+    clip,
+    paste,
   }
 }

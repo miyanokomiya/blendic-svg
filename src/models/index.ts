@@ -70,13 +70,14 @@ export function getAction(
   arg: Partial<Action> = {},
   generateId = false
 ): Action {
+  const id = generateId ? v4() : arg.id ?? ''
   return {
-    id: generateId ? v4() : '',
     name: '',
     totalFrame: 60,
     armatureId: '',
     keyframes: [],
     ...arg,
+    id,
   }
 }
 
@@ -84,18 +85,19 @@ export function getKeyframe(
   arg: Partial<Keyframe> = {},
   generateId = false
 ): Keyframe {
+  const id = generateId ? v4() : arg.id ?? ''
   return {
-    id: generateId ? v4() : '',
     frame: 0,
     bornId: '',
     transform: getTransform(),
     ...arg,
+    id,
   }
 }
 
 export function getBorn(arg: Partial<Born> = {}, generateId = false): Born {
+  const id = generateId ? v4() : arg.id ?? ''
   return {
-    id: generateId ? v4() : '',
     name: '',
     transform: getTransform(),
     parentId: '',
@@ -103,6 +105,7 @@ export function getBorn(arg: Partial<Born> = {}, generateId = false): Born {
     head: { x: 0, y: 0 },
     tail: { x: 0, y: 0 },
     ...arg,
+    id,
   }
 }
 
@@ -110,12 +113,13 @@ export function getArmature(
   arg: Partial<Armature> = {},
   generateId = false
 ): Armature {
+  const id = generateId ? v4() : arg.id ?? ''
   return {
-    id: generateId ? v4() : '',
     name: '',
     transform: getTransform(),
     borns: [],
     ...arg,
+    id,
   }
 }
 

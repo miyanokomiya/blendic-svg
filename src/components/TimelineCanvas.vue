@@ -23,6 +23,8 @@
       @keydown.g.exact.prevent="editKeyDown('g')"
       @keydown.x.exact.prevent="editKeyDown('x')"
       @keydown.a.exact.prevent="editKeyDown('a')"
+      @keydown.c.ctrl.exact.prevent="editKeyDown('ctrl-c')"
+      @keydown.v.ctrl.exact.prevent="editKeyDown('ctrl-v')"
     >
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
     </svg>
@@ -47,6 +49,8 @@ export default defineComponent({
     'g',
     'x',
     'a',
+    'ctrl-c',
+    'ctrl-v',
   ],
   setup(props, { emit }) {
     const svg = ref<SVGElement>()
@@ -113,7 +117,7 @@ export default defineComponent({
       keyDownEscape: () => {
         emit('escape')
       },
-      editKeyDown(key: 'g' | 'x' | 'a') {
+      editKeyDown(key: 'g' | 'x' | 'a' | 'ctrl-c' | 'ctrl-v') {
         if (!canvas.mousePoint.value) return
 
         canvas.editStartPoint.value = canvas.mousePoint.value

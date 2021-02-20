@@ -11,8 +11,9 @@ import {
 } from '../models/index'
 import {
   add,
-  getOuterRectangle,
-  getRectCenter,
+  getPolygonCenter,
+  interpolateScaler,
+  interpolateVector,
   isSame,
   IVec2,
   multi,
@@ -172,52 +173,16 @@ export function fixConnections(borns: Born[]): Born[] {
   return borns.map((b) => fixConnection(borns, b))
 }
 
-export function updateConnections(borns: Born[]): Born[] {
-  return borns.map((b) => {
-    const parent = findBorn(borns, b.parentId)
-    if (!parent) return { ...b, connected: false, parentId: '' }
-    if (!b.connected) return b
-    return { ...b, connected: isSame(parent.tail, b.head) }
-  })
-}
-export function _updateConnections(borns: Born[]): IdMap<Partial<Born>> {
+export function updateConnections(borns: Born[]): IdMap<Partial<Born>> {
   return borns.reduce<IdMap<Partial<Born>>>((p, b) => {
     const parent = findBorn(borns, b.parentId)
     if (!parent) {
-      p[b.id] = { connected: false, parentId: '' }
+      if (b.connected) p[b.id] = { connected: false, parentId: '' }
     } else if (b.connected) {
       p[b.id] = { connected: isSame(parent.tail, b.head) }
     }
     return p
   }, {})
-}
-
-export function updateBornName(
-  borns: Born[],
-  from: string,
-  to: string
-): Born[] {
-  return borns.map((b) => ({
-    ...b,
-    name: b.name === from ? to : b.name,
-    parentId: b.parentId === from ? to : b.parentId,
-  }))
-}
-
-export function getSelectedBornsBoundingOrigin(
-  bornMap: IdMap<Born>,
-  selectedState: IdMap<BornSelectedState>
-): IVec2 {
-  return getRectCenter(
-    getOuterRectangle(
-      Object.keys(selectedState).map((id) => {
-        const selected = []
-        if (selectedState[id].head) selected.push(bornMap[id].head)
-        if (selectedState[id].tail) selected.push(bornMap[id].tail)
-        return selected
-      })
-    )
-  )
 }
 
 export function getSelectedBornsOrigin(
@@ -234,12 +199,7 @@ export function getSelectedBornsOrigin(
     })
     .flat()
 
-  if (selectedPoints.length === 0) return { x: 0, y: 0 }
-
-  return multi(
-    selectedPoints.reduce((p, c) => add(p, c), { x: 0, y: 0 }),
-    1 / selectedPoints.length
-  )
+  return getPolygonCenter(selectedPoints)
 }
 
 export function getPosedBornHeadsOrigin(bornMap: IdMap<Born>): IVec2 {
@@ -247,11 +207,7 @@ export function getPosedBornHeadsOrigin(bornMap: IdMap<Born>): IVec2 {
     (id) => posedTransform(bornMap[id], [bornMap[id].transform]).head
   )
 
-  if (points.length === 0) return { x: 0, y: 0 }
-  return multi(
-    points.reduce((p, c) => add(p, c), { x: 0, y: 0 }),
-    1 / points.length
-  )
+  return getPolygonCenter(points)
 }
 
 interface TreeNode {
@@ -397,14 +353,4 @@ export function interpolateTransform(
     rotate: interpolateScaler(a.rotate, b.rotate, rate),
     translate: interpolateVector(a.translate, b.translate, rate),
   })
-}
-
-export function interpolateScaler(a: number, b: number, rate: number): number {
-  return a * (1 - rate) + b * rate
-}
-export function interpolateVector(a: IVec2, b: IVec2, rate: number): IVec2 {
-  return {
-    x: interpolateScaler(a.x, b.x, rate),
-    y: interpolateScaler(a.y, b.y, rate),
-  }
 }

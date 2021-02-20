@@ -436,7 +436,7 @@ function getUpdateBornItem(updated: Partial<Born>): HistoryItem {
 function getUpdateBornsItem(updated: IdMap<Partial<Born>>): HistoryItem {
   const updatedMap = mergeMap<Partial<Born>>(
     updated,
-    armatureUtils._updateConnections(
+    armatureUtils.updateConnections(
       lastSelectedArmature.value!.borns.map((b) => ({
         ...b,
         ...updated[b.id],
@@ -481,7 +481,7 @@ function getDeleteBornItem(): HistoryItem {
   )
 
   const updateItem = getUpdateBornsItem(
-    armatureUtils._updateConnections(updated)
+    armatureUtils.updateConnections(updated)
   )
   const selectItem = getSelectBornItem('')
 

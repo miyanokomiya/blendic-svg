@@ -178,17 +178,20 @@ describe('utils/armatures', () => {
         id: 'connected',
         parentId: 'parent',
         connected: true,
-        head: { x: 10, y: 20 },
+        head: { x: 1, y: 2 },
       })
       const unconnected = getBorn({
         id: 'unconnected',
         parentId: 'parent',
         connected: true,
-        head: { x: 1, y: 2 },
+        head: { x: 10, y: 20 },
       })
       expect(
         target.updateConnections([parent, connected, unconnected])
-      ).toEqual([parent, { ...connected, connected: false }, unconnected])
+      ).toEqual({
+        connected: { connected: true },
+        unconnected: { connected: false },
+      })
     })
     it('cannot find parent => set no parent', () => {
       const connected = getBorn({
@@ -197,50 +200,8 @@ describe('utils/armatures', () => {
         connected: true,
         head: { x: 10, y: 20 },
       })
-      expect(target.updateConnections([connected])).toEqual([
-        { ...connected, connected: false, parentId: '' },
-      ])
-    })
-  })
-
-  describe('updateBornName', () => {
-    it("rename born's name, parentId", () => {
-      const borns = [
-        getBorn({ name: '1', parentId: '' }),
-        getBorn({ name: '2', parentId: '1' }),
-        getBorn({ name: '3', parentId: '2' }),
-      ]
-      expect(target.updateBornName(borns, '1', '10')).toEqual([
-        getBorn({ name: '10', parentId: '' }),
-        getBorn({ name: '2', parentId: '10' }),
-        getBorn({ name: '3', parentId: '2' }),
-      ])
-    })
-  })
-
-  describe('getSelectedBornsBoundingOrigin', () => {
-    it('retuns selected borns origin', () => {
-      const bornMap = {
-        1: getBorn({ id: '1', head: { x: 0, y: 1 }, tail: { x: 2, y: 3 } }),
-        2: getBorn({ id: '2', head: { x: 10, y: 11 }, tail: { x: 12, y: 13 } }),
-        3: getBorn({ id: '3', head: { x: 20, y: 21 }, tail: { x: 24, y: 25 } }),
-        4: getBorn({
-          id: '4',
-          head: { x: 100, y: 100 },
-          tail: { x: 100, y: 100 },
-        }),
-      }
-      const selectedState = {
-        1: { head: true, tail: true },
-        2: { head: true, tail: false },
-        3: { head: false, tail: true },
-        4: { head: false, tail: false },
-      }
-      expect(
-        target.getSelectedBornsBoundingOrigin(bornMap, selectedState)
-      ).toEqual({
-        x: 12,
-        y: 13,
+      expect(target.updateConnections([connected])).toEqual({
+        connected: { connected: false, parentId: '' },
       })
     })
   })

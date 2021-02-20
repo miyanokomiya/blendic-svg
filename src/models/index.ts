@@ -194,3 +194,5 @@ export function isBornSelected(selectedState?: BornSelectedState): boolean {
 
 export const scaleRate = 1.1
 export const frameWidth = 20
+
+export type PlayState = 'pause' | 'play' | 'reverse'

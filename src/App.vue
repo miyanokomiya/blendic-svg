@@ -180,6 +180,9 @@ export default defineComponent({
         } else {
           historyStore.undo()
         }
+      } else if (e.key.toLowerCase() === ' ') {
+        e.preventDefault()
+        animationStore.togglePlaying()
       }
     }
 

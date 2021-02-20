@@ -26,11 +26,13 @@ import {
   getTransform,
   IdMap,
   Keyframe,
+  PlayState,
   toBornIdMap,
   toMap,
   Transform,
 } from '/@/models'
 
+const playing = ref<PlayState>('pause')
 const currentFrame = ref(0)
 const endFrame = ref(60)
 const actions = useListState<Action>('Action')
@@ -209,8 +211,28 @@ function setCurrentFrame(val: number) {
   editTransforms.value = {}
 }
 
+function setPlaying(val: PlayState) {
+  playing.value = val
+}
+function togglePlaying() {
+  playing.value = playing.value === 'pause' ? 'play' : 'pause'
+}
+function jumpStartFrame() {
+  currentFrame.value = 0
+}
+function jumpEndFrame() {
+  currentFrame.value = endFrame.value
+}
+function jumpNextKey() {
+  console.log('TODO jumpNextKey')
+}
+function jumpPrevKey() {
+  console.log('TODO jumpPrevKey')
+}
+
 export function useAnimationStore() {
   return {
+    playing,
     currentFrame,
     endFrame,
     actions: actions.state.list,
@@ -231,6 +253,12 @@ export function useAnimationStore() {
     applyEditedTransforms,
     execInsertKeyframe,
     setCurrentFrame,
+    setPlaying,
+    togglePlaying,
+    jumpStartFrame,
+    jumpEndFrame,
+    jumpNextKey,
+    jumpPrevKey,
   }
 }
 

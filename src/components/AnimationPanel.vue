@@ -7,6 +7,16 @@
       <input v-model="draftName" type="text" @change="changeActionName" />
       <button class="add-action" @click="addAction">+</button>
       <button class="delete-action" @click="deleteAction">x</button>
+      <AnimationController
+        :playing="playing"
+        @play="setPlaying('play')"
+        @reverse="setPlaying('reverse')"
+        @pause="setPlaying('pause')"
+        @jump-start="jumpStartFrame"
+        @jump-end="jumpEndFrame"
+        @jump-next="jumpNextKey"
+        @jump-prev="jumpPrevKey"
+      />
       <label class="end-frame-field"
         >End:
         <input v-model="draftEndFrame" type="number" @change="changeEndFrame" />
@@ -80,6 +90,7 @@ import TimelineCanvas from './TimelineCanvas.vue'
 import TimelineRow from './elements/atoms/TimelineRow.vue'
 import TimelineAxis from './elements/atoms/TimelineAxis.vue'
 import Keyframes from './elements/Keyframes.vue'
+import AnimationController from './molecules/AnimationController.vue'
 import { getNearestFrameAtPoint } from '../utils/animations'
 import { IVec2 } from 'okageo'
 import { toList } from '/@/utils/commons'
@@ -91,6 +102,7 @@ export default defineComponent({
     TimelineRow,
     TimelineAxis,
     Keyframes,
+    AnimationController,
   },
   setup() {
     const labelWidth = 140
@@ -149,6 +161,7 @@ export default defineComponent({
     })
 
     return {
+      playing: animationStore.playing,
       actions: animationStore.actions,
       selectedAllBornList,
       selectedAllBornIdList,
@@ -159,6 +172,11 @@ export default defineComponent({
       axisPadding,
       currentFrame: animationStore.currentFrame,
       endFrame: animationStore.endFrame,
+      setPlaying: animationStore.setPlaying,
+      jumpStartFrame: animationStore.jumpStartFrame,
+      jumpEndFrame: animationStore.jumpEndFrame,
+      jumpNextKey: animationStore.jumpNextKey,
+      jumpPrevKey: animationStore.jumpPrevKey,
       changeActionName: () => {
         if (!draftName.value) return
         animationStore.updateAction({ name: draftName.value })

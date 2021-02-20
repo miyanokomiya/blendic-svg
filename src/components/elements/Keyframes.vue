@@ -18,9 +18,9 @@
               @click.left.shift.exact="shiftSelectFrame(f)"
             />
             <circle
-              v-for="(k, i) in keyframes"
+              v-for="k in keyframes"
               :key="k.bornId"
-              :cy="(i + 1) * 24"
+              :cy="(bornIndexMap[k.bornId] + 1) * 24"
               r="4"
               stroke="#000"
               :fill="selectedKeyframeMap[k.id] ? selectedColor : '#fff'"

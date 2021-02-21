@@ -11,6 +11,7 @@ import {
   getInterpolatedTransformMapByBornId,
   getKeyframeMapByBornId,
   getKeyframeMapByFrame,
+  slideKeyframesTo,
 } from '../utils/animations'
 import {
   convolutePoseTransforms,
@@ -313,9 +314,12 @@ function execUpdateKeyframes(keyframes: IdMap<Keyframe>) {
 function pasteKeyframes(keyframeList: Keyframe[]) {
   const item = getExecPasteKeyframeItem(
     toMap(
-      keyframeList
-        .filter((k) => store.bornMap.value[k.bornId])
-        .map((k) => getKeyframe({ ...k, frame: currentFrame.value }, true))
+      slideKeyframesTo(
+        keyframeList
+          .filter((k) => store.bornMap.value[k.bornId])
+          .map((k) => getKeyframe(k, true)),
+        currentFrame.value
+      )
     )
   )
   item.redo()

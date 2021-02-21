@@ -104,3 +104,13 @@ export function interpolateKeyframeTransform(
   const rate = curveFn((frame - a.frame) / (b.frame - a.frame))
   return interpolateTransform(a.transform, b.transform, rate)
 }
+
+export function slideKeyframesTo(
+  keyframes: Keyframe[],
+  at: number
+): Keyframe[] {
+  if (keyframes.length === 0) return keyframes
+
+  const min = sortKeyframes(keyframes)[0].frame
+  return keyframes.map((k) => ({ ...k, frame: k.frame + (at - min) }))
+}

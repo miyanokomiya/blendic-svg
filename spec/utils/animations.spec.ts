@@ -2,6 +2,7 @@ import { getKeyframe, getTransform } from '/@/models'
 import {
   getNeighborKeyframes,
   interpolateKeyframeTransform,
+  slideKeyframesTo,
   sortKeyframeMap,
 } from '/@/utils/animations'
 
@@ -129,6 +130,28 @@ describe('utils/animations.ts', () => {
         (x: number) => Math.pow(x, 2)
       )
       expect(ret.rotate).toBeCloseTo(20.4)
+    })
+  })
+
+  describe('slideKeyframesTo', () => {
+    it('do nothing if empty', () => {
+      expect(slideKeyframesTo([], 10)).toEqual([])
+    })
+    it('slide keyframes to the frame', () => {
+      expect(
+        slideKeyframesTo(
+          [
+            getKeyframe({ id: '1', frame: 1 }),
+            getKeyframe({ id: '2', frame: 2 }),
+            getKeyframe({ id: '4', frame: 4 }),
+          ],
+          10
+        )
+      ).toEqual([
+        getKeyframe({ id: '1', frame: 10 }),
+        getKeyframe({ id: '2', frame: 11 }),
+        getKeyframe({ id: '4', frame: 13 }),
+      ])
     })
   })
 })

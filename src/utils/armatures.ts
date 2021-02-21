@@ -378,12 +378,14 @@ export function duplicateBorns(srcBorns: IdMap<Born>, names: string[]): Born[] {
   const duplicatedIdMap = mapReduce(srcBorns, () => v4())
   return toList(
     mapReduce(srcBorns, (src) => {
-      // connect only when the parent is duplicated together
-      const connected = src.connected && !!srcBorns[src.parentId]
+      // switch new parent if current parent is duplicated together
+      const parentId = duplicatedIdMap[src.parentId] ?? src.parentId
+      // connect if current parent is duplicated together
+      const connected = src.connected && !!duplicatedIdMap[src.parentId]
       const b = getBorn({
         ...src,
         id: duplicatedIdMap[src.id],
-        parentId: duplicatedIdMap[src.parentId],
+        parentId,
         connected,
         name: getNextName(src.name, names),
       })

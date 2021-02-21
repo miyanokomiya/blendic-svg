@@ -600,25 +600,31 @@ describe('utils/armatures', () => {
       expect(ret[1].id).not.toBe('b')
       expect(ret[1].name).toBe('b.001')
     })
-    it('extend connected state only when the parent is duplicated together', () => {
+    it('switch new parent if the parent is duplicated together', () => {
       const ret = target.duplicateBorns(
         {
           a: getBorn({ id: 'a', name: 'a' }),
           b: getBorn({ id: 'b', name: 'b', parentId: 'a', connected: true }),
-          c: getBorn({
-            id: 'c',
-            name: 'c',
-            parentId: 'parent_c',
-            connected: true,
-          }),
+          c: getBorn({ id: 'b', name: 'b', parentId: 'a', connected: false }),
         },
-        ['b', 'a']
+        ['b', 'a', 'c']
       )
       expect(ret.length).toBe(3)
       expect(ret[1].parentId).toBe(ret[0].id)
       expect(ret[1].connected).toBe(true)
-      expect(ret[2].parentId).toBe(undefined)
+      expect(ret[2].parentId).toBe(ret[0].id)
       expect(ret[2].connected).toBe(false)
+    })
+    it('unconnect current parent if the parent is not duplicated together', () => {
+      const ret = target.duplicateBorns(
+        {
+          b: getBorn({ id: 'b', name: 'b', parentId: 'a', connected: true }),
+        },
+        ['b', 'a']
+      )
+      expect(ret.length).toBe(1)
+      expect(ret[0].parentId).toBe('a')
+      expect(ret[0].connected).toBe(false)
     })
   })
 })

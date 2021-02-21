@@ -224,11 +224,14 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     if (state.command === '') {
       const srcBorns = store.allSelectedBorns.value
       const names = allNames.value.concat()
-      store.addBorns(duplicateBorns(srcBorns, names), {
-        head: true,
-        tail: true,
-      })
-      setEditMode('grab')
+      const duplicated = duplicateBorns(srcBorns, names)
+      if (duplicated.length > 0) {
+        store.addBorns(duplicated, {
+          head: true,
+          tail: true,
+        })
+        setEditMode('grab')
+      }
     }
   }
 

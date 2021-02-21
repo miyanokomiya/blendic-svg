@@ -58,10 +58,10 @@ export function dropMap<T>(
   origin: { [key: string]: T },
   keyMap: { [key: string]: any }
 ): { [key: string]: T } {
-  return dropMapIf(origin, (_t, key) => keyMap[key] === undefined)
+  return dropMapIfFalse(origin, (_t, key) => keyMap[key] === undefined)
 }
 
-export function dropMapIf<T>(
+export function dropMapIfFalse<T>(
   origin: { [key: string]: T },
   checkFn: (t: T, key: string) => boolean
 ): { [key: string]: T } {

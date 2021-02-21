@@ -24,7 +24,7 @@ import {
 } from '../utils/armatures'
 import {
   dropMap,
-  dropMapIf,
+  dropMapIfFalse,
   extractMap,
   flatKeyListMap,
   mapReduce,
@@ -169,7 +169,7 @@ function applyEditedTransforms(mapByBornId: IdMap<Transform>) {
 function pastePoses(mapByBornId: IdMap<Transform>) {
   const item = getUpdateEditedTransformsItem(
     mapReduce(
-      dropMapIf(mapByBornId, (_, bornId) => {
+      dropMapIfFalse(mapByBornId, (_, bornId) => {
         // drop poses of unexisted borns
         return !!currentPosedBorns.value[bornId]
       }),

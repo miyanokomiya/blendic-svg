@@ -1,6 +1,6 @@
 import {
   dropMap,
-  dropMapIf,
+  dropMapIfFalse,
   extractMap,
   flatKeyListMap,
   mapReduce,
@@ -151,10 +151,10 @@ describe('utils/commons.ts', () => {
     })
   })
 
-  describe('dropMapIf', () => {
+  describe('dropMapIfFalse', () => {
     it('drop origin if returns false', () => {
       expect(
-        dropMapIf(
+        dropMapIfFalse(
           {
             1: { a: 1 },
             2: { a: 2 },

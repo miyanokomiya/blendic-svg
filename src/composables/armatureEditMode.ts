@@ -216,6 +216,10 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     }
   }
 
+  function clip() {}
+
+  function paste() {}
+
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
@@ -232,5 +236,7 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     clickEmpty,
     execDelete,
     execAdd,
+    clip,
+    paste,
   }
 }

@@ -19,9 +19,12 @@ import {
   getPosedBornHeadsOrigin,
   getPoseSelectedBorns,
   getTransformedBornMap,
+  invertPoseTransform,
+  multiPoseTransform,
 } from '../utils/armatures'
 import {
   dropMap,
+  dropMapIf,
   extractMap,
   flatKeyListMap,
   mapReduce,
@@ -148,24 +151,40 @@ function setEndFrame(val: number) {
   historyStore.push(item)
 }
 
-function setEditedTransforms(map: IdMap<Transform>) {
-  const item = getUpdateEditedTransformsItem(map)
+function setEditedTransforms(mapByBornId: IdMap<Transform>) {
+  const item = getUpdateEditedTransformsItem(mapByBornId)
   item.redo()
   historyStore.push(item)
 }
-function applyEditedTransforms(map: IdMap<Transform>) {
-  const ids = Array.from(
-    new Set(Object.keys(editTransforms.value).concat(Object.keys(map)))
-  )
+function applyEditedTransforms(mapByBornId: IdMap<Transform>) {
   setEditedTransforms(
-    ids.reduce<IdMap<Transform>>((p, id) => {
-      p[id] = convolutePoseTransforms([
+    mapReduce({ ...editTransforms.value, ...mapByBornId }, (_p, id) => {
+      return convolutePoseTransforms([
         getBornEditedTransforms(id),
-        map[id] ?? getTransform(),
+        mapByBornId[id] ?? getTransform(),
       ])
-      return p
-    }, {})
+    })
   )
+}
+function pastePoses(mapByBornId: IdMap<Transform>) {
+  const item = getUpdateEditedTransformsItem(
+    mapReduce(
+      dropMapIf(mapByBornId, (_, bornId) => {
+        // drop poses of unexisted borns
+        return !!currentPosedBorns.value[bornId]
+      }),
+      (t, bornId) => {
+        // invert keyframe's pose & paste the pose
+        return multiPoseTransform(
+          t,
+          invertPoseTransform(currentInterpolatedTransform(bornId))
+        )
+      }
+    ),
+    'Paste Pose'
+  )
+  item.redo()
+  historyStore.push(item)
 }
 
 function currentInterpolatedTransform(bornId: string): Transform {
@@ -346,6 +365,7 @@ export function useAnimationStore() {
     setEndFrame,
 
     applyEditedTransforms,
+    pastePoses,
     setCurrentFrame,
     setPlaying,
     togglePlaying,
@@ -386,14 +406,17 @@ function getUpdateEndFrameItem(val: number): HistoryItem {
   }
 }
 
-function getUpdateEditedTransformsItem(val: IdMap<Transform>): HistoryItem {
+function getUpdateEditedTransformsItem(
+  val: IdMap<Transform>,
+  name = 'Update Pose'
+): HistoryItem {
   const current = { ...editTransforms.value }
 
   const redo = () => {
     editTransforms.value = val
   }
   return {
-    name: 'Update Pose',
+    name,
     undo: () => {
       editTransforms.value = current
     },

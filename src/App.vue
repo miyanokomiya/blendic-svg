@@ -18,6 +18,8 @@
         @a="selectAll"
         @shift-a="addItem"
         @i="saveKeyframe"
+        @ctrl-c="clip"
+        @ctrl-v="paste"
       >
         <g v-if="canvasMode === 'object'">
           <ArmatureElm
@@ -250,6 +252,8 @@ export default defineComponent({
       saveKeyframe() {
         animationStore.execInsertKeyframe()
       },
+      clip: canvasStore.clip,
+      paste: canvasStore.paste,
     }
   },
 })

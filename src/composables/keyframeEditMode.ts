@@ -24,8 +24,6 @@ export interface KeyframeEditMode extends CanvasEditModeBase {
   getEditFrames: (id: string) => number
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
-  clip: () => void
-  paste: () => void
 }
 
 export function useKeyframeEditMode(): KeyframeEditMode {

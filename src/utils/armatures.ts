@@ -30,6 +30,17 @@ export function multiPoseTransform(a: Transform, b: Transform): Transform {
   })
 }
 
+export function invertPoseTransform(a: Transform): Transform {
+  return getTransform({
+    scale: {
+      x: a.scale.x === 0 ? 0 : 1 / a.scale.x,
+      y: a.scale.y === 0 ? 0 : 1 / a.scale.y,
+    },
+    rotate: -a.rotate,
+    translate: multi(a.translate, -1),
+  })
+}
+
 export function convolutePoseTransforms(transforms: Transform[]): Transform {
   return transforms.reduce((ret, t) => {
     return multiPoseTransform(ret, t)

@@ -107,6 +107,8 @@ export function useCanvasStore() {
     shiftSelect: (id: string, selectedState: BornSelectedState) =>
       canvasEditMode.value.shiftSelect(id, selectedState),
     selectAll: () => canvasEditMode.value.selectAll(),
+    clip: () => canvasEditMode.value.clip(),
+    paste: () => canvasEditMode.value.paste(),
   }
 }
 export type CanvasStore = ReturnType<typeof useCanvasStore>

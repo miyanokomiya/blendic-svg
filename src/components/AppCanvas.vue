@@ -30,6 +30,8 @@
       @keydown.a.exact.prevent="editKeyDown('a')"
       @keydown.a.shift.exact.prevent="editKeyDown('shift-a')"
       @keydown.i.exact.prevent="editKeyDown('i')"
+      @keydown.c.ctrl.exact.prevent="editKeyDown('ctrl-c')"
+      @keydown.v.ctrl.exact.prevent="editKeyDown('ctrl-v')"
     >
       <rect
         :x="originalViewBox.x"
@@ -113,6 +115,8 @@ export default defineComponent({
     'a',
     'shift-a',
     'i',
+    'ctrl-c',
+    'ctrl-v',
   ],
   setup(props, { emit }) {
     const viewSize = reactive({ width: 600, height: 400 })
@@ -262,7 +266,18 @@ export default defineComponent({
         emit('escape')
       },
       editKeyDown(
-        key: 'g' | 's' | 'r' | 'e' | 'x' | 'y' | 'a' | 'shift-a' | 'i'
+        key:
+          | 'g'
+          | 's'
+          | 'r'
+          | 'e'
+          | 'x'
+          | 'y'
+          | 'a'
+          | 'shift-a'
+          | 'i'
+          | 'ctrl-c'
+          | 'ctrl-v'
       ) {
         if (!mousePoint.value) return
 

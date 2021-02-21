@@ -2,6 +2,43 @@ import * as target from '../../src/utils/armatures'
 import { getArmature, getBorn, getTransform } from '../../src/models/index'
 
 describe('utils/armatures', () => {
+  describe('invertPoseTransform', () => {
+    it('invert pose transform', () => {
+      expect(
+        target.invertPoseTransform(
+          getTransform({
+            translate: { x: 20, y: 30 },
+            scale: { x: 2, y: 4 },
+            rotate: 45,
+          })
+        )
+      ).toEqual(
+        getTransform({
+          translate: { x: -20, y: -30 },
+          scale: { x: 1 / 2, y: 1 / 4 },
+          rotate: -45,
+        })
+      )
+    })
+    it('invert zero scale to zero scale', () => {
+      expect(
+        target.invertPoseTransform(
+          getTransform({
+            translate: { x: 20, y: 30 },
+            scale: { x: 0, y: 0 },
+            rotate: 45,
+          })
+        )
+      ).toEqual(
+        getTransform({
+          translate: { x: -20, y: -30 },
+          scale: { x: 0, y: 0 },
+          rotate: -45,
+        })
+      )
+    })
+  })
+
   describe('extrudeFromParent', () => {
     const parent = getBorn({ id: 'parent', tail: { x: 1, y: 2 } })
 

@@ -147,6 +147,8 @@ export interface CanvasEditModeBase {
   clickEmpty: () => void
   execDelete: () => void
   execAdd: () => void
+  clip: () => void
+  paste: () => void
 }
 
 export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {

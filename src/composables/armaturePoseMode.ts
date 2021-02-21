@@ -12,10 +12,12 @@ import {
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '../store/animation'
+import { mapReduce, toList } from '../utils/commons'
 
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
+  clipboard: IdMap<Transform>
 }
 
 export interface BornPoseMode extends CanvasEditModeBase {}
@@ -24,6 +26,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
+    clipboard: {},
   })
 
   const store = useStore()
@@ -142,6 +145,17 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     }
   }
 
+  function clip() {
+    state.clipboard = mapReduce(animationStore.selectedAllBorns.value, (b) =>
+      animationStore.getCurrentSelfTransforms(b.id)
+    )
+  }
+
+  function paste() {
+    if (Object.keys(state.clipboard).length === 0) return
+    animationStore.pastePoses(state.clipboard)
+  }
+
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
@@ -158,5 +172,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     clickEmpty,
     execDelete: () => {},
     execAdd: () => {},
+    clip,
+    paste,
   }
 }

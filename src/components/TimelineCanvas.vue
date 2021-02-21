@@ -58,7 +58,11 @@ export default defineComponent({
     const svg = ref<SVGElement>()
     const wrapper = ref<SVGElement>()
 
-    const canvas = useCanvas({ scaleMin: 1 })
+    const canvas = useCanvas({
+      scaleMin: 1,
+      ignoreNegativeY: true,
+      scaleAtFixY: true,
+    })
 
     function adjustSvgSize() {
       if (!wrapper.value) return

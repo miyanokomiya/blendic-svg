@@ -56,6 +56,7 @@
               :keyframe-map-by-frame="keyframeMapByFrame"
               :born-ids="selectedAllBornIdList"
               :selected-keyframe-map="selectedKeyframeMap"
+              :scroll-y="viewOrigin.y"
               @select="selectKeyframe"
               @shift-select="shiftSelectKeyframe"
               @select-frame="selectKeyframeByFrame"
@@ -68,6 +69,7 @@
             <TimelineBorns
               :selected-all-born-list="selectedAllBornList"
               :label-width="labelWidth"
+              :scroll-y="viewOrigin.y"
             />
           </g>
         </template>

@@ -9,7 +9,12 @@ export interface MoveInfo {
 }
 
 export function useCanvas(
-  options: { scaleMin?: number; scaleMax?: number } = {}
+  options: {
+    scaleMin?: number
+    scaleMax?: number
+    ignoreNegativeY?: boolean
+    scaleAtFixY?: boolean
+  } = {}
 ) {
   const viewSize = reactive({ width: 600, height: 100 })
   const editStartPoint = ref<IVec2>()
@@ -31,6 +36,18 @@ export function useCanvas(
 
   function viewToCanvas(v: IVec2): IVec2 {
     return add(viewOrigin.value, multi(v, scale.value))
+  }
+
+  function fixOrigin(origin: IVec2): IVec2 {
+    // negative y space is not used
+    if (options.ignoreNegativeY) {
+      return {
+        x: origin.x,
+        y: Math.max(origin.y, 0),
+      }
+    } else {
+      return origin
+    }
   }
 
   return {
@@ -55,8 +72,18 @@ export function useCanvas(
         ),
         options.scaleMax ?? 10
       )
-      const afterOrigin = viewToCanvas(origin)
-      viewOrigin.value = add(viewOrigin.value, sub(beforeOrigin, afterOrigin))
+
+      if (options.scaleAtFixY) {
+        viewOrigin.value = add(
+          viewOrigin.value,
+          sub(beforeOrigin, { ...viewToCanvas(origin), y: beforeOrigin.y })
+        )
+      } else {
+        viewOrigin.value = add(
+          viewOrigin.value,
+          sub(beforeOrigin, viewToCanvas(origin))
+        )
+      }
     },
     downLeft() {
       if (!mousePoint.value) return
@@ -82,9 +109,11 @@ export function useCanvas(
       if (!viewMovingInfo.value) return
       if (!mousePoint.value) return
 
-      viewOrigin.value = add(
-        viewMovingInfo.value.origin,
-        multi(sub(viewMovingInfo.value.downAt, mousePoint.value), scale.value)
+      viewOrigin.value = fixOrigin(
+        add(
+          viewMovingInfo.value.origin,
+          multi(sub(viewMovingInfo.value.downAt, mousePoint.value), scale.value)
+        )
       )
     },
   }

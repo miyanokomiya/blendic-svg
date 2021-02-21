@@ -1,27 +1,29 @@
 <template>
   <g>
-    <g>
-      <g>
-        <g
-          v-for="(keyframes, f) in sortedKeyframeMapByFrame"
-          :key="f"
-          :transform="`translate(${parseInt(f) * frameWidth}, 0)`"
-        >
-          <g :transform="`scale(${scale}) translate(0, 36)`">
+    <g :transform="`scale(${scale}) translate(0, ${headerHeight * 2})`">
+      <line x1="-100000" x2="100000" stroke="#000" />
+    </g>
+    <g
+      v-for="(keyframes, f) in sortedKeyframeMapByFrame"
+      :key="f"
+      :transform="`translate(${parseInt(f) * frameWidth}, 0)`"
+    >
+      <g :transform="`scale(${scale}) translate(0, 36)`">
+        <circle
+          v-if="keyframes.length > 0"
+          key="all"
+          r="5"
+          stroke="#000"
+          :fill="selectedFrameMap[f] ? selectedColor : '#fff'"
+          @click.left.exact="selectFrame(f)"
+          @click.left.shift.exact="shiftSelectFrame(f)"
+        />
+        <g :transform="`translate(0, ${-scrollY})`">
+          <g v-for="k in keyframes" :key="k.id">
             <circle
-              v-if="keyframes.length > 0"
-              key="all"
-              r="4"
-              stroke="#000"
-              :fill="selectedFrameMap[f] ? selectedColor : '#fff'"
-              @click.left.exact="selectFrame(f)"
-              @click.left.shift.exact="shiftSelectFrame(f)"
-            />
-            <circle
-              v-for="k in keyframes"
-              :key="k.bornId"
-              :cy="(bornIndexMap[k.bornId] + 1) * 24"
-              r="4"
+              v-if="bornRowMap[k.bornId] > scrollY + headerHeight / 2"
+              :cy="bornRowMap[k.bornId]"
+              r="5"
               stroke="#000"
               :fill="selectedKeyframeMap[k.id] ? selectedColor : '#fff'"
               @click.left.exact="select(k.id)"
@@ -58,6 +60,10 @@ export default defineComponent({
       type: Object as PropType<IdMap<boolean>>,
       default: () => ({}),
     },
+    scrollY: {
+      type: Number,
+      default: 0,
+    },
   },
   emits: ['select', 'shift-select', 'select-frame', 'shift-select-frame'],
   setup(props, { emit }) {
@@ -92,6 +98,10 @@ export default defineComponent({
       })
     })
 
+    const bornRowMap = computed(() => {
+      return mapReduce(bornIndexMap.value, (index) => (index + 1) * 24)
+    })
+
     function sortAndFilterKeyframesByBornId(keyframes: Keyframe[]): Keyframe[] {
       return keyframes
         .filter((k) => bornIndexMap.value[k.bornId] > -1)
@@ -124,6 +134,7 @@ export default defineComponent({
       selectFrame,
       shiftSelectFrame,
       selectedColor: settings.selectedColor,
+      bornRowMap,
     }
   },
 })

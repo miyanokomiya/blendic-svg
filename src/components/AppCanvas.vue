@@ -62,9 +62,11 @@
         :side="scaleNaviElm.side"
       />
     </svg>
-    <div class="help">
-      <p>Mode: {{ canvasMode }}</p>
-    </div>
+    <CanvasModepanel
+      class="mode-panel"
+      :canvas-mode="canvasMode"
+      @change-mode="changeMode"
+    />
   </div>
 </template>
 
@@ -80,16 +82,17 @@ import {
 } from 'vue'
 import { getPointInTarget } from 'okanvas'
 import { IVec2, IRectangle, multi, sub, add, getRectCenter } from 'okageo'
-import { CanvasCommand, scaleRate } from '/@/models'
+import { CanvasCommand, CanvasMode, scaleRate } from '/@/models'
 import * as helpers from '/@/utils/helpers'
 import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
+import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import { useWindow } from '../composables/window'
 import { useAnimationStore } from '../store/animation'
 
 export default defineComponent({
-  components: { ScaleMarker },
+  components: { ScaleMarker, CanvasModepanel },
   props: {
     originalViewBox: {
       type: Object as PropType<IRectangle>,
@@ -101,6 +104,7 @@ export default defineComponent({
     },
   },
   emits: [
+    'change-mode',
     'mousemove',
     'click-any',
     'click-empty',
@@ -296,6 +300,9 @@ export default defineComponent({
         editStartPoint.value = mousePoint.value
         emit(key)
       },
+      changeMode(canvasMode: CanvasMode) {
+        emit('change-mode', canvasMode)
+      },
     }
   },
 })
@@ -305,11 +312,10 @@ export default defineComponent({
 .app-canvas-root {
   position: relative;
 }
-.help {
+.mode-panel {
   position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
+  top: 4px;
+  left: 4px;
 }
 svg {
   border: solid 1px black;

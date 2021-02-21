@@ -4,6 +4,7 @@
       <AppCanvas
         :current-command="canvasCommand"
         class="canvas"
+        @change-mode="changeMode"
         @mousemove="mousemove"
         @click-any="clickAny"
         @click-empty="clickEmpty"
@@ -88,6 +89,7 @@ import BornElm from './components/elements/Born.vue'
 import {
   Born,
   BornSelectedState,
+  CanvasMode,
   EditMode,
   editModeToCanvasCommand,
   IdMap,
@@ -237,6 +239,10 @@ export default defineComponent({
       ctrlToggleCanvasMode() {
         if (!store.lastSelectedArmature.value) return
         canvasStore.ctrlToggleCanvasMode()
+      },
+      changeMode(canvasMode: CanvasMode) {
+        if (!store.lastSelectedArmature.value) return
+        canvasStore.setCanvasMode(canvasMode)
       },
       setEditMode(mode: EditMode) {
         canvasStore.setEditMode(mode)

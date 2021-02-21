@@ -1,4 +1,4 @@
-import { reactive, computed } from 'vue'
+import { reactive, computed, ComputedRef } from 'vue'
 import { sub } from 'okageo'
 import {
   Transform,
@@ -8,6 +8,8 @@ import {
   EditMovement,
   CanvasEditModeBase,
   Keyframe,
+  getKeyframe,
+  toMap,
 } from '../models/index'
 import { useAnimationStore } from '../store/animation'
 import { mapReduce, toList } from '../utils/commons'
@@ -18,9 +20,11 @@ interface State {
   command: EditMode
   editMovement: EditMovement | undefined
   clipboard: Keyframe[]
+  tmpKeyframes: IdMap<Keyframe>
 }
 
 export interface KeyframeEditMode extends CanvasEditModeBase {
+  tmpKeyframes: ComputedRef<IdMap<Keyframe>>
   getEditFrames: (id: string) => number
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
@@ -31,6 +35,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     command: '',
     editMovement: undefined,
     clipboard: [],
+    tmpKeyframes: {},
   })
 
   const animationStore = useAnimationStore()
@@ -46,6 +51,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   function cancel() {
     state.command = ''
     state.editMovement = undefined
+    state.tmpKeyframes = {}
   }
 
   function clickAny() {
@@ -99,12 +105,21 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   function completeEdit() {
     if (!isAnySelected.value) return
 
-    animationStore.execUpdateKeyframes(
-      mapReduce(editTargets.value, (keyframe, id) => ({
-        ...keyframe,
-        frame: getEditFrames(id),
-      }))
-    )
+    const updatedMap = mapReduce(editTargets.value, (keyframe, id) => ({
+      ...keyframe,
+      frame: getEditFrames(id),
+    }))
+    const duplicatedList = toList(state.tmpKeyframes)
+    if (duplicatedList.length > 0) {
+      animationStore.completeDuplicateKeyframes(
+        toList(state.tmpKeyframes),
+        toList(updatedMap)
+      )
+    } else {
+      animationStore.execUpdateKeyframes(updatedMap)
+    }
+
+    state.tmpKeyframes = {}
     state.editMovement = undefined
     state.command = ''
   }
@@ -163,8 +178,12 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     animationStore.execDeleteKeyframes()
   }
 
-  function getEditFrames(id: string) {
-    return editFrames.value[id] ?? allKeyframes.value[id].frame
+  function getEditFrames(id: string): number {
+    return (
+      editFrames.value[id] ??
+      allKeyframes.value[id]?.frame ??
+      state.tmpKeyframes[id].frame
+    )
   }
 
   function clip() {
@@ -176,7 +195,24 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     animationStore.pasteKeyframes(state.clipboard)
   }
 
+  function duplicate() {
+    if (state.command !== '') return
+
+    // duplicate current edit targets as tmp keyframes
+    // & continue to edit original edit targets
+    const duplicated = toMap(
+      toList(
+        mapReduce(editTargets.value, (src) => {
+          return getKeyframe({ ...src }, true)
+        })
+      )
+    )
+    state.tmpKeyframes = duplicated
+    state.command = 'grab'
+  }
+
   return {
+    tmpKeyframes: computed(() => state.tmpKeyframes),
     command: computed(() => state.command),
     getEditTransforms(id: string) {
       return editTransforms.value[id] ?? getTransform()
@@ -197,6 +233,6 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     execAdd: () => {},
     clip,
     paste,
-    duplicate: () => {},
+    duplicate,
   }
 }

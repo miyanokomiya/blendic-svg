@@ -1,5 +1,11 @@
 import * as target from '../../src/utils/armatures'
-import { getArmature, getBorn, getTransform } from '../../src/models/index'
+import {
+  getArmature,
+  getBorn,
+  getKeyframe,
+  getTransform,
+  toMap,
+} from '../../src/models/index'
 
 describe('utils/armatures', () => {
   describe('invertPoseTransform', () => {

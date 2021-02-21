@@ -1,7 +1,9 @@
-import { getKeyframe, getTransform } from '/@/models'
+import { getKeyframe, getTransform, toMap } from '/@/models'
 import {
   getNeighborKeyframes,
   interpolateKeyframeTransform,
+  mergeKeyframes,
+  mergeKeyframesWithDropped,
   slideKeyframesTo,
   sortKeyframeMap,
 } from '/@/utils/animations'
@@ -152,6 +154,37 @@ describe('utils/animations.ts', () => {
         getKeyframe({ id: '2', frame: 11 }),
         getKeyframe({ id: '4', frame: 13 }),
       ])
+    })
+  })
+
+  describe('mergeKeyframesWithDropped', () => {
+    it('merge keyframes by the same frame and bornId', () => {
+      const ret = mergeKeyframesWithDropped(
+        [
+          getKeyframe({ id: 'src_1_a', frame: 1, bornId: 'a' }),
+          getKeyframe({ id: 'src_1_b', frame: 1, bornId: 'b' }),
+          getKeyframe({ id: 'src_1_d', frame: 1, bornId: 'd' }),
+          getKeyframe({ id: 'src_2_a', frame: 2, bornId: 'a' }),
+        ],
+        [
+          getKeyframe({ id: 'ove_1_a', frame: 1, bornId: 'a' }),
+          getKeyframe({ id: 'ove_2_b', frame: 2, bornId: 'b' }),
+          getKeyframe({ id: 'ove_1_c', frame: 1, bornId: 'c' }),
+          getKeyframe({ id: 'ove_3_c', frame: 3, bornId: 'c' }),
+        ]
+      )
+      expect(toMap(ret.merged)).toEqual({
+        src_1_b: getKeyframe({ id: 'src_1_b', frame: 1, bornId: 'b' }),
+        src_1_d: getKeyframe({ id: 'src_1_d', frame: 1, bornId: 'd' }),
+        src_2_a: getKeyframe({ id: 'src_2_a', frame: 2, bornId: 'a' }),
+        ove_1_a: getKeyframe({ id: 'ove_1_a', frame: 1, bornId: 'a' }),
+        ove_2_b: getKeyframe({ id: 'ove_2_b', frame: 2, bornId: 'b' }),
+        ove_1_c: getKeyframe({ id: 'ove_1_c', frame: 1, bornId: 'c' }),
+        ove_3_c: getKeyframe({ id: 'ove_3_c', frame: 3, bornId: 'c' }),
+      })
+      expect(toMap(ret.dropped)).toEqual({
+        src_1_a: getKeyframe({ id: 'src_1_a', frame: 1, bornId: 'a' }),
+      })
     })
   })
 })

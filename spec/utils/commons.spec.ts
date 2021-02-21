@@ -1,9 +1,11 @@
 import {
+  dropListByKey,
   dropMap,
   dropMapIfFalse,
   extractMap,
   flatKeyListMap,
   mapReduce,
+  mergeListByKey,
   toKeyListMap,
   toKeyMap,
   toList,
@@ -167,6 +169,65 @@ describe('utils/commons.ts', () => {
         2: { a: 2 },
         4: { a: 4 },
       })
+    })
+  })
+
+  describe('mergeListByKey', () => {
+    it('merge two list by the key', () => {
+      expect(
+        mergeListByKey(
+          [
+            { a: 1, val: 'src_1' },
+            { a: 2, val: 'src_2' },
+            { a: 3, val: 'src_3' },
+          ],
+          [
+            { a: 1, val: 'ove_1' },
+            { a: 3, val: 'ove_3' },
+            { a: 4, val: 'ove_4' },
+          ],
+          'a'
+        )
+      ).toEqual([
+        { a: 1, val: 'ove_1' },
+        { a: 2, val: 'src_2' },
+        { a: 3, val: 'ove_3' },
+        { a: 4, val: 'ove_4' },
+      ])
+    })
+  })
+
+  describe('dropListByKey', () => {
+    it('drop items by the key value', () => {
+      expect(
+        dropListByKey(
+          [
+            { a: 1, val: 'src_1' },
+            { a: 2, val: 'src_2' },
+          ],
+          [
+            { a: 1, val: 'ove_1' },
+            { a: 3, val: 'ove_3' },
+          ],
+          'a'
+        )
+      ).toEqual([{ a: 2, val: 'src_2' }])
+    })
+    it('inverse: true => get dropped items by the key value', () => {
+      expect(
+        dropListByKey(
+          [
+            { a: 1, val: 'src_1' },
+            { a: 2, val: 'src_2' },
+          ],
+          [
+            { a: 1, val: 'ove_1' },
+            { a: 3, val: 'ove_3' },
+          ],
+          'a',
+          true
+        )
+      ).toEqual([{ a: 1, val: 'src_1' }])
     })
   })
 })

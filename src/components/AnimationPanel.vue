@@ -35,6 +35,7 @@
         @g="grag"
         @ctrl-c="clipKeyframes"
         @ctrl-v="pasteKeyframes"
+        @shift-d="duplicateKeyframes"
       >
         <template #default="{ scale, viewOrigin, viewSize }">
           <g
@@ -124,11 +125,13 @@ export default defineComponent({
       selectedAllBornList.value.map((b) => b.id)
     )
     const keyframeMapByFrame = computed(() => {
-      // animationStore.keyframeMapByFrame.value
       return getKeyframeMapByFrame(
         toList(
           mapReduce(
-            animationStore.visibledKeyframeMap.value,
+            {
+              ...animationStore.visibledKeyframeMap.value,
+              ...keyframeEditMode.tmpKeyframes.value,
+            },
             (keyframe, id) => ({
               ...keyframe,
               frame: keyframeEditMode.getEditFrames(id),
@@ -235,6 +238,7 @@ export default defineComponent({
       deleteKeyframes: keyframeEditMode.execDelete,
       clipKeyframes: keyframeEditMode.clip,
       pasteKeyframes: keyframeEditMode.paste,
+      duplicateKeyframes: keyframeEditMode.duplicate,
       clickEmpty: keyframeEditMode.clickEmpty,
       downCurrentFrame,
       downLeft,

@@ -1,5 +1,12 @@
 import { interpolateTransform } from './armatures'
-import { mapReduce, toKeyListMap } from './commons'
+import {
+  dropListByKey,
+  dropMap,
+  mapReduce,
+  mergeListByKey,
+  toKeyListMap,
+  toList,
+} from './commons'
 import {
   frameWidth,
   getTransform,
@@ -113,4 +120,42 @@ export function slideKeyframesTo(
 
   const min = sortKeyframes(keyframes)[0].frame
   return keyframes.map((k) => ({ ...k, frame: k.frame + (at - min) }))
+}
+
+export function mergeKeyframes(
+  src: Keyframe[],
+  override: Keyframe[]
+): Keyframe[] {
+  return mergeKeyframesWithDropped(src, override).merged
+}
+
+export function mergeKeyframesWithDropped(
+  src: Keyframe[],
+  override: Keyframe[]
+): { merged: Keyframe[]; dropped: Keyframe[] } {
+  const srcMapByFrame = getKeyframeMapByFrame(src)
+  const overrideMapByFrame = getKeyframeMapByFrame(override)
+  const overrideMapByNewFrame = dropMap(overrideMapByFrame, srcMapByFrame)
+
+  const dropped: Keyframe[] = []
+  const merged = toList({
+    ...mapReduce(srcMapByFrame, (keyframes, frameStr: string) => {
+      dropped.push(
+        ...dropListByKey(
+          keyframes,
+          overrideMapByFrame[frameStr] ?? [],
+          'bornId',
+          true
+        )
+      )
+      return mergeListByKey(
+        keyframes,
+        overrideMapByFrame[frameStr] ?? [],
+        'bornId'
+      )
+    }),
+    ...overrideMapByNewFrame,
+  }).flat()
+
+  return { merged, dropped }
 }

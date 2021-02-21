@@ -72,3 +72,30 @@ export function dropMapIfFalse<T>(
     return p
   }, {})
 }
+
+export function mergeListByKey<T extends object>(
+  src: T[],
+  override: T[],
+  key: string
+): T[] {
+  return toList({
+    ...toKeyMap<T>(src, key),
+    ...toKeyMap<T>(override, key),
+  })
+}
+
+export function dropListByKey<T extends object>(
+  src: T[],
+  drop: T[],
+  key: string,
+  inverse = false
+): T[] {
+  const srcMap = toKeyMap<T>(src, key)
+  const dropMap = toKeyMap<T>(drop, key)
+  return toList(
+    dropMapIfFalse<T>(
+      srcMap,
+      (s, id) => ((s as any)[key] === (dropMap[id] as any)?.[key]) === inverse
+    )
+  )
+}

@@ -174,5 +174,6 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     execAdd: () => {},
     clip,
     paste,
+    duplicate: () => {},
   }
 }

@@ -20,6 +20,7 @@
         @i="saveKeyframe"
         @ctrl-c="clip"
         @ctrl-v="paste"
+        @shift-d="duplicate"
       >
         <g v-if="canvasMode === 'object'">
           <ArmatureElm
@@ -254,6 +255,7 @@ export default defineComponent({
       },
       clip: canvasStore.clip,
       paste: canvasStore.paste,
+      duplicate: canvasStore.duplicate,
     }
   },
 })

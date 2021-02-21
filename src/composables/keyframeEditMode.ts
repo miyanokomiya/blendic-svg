@@ -197,5 +197,6 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     execAdd: () => {},
     clip,
     paste,
+    duplicate: () => {},
   }
 }

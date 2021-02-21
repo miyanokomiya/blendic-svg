@@ -109,6 +109,7 @@ export function useCanvasStore() {
     selectAll: () => canvasEditMode.value.selectAll(),
     clip: () => canvasEditMode.value.clip(),
     paste: () => canvasEditMode.value.paste(),
+    duplicate: () => canvasEditMode.value.duplicate(),
   }
 }
 export type CanvasStore = ReturnType<typeof useCanvasStore>

@@ -1,3 +1,4 @@
+import { v4 } from 'uuid'
 import {
   Transform,
   Armature,
@@ -20,7 +21,8 @@ import {
   rotate,
   sub,
 } from 'okageo'
-import { dropMapIfFalse } from './commons'
+import { dropMapIfFalse, mapReduce, toList } from './commons'
+import { getNextName } from './relations'
 
 export function multiPoseTransform(a: Transform, b: Transform): Transform {
   return getTransform({
@@ -370,4 +372,23 @@ export function interpolateTransform(
     rotate: interpolateScaler(a.rotate, b.rotate, rate),
     translate: interpolateVector(a.translate, b.translate, rate),
   })
+}
+
+export function duplicateBorns(srcBorns: IdMap<Born>, names: string[]): Born[] {
+  const duplicatedIdMap = mapReduce(srcBorns, () => v4())
+  return toList(
+    mapReduce(srcBorns, (src) => {
+      // connect only when the parent is duplicated together
+      const connected = src.connected && !!srcBorns[src.parentId]
+      const b = getBorn({
+        ...src,
+        id: duplicatedIdMap[src.id],
+        parentId: duplicatedIdMap[src.parentId],
+        connected,
+        name: getNextName(src.name, names),
+      })
+      names.push(b.name)
+      return b
+    })
+  ).sort((a, b) => (a.name >= b.name ? 1 : -1))
 }

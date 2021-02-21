@@ -32,6 +32,7 @@
       @keydown.i.exact.prevent="editKeyDown('i')"
       @keydown.c.ctrl.exact.prevent="editKeyDown('ctrl-c')"
       @keydown.v.ctrl.exact.prevent="editKeyDown('ctrl-v')"
+      @keydown.d.shift.exact.prevent="editKeyDown('shift-d')"
     >
       <rect
         :x="originalViewBox.x"
@@ -117,6 +118,7 @@ export default defineComponent({
     'i',
     'ctrl-c',
     'ctrl-v',
+    'shift-d',
   ],
   setup(props, { emit }) {
     const viewSize = reactive({ width: 600, height: 400 })
@@ -278,6 +280,7 @@ export default defineComponent({
           | 'i'
           | 'ctrl-c'
           | 'ctrl-v'
+          | 'shift-d'
       ) {
         if (!mousePoint.value) return
 

@@ -149,6 +149,7 @@ export interface CanvasEditModeBase {
   execAdd: () => void
   clip: () => void
   paste: () => void
+  duplicate: () => void
 }
 
 export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {

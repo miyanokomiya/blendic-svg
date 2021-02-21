@@ -1,4 +1,4 @@
-import { reactive, computed, toRef, ref } from 'vue'
+import { reactive, computed } from 'vue'
 import { getDistance, getRadian, multi, sub } from 'okageo'
 import {
   Transform,
@@ -10,7 +10,11 @@ import {
   CanvasEditModeBase,
   EditMovement,
 } from '../models/index'
-import { editTransform, extrudeFromParent } from '/@/utils/armatures'
+import {
+  duplicateBorns,
+  editTransform,
+  extrudeFromParent,
+} from '/@/utils/armatures'
 import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
@@ -216,9 +220,17 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     }
   }
 
-  function clip() {}
-
-  function paste() {}
+  function duplicate() {
+    if (state.command === '') {
+      const srcBorns = store.allSelectedBorns.value
+      const names = allNames.value.concat()
+      store.addBorns(duplicateBorns(srcBorns, names), {
+        head: true,
+        tail: true,
+      })
+      setEditMode('grab')
+    }
+  }
 
   return {
     command: computed(() => state.command),
@@ -236,7 +248,8 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     clickEmpty,
     execDelete,
     execAdd,
-    clip,
-    paste,
+    clip: () => {},
+    paste: () => {},
+    duplicate,
   }
 }

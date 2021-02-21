@@ -280,6 +280,7 @@ export function useStore() {
     lastSelectedArmature,
     lastSelectedBorn,
     bornMap,
+    allSelectedBorns,
     selectedBornsOrigin,
     selectAllArmature,
     selectArmature,

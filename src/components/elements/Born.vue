@@ -115,11 +115,7 @@ export default defineComponent({
       ),
       click: (state: BornSelectedState) => {
         if (props.poseMode) {
-          if (selectedAll.value) {
-            emit('select', { head: false, tail: false })
-          } else {
-            emit('select', { head: true, tail: true })
-          }
+          emit('select', { head: true, tail: true })
         } else {
           emit('select', state)
         }

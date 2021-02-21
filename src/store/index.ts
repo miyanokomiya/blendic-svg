@@ -83,6 +83,9 @@ const selectedBornsOrigin = computed(
     armatureUtils.getSelectedBornsOrigin(bornMap.value, state.selectedBorns)
 )
 
+const anySelectedBorns = computed(() => {
+  return armatureUtils.getAnySelectedBorns(bornMap.value, state.selectedBorns)
+})
 const allSelectedBorns = computed(() => {
   return armatureUtils.getAllSelectedBorns(bornMap.value, state.selectedBorns)
 })
@@ -209,7 +212,8 @@ function selectBorn(
   if (!lastSelectedBorn.value && !id) return
   if (
     state.lastSelectedBornId === id &&
-    isSameBornSelectedState(state.selectedBorns[id], selectedState)
+    isSameBornSelectedState(state.selectedBorns[id], selectedState) &&
+    Object.keys(allSelectedBorns.value).length === 1
   )
     return
 

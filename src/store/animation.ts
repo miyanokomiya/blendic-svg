@@ -78,7 +78,7 @@ const visibledSelectedKeyframeMap = computed(() => {
   return extractMap(visibledKeyframeMap.value, selectedKeyframeMap.value)
 })
 const isAnyVisibledSelectedKeyframe = computed(() => {
-  return Object.keys(visibledSelectedKeyframeMap).length > 0
+  return Object.keys(visibledSelectedKeyframeMap.value).length > 0
 })
 
 const currentInterpolatedTransformMapByBornId = computed(
@@ -563,7 +563,6 @@ function getExecInsertKeyframeItem(keyframes: Keyframe[]) {
       editTransforms.value,
       toBornIdMap(insertedKeyframes)
     )
-    console.log('redo', merged.length)
   }
   return {
     name: 'Insert Keyframe',
@@ -578,7 +577,6 @@ function getExecInsertKeyframeItem(keyframes: Keyframe[]) {
       actions.lastSelectedItem.value!.keyframes = reverted
       currentFrame.value = preFrame
       editTransforms.value = preEditTransforms
-      console.log('undo', reverted.length)
     },
     redo,
   }

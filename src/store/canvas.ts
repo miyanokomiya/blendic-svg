@@ -15,6 +15,12 @@ const state = reactive({
   axisGrid: '' as AxisGrid,
 })
 
+function initState() {
+  state.canvasMode = 'object'
+  state.pastCanvasMode = 'edit'
+  state.axisGrid = ''
+}
+
 const canvasEditMode = computed(() => {
   if (state.canvasMode === 'edit') {
     return useBornEditMode(useCanvasStore())
@@ -83,6 +89,7 @@ function getEditTransforms(id: string): Transform {
 
 export function useCanvasStore() {
   return {
+    initState,
     state,
     command,
     toggleCanvasMode,

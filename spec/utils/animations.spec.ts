@@ -1,5 +1,13 @@
-import { getKeyframe, getTransform, toMap } from '/@/models'
 import {
+  getAction,
+  getArmature,
+  getBorn,
+  getKeyframe,
+  getTransform,
+  toMap,
+} from '/@/models'
+import {
+  cleanActions,
   getNeighborKeyframes,
   interpolateKeyframeTransform,
   mergeKeyframes,
@@ -185,6 +193,49 @@ describe('utils/animations.ts', () => {
       expect(toMap(ret.dropped)).toEqual({
         src_1_a: getKeyframe({ id: 'src_1_a', frame: 1, bornId: 'a' }),
       })
+    })
+  })
+
+  describe('cleanActions', () => {
+    it('drop actions of unexisted armatures', () => {
+      expect(
+        cleanActions(
+          [
+            getAction({ id: 'act_1', armatureId: 'arm_1' }),
+            getAction({ id: 'act_2', armatureId: 'arm_2' }),
+          ],
+          [getArmature({ id: 'arm_2' })]
+        )
+      ).toEqual([getAction({ id: 'act_2', armatureId: 'arm_2' })])
+    })
+    it('drop keyframes of unexisted borns', () => {
+      expect(
+        cleanActions(
+          [
+            getAction({
+              id: 'act_1',
+              armatureId: 'arm_1',
+              keyframes: [
+                getKeyframe({ id: 'key_1', bornId: 'born_1' }),
+                getKeyframe({ id: 'key_2', bornId: 'born_2' }),
+                getKeyframe({ id: 'key_4', bornId: 'born_4' }),
+              ],
+            }),
+          ],
+          [
+            getArmature({
+              id: 'arm_1',
+              borns: [getBorn({ id: 'born_2' }), getBorn({ id: 'born_3' })],
+            }),
+          ]
+        )
+      ).toEqual([
+        getAction({
+          id: 'act_1',
+          armatureId: 'arm_1',
+          keyframes: [getKeyframe({ id: 'key_2', bornId: 'born_2' })],
+        }),
+      ])
     })
   })
 })

@@ -2,17 +2,23 @@ import { interpolateTransform } from './armatures'
 import {
   dropListByKey,
   dropMap,
+  extractMap,
   mapReduce,
   mergeListByKey,
   toKeyListMap,
   toList,
 } from './commons'
 import {
+  Action,
+  Armature,
+  Born,
   frameWidth,
   getTransform,
   IdMap,
   Keyframe,
   scaleRate,
+  toBornIdMap,
+  toMap,
   Transform,
 } from '/@/models'
 
@@ -158,4 +164,24 @@ export function mergeKeyframesWithDropped(
   }).flat()
 
   return { merged, dropped }
+}
+
+export function cleanActions(
+  actions: Action[],
+  armatures: Armature[]
+): Action[] {
+  const armatureMap = toMap(armatures)
+  return actions
+    .filter((action) => !!armatureMap[action.armatureId])
+    .map((action) => ({
+      ...action,
+      keyframes: cleanKeyframes(
+        action.keyframes,
+        armatureMap[action.armatureId].borns
+      ),
+    }))
+}
+
+function cleanKeyframes(keyframes: Keyframe[], borns: Born[]): Keyframe[] {
+  return toList(extractMap(toBornIdMap(keyframes), toMap(borns))).flat()
 }

@@ -46,6 +46,13 @@ const state = reactive({
   selectedBorns: {} as IdMap<BornSelectedState>,
 })
 
+function initState(initArmatures: Armature[]) {
+  state.armatures = initArmatures
+  state.lastSelectedArmatureId = ''
+  state.selectedArmatures = {}
+  state.selectedBorns = {}
+}
+
 const lastSelectedArmatureIndex = computed(() =>
   state.armatures.findIndex(
     (a) =>
@@ -83,9 +90,6 @@ const selectedBornsOrigin = computed(
     armatureUtils.getSelectedBornsOrigin(bornMap.value, state.selectedBorns)
 )
 
-const anySelectedBorns = computed(() => {
-  return armatureUtils.getAnySelectedBorns(bornMap.value, state.selectedBorns)
-})
 const allSelectedBorns = computed(() => {
   return armatureUtils.getAllSelectedBorns(bornMap.value, state.selectedBorns)
 })
@@ -280,6 +284,7 @@ function updateBorn(diff: Partial<Born>) {
 
 export function useStore() {
   return {
+    initState,
     state,
     lastSelectedArmature,
     lastSelectedBorn,

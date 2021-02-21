@@ -15,7 +15,7 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
-import { useHistoryStore } from '../store/history'
+import { useHistoryStore } from '/@/store/history'
 
 export default defineComponent({
   setup() {

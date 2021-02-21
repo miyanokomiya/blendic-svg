@@ -58,6 +58,12 @@ const selectedKeyframeMap = ref<IdMap<boolean>>({})
 const historyStore = useHistoryStore()
 const store = useStore()
 
+function initState(initActions: Action[] = []) {
+  actions.state.list = initActions
+  editTransforms.value = {}
+  selectedKeyframeMap.value = {}
+}
+
 const keyframeMapByFrame = computed(() => {
   return getKeyframeMapByFrame(actions.lastSelectedItem.value?.keyframes ?? [])
 })
@@ -360,6 +366,7 @@ function completeDuplicateKeyframes(
 
 export function useAnimationStore() {
   return {
+    initState,
     playing,
     currentFrame,
     endFrame,

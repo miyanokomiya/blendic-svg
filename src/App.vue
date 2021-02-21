@@ -106,6 +106,7 @@ import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
 import { useAnimationStore } from './store/animation'
+import { useStrage } from './composables/strage'
 
 export default defineComponent({
   components: {
@@ -188,6 +189,14 @@ export default defineComponent({
       } else if (e.key.toLowerCase() === ' ') {
         e.preventDefault()
         animationStore.togglePlaying()
+      } else if (e.ctrlKey && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        const strage = useStrage()
+        strage.saveFile()
+      } else if (e.ctrlKey && e.key.toLowerCase() === 'o') {
+        e.preventDefault()
+        const strage = useStrage()
+        strage.loadFile()
       }
     }
 

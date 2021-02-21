@@ -62,6 +62,7 @@ function initState(initActions: Action[] = []) {
   actions.state.list = initActions
   editTransforms.value = {}
   selectedKeyframeMap.value = {}
+  console.log(actions.state.list)
 }
 
 const keyframeMapByFrame = computed(() => {
@@ -370,7 +371,7 @@ export function useAnimationStore() {
     playing,
     currentFrame,
     endFrame,
-    actions: actions.state.list,
+    actions: computed(() => actions.state.list),
     selectedKeyframeMap,
     keyframeMapByFrame,
     keyframeMapByBornId,
@@ -621,20 +622,26 @@ function overridedKeyframeList(keyframes: IdMap<Keyframe>): Keyframe[] {
 }
 
 function getExecUpdateKeyframeItem(keyframes: IdMap<Keyframe>) {
-  const preKeyframes = extractMap(visibledSelectedKeyframeMap.value, keyframes)
+  const { dropped } = mergeKeyframesWithDropped(
+    actions.lastSelectedItem.value!.keyframes,
+    toList(keyframes)
+  )
 
   const redo = () => {
-    const updated = overridedKeyframeList(keyframes)
-    actions.lastSelectedItem.value!.keyframes = updated
+    const { merged } = mergeKeyframesWithDropped(
+      actions.lastSelectedItem.value!.keyframes,
+      toList(keyframes)
+    )
+    actions.lastSelectedItem.value!.keyframes = merged
   }
   return {
     name: 'Update Keyframe',
     undo: () => {
-      const reverted = toList({
-        ...dropMap(toMap(actions.lastSelectedItem.value!.keyframes), keyframes),
-        ...preKeyframes,
-      })
-      actions.lastSelectedItem.value!.keyframes = reverted
+      const { merged } = mergeKeyframesWithDropped(
+        actions.lastSelectedItem.value!.keyframes,
+        dropped
+      )
+      actions.lastSelectedItem.value!.keyframes = merged
     },
     redo,
   }

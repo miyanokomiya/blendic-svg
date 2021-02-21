@@ -144,7 +144,7 @@ export default defineComponent({
     })
 
     const actionOptions = computed(() =>
-      animationStore.actions.map((a) => {
+      animationStore.actions.value.map((a) => {
         const valid = store.lastSelectedArmature.value?.id !== a.armatureId
         return {
           value: a.id,
@@ -195,7 +195,7 @@ export default defineComponent({
 
     return {
       playing: animationStore.playing,
-      actions: animationStore.actions,
+      actions: animationStore.actions.value,
       selectedAllBornList,
       selectedAllBornIdList,
       keyframeMapByFrame,

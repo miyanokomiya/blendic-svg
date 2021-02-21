@@ -194,6 +194,22 @@ describe('utils/animations.ts', () => {
         src_1_a: getKeyframe({ id: 'src_1_a', frame: 1, bornId: 'a' }),
       })
     })
+    it('override keyframes by the same id', () => {
+      const ret = mergeKeyframesWithDropped(
+        [
+          getKeyframe({ id: 'src_a', frame: 1, bornId: 'a' }),
+          getKeyframe({ id: 'src_b', frame: 1, bornId: 'b' }),
+        ],
+        [getKeyframe({ id: 'src_b', frame: 10, bornId: 'bb' })]
+      )
+      expect(toMap(ret.merged)).toEqual({
+        src_a: getKeyframe({ id: 'src_a', frame: 1, bornId: 'a' }),
+        src_b: getKeyframe({ id: 'src_b', frame: 10, bornId: 'bb' }),
+      })
+      expect(toMap(ret.dropped)).toEqual({
+        src_b: getKeyframe({ id: 'src_b', frame: 1, bornId: 'b' }),
+      })
+    })
   })
 
   describe('cleanActions', () => {

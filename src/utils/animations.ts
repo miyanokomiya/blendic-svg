@@ -139,11 +139,17 @@ export function mergeKeyframesWithDropped(
   src: Keyframe[],
   override: Keyframe[]
 ): { merged: Keyframe[]; dropped: Keyframe[] } {
-  const srcMapByFrame = getKeyframeMapByFrame(src)
+  const srcMap = toMap(src)
+  const overrideMap = toMap(override)
+
+  const srcMapByFrame = getKeyframeMapByFrame(
+    toList(dropMap(srcMap, overrideMap))
+  )
   const overrideMapByFrame = getKeyframeMapByFrame(override)
   const overrideMapByNewFrame = dropMap(overrideMapByFrame, srcMapByFrame)
 
-  const dropped: Keyframe[] = []
+  const dropped: Keyframe[] = toList(extractMap(srcMap, overrideMap))
+
   const merged = toList({
     ...mapReduce(srcMapByFrame, (keyframes, frameStr: string) => {
       dropped.push(

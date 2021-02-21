@@ -23,7 +23,7 @@ export function useStrage() {
 
   function serialize(): string {
     const armatures = store.state.armatures
-    const actions = cleanActions(animationStore.actions, armatures)
+    const actions = cleanActions(animationStore.actions.value, armatures)
     const root: Root = { armatures, actions }
     return JSON.stringify(root)
   }

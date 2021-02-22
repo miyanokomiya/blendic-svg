@@ -74,6 +74,10 @@
           </g>
         </template>
       </TimelineCanvas>
+      <CommandExamPanel
+        class="command-exam-panel"
+        :available-command-list="availableCommandList"
+      />
     </div>
   </div>
 </template>
@@ -88,6 +92,7 @@ import TimelineAxis from './elements/atoms/TimelineAxis.vue'
 import TimelineBorns from './elements/TimelineBorns.vue'
 import Keyframes from './elements/Keyframes.vue'
 import AnimationController from './molecules/AnimationController.vue'
+import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import {
   getKeyframeMapByFrame,
   getNearestFrameAtPoint,
@@ -105,6 +110,7 @@ export default defineComponent({
     TimelineBorns,
     Keyframes,
     AnimationController,
+    CommandExamPanel,
   },
   setup() {
     const labelWidth = 140
@@ -247,6 +253,7 @@ export default defineComponent({
       drag,
       upLeft,
       mousemove: keyframeEditMode.mousemove,
+      availableCommandList: keyframeEditMode.availableCommandList,
     }
   },
 })
@@ -283,7 +290,13 @@ export default defineComponent({
   }
 }
 .middle {
+  position: relative;
   flex: 1;
   min-height: 0; // for flex grow
+  .command-exam-panel {
+    position: absolute;
+    bottom: 4px;
+    right: 8px;
+  }
 }
 </style>

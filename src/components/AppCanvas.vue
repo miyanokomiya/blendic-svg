@@ -67,6 +67,10 @@
       :canvas-mode="canvasMode"
       @change-mode="changeMode"
     />
+    <CommandExamPanel
+      class="command-exam-panel"
+      :available-command-list="availableCommandList"
+    />
   </div>
 </template>
 
@@ -87,12 +91,13 @@ import * as helpers from '/@/utils/helpers'
 import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
+import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import { useWindow } from '../composables/window'
 import { useAnimationStore } from '../store/animation'
 
 export default defineComponent({
-  components: { ScaleMarker, CanvasModepanel },
+  components: { ScaleMarker, CanvasModepanel, CommandExamPanel },
   props: {
     originalViewBox: {
       type: Object as PropType<IRectangle>,
@@ -303,6 +308,7 @@ export default defineComponent({
       changeMode(canvasMode: CanvasMode) {
         emit('change-mode', canvasMode)
       },
+      availableCommandList: canvasStore.availableCommandList,
     }
   },
 })
@@ -315,6 +321,11 @@ export default defineComponent({
 .mode-panel {
   position: absolute;
   top: 4px;
+  left: 4px;
+}
+.command-exam-panel {
+  position: absolute;
+  top: 24px;
   left: 4px;
 }
 svg {

@@ -164,6 +164,8 @@ export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude'
 
 export type EditMovement = { current: IVec2; start: IVec2 }
 
+export type CommandExam = { command: string; title: string }
+
 export interface CanvasEditModeBase {
   command: ComputedRef<EditMode>
   getEditTransforms: (id: string) => Transform
@@ -181,6 +183,7 @@ export interface CanvasEditModeBase {
   clip: () => void
   paste: () => void
   duplicate: () => void
+  availableCommandList: ComputedRef<CommandExam[]>
 }
 
 export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {

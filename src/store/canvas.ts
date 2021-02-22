@@ -39,6 +39,10 @@ watch(canvasEditMode, (_to, from) => {
 
 const command = computed((): EditMode => canvasEditMode.value.command.value)
 
+const availableCommandList = computed(
+  () => canvasEditMode.value.availableCommandList.value
+)
+
 function toggleCanvasMode() {
   if (state.canvasMode === 'edit') {
     setCanvasMode(state.pastCanvasMode)
@@ -120,6 +124,7 @@ export function useCanvasStore() {
     clip: () => canvasEditMode.value.clip(),
     paste: () => canvasEditMode.value.paste(),
     duplicate: () => canvasEditMode.value.duplicate(),
+    availableCommandList,
   }
 }
 export type CanvasStore = ReturnType<typeof useCanvasStore>

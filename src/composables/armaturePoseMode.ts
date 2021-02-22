@@ -156,6 +156,29 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     animationStore.pastePoses(state.clipboard)
   }
 
+  const availableCommandList = computed(() => {
+    if (state.command === 'grab') {
+      return [
+        { command: 'x', title: 'Fix Axis X' },
+        { command: 'y', title: 'Fix Axis Y' },
+      ]
+    } else if (isAnySelected.value) {
+      return [
+        { command: 'i', title: 'Insert Keyframe' },
+        { command: 'g', title: 'Grab' },
+        { command: 'r', title: 'Rotate' },
+        { command: 'a', title: 'All Select' },
+        { command: 'Ctrl + c', title: 'Clip' },
+        { command: 'Ctrl + v', title: 'Paste' },
+      ]
+    } else {
+      return [
+        { command: 'a', title: 'All Select' },
+        { command: 'Ctrl + v', title: 'Paste' },
+      ]
+    }
+  })
+
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
@@ -175,5 +198,6 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     clip,
     paste,
     duplicate: () => {},
+    availableCommandList,
   }
 }

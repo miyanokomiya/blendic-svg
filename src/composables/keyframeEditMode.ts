@@ -210,6 +210,26 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     state.command = 'grab'
   }
 
+  const availableCommandList = computed(() => {
+    if (isAnySelected.value) {
+      return [
+        { command: 'g', title: 'Grab' },
+        { command: 'a', title: 'All Select' },
+        { command: 'x', title: 'Delete' },
+        { command: 'D', title: 'Duplicate' },
+        { command: 'Ctrl + c', title: 'Clip' },
+        { command: 'Ctrl + v', title: 'Paste' },
+        { command: 'Space', title: 'Play/Stop' },
+      ]
+    } else {
+      return [
+        { command: 'a', title: 'All Select' },
+        { command: 'Ctrl + v', title: 'Paste' },
+        { command: 'Space', title: 'Play/Stop' },
+      ]
+    }
+  })
+
   return {
     tmpKeyframes: computed(() => state.tmpKeyframes),
     command: computed(() => state.command),
@@ -233,5 +253,6 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     clip,
     paste,
     duplicate,
+    availableCommandList,
   }
 }

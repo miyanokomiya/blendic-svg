@@ -235,6 +235,31 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     }
   }
 
+  const availableCommandList = computed(() => {
+    if (state.command === 'grab' || state.command === 'scale') {
+      return [
+        { command: 'x', title: 'Fix Axis X' },
+        { command: 'y', title: 'Fix Axis Y' },
+      ]
+    } else if (isAnySelected.value) {
+      return [
+        { command: 'e', title: 'Extlude' },
+        { command: 'g', title: 'Grab' },
+        { command: 'r', title: 'Rotate' },
+        { command: 's', title: 'Scale' },
+        { command: 'a', title: 'All Select' },
+        { command: 'x', title: 'Delete' },
+        { command: 'A', title: 'Add' },
+        { command: 'D', title: 'Duplicate' },
+      ]
+    } else {
+      return [
+        { command: 'a', title: 'All Select' },
+        { command: 'A', title: 'Add' },
+      ]
+    }
+  })
+
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
@@ -254,5 +279,6 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     clip: () => {},
     paste: () => {},
     duplicate,
+    availableCommandList,
   }
 }

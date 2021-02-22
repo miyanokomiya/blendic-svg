@@ -107,6 +107,21 @@ export function useObjectMode(): ObjectMode {
     }
   }
 
+  const availableCommandList = computed(() => {
+    if (target.value) {
+      return [
+        { command: 'a', title: 'Select' },
+        { command: 'A', title: 'Add' },
+        { command: 'x', title: 'Delete' },
+      ]
+    } else {
+      return [
+        { command: 'a', title: 'Select' },
+        { command: 'A', title: 'Add' },
+      ]
+    }
+  })
+
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
@@ -126,5 +141,6 @@ export function useObjectMode(): ObjectMode {
     clip: () => {},
     paste: () => {},
     duplicate: () => {},
+    availableCommandList,
   }
 }

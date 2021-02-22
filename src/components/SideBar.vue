@@ -24,7 +24,7 @@ type TabName = '' | 'item'
 export default defineComponent({
   components: { ItemPanel },
   setup() {
-    const currentTab = ref<TabName>('')
+    const currentTab = ref<TabName>('item')
 
     const tabs = computed((): { key: TabName; label: string }[] => [
       { key: 'item', label: 'Item' },

@@ -1,8 +1,8 @@
 import { getInner, IVec2, sub } from 'okageo'
 import { computed, reactive, watch } from 'vue'
-import { useBornEditMode } from '../composables/armatureEditMode'
-import { useBornPoseMode } from '../composables/armaturePoseMode'
-import { useObjectMode } from '../composables/objectMode'
+import { BornEditMode, useBornEditMode } from '../composables/armatureEditMode'
+import { BornPoseMode, useBornPoseMode } from '../composables/armaturePoseMode'
+import { ObjectMode, useObjectMode } from '../composables/objectMode'
 import { HistoryItem, useHistoryStore } from './history'
 import { BornSelectedState, CanvasMode, EditMode, Transform } from '/@/models'
 
@@ -21,7 +21,10 @@ function initState() {
   state.axisGrid = ''
 }
 
-const canvasEditMode = computed(() => {
+const canvasEditMode = computed(():
+  | BornEditMode
+  | ObjectMode
+  | BornPoseMode => {
   if (state.canvasMode === 'edit') {
     return useBornEditMode(useCanvasStore())
   } else if (state.canvasMode === 'pose') {

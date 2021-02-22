@@ -4,43 +4,23 @@
       <h4>Translate</h4>
       <div class="field">
         <label>x</label>
-        <input
-          v-model="draftTransform.translateX"
-          type="text"
-          @change="changeTransform"
+        <NumberInput
+          :model-value="draftTransform.translateX"
+          @update:modelValue="changeTranslateX"
         />
       </div>
       <div class="field">
         <label>y</label>
-        <input
-          v-model="draftTransform.translateY"
-          type="text"
-          @change="changeTransform"
+        <NumberInput
+          :model-value="draftTransform.translateY"
+          @update:modelValue="changeTranslateY"
         />
       </div>
       <h4>Rotate</h4>
       <div class="field">
-        <input
-          v-model="draftTransform.rotate"
-          type="text"
-          @change="changeTransform"
-        />
-      </div>
-      <h4>Scale</h4>
-      <div class="field">
-        <label>x</label>
-        <input
-          v-model="draftTransform.scaleX"
-          type="text"
-          @change="changeTransform"
-        />
-      </div>
-      <div class="field">
-        <label>y</label>
-        <input
-          v-model="draftTransform.scaleY"
-          type="text"
-          @change="changeTransform"
+        <NumberInput
+          :model-value="draftTransform.rotate"
+          @update:modelValue="changeRotate"
         />
       </div>
     </form>
@@ -48,20 +28,32 @@
       <h4>Head</h4>
       <div class="field">
         <label>x</label>
-        <input v-model="draftBorn.headX" type="text" @change="changeBorn" />
+        <NumberInput
+          :model-value="draftBorn.headX"
+          @update:modelValue="changeBornHeadX"
+        />
       </div>
       <div class="field">
         <label>y</label>
-        <input v-model="draftBorn.headY" type="text" @change="changeBorn" />
+        <NumberInput
+          :model-value="draftBorn.headY"
+          @update:modelValue="changeBornHeadY"
+        />
       </div>
       <h4>Tail</h4>
       <div class="field">
         <label>x</label>
-        <input v-model="draftBorn.tailX" type="text" @change="changeBorn" />
+        <NumberInput
+          :model-value="draftBorn.tailX"
+          @update:modelValue="changeBornTailX"
+        />
       </div>
       <div class="field">
         <label>y</label>
-        <input v-model="draftBorn.tailY" type="text" @change="changeBorn" />
+        <NumberInput
+          :model-value="draftBorn.tailY"
+          @update:modelValue="changeBornTailY"
+        />
       </div>
     </form>
     <div v-else>
@@ -72,13 +64,15 @@
 
 <script lang="ts">
 import { computed, defineComponent, reactive, watchEffect } from 'vue'
-import { Born, Transform } from '/@/models'
+import { Born, getTransform, Transform } from '/@/models'
 import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
 import { useCanvasStore } from '/@/store/canvas'
 import { convolutePoseTransforms, editTransform } from '/@/utils/armatures'
+import NumberInput from '/@/components/atoms/NumberInput.vue'
 
 export default defineComponent({
+  components: { NumberInput },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
@@ -127,11 +121,57 @@ export default defineComponent({
       ])
     })
 
-    function changeBorn() {
-      console.log(draftTransform)
+    function changeBornHeadX(val: number) {
+      draftBorn.headX = val
+      changeBorn()
     }
+    function changeBornHeadY(val: number) {
+      draftBorn.headY = val
+      changeBorn()
+    }
+    function changeBornTailX(val: number) {
+      draftBorn.tailX = val
+      changeBorn()
+    }
+    function changeBornTailY(val: number) {
+      draftBorn.tailY = val
+      changeBorn()
+    }
+    function changeBorn() {
+      if (!targetBorn.value) return
+      store.updateBorns({
+        [targetBorn.value.id]: {
+          head: { x: draftBorn.headX, y: draftBorn.headY },
+          tail: { x: draftBorn.tailX, y: draftBorn.tailY },
+        },
+      })
+    }
+
+    function changeTranslateX(val: number) {
+      draftTransform.translateX = val
+      changeTransform()
+    }
+    function changeTranslateY(val: number) {
+      draftTransform.translateY = val
+      changeTransform()
+    }
+    function changeRotate(val: number) {
+      draftTransform.rotate = val
+      changeTransform()
+    }
+
     function changeTransform() {
-      console.log(draftTransform)
+      if (!targetBorn.value) return
+      animationStore.pastePoses({
+        [targetBorn.value.id]: getTransform({
+          translate: {
+            x: draftTransform.translateX,
+            y: draftTransform.translateY,
+          },
+          rotate: draftTransform.rotate,
+          scale: { x: draftTransform.scaleX, y: draftTransform.scaleY },
+        }),
+      })
     }
 
     watchEffect(() => {
@@ -155,10 +195,15 @@ export default defineComponent({
     return {
       targetBorn,
       draftBorn,
-      changeBorn,
+      changeBornHeadX,
+      changeBornHeadY,
+      changeBornTailX,
+      changeBornTailY,
       targetTransform,
       draftTransform,
-      changeTransform,
+      changeTranslateX,
+      changeTranslateY,
+      changeRotate,
     }
   },
 })

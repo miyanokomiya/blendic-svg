@@ -144,7 +144,7 @@ export default defineComponent({
             return editTransform(
               b,
               canvasStore.getEditTransforms(b.id),
-              store.state.selectedBorns[b.id] || []
+              store.state.selectedBorns[b.id] || {}
             )
           })
         )

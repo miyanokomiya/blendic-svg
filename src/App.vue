@@ -24,54 +24,60 @@
         @ctrl-v="paste"
         @shift-d="duplicate"
       >
-        <ElementLayer />
-        <g v-if="canvasMode === 'object'">
-          <ArmatureElm
-            v-for="armature in armatures"
-            :key="armature.id"
-            :armature="armature"
-            :selected="lastSelectedArmatureId === armature.id"
-            @select="(selected) => selectArmature(armature.id, selected)"
-            @shift-select="
-              (selected) => shiftSelectArmature(armature.id, selected)
-            "
-          />
-        </g>
-        <g v-if="canvasMode === 'edit'">
-          <ArmatureElm
-            v-for="armature in otherArmatures"
-            :key="armature.id"
-            :armature="armature"
-            :opacity="0.3"
-          />
-          <BornElm
-            v-for="born in visibledBornMap"
-            :key="born.id"
-            :born="born"
-            :parent="visibledBornMap[born.parentId]"
-            :selected-state="selectedBorns[born.id]"
-            @select="(state) => selectBorn(born.id, state)"
-            @shift-select="(state) => shiftSelectBorn(born.id, state)"
-          />
-        </g>
-        <g v-if="canvasMode === 'pose'">
-          <ArmatureElm
-            v-for="armature in otherArmatures"
-            :key="armature.id"
-            :armature="armature"
-            :opacity="0.3"
-          />
-          <BornElm
-            v-for="born in visibledBornMap"
-            :key="born.id"
-            :born="born"
-            :parent="visibledBornMap[born.parentId]"
-            :selected-state="selectedBorns[born.id]"
-            pose-mode
-            @select="(state) => selectBorn(born.id, state)"
-            @shift-select="(state) => shiftSelectBorn(born.id, state)"
-          />
-        </g>
+        <template #default="{ scale }">
+          <ElementLayer />
+          <g v-if="canvasMode === 'object'">
+            <ArmatureElm
+              v-for="armature in armatures"
+              :key="armature.id"
+              :armature="armature"
+              :selected="lastSelectedArmatureId === armature.id"
+              :scale="scale"
+              @select="(selected) => selectArmature(armature.id, selected)"
+              @shift-select="
+                (selected) => shiftSelectArmature(armature.id, selected)
+              "
+            />
+          </g>
+          <g v-if="canvasMode === 'edit'">
+            <ArmatureElm
+              v-for="armature in otherArmatures"
+              :key="armature.id"
+              :armature="armature"
+              :opacity="0.3"
+              :scale="scale"
+            />
+            <BornElm
+              v-for="born in visibledBornMap"
+              :key="born.id"
+              :born="born"
+              :parent="visibledBornMap[born.parentId]"
+              :selected-state="selectedBorns[born.id]"
+              :scale="scale"
+              @select="(state) => selectBorn(born.id, state)"
+              @shift-select="(state) => shiftSelectBorn(born.id, state)"
+            />
+          </g>
+          <g v-if="canvasMode === 'pose'">
+            <ArmatureElm
+              v-for="armature in otherArmatures"
+              :key="armature.id"
+              :armature="armature"
+              :opacity="0.3"
+            />
+            <BornElm
+              v-for="born in visibledBornMap"
+              :key="born.id"
+              :born="born"
+              :parent="visibledBornMap[born.parentId]"
+              :selected-state="selectedBorns[born.id]"
+              :scale="scale"
+              pose-mode
+              @select="(state) => selectBorn(born.id, state)"
+              @shift-select="(state) => shiftSelectBorn(born.id, state)"
+            />
+          </g>
+        </template>
       </AppCanvas>
       <SideBar class="side-bar" />
       <SidePanel class="side-panel" />

@@ -53,7 +53,7 @@
         :stroke="gridLineElm.stroke"
         :stroke-width="gridLineElm.strokeWidth"
       ></line>
-      <slot />
+      <slot :scale="scale" />
       <ScaleMarker
         v-if="scaleNaviElm"
         :origin="scaleNaviElm.origin"

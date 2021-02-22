@@ -1,6 +1,13 @@
 <template>
-  <g stroke="black" :fill="fill" :transform="transform" :opacity="opacity">
+  <g
+    stroke="black"
+    :fill="fill"
+    :transform="transform"
+    :opacity="opacity"
+    :stroke-width="Math.min(2 * scale, 2)"
+  >
     <g
+      stroke-linejoin="bevel"
       @click.exact="click({ head: true, tail: true })"
       @click.shift.exact="shiftClick({ head: true, tail: true })"
     >
@@ -8,7 +15,7 @@
       <path :d="tailPath" />
     </g>
     <circle
-      r="10"
+      :r="circleR"
       :cx="head.x"
       :cy="head.y"
       :fill="fillHead"
@@ -16,7 +23,7 @@
       @click.shift.exact="shiftClick({ head: true, tail: false })"
     ></circle>
     <circle
-      r="10"
+      :r="circleR"
       :cx="tail.x"
       :cy="tail.y"
       :fill="fillTail"
@@ -29,13 +36,15 @@
       :y1="parent.tail.y"
       :x2="head.x"
       :y2="head.y"
-      stroke-dasharray="2 2"
+      :stroke-dasharray="`${2 * scale} ${2 * scale}`"
       class="view-only"
     />
     <text
       :x="(head.x + tail.x) / 2"
       :y="(head.y + tail.y) / 2"
+      :font-size="Math.min(16 * scale, 16)"
       text-anchor="middle"
+      dominant-baseline="middle"
       fill="black"
       stroke="none"
       class="view-only"
@@ -48,7 +57,7 @@
 import { defineComponent, PropType, computed } from 'vue'
 import { Born, BornSelectedState } from '../../models/index'
 import { transform, d } from '../../utils/helpers'
-import { IVec2, add, sub, multi, rotate } from 'okageo'
+import { IVec2, add, sub, multi, rotate, getDistance } from 'okageo'
 import { useSettings } from '../../composables/settings'
 
 function d1(head: IVec2, tail: IVec2, invert = false): IVec2 {
@@ -56,6 +65,10 @@ function d1(head: IVec2, tail: IVec2, invert = false): IVec2 {
     head,
     rotate(multi(sub(tail, head), 0.15), (Math.PI / 4) * (invert ? -1 : 1))
   )
+}
+
+function getCircleR(head: IVec2, tail: IVec2): number {
+  return getDistance(head, tail) * 0.04
 }
 
 export default defineComponent({
@@ -69,6 +82,7 @@ export default defineComponent({
       default: undefined,
     },
     opacity: { type: Number, default: 1 },
+    scale: { type: Number, default: 1 },
     selectedState: {
       type: Object as PropType<BornSelectedState>,
       default: () => ({ head: false, tail: false }),
@@ -95,7 +109,10 @@ export default defineComponent({
       }
     })
 
+    const circleR = computed(() => getCircleR(head.value, tail.value))
+
     return {
+      circleR,
       transform: computed(() => transform(props.born.transform)),
       head,
       tail,

@@ -6,6 +6,7 @@
         { key: 'history', label: 'History' },
         { key: 'file', label: 'File' },
       ]"
+      initial-tab="file"
     >
       <template #detail>
         <form v-if="selectedObjectType === 'armature'" @submit.prevent>

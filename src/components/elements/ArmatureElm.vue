@@ -6,6 +6,7 @@
       :born="born"
       :selected-state="bornSelectedState"
       :parent="bornMap[born.parentId]"
+      :scale="scale"
       @select="click"
       @shift-select="shiftClick"
     />
@@ -26,6 +27,7 @@ export default defineComponent({
       required: true,
     },
     opacity: { type: Number, default: 0.8 },
+    scale: { type: Number, default: 1 },
     selected: {
       type: Boolean,
       default: false,

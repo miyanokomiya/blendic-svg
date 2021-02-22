@@ -26,9 +26,13 @@ export default defineComponent({
       type: Array as PropType<{ key: string; label: string }[]>,
       default: () => [],
     },
+    initialTab: {
+      type: String,
+      default: undefined,
+    },
   },
   setup(props) {
-    const current = ref<string>(props.tabs[0]?.key ?? '')
+    const current = ref<string>(props.initialTab ?? props.tabs[0]?.key ?? '')
 
     return {
       current,
@@ -53,14 +57,16 @@ ul {
   > li {
     margin-right: 4px;
     padding: 2px 4px;
-    border: solid 1px #000;
+    border: solid 1px #aaa;
+    border-radius: 4px 4px 0 0;
     border-bottom: none;
     &.current {
-      background-color: lime;
+      background-color: #ddd;
     }
     > a {
       text-decoration: none;
       color: #000;
+      font-size: 14px;
     }
   }
 }

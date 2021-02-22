@@ -42,6 +42,7 @@ import {
   getTransform,
   IdMap,
   Keyframe,
+  mergeMap,
   PlayState,
   toBornIdMap,
   toMap,
@@ -177,18 +178,21 @@ function applyEditedTransforms(mapByBornId: IdMap<Transform>) {
 }
 function pastePoses(mapByBornId: IdMap<Transform>) {
   const item = getUpdateEditedTransformsItem(
-    mapReduce(
-      dropMapIfFalse(mapByBornId, (_, bornId) => {
-        // drop poses of unexisted borns
-        return !!currentPosedBorns.value[bornId]
-      }),
-      (t, bornId) => {
-        // invert keyframe's pose & paste the pose
-        return multiPoseTransform(
-          t,
-          invertPoseTransform(currentInterpolatedTransform(bornId))
-        )
-      }
+    mergeMap(
+      editTransforms.value,
+      mapReduce(
+        dropMapIfFalse(mapByBornId, (_, bornId) => {
+          // drop poses of unexisted borns
+          return !!currentPosedBorns.value[bornId]
+        }),
+        (t, bornId) => {
+          // invert keyframe's pose & paste the pose
+          return multiPoseTransform(
+            t,
+            invertPoseTransform(currentInterpolatedTransform(bornId))
+          )
+        }
+      )
     ),
     'Paste Pose'
   )

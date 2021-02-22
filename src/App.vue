@@ -71,6 +71,7 @@
           />
         </g>
       </AppCanvas>
+      <SideBar class="side-bar" />
       <SidePanel class="side-panel" />
     </div>
     <div class="bottom">
@@ -85,6 +86,7 @@ import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
 import AnimationPanel from './components/AnimationPanel.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
+import SideBar from '/@/components/SideBar.vue'
 import BornElm from './components/elements/Born.vue'
 import {
   Born,
@@ -115,6 +117,7 @@ export default defineComponent({
     BornElm,
     SidePanel,
     AnimationPanel,
+    SideBar,
   },
   setup() {
     const store = useStore()
@@ -286,11 +289,11 @@ export default defineComponent({
 }
 input[type='text'] {
   padding: 2px 4px;
-  border: solid 1px #000;
+  border: solid 1px #777;
 }
 input[type='number'] {
   padding: 2px 0 2px 4px;
-  border: solid 1px #000;
+  border: solid 1px #777;
 }
 </style>
 
@@ -304,8 +307,11 @@ input[type='number'] {
   justify-content: center;
   align-items: stretch;
   .canvas {
+    width: calc(100% - 226px);
+  }
+  .side-bar {
     margin-right: auto;
-    width: calc(100% - 210px);
+    flex-shrink: 0;
   }
   .side-panel {
     width: 200px;

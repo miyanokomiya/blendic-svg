@@ -51,7 +51,7 @@ export default defineComponent({
   select {
     width: 100%;
     padding: 1px 12px 0 0;
-    border: solid 1px #000;
+    border: solid 1px #777;
   }
   &::after {
     display: block;
@@ -62,7 +62,7 @@ export default defineComponent({
     width: 0;
     height: 0;
     pointer-events: none;
-    border-top: solid 8px #000;
+    border-top: solid 8px #777;
     border-left: solid 6px transparent;
     border-right: solid 6px transparent;
   }

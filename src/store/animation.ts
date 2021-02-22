@@ -8,6 +8,8 @@ import {
   useListState,
 } from '../composables/listState'
 import {
+  findNextFrameWithKeyframe,
+  findPrevFrameWithKeyframe,
   getInterpolatedTransformMapByBornId,
   getKeyframeMapByBornId,
   getKeyframeMapByFrame,
@@ -65,12 +67,16 @@ function initState(initActions: Action[] = []) {
   console.log(actions.state.list)
 }
 
+const keyframeList = computed(() => {
+  return actions.lastSelectedItem.value?.keyframes ?? []
+})
+
 const keyframeMapByFrame = computed(() => {
-  return getKeyframeMapByFrame(actions.lastSelectedItem.value?.keyframes ?? [])
+  return getKeyframeMapByFrame(keyframeList.value)
 })
 
 const keyframeMapByBornId = computed(() => {
-  return getKeyframeMapByBornId(actions.lastSelectedItem.value?.keyframes ?? [])
+  return getKeyframeMapByBornId(keyframeList.value)
 })
 
 const visibledKeyframeMapByBornId = computed(() => {
@@ -221,16 +227,20 @@ function togglePlaying() {
   playing.value = playing.value === 'pause' ? 'play' : 'pause'
 }
 function jumpStartFrame() {
-  currentFrame.value = 0
+  setCurrentFrame(0)
 }
 function jumpEndFrame() {
-  currentFrame.value = endFrame.value
+  setCurrentFrame(endFrame.value)
 }
 function jumpNextKey() {
-  console.log('TODO jumpNextKey')
+  setCurrentFrame(
+    findNextFrameWithKeyframe(keyframeList.value, currentFrame.value)
+  )
 }
 function jumpPrevKey() {
-  console.log('TODO jumpPrevKey')
+  setCurrentFrame(
+    findPrevFrameWithKeyframe(keyframeList.value, currentFrame.value)
+  )
 }
 function stepFrame(tickFrame: number, reverse = false) {
   if (endFrame.value === 0) return

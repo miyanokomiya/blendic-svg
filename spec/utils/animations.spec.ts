@@ -13,6 +13,8 @@ import {
   mergeKeyframesWithDropped,
   slideKeyframesTo,
   sortKeyframeMap,
+  findNextFrameWithKeyframe,
+  findPrevFrameWithKeyframe,
 } from '/@/utils/animations'
 
 describe('utils/animations.ts', () => {
@@ -255,6 +257,60 @@ describe('utils/animations.ts', () => {
           ],
         }),
       ])
+    })
+  })
+
+  describe('findNextFrameWithKeyframe', () => {
+    it('find next frame with some keyframes', () => {
+      expect(
+        findNextFrameWithKeyframe(
+          [
+            getKeyframe({ id: '1', frame: 0 }),
+            getKeyframe({ id: '10', frame: 10 }),
+            getKeyframe({ id: '20', frame: 20 }),
+            getKeyframe({ id: '21', frame: 21 }),
+          ],
+          10
+        )
+      ).toBe(20)
+    })
+    it('return the same frame if any next frame is exists', () => {
+      expect(
+        findNextFrameWithKeyframe(
+          [
+            getKeyframe({ id: '1', frame: 0 }),
+            getKeyframe({ id: '10', frame: 10 }),
+            getKeyframe({ id: '20', frame: 20 }),
+          ],
+          30
+        )
+      ).toBe(30)
+    })
+  })
+
+  describe('findPrevFrameWithKeyframe', () => {
+    it('find prev frame with some keyframes', () => {
+      expect(
+        findPrevFrameWithKeyframe(
+          [
+            getKeyframe({ id: '1', frame: 0 }),
+            getKeyframe({ id: '10', frame: 10 }),
+            getKeyframe({ id: '20', frame: 20 }),
+          ],
+          15
+        )
+      ).toBe(10)
+    })
+    it('return the same frame if any prev frame is exists', () => {
+      expect(
+        findPrevFrameWithKeyframe(
+          [
+            getKeyframe({ id: '10', frame: 10 }),
+            getKeyframe({ id: '20', frame: 20 }),
+          ],
+          5
+        )
+      ).toBe(5)
     })
   })
 })

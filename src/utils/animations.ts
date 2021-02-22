@@ -193,3 +193,23 @@ function cleanKeyframes(keyframes: Keyframe[], borns: Born[]): Keyframe[] {
     extractMap(getKeyframeMapByBornId(keyframes), toMap(borns))
   ).flat()
 }
+
+export function findNextFrameWithKeyframe(
+  keyframes: Keyframe[],
+  currentFrame: number
+): number {
+  const gt = Object.keys(getKeyframeMapByFrame(keyframes))
+    .map((s) => parseInt(s))
+    .filter((frame) => currentFrame < frame)
+  return gt.length > 0 ? gt[0] : currentFrame
+}
+
+export function findPrevFrameWithKeyframe(
+  keyframes: Keyframe[],
+  currentFrame: number
+): number {
+  const gt = Object.keys(getKeyframeMapByFrame(keyframes))
+    .map((s) => parseInt(s))
+    .filter((frame) => frame < currentFrame)
+  return gt.length > 0 ? gt[gt.length - 1] : currentFrame
+}

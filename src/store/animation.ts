@@ -178,9 +178,9 @@ function applyEditedTransforms(mapByBornId: IdMap<Transform>) {
 }
 function pastePoses(mapByBornId: IdMap<Transform>) {
   const item = getUpdateEditedTransformsItem(
-    mergeMap(
-      editTransforms.value,
-      mapReduce(
+    {
+      ...editTransforms.value,
+      ...mapReduce(
         dropMapIfFalse(mapByBornId, (_, bornId) => {
           // drop poses of unexisted borns
           return !!currentPosedBorns.value[bornId]
@@ -192,8 +192,8 @@ function pastePoses(mapByBornId: IdMap<Transform>) {
             invertPoseTransform(currentInterpolatedTransform(bornId))
           )
         }
-      )
-    ),
+      ),
+    },
     'Paste Pose'
   )
   item.redo()

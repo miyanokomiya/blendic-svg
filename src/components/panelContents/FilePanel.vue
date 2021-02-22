@@ -2,12 +2,12 @@
   <div class="file-panel">
     <h3>Project</h3>
     <div class="menu-list">
-      <button type="button" @click="openFile">Open</button>
-      <button type="button" @click="saveProjectFile">Save</button>
+      <button type="button" @click="openFile">Open (Ctrl + o)</button>
+      <button type="button" @click="saveProjectFile">Save (Ctrl + s)</button>
     </div>
     <h3>Import</h3>
     <div class="menu-list">
-      <button type="button" @click="importSvg">SVG</button>
+      <button type="button" @click="importSvg">SVG (Ctrl + O)</button>
     </div>
   </div>
 </template>

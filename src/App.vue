@@ -214,8 +214,13 @@ export default defineComponent({
         strage.saveProjectFile()
       } else if (e.ctrlKey && e.key.toLowerCase() === 'o') {
         e.preventDefault()
-        const strage = useStrage()
-        strage.loadProjectFile()
+        if (e.shiftKey) {
+          const strage = useStrage()
+          strage.loadSvgFile()
+        } else {
+          const strage = useStrage()
+          strage.loadProjectFile()
+        }
       }
     }
 

@@ -128,7 +128,7 @@ export default defineComponent({
         const f = i * frameInterval.value + visibledFrameStart.value
         return {
           f,
-          labelSize: f % 10 === 0 ? 14 : f % 2 === 0 ? 11 : 0,
+          labelSize: f % 10 === 0 ? 14 : f % 5 === 0 ? 11 : 0,
           strokeWidth: f % 10 === 0 ? 2 : 1,
         }
       })

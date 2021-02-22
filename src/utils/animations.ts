@@ -17,7 +17,6 @@ import {
   IdMap,
   Keyframe,
   scaleRate,
-  toBornIdMap,
   toMap,
   Transform,
 } from '/@/models'
@@ -27,7 +26,8 @@ export function getScaleLog(scale: number): number {
 }
 
 export function getFrameInterval(scale: number): number {
-  return Math.round(getScaleLog(scale) / 2) + 1
+  const level = Math.round(getScaleLog(scale) / 2) + 1
+  return Math.round(level / 5) * 5 + 5
 }
 
 export function visibledFrameStart(frameInterval: number, originX: number) {

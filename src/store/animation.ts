@@ -216,8 +216,14 @@ function getCurrentSelfTransforms(bornId: string): Transform {
 }
 
 function setCurrentFrame(val: number) {
-  currentFrame.value = val
-  editTransforms.value = {}
+  if (currentFrame.value === val) return
+
+  const item = getUpdateCurrentFrameItem(val)
+  item.redo()
+  // save only first operation
+  if (item.name !== historyStore.currentItemName.value) {
+    historyStore.push(item)
+  }
 }
 
 function setPlaying(val: PlayState) {
@@ -247,10 +253,10 @@ function stepFrame(tickFrame: number, reverse = false) {
 
   if (reverse) {
     const val = currentFrame.value - tickFrame
-    currentFrame.value = val <= 0 ? endFrame.value : val
+    setCurrentFrame(val <= 0 ? endFrame.value : val)
   } else {
     const val = currentFrame.value + tickFrame
-    currentFrame.value = endFrame.value <= val ? 0 : val
+    setCurrentFrame(endFrame.value <= val ? 0 : val)
   }
   editTransforms.value = {}
 }
@@ -694,6 +700,23 @@ function getCompleteDuplicateKeyframes(
     redo: () => {
       updateItem.redo()
       duplicatItem.redo()
+    },
+  }
+}
+
+function getUpdateCurrentFrameItem(frame: number): HistoryItem {
+  const preFrame = currentFrame.value
+  const preEditTransforms = { ...editTransforms.value }
+
+  return {
+    name: 'Update Frame',
+    undo: () => {
+      currentFrame.value = preFrame
+      editTransforms.value = preEditTransforms
+    },
+    redo: () => {
+      currentFrame.value = frame
+      editTransforms.value = {}
     },
   }
 }

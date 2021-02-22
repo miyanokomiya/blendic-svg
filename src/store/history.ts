@@ -19,6 +19,10 @@ const allStack = computed(() => {
 })
 const currentItemIndex = computed(() => state.undoStack.length - 1)
 
+const currentItemName = computed((): string => {
+  return allStack.value[currentItemIndex.value]?.name ?? ''
+})
+
 function clearHistory() {
   state.undoStack = []
   state.redoStack = []
@@ -48,5 +52,14 @@ function redo() {
 }
 
 export function useHistoryStore() {
-  return { state, allStack, currentItemIndex, clearHistory, push, undo, redo }
+  return {
+    state,
+    allStack,
+    currentItemIndex,
+    currentItemName,
+    clearHistory,
+    push,
+    undo,
+    redo,
+  }
 }

@@ -12,7 +12,7 @@ import {
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '../store/animation'
-import { mapReduce, toList } from '../utils/commons'
+import { mapReduce } from '../utils/commons'
 
 interface State {
   command: EditMode

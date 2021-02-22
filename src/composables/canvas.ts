@@ -1,4 +1,4 @@
-import { defineComponent, ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { IVec2, multi, sub, add, getRectCenter } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import { scaleRate } from '../models'

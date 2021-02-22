@@ -1,5 +1,4 @@
 import { reactive, computed, ComputedRef } from 'vue'
-import { sub } from 'okageo'
 import {
   Transform,
   getTransform,

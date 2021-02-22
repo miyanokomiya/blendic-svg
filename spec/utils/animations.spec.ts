@@ -10,7 +10,6 @@ import {
   cleanActions,
   getNeighborKeyframes,
   interpolateKeyframeTransform,
-  mergeKeyframes,
   mergeKeyframesWithDropped,
   slideKeyframesTo,
   sortKeyframeMap,

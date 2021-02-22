@@ -123,5 +123,8 @@ export function useObjectMode(): ObjectMode {
     clickEmpty,
     execDelete,
     execAdd,
+    clip: () => {},
+    paste: () => {},
+    duplicate: () => {},
   }
 }

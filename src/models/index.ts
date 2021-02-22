@@ -1,4 +1,4 @@
-import { IVec2 } from 'okageo'
+import { IRectangle, IVec2 } from 'okageo'
 import { v4 } from 'uuid'
 import { ComputedRef } from 'vue'
 import { toKeyMap } from '../utils/commons'
@@ -47,13 +47,44 @@ export interface Armature {
 }
 
 export interface Actor {
-  parent: Armature
+  id: string
+  armatureId: string
   svgElements: SvgElement[]
+  svgAttributes: { [name: string]: string }[]
+  svgInnerHtml: string
+  viewBox: IRectangle
 }
 
 export interface SvgElement {
   id: string
   transform: Transform
+  parentId: string
+}
+
+export function getActor(arg: Partial<Actor> = {}, generateId = false): Actor {
+  const id = generateId ? v4() : arg.id ?? ''
+  return {
+    armatureId: '',
+    svgElements: [],
+    svgAttributes: [],
+    svgInnerHtml: '',
+    viewBox: { x: 0, y: 0, width: 100, height: 100 },
+    ...arg,
+    id,
+  }
+}
+
+export function getSvgElement(
+  arg: Partial<SvgElement> = {},
+  generateId = false
+): SvgElement {
+  const id = generateId ? v4() : arg.id ?? ''
+  return {
+    parentId: '',
+    transform: getTransform(),
+    ...arg,
+    id,
+  }
 }
 
 export function getTransform(arg: Partial<Transform> = {}): Transform {

@@ -1,8 +1,13 @@
 <template>
   <div class="file-panel">
+    <h3>Project</h3>
     <div class="menu-list">
       <button type="button" @click="openFile">Open</button>
-      <button type="button" @click="saveFile">Save</button>
+      <button type="button" @click="saveProjectFile">Save</button>
+    </div>
+    <h3>Import</h3>
+    <div class="menu-list">
+      <button type="button" @click="importSvg">SVG</button>
     </div>
   </div>
 </template>
@@ -17,11 +22,15 @@ export default defineComponent({
     return {
       openFile() {
         const strage = useStrage()
-        strage.loadFile()
+        strage.loadProjectFile()
       },
-      saveFile() {
+      saveProjectFile() {
         const strage = useStrage()
-        strage.saveFile()
+        strage.saveProjectFile()
+      },
+      importSvg() {
+        const strage = useStrage()
+        strage.loadSvgFile()
       },
     }
   },
@@ -29,6 +38,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+h3 {
+  margin-bottom: 10px;
+  text-align: left;
+}
 .menu-list {
   display: flex;
   flex-direction: column;

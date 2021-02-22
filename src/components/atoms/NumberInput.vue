@@ -33,7 +33,6 @@ export default defineComponent({
       draftValue,
       input() {
         if (parseDraftValue.value === props.modelValue) return
-        console.log(props.modelValue, draftValue.value)
         emit('update:modelValue', parseDraftValue.value)
       },
     }

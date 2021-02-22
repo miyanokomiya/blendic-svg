@@ -1,14 +1,17 @@
 import { reactive } from 'vue'
-import { Action, Armature } from '../models'
+import { Action, Actor, Armature } from '../models'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import { useCanvasStore } from '../store/canvas'
+import { useElementStore } from '../store/element'
 import { useHistoryStore } from '../store/history'
 import { cleanActions } from '../utils/animations'
+import { parseFromSvg } from '../utils/elements'
 
 interface Root {
   armatures: Armature[]
   actions: Action[]
+  actors: Actor[]
 }
 
 export function useStrage() {
@@ -16,6 +19,7 @@ export function useStrage() {
   const animationStore = useAnimationStore()
   const historyStore = useHistoryStore()
   const canvasStore = useCanvasStore()
+  const elementStore = useElementStore()
 
   const state = reactive({
     currentFileName: 'blendic.json',
@@ -24,7 +28,8 @@ export function useStrage() {
   function serialize(): string {
     const armatures = store.state.armatures
     const actions = cleanActions(animationStore.actions.value, armatures)
-    const root: Root = { armatures, actions }
+    const actors = elementStore.actors.value
+    const root: Root = { armatures, actions, actors }
     return JSON.stringify(root)
   }
   function deserialize(src: string) {
@@ -34,12 +39,13 @@ export function useStrage() {
       canvasStore.initState()
       store.initState(root.armatures)
       animationStore.initState(root.actions)
+      elementStore.initState(root.actors)
     } catch (e) {
       alert('Failed to load: Invalid file.')
     }
   }
 
-  async function loadFile() {
+  async function loadProjectFile() {
     try {
       const file = await showOpenFileDialog()
       const json = await readAsText(file)
@@ -50,14 +56,26 @@ export function useStrage() {
     }
   }
 
-  async function saveFile() {
+  async function saveProjectFile() {
     const json = serialize()
     saveJson(json, state.currentFileName)
   }
 
+  async function loadSvgFile() {
+    try {
+      const file = await showOpenFileDialog('.svg, image/svg+xml')
+      const svg = await readAsText(file)
+      const actor = parseFromSvg(svg)
+      elementStore.initState([actor])
+    } catch (e) {
+      alert('Failed to load: Invalid file.')
+    }
+  }
+
   return {
-    loadFile,
-    saveFile,
+    loadProjectFile,
+    saveProjectFile,
+    loadSvgFile,
   }
 }
 
@@ -78,11 +96,11 @@ function saveFileInWeb(file: string, filename: string) {
   document.body.removeChild(a)
 }
 
-function showOpenFileDialog(): Promise<File> {
+function showOpenFileDialog(accept = '.json, application/json'): Promise<File> {
   return new Promise((resolve, reject) => {
     const input = document.createElement('input')
     input.type = 'file'
-    input.accept = '.json, application/json'
+    input.accept = accept
     input.onchange = (event) => {
       const target = event?.target as any
       if (target?.files) {

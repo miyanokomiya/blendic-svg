@@ -2,6 +2,7 @@
   <div>
     <div class="main">
       <AppCanvas
+        :original-view-box="viewBox"
         :current-command="canvasCommand"
         class="canvas"
         @change-mode="changeMode"
@@ -23,6 +24,7 @@
         @ctrl-v="paste"
         @shift-d="duplicate"
       >
+        <ElementLayer />
         <g v-if="canvasMode === 'object'">
           <ArmatureElm
             v-for="armature in armatures"
@@ -85,6 +87,7 @@ import { defineComponent, computed, onMounted, onUnmounted } from 'vue'
 import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
 import AnimationPanel from './components/AnimationPanel.vue'
+import ElementLayer from './components/elements/ElementLayer.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import SideBar from '/@/components/SideBar.vue'
 import BornElm from './components/elements/Born.vue'
@@ -109,6 +112,7 @@ import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
 import { useAnimationStore } from './store/animation'
 import { useStrage } from './composables/strage'
+import { useElementStore } from './store/element'
 
 export default defineComponent({
   components: {
@@ -118,12 +122,18 @@ export default defineComponent({
     SidePanel,
     AnimationPanel,
     SideBar,
+    ElementLayer,
   },
   setup() {
     const store = useStore()
     const canvasStore = useCanvasStore()
     const animationStore = useAnimationStore()
     const historyStore = useHistoryStore()
+    const elementStore = useElementStore()
+
+    const viewBox = computed(() => {
+      return elementStore.lastSelectedActor.value?.viewBox
+    })
 
     const canvasMode = computed(() => canvasStore.state.canvasMode)
 
@@ -195,11 +205,11 @@ export default defineComponent({
       } else if (e.ctrlKey && e.key.toLowerCase() === 's') {
         e.preventDefault()
         const strage = useStrage()
-        strage.saveFile()
+        strage.saveProjectFile()
       } else if (e.ctrlKey && e.key.toLowerCase() === 'o') {
         e.preventDefault()
         const strage = useStrage()
-        strage.loadFile()
+        strage.loadProjectFile()
       }
     }
 
@@ -211,6 +221,7 @@ export default defineComponent({
     })
 
     return {
+      viewBox,
       armatures: computed(() => store.state.armatures),
       otherArmatures,
       lastSelectedArmatureId: computed(

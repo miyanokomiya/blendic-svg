@@ -64,7 +64,6 @@ function initState(initActions: Action[] = []) {
   actions.state.list = initActions
   editTransforms.value = {}
   selectedKeyframeMap.value = {}
-  console.log(actions.state.list)
 }
 
 const keyframeList = computed(() => {

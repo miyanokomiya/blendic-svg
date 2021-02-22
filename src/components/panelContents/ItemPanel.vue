@@ -76,6 +76,7 @@ import { Born, Transform } from '/@/models'
 import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
 import { useCanvasStore } from '/@/store/canvas'
+import { convolutePoseTransforms, editTransform } from '/@/utils/armatures'
 
 export default defineComponent({
   setup() {
@@ -103,13 +104,27 @@ export default defineComponent({
         return undefined
       }
 
+      const original = store.lastSelectedBorn.value
+      if (!original) return undefined
+
+      if (canvasStore.state.canvasMode === 'edit') {
+        return editTransform(
+          original,
+          canvasStore.getEditTransforms(original.id),
+          store.state.selectedBorns[original.id] || {}
+        )
+      }
+
       return store.lastSelectedBorn.value
     })
 
     const targetTransform = computed((): Transform | undefined => {
       if (!targetBorn.value) return undefined
       if (canvasStore.state.canvasMode !== 'pose') return undefined
-      return animationStore.getCurrentSelfTransforms(targetBorn.value.id)
+      return convolutePoseTransforms([
+        animationStore.getCurrentSelfTransforms(targetBorn.value.id),
+        canvasStore.getEditTransforms(targetBorn.value.id),
+      ])
     })
 
     function changeBorn() {

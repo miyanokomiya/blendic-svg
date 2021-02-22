@@ -232,9 +232,10 @@ describe('utils/animations.ts', () => {
               id: 'act_1',
               armatureId: 'arm_1',
               keyframes: [
-                getKeyframe({ id: 'key_1', bornId: 'born_1' }),
-                getKeyframe({ id: 'key_2', bornId: 'born_2' }),
-                getKeyframe({ id: 'key_4', bornId: 'born_4' }),
+                getKeyframe({ id: 'key_1', bornId: 'born_1', frame: 1 }),
+                getKeyframe({ id: 'key_2', bornId: 'born_2', frame: 1 }),
+                getKeyframe({ id: 'key_2', bornId: 'born_2', frame: 2 }),
+                getKeyframe({ id: 'key_4', bornId: 'born_4', frame: 1 }),
               ],
             }),
           ],
@@ -249,7 +250,10 @@ describe('utils/animations.ts', () => {
         getAction({
           id: 'act_1',
           armatureId: 'arm_1',
-          keyframes: [getKeyframe({ id: 'key_2', bornId: 'born_2' })],
+          keyframes: [
+            getKeyframe({ id: 'key_2', bornId: 'born_2', frame: 1 }),
+            getKeyframe({ id: 'key_2', bornId: 'born_2', frame: 2 }),
+          ],
         }),
       ])
     })

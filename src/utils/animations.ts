@@ -189,5 +189,7 @@ export function cleanActions(
 }
 
 function cleanKeyframes(keyframes: Keyframe[], borns: Born[]): Keyframe[] {
-  return toList(extractMap(toBornIdMap(keyframes), toMap(borns))).flat()
+  return toList(
+    extractMap(getKeyframeMapByBornId(keyframes), toMap(borns))
+  ).flat()
 }

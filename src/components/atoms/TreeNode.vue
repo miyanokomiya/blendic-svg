@@ -1,8 +1,14 @@
 <template>
   <div class="tree-node" :class="{ odd: rowIndex % 2 === 0 }">
     <div class="node-view">
-      <div :style="{ width: `${nestIndex * 10}px` }" />
-      <span class="node-name">{{ node.tag }} #{{ node.id }}</span>
+      <div class="spacer" :style="{ width: `${nestIndex * 10}px` }" />
+      <a
+        class="node-name"
+        :class="{ selected, disabled: !canSelect }"
+        @click.left.exact.prevent="click"
+        @click.left.shift.exact.prevent="shiftClick"
+        >{{ node.tag }} #{{ node.id }}</a
+      >
     </div>
     <div class="children-space">
       <TreeNode
@@ -17,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { computed, ComputedRef, defineComponent, inject, PropType } from 'vue'
 import { ElementNode } from '/@/models'
 
 function shouldHide(tag: string): boolean {
@@ -45,8 +51,31 @@ export default defineComponent({
       .filter((c): c is ElementNode => typeof c !== 'string')
       .filter((elm) => !shouldHide(elm.tag))
 
+    // eslint-disable-next-line no-unused-vars
+    const onClickElement = inject<(id: string, shift: boolean) => void>(
+      'onClickElement',
+      () => {}
+    )
+
+    const selectedMap = inject<ComputedRef<{ [id: string]: boolean }>>(
+      'selectedMap',
+      computed(() => ({}))
+    )
+
+    const selected = computed(() => {
+      return !!selectedMap.value[props.node.id]
+    })
+
+    const canSelect = computed(() => props.node.tag !== 'svg')
+
     return {
+      canSelect,
       children,
+      click: () =>
+        canSelect.value ? onClickElement(props.node.id, false) : '',
+      shiftClick: () =>
+        canSelect.value ? onClickElement(props.node.id, true) : '',
+      selected,
     }
   },
 })
@@ -60,6 +89,7 @@ export default defineComponent({
   font-size: 16px;
   width: fit-content;
   background-color: #fff;
+  user-select: none;
   &.odd {
     background-color: #eee;
   }
@@ -69,10 +99,24 @@ export default defineComponent({
   display: flex;
   align-items: center;
 }
+.spacer {
+  flex-shrink: 0;
+}
 .node-name {
   display: flex;
   align-items: center;
   white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.7;
+  }
+  &.selected {
+    color: orange;
+  }
+  &.disabled {
+    pointer-events: none;
+  }
   &::before {
     content: ' ';
     margin-right: 4px;

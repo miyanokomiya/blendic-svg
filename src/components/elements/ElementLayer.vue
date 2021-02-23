@@ -16,6 +16,11 @@ import { ElementNode, getTransform, toMap } from '/@/models'
 import { useCanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '/@/store/animation'
 import { mapReduce } from '/@/utils/commons'
+import { useStore } from '/@/store'
+import {
+  convolutePoseTransforms,
+  getTransformedBornMap,
+} from '/@/utils/armatures'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -25,6 +30,7 @@ function getId(elm: ElementNode | string): string {
 export default defineComponent({
   components: { NativeElement },
   setup() {
+    const store = useStore()
     const elementStore = useElementStore()
     const canvasStore = useCanvasStore()
     const animationStore = useAnimationStore()
@@ -45,8 +51,22 @@ export default defineComponent({
     })
 
     const transFormMap = computed(() => {
+      const posedMap = getTransformedBornMap(
+        toMap(
+          (store.lastSelectedArmature.value?.borns ?? []).map((b) => {
+            return {
+              ...b,
+              transform: convolutePoseTransforms([
+                animationStore.getCurrentSelfTransforms(b.id),
+                canvasStore.getEditTransforms(b.id),
+              ]),
+            }
+          })
+        )
+      )
+
       return mapReduce(toMap(elementList.value), (e) => {
-        const born = animationStore.currentPosedBorns.value[e.bornId]
+        const born = posedMap[e.bornId]
         if (born) {
           return {
             ...born.transform,

@@ -1,7 +1,7 @@
 <template>
   <div class="view-panel">
+    <h4>View</h4>
     <form>
-      <h4>View</h4>
       <div class="field inline">
         <label>Born Name</label>
         <input v-model="settings.showBornName" type="checkbox" />
@@ -36,14 +36,11 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.weight-panel {
+.view-panel {
   text-align: left;
 }
 h4 {
   margin-bottom: 8px;
-}
-* + h4 {
-  margin-top: 8px;
 }
 form {
   display: flex;

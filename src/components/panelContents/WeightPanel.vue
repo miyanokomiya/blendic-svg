@@ -1,7 +1,7 @@
 <template>
   <div class="weight-panel">
-    <form v-if="canvasMode === 'weight'" @submit.prevent>
-      <h4>Weight Paint</h4>
+    <h4>Weight Paint</h4>
+    <form v-if="canvasMode === 'weight' && targetActor" @submit.prevent>
       <div class="field">
         <label>Armature</label>
         <SelectField v-model="armatureId" :options="armatureOptions" />
@@ -32,6 +32,10 @@ export default defineComponent({
     const elementStore = useElementStore()
 
     const canvasMode = computed(() => canvasStore.state.canvasMode)
+
+    const targetActor = computed(() => {
+      return elementStore.lastSelectedActor.value
+    })
 
     const targetElement = computed(() => {
       return elementStore.lastSelectedElement.value
@@ -74,6 +78,7 @@ export default defineComponent({
 
     return {
       canvasMode,
+      targetActor,
       targetElement,
       armatureId,
       armatureOptions,
@@ -90,9 +95,6 @@ export default defineComponent({
 }
 h4 {
   margin-bottom: 8px;
-}
-* + h4 {
-  margin-top: 8px;
 }
 form {
   display: flex;

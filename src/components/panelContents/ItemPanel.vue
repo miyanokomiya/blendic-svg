@@ -1,7 +1,8 @@
 <template>
   <div class="item-panel">
+    <h4>Item</h4>
     <form v-if="targetTransform" @submit.prevent>
-      <h4>Translate</h4>
+      <h5>Translate</h5>
       <div class="field">
         <label>x</label>
         <NumberInput
@@ -16,7 +17,7 @@
           @update:modelValue="changeTranslateY"
         />
       </div>
-      <h4>Rotate</h4>
+      <h5>Rotate</h5>
       <div class="field">
         <NumberInput
           :model-value="draftTransform.rotate"
@@ -25,7 +26,7 @@
       </div>
     </form>
     <form v-else-if="targetBorn" @submit.prevent>
-      <h4>Head</h4>
+      <h5>Head</h5>
       <div class="field">
         <label>x</label>
         <NumberInput
@@ -40,7 +41,7 @@
           @update:modelValue="changeBornHeadY"
         />
       </div>
-      <h4>Tail</h4>
+      <h5>Tail</h5>
       <div class="field">
         <label>x</label>
         <NumberInput
@@ -213,10 +214,11 @@ export default defineComponent({
 .item-panel {
   text-align: left;
 }
-h4 {
+h4,
+h5 {
   margin-bottom: 8px;
 }
-* + h4 {
+* + h5 {
   margin-top: 8px;
 }
 form {

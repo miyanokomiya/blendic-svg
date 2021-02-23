@@ -40,6 +40,7 @@
       class="view-only"
     />
     <text
+      v-if="name"
       :x="(head.x + tail.x) / 2"
       :y="(head.y + tail.y) / 2"
       :font-size="Math.min(16 * scale, 16)"
@@ -48,7 +49,7 @@
       fill="black"
       stroke="none"
       class="view-only"
-      >{{ born.name }}</text
+      >{{ name }}</text
     >
   </g>
 </template>
@@ -112,6 +113,7 @@ export default defineComponent({
     const circleR = computed(() => getCircleR(head.value, tail.value))
 
     return {
+      name: computed(() => (settings.showBornName ? props.born.name : '')),
       circleR,
       transform: computed(() => transform(props.born.transform)),
       head,

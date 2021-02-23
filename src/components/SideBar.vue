@@ -11,6 +11,7 @@
     </ul>
     <div v-if="currentTab !== ''" class="tab-content">
       <ItemPanel v-if="currentTab === 'item'" />
+      <WeightPanel v-else-if="currentTab === 'weight'" />
     </div>
   </div>
 </template>
@@ -18,16 +19,18 @@
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
 import ItemPanel from '/@/components/panelContents/ItemPanel.vue'
+import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
 
-type TabName = '' | 'item'
+type TabName = '' | 'item' | 'weight'
 
 export default defineComponent({
-  components: { ItemPanel },
+  components: { ItemPanel, WeightPanel },
   setup() {
     const currentTab = ref<TabName>('item')
 
     const tabs = computed((): { key: TabName; label: string }[] => [
       { key: 'item', label: 'Item' },
+      { key: 'weight', label: 'Weight' },
     ])
 
     function toggleTab(tab: TabName) {

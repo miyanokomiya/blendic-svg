@@ -26,19 +26,6 @@
       >
         <template #default="{ scale }">
           <ElementLayer />
-          <g v-if="canvasMode === 'object'">
-            <ArmatureElm
-              v-for="armature in armatures"
-              :key="armature.id"
-              :armature="armature"
-              :selected="lastSelectedArmatureId === armature.id"
-              :scale="scale"
-              @select="(selected) => selectArmature(armature.id, selected)"
-              @shift-select="
-                (selected) => shiftSelectArmature(armature.id, selected)
-              "
-            />
-          </g>
           <g v-if="canvasMode === 'edit'">
             <ArmatureElm
               v-for="armature in otherArmatures"
@@ -58,7 +45,7 @@
               @shift-select="(state) => shiftSelectBorn(born.id, state)"
             />
           </g>
-          <g v-if="canvasMode === 'pose'">
+          <g v-else-if="canvasMode === 'pose'">
             <ArmatureElm
               v-for="armature in otherArmatures"
               :key="armature.id"
@@ -75,6 +62,19 @@
               pose-mode
               @select="(state) => selectBorn(born.id, state)"
               @shift-select="(state) => shiftSelectBorn(born.id, state)"
+            />
+          </g>
+          <g v-else>
+            <ArmatureElm
+              v-for="armature in armatures"
+              :key="armature.id"
+              :armature="armature"
+              :selected="lastSelectedArmatureId === armature.id"
+              :scale="scale"
+              @select="(selected) => selectArmature(armature.id, selected)"
+              @shift-select="
+                (selected) => shiftSelectArmature(armature.id, selected)
+              "
             />
           </g>
         </template>
@@ -275,8 +275,15 @@ export default defineComponent({
         canvasStore.ctrlToggleCanvasMode()
       },
       changeMode(canvasMode: CanvasMode) {
-        if (!store.lastSelectedArmature.value) return
-        canvasStore.setCanvasMode(canvasMode)
+        if (canvasMode === 'weight') {
+          canvasStore.setCanvasMode(canvasMode)
+        } else {
+          if (store.lastSelectedArmature.value) {
+            canvasStore.setCanvasMode(canvasMode)
+          } else {
+            canvasStore.setCanvasMode('object')
+          }
+        }
       },
       setEditMode(mode: EditMode) {
         canvasStore.setEditMode(mode)

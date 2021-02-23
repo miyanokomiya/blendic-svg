@@ -53,10 +53,16 @@ export interface ElementNode {
   children: (ElementNode | string)[]
 }
 
+export interface BElement {
+  id: string
+  bornId: string
+}
+
 export interface Actor {
   id: string
   armatureId: string
   svgTree: ElementNode
+  elements: BElement[]
   viewBox: IRectangle
 }
 
@@ -74,11 +80,24 @@ export function getElementNode(
   }
 }
 
+export function getBElement(
+  arg: Partial<BElement> = {},
+  generateId = false
+): BElement {
+  const id = generateId ? v4() : arg.id ?? ''
+  return {
+    bornId: '',
+    ...arg,
+    id,
+  }
+}
+
 export function getActor(arg: Partial<Actor> = {}, generateId = false): Actor {
   const id = generateId ? v4() : arg.id ?? ''
   return {
     armatureId: '',
     svgTree: getElementNode(),
+    elements: [],
     viewBox: { x: 0, y: 0, width: 100, height: 100 },
     ...arg,
     id,
@@ -156,7 +175,7 @@ export interface BornSelectedState {
   head?: boolean
   tail?: boolean
 }
-export type CanvasMode = 'object' | 'edit' | 'pose'
+export type CanvasMode = 'object' | 'edit' | 'pose' | 'weight'
 export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
 export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude'
 

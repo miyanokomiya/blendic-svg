@@ -18,6 +18,12 @@
     >
       Edit
     </button>
+    <button
+      :class="{ selected: canvasMode === 'weight' }"
+      @click="changeMode('weight')"
+    >
+      Weight
+    </button>
   </div>
 </template>
 

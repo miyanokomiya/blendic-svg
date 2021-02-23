@@ -13,6 +13,7 @@ import { computed, defineComponent, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
 import { ElementNode } from '/@/models'
+import { useCanvasStore } from '/@/store/canvas'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -23,14 +24,21 @@ export default defineComponent({
   components: { NativeElement },
   setup() {
     const elementStore = useElementStore()
+    const canvasStore = useCanvasStore()
+
+    const canvasMode = computed(() => canvasStore.state.canvasMode)
 
     const elementList = computed(() => {
       return elementStore.lastSelectedActor.value?.svgTree.children ?? []
     })
 
-    const selectedMap = computed(() => elementStore.selectedElements.value)
+    const selectedMap = computed(() => {
+      if (canvasMode.value !== 'weight') return {}
+      return elementStore.selectedElements.value
+    })
 
     function clickElement(id: string, shift: boolean) {
+      if (canvasMode.value !== 'weight') return
       elementStore.selectElement(id, shift)
     }
 

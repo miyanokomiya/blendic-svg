@@ -1,8 +1,10 @@
 import { IRectangle } from 'okageo'
 import {
   Actor,
+  BElement,
   ElementNode,
   getActor,
+  getBElement,
   getElementNode,
 } from '../models'
 
@@ -16,7 +18,19 @@ export function parseFromSvg(svgText: string): Actor {
   const viewBox = parseViewBox(svg)
   const svgTree = parseElementNode(svg)
 
-  return getActor({ svgTree, viewBox }, true)
+  return getActor(
+    { svgTree, viewBox, elements: svgTree.children.flatMap(toBElements) },
+    true
+  )
+}
+
+function toBElements(tree: ElementNode | string): BElement[] {
+  if (typeof tree === 'string') return []
+  return [toBElement(tree), ...tree.children.flatMap(toBElements)]
+}
+
+function toBElement(node: ElementNode): BElement {
+  return getBElement({ id: node.id })
 }
 
 function parseElementNode(parentElm: SVGElement): ElementNode {
@@ -56,4 +70,13 @@ function parseViewBox(root: SVGElement): IRectangle | undefined {
     width: list[2],
     height: list[3],
   }
+}
+
+function findNode(tree: ElementNode, id: string): ElementNode | undefined {
+  if (tree.id === id) return tree
+
+  tree.children.find((c) => {
+    if (typeof c === 'string') return false
+    if (c.id === id) return true
+  })
 }

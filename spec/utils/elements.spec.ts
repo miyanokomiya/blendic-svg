@@ -1,4 +1,4 @@
-import { getActor, getElementNode } from '/@/models'
+import { getActor, getBElement, getElementNode } from '/@/models'
 import { parseFromSvg } from '/@/utils/elements'
 
 const svgText = `
@@ -53,6 +53,11 @@ describe('utils/elements.ts', () => {
           ],
         })
       )
+      expect(ret.elements).toEqual([
+        getBElement({ id: 'g_1' }),
+        getBElement({ id: 'rect_1' }),
+        getBElement({ id: 'text_1' }),
+      ])
     })
   })
 })

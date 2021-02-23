@@ -3,6 +3,7 @@ import { computed, reactive, watch } from 'vue'
 import { BornEditMode, useBornEditMode } from '../composables/armatureEditMode'
 import { BornPoseMode, useBornPoseMode } from '../composables/armaturePoseMode'
 import { ObjectMode, useObjectMode } from '../composables/objectMode'
+import { useWeightPaintMode } from '../composables/weightPaintMode'
 import { HistoryItem, useHistoryStore } from './history'
 import { BornSelectedState, CanvasMode, EditMode, Transform } from '/@/models'
 
@@ -29,6 +30,8 @@ const canvasEditMode = computed(():
     return useBornEditMode(useCanvasStore())
   } else if (state.canvasMode === 'pose') {
     return useBornPoseMode(useCanvasStore())
+  } else if (state.canvasMode === 'weight') {
+    return useWeightPaintMode()
   } else {
     return useObjectMode()
   }

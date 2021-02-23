@@ -1,15 +1,26 @@
 import { computed, ref } from 'vue'
 import { useListState } from '../composables/listState'
-import { Actor, IdMap } from '../models'
+import { Actor, IdMap, toMap } from '../models'
+import { extractMap, mapReduce, toList } from '../utils/commons'
 import { HistoryItem, useHistoryStore } from './history'
 
 const historyStore = useHistoryStore()
 
 const actorsState = useListState<Actor>('Actor')
 const selectedElements = ref<IdMap<boolean>>({})
+const lastSelectedElementId = ref<string>()
 
 const lastSelectedActor = computed(() => {
   return actorsState.lastSelectedItem.value
+})
+
+const elementMap = computed(() =>
+  toMap(lastSelectedActor.value?.elements ?? [])
+)
+
+const lastSelectedElement = computed(() => {
+  if (!lastSelectedElementId.value) return
+  return elementMap.value[lastSelectedElementId.value]
 })
 
 function initState(actors: Actor[]) {
@@ -26,11 +37,31 @@ function selectElement(id = '', shift = false) {
   historyStore.push(item)
 }
 
+function updateArmatureId(id: string) {
+  if (!lastSelectedActor.value) return
+
+  const item = getUpdateArmatureIdItem(id)
+  item.redo()
+  historyStore.push(item)
+}
+
+function updateElement(val: { bornId: string }) {
+  if (!lastSelectedElement.value) return
+
+  const item = getUpdateElementItem(val)
+  item.redo()
+  historyStore.push(item)
+}
+
 export function useElementStore() {
   return {
     initState,
     actors: computed(() => actorsState.state.list),
     lastSelectedActor,
+    lastSelectedElement,
+
+    updateArmatureId,
+    updateElement,
 
     selectedElements,
     selectElement,
@@ -39,21 +70,74 @@ export function useElementStore() {
 
 export function getSelectItem(id: string, shift = false): HistoryItem {
   const current = { ...selectedElements.value }
+  const currentLast = lastSelectedElementId.value
+
   const redo = () => {
     if (shift) {
       if (selectedElements.value[id]) {
         delete selectedElements.value[id]
       } else {
         selectedElements.value[id] = true
+        lastSelectedElementId.value = id
       }
     } else {
       selectedElements.value = id ? { [id]: true } : {}
+      lastSelectedElementId.value = id
+    }
+
+    if (
+      !lastSelectedElementId.value &&
+      Object.keys(selectedElements.value).length > 0
+    ) {
+      lastSelectedElementId.value = Object.keys(selectedElements.value)[0]
     }
   }
   return {
     name: 'Select Element',
     undo: () => {
       selectedElements.value = { ...current }
+      lastSelectedElementId.value = currentLast
+    },
+    redo,
+  }
+}
+
+export function getUpdateArmatureIdItem(id: string): HistoryItem {
+  const current = lastSelectedActor.value!.armatureId
+  const currentElements = elementMap.value
+
+  const redo = () => {
+    lastSelectedActor.value!.armatureId = id
+    lastSelectedActor.value!.elements = lastSelectedActor.value!.elements.map(
+      (e) => ({ ...e, bornId: '' })
+    )
+  }
+  return {
+    name: 'Update Parent',
+    undo: () => {
+      lastSelectedActor.value!.armatureId = current
+      lastSelectedActor.value!.elements = toList(currentElements)
+    },
+    redo,
+  }
+}
+
+export function getUpdateElementItem(val: { bornId: string }): HistoryItem {
+  const current = extractMap(elementMap.value, selectedElements.value)
+
+  const redo = () => {
+    lastSelectedActor.value!.elements = toList({
+      ...elementMap.value,
+      ...mapReduce(current, (e) => ({ ...e, ...val })),
+    })
+  }
+  return {
+    name: 'Update Parent',
+    undo: () => {
+      lastSelectedActor.value!.elements = toList({
+        ...elementMap.value,
+        ...current,
+      })
     },
     redo,
   }

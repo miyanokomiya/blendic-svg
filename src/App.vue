@@ -274,7 +274,9 @@ export default defineComponent({
       },
       changeMode(canvasMode: CanvasMode) {
         if (canvasMode === 'weight') {
-          canvasStore.setCanvasMode(canvasMode)
+          if (elementStore.lastSelectedActor.value) {
+            canvasStore.setCanvasMode(canvasMode)
+          }
         } else {
           if (store.lastSelectedArmature.value) {
             canvasStore.setCanvasMode(canvasMode)

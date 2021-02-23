@@ -3,7 +3,7 @@
     stroke="black"
     :fill="fill"
     :transform="transform"
-    :opacity="opacity"
+    :opacity="adjustedOpacity"
     :stroke-width="Math.min(2 * scale, 2)"
   >
     <g
@@ -113,6 +113,7 @@ export default defineComponent({
     const circleR = computed(() => getCircleR(head.value, tail.value))
 
     return {
+      adjustedOpacity: computed(() => props.opacity * settings.bornOpacity),
       name: computed(() => (settings.showBornName ? props.born.name : '')),
       circleR,
       transform: computed(() => transform(props.born.transform)),

@@ -6,6 +6,16 @@
         <label>Born Name</label>
         <input v-model="settings.showBornName" type="checkbox" />
       </div>
+      <div class="field break">
+        <label>Born Opacity</label>
+        <input
+          v-model="settings.bornOpacity"
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+        />
+      </div>
     </form>
   </div>
 </template>
@@ -43,15 +53,24 @@ form {
     margin-bottom: 8px;
     width: 100%;
     display: flex;
-    align-items: center;
     &:last-child {
       margin-bottom: 0;
     }
-    > label {
-      margin-right: 6px;
+    &.inline {
+      align-items: center;
+      > label {
+        margin-right: 6px;
+      }
+      > label + * {
+        margin-left: auto;
+      }
     }
-    > label + * {
-      margin-left: auto;
+    &.break {
+      flex-direction: column;
+      align-items: flex-start;
+      > label {
+        margin-bottom: 6px;
+      }
     }
   }
 }

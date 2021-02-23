@@ -215,6 +215,20 @@ export default defineComponent({
       document.removeEventListener('keydown', onGlobalKeyDown)
     })
 
+    const selectedBorns = computed(() => {
+      if (canvasMode.value === 'weight') {
+        // hilight parent born for weight paiting
+        const selectedElement = elementStore.lastSelectedElement.value
+        if (selectedElement?.bornId) {
+          return { [selectedElement.bornId]: { head: true, tail: true } }
+        } else {
+          return {}
+        }
+      } else {
+        return store.state.selectedBorns
+      }
+    })
+
     return {
       viewBox,
       armatures: computed(() => store.state.armatures),
@@ -223,7 +237,7 @@ export default defineComponent({
         () => store.lastSelectedArmature.value?.id
       ),
       visibledBornMap,
-      selectedBorns: computed(() => store.state.selectedBorns),
+      selectedBorns,
       canvasMode,
       canvasCommand,
       mousemove(arg: { current: IVec2; start: IVec2 }) {

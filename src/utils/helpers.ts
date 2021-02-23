@@ -52,3 +52,22 @@ export function gridLineElm(
 export function viewbox(rect: IRectangle): string {
   return `${rect.x} ${rect.y} ${rect.width} ${rect.height}`
 }
+
+export function parseStyle(val = ''): { [name: string]: string } {
+  return val
+    .split(';')
+    .map((e) => e.split(':'))
+    .reduce<{ [name: string]: string }>((p, c) => {
+      if (c.length === 2) {
+        p[c[0].trim()] = c[1].trim()
+      }
+      return p
+    }, {})
+}
+
+export function toStyle(obj: { [name: string]: string | undefined }): string {
+  return Object.entries(obj)
+    .filter((e) => e[1])
+    .map((e) => `${e[0]}:${e[1]};`)
+    .join('')
+}

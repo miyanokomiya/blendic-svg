@@ -1,5 +1,10 @@
 import { IRectangle } from 'okageo'
-import { Actor, getActor, getSvgElement, SvgElement } from '../models'
+import {
+  Actor,
+  ElementNode,
+  getActor,
+  getElementNode,
+} from '../models'
 
 export function parseFromSvg(svgText: string): Actor {
   const domParser = new DOMParser()
@@ -9,41 +14,33 @@ export function parseFromSvg(svgText: string): Actor {
   const svg = svgTags[0] as SVGElement
 
   const viewBox = parseViewBox(svg)
+  const svgTree = parseElementNode(svg)
 
-  return getActor(
-    {
-      svgElements: parseElementsFromSvgRoot(svg),
-      svgAttributes: Array.from(svg.attributes).map((a) => ({
-        [a.name]: a.value,
-      })),
-      svgInnerHtml: svg.innerHTML,
-      viewBox,
-    },
-    true
-  )
+  return getActor({ svgTree, viewBox }, true)
 }
 
-function parseElementsFromSvgRoot(root: SVGElement): SvgElement[] {
-  return getSvgChildren(root).flatMap((c) => parseElementNode(c))
+function parseElementNode(parentElm: SVGElement): ElementNode {
+  return getElementNode({
+    id: parentElm.id,
+    tag: parentElm.tagName.toLowerCase(),
+    attributs: Array.from(parentElm.attributes).reduce<{
+      [name: string]: string
+    }>((p, c) => ({ ...p, [c.name]: c.value }), {}),
+    children: parseHTMLCollection(parentElm.childNodes),
+  })
 }
 
-function parseElementNode(parentElm: SVGElement, parentId = ''): SvgElement[] {
-  return [
-    getSvgElement({
-      id: parentElm.id,
-      parentId,
-    }),
-  ].concat(
-    getSvgChildren(parentElm).flatMap((el) =>
-      parseElementNode(el, parentElm.id)
-    )
-  )
-}
-
-function getSvgChildren(parentElm: SVGElement): SVGElement[] {
-  return Array.from(parentElm.childNodes).filter(
-    (el): el is SVGElement => el instanceof SVGElement
-  )
+function parseHTMLCollection(
+  collection: NodeListOf<ChildNode>
+): (ElementNode | string)[] {
+  return Array.from(collection)
+    .map((c) => {
+      if (c.nodeName === '#text') {
+        return c.nodeValue?.trim() || ''
+      }
+      return parseElementNode(c as SVGElement)
+    })
+    .filter((c) => !!c)
 }
 
 function parseViewBox(root: SVGElement): IRectangle | undefined {

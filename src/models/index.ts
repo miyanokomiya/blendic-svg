@@ -46,42 +46,40 @@ export interface Armature {
   borns: Born[]
 }
 
+export interface ElementNode {
+  id: string
+  tag: string
+  attributs: { [name: string]: string }
+  children: (ElementNode | string)[]
+}
+
 export interface Actor {
   id: string
   armatureId: string
-  svgElements: SvgElement[]
-  svgAttributes: { [name: string]: string }[]
-  svgInnerHtml: string
+  svgTree: ElementNode
   viewBox: IRectangle
 }
 
-export interface SvgElement {
-  id: string
-  transform: Transform
-  parentId: string
+export function getElementNode(
+  arg: Partial<ElementNode> = {},
+  generateId = false
+): ElementNode {
+  const id = generateId ? v4() : arg.id ?? ''
+  return {
+    tag: '',
+    attributs: {},
+    children: [],
+    ...arg,
+    id,
+  }
 }
 
 export function getActor(arg: Partial<Actor> = {}, generateId = false): Actor {
   const id = generateId ? v4() : arg.id ?? ''
   return {
     armatureId: '',
-    svgElements: [],
-    svgAttributes: [],
-    svgInnerHtml: '',
+    svgTree: getElementNode(),
     viewBox: { x: 0, y: 0, width: 100, height: 100 },
-    ...arg,
-    id,
-  }
-}
-
-export function getSvgElement(
-  arg: Partial<SvgElement> = {},
-  generateId = false
-): SvgElement {
-  const id = generateId ? v4() : arg.id ?? ''
-  return {
-    parentId: '',
-    transform: getTransform(),
     ...arg,
     id,
   }

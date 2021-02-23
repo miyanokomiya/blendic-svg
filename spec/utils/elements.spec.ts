@@ -1,5 +1,11 @@
-import { getActor, getBElement, getElementNode } from '/@/models'
-import { parseFromSvg } from '/@/utils/elements'
+import {
+  getActor,
+  getArmature,
+  getBElement,
+  getBorn,
+  getElementNode,
+} from '/@/models'
+import { cleanActors, parseFromSvg } from '/@/utils/elements'
 
 const svgText = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="1 2  3   4">
@@ -57,6 +63,65 @@ describe('utils/elements.ts', () => {
         getBElement({ id: 'g_1' }),
         getBElement({ id: 'rect_1' }),
         getBElement({ id: 'text_1' }),
+      ])
+    })
+  })
+
+  describe('cleanActors', () => {
+    it('clear armatureId and bornId if the armature does not exist', () => {
+      expect(
+        cleanActors(
+          [
+            getActor({
+              id: 'act_1',
+              armatureId: 'arm_1',
+              elements: [getBElement({ id: 'be_1', bornId: 'bor_1' })],
+            }),
+            getActor({
+              id: 'act_2',
+              armatureId: 'arm_2',
+              elements: [getBElement({ id: 'be_1', bornId: 'bor_1' })],
+            }),
+          ],
+          [getArmature({ id: 'arm_1', borns: [getBorn({ id: 'bor_1' })] })]
+        )
+      ).toEqual([
+        getActor({
+          id: 'act_1',
+          armatureId: 'arm_1',
+          elements: [getBElement({ id: 'be_1', bornId: 'bor_1' })],
+        }),
+        getActor({
+          id: 'act_2',
+          armatureId: '',
+          elements: [getBElement({ id: 'be_1', bornId: '' })],
+        }),
+      ])
+    })
+    it('clear bornId if the born does not exist', () => {
+      expect(
+        cleanActors(
+          [
+            getActor({
+              id: 'act_1',
+              armatureId: 'arm_1',
+              elements: [
+                getBElement({ id: 'be_1', bornId: 'bor_1' }),
+                getBElement({ id: 'be_2', bornId: 'bor_2' }),
+              ],
+            }),
+          ],
+          [getArmature({ id: 'arm_1', borns: [getBorn({ id: 'bor_1' })] })]
+        )
+      ).toEqual([
+        getActor({
+          id: 'act_1',
+          armatureId: 'arm_1',
+          elements: [
+            getBElement({ id: 'be_1', bornId: 'bor_1' }),
+            getBElement({ id: 'be_2', bornId: '' }),
+          ],
+        }),
       ])
     })
   })

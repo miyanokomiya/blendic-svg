@@ -6,7 +6,7 @@ import { useCanvasStore } from '../store/canvas'
 import { useElementStore } from '../store/element'
 import { useHistoryStore } from '../store/history'
 import { cleanActions } from '../utils/animations'
-import { parseFromSvg } from '../utils/elements'
+import { cleanActors, parseFromSvg } from '../utils/elements'
 
 interface Root {
   armatures: Armature[]
@@ -28,7 +28,7 @@ export function useStrage() {
   function serialize(): string {
     const armatures = store.state.armatures
     const actions = cleanActions(animationStore.actions.value, armatures)
-    const actors = elementStore.actors.value
+    const actors = cleanActors(elementStore.actors.value, armatures)
     const root: Root = { armatures, actions, actors }
     return JSON.stringify(root)
   }

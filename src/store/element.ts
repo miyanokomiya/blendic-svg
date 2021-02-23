@@ -23,6 +23,10 @@ const lastSelectedElement = computed(() => {
   return elementMap.value[lastSelectedElementId.value]
 })
 
+const selectedElementCount = computed(() => {
+  return Object.keys(selectedElements.value).length
+})
+
 function initState(actors: Actor[]) {
   actorsState.state.list = actors
   if (actors.length > 0) {
@@ -32,9 +36,29 @@ function initState(actors: Actor[]) {
 }
 
 function selectElement(id = '', shift = false) {
+  if (!id && Object.keys(selectedElements.value).length === 0) return
+  if (
+    !shift &&
+    id === lastSelectedElementId.value &&
+    selectedElementCount.value === 1
+  )
+    return
+
   const item = getSelectItem(id, shift)
   item.redo()
   historyStore.push(item)
+}
+
+function selectAllElement() {
+  if (Object.keys(elementMap.value).length === 0) return
+
+  if (selectedElementCount.value === Object.keys(elementMap.value).length) {
+    selectElement('')
+  } else {
+    const item = getSelectAllItem()
+    item.redo()
+    historyStore.push(item)
+  }
 }
 
 function updateArmatureId(id: string) {
@@ -65,6 +89,7 @@ export function useElementStore() {
 
     selectedElements,
     selectElement,
+    selectAllElement,
   }
 }
 
@@ -76,6 +101,9 @@ export function getSelectItem(id: string, shift = false): HistoryItem {
     if (shift) {
       if (selectedElements.value[id]) {
         delete selectedElements.value[id]
+        if (lastSelectedElementId.value === id) {
+          lastSelectedElementId.value = ''
+        }
       } else {
         selectedElements.value[id] = true
         lastSelectedElementId.value = id
@@ -85,15 +113,30 @@ export function getSelectItem(id: string, shift = false): HistoryItem {
       lastSelectedElementId.value = id
     }
 
-    if (
-      !lastSelectedElementId.value &&
-      Object.keys(selectedElements.value).length > 0
-    ) {
+    if (!lastSelectedElementId.value && selectedElementCount.value > 0) {
       lastSelectedElementId.value = Object.keys(selectedElements.value)[0]
     }
   }
   return {
     name: 'Select Element',
+    undo: () => {
+      selectedElements.value = { ...current }
+      lastSelectedElementId.value = currentLast
+    },
+    redo,
+  }
+}
+
+export function getSelectAllItem(): HistoryItem {
+  const current = { ...selectedElements.value }
+  const currentLast = lastSelectedElementId.value
+
+  const redo = () => {
+    selectedElements.value = mapReduce(elementMap.value, () => true)
+    lastSelectedElementId.value = Object.keys(elementMap)[0] ?? ''
+  }
+  return {
+    name: 'Select All Element',
     undo: () => {
       selectedElements.value = { ...current }
       lastSelectedElementId.value = currentLast

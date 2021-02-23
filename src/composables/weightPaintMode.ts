@@ -35,16 +35,17 @@ export function useWeightPaintMode(): WeightPaintMode {
 
   function completeEdit() {}
 
-  function select(id: string) {
+  function select(_id: string) {
     completeEdit()
   }
 
-  function shiftSelect(id: string) {
+  function shiftSelect(_id: string) {
     completeEdit()
   }
 
   function selectAll() {
     completeEdit()
+    elementStore.selectAllElement()
   }
 
   function mousemove(_arg: EditMovement) {}

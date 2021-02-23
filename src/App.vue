@@ -25,63 +25,8 @@
         @shift-d="duplicate"
       >
         <template #default="{ scale }">
-          <ElementLayer />
-          <g v-if="canvasMode === 'edit'">
-            <ArmatureElm
-              v-for="armature in otherArmatures"
-              :key="armature.id"
-              :armature="armature"
-              :opacity="0.3"
-              :scale="scale"
-            />
-            <BornElm
-              v-for="born in visibledBornMap"
-              :key="born.id"
-              :born="born"
-              :parent="visibledBornMap[born.parentId]"
-              :selected-state="selectedBorns[born.id]"
-              :scale="scale"
-              @select="(state) => selectBorn(born.id, state)"
-              @shift-select="(state) => shiftSelectBorn(born.id, state)"
-            />
-          </g>
-          <g v-else-if="canvasMode === 'pose'">
-            <ArmatureElm
-              v-for="armature in otherArmatures"
-              :key="armature.id"
-              :armature="armature"
-              :opacity="0.3"
-            />
-            <BornElm
-              v-for="born in visibledBornMap"
-              :key="born.id"
-              :born="born"
-              :parent="visibledBornMap[born.parentId]"
-              :selected-state="selectedBorns[born.id]"
-              :scale="scale"
-              pose-mode
-              @select="(state) => selectBorn(born.id, state)"
-              @shift-select="(state) => shiftSelectBorn(born.id, state)"
-            />
-          </g>
-          <g v-else-if="canvasMode === 'weight'">
-            <ArmatureElm
-              v-for="armature in otherArmatures"
-              :key="armature.id"
-              :armature="armature"
-              :opacity="0.3"
-            />
-            <BornElm
-              v-for="born in visibledBornMap"
-              :key="born.id"
-              :born="born"
-              :parent="visibledBornMap[born.parentId]"
-              :scale="scale"
-              :opacity="0.7"
-              pose-mode
-            />
-          </g>
-          <g v-else>
+          <ElementLayer :class="{ 'view-only': canvasMode !== 'weight' }" />
+          <g v-if="canvasMode === 'object'">
             <ArmatureElm
               v-for="armature in armatures"
               :key="armature.id"
@@ -92,6 +37,28 @@
               @shift-select="
                 (selected) => shiftSelectArmature(armature.id, selected)
               "
+            />
+          </g>
+          <g v-else>
+            <ArmatureElm
+              v-for="armature in otherArmatures"
+              :key="armature.id"
+              :armature="armature"
+              :opacity="0.3"
+              :scale="scale"
+              class="view-only"
+            />
+            <BornElm
+              v-for="born in visibledBornMap"
+              :key="born.id"
+              :born="born"
+              :parent="visibledBornMap[born.parentId]"
+              :selected-state="selectedBorns[born.id]"
+              :scale="scale"
+              :pose-mode="canvasMode === 'pose'"
+              :class="{ 'view-only': canvasMode === 'weight' }"
+              @select="(state) => selectBorn(born.id, state)"
+              @shift-select="(state) => shiftSelectBorn(born.id, state)"
             />
           </g>
         </template>
@@ -367,5 +334,8 @@ input[type='number'] {
 .bottom {
   padding: 0 10px;
   height: 300px;
+}
+.view-only {
+  pointer-events: none;
 }
 </style>

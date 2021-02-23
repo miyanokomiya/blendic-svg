@@ -73,5 +73,8 @@ form {
       }
     }
   }
+  input[type='range'] {
+    width: 100%;
+  }
 }
 </style>

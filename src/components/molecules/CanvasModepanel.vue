@@ -58,6 +58,7 @@ export default defineComponent({
     border: solid 1px #777;
     border-radius: 4px;
     font-size: 12px;
+    background-color: #fff;
     &.selected {
       background-color: #ddd;
     }

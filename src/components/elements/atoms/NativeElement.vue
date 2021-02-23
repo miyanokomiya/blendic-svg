@@ -8,8 +8,8 @@ import {
   PropType,
 } from 'vue'
 import { useSettings } from '/@/composables/settings'
-import { ElementNode } from '/@/models'
-import { parseStyle, toStyle } from '/@/utils/helpers'
+import { ElementNode, Transform } from '/@/models'
+import { parseStyle, toStyle, transform } from '/@/utils/helpers'
 
 const NativeElement: any = defineComponent({
   props: {
@@ -24,6 +24,11 @@ const NativeElement: any = defineComponent({
 
     const selectedMap = inject<ComputedRef<{ [id: string]: boolean }>>(
       'selectedMap',
+      computed(() => ({}))
+    )
+
+    const transFormMap = inject<ComputedRef<{ [id: string]: Transform }>>(
+      'transFormMap',
       computed(() => ({}))
     )
 
@@ -55,6 +60,10 @@ const NativeElement: any = defineComponent({
         () => {}
       )
 
+      const transformStr = transform(transFormMap.value[elm.id])
+        ? transform(transFormMap.value[elm.id])
+        : ''
+
       const onClick =
         elm.tag === 'g'
           ? undefined
@@ -70,6 +79,7 @@ const NativeElement: any = defineComponent({
           ...overrideAttrs.value,
           style: overrideStyle.value,
           onClick,
+          transform: (elm.attributs.transform ?? '') + transformStr,
         },
         Array.isArray(elm.children)
           ? elm.children.map((c) =>

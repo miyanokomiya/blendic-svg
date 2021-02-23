@@ -64,6 +64,23 @@
               @shift-select="(state) => shiftSelectBorn(born.id, state)"
             />
           </g>
+          <g v-else-if="canvasMode === 'weight'">
+            <ArmatureElm
+              v-for="armature in otherArmatures"
+              :key="armature.id"
+              :armature="armature"
+              :opacity="0.3"
+            />
+            <BornElm
+              v-for="born in visibledBornMap"
+              :key="born.id"
+              :born="born"
+              :parent="visibledBornMap[born.parentId]"
+              :scale="scale"
+              :opacity="0.7"
+              pose-mode
+            />
+          </g>
           <g v-else>
             <ArmatureElm
               v-for="armature in armatures"

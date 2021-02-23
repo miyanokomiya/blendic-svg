@@ -4,7 +4,7 @@ import { Transform } from '../models/index'
 export function transform(transform: Transform): string {
   return [
     `translate(${transform.translate.x},${transform.translate.y})`,
-    `rotate(${transform.rotate})`,
+    `rotate(${transform.rotate} ${transform.origin.x} ${transform.origin.y})`,
     `scale(${transform.scale.x},${transform.scale.y})`,
   ].join(' ')
 }

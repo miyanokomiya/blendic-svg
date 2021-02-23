@@ -7,8 +7,8 @@ import {
 } from '/@/models'
 import { cleanActors, parseFromSvg } from '/@/utils/elements'
 
-const svgText = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="1 2  3   4">
+const svgText_1 = `
+<svg id="svg_1" xmlns="http://www.w3.org/2000/svg" viewBox="1 2  3   4">
   <g id="g_1">
     <rect id="rect_1" />
     <text id="text_1">message</text>
@@ -16,17 +16,25 @@ const svgText = `
 </svg>
 `
 
+const svgText_2 = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="1 2  3   4">
+  <rect id="rect_1" />
+  <text>message</text>
+</svg>
+`
+
 describe('utils/elements.ts', () => {
   describe('parseFromSvg', () => {
     it('parse SVG to a actor', () => {
-      const ret = parseFromSvg(svgText)
+      const ret = parseFromSvg(svgText_1)
 
       expect(ret.viewBox).toEqual({ x: 1, y: 2, width: 3, height: 4 })
       expect(ret.svgTree).toEqual(
         getElementNode({
-          id: '',
+          id: 'svg_1',
           tag: 'svg',
           attributs: {
+            id: 'svg_1',
             xmlns: 'http://www.w3.org/2000/svg',
             viewBox: '1 2  3   4',
           },
@@ -64,6 +72,12 @@ describe('utils/elements.ts', () => {
         getBElement({ id: 'rect_1' }),
         getBElement({ id: 'text_1' }),
       ])
+    })
+    it('assing a new id if a element has no id', () => {
+      const ret = parseFromSvg(svgText_2)
+
+      expect(ret.elements[0].id).toBe('rect_1')
+      expect(ret.elements[1].id).not.toBe('')
     })
   })
 

@@ -36,14 +36,18 @@ function toBElement(node: ElementNode): BElement {
 }
 
 function parseElementNode(parentElm: SVGElement): ElementNode {
-  return getElementNode({
-    id: parentElm.id,
-    tag: parentElm.tagName.toLowerCase(),
-    attributs: Array.from(parentElm.attributes).reduce<{
-      [name: string]: string
-    }>((p, c) => ({ ...p, [c.name]: c.value }), {}),
-    children: parseHTMLCollection(parentElm.childNodes),
-  })
+  const id = parentElm.id
+  return getElementNode(
+    {
+      id,
+      tag: parentElm.tagName.toLowerCase(),
+      attributs: Array.from(parentElm.attributes).reduce<{
+        [name: string]: string
+      }>((p, c) => ({ ...p, [c.name]: c.value }), {}),
+      children: parseHTMLCollection(parentElm.childNodes),
+    },
+    !id
+  )
 }
 
 function parseHTMLCollection(

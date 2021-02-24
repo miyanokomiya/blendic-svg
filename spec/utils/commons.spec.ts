@@ -4,6 +4,7 @@ import {
   dropMapIfFalse,
   extractMap,
   flatKeyListMap,
+  getParentIdPath,
   mapReduce,
   mergeListByKey,
   toKeyListMap,
@@ -228,6 +229,50 @@ describe('utils/commons.ts', () => {
           true
         )
       ).toEqual([{ a: 1, val: 'src_1' }])
+    })
+  })
+
+  describe('getParentIdPath', () => {
+    it('get id list of the root to the parent', () => {
+      expect(
+        getParentIdPath(
+          {
+            '1': { id: '1', parentId: '' },
+            '2': { id: '2', parentId: '' },
+            '1_1': { id: '1_1', parentId: '1' },
+            '1_1_1': { id: '1_1_1', parentId: '1_1' },
+          },
+          '1_1_1'
+        )
+      ).toEqual(['1', '1_1'])
+    })
+    it('stop if the parent does not exist', () => {
+      expect(
+        getParentIdPath(
+          {
+            '1': { id: '1', parentId: '' },
+            '2': { id: '2', parentId: '' },
+            '1_1': { id: '1_1', parentId: '-1' },
+            '1_1_1': { id: '1_1_1', parentId: '1_1' },
+          },
+          '1_1_1'
+        )
+      ).toEqual(['1_1'])
+    })
+    it('stop at the preventId', () => {
+      expect(
+        getParentIdPath(
+          {
+            '1': { id: '1', parentId: '' },
+            '2': { id: '2', parentId: '' },
+            '1_1': { id: '1_1', parentId: '1' },
+            '1_1_1': { id: '1_1_1', parentId: '1_1' },
+            '1_1_1_1': { id: '1_1_1_1', parentId: '1_1_1' },
+          },
+          '1_1_1_1',
+          '1_1'
+        )
+      ).toEqual(['1_1_1'])
     })
   })
 })

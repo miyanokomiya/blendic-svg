@@ -236,7 +236,7 @@ export function getTree<T extends { id: string; parentId: string }>(
   const parentMap: IdMap<T[]> = Object.keys(idMap).reduce<IdMap<T[]>>(
     (p, c) => {
       const b = idMap[c]
-      if (!b.parentId) {
+      if (!b.parentId || !idMap[b.parentId]) {
         noParents.push(b)
       } else if (p[b.parentId]) {
         p[b.parentId].push(b)

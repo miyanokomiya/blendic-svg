@@ -283,7 +283,7 @@ describe('utils/armatures', () => {
   })
 
   describe('getTree', () => {
-    it('get nodes tree', () => {
+    it('get nodes tree: nested children', () => {
       const bornMap = {
         a: { id: 'a', parentId: '' },
         aa: { id: 'aa', parentId: 'a' },
@@ -305,7 +305,7 @@ describe('utils/armatures', () => {
         { id: 'b', children: [], parentId: '' },
       ])
     })
-    it('get nodes tree', () => {
+    it('get nodes tree: multi children', () => {
       const bornMap = {
         a: { id: 'a', parentId: '' },
         aa: { id: 'aa', parentId: 'a' },
@@ -320,6 +320,21 @@ describe('utils/armatures', () => {
             { id: 'ab', children: [], parentId: 'a' },
           ],
         },
+      ])
+    })
+    it('ignore the parent does not exist', () => {
+      const bornMap = {
+        a: { id: 'a', parentId: '' },
+        aa: { id: 'aa', parentId: 'a' },
+        ab: { id: 'ab', parentId: 'b' },
+      }
+      expect(target.getTree(bornMap)).toEqual([
+        {
+          id: 'a',
+          parentId: '',
+          children: [{ id: 'aa', children: [], parentId: 'a' }],
+        },
+        { id: 'ab', children: [], parentId: 'b' },
       ])
     })
   })

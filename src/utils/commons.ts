@@ -99,3 +99,16 @@ export function dropListByKey<T extends object>(
     )
   )
 }
+
+export function getParentIdPath(
+  itemMap: { [id: string]: { id: string; parentId: string } },
+  from: string,
+  preventId = ''
+): string[] {
+  const b = itemMap[from]
+  if (!b || !itemMap[b.parentId] || preventId === b.parentId) {
+    return []
+  } else {
+    return [...getParentIdPath(itemMap, b.parentId, preventId), b.parentId]
+  }
+}

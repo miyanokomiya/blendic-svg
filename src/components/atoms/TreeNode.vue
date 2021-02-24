@@ -47,9 +47,11 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const children = props.node.children
-      .filter((c): c is ElementNode => typeof c !== 'string')
-      .filter((elm) => !shouldHide(elm.tag))
+    const children = computed(() => {
+      return props.node.children
+        .filter((c): c is ElementNode => typeof c !== 'string')
+        .filter((elm) => !shouldHide(elm.tag))
+    })
 
     // eslint-disable-next-line no-unused-vars
     const onClickElement = inject<(id: string, shift: boolean) => void>(

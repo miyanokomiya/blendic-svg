@@ -60,7 +60,7 @@ const NativeElement: any = defineComponent({
         () => {}
       )
 
-      const transformStr = transform(transFormMap.value[elm.id])
+      const transformStr = transFormMap.value[elm.id]
         ? transform(transFormMap.value[elm.id])
         : ''
 
@@ -79,7 +79,7 @@ const NativeElement: any = defineComponent({
           ...overrideAttrs.value,
           style: overrideStyle.value,
           onClick,
-          transform: (elm.attributs.transform ?? '') + transformStr,
+          transform: transformStr + (elm.attributs.transform ?? ''),
         },
         Array.isArray(elm.children)
           ? elm.children.map((c) =>

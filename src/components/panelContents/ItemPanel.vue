@@ -24,6 +24,21 @@
           @update:modelValue="changeRotate"
         />
       </div>
+      <h5>Scale</h5>
+      <div class="field">
+        <label>x</label>
+        <NumberInput
+          :model-value="draftTransform.scaleX"
+          @update:modelValue="changeScaleX"
+        />
+      </div>
+      <div class="field">
+        <label>y</label>
+        <NumberInput
+          :model-value="draftTransform.scaleY"
+          @update:modelValue="changeScaleY"
+        />
+      </div>
     </form>
     <form v-else-if="targetBone" @submit.prevent>
       <h5>Head</h5>
@@ -160,6 +175,14 @@ export default defineComponent({
       draftTransform.rotate = val
       changeTransform()
     }
+    function changeScaleX(val: number) {
+      draftTransform.scaleX = val
+      changeTransform()
+    }
+    function changeScaleY(val: number) {
+      draftTransform.scaleY = val
+      changeTransform()
+    }
 
     function changeTransform() {
       if (!targetBone.value) return
@@ -205,6 +228,8 @@ export default defineComponent({
       changeTranslateX,
       changeTranslateY,
       changeRotate,
+      changeScaleX,
+      changeScaleY,
     }
   },
 })

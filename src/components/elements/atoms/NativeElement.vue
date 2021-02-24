@@ -8,7 +8,7 @@ import {
   PropType,
 } from 'vue'
 import { useSettings } from '/@/composables/settings'
-import { BElement, Born, ElementNode, IdMap, toMap, Transform } from '/@/models'
+import { BElement, Born, ElementNode, IdMap, toMap } from '/@/models'
 import { getTransformedBornMap } from '/@/utils/armatures'
 import { getParentIdPath } from '/@/utils/commons'
 import { parseStyle, toStyle, transform } from '/@/utils/helpers'
@@ -22,6 +22,10 @@ const NativeElement: any = defineComponent({
     relativeRootBornId: {
       type: String,
       default: '',
+    },
+    groupSelected: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ['click-element'],
@@ -44,13 +48,16 @@ const NativeElement: any = defineComponent({
     )
 
     const overrideAttrs = computed((): { [name: string]: string } => {
-      if (typeof props.element === 'string') return {}
-      return selectedMap.value[props.element.id]
-        ? {
-            fill: settings.selectedColor,
-            stroke: settings.selectedColor,
-          }
-        : {}
+      if (typeof props.element === 'string') {
+        return {}
+      } else if (selectedMap.value[props.element.id] || props.groupSelected) {
+        return {
+          fill: settings.selectedColor,
+          stroke: settings.selectedColor,
+        }
+      } else {
+        return {}
+      }
     })
 
     const overrideStyle = computed(() => {
@@ -61,67 +68,85 @@ const NativeElement: any = defineComponent({
       })
     })
 
-    return () => {
-      if (typeof props.element === 'string') return props.element
+    const isElement = computed(() => typeof props.element !== 'string')
+    const element = computed(() => props.element as ElementNode)
+    const myElement = computed(() => elementMap.value[element.value.id])
 
-      const elm = props.element
-      const myElement = elementMap.value[props.element.id]
-      // eslint-disable-next-line no-unused-vars
-      const onClickElement = inject<(id: string, shift: boolean) => void>(
-        'onClickElement',
-        () => {}
-      )
+    const groupSelected = computed(() => {
+      if (!isElement.value) return props.groupSelected
+      return props.groupSelected || selectedMap.value[element.value.id]
+    })
 
-      let posedTransform: Transform | null = null
+    // eslint-disable-next-line no-unused-vars
+    const onClickElement = inject<(id: string, shift: boolean) => void>(
+      'onClickElement',
+      () => {}
+    )
 
+    const posedTransform = computed(() => {
       // TODO: improve performance
-      if (myElement.bornId && bornMap.value[myElement.bornId]) {
+      if (myElement.value.bornId && bornMap.value[myElement.value.bornId]) {
         // get relative born's transformation from relativeRootBornId's tail
         const parentIdPath = getParentIdPath(
           bornMap.value,
-          myElement.bornId,
+          myElement.value.bornId,
           props.relativeRootBornId
         )
         const posedMap = getTransformedBornMap(
           toMap(
-            [...parentIdPath, myElement.bornId].map((id) => bornMap.value[id])
+            [...parentIdPath, myElement.value.bornId].map(
+              (id) => bornMap.value[id]
+            )
           )
         )
-        posedTransform = {
-          ...posedMap[myElement.bornId].transform,
-          origin: posedMap[myElement.bornId].head,
+        return {
+          ...posedMap[myElement.value.bornId].transform,
+          origin: posedMap[myElement.value.bornId].head,
         }
+      } else {
+        return undefined
       }
+    })
 
-      const transformStr = posedTransform ? transform(posedTransform) : ''
+    const transformStr = computed(() => {
+      const posedTransformStr = posedTransform.value
+        ? transform(posedTransform.value)
+        : ''
+      // this order of transformations is important
+      return posedTransformStr + (element.value.attributs.transform ?? '')
+    })
 
-      const onClick =
-        elm.tag === 'g'
-          ? undefined
-          : (e: MouseEvent) => {
-              e.stopPropagation()
-              onClickElement(elm.id, e.shiftKey)
-            }
+    function onClick(e: MouseEvent) {
+      if (element.value.tag === 'g') return
+      e.stopPropagation()
+      onClickElement(element.value.id, e.shiftKey)
+    }
 
-      return h(
-        elm.tag,
-        {
-          ...elm.attributs,
-          ...overrideAttrs.value,
-          style: overrideStyle.value,
-          onClick,
-          // this order of transformations is important
-          transform: transformStr + (elm.attributs.transform ?? ''),
-        },
-        Array.isArray(elm.children)
-          ? elm.children.map((c) =>
-              h(NativeElement, {
-                element: c,
-                relativeRootBornId: myElement.bornId,
-              })
-            )
-          : elm.children
-      )
+    const attributs = computed(() => {
+      return {
+        ...element.value.attributs,
+        ...overrideAttrs.value,
+        style: overrideStyle.value,
+        onClick,
+        transform: transformStr.value,
+      }
+    })
+
+    const children = computed(() => {
+      return Array.isArray(element.value.children)
+        ? element.value.children.map((c) =>
+            h(NativeElement, {
+              element: c,
+              relativeRootBornId: myElement.value.bornId,
+              groupSelected: groupSelected.value,
+            })
+          )
+        : element.value.children
+    })
+
+    return () => {
+      if (!isElement.value) return props.element
+      return h(element.value.tag, attributs.value, children.value)
     }
   },
 })

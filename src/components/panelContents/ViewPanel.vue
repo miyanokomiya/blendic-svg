@@ -3,13 +3,13 @@
     <h4>View</h4>
     <form>
       <div class="field inline">
-        <label>Born Name</label>
-        <input v-model="settings.showBornName" type="checkbox" />
+        <label>Bone Name</label>
+        <input v-model="settings.showBoneName" type="checkbox" />
       </div>
       <div class="field break">
-        <label>Born Opacity</label>
+        <label>Bone Opacity</label>
         <input
-          v-model="settings.bornOpacity"
+          v-model="settings.boneOpacity"
           type="range"
           min="0"
           max="1"

@@ -11,7 +11,7 @@ import {
 import {
   Action,
   Armature,
-  Born,
+  Bone,
   frameWidth,
   getTransform,
   IdMap,
@@ -49,10 +49,10 @@ export function getKeyframeMapByFrame(
   return toKeyListMap(keyframes, 'frame')
 }
 
-export function getKeyframeMapByBornId(
+export function getKeyframeMapByBoneId(
   keyframes: Keyframe[]
 ): IdMap<Keyframe[]> {
-  return sortKeyframeMap(toKeyListMap(keyframes, 'bornId'))
+  return sortKeyframeMap(toKeyListMap(keyframes, 'boneId'))
 }
 
 export function sortKeyframes(keyframes: Keyframe[]): Keyframe[] {
@@ -65,18 +65,18 @@ export function sortKeyframeMap(
   return mapReduce(keyframeMap, sortKeyframes)
 }
 
-export function getInterpolatedTransformMapByBornId(
+export function getInterpolatedTransformMapByBoneId(
   sortedKeyframes: IdMap<Keyframe[]>,
   frame: number,
   curveFn?: InterpolateCurve
 ): IdMap<Transform> {
   return mapReduce(
-    getgetNeighborKeyframeMapByBornId(sortedKeyframes, frame),
+    getgetNeighborKeyframeMapByBoneId(sortedKeyframes, frame),
     (neighbors) => interpolateKeyframeTransform(neighbors, frame, curveFn)
   )
 }
 
-export function getgetNeighborKeyframeMapByBornId(
+export function getgetNeighborKeyframeMapByBoneId(
   sortedKeyframes: IdMap<Keyframe[]>,
   frame: number
 ): IdMap<NeighborKeyframes> {
@@ -156,14 +156,14 @@ export function mergeKeyframesWithDropped(
         ...dropListByKey(
           keyframes,
           overrideMapByFrame[frameStr] ?? [],
-          'bornId',
+          'boneId',
           true
         )
       )
       return mergeListByKey(
         keyframes,
         overrideMapByFrame[frameStr] ?? [],
-        'bornId'
+        'boneId'
       )
     }),
     ...overrideMapByNewFrame,
@@ -183,14 +183,14 @@ export function cleanActions(
       ...action,
       keyframes: cleanKeyframes(
         action.keyframes,
-        armatureMap[action.armatureId].borns
+        armatureMap[action.armatureId].bones
       ),
     }))
 }
 
-function cleanKeyframes(keyframes: Keyframe[], borns: Born[]): Keyframe[] {
+function cleanKeyframes(keyframes: Keyframe[], bones: Bone[]): Keyframe[] {
   return toList(
-    extractMap(getKeyframeMapByBornId(keyframes), toMap(borns))
+    extractMap(getKeyframeMapByBoneId(keyframes), toMap(bones))
   ).flat()
 }
 

@@ -2,14 +2,14 @@ import { reactive, computed, watch } from 'vue'
 import { getNextName } from '/@/utils/relations'
 import {
   Armature,
-  BornSelectedState,
-  getBorn,
+  BoneSelectedState,
+  getBone,
   getArmature,
   toMap,
-  Born,
+  Bone,
   IdMap,
-  isSameBornSelectedState,
-  isBornSelected,
+  isSameBoneSelectedState,
+  isBoneSelected,
   mergeMap,
   getOriginPartial,
 } from '/@/models/index'
@@ -23,10 +23,10 @@ const armature = reactive<Armature>(
   getArmature(
     {
       name: 'armature',
-      borns: [
-        getBorn(
+      bones: [
+        getBone(
           {
-            name: 'born',
+            name: 'bone',
             head: { x: 20, y: 200 },
             tail: { x: 220, y: 200 },
           },
@@ -41,16 +41,16 @@ const armature = reactive<Armature>(
 const state = reactive({
   armatures: [armature],
   lastSelectedArmatureId: '',
-  lastSelectedBornId: '',
+  lastSelectedBoneId: '',
   selectedArmatures: {} as IdMap<boolean>,
-  selectedBorns: {} as IdMap<BornSelectedState>,
+  selectedBones: {} as IdMap<BoneSelectedState>,
 })
 
 function initState(initArmatures: Armature[]) {
   state.armatures = initArmatures
   state.lastSelectedArmatureId = ''
   state.selectedArmatures = {}
-  state.selectedBorns = {}
+  state.selectedBones = {}
 }
 
 const lastSelectedArmatureIndex = computed(() =>
@@ -66,32 +66,32 @@ const lastSelectedArmature = computed(() =>
     : undefined
 )
 
-const lastSelectedBornIndex = computed(() => {
+const lastSelectedBoneIndex = computed(() => {
   if (!lastSelectedArmature.value) return -1
-  return lastSelectedArmature.value.borns.findIndex(
+  return lastSelectedArmature.value.bones.findIndex(
     (b) =>
-      b.id === state.lastSelectedBornId &&
-      (state.selectedBorns[state.lastSelectedBornId]?.head ||
-        state.selectedBorns[state.lastSelectedBornId]?.tail)
+      b.id === state.lastSelectedBoneId &&
+      (state.selectedBones[state.lastSelectedBoneId]?.head ||
+        state.selectedBones[state.lastSelectedBoneId]?.tail)
   )
 })
-const lastSelectedBorn = computed(() => {
+const lastSelectedBone = computed(() => {
   if (!lastSelectedArmature.value) return
-  return lastSelectedBornIndex.value !== -1
-    ? lastSelectedArmature.value.borns[lastSelectedBornIndex.value]
+  return lastSelectedBoneIndex.value !== -1
+    ? lastSelectedArmature.value.bones[lastSelectedBoneIndex.value]
     : undefined
 })
 
 const armatureMap = computed(() => toMap(state.armatures))
-const bornMap = computed(() => toMap(lastSelectedArmature.value?.borns ?? []))
+const boneMap = computed(() => toMap(lastSelectedArmature.value?.bones ?? []))
 
-const selectedBornsOrigin = computed(
+const selectedBonesOrigin = computed(
   (): IVec2 =>
-    armatureUtils.getSelectedBornsOrigin(bornMap.value, state.selectedBorns)
+    armatureUtils.getSelectedBonesOrigin(boneMap.value, state.selectedBones)
 )
 
-const allSelectedBorns = computed(() => {
-  return armatureUtils.getAllSelectedBorns(bornMap.value, state.selectedBorns)
+const allSelectedBones = computed(() => {
+  return armatureUtils.getAllSelectedBones(boneMap.value, state.selectedBones)
 })
 
 watch(
@@ -120,25 +120,25 @@ watch(
 )
 
 watch(
-  () => state.selectedBorns,
+  () => state.selectedBones,
   () => {
-    if (!isBornSelected(state.selectedBorns[state.lastSelectedBornId])) {
-      const otherKeys = Object.keys(state.selectedBorns)
-      state.lastSelectedBornId = otherKeys.length > 0 ? otherKeys[0] : ''
+    if (!isBoneSelected(state.selectedBones[state.lastSelectedBoneId])) {
+      const otherKeys = Object.keys(state.selectedBones)
+      state.lastSelectedBoneId = otherKeys.length > 0 ? otherKeys[0] : ''
     }
   }
 )
 watch(
-  () => bornMap.value,
+  () => boneMap.value,
   () => {
-    // unselect unexisted borns
-    state.selectedBorns = Object.keys(state.selectedBorns).reduce<
-      IdMap<BornSelectedState>
+    // unselect unexisted bones
+    state.selectedBones = Object.keys(state.selectedBones).reduce<
+      IdMap<BoneSelectedState>
     >((m, id) => {
-      return bornMap.value[id]
+      return boneMap.value[id]
         ? {
             ...m,
-            [id]: state.selectedBorns[id],
+            [id]: state.selectedBones[id],
           }
         : m
     }, {})
@@ -183,7 +183,7 @@ function addArmature() {
           'armature',
           state.armatures.map((a) => a.name)
         ),
-        borns: [getBorn({ name: 'born', tail: { x: 100, y: 0 } }, true)],
+        bones: [getBone({ name: 'bone', tail: { x: 100, y: 0 } }, true)],
       },
       true
     )
@@ -192,55 +192,55 @@ function addArmature() {
   historyStore.push(item)
 }
 
-function selectAllBorn() {
+function selectAllBone() {
   if (!lastSelectedArmature.value) return
   if (
-    Object.keys(allSelectedBorns.value).length ===
-    Object.keys(bornMap.value).length
+    Object.keys(allSelectedBones.value).length ===
+    Object.keys(boneMap.value).length
   ) {
-    selectBorn()
+    selectBone()
   } else {
-    const item = getSelectAllBornItem()
+    const item = getSelectAllBoneItem()
     item.redo()
     historyStore.push(item)
   }
 }
-function selectBorn(
+function selectBone(
   id: string = '',
-  selectedState: BornSelectedState = { head: true, tail: true },
+  selectedState: BoneSelectedState = { head: true, tail: true },
   shift = false,
   ignoreConnection = false
 ) {
   if (!lastSelectedArmature.value) return
   // skip same selected state
-  if (!lastSelectedBorn.value && !id) return
+  if (!lastSelectedBone.value && !id) return
   if (
-    state.lastSelectedBornId === id &&
-    isSameBornSelectedState(state.selectedBorns[id], selectedState) &&
-    Object.keys(allSelectedBorns.value).length === 1
+    state.lastSelectedBoneId === id &&
+    isSameBoneSelectedState(state.selectedBones[id], selectedState) &&
+    Object.keys(allSelectedBones.value).length === 1
   )
     return
 
-  const item = getSelectBornItem(id, selectedState, shift, ignoreConnection)
+  const item = getSelectBoneItem(id, selectedState, shift, ignoreConnection)
   item.redo()
   historyStore.push(item)
 }
-function deleteBorn() {
+function deleteBone() {
   if (!lastSelectedArmature.value) return
 
-  const item = getDeleteBornItem()
+  const item = getDeleteBoneItem()
   item.redo()
   historyStore.push(item)
 }
-function addBorn() {
+function addBone() {
   if (!lastSelectedArmature.value) return
 
-  addBorns([
-    getBorn(
+  addBones([
+    getBone(
       {
         name: getNextName(
-          'born',
-          lastSelectedArmature.value.borns.map((a) => a.name)
+          'bone',
+          lastSelectedArmature.value.bones.map((a) => a.name)
         ),
         tail: { x: 100, y: 0 },
       },
@@ -248,33 +248,33 @@ function addBorn() {
     ),
   ])
 }
-function addBorns(borns: Born[], selectedState?: BornSelectedState) {
+function addBones(bones: Bone[], selectedState?: BoneSelectedState) {
   if (!lastSelectedArmature.value) return
 
-  const item = getAddBornItem(
-    borns,
-    borns.reduce<IdMap<BornSelectedState>>((p, born) => {
-      if (selectedState) p[born.id] = { ...selectedState }
+  const item = getAddBoneItem(
+    bones,
+    bones.reduce<IdMap<BoneSelectedState>>((p, bone) => {
+      if (selectedState) p[bone.id] = { ...selectedState }
       return p
     }, {})
   )
   item.redo()
   historyStore.push(item)
 }
-function updateBorns(diffMap: IdMap<Partial<Born>>) {
+function updateBones(diffMap: IdMap<Partial<Bone>>) {
   if (!lastSelectedArmature.value) return
 
-  const item = getUpdateBornsItem(diffMap)
+  const item = getUpdateBonesItem(diffMap)
   item.redo()
   historyStore.push(item)
 }
-function updateBorn(diff: Partial<Born>) {
+function updateBone(diff: Partial<Bone>) {
   if (!lastSelectedArmature.value) return
-  if (!lastSelectedBorn.value) return
+  if (!lastSelectedBone.value) return
 
-  const item = getUpdateBornItem(
-    armatureUtils.fixConnection(lastSelectedArmature.value.borns, {
-      ...lastSelectedBorn.value,
+  const item = getUpdateBoneItem(
+    armatureUtils.fixConnection(lastSelectedArmature.value.bones, {
+      ...lastSelectedBone.value,
       ...diff,
     })
   )
@@ -287,22 +287,22 @@ export function useStore() {
     initState,
     state,
     lastSelectedArmature,
-    lastSelectedBorn,
-    bornMap,
-    allSelectedBorns,
-    selectedBornsOrigin,
+    lastSelectedBone,
+    boneMap,
+    allSelectedBones,
+    selectedBonesOrigin,
     selectAllArmature,
     selectArmature,
     updateArmatureName,
     deleteArmature,
     addArmature,
-    selectAllBorn,
-    selectBorn,
-    deleteBorn,
-    addBorn,
-    addBorns,
-    updateBorns,
-    updateBorn,
+    selectAllBone,
+    selectBone,
+    deleteBone,
+    addBone,
+    addBones,
+    updateBones,
+    updateBone,
   }
 }
 
@@ -373,20 +373,20 @@ function getAddArmatureItem(armature: Armature): HistoryItem {
   }
 }
 
-function getSelectBornItem(
+function getSelectBoneItem(
   id: string,
-  selectedState: BornSelectedState = { head: true, tail: true },
+  selectedState: BoneSelectedState = { head: true, tail: true },
   shift = false,
   ignoreConnection = false
 ): HistoryItem {
-  const current = { ...state.selectedBorns }
-  const currentLast = state.lastSelectedBornId
+  const current = { ...state.selectedBones }
+  const currentLast = state.lastSelectedBoneId
 
   const redo = () => {
-    state.selectedBorns = id
+    state.selectedBones = id
       ? mergeMap(
-          { ...(shift ? state.selectedBorns : {}), [id]: selectedState },
-          armatureUtils.selectBorn(
+          { ...(shift ? state.selectedBones : {}), [id]: selectedState },
+          armatureUtils.selectBone(
             lastSelectedArmature.value!,
             id,
             selectedState,
@@ -394,22 +394,22 @@ function getSelectBornItem(
           )
         )
       : {}
-    state.lastSelectedBornId = id
+    state.lastSelectedBoneId = id
   }
   return {
-    name: 'Select Born',
+    name: 'Select Bone',
     undo: () => {
-      state.selectedBorns = { ...current }
-      state.lastSelectedBornId = currentLast
+      state.selectedBones = { ...current }
+      state.lastSelectedBoneId = currentLast
     },
     redo,
   }
 }
 
-function getAllBornSelectedStateMap(): IdMap<BornSelectedState> {
+function getAllBoneSelectedStateMap(): IdMap<BoneSelectedState> {
   if (!lastSelectedArmature.value) return {}
 
-  return lastSelectedArmature.value.borns.reduce<IdMap<BornSelectedState>>(
+  return lastSelectedArmature.value.bones.reduce<IdMap<BoneSelectedState>>(
     (p, b) => {
       p[b.id] = { head: true, tail: true }
       return p
@@ -418,67 +418,67 @@ function getAllBornSelectedStateMap(): IdMap<BornSelectedState> {
   )
 }
 
-function getSelectAllBornItem(): HistoryItem {
-  const current = { ...state.selectedBorns }
-  const currentLast = state.lastSelectedBornId
+function getSelectAllBoneItem(): HistoryItem {
+  const current = { ...state.selectedBones }
+  const currentLast = state.lastSelectedBoneId
 
   const redo = () => {
-    state.selectedBorns = getAllBornSelectedStateMap()
+    state.selectedBones = getAllBoneSelectedStateMap()
   }
   return {
-    name: 'Select All Born',
+    name: 'Select All Bone',
     undo: () => {
-      state.selectedBorns = { ...current }
-      state.lastSelectedBornId = currentLast
+      state.selectedBones = { ...current }
+      state.lastSelectedBoneId = currentLast
     },
     redo,
   }
 }
 
-function getUpdateBornItem(updated: Partial<Born>): HistoryItem {
-  const current = getOriginPartial(lastSelectedBorn.value!, updated)
+function getUpdateBoneItem(updated: Partial<Bone>): HistoryItem {
+  const current = getOriginPartial(lastSelectedBone.value!, updated)
 
   const redo = () => {
-    const index = lastSelectedBornIndex.value
-    lastSelectedArmature.value!.borns[index] = {
-      ...lastSelectedArmature.value!.borns[index],
+    const index = lastSelectedBoneIndex.value
+    lastSelectedArmature.value!.bones[index] = {
+      ...lastSelectedArmature.value!.bones[index],
       ...updated,
     }
   }
   return {
-    name: 'Update Born',
+    name: 'Update Bone',
     undo: () => {
-      const index = lastSelectedBornIndex.value
-      lastSelectedArmature.value!.borns[index] = {
-        ...lastSelectedArmature.value!.borns[index],
+      const index = lastSelectedBoneIndex.value
+      lastSelectedArmature.value!.bones[index] = {
+        ...lastSelectedArmature.value!.bones[index],
         ...current,
       }
     },
     redo,
   }
 }
-function getUpdateBornsItem(updated: IdMap<Partial<Born>>): HistoryItem {
-  const updatedMap = mergeMap<Partial<Born>>(
+function getUpdateBonesItem(updated: IdMap<Partial<Bone>>): HistoryItem {
+  const updatedMap = mergeMap<Partial<Bone>>(
     updated,
     armatureUtils.updateConnections(
-      lastSelectedArmature.value!.borns.map((b) => ({
+      lastSelectedArmature.value!.bones.map((b) => ({
         ...b,
         ...updated[b.id],
       }))
     )
   )
 
-  const current = Object.keys(updatedMap).reduce<IdMap<Partial<Born>>>(
+  const current = Object.keys(updatedMap).reduce<IdMap<Partial<Bone>>>(
     (p, id) => {
-      if (bornMap.value[id])
-        p[id] = getOriginPartial(bornMap.value[id], updatedMap[id])
+      if (boneMap.value[id])
+        p[id] = getOriginPartial(boneMap.value[id], updatedMap[id])
       return p
     },
     {}
   )
 
   const redo = () => {
-    lastSelectedArmature.value!.borns = lastSelectedArmature.value!.borns.map(
+    lastSelectedArmature.value!.bones = lastSelectedArmature.value!.bones.map(
       (b) => ({
         ...b,
         ...updatedMap[b.id],
@@ -486,9 +486,9 @@ function getUpdateBornsItem(updated: IdMap<Partial<Born>>): HistoryItem {
     )
   }
   return {
-    name: 'Update Born',
+    name: 'Update Bone',
     undo: () => {
-      lastSelectedArmature.value!.borns = lastSelectedArmature.value!.borns.map(
+      lastSelectedArmature.value!.bones = lastSelectedArmature.value!.bones.map(
         (b) => ({
           ...b,
           ...current[b.id],
@@ -498,51 +498,51 @@ function getUpdateBornsItem(updated: IdMap<Partial<Born>>): HistoryItem {
     redo,
   }
 }
-function getDeleteBornItem(): HistoryItem {
-  const current = lastSelectedArmature.value!.borns.concat()
-  const updated = lastSelectedArmature.value!.borns.filter(
-    (b) => !state.selectedBorns[b.id]
+function getDeleteBoneItem(): HistoryItem {
+  const current = lastSelectedArmature.value!.bones.concat()
+  const updated = lastSelectedArmature.value!.bones.filter(
+    (b) => !state.selectedBones[b.id]
   )
 
-  const updateItem = getUpdateBornsItem(
+  const updateItem = getUpdateBonesItem(
     armatureUtils.updateConnections(updated)
   )
-  const selectItem = getSelectBornItem('')
+  const selectItem = getSelectBoneItem('')
 
   const redo = () => {
-    lastSelectedArmature.value!.borns = updated
+    lastSelectedArmature.value!.bones = updated
     updateItem.redo()
   }
   return {
-    name: 'Delete Born',
+    name: 'Delete Bone',
     undo: () => {
-      lastSelectedArmature.value!.borns = current.concat()
+      lastSelectedArmature.value!.bones = current.concat()
       selectItem.undo()
       updateItem.undo()
     },
     redo,
   }
 }
-function getAddBornItem(
-  borns: Born[],
-  selectedBorns: IdMap<BornSelectedState>
+function getAddBoneItem(
+  bones: Bone[],
+  selectedBones: IdMap<BoneSelectedState>
 ): HistoryItem {
-  const selectItems = borns.map((b, i) =>
-    getSelectBornItem(b.id, selectedBorns[b.id], i !== 0)
+  const selectItems = bones.map((b, i) =>
+    getSelectBoneItem(b.id, selectedBones[b.id], i !== 0)
   )
 
   const redo = () => {
-    lastSelectedArmature.value!.borns = lastSelectedArmature.value!.borns.concat(
-      borns
+    lastSelectedArmature.value!.bones = lastSelectedArmature.value!.bones.concat(
+      bones
     )
     selectItems.forEach((i) => i.redo())
   }
   return {
-    name: 'Add Born',
+    name: 'Add Bone',
     undo: () => {
-      lastSelectedArmature.value!.borns = lastSelectedArmature.value!.borns.slice(
+      lastSelectedArmature.value!.bones = lastSelectedArmature.value!.bones.slice(
         0,
-        lastSelectedArmature.value!.borns.length - borns.length
+        lastSelectedArmature.value!.bones.length - bones.length
       )
       selectItems.forEach((i) => i.undo())
     },

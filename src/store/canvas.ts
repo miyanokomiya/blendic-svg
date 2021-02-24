@@ -1,11 +1,11 @@
 import { getInner, IVec2, sub } from 'okageo'
 import { computed, reactive, watch } from 'vue'
-import { BornEditMode, useBornEditMode } from '../composables/armatureEditMode'
-import { BornPoseMode, useBornPoseMode } from '../composables/armaturePoseMode'
+import { BoneEditMode, useBoneEditMode } from '../composables/armatureEditMode'
+import { BonePoseMode, useBonePoseMode } from '../composables/armaturePoseMode'
 import { ObjectMode, useObjectMode } from '../composables/objectMode'
 import { useWeightPaintMode } from '../composables/weightPaintMode'
 import { HistoryItem, useHistoryStore } from './history'
-import { BornSelectedState, CanvasMode, EditMode, Transform } from '/@/models'
+import { BoneSelectedState, CanvasMode, EditMode, Transform } from '/@/models'
 
 export type AxisGrid = '' | 'x' | 'y'
 
@@ -23,13 +23,13 @@ function initState() {
 }
 
 const canvasEditMode = computed(():
-  | BornEditMode
+  | BoneEditMode
   | ObjectMode
-  | BornPoseMode => {
+  | BonePoseMode => {
   if (state.canvasMode === 'edit') {
-    return useBornEditMode(useCanvasStore())
+    return useBoneEditMode(useCanvasStore())
   } else if (state.canvasMode === 'pose') {
-    return useBornPoseMode(useCanvasStore())
+    return useBonePoseMode(useCanvasStore())
   } else if (state.canvasMode === 'weight') {
     return useWeightPaintMode()
   } else {
@@ -119,9 +119,9 @@ export function useCanvasStore() {
     setEditMode: (mode: EditMode) => canvasEditMode.value.setEditMode(mode),
     execDelete: () => canvasEditMode.value.execDelete(),
     execAdd: () => canvasEditMode.value.execAdd(),
-    select: (id: string, selectedState: BornSelectedState) =>
+    select: (id: string, selectedState: BoneSelectedState) =>
       canvasEditMode.value.select(id, selectedState),
-    shiftSelect: (id: string, selectedState: BornSelectedState) =>
+    shiftSelect: (id: string, selectedState: BoneSelectedState) =>
       canvasEditMode.value.shiftSelect(id, selectedState),
     selectAll: () => canvasEditMode.value.selectAll(),
     clip: () => canvasEditMode.value.clip(),

@@ -46,9 +46,9 @@ export default defineComponent({
       return elementStore.selectedElements.value
     })
 
-    const bornMap = computed(() => {
+    const boneMap = computed(() => {
       return toMap(
-        (store.lastSelectedArmature.value?.borns ?? []).map((b) => {
+        (store.lastSelectedArmature.value?.bones ?? []).map((b) => {
           return {
             ...b,
             transform: convolutePoseTransforms([
@@ -66,7 +66,7 @@ export default defineComponent({
     }
 
     provide('onClickElement', clickElement)
-    provide('bornMap', bornMap)
+    provide('boneMap', boneMap)
     provide('selectedMap', selectedMap)
     provide('elementMap', elementMap)
 

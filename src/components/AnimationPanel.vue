@@ -54,7 +54,7 @@
             <Keyframes
               :scale="scale"
               :keyframe-map-by-frame="keyframeMapByFrame"
-              :born-ids="selectedAllBornIdList"
+              :bone-ids="selectedAllBoneIdList"
               :selected-keyframe-map="selectedKeyframeMap"
               :scroll-y="viewOrigin.y"
               @select="selectKeyframe"
@@ -66,8 +66,8 @@
           <g
             :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
           >
-            <TimelineBorns
-              :selected-all-born-list="selectedAllBornList"
+            <TimelineBones
+              :selected-all-bone-list="selectedAllBoneList"
               :label-width="labelWidth"
               :scroll-y="viewOrigin.y"
             />
@@ -89,7 +89,7 @@ import { useAnimationStore } from '../store/animation'
 import SelectField from './atoms/SelectField.vue'
 import TimelineCanvas from './TimelineCanvas.vue'
 import TimelineAxis from './elements/atoms/TimelineAxis.vue'
-import TimelineBorns from './elements/TimelineBorns.vue'
+import TimelineBones from './elements/TimelineBones.vue'
 import Keyframes from './elements/Keyframes.vue'
 import AnimationController from './molecules/AnimationController.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
@@ -107,7 +107,7 @@ export default defineComponent({
     SelectField,
     TimelineCanvas,
     TimelineAxis,
-    TimelineBorns,
+    TimelineBones,
     Keyframes,
     AnimationController,
     CommandExamPanel,
@@ -126,11 +126,11 @@ export default defineComponent({
     const draftEndFrame = ref('')
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
-    const selectedAllBornList = computed(() =>
-      toList(animationStore.selectedAllBorns.value)
+    const selectedAllBoneList = computed(() =>
+      toList(animationStore.selectedAllBones.value)
     )
-    const selectedAllBornIdList = computed(() =>
-      selectedAllBornList.value.map((b) => b.id)
+    const selectedAllBoneIdList = computed(() =>
+      selectedAllBoneList.value.map((b) => b.id)
     )
     const keyframeMapByFrame = computed(() => {
       return getKeyframeMapByFrame(
@@ -202,8 +202,8 @@ export default defineComponent({
     return {
       playing: animationStore.playing,
       actions: animationStore.actions.value,
-      selectedAllBornList,
-      selectedAllBornIdList,
+      selectedAllBoneList,
+      selectedAllBoneIdList,
       keyframeMapByFrame,
       selectedKeyframeMap: animationStore.selectedKeyframeMap,
       draftName,

@@ -1,7 +1,7 @@
 import { reactive, computed } from 'vue'
 import {
   Transform,
-  BornSelectedState,
+  BoneSelectedState,
   EditMode,
   IdMap,
   CanvasEditModeBase,
@@ -65,20 +65,20 @@ export function useObjectMode(): ObjectMode {
     state.command = ''
   }
 
-  function select(id: string, selectedState: BornSelectedState) {
+  function select(id: string, selectedState: BoneSelectedState) {
     if (state.command) {
       completeEdit()
       return
     }
-    store.selectBorn(id, selectedState)
+    store.selectBone(id, selectedState)
   }
 
-  function shiftSelect(id: string, selectedState: BornSelectedState) {
+  function shiftSelect(id: string, selectedState: BoneSelectedState) {
     if (state.command) {
       completeEdit()
       return
     }
-    store.selectBorn(id, selectedState, true)
+    store.selectBone(id, selectedState, true)
   }
 
   function selectAll() {

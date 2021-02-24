@@ -69,7 +69,7 @@ function updateArmatureId(id: string) {
   historyStore.push(item)
 }
 
-function updateElement(val: { bornId: string }) {
+function updateElement(val: { boneId: string }) {
   if (!lastSelectedElement.value) return
 
   const item = getUpdateElementItem(val)
@@ -152,7 +152,7 @@ export function getUpdateArmatureIdItem(id: string): HistoryItem {
   const redo = () => {
     lastSelectedActor.value!.armatureId = id
     lastSelectedActor.value!.elements = lastSelectedActor.value!.elements.map(
-      (e) => ({ ...e, bornId: '' })
+      (e) => ({ ...e, boneId: '' })
     )
   }
   return {
@@ -165,7 +165,7 @@ export function getUpdateArmatureIdItem(id: string): HistoryItem {
   }
 }
 
-export function getUpdateElementItem(val: { bornId: string }): HistoryItem {
+export function getUpdateElementItem(val: { boneId: string }): HistoryItem {
   const current = extractMap(elementMap.value, selectedElements.value)
 
   const redo = () => {

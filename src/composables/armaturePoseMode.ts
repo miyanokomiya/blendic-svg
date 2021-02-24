@@ -3,7 +3,7 @@ import { getRadian, IVec2, rotate, sub } from 'okageo'
 import {
   Transform,
   getTransform,
-  BornSelectedState,
+  BoneSelectedState,
   EditMode,
   IdMap,
   EditMovement,
@@ -20,9 +20,9 @@ interface State {
   clipboard: IdMap<Transform>
 }
 
-export interface BornPoseMode extends CanvasEditModeBase {}
+export interface BonePoseMode extends CanvasEditModeBase {}
 
-export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
+export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
@@ -31,10 +31,10 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
 
   const store = useStore()
   const animationStore = useAnimationStore()
-  const lastSelectedBornId = computed(() => store.lastSelectedBorn.value?.id)
+  const lastSelectedBoneId = computed(() => store.lastSelectedBone.value?.id)
 
   const target = computed(() => store.lastSelectedArmature.value)
-  const isAnySelected = computed(() => !!lastSelectedBornId.value)
+  const isAnySelected = computed(() => !!lastSelectedBoneId.value)
 
   function cancel() {
     state.command = ''
@@ -51,7 +51,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     if (state.command) {
       completeEdit()
     } else {
-      store.selectBorn()
+      store.selectBone()
     }
   }
 
@@ -65,9 +65,9 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     }
   }
 
-  function convertToPosedSpace(vec: IVec2, bornId: string): IVec2 {
-    const born = animationStore.currentPosedBorns.value[bornId]
-    const parent = animationStore.currentPosedBorns.value[born.parentId]
+  function convertToPosedSpace(vec: IVec2, boneId: string): IVec2 {
+    const bone = animationStore.currentPosedBones.value[boneId]
+    const parent = animationStore.currentPosedBones.value[bone.parentId]
     if (parent) {
       return rotate(vec, (-parent.transform.rotate / 180) * Math.PI)
     } else {
@@ -79,13 +79,13 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     if (!state.editMovement) return {}
 
     if (state.command === 'rotate') {
-      const origin = animationStore.selectedPosedBornOrigin.value
+      const origin = animationStore.selectedPosedBoneOrigin.value
       const rotate =
         ((getRadian(state.editMovement.current, origin) -
           getRadian(state.editMovement.start, origin)) /
           Math.PI) *
         180
-      return Object.keys(animationStore.selectedBorns.value).reduce<
+      return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>
       >((map, id) => {
         map[id] = getTransform({ rotate })
@@ -95,10 +95,10 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
 
     const translate = sub(state.editMovement.current, state.editMovement.start)
     const snappedTranslate = canvasStore.snapTranslate(translate)
-    return Object.keys(animationStore.selectedBorns.value).reduce<
+    return Object.keys(animationStore.selectedBones.value).reduce<
       IdMap<Transform>
     >((map, id) => {
-      if (!animationStore.selectedBorns.value[id].connected) {
+      if (!animationStore.selectedBones.value[id].connected) {
         map[id] = getTransform({
           translate: convertToPosedSpace(snappedTranslate, id),
         })
@@ -115,20 +115,20 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
     state.command = ''
   }
 
-  function select(id: string, selectedState: BornSelectedState) {
+  function select(id: string, selectedState: BoneSelectedState) {
     if (state.command) {
       completeEdit()
       return
     }
-    store.selectBorn(id, selectedState, false, true)
+    store.selectBone(id, selectedState, false, true)
   }
 
-  function shiftSelect(id: string, selectedState: BornSelectedState) {
+  function shiftSelect(id: string, selectedState: BoneSelectedState) {
     if (state.command) {
       completeEdit()
       return
     }
-    store.selectBorn(id, selectedState, true, true)
+    store.selectBone(id, selectedState, true, true)
   }
 
   function selectAll() {
@@ -136,7 +136,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
       completeEdit()
       return
     }
-    store.selectAllBorn()
+    store.selectAllBone()
   }
 
   function mousemove(arg: EditMovement) {
@@ -146,7 +146,7 @@ export function useBornPoseMode(canvasStore: CanvasStore): BornPoseMode {
   }
 
   function clip() {
-    state.clipboard = mapReduce(animationStore.selectedAllBorns.value, (b) =>
+    state.clipboard = mapReduce(animationStore.selectedAllBones.value, (b) =>
       animationStore.getCurrentSelfTransforms(b.id)
     )
   }

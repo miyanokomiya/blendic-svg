@@ -147,11 +147,11 @@ export default defineComponent({
       return add(viewOrigin.value, multi(v, scale.value))
     }
 
-    const selectedBornsOrigin = computed(() => {
+    const selectedBonesOrigin = computed(() => {
       if (canvasStore.state.canvasMode === 'edit') {
-        return store.selectedBornsOrigin.value
+        return store.selectedBonesOrigin.value
       } else {
-        return animationStore.selectedPosedBornOrigin.value
+        return animationStore.selectedPosedBoneOrigin.value
       }
     })
 
@@ -175,7 +175,7 @@ export default defineComponent({
         scale.value,
         canvasStore.state.axisGrid,
         viewCanvasRect.value,
-        selectedBornsOrigin.value
+        selectedBonesOrigin.value
       )
     })
 
@@ -183,7 +183,7 @@ export default defineComponent({
       if (!mousePoint.value) return
       if (!['scale', 'rotate'].includes(props.currentCommand)) return
       return {
-        origin: selectedBornsOrigin.value,
+        origin: selectedBonesOrigin.value,
         current: viewToCanvas(mousePoint.value),
         side: props.currentCommand === 'rotate',
       }

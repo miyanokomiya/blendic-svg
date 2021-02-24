@@ -21,11 +21,11 @@
             />
           </div>
         </form>
-        <form v-if="selectedObjectType === 'born'" @submit.prevent>
-          <h3>Born</h3>
+        <form v-if="selectedObjectType === 'bone'" @submit.prevent>
+          <h3>Bone</h3>
           <div class="field inline">
             <label>Name</label>
-            <input v-model="draftName" type="text" @change="changeBornName" />
+            <input v-model="draftName" type="text" @change="changeBoneName" />
           </div>
           <div class="field inline">
             <label>Parent</label>
@@ -71,57 +71,57 @@ export default defineComponent({
 
     const parentOptions = computed(() => {
       if (!store.lastSelectedArmature.value) return []
-      return store.lastSelectedArmature.value.borns
-        .filter((b) => b.id !== store.lastSelectedBorn.value?.id)
+      return store.lastSelectedArmature.value.bones
+        .filter((b) => b.id !== store.lastSelectedBone.value?.id)
         .map((b) => ({ value: b.id, label: b.name }))
     })
 
-    const selectedObjectType = computed((): 'born' | 'armature' | '' => {
-      if (store.lastSelectedBorn.value) return 'born'
+    const selectedObjectType = computed((): 'bone' | 'armature' | '' => {
+      if (store.lastSelectedBone.value) return 'bone'
       if (store.lastSelectedArmature.value) return 'armature'
       return ''
     })
 
     function initDraftName() {
-      if (store.lastSelectedBorn.value)
-        draftName.value = store.lastSelectedBorn.value.name
+      if (store.lastSelectedBone.value)
+        draftName.value = store.lastSelectedBone.value.name
       else if (store.lastSelectedArmature.value)
         draftName.value = store.lastSelectedArmature.value.name
       else draftName.value = ''
     }
 
     watch(store.lastSelectedArmature, initDraftName)
-    watch(store.lastSelectedBorn, initDraftName)
+    watch(store.lastSelectedBone, initDraftName)
 
     return {
       draftName,
       lastSelectedArmature: store.lastSelectedArmature,
-      lastSelectedBorn: store.lastSelectedBorn,
+      lastSelectedBone: store.lastSelectedBone,
       parentOptions,
       selectedObjectType,
       connected: computed({
         get(): boolean {
-          return store.lastSelectedBorn.value?.connected ?? false
+          return store.lastSelectedBone.value?.connected ?? false
         },
         set(val: boolean) {
-          store.updateBorn({ connected: val })
+          store.updateBone({ connected: val })
         },
       }),
       parentId: computed({
         get(): string {
-          return store.lastSelectedBorn.value?.parentId ?? ''
+          return store.lastSelectedBone.value?.parentId ?? ''
         },
         set(val: string) {
-          store.updateBorn({ parentId: val })
+          store.updateBone({ parentId: val })
         },
       }),
       changeArmatureName() {
         if (!draftName.value) return
         store.updateArmatureName(draftName.value)
       },
-      changeBornName() {
+      changeBoneName() {
         if (!draftName.value) return
-        store.updateBorn({ name: draftName.value })
+        store.updateBone({ name: draftName.value })
       },
     }
   },

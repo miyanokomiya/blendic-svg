@@ -21,8 +21,8 @@
         <g :transform="`translate(0, ${-scrollY})`">
           <g v-for="k in keyframes" :key="k.id">
             <circle
-              v-if="bornRowMap[k.bornId] > scrollY + headerHeight / 2"
-              :cy="bornRowMap[k.bornId]"
+              v-if="boneRowMap[k.boneId] > scrollY + headerHeight / 2"
+              :cy="boneRowMap[k.boneId]"
               r="5"
               stroke="#000"
               :fill="selectedKeyframeMap[k.id] ? selectedColor : '#fff'"
@@ -52,7 +52,7 @@ export default defineComponent({
       type: Object as PropType<IdMap<Keyframe[]>>,
       default: () => ({}),
     },
-    bornIds: {
+    boneIds: {
       type: Array as PropType<string[]>,
       default: () => [],
     },
@@ -69,9 +69,9 @@ export default defineComponent({
   setup(props, { emit }) {
     const { settings } = useSettings()
 
-    const bornIndexMap = computed(
+    const boneIndexMap = computed(
       (): IdMap<number> => {
-        return props.bornIds.reduce<IdMap<number>>((p, id, i) => {
+        return props.boneIds.reduce<IdMap<number>>((p, id, i) => {
           p[id] = i
           return p
         }, {})
@@ -80,9 +80,9 @@ export default defineComponent({
 
     const sortedKeyframeMapByFrame = computed(() => {
       return Object.keys(props.keyframeMapByFrame).reduce<IdMap<Keyframe[]>>(
-        (p, bornId) => {
-          p[bornId] = sortAndFilterKeyframesByBornId(
-            props.keyframeMapByFrame[bornId]
+        (p, boneId) => {
+          p[boneId] = sortAndFilterKeyframesByBoneId(
+            props.keyframeMapByFrame[boneId]
           )
           return p
         },
@@ -98,15 +98,15 @@ export default defineComponent({
       })
     })
 
-    const bornRowMap = computed(() => {
-      return mapReduce(bornIndexMap.value, (index) => (index + 1) * 24)
+    const boneRowMap = computed(() => {
+      return mapReduce(boneIndexMap.value, (index) => (index + 1) * 24)
     })
 
-    function sortAndFilterKeyframesByBornId(keyframes: Keyframe[]): Keyframe[] {
+    function sortAndFilterKeyframesByBoneId(keyframes: Keyframe[]): Keyframe[] {
       return keyframes
-        .filter((k) => bornIndexMap.value[k.bornId] > -1)
+        .filter((k) => boneIndexMap.value[k.boneId] > -1)
         .sort(
-          (a, b) => bornIndexMap.value[a.bornId] - bornIndexMap.value[b.bornId]
+          (a, b) => boneIndexMap.value[a.boneId] - boneIndexMap.value[b.boneId]
         )
     }
 
@@ -126,7 +126,7 @@ export default defineComponent({
     return {
       headerHeight: 24,
       frameWidth,
-      bornIndexMap,
+      boneIndexMap,
       sortedKeyframeMapByFrame,
       selectedFrameMap,
       select,
@@ -134,7 +134,7 @@ export default defineComponent({
       selectFrame,
       shiftSelectFrame,
       selectedColor: settings.selectedColor,
-      bornRowMap,
+      boneRowMap,
     }
   },
 })

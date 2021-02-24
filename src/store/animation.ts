@@ -10,8 +10,8 @@ import {
 import {
   findNextFrameWithKeyframe,
   findPrevFrameWithKeyframe,
-  getInterpolatedTransformMapByBornId,
-  getKeyframeMapByBornId,
+  getInterpolatedTransformMapByBoneId,
+  getKeyframeMapByBoneId,
   getKeyframeMapByFrame,
   mergeKeyframes,
   mergeKeyframesWithDropped,
@@ -19,10 +19,10 @@ import {
 } from '../utils/animations'
 import {
   convolutePoseTransforms,
-  getAnySelectedBorns,
-  getPosedBornHeadsOrigin,
-  getPoseSelectedBorns,
-  getTransformedBornMap,
+  getAnySelectedBones,
+  getPosedBoneHeadsOrigin,
+  getPoseSelectedBones,
+  getTransformedBoneMap,
   invertPoseTransform,
   multiPoseTransform,
 } from '../utils/armatures'
@@ -38,14 +38,14 @@ import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
 import {
   Action,
-  Born,
+  Bone,
   getAction,
   getKeyframe,
   getTransform,
   IdMap,
   Keyframe,
   PlayState,
-  toBornIdMap,
+  toBoneIdMap,
   toMap,
   Transform,
 } from '/@/models'
@@ -74,16 +74,16 @@ const keyframeMapByFrame = computed(() => {
   return getKeyframeMapByFrame(keyframeList.value)
 })
 
-const keyframeMapByBornId = computed(() => {
-  return getKeyframeMapByBornId(keyframeList.value)
+const keyframeMapByBoneId = computed(() => {
+  return getKeyframeMapByBoneId(keyframeList.value)
 })
 
-const visibledKeyframeMapByBornId = computed(() => {
-  return extractMap(keyframeMapByBornId.value, selectedAllBorns.value)
+const visibledKeyframeMapByBoneId = computed(() => {
+  return extractMap(keyframeMapByBoneId.value, selectedAllBones.value)
 })
 
 const visibledKeyframeMap = computed(() => {
-  return toMap(flatKeyListMap(visibledKeyframeMapByBornId.value))
+  return toMap(flatKeyListMap(visibledKeyframeMapByBoneId.value))
 })
 
 const visibledSelectedKeyframeMap = computed(() => {
@@ -93,20 +93,20 @@ const isAnyVisibledSelectedKeyframe = computed(() => {
   return Object.keys(visibledSelectedKeyframeMap.value).length > 0
 })
 
-const currentInterpolatedTransformMapByBornId = computed(
+const currentInterpolatedTransformMapByBoneId = computed(
   (): IdMap<Transform> => {
-    return getInterpolatedTransformMapByBornId(
-      keyframeMapByBornId.value,
+    return getInterpolatedTransformMapByBoneId(
+      keyframeMapByBoneId.value,
       currentFrame.value
     )
   }
 )
 
-const posedBornIds = computed(() => {
+const posedBoneIds = computed(() => {
   return Array.from(
     new Set(
       Object.keys(editTransforms.value).concat(
-        Object.keys(keyframeMapByBornId.value)
+        Object.keys(keyframeMapByBoneId.value)
       )
     )
   )
@@ -114,22 +114,22 @@ const posedBornIds = computed(() => {
 
 const currentSelfTransforms = computed(
   (): IdMap<Transform> => {
-    return posedBornIds.value.reduce<IdMap<Transform>>((p, id) => {
+    return posedBoneIds.value.reduce<IdMap<Transform>>((p, id) => {
       p[id] = convolutePoseTransforms([
         currentInterpolatedTransform(id),
-        getBornEditedTransforms(id),
+        getBoneEditedTransforms(id),
       ])
       return p
     }, {})
   }
 )
 
-const currentPosedBorns = computed(
-  (): IdMap<Born> => {
+const currentPosedBones = computed(
+  (): IdMap<Bone> => {
     if (!store.lastSelectedArmature.value) return {}
-    return getTransformedBornMap(
+    return getTransformedBoneMap(
       toMap(
-        store.lastSelectedArmature.value.borns.map((b) => {
+        store.lastSelectedArmature.value.bones.map((b) => {
           return {
             ...b,
             transform: getCurrentSelfTransforms(b.id),
@@ -140,21 +140,21 @@ const currentPosedBorns = computed(
   }
 )
 
-const selectedAllBorns = computed(() => {
-  return getAnySelectedBorns(currentPosedBorns.value, store.state.selectedBorns)
+const selectedAllBones = computed(() => {
+  return getAnySelectedBones(currentPosedBones.value, store.state.selectedBones)
 })
 
-const selectedBorns = computed(() => {
-  return getPoseSelectedBorns(
-    currentPosedBorns.value,
-    store.state.selectedBorns
+const selectedBones = computed(() => {
+  return getPoseSelectedBones(
+    currentPosedBones.value,
+    store.state.selectedBones
   )
 })
 
-const selectedPosedBornOrigin = computed(
+const selectedPosedBoneOrigin = computed(
   (): IVec2 => {
     if (!store.lastSelectedArmature.value) return { x: 0, y: 0 }
-    return getPosedBornHeadsOrigin(selectedBorns.value)
+    return getPosedBoneHeadsOrigin(selectedBones.value)
   }
 )
 
@@ -165,35 +165,35 @@ function setEndFrame(val: number) {
   historyStore.push(item)
 }
 
-function setEditedTransforms(mapByBornId: IdMap<Transform>) {
-  const item = getUpdateEditedTransformsItem(mapByBornId)
+function setEditedTransforms(mapByBoneId: IdMap<Transform>) {
+  const item = getUpdateEditedTransformsItem(mapByBoneId)
   item.redo()
   historyStore.push(item)
 }
-function applyEditedTransforms(mapByBornId: IdMap<Transform>) {
+function applyEditedTransforms(mapByBoneId: IdMap<Transform>) {
   setEditedTransforms(
-    mapReduce({ ...editTransforms.value, ...mapByBornId }, (_p, id) => {
+    mapReduce({ ...editTransforms.value, ...mapByBoneId }, (_p, id) => {
       return convolutePoseTransforms([
-        getBornEditedTransforms(id),
-        mapByBornId[id] ?? getTransform(),
+        getBoneEditedTransforms(id),
+        mapByBoneId[id] ?? getTransform(),
       ])
     })
   )
 }
-function pastePoses(mapByBornId: IdMap<Transform>) {
+function pastePoses(mapByBoneId: IdMap<Transform>) {
   const item = getUpdateEditedTransformsItem(
     {
       ...editTransforms.value,
       ...mapReduce(
-        dropMapIfFalse(mapByBornId, (_, bornId) => {
-          // drop poses of unexisted borns
-          return !!currentPosedBorns.value[bornId]
+        dropMapIfFalse(mapByBoneId, (_, boneId) => {
+          // drop poses of unexisted bones
+          return !!currentPosedBones.value[boneId]
         }),
-        (t, bornId) => {
+        (t, boneId) => {
           // invert keyframe's pose & paste the pose
           return multiPoseTransform(
             t,
-            invertPoseTransform(currentInterpolatedTransform(bornId))
+            invertPoseTransform(currentInterpolatedTransform(boneId))
           )
         }
       ),
@@ -204,14 +204,14 @@ function pastePoses(mapByBornId: IdMap<Transform>) {
   historyStore.push(item)
 }
 
-function currentInterpolatedTransform(bornId: string): Transform {
-  return currentInterpolatedTransformMapByBornId.value[bornId] ?? getTransform()
+function currentInterpolatedTransform(boneId: string): Transform {
+  return currentInterpolatedTransformMapByBoneId.value[boneId] ?? getTransform()
 }
-function getBornEditedTransforms(bornId: string): Transform {
-  return editTransforms.value[bornId] ?? getTransform()
+function getBoneEditedTransforms(boneId: string): Transform {
+  return editTransforms.value[boneId] ?? getTransform()
 }
-function getCurrentSelfTransforms(bornId: string): Transform {
-  return currentSelfTransforms.value[bornId] ?? getTransform()
+function getCurrentSelfTransforms(boneId: string): Transform {
+  return currentSelfTransforms.value[boneId] ?? getTransform()
 }
 
 function setCurrentFrame(val: number) {
@@ -325,17 +325,17 @@ function selectAllKeyframes() {
   }
 }
 function execInsertKeyframe() {
-  if (Object.keys(selectedAllBorns.value).length === 0) return
+  if (Object.keys(selectedAllBones.value).length === 0) return
   if (!actions.lastSelectedItem.value) {
     addAction()
   }
 
-  const keyframes = Object.keys(selectedAllBorns.value).map((bornId) => {
+  const keyframes = Object.keys(selectedAllBones.value).map((boneId) => {
     return getKeyframe(
       {
         frame: currentFrame.value,
-        bornId,
-        transform: getCurrentSelfTransforms(bornId),
+        boneId,
+        transform: getCurrentSelfTransforms(boneId),
       },
       true
     )
@@ -362,7 +362,7 @@ function pasteKeyframes(keyframeList: Keyframe[]) {
     toMap(
       slideKeyframesTo(
         keyframeList
-          .filter((k) => store.bornMap.value[k.bornId])
+          .filter((k) => store.boneMap.value[k.boneId])
           .map((k) => getKeyframe(k, true)),
         currentFrame.value
       )
@@ -392,14 +392,14 @@ export function useAnimationStore() {
     actions: computed(() => actions.state.list),
     selectedKeyframeMap,
     keyframeMapByFrame,
-    keyframeMapByBornId,
+    keyframeMapByBoneId,
     visibledKeyframeMap,
     visibledSelectedKeyframeMap,
-    posedBornIds,
-    currentPosedBorns,
-    selectedAllBorns,
-    selectedBorns,
-    selectedPosedBornOrigin,
+    posedBoneIds,
+    currentPosedBones,
+    selectedAllBones,
+    selectedBones,
+    selectedPosedBoneOrigin,
     getCurrentSelfTransforms,
     setEndFrame,
 
@@ -587,7 +587,7 @@ function getExecInsertKeyframeItem(keyframes: Keyframe[]) {
     currentFrame.value = preFrame
     editTransforms.value = dropMap(
       editTransforms.value,
-      toBornIdMap(insertedKeyframes)
+      toBoneIdMap(insertedKeyframes)
     )
   }
   return {

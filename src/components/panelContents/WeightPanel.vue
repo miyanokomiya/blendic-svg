@@ -7,8 +7,8 @@
         <SelectField v-model="armatureId" :options="armatureOptions" />
       </div>
       <div v-if="targetElement" class="field">
-        <label>Born</label>
-        <SelectField v-model="bornId" :options="bornOptions" />
+        <label>Bone</label>
+        <SelectField v-model="boneId" :options="boneOptions" />
       </div>
     </form>
     <div v-else>
@@ -58,18 +58,18 @@ export default defineComponent({
       return store.state.armatures.map((a) => ({ value: a.id, label: a.name }))
     })
 
-    const bornId = computed({
+    const boneId = computed({
       get(): string {
-        return targetElement.value?.bornId ?? ''
+        return targetElement.value?.boneId ?? ''
       },
       set(val: string) {
-        elementStore.updateElement({ bornId: val })
+        elementStore.updateElement({ boneId: val })
       },
     })
 
-    const bornOptions = computed(() => {
+    const boneOptions = computed(() => {
       return (
-        currentArmature.value?.borns.map((b) => ({
+        currentArmature.value?.bones.map((b) => ({
           value: b.id,
           label: b.name,
         })) ?? []
@@ -82,8 +82,8 @@ export default defineComponent({
       targetElement,
       armatureId,
       armatureOptions,
-      bornId,
-      bornOptions,
+      boneId,
+      boneOptions,
     }
   },
 })

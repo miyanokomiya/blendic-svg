@@ -56,7 +56,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from 'vue'
-import { Born, BornSelectedState } from '../../models/index'
+import { Bone, BoneSelectedState } from '../../models/index'
 import { transform, d } from '../../utils/helpers'
 import { IVec2, add, sub, multi, rotate, getDistance } from 'okageo'
 import { useSettings } from '../../composables/settings'
@@ -74,18 +74,18 @@ function getCircleR(head: IVec2, tail: IVec2): number {
 
 export default defineComponent({
   props: {
-    born: {
-      type: Object as PropType<Born>,
+    bone: {
+      type: Object as PropType<Bone>,
       required: true,
     },
     parent: {
-      type: Object as PropType<Born | undefined>,
+      type: Object as PropType<Bone | undefined>,
       default: undefined,
     },
     opacity: { type: Number, default: 1 },
     scale: { type: Number, default: 1 },
     selectedState: {
-      type: Object as PropType<BornSelectedState>,
+      type: Object as PropType<BoneSelectedState>,
       default: () => ({ head: false, tail: false }),
     },
     poseMode: {
@@ -97,8 +97,8 @@ export default defineComponent({
   setup(props, { emit }) {
     const { settings } = useSettings()
 
-    const head = computed(() => props.born.head)
-    const tail = computed(() => props.born.tail)
+    const head = computed(() => props.bone.head)
+    const tail = computed(() => props.bone.tail)
     const side1 = computed(() => d1(head.value, tail.value))
     const side2 = computed(() => d1(head.value, tail.value, true))
 
@@ -113,10 +113,10 @@ export default defineComponent({
     const circleR = computed(() => getCircleR(head.value, tail.value))
 
     return {
-      adjustedOpacity: computed(() => props.opacity * settings.bornOpacity),
-      name: computed(() => (settings.showBornName ? props.born.name : '')),
+      adjustedOpacity: computed(() => props.opacity * settings.boneOpacity),
+      name: computed(() => (settings.showBoneName ? props.bone.name : '')),
       circleR,
-      transform: computed(() => transform(props.born.transform)),
+      transform: computed(() => transform(props.bone.transform)),
       head,
       tail,
       headPath: computed(() => d([head.value, side1.value, side2.value], true)),
@@ -133,14 +133,14 @@ export default defineComponent({
       fillTail: computed(() =>
         props.selectedState.tail ? settings.selectedColor : ''
       ),
-      click: (state: BornSelectedState) => {
+      click: (state: BoneSelectedState) => {
         if (props.poseMode) {
           emit('select', { head: true, tail: true })
         } else {
           emit('select', state)
         }
       },
-      shiftClick: (state: BornSelectedState) => {
+      shiftClick: (state: BoneSelectedState) => {
         if (props.poseMode) {
           if (selectedAll.value) {
             emit('shift-select', { head: false, tail: false })

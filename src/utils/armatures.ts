@@ -2,13 +2,13 @@ import { v4 } from 'uuid'
 import {
   Transform,
   Armature,
-  Born,
-  BornSelectedState,
+  Bone,
+  BoneSelectedState,
   getTransform,
-  getBorn,
+  getBone,
   IdMap,
   toMap,
-  isBornSelected,
+  isBoneSelected,
 } from '../models/index'
 import {
   add,
@@ -68,46 +68,46 @@ export function applyTransform(p: IVec2, transform: Transform): IVec2 {
 }
 
 export function editTransform(
-  born: Born,
+  bone: Bone,
   transform: Transform,
-  selectedState: BornSelectedState
-): Born {
+  selectedState: BoneSelectedState
+): Bone {
   const head = selectedState.head
-    ? applyTransform(born.head, transform)
-    : born.head
+    ? applyTransform(bone.head, transform)
+    : bone.head
   const tail = selectedState.tail
-    ? applyTransform(born.tail, transform)
-    : born.tail
+    ? applyTransform(bone.tail, transform)
+    : bone.tail
 
   return {
-    ...born,
+    ...bone,
     head,
     tail,
   }
 }
 
-export function posedTransform(born: Born, transforms: Transform[]): Born {
+export function posedTransform(bone: Bone, transforms: Transform[]): Bone {
   const convoluted = convolutePoseTransforms(transforms)
   const head = applyTransform(
-    born.head,
+    bone.head,
     getTransform({ translate: convoluted.translate })
   )
   const tail = applyTransform(
-    born.tail,
-    getTransform({ ...convoluted, origin: born.head })
+    bone.tail,
+    getTransform({ ...convoluted, origin: bone.head })
   )
 
   return {
-    ...born,
+    ...bone,
     head,
     tail,
     transform: getTransform(),
   }
 }
 
-export function extrudeFromParent(parent: Born, fromHead = false): Born {
+export function extrudeFromParent(parent: Bone, fromHead = false): Bone {
   const head = fromHead ? parent.head : parent.tail
-  return getBorn(
+  return getBone(
     {
       head,
       tail: head,
@@ -118,49 +118,49 @@ export function extrudeFromParent(parent: Born, fromHead = false): Born {
   )
 }
 
-export function findBorn(borns: Born[], id: string): Born | undefined {
-  return borns.find((b) => b.id === id)
+export function findBone(bones: Bone[], id: string): Bone | undefined {
+  return bones.find((b) => b.id === id)
 }
 
 export function findChildren(
   armature: Armature,
   id: string,
   onlyConnected = false
-): Born[] {
-  return armature.borns.filter(
+): Bone[] {
+  return armature.bones.filter(
     (b) => b.parentId === id && (!onlyConnected || b.connected)
   )
 }
 
-export function adjustConnectedPosition(borns: Born[]): Born[] {
-  return borns.map((b) => {
+export function adjustConnectedPosition(bones: Bone[]): Bone[] {
+  return bones.map((b) => {
     if (!b.connected) return b
     return {
       ...b,
-      head: b.connected ? findBorn(borns, b.parentId)?.tail ?? b.head : b.head,
+      head: b.connected ? findBone(bones, b.parentId)?.tail ?? b.head : b.head,
     }
   })
 }
 
-export function selectBorn(
+export function selectBone(
   armature: Armature,
   id: string,
-  selectedState: BornSelectedState,
+  selectedState: BoneSelectedState,
   ignoreConnection = false
-): IdMap<Partial<BornSelectedState>> {
-  const target = findBorn(armature.borns, id)
+): IdMap<Partial<BoneSelectedState>> {
+  const target = findBone(armature.bones, id)
   if (!target) return {}
 
-  let ret: IdMap<Partial<BornSelectedState>> = {
+  let ret: IdMap<Partial<BoneSelectedState>> = {
     [id]: selectedState,
   }
 
   if (!ignoreConnection) {
     if (selectedState.head && target.connected) {
-      const parent = findBorn(armature.borns, target.parentId)
+      const parent = findBone(armature.bones, target.parentId)
       if (parent) {
         ret = {
-          ...selectBorn(armature, parent.id, { tail: true }, ignoreConnection),
+          ...selectBone(armature, parent.id, { tail: true }, ignoreConnection),
           ...ret,
         }
       }
@@ -175,21 +175,21 @@ export function selectBorn(
   return ret
 }
 
-export function fixConnection(borns: Born[], b: Born): Born {
+export function fixConnection(bones: Bone[], b: Bone): Bone {
   if (!b.connected) return b
 
-  const parent = findBorn(borns, b.parentId)
+  const parent = findBone(bones, b.parentId)
   if (!parent) return { ...b, connected: false, parentId: '' }
 
   return { ...b, head: parent.tail }
 }
-export function fixConnections(borns: Born[]): Born[] {
-  return borns.map((b) => fixConnection(borns, b))
+export function fixConnections(bones: Bone[]): Bone[] {
+  return bones.map((b) => fixConnection(bones, b))
 }
 
-export function updateConnections(borns: Born[]): IdMap<Partial<Born>> {
-  return borns.reduce<IdMap<Partial<Born>>>((p, b) => {
-    const parent = findBorn(borns, b.parentId)
+export function updateConnections(bones: Bone[]): IdMap<Partial<Bone>> {
+  return bones.reduce<IdMap<Partial<Bone>>>((p, b) => {
+    const parent = findBone(bones, b.parentId)
     if (!parent) {
       if (b.connected) p[b.id] = { connected: false, parentId: '' }
     } else if (b.connected) {
@@ -199,14 +199,14 @@ export function updateConnections(borns: Born[]): IdMap<Partial<Born>> {
   }, {})
 }
 
-export function getSelectedBornsOrigin(
-  bornMap: IdMap<Born>,
-  selectedState: IdMap<BornSelectedState>
+export function getSelectedBonesOrigin(
+  boneMap: IdMap<Bone>,
+  selectedState: IdMap<BoneSelectedState>
 ): IVec2 {
   const selectedPoints = Object.keys(selectedState)
     .map((id) => {
       const selected = []
-      const posed = posedTransform(bornMap[id], [bornMap[id].transform])
+      const posed = posedTransform(boneMap[id], [boneMap[id].transform])
       if (selectedState[id].head) selected.push(posed.head)
       if (selectedState[id].tail) selected.push(posed.tail)
       return selected
@@ -216,9 +216,9 @@ export function getSelectedBornsOrigin(
   return getPolygonCenter(selectedPoints)
 }
 
-export function getPosedBornHeadsOrigin(bornMap: IdMap<Born>): IVec2 {
-  const points = Object.keys(bornMap).map(
-    (id) => posedTransform(bornMap[id], [bornMap[id].transform]).head
+export function getPosedBoneHeadsOrigin(boneMap: IdMap<Bone>): IVec2 {
+  const points = Object.keys(boneMap).map(
+    (id) => posedTransform(boneMap[id], [boneMap[id].transform]).head
   )
 
   return getPolygonCenter(points)
@@ -264,21 +264,21 @@ function getChildNodes<T extends { id: string; parentId: string }>(
   )
 }
 
-interface BornNode extends Born, TreeNode {
-  children: BornNode[]
+interface BoneNode extends Bone, TreeNode {
+  children: BoneNode[]
 }
 
-export function getTransformedBornMap(bornMap: IdMap<Born>): IdMap<Born> {
-  return toMap(flatBornTree(getTransformBornTree(bornMap)))
+export function getTransformedBoneMap(boneMap: IdMap<Bone>): IdMap<Bone> {
+  return toMap(flatBoneTree(getTransformBoneTree(boneMap)))
 }
 
-function getTransformBornTree(bornMap: IdMap<Born>): BornNode[] {
-  return (getTree<Born>(bornMap) as BornNode[]).map((b) => {
+function getTransformBoneTree(boneMap: IdMap<Bone>): BoneNode[] {
+  return (getTree<Bone>(boneMap) as BoneNode[]).map((b) => {
     return { ...b, children: getChildTransforms(b) }
   })
 }
 
-function getChildTransforms(parent: BornNode): BornNode[] {
+function getChildTransforms(parent: BoneNode): BoneNode[] {
   return (
     parent.children.map((b) => {
       const extended = extendTransform(parent, b)
@@ -293,7 +293,7 @@ function getChildTransforms(parent: BornNode): BornNode[] {
   )
 }
 
-export function extendTransform(parent: Born, child: Born): Born {
+export function extendTransform(parent: Bone, child: Bone): Bone {
   const childPosedHead = add(child.head, child.transform.translate)
   const appliedChildHead = applyTransform(childPosedHead, {
     ...parent.transform,
@@ -314,50 +314,50 @@ export function extendTransform(parent: Born, child: Born): Born {
   }
 }
 
-function flatBornTree(children: BornNode[]): Born[] {
+function flatBoneTree(children: BoneNode[]): Bone[] {
   return children
     .map((b) => {
-      const { children, ...born } = b
-      return born
+      const { children, ...bone } = b
+      return bone
     })
-    .concat(children.flatMap((c) => flatBornTree(c.children)))
+    .concat(children.flatMap((c) => flatBoneTree(c.children)))
 }
 
-export function getAnySelectedBorns(
-  bornMap: IdMap<Born>,
-  selectedState: IdMap<BornSelectedState>
-): IdMap<Born> {
-  return dropMapIfFalse(bornMap, (b) => isBornSelected(selectedState[b.id]))
+export function getAnySelectedBones(
+  boneMap: IdMap<Bone>,
+  selectedState: IdMap<BoneSelectedState>
+): IdMap<Bone> {
+  return dropMapIfFalse(boneMap, (b) => isBoneSelected(selectedState[b.id]))
 }
 
-export function getAllSelectedBorns(
-  bornMap: IdMap<Born>,
-  selectedState: IdMap<BornSelectedState>
-): IdMap<Born> {
-  return dropMapIfFalse(bornMap, (b) =>
-    isBornSelected(selectedState[b.id], true)
+export function getAllSelectedBones(
+  boneMap: IdMap<Bone>,
+  selectedState: IdMap<BoneSelectedState>
+): IdMap<Bone> {
+  return dropMapIfFalse(boneMap, (b) =>
+    isBoneSelected(selectedState[b.id], true)
   )
 }
 
-export function getPoseSelectedBorns(
-  bornMap: IdMap<Born>,
-  selectedState: IdMap<BornSelectedState>
-): IdMap<Born> {
+export function getPoseSelectedBones(
+  boneMap: IdMap<Bone>,
+  selectedState: IdMap<BoneSelectedState>
+): IdMap<Bone> {
   return toMap(
-    filterPoseSelectedBorn(getTree(bornMap) as BornNode[], selectedState)
+    filterPoseSelectedBone(getTree(boneMap) as BoneNode[], selectedState)
   )
 }
 
-function filterPoseSelectedBorn(
-  bornTree: BornNode[],
-  selectedState: IdMap<BornSelectedState>
-): Born[] {
-  return bornTree.flatMap((node) => {
-    if (isBornSelected(selectedState[node.id])) {
-      const { children, ...born } = node
-      return [born]
+function filterPoseSelectedBone(
+  boneTree: BoneNode[],
+  selectedState: IdMap<BoneSelectedState>
+): Bone[] {
+  return boneTree.flatMap((node) => {
+    if (isBoneSelected(selectedState[node.id])) {
+      const { children, ...bone } = node
+      return [bone]
     } else {
-      return filterPoseSelectedBorn(node.children, selectedState)
+      return filterPoseSelectedBone(node.children, selectedState)
     }
   })
 }
@@ -374,15 +374,15 @@ export function interpolateTransform(
   })
 }
 
-export function duplicateBorns(srcBorns: IdMap<Born>, names: string[]): Born[] {
-  const duplicatedIdMap = mapReduce(srcBorns, () => v4())
+export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
+  const duplicatedIdMap = mapReduce(srcBones, () => v4())
   return toList(
-    mapReduce(srcBorns, (src) => {
+    mapReduce(srcBones, (src) => {
       // switch new parent if current parent is duplicated together
       const parentId = duplicatedIdMap[src.parentId] ?? src.parentId
       // connect if current parent is duplicated together
       const connected = src.connected && !!duplicatedIdMap[src.parentId]
-      const b = getBorn({
+      const b = getBone({
         ...src,
         id: duplicatedIdMap[src.id],
         parentId,

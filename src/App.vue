@@ -48,17 +48,17 @@
               :scale="scale"
               class="view-only"
             />
-            <BornElm
-              v-for="born in visibledBornMap"
-              :key="born.id"
-              :born="born"
-              :parent="visibledBornMap[born.parentId]"
-              :selected-state="selectedBorns[born.id]"
+            <BoneElm
+              v-for="bone in visibledBoneMap"
+              :key="bone.id"
+              :bone="bone"
+              :parent="visibledBoneMap[bone.parentId]"
+              :selected-state="selectedBones[bone.id]"
               :scale="scale"
               :pose-mode="canvasMode === 'pose'"
               :class="{ 'view-only': canvasMode === 'weight' }"
-              @select="(state) => selectBorn(born.id, state)"
-              @shift-select="(state) => shiftSelectBorn(born.id, state)"
+              @select="(state) => selectBone(bone.id, state)"
+              @shift-select="(state) => shiftSelectBone(bone.id, state)"
             />
           </g>
         </template>
@@ -80,10 +80,10 @@ import AnimationPanel from './components/AnimationPanel.vue'
 import ElementLayer from './components/elements/ElementLayer.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import SideBar from '/@/components/SideBar.vue'
-import BornElm from './components/elements/Born.vue'
+import BoneElm from './components/elements/Bone.vue'
 import {
-  Born,
-  BornSelectedState,
+  Bone,
+  BoneSelectedState,
   CanvasMode,
   EditMode,
   editModeToCanvasCommand,
@@ -93,7 +93,7 @@ import {
 import {
   convolutePoseTransforms,
   editTransform,
-  getTransformedBornMap,
+  getTransformedBoneMap,
   posedTransform,
 } from './utils/armatures'
 import { IVec2 } from 'okageo'
@@ -108,7 +108,7 @@ export default defineComponent({
   components: {
     AppCanvas,
     ArmatureElm,
-    BornElm,
+    BoneElm,
     SidePanel,
     AnimationPanel,
     SideBar,
@@ -136,22 +136,22 @@ export default defineComponent({
       )
     )
 
-    const visibledBornMap = computed(() => {
+    const visibledBoneMap = computed(() => {
       if (!lastSelectedArmature.value) return {}
       if (canvasMode.value === 'edit') {
         return toMap(
-          lastSelectedArmature.value.borns.map((b) => {
+          lastSelectedArmature.value.bones.map((b) => {
             return editTransform(
               b,
               canvasStore.getEditTransforms(b.id),
-              store.state.selectedBorns[b.id] || {}
+              store.state.selectedBones[b.id] || {}
             )
           })
         )
       } else {
-        const posedMap = getTransformedBornMap(
+        const posedMap = getTransformedBoneMap(
           toMap(
-            lastSelectedArmature.value.borns.map((b) => {
+            lastSelectedArmature.value.bones.map((b) => {
               return {
                 ...b,
                 transform: convolutePoseTransforms([
@@ -162,7 +162,7 @@ export default defineComponent({
             })
           )
         )
-        return Object.keys(posedMap).reduce<IdMap<Born>>((p, id) => {
+        return Object.keys(posedMap).reduce<IdMap<Bone>>((p, id) => {
           const b = posedMap[id]
           p[id] = posedTransform(b, [b.transform])
           return p
@@ -215,17 +215,17 @@ export default defineComponent({
       document.removeEventListener('keydown', onGlobalKeyDown)
     })
 
-    const selectedBorns = computed(() => {
+    const selectedBones = computed(() => {
       if (canvasMode.value === 'weight') {
-        // hilight parent born for weight paiting
+        // hilight parent bone for weight paiting
         const selectedElement = elementStore.lastSelectedElement.value
-        if (selectedElement?.bornId) {
-          return { [selectedElement.bornId]: { head: true, tail: true } }
+        if (selectedElement?.boneId) {
+          return { [selectedElement.boneId]: { head: true, tail: true } }
         } else {
           return {}
         }
       } else {
-        return store.state.selectedBorns
+        return store.state.selectedBones
       }
     })
 
@@ -236,8 +236,8 @@ export default defineComponent({
       lastSelectedArmatureId: computed(
         () => store.lastSelectedArmature.value?.id
       ),
-      visibledBornMap,
-      selectedBorns,
+      visibledBoneMap,
+      selectedBones,
       canvasMode,
       canvasCommand,
       mousemove(arg: { current: IVec2; start: IVec2 }) {
@@ -249,10 +249,10 @@ export default defineComponent({
       clickEmpty() {
         canvasStore.clickEmpty()
       },
-      selectBorn(id: string, state: BornSelectedState) {
+      selectBone(id: string, state: BoneSelectedState) {
         canvasStore.select(id, state)
       },
-      shiftSelectBorn(id: string, state: BornSelectedState) {
+      shiftSelectBone(id: string, state: BoneSelectedState) {
         canvasStore.shiftSelect(id, state)
       },
       selectArmature(id: string, selected: boolean) {

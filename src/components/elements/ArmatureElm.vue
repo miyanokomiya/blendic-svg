@@ -1,11 +1,11 @@
 <template>
   <g stroke="black" :transform="transform" :opacity="opacity">
-    <BornElm
-      v-for="born in armature.borns"
-      :key="born.name"
-      :born="born"
-      :selected-state="bornSelectedState"
-      :parent="bornMap[born.parentId]"
+    <BoneElm
+      v-for="bone in armature.bones"
+      :key="bone.name"
+      :bone="bone"
+      :selected-state="boneSelectedState"
+      :parent="boneMap[bone.parentId]"
       :scale="scale"
       @select="click"
       @shift-select="shiftClick"
@@ -17,10 +17,10 @@
 import { defineComponent, PropType, computed } from 'vue'
 import { Armature, toMap } from '/@/models/index'
 import { transform } from '/@/utils/helpers'
-import BornElm from '/@/components/elements/Born.vue'
+import BoneElm from '/@/components/elements/Bone.vue'
 
 export default defineComponent({
-  components: { BornElm },
+  components: { BoneElm },
   props: {
     armature: {
       type: Object as PropType<Armature>,
@@ -36,9 +36,9 @@ export default defineComponent({
   emits: ['select', 'shift-select'],
   setup(props, { emit }) {
     return {
-      bornMap: computed(() => toMap(props.armature.borns)),
+      boneMap: computed(() => toMap(props.armature.bones)),
       transform: computed(() => transform(props.armature.transform)),
-      bornSelectedState: computed(() =>
+      boneSelectedState: computed(() =>
         props.selected ? { head: true, tail: true } : undefined
       ),
       click: () => emit('select', !props.selected),

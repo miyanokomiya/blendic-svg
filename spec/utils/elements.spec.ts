@@ -2,7 +2,7 @@ import {
   getActor,
   getArmature,
   getBElement,
-  getBorn,
+  getBone,
   getElementNode,
 } from '/@/models'
 import { cleanActors, parseFromSvg } from '/@/utils/elements'
@@ -82,37 +82,37 @@ describe('utils/elements.ts', () => {
   })
 
   describe('cleanActors', () => {
-    it('clear armatureId and bornId if the armature does not exist', () => {
+    it('clear armatureId and boneId if the armature does not exist', () => {
       expect(
         cleanActors(
           [
             getActor({
               id: 'act_1',
               armatureId: 'arm_1',
-              elements: [getBElement({ id: 'be_1', bornId: 'bor_1' })],
+              elements: [getBElement({ id: 'be_1', boneId: 'bor_1' })],
             }),
             getActor({
               id: 'act_2',
               armatureId: 'arm_2',
-              elements: [getBElement({ id: 'be_1', bornId: 'bor_1' })],
+              elements: [getBElement({ id: 'be_1', boneId: 'bor_1' })],
             }),
           ],
-          [getArmature({ id: 'arm_1', borns: [getBorn({ id: 'bor_1' })] })]
+          [getArmature({ id: 'arm_1', bones: [getBone({ id: 'bor_1' })] })]
         )
       ).toEqual([
         getActor({
           id: 'act_1',
           armatureId: 'arm_1',
-          elements: [getBElement({ id: 'be_1', bornId: 'bor_1' })],
+          elements: [getBElement({ id: 'be_1', boneId: 'bor_1' })],
         }),
         getActor({
           id: 'act_2',
           armatureId: '',
-          elements: [getBElement({ id: 'be_1', bornId: '' })],
+          elements: [getBElement({ id: 'be_1', boneId: '' })],
         }),
       ])
     })
-    it('clear bornId if the born does not exist', () => {
+    it('clear boneId if the bone does not exist', () => {
       expect(
         cleanActors(
           [
@@ -120,20 +120,20 @@ describe('utils/elements.ts', () => {
               id: 'act_1',
               armatureId: 'arm_1',
               elements: [
-                getBElement({ id: 'be_1', bornId: 'bor_1' }),
-                getBElement({ id: 'be_2', bornId: 'bor_2' }),
+                getBElement({ id: 'be_1', boneId: 'bor_1' }),
+                getBElement({ id: 'be_2', boneId: 'bor_2' }),
               ],
             }),
           ],
-          [getArmature({ id: 'arm_1', borns: [getBorn({ id: 'bor_1' })] })]
+          [getArmature({ id: 'arm_1', bones: [getBone({ id: 'bor_1' })] })]
         )
       ).toEqual([
         getActor({
           id: 'act_1',
           armatureId: 'arm_1',
           elements: [
-            getBElement({ id: 'be_1', bornId: 'bor_1' }),
-            getBElement({ id: 'be_2', bornId: '' }),
+            getBElement({ id: 'be_1', boneId: 'bor_1' }),
+            getBElement({ id: 'be_2', boneId: '' }),
           ],
         }),
       ])

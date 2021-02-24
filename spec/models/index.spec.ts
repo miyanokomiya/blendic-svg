@@ -1,7 +1,7 @@
 import {
   getOriginPartial,
-  isBornSelected,
-  isSameBornSelectedState,
+  isBoneSelected,
+  isSameBoneSelectedState,
   mergeMap,
   toMap,
 } from '/@/models'
@@ -46,18 +46,18 @@ describe('models/index.ts', () => {
     })
   })
 
-  describe('isSameBornSelectedState', () => {
+  describe('isSameBoneSelectedState', () => {
     it.each([
       [{ head: true }, { head: true, tail: false }, true],
       [{ head: true }, { head: true, tail: true }, false],
       [{ tail: true }, { head: false, tail: true }, true],
       [{ head: false }, { head: false, tail: false }, true],
     ])('add(%s, %s) => %s', (a, b, expected) => {
-      expect(isSameBornSelectedState(a, b)).toBe(expected)
+      expect(isSameBoneSelectedState(a, b)).toBe(expected)
     })
   })
 
-  describe('isBornSelected', () => {
+  describe('isBoneSelected', () => {
     describe('partial', () => {
       it.each([
         [{ head: false, tail: false }, false],
@@ -65,7 +65,7 @@ describe('models/index.ts', () => {
         [{ head: false, tail: true }, true],
         [{ head: true, tail: true }, true],
       ])('add(%s, %s) => %s', (a, expected) => {
-        expect(isBornSelected(a)).toBe(expected)
+        expect(isBoneSelected(a)).toBe(expected)
       })
     })
     describe('all', () => {
@@ -75,7 +75,7 @@ describe('models/index.ts', () => {
         [{ head: false, tail: true }, false],
         [{ head: true, tail: true }, true],
       ])('add(%s, %s) => %s', (a, expected) => {
-        expect(isBornSelected(a, true)).toBe(expected)
+        expect(isBoneSelected(a, true)).toBe(expected)
       })
     })
   })

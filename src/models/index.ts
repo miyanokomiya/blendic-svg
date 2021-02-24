@@ -26,10 +26,10 @@ export interface Keyframe {
   id: string
   frame: number
   transform: Transform
-  bornId: string
+  boneId: string
 }
 
-export interface Born {
+export interface Bone {
   id: string
   name: string
   transform: Transform
@@ -43,7 +43,7 @@ export interface Armature {
   id: string
   name: string
   transform: Transform
-  borns: Born[]
+  bones: Bone[]
 }
 
 export interface ElementNode {
@@ -55,7 +55,7 @@ export interface ElementNode {
 
 export interface BElement {
   id: string
-  bornId: string
+  boneId: string
 }
 
 export interface Actor {
@@ -86,7 +86,7 @@ export function getBElement(
 ): BElement {
   const id = generateId ? v4() : arg.id ?? ''
   return {
-    bornId: '',
+    boneId: '',
     ...arg,
     id,
   }
@@ -136,14 +136,14 @@ export function getKeyframe(
   const id = generateId ? v4() : arg.id ?? ''
   return {
     frame: 0,
-    bornId: '',
+    boneId: '',
     transform: getTransform(),
     ...arg,
     id,
   }
 }
 
-export function getBorn(arg: Partial<Born> = {}, generateId = false): Born {
+export function getBone(arg: Partial<Bone> = {}, generateId = false): Bone {
   const id = generateId ? v4() : arg.id ?? ''
   return {
     name: '',
@@ -165,13 +165,13 @@ export function getArmature(
   return {
     name: '',
     transform: getTransform(),
-    borns: [],
+    bones: [],
     ...arg,
     id,
   }
 }
 
-export interface BornSelectedState {
+export interface BoneSelectedState {
   head?: boolean
   tail?: boolean
 }
@@ -189,8 +189,8 @@ export interface CanvasEditModeBase {
   end: () => void
   cancel: () => void
   setEditMode: (mode: EditMode) => void
-  select: (id: string, selectedState: BornSelectedState) => void
-  shiftSelect: (id: string, selectedState: BornSelectedState) => void
+  select: (id: string, selectedState: BoneSelectedState) => void
+  shiftSelect: (id: string, selectedState: BoneSelectedState) => void
   selectAll: () => void
   mousemove: (arg: EditMovement) => void
   clickAny: () => void
@@ -214,8 +214,8 @@ export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {
 export function toMap<T extends { id: string }>(list: T[]): IdMap<T> {
   return toKeyMap(list, 'id')
 }
-export function toBornIdMap<T extends { bornId: string }>(list: T[]): IdMap<T> {
-  return toKeyMap(list, 'bornId')
+export function toBoneIdMap<T extends { boneId: string }>(list: T[]): IdMap<T> {
+  return toKeyMap(list, 'boneId')
 }
 export function toFrameMap<T extends { frame: number }>(list: T[]): IdMap<T> {
   return toKeyMap(list, 'frame')
@@ -236,15 +236,15 @@ export function getOriginPartial<T>(src: T, partial: Partial<T>): Partial<T> {
   }, {})
 }
 
-export function isSameBornSelectedState(
-  a?: BornSelectedState,
-  b?: BornSelectedState
+export function isSameBoneSelectedState(
+  a?: BoneSelectedState,
+  b?: BoneSelectedState
 ): boolean {
   return !!a?.head === !!b?.head && !!a?.tail === !!b?.tail
 }
 
-export function isBornSelected(
-  selectedState?: BornSelectedState,
+export function isBoneSelected(
+  selectedState?: BoneSelectedState,
   all = false
 ): boolean {
   if (!selectedState) return false

@@ -1,5 +1,5 @@
 import { useStore } from '/@/store/index'
-import { getArmature, getBorn } from '/@/models'
+import { getArmature, getBone } from '/@/models'
 import { nextTick } from 'vue'
 
 describe('store/index', () => {
@@ -7,9 +7,9 @@ describe('store/index', () => {
   beforeEach(() => {
     store.state.armatures = []
     store.state.lastSelectedArmatureId = ''
-    store.state.lastSelectedBornId = ''
+    store.state.lastSelectedBoneId = ''
     store.state.selectedArmatures = {}
-    store.state.selectedBorns = {}
+    store.state.selectedBones = {}
   })
 
   describe('lastSelectedArmature', () => {
@@ -39,23 +39,23 @@ describe('store/index', () => {
     })
   })
 
-  describe('lastSelectedBorn', () => {
-    it('should clear if the born is removed', async () => {
+  describe('lastSelectedBone', () => {
+    it('should clear if the bone is removed', async () => {
       store.state.armatures = [
         getArmature({
           id: 'arm',
-          borns: [getBorn({ id: 'a' }), getBorn({ id: 'b' })],
+          bones: [getBone({ id: 'a' }), getBone({ id: 'b' })],
         }),
       ]
       store.selectArmature('arm')
-      store.selectBorn('a')
-      expect(store.lastSelectedBorn.value?.id).toBe('a')
-      store.state.armatures[0].borns = [getBorn({ id: 'a' })]
-      expect(store.lastSelectedBorn.value?.id).toBe('a')
-      store.state.armatures[0].borns = []
-      expect(store.lastSelectedBorn.value).toBe(undefined)
+      store.selectBone('a')
+      expect(store.lastSelectedBone.value?.id).toBe('a')
+      store.state.armatures[0].bones = [getBone({ id: 'a' })]
+      expect(store.lastSelectedBone.value?.id).toBe('a')
+      store.state.armatures[0].bones = []
+      expect(store.lastSelectedBone.value).toBe(undefined)
       await nextTick()
-      expect(store.state.lastSelectedBornId).toBe('')
+      expect(store.state.lastSelectedBoneId).toBe('')
     })
   })
 })

@@ -3,7 +3,7 @@ import { getRadian, IVec2, rotate, sub } from 'okageo'
 import {
   Transform,
   getTransform,
-  BornSelectedState,
+  BoneSelectedState,
   EditMode,
   IdMap,
   EditMovement,

@@ -82,14 +82,14 @@ export function cleanActors(actors: Actor[], armatures: Armature[]): Actor[] {
   const armatureMap = toMap(armatures)
   return actors.map((act) => {
     const arm = armatureMap[act.armatureId]
-    const bornMap = toMap(arm?.borns ?? [])
+    const boneMap = toMap(arm?.bones ?? [])
 
     return {
       ...act,
       armatureId: arm ? act.armatureId : '',
       elements: act.elements.map((e) => ({
         ...e,
-        bornId: bornMap[e.bornId] ? e.bornId : '',
+        boneId: boneMap[e.boneId] ? e.boneId : '',
       })),
     }
   })

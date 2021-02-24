@@ -8,8 +8,8 @@ import {
   PropType,
 } from 'vue'
 import { useSettings } from '/@/composables/settings'
-import { BElement, Born, ElementNode, IdMap, toMap } from '/@/models'
-import { getTransformedBornMap } from '/@/utils/armatures'
+import { BElement, Bone, ElementNode, IdMap, toMap } from '/@/models'
+import { getTransformedBoneMap } from '/@/utils/armatures'
 import { getParentIdPath } from '/@/utils/commons'
 import { parseStyle, toStyle, transform } from '/@/utils/helpers'
 
@@ -19,7 +19,7 @@ const NativeElement: any = defineComponent({
       type: [Object, String] as PropType<ElementNode | string>,
       required: true,
     },
-    relativeRootBornId: {
+    relativeRootBoneId: {
       type: String,
       default: '',
     },
@@ -42,8 +42,8 @@ const NativeElement: any = defineComponent({
       computed(() => ({}))
     )
 
-    const bornMap = inject<ComputedRef<IdMap<Born>>>(
-      'bornMap',
+    const boneMap = inject<ComputedRef<IdMap<Bone>>>(
+      'boneMap',
       computed(() => ({}))
     )
 
@@ -85,23 +85,23 @@ const NativeElement: any = defineComponent({
 
     const posedTransform = computed(() => {
       // TODO: improve performance
-      if (myElement.value.bornId && bornMap.value[myElement.value.bornId]) {
-        // get relative born's transformation from relativeRootBornId's tail
+      if (myElement.value.boneId && boneMap.value[myElement.value.boneId]) {
+        // get relative bone's transformation from relativeRootBoneId's tail
         const parentIdPath = getParentIdPath(
-          bornMap.value,
-          myElement.value.bornId,
-          props.relativeRootBornId
+          boneMap.value,
+          myElement.value.boneId,
+          props.relativeRootBoneId
         )
-        const posedMap = getTransformedBornMap(
+        const posedMap = getTransformedBoneMap(
           toMap(
-            [...parentIdPath, myElement.value.bornId].map(
-              (id) => bornMap.value[id]
+            [...parentIdPath, myElement.value.boneId].map(
+              (id) => boneMap.value[id]
             )
           )
         )
         return {
-          ...posedMap[myElement.value.bornId].transform,
-          origin: posedMap[myElement.value.bornId].head,
+          ...posedMap[myElement.value.boneId].transform,
+          origin: posedMap[myElement.value.boneId].head,
         }
       } else {
         return undefined
@@ -137,7 +137,7 @@ const NativeElement: any = defineComponent({
         ? element.value.children.map((c) =>
             h(NativeElement, {
               element: c,
-              relativeRootBornId: myElement.value.bornId,
+              relativeRootBoneId: myElement.value.boneId,
               groupSelected: groupSelected.value,
             })
           )

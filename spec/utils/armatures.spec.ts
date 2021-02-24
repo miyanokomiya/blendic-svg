@@ -1,5 +1,5 @@
 import * as target from '../../src/utils/armatures'
-import { getArmature, getBorn, getTransform } from '../../src/models/index'
+import { getArmature, getBone, getTransform } from '../../src/models/index'
 
 describe('utils/armatures', () => {
   describe('invertPoseTransform', () => {
@@ -40,11 +40,11 @@ describe('utils/armatures', () => {
   })
 
   describe('extrudeFromParent', () => {
-    const parent = getBorn({ id: 'parent', tail: { x: 1, y: 2 } })
+    const parent = getBone({ id: 'parent', tail: { x: 1, y: 2 } })
 
     it("fromHead: false => extrude from parent's tail", () => {
       expect({ ...target.extrudeFromParent(parent), id: '1' }).toEqual(
-        getBorn({
+        getBone({
           id: '1',
           head: parent.tail,
           tail: parent.tail,
@@ -58,7 +58,7 @@ describe('utils/armatures', () => {
         ...target.extrudeFromParent({ ...parent, connected: false }, true),
         id: '1',
       }).toEqual(
-        getBorn({
+        getBone({
           id: '1',
           head: parent.head,
           tail: parent.head,
@@ -70,7 +70,7 @@ describe('utils/armatures', () => {
         ...target.extrudeFromParent({ ...parent, connected: true }, true),
         id: '1',
       }).toEqual(
-        getBorn({
+        getBone({
           id: '1',
           head: parent.head,
           tail: parent.head,
@@ -82,10 +82,10 @@ describe('utils/armatures', () => {
   })
 
   describe('adjustConnectedPosition', () => {
-    const parent = getBorn({ id: 'parent', tail: { x: 1, y: 2 } })
+    const parent = getBone({ id: 'parent', tail: { x: 1, y: 2 } })
 
     it("connected: true => connect child's head to parent's tail", () => {
-      const child = getBorn({
+      const child = getBone({
         id: 'child',
         head: { x: 0, y: 0 },
         parentId: 'parent',
@@ -97,7 +97,7 @@ describe('utils/armatures', () => {
       ])
     })
     it('connected: false => do nothing', () => {
-      const child = getBorn({
+      const child = getBone({
         id: 'child',
         head: { x: 0, y: 0 },
         parentId: 'parent',
@@ -110,29 +110,29 @@ describe('utils/armatures', () => {
     })
   })
 
-  describe('selectBorn', () => {
-    const parent = getBorn({ id: 'parent' })
-    const selecgted = getBorn({
+  describe('selectBone', () => {
+    const parent = getBone({ id: 'parent' })
+    const selecgted = getBone({
       id: 'selecgted',
       parentId: 'parent',
       connected: true,
     })
-    const brother = getBorn({
+    const brother = getBone({
       id: 'brother',
       parentId: 'parent',
       connected: true,
     })
-    const unconnectedBrother = getBorn({
+    const unconnectedBrother = getBone({
       id: 'unconnectedBrother',
       parentId: 'parent',
       connected: false,
     })
-    const child = getBorn({
+    const child = getBone({
       id: 'child',
       parentId: 'selecgted',
       connected: true,
     })
-    const unconnectedChild = getBorn({
+    const unconnectedChild = getBone({
       id: 'unconnectedChild',
       parentId: 'selecgted',
       connected: false,
@@ -141,9 +141,9 @@ describe('utils/armatures', () => {
     describe('head: true', () => {
       it("connected: true => also select parent's tail & brother's head", () => {
         expect(
-          target.selectBorn(
+          target.selectBone(
             getArmature({
-              borns: [parent, selecgted, brother, unconnectedBrother, child],
+              bones: [parent, selecgted, brother, unconnectedBrother, child],
             }),
             selecgted.id,
             { head: true, tail: false }
@@ -156,9 +156,9 @@ describe('utils/armatures', () => {
       })
       it("connected: false => not select parent's tail", () => {
         expect(
-          target.selectBorn(
+          target.selectBone(
             getArmature({
-              borns: [parent, { ...selecgted, connected: false }, child],
+              bones: [parent, { ...selecgted, connected: false }, child],
             }),
             selecgted.id,
             { head: true, tail: false }
@@ -171,9 +171,9 @@ describe('utils/armatures', () => {
     describe('tail: true', () => {
       it("also select connected children's head", () => {
         expect(
-          target.selectBorn(
+          target.selectBone(
             getArmature({
-              borns: [parent, selecgted, child, unconnectedChild],
+              bones: [parent, selecgted, child, unconnectedChild],
             }),
             selecgted.id,
             { head: false, tail: true }
@@ -188,14 +188,14 @@ describe('utils/armatures', () => {
 
   describe('fixConnections', () => {
     it("connected: true => connect child's head to parent's tail", () => {
-      const parent = getBorn({ id: 'parent', tail: { x: 1, y: 2 } })
-      const connected = getBorn({
+      const parent = getBone({ id: 'parent', tail: { x: 1, y: 2 } })
+      const connected = getBone({
         id: 'connected',
         parentId: 'parent',
         connected: true,
         head: { x: 10, y: 20 },
       })
-      const unconnected = getBorn({
+      const unconnected = getBone({
         id: 'unconnected',
         parentId: 'parent',
         connected: false,
@@ -210,14 +210,14 @@ describe('utils/armatures', () => {
 
   describe('updateConnections', () => {
     it("parent's tail != child's head => connected is false", () => {
-      const parent = getBorn({ id: 'parent', tail: { x: 1, y: 2 } })
-      const connected = getBorn({
+      const parent = getBone({ id: 'parent', tail: { x: 1, y: 2 } })
+      const connected = getBone({
         id: 'connected',
         parentId: 'parent',
         connected: true,
         head: { x: 1, y: 2 },
       })
-      const unconnected = getBorn({
+      const unconnected = getBone({
         id: 'unconnected',
         parentId: 'parent',
         connected: true,
@@ -231,7 +231,7 @@ describe('utils/armatures', () => {
       })
     })
     it('cannot find parent => set no parent', () => {
-      const connected = getBorn({
+      const connected = getBone({
         id: 'connected',
         parentId: 'parent',
         connected: true,
@@ -243,13 +243,13 @@ describe('utils/armatures', () => {
     })
   })
 
-  describe('getSelectedBornsOrigin', () => {
-    it('retuns selected borns origin', () => {
-      const bornMap = {
-        1: getBorn({ id: '1', head: { x: 0, y: 1 }, tail: { x: 2, y: 3 } }),
-        2: getBorn({ id: '2', head: { x: 10, y: 11 }, tail: { x: 12, y: 13 } }),
-        3: getBorn({ id: '3', head: { x: 20, y: 21 }, tail: { x: 24, y: 25 } }),
-        4: getBorn({
+  describe('getSelectedBonesOrigin', () => {
+    it('retuns selected bones origin', () => {
+      const boneMap = {
+        1: getBone({ id: '1', head: { x: 0, y: 1 }, tail: { x: 2, y: 3 } }),
+        2: getBone({ id: '2', head: { x: 10, y: 11 }, tail: { x: 12, y: 13 } }),
+        3: getBone({ id: '3', head: { x: 20, y: 21 }, tail: { x: 24, y: 25 } }),
+        4: getBone({
           id: '4',
           head: { x: 100, y: 100 },
           tail: { x: 100, y: 100 },
@@ -261,21 +261,21 @@ describe('utils/armatures', () => {
         3: { head: false, tail: true },
         4: { head: false, tail: false },
       }
-      expect(target.getSelectedBornsOrigin(bornMap, selectedState)).toEqual({
+      expect(target.getSelectedBonesOrigin(boneMap, selectedState)).toEqual({
         x: 9,
         y: 10,
       })
     })
   })
 
-  describe('getPosedBornHeadsOrigin', () => {
-    it('retuns selected borns origin', () => {
-      const bornMap = {
-        1: getBorn({ id: '1', head: { x: 0, y: 2 }, tail: { x: 2, y: 3 } }),
-        2: getBorn({ id: '2', head: { x: 10, y: 12 }, tail: { x: 12, y: 13 } }),
-        3: getBorn({ id: '3', head: { x: 5, y: 7 }, tail: { x: 24, y: 25 } }),
+  describe('getPosedBoneHeadsOrigin', () => {
+    it('retuns selected bones origin', () => {
+      const boneMap = {
+        1: getBone({ id: '1', head: { x: 0, y: 2 }, tail: { x: 2, y: 3 } }),
+        2: getBone({ id: '2', head: { x: 10, y: 12 }, tail: { x: 12, y: 13 } }),
+        3: getBone({ id: '3', head: { x: 5, y: 7 }, tail: { x: 24, y: 25 } }),
       }
-      expect(target.getPosedBornHeadsOrigin(bornMap)).toEqual({
+      expect(target.getPosedBoneHeadsOrigin(boneMap)).toEqual({
         x: 5,
         y: 7,
       })
@@ -284,13 +284,13 @@ describe('utils/armatures', () => {
 
   describe('getTree', () => {
     it('get nodes tree: nested children', () => {
-      const bornMap = {
+      const boneMap = {
         a: { id: 'a', parentId: '' },
         aa: { id: 'aa', parentId: 'a' },
         aaa: { id: 'aaa', parentId: 'aa' },
         b: { id: 'b', parentId: '' },
       }
-      expect(target.getTree(bornMap)).toEqual([
+      expect(target.getTree(boneMap)).toEqual([
         {
           id: 'a',
           parentId: '',
@@ -306,12 +306,12 @@ describe('utils/armatures', () => {
       ])
     })
     it('get nodes tree: multi children', () => {
-      const bornMap = {
+      const boneMap = {
         a: { id: 'a', parentId: '' },
         aa: { id: 'aa', parentId: 'a' },
         ab: { id: 'ab', parentId: 'a' },
       }
-      expect(target.getTree(bornMap)).toEqual([
+      expect(target.getTree(boneMap)).toEqual([
         {
           id: 'a',
           parentId: '',
@@ -323,12 +323,12 @@ describe('utils/armatures', () => {
       ])
     })
     it('ignore the parent does not exist', () => {
-      const bornMap = {
+      const boneMap = {
         a: { id: 'a', parentId: '' },
         aa: { id: 'aa', parentId: 'a' },
         ab: { id: 'ab', parentId: 'b' },
       }
-      expect(target.getTree(bornMap)).toEqual([
+      expect(target.getTree(boneMap)).toEqual([
         {
           id: 'a',
           parentId: '',
@@ -341,16 +341,16 @@ describe('utils/armatures', () => {
 
   describe('extendTransform', () => {
     it('scale', () => {
-      expect(target.extendTransform(getBorn(), getBorn())).toEqual(getBorn())
+      expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())
       expect(
         target.extendTransform(
-          getBorn({
+          getBone({
             head: { x: 1, y: 1 },
             transform: getTransform({
               scale: { x: 2, y: 3 },
             }),
           }),
-          getBorn({
+          getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
               scale: { x: 2, y: 3 },
@@ -359,7 +359,7 @@ describe('utils/armatures', () => {
           })
         )
       ).toEqual(
-        getBorn({
+        getBone({
           head: { x: 2, y: 3 },
           transform: getTransform({
             translate: { x: 1, y: 4 },
@@ -370,16 +370,16 @@ describe('utils/armatures', () => {
       )
     })
     it('rotate', () => {
-      expect(target.extendTransform(getBorn(), getBorn())).toEqual(getBorn())
+      expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())
       expect(
         target.extendTransform(
-          getBorn({
+          getBone({
             head: { x: 1, y: 1 },
             transform: getTransform({
               rotate: 90,
             }),
           }),
-          getBorn({
+          getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
               rotate: 45,
@@ -387,7 +387,7 @@ describe('utils/armatures', () => {
           })
         )
       ).toEqual(
-        getBorn({
+        getBone({
           head: { x: 2, y: 3 },
           transform: getTransform({
             translate: { x: -3, y: -1 },
@@ -398,48 +398,48 @@ describe('utils/armatures', () => {
     })
   })
 
-  describe('getTransformedBornMap', () => {
-    it('get transformed born map', () => {
+  describe('getTransformedBoneMap', () => {
+    it('get transformed bone map', () => {
       expect(
-        target.getTransformedBornMap({
-          a: getBorn({
+        target.getTransformedBoneMap({
+          a: getBone({
             id: 'a',
             parentId: '',
             transform: getTransform({ rotate: 10 }),
           }),
-          aa: getBorn({
+          aa: getBone({
             id: 'aa',
             parentId: 'a',
             transform: getTransform({ rotate: 20 }),
           }),
-          aaa: getBorn({
+          aaa: getBone({
             id: 'aaa',
             parentId: 'aa',
             transform: getTransform({ rotate: 30 }),
           }),
-          b: getBorn({
+          b: getBone({
             id: 'b',
             parentId: '',
             transform: getTransform({ rotate: 30 }),
           }),
         })
       ).toEqual({
-        a: getBorn({
+        a: getBone({
           id: 'a',
           parentId: '',
           transform: getTransform({ rotate: 10 }),
         }),
-        aa: getBorn({
+        aa: getBone({
           id: 'aa',
           parentId: 'a',
           transform: getTransform({ rotate: 30 }),
         }),
-        aaa: getBorn({
+        aaa: getBone({
           id: 'aaa',
           parentId: 'aa',
           transform: getTransform({ rotate: 60 }),
         }),
-        b: getBorn({
+        b: getBone({
           id: 'b',
           parentId: '',
           transform: getTransform({ rotate: 30 }),
@@ -448,24 +448,24 @@ describe('utils/armatures', () => {
     })
   })
 
-  describe('getAnySelectedBorns', () => {
-    it('get any selected borns', () => {
+  describe('getAnySelectedBones', () => {
+    it('get any selected bones', () => {
       expect(
-        target.getAnySelectedBorns(
+        target.getAnySelectedBones(
           {
-            a: getBorn({
+            a: getBone({
               id: 'a',
               parentId: '',
             }),
-            aa: getBorn({
+            aa: getBone({
               id: 'aa',
               parentId: 'a',
             }),
-            aaa: getBorn({
+            aaa: getBone({
               id: 'aaa',
               parentId: 'aa',
             }),
-            b: getBorn({
+            b: getBone({
               id: 'b',
               parentId: '',
             }),
@@ -477,15 +477,15 @@ describe('utils/armatures', () => {
           }
         )
       ).toEqual({
-        aa: getBorn({
+        aa: getBone({
           id: 'aa',
           parentId: 'a',
         }),
-        aaa: getBorn({
+        aaa: getBone({
           id: 'aaa',
           parentId: 'aa',
         }),
-        b: getBorn({
+        b: getBone({
           id: 'b',
           parentId: '',
         }),
@@ -493,24 +493,24 @@ describe('utils/armatures', () => {
     })
   })
 
-  describe('getAllSelectedBorns', () => {
-    it('get all selected borns', () => {
+  describe('getAllSelectedBones', () => {
+    it('get all selected bones', () => {
       expect(
-        target.getAllSelectedBorns(
+        target.getAllSelectedBones(
           {
-            a: getBorn({
+            a: getBone({
               id: 'a',
               parentId: '',
             }),
-            aa: getBorn({
+            aa: getBone({
               id: 'aa',
               parentId: 'a',
             }),
-            aaa: getBorn({
+            aaa: getBone({
               id: 'aaa',
               parentId: 'aa',
             }),
-            b: getBorn({
+            b: getBone({
               id: 'b',
               parentId: '',
             }),
@@ -522,7 +522,7 @@ describe('utils/armatures', () => {
           }
         )
       ).toEqual({
-        aa: getBorn({
+        aa: getBone({
           id: 'aa',
           parentId: 'a',
         }),
@@ -530,24 +530,24 @@ describe('utils/armatures', () => {
     })
   })
 
-  describe('getPoseSelectedBorns', () => {
+  describe('getPoseSelectedBones', () => {
     it('if parent is selected the children are ignored', () => {
       expect(
-        target.getPoseSelectedBorns(
+        target.getPoseSelectedBones(
           {
-            a: getBorn({
+            a: getBone({
               id: 'a',
               parentId: '',
             }),
-            aa: getBorn({
+            aa: getBone({
               id: 'aa',
               parentId: 'a',
             }),
-            aaa: getBorn({
+            aaa: getBone({
               id: 'aaa',
               parentId: 'aa',
             }),
-            b: getBorn({
+            b: getBone({
               id: 'b',
               parentId: '',
             }),
@@ -559,11 +559,11 @@ describe('utils/armatures', () => {
           }
         )
       ).toEqual({
-        aa: getBorn({
+        aa: getBone({
           id: 'aa',
           parentId: 'a',
         }),
-        b: getBorn({
+        b: getBone({
           id: 'b',
           parentId: '',
         }),
@@ -600,12 +600,12 @@ describe('utils/armatures', () => {
     })
   })
 
-  describe('duplicateBorns', () => {
-    it('duplicate borns with new ids & names, sorted by new name', () => {
-      const ret = target.duplicateBorns(
+  describe('duplicateBones', () => {
+    it('duplicate bones with new ids & names, sorted by new name', () => {
+      const ret = target.duplicateBones(
         {
-          b: getBorn({ id: 'b', name: 'b' }),
-          a: getBorn({ id: 'a', name: 'aa' }),
+          b: getBone({ id: 'b', name: 'b' }),
+          a: getBone({ id: 'a', name: 'aa' }),
         },
         ['b', 'aa.001']
       )
@@ -616,11 +616,11 @@ describe('utils/armatures', () => {
       expect(ret[1].name).toBe('b.001')
     })
     it('switch new parent if the parent is duplicated together', () => {
-      const ret = target.duplicateBorns(
+      const ret = target.duplicateBones(
         {
-          a: getBorn({ id: 'a', name: 'a' }),
-          b: getBorn({ id: 'b', name: 'b', parentId: 'a', connected: true }),
-          c: getBorn({ id: 'b', name: 'b', parentId: 'a', connected: false }),
+          a: getBone({ id: 'a', name: 'a' }),
+          b: getBone({ id: 'b', name: 'b', parentId: 'a', connected: true }),
+          c: getBone({ id: 'b', name: 'b', parentId: 'a', connected: false }),
         },
         ['b', 'a', 'c']
       )
@@ -631,9 +631,9 @@ describe('utils/armatures', () => {
       expect(ret[2].connected).toBe(false)
     })
     it('unconnect current parent if the parent is not duplicated together', () => {
-      const ret = target.duplicateBorns(
+      const ret = target.duplicateBones(
         {
-          b: getBorn({ id: 'b', name: 'b', parentId: 'a', connected: true }),
+          b: getBone({ id: 'b', name: 'b', parentId: 'a', connected: true }),
         },
         ['b', 'a']
       )

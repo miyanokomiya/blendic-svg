@@ -2,16 +2,16 @@ import { reactive, computed } from 'vue'
 import { getDistance, getRadian, multi, sub } from 'okageo'
 import {
   Transform,
-  Born,
+  Bone,
   getTransform,
-  BornSelectedState,
+  BoneSelectedState,
   EditMode,
   IdMap,
   CanvasEditModeBase,
   EditMovement,
 } from '../models/index'
 import {
-  duplicateBorns,
+  duplicateBones,
   editTransform,
   extrudeFromParent,
 } from '/@/utils/armatures'
@@ -24,23 +24,23 @@ interface State {
   editMovement: EditMovement | undefined
 }
 
-export interface BornEditMode extends CanvasEditModeBase {}
+export interface BoneEditMode extends CanvasEditModeBase {}
 
-export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
+export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
   })
 
   const store = useStore()
-  const selectedBorns = computed(() => store.state.selectedBorns)
-  const lastSelectedBornId = computed(() => store.lastSelectedBorn.value?.id)
+  const selectedBones = computed(() => store.state.selectedBones)
+  const lastSelectedBoneId = computed(() => store.lastSelectedBone.value?.id)
 
   const target = computed(() => store.lastSelectedArmature.value)
 
-  const isAnySelected = computed(() => !!lastSelectedBornId.value)
+  const isAnySelected = computed(() => !!lastSelectedBoneId.value)
 
-  const allNames = computed(() => target.value?.borns.map((a) => a.name) ?? [])
+  const allNames = computed(() => target.value?.bones.map((a) => a.name) ?? [])
 
   function cancel() {
     state.command = ''
@@ -57,11 +57,11 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     if (state.command) {
       completeEdit()
     } else {
-      store.selectBorn()
+      store.selectBone()
     }
   }
 
-  function extrude(parent: Born, fromHead = false): Born {
+  function extrude(parent: Bone, fromHead = false): Bone {
     return {
       ...extrudeFromParent(parent, fromHead),
     }
@@ -75,30 +75,30 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     if (isAnySelected.value) {
       state.command = mode
       if (mode === 'extrude') {
-        const shouldSkipBorns: IdMap<boolean> = {}
+        const shouldSkipBones: IdMap<boolean> = {}
         const names = allNames.value.concat()
-        const extrudedBorns: Born[] = []
+        const extrudedBones: Bone[] = []
 
-        Object.keys(selectedBorns.value).forEach((id) => {
-          const selectedState = selectedBorns.value[id]
-          const parent = store.bornMap.value[id]
+        Object.keys(selectedBones.value).forEach((id) => {
+          const selectedState = selectedBones.value[id]
+          const parent = store.boneMap.value[id]
 
-          const borns: Born[] = []
-          if (selectedState.tail) borns.push(extrude(parent))
-          if (selectedState.head) borns.push(extrude(parent, true))
+          const bones: Bone[] = []
+          if (selectedState.tail) bones.push(extrude(parent))
+          if (selectedState.head) bones.push(extrude(parent, true))
 
-          borns.forEach((b) => {
+          bones.forEach((b) => {
             // prevent to extruding from same parent
-            if (!shouldSkipBorns[b.parentId]) {
+            if (!shouldSkipBones[b.parentId]) {
               b.name = getNextName(parent.name, names)
-              extrudedBorns.push(b)
+              extrudedBones.push(b)
               names.push(b.name)
-              shouldSkipBorns[b.parentId] = true
+              shouldSkipBones[b.parentId] = true
             }
           })
         })
 
-        store.addBorns(extrudedBorns, { tail: true })
+        store.addBones(extrudedBones, { tail: true })
       }
     }
   }
@@ -107,7 +107,7 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     if (!state.editMovement) return {}
 
     if (state.command === 'scale') {
-      const origin = store.selectedBornsOrigin.value
+      const origin = store.selectedBonesOrigin.value
       const isOppositeSide = canvasStore.isOppositeSide(
         origin,
         state.editMovement.start,
@@ -119,7 +119,7 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
           getDistance(state.editMovement.start, origin)
       )
       const snappedScale = canvasStore.snapScale(scale)
-      return Object.keys(selectedBorns.value).reduce<IdMap<Transform>>(
+      return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
         (map, id) => {
           map[id] = getTransform({ origin, scale: snappedScale })
           return map
@@ -129,13 +129,13 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     }
 
     if (state.command === 'rotate') {
-      const origin = store.selectedBornsOrigin.value
+      const origin = store.selectedBonesOrigin.value
       const rotate =
         ((getRadian(state.editMovement.current, origin) -
           getRadian(state.editMovement.start, origin)) /
           Math.PI) *
         180
-      return Object.keys(selectedBorns.value).reduce<IdMap<Transform>>(
+      return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
         (map, id) => {
           map[id] = getTransform({
             origin,
@@ -149,7 +149,7 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
 
     const translate = sub(state.editMovement.current, state.editMovement.start)
     const snappedTranslate = canvasStore.snapTranslate(translate)
-    return Object.keys(selectedBorns.value).reduce<IdMap<Transform>>(
+    return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
       (map, id) => {
         map[id] = getTransform({ translate: snappedTranslate })
         return map
@@ -158,13 +158,13 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
     )
   })
 
-  const editedBornMap = computed(
-    (): IdMap<Born> =>
-      Object.keys(editTransforms.value).reduce<IdMap<Born>>((m, id) => {
+  const editedBoneMap = computed(
+    (): IdMap<Bone> =>
+      Object.keys(editTransforms.value).reduce<IdMap<Bone>>((m, id) => {
         m[id] = editTransform(
-          store.bornMap.value[id],
+          store.boneMap.value[id],
           editTransforms.value[id],
-          selectedBorns.value[id]
+          selectedBones.value[id]
         )
         return m
       }, {})
@@ -173,25 +173,25 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
   function completeEdit() {
     if (!target.value) return
 
-    store.updateBorns(editedBornMap.value)
+    store.updateBones(editedBoneMap.value)
     state.editMovement = undefined
     state.command = ''
   }
 
-  function select(id: string, selectedState: BornSelectedState) {
+  function select(id: string, selectedState: BoneSelectedState) {
     if (state.command) {
       completeEdit()
       return
     }
-    store.selectBorn(id, selectedState)
+    store.selectBone(id, selectedState)
   }
 
-  function shiftSelect(id: string, selectedState: BornSelectedState) {
+  function shiftSelect(id: string, selectedState: BoneSelectedState) {
     if (state.command) {
       completeEdit()
       return
     }
-    store.selectBorn(id, selectedState, true)
+    store.selectBone(id, selectedState, true)
   }
 
   function selectAll() {
@@ -199,7 +199,7 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
       completeEdit()
       return
     }
-    store.selectAllBorn()
+    store.selectAllBone()
   }
 
   function mousemove(arg: EditMovement) {
@@ -210,23 +210,23 @@ export function useBornEditMode(canvasStore: CanvasStore): BornEditMode {
 
   function execDelete() {
     if (state.command === '') {
-      store.deleteBorn()
+      store.deleteBone()
     }
   }
 
   function execAdd() {
     if (state.command === '') {
-      store.addBorn()
+      store.addBone()
     }
   }
 
   function duplicate() {
     if (state.command === '') {
-      const srcBorns = store.allSelectedBorns.value
+      const srcBones = store.allSelectedBones.value
       const names = allNames.value.concat()
-      const duplicated = duplicateBorns(srcBorns, names)
+      const duplicated = duplicateBones(srcBones, names)
       if (duplicated.length > 0) {
-        store.addBorns(duplicated, {
+        store.addBones(duplicated, {
           head: true,
           tail: true,
         })

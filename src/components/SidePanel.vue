@@ -4,6 +4,7 @@
       :tabs="[
         { key: 'detail', label: 'Detail' },
         { key: 'history', label: 'History' },
+        { key: 'tree', label: 'Tree' },
         { key: 'file', label: 'File' },
       ]"
       initial-tab="file"
@@ -40,6 +41,9 @@
       <template #file>
         <FilePanel />
       </template>
+      <template #tree>
+        <TreePanel />
+      </template>
     </TabPanel>
   </div>
 </template>
@@ -51,9 +55,16 @@ import TabPanel from './TabPanel.vue'
 import SelectField from './atoms/SelectField.vue'
 import HistoryStack from '/@/components/panelContents/HistoryStack.vue'
 import FilePanel from '/@/components/panelContents/FilePanel.vue'
+import TreePanel from '/@/components/panelContents/TreePanel.vue'
 
 export default defineComponent({
-  components: { TabPanel, HistoryStack, SelectField, FilePanel },
+  components: {
+    TabPanel,
+    HistoryStack,
+    SelectField,
+    FilePanel,
+    TreePanel,
+  },
   setup() {
     const store = useStore()
     const draftName = ref('')

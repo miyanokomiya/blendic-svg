@@ -12,15 +12,11 @@
 import { computed, defineComponent, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
-import { ElementNode, getTransform, toMap } from '/@/models'
+import { ElementNode, toMap } from '/@/models'
 import { useCanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '/@/store/animation'
-import { mapReduce } from '/@/utils/commons'
 import { useStore } from '/@/store'
-import {
-  convolutePoseTransforms,
-  getTransformedBornMap,
-} from '/@/utils/armatures'
+import { convolutePoseTransforms } from '/@/utils/armatures'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -41,8 +37,8 @@ export default defineComponent({
       return elementStore.lastSelectedActor.value?.svgTree.children ?? []
     })
 
-    const elementList = computed(() => {
-      return elementStore.lastSelectedActor.value?.elements ?? []
+    const elementMap = computed(() => {
+      return toMap(elementStore.lastSelectedActor.value?.elements ?? [])
     })
 
     const selectedMap = computed(() => {
@@ -50,32 +46,18 @@ export default defineComponent({
       return elementStore.selectedElements.value
     })
 
-    const transFormMap = computed(() => {
-      const posedMap = getTransformedBornMap(
-        toMap(
-          (store.lastSelectedArmature.value?.borns ?? []).map((b) => {
-            return {
-              ...b,
-              transform: convolutePoseTransforms([
-                animationStore.getCurrentSelfTransforms(b.id),
-                canvasStore.getEditTransforms(b.id),
-              ]),
-            }
-          })
-        )
-      )
-
-      return mapReduce(toMap(elementList.value), (e) => {
-        const born = posedMap[e.bornId]
-        if (born) {
+    const bornMap = computed(() => {
+      return toMap(
+        (store.lastSelectedArmature.value?.borns ?? []).map((b) => {
           return {
-            ...born.transform,
-            origin: born.head,
+            ...b,
+            transform: convolutePoseTransforms([
+              animationStore.getCurrentSelfTransforms(b.id),
+              canvasStore.getEditTransforms(b.id),
+            ]),
           }
-        } else {
-          return getTransform()
-        }
-      })
+        })
+      )
     })
 
     function clickElement(id: string, shift: boolean) {
@@ -84,8 +66,9 @@ export default defineComponent({
     }
 
     provide('onClickElement', clickElement)
+    provide('bornMap', bornMap)
     provide('selectedMap', selectedMap)
-    provide('transFormMap', transFormMap)
+    provide('elementMap', elementMap)
 
     return {
       elementNodeList,

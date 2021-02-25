@@ -5,7 +5,9 @@ export function transform(transform: Transform): string {
   return [
     `translate(${transform.translate.x},${transform.translate.y})`,
     `rotate(${transform.rotate} ${transform.origin.x} ${transform.origin.y})`,
+    `translate(${transform.origin.x},${transform.origin.y})`,
     `scale(${transform.scale.x},${transform.scale.y})`,
+    `translate(${-transform.origin.x},${-transform.origin.y})`,
   ].join(' ')
 }
 

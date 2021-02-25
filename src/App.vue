@@ -136,6 +136,24 @@ export default defineComponent({
       )
     )
 
+    const posedMap = computed(() => {
+      if (!lastSelectedArmature.value) return {}
+
+      return getTransformedBoneMap(
+        toMap(
+          lastSelectedArmature.value.bones.map((b) => {
+            return {
+              ...b,
+              transform: convolutePoseTransforms([
+                animationStore.getCurrentSelfTransforms(b.id),
+                canvasStore.getEditTransforms(b.id),
+              ]),
+            }
+          })
+        )
+      )
+    })
+
     const visibledBoneMap = computed(() => {
       if (!lastSelectedArmature.value) return {}
       if (canvasMode.value === 'edit') {
@@ -149,21 +167,8 @@ export default defineComponent({
           })
         )
       } else {
-        const posedMap = getTransformedBoneMap(
-          toMap(
-            lastSelectedArmature.value.bones.map((b) => {
-              return {
-                ...b,
-                transform: convolutePoseTransforms([
-                  animationStore.getCurrentSelfTransforms(b.id),
-                  canvasStore.getEditTransforms(b.id),
-                ]),
-              }
-            })
-          )
-        )
-        return Object.keys(posedMap).reduce<IdMap<Bone>>((p, id) => {
-          const b = posedMap[id]
+        return Object.keys(posedMap.value).reduce<IdMap<Bone>>((p, id) => {
+          const b = posedMap.value[id]
           p[id] = posedTransform(b, [b.transform])
           return p
         }, {})

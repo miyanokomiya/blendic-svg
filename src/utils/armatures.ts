@@ -59,36 +59,9 @@ function scale(p: IVec2, scale: IVec2, origin: IVec2 = { x: 0, y: 0 }): IVec2 {
 
 export function applyTransform(p: IVec2, transform: Transform): IVec2 {
   return add(
-    rotate(
-      scale(p, transform.scale, transform.origin),
-      (transform.rotate / 180) * Math.PI,
-      transform.origin
-    ),
-    transform.translate
-  )
-}
-
-export function applyPoseTransform(
-  p: IVec2,
-  transform: Transform,
-  head: IVec2,
-  tail: IVec2
-): IVec2 {
-  const translatedHead = add(head, transform.translate)
-  const translatedTail = add(tail, transform.translate)
-  const bodyRotate =
-    (getRadian(translatedTail, translatedHead) / Math.PI) * 180 + 90
-
-  return add(
-    rotate(
-      add(
-        translatedHead,
-        rotate(
-          scale(rotate(sub(p, translatedHead), -bodyRotate), transform.scale),
-          bodyRotate
-        )
-      ),
-      (transform.rotate / 180) * Math.PI,
+    scale(
+      rotate(p, (transform.rotate / 180) * Math.PI, transform.origin),
+      transform.scale,
       transform.origin
     ),
     transform.translate

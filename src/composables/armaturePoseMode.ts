@@ -75,6 +75,11 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     }
   }
 
+  function rotateDirection(boneId: string) {
+    const scale = animationStore.currentPosedBones.value[boneId].transform.scale
+    return Math.sign(scale.x * scale.y)
+  }
+
   const editTransforms = computed(() => {
     if (!state.editMovement) return {}
 
@@ -88,7 +93,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>
       >((map, id) => {
-        map[id] = getTransform({ rotate })
+        map[id] = getTransform({ rotate: rotate * rotateDirection(id) })
         return map
       }, {})
     }

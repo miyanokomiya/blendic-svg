@@ -57,9 +57,10 @@
 <script lang="ts">
 import { defineComponent, PropType, computed } from 'vue'
 import { Bone, BoneSelectedState } from '../../models/index'
-import { transform, d } from '../../utils/helpers'
+import { d } from '../../utils/helpers'
 import { IVec2, add, sub, multi, rotate, getDistance } from 'okageo'
 import { useSettings } from '../../composables/settings'
+import { posedTransform } from '/@/utils/armatures'
 
 function d1(head: IVec2, tail: IVec2, invert = false): IVec2 {
   return add(
@@ -97,8 +98,15 @@ export default defineComponent({
   setup(props, { emit }) {
     const { settings } = useSettings()
 
-    const head = computed(() => props.bone.head)
-    const tail = computed(() => props.bone.tail)
+    const posedTransformBone = computed(() => {
+      return posedTransform(props.bone, [props.bone.transform])
+    })
+    const head = computed(() => {
+      return posedTransformBone.value.head
+    })
+    const tail = computed(() => {
+      return posedTransformBone.value.tail
+    })
     const side1 = computed(() => d1(head.value, tail.value))
     const side2 = computed(() => d1(head.value, tail.value, true))
 
@@ -112,11 +120,16 @@ export default defineComponent({
 
     const circleR = computed(() => getCircleR(head.value, tail.value))
 
+    const transformStr = computed(() => {
+      // return transform(props.bone.transform)
+      return ''
+    })
+
     return {
       adjustedOpacity: computed(() => props.opacity * settings.boneOpacity),
       name: computed(() => (settings.showBoneName ? props.bone.name : '')),
       circleR,
-      transform: computed(() => transform(props.bone.transform)),
+      transform: transformStr,
       head,
       tail,
       headPath: computed(() => d([head.value, side1.value, side2.value], true)),

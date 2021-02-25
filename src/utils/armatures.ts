@@ -13,6 +13,7 @@ import {
 import {
   add,
   getPolygonCenter,
+  getRadian,
   interpolateScaler,
   interpolateVector,
   isSame,
@@ -58,9 +59,9 @@ function scale(p: IVec2, scale: IVec2, origin: IVec2 = { x: 0, y: 0 }): IVec2 {
 
 export function applyTransform(p: IVec2, transform: Transform): IVec2 {
   return add(
-    rotate(
-      scale(p, transform.scale, transform.origin),
-      (transform.rotate / 180) * Math.PI,
+    scale(
+      rotate(p, (transform.rotate / 180) * Math.PI, transform.origin),
+      transform.scale,
       transform.origin
     ),
     transform.translate

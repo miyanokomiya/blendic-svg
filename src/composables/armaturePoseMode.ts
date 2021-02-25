@@ -1,5 +1,5 @@
 import { reactive, computed } from 'vue'
-import { getRadian, IVec2, rotate, sub } from 'okageo'
+import { getDistance, getRadian, IVec2, multi, rotate, sub } from 'okageo'
 import {
   Transform,
   getTransform,
@@ -75,6 +75,11 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     }
   }
 
+  function rotateDirection(boneId: string) {
+    const scale = animationStore.currentPosedBones.value[boneId].transform.scale
+    return Math.sign(scale.x * scale.y)
+  }
+
   const editTransforms = computed(() => {
     if (!state.editMovement) return {}
 
@@ -88,12 +93,34 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>
       >((map, id) => {
-        map[id] = getTransform({ rotate })
+        map[id] = getTransform({ rotate: rotate * rotateDirection(id) })
         return map
       }, {})
     }
 
     const translate = sub(state.editMovement.current, state.editMovement.start)
+
+    if (state.command === 'scale') {
+      const origin = animationStore.selectedPosedBoneOrigin.value
+      const isOppositeSide = canvasStore.isOppositeSide(
+        origin,
+        state.editMovement.start,
+        state.editMovement.current
+      )
+      const scale = multi(
+        multi({ x: 1, y: 1 }, isOppositeSide ? -1 : 1),
+        getDistance(state.editMovement.current, origin) /
+          getDistance(state.editMovement.start, origin)
+      )
+      const snappedScale = canvasStore.snapScale(scale)
+      return Object.keys(animationStore.selectedBones.value).reduce<
+        IdMap<Transform>
+      >((map, id) => {
+        map[id] = getTransform({ scale: snappedScale })
+        return map
+      }, {})
+    }
+
     const snappedTranslate = canvasStore.snapTranslate(translate)
     return Object.keys(animationStore.selectedBones.value).reduce<
       IdMap<Transform>

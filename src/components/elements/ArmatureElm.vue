@@ -16,7 +16,7 @@
 <script lang="ts">
 import { defineComponent, PropType, computed } from 'vue'
 import { Armature, toMap } from '/@/models/index'
-import { transform } from '/@/utils/helpers'
+import { getTnansformStr } from '/@/utils/helpers'
 import BoneElm from '/@/components/elements/Bone.vue'
 
 export default defineComponent({
@@ -37,7 +37,7 @@ export default defineComponent({
   setup(props, { emit }) {
     return {
       boneMap: computed(() => toMap(props.armature.bones)),
-      transform: computed(() => transform(props.armature.transform)),
+      transform: computed(() => getTnansformStr(props.armature.transform)),
       boneSelectedState: computed(() =>
         props.selected ? { head: true, tail: true } : undefined
       ),

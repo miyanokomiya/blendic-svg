@@ -1,14 +1,30 @@
-import { IVec2, IRectangle } from 'okageo'
+import { IVec2, IRectangle, isZero } from 'okageo'
 import { Transform } from '../models/index'
 
-export function transform(transform: Transform): string {
+function getScaleText(scale: IVec2, origin: IVec2): string {
+  if (scale.x === 1 && scale.y === 1) return ''
+
   return [
-    `translate(${transform.translate.x},${transform.translate.y})`,
-    `translate(${transform.origin.x},${transform.origin.y})`,
-    `scale(${transform.scale.x},${transform.scale.y})`,
-    `translate(${-transform.origin.x},${-transform.origin.y})`,
-    `rotate(${transform.rotate} ${transform.origin.x} ${transform.origin.y})`,
-  ].join(' ')
+    isZero(origin) ? '' : `translate(${origin.x},${origin.y})`,
+    `scale(${scale.x},${scale.y})`,
+    isZero(origin) ? '' : `translate(${-origin.x},${-origin.y})`,
+  ]
+    .filter((s) => !!s)
+    .join(' ')
+}
+
+export function getTnansformStr(transform: Transform): string {
+  return [
+    isZero(transform.translate)
+      ? ''
+      : `translate(${transform.translate.x},${transform.translate.y})`,
+    getScaleText(transform.scale, transform.origin),
+    transform.rotate === 0
+      ? ''
+      : `rotate(${transform.rotate} ${transform.origin.x} ${transform.origin.y})`,
+  ]
+    .filter((s) => !!s)
+    .join(' ')
 }
 
 export function d(points: IVec2[], closed = false): string {

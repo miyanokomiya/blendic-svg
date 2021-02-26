@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, provide } from 'vue'
+import { computed, defineComponent, provide, watch } from 'vue'
 import { useElementStore } from '/@/store/element'
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
 import { ElementNode, toMap } from '/@/models'
@@ -17,6 +17,7 @@ import { useCanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '/@/store/animation'
 import { useStore } from '/@/store'
 import { convolutePoseTransforms } from '/@/utils/armatures'
+import { TransformCache } from '/@/utils/poseResolver'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -59,6 +60,17 @@ export default defineComponent({
         })
       )
     })
+
+    // keep the same object without using 'ref'
+    const transformCache: TransformCache = {}
+    // clear cache
+    watch(boneMap, () => {
+      for (let k in transformCache) {
+        delete transformCache[k]
+      }
+    })
+    // provide and each elements uses the same object
+    provide('transformCache', transformCache)
 
     function clickElement(id: string, shift: boolean) {
       if (canvasMode.value !== 'weight') return

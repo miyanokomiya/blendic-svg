@@ -69,6 +69,12 @@ export function toTransformStr(
   return posedTransformStr + (originalTransformStr ?? '')
 }
 
+// return zero affine matrix if arg can not be inverted
+export function invertTransformOrZero(m: AffineMatrix): AffineMatrix {
+  if (m[0] * m[3] - m[1] * m[2] === 0) return [0, 0, 0, 0, 0, 0]
+  return invertTransform(m)
+}
+
 export function getPoseDeformMatrix(
   spacePoseMatrix?: AffineMatrix,
   selfPoseMatrix?: AffineMatrix,
@@ -76,8 +82,10 @@ export function getPoseDeformMatrix(
 ): AffineMatrix {
   return multiAffines(
     [
-      elementSpaceMatrix ? invertTransform(elementSpaceMatrix) : undefined,
-      spacePoseMatrix ? invertTransform(spacePoseMatrix) : undefined,
+      elementSpaceMatrix
+        ? invertTransformOrZero(elementSpaceMatrix)
+        : undefined,
+      spacePoseMatrix ? invertTransformOrZero(spacePoseMatrix) : undefined,
       selfPoseMatrix,
     ].filter((m): m is AffineMatrix => !!m)
   )

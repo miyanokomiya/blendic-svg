@@ -125,11 +125,25 @@ const NativeElement: any = defineComponent({
       return props.groupSelected || selectedMap.value[element.value.id]
     })
 
-    const relativePoseMatrix = computed(() => {
+    const spacePoseMatrix = computed(() => {
       const t = resolveRelativePose(
         boneMap.value,
+        '',
         props.relativeRootBoneId,
-        myElement.value.boneId,
+        transformCache
+      )
+      return t ? poseToAffine(t) : undefined
+    })
+
+    const boundBoneId = computed(() => {
+      return myElement.value.boneId || props.relativeRootBoneId
+    })
+
+    const selfPoseMatrix = computed(() => {
+      const t = resolveRelativePose(
+        boneMap.value,
+        '',
+        boundBoneId.value,
         transformCache
       )
       return t ? poseToAffine(t) : undefined
@@ -151,7 +165,11 @@ const NativeElement: any = defineComponent({
       return affineToTransform(
         multiAffines(
           [
-            getPoseDeformMatrix(relativePoseMatrix.value, props.nativeMatrix),
+            getPoseDeformMatrix(
+              spacePoseMatrix.value,
+              selfPoseMatrix.value,
+              props.nativeMatrix
+            ),
             nativeMatrix.value,
           ].filter((m): m is AffineMatrix => !!m)
         )
@@ -173,8 +191,7 @@ const NativeElement: any = defineComponent({
         ? element.value.children.map((c) =>
             h(NativeElement, {
               element: c,
-              relativeRootBoneId:
-                myElement.value.boneId || props.relativeRootBoneId,
+              relativeRootBoneId: boundBoneId.value,
               groupSelected: groupSelected.value,
               nativeMatrix: nativeMatrix.value,
             })

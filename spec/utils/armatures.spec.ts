@@ -58,6 +58,15 @@ describe('utils/armatures', () => {
     })
   })
 
+  describe('applyScale', () => {
+    it('apply scale x and y', () => {
+      expect(target.applyScale({ x: 10, y: 2 }, { x: -2, y: 3 })).toEqual({
+        x: -20,
+        y: 6,
+      })
+    })
+  })
+
   describe('extrudeFromParent', () => {
     const parent = getBone({ id: 'parent', tail: { x: 1, y: 2 } })
 

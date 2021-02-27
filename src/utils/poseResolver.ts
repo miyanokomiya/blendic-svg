@@ -115,23 +115,27 @@ export function getPosedElementTree(
   svgTree: ElementNode
 ) {
   return getPosedElementNode(
-    boneMap,
+    getPosedElementMatrixMap(
+      boneMap,
+      elementMap,
+      svgTree,
+      undefined,
+      undefined,
+      {}
+    ),
     elementMap,
-    svgTree,
-    undefined,
-    undefined,
-    {}
+    svgTree
   )
 }
 
-function getPosedElementNode(
+export function getPosedElementMatrixMap(
   boneMap: IdMap<Bone>,
   elementMap: IdMap<BElement>,
   node: ElementNode,
   relativeRootBoneId = '',
   spaceNativeMatrix = IDENTITY_AFFINE,
   transformCache?: TransformCache
-): ElementNode {
+): IdMap<AffineMatrix> {
   const bElement = elementMap[node.id]
   const spacePoseMatrix = getSpacePoseMatrix(
     boneMap,
@@ -141,14 +145,41 @@ function getPosedElementNode(
   const boundBoneId = bElement?.boneId || relativeRootBoneId
   const selfPoseMatrix = getSelfPoseMatrix(boneMap, boundBoneId, transformCache)
   const nativeMatrix = getnativeMatrix(node, spaceNativeMatrix)
-  const transformStr = affineToTransform(
-    multiAffines(
-      [
-        getPoseDeformMatrix(spacePoseMatrix, selfPoseMatrix, spaceNativeMatrix),
-        nativeMatrix,
-      ].filter((m): m is AffineMatrix => !!m)
-    )
+  const transform = multiAffines(
+    [
+      getPoseDeformMatrix(spacePoseMatrix, selfPoseMatrix, spaceNativeMatrix),
+      nativeMatrix,
+    ].filter((m): m is AffineMatrix => !!m)
   )
+
+  return {
+    [node.id]: transform,
+    ...node.children.reduce<IdMap<AffineMatrix>>((p, c) => {
+      if (typeof c === 'string') return p
+      p = {
+        ...p,
+        ...getPosedElementMatrixMap(
+          boneMap,
+          elementMap,
+          c,
+          boundBoneId,
+          nativeMatrix,
+          transformCache
+        ),
+      }
+      return p
+    }, {}),
+  }
+}
+
+function getPosedElementNode(
+  matrixMap: IdMap<AffineMatrix>,
+  elementMap: IdMap<BElement>,
+  node: ElementNode
+): ElementNode {
+  const transformStr = matrixMap[node.id]
+    ? affineToTransform(matrixMap[node.id])
+    : ''
 
   return {
     id: node.id,
@@ -159,14 +190,7 @@ function getPosedElementNode(
     },
     children: node.children.map((c) => {
       if (typeof c === 'string') return c
-      return getPosedElementNode(
-        boneMap,
-        elementMap,
-        c,
-        boundBoneId,
-        nativeMatrix,
-        transformCache
-      )
+      return getPosedElementNode(matrixMap, elementMap, c)
     }),
   }
 }

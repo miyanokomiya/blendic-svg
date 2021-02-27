@@ -19,15 +19,18 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import {
   AffineMatrix,
+  affineToTransform,
   IDENTITY_AFFINE,
   invertTransform,
   multiAffine,
   multiAffines,
 } from 'okageo'
-import { getBone, getTransform } from '/@/models'
+import { getBElement, getBone, getElementNode, getTransform } from '/@/models'
+import { mapReduce } from '/@/utils/commons'
 import {
   getNativeDeformMatrix,
   getPoseDeformMatrix,
+  getPosedElementMatrixMap,
   resolveRelativePose,
   TransformCache,
 } from '/@/utils/poseResolver'
@@ -119,6 +122,72 @@ describe('utils/poseResolver.ts', () => {
       const a: AffineMatrix = [1, 2, 3, 4, 5, 6]
       const b: AffineMatrix = [10, 20, 30, 40, 50, 60]
       expect(getNativeDeformMatrix(a, b)).toEqual(multiAffine(a, b))
+    })
+  })
+
+  describe('getPosedElementMatrixMap', () => {
+    it('get matrix tree', () => {
+      const map = getPosedElementMatrixMap(
+        {
+          bone_a: getBone({
+            id: 'bone_a',
+            transform: getTransform({ rotate: 45, origin: { x: 1, y: 2 } }),
+          }),
+          bone_b: getBone({
+            id: 'bone_b',
+            parentId: 'bone_a',
+            transform: getTransform({ rotate: 45, origin: { x: 1, y: 2 } }),
+          }),
+          bone_c: getBone({
+            id: 'bone_c',
+            parentId: 'bone_b',
+            transform: getTransform(),
+          }),
+          bone_d: getBone({
+            id: 'bone_d',
+            transform: getTransform(),
+          }),
+        },
+        {
+          elm_a: getBElement({ id: 'elm_a', boneId: 'bone_a' }),
+          elm_b: getBElement({ id: 'elm_b', boneId: 'bone_b' }),
+          elm_c: getBElement({ id: 'elm_c', boneId: 'bone_c' }),
+          elm_d: getBElement({ id: 'elm_d', boneId: 'bone_d' }),
+        },
+        getElementNode({
+          id: 'root',
+          tag: 'svg',
+          children: [
+            getElementNode({
+              id: 'elm_a',
+              tag: 'g',
+              attributs: { transform: 'matrix(1,2,3,4,5,6)' },
+              children: [
+                getElementNode({
+                  id: 'elm_b',
+                  tag: 'g',
+                  attributs: { transform: 'rotate(10,29,39)' },
+                  children: [],
+                }),
+              ],
+            }),
+            getElementNode({
+              id: 'elm_c',
+              tag: 'g',
+              children: [],
+            }),
+            getElementNode({
+              id: 'elm_d',
+              tag: 'g',
+              attributs: { transform: 'matrix(1,2,3,4,5,6)' },
+              children: [],
+            }),
+          ],
+        })
+      )
+      expect(
+        JSON.stringify(mapReduce(map, affineToTransform), null, ' ')
+      ).toMatchSnapshot()
     })
   })
 })

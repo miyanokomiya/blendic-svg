@@ -70,13 +70,15 @@ export function toTransformStr(
 }
 
 export function getPoseDeformMatrix(
-  relativePoseMatrix?: AffineMatrix,
+  spacePoseMatrix?: AffineMatrix,
+  selfPoseMatrix?: AffineMatrix,
   elementSpaceMatrix?: AffineMatrix
 ): AffineMatrix {
   return multiAffines(
     [
       elementSpaceMatrix ? invertTransform(elementSpaceMatrix) : undefined,
-      relativePoseMatrix,
+      spacePoseMatrix ? invertTransform(spacePoseMatrix) : undefined,
+      selfPoseMatrix,
     ].filter((m): m is AffineMatrix => !!m)
   )
 }

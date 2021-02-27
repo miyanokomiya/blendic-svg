@@ -22,6 +22,7 @@ import {
   IDENTITY_AFFINE,
   invertTransform,
   multiAffine,
+  multiAffines,
 } from 'okageo'
 import { getBone, getTransform } from '/@/models'
 import {
@@ -92,8 +93,9 @@ describe('utils/poseResolver.ts', () => {
     it('return multi affine matrix: b^-1 * a', () => {
       const a: AffineMatrix = [1, 2, 3, 4, 5, 6]
       const b: AffineMatrix = [10, 20, 30, 40, 50, 60]
-      expect(getPoseDeformMatrix(a, b)).toEqual(
-        multiAffine(invertTransform(b), a)
+      const c: AffineMatrix = [100, 200, 300, 400, 500, 600]
+      expect(getPoseDeformMatrix(a, b, c)).toEqual(
+        multiAffines([invertTransform(c), invertTransform(a), b])
       )
     })
   })

@@ -2,7 +2,6 @@
 import {
   AffineMatrix,
   affineToTransform,
-  invertTransform,
   multiAffines,
   parseTransform,
 } from 'okageo'
@@ -18,7 +17,12 @@ import { useSettings } from '/@/composables/settings'
 import { BElement, Bone, ElementNode, IdMap } from '/@/models'
 import { poseToAffine } from '/@/utils/armatures'
 import { parseStyle, toStyle } from '/@/utils/helpers'
-import { resolveRelativePose, TransformCache } from '/@/utils/poseResolver'
+import {
+  getNativeDeformMatrix,
+  getPoseDeformMatrix,
+  resolveRelativePose,
+  TransformCache,
+} from '/@/utils/poseResolver'
 
 const NativeElement: any = defineComponent({
   props: {
@@ -102,48 +106,37 @@ const NativeElement: any = defineComponent({
       return props.groupSelected || selectedMap.value[element.value.id]
     })
 
-    const posedTransform = computed(() => {
-      return resolveRelativePose(
+    const relativePoseMatrix = computed(() => {
+      const t = resolveRelativePose(
         boneMap.value,
         props.relativeRootBoneId,
         myElement.value.boneId,
         transformCache
       )
-    })
-
-    const poseTransformMatrix = computed(() => {
-      return multiAffines(
-        [
-          props.nativeMatrix ? invertTransform(props.nativeMatrix) : undefined,
-          posedTransform.value ? poseToAffine(posedTransform.value) : undefined,
-        ].filter((m): m is AffineMatrix => !!m)
-      )
+      return t ? poseToAffine(t) : undefined
     })
 
     const nativeMatrix = computed(() => {
       if (!isElement.value) return
-      return multiAffines(
-        [
-          props.nativeMatrix,
-          element.value.attributs.transform
-            ? parseTransform(element.value.attributs.transform)
-            : undefined,
-        ].filter((m): m is AffineMatrix => !!m)
-      )
-    })
 
-    const resolvedTransformMatrix = computed(() => {
-      if (!isElement.value) return
-      return multiAffines(
-        [poseTransformMatrix.value, nativeMatrix.value].filter(
-          (m): m is AffineMatrix => !!m
-        )
+      return getNativeDeformMatrix(
+        props.nativeMatrix,
+        element.value.attributs.transform
+          ? parseTransform(element.value.attributs.transform)
+          : undefined
       )
     })
 
     const transformStr = computed(() => {
-      if (!resolvedTransformMatrix.value) return ''
-      return affineToTransform(resolvedTransformMatrix.value)
+      if (!isElement.value) return
+      return affineToTransform(
+        multiAffines(
+          [
+            getPoseDeformMatrix(relativePoseMatrix.value, props.nativeMatrix),
+            nativeMatrix.value,
+          ].filter((m): m is AffineMatrix => !!m)
+        )
+      )
     })
 
     const attributs = computed(() => {

@@ -1,3 +1,4 @@
+import { AffineMatrix, invertTransform, multiAffines } from 'okageo'
 import { Bone, IdMap, toMap, Transform } from '../models'
 import { getTransformedBoneMap } from './armatures'
 import { getParentIdPath } from './commons'
@@ -47,4 +48,27 @@ export function toTransformStr(
   const posedTransformStr = poseTransform ? getTnansformStr(poseTransform) : ''
   // this order of transformations is important
   return posedTransformStr + (originalTransformStr ?? '')
+}
+
+export function getPoseDeformMatrix(
+  relativePoseMatrix?: AffineMatrix,
+  elementSpaceMatrix?: AffineMatrix
+): AffineMatrix {
+  return multiAffines(
+    [
+      elementSpaceMatrix ? invertTransform(elementSpaceMatrix) : undefined,
+      relativePoseMatrix,
+    ].filter((m): m is AffineMatrix => !!m)
+  )
+}
+
+export function getNativeDeformMatrix(
+  elementSpaceMatrix?: AffineMatrix,
+  elementSlefMatrix?: AffineMatrix
+): AffineMatrix {
+  return multiAffines(
+    [elementSpaceMatrix, elementSlefMatrix].filter(
+      (m): m is AffineMatrix => !!m
+    )
+  )
 }

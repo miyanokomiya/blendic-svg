@@ -66,12 +66,16 @@ export function multiPoseTransform(a: Transform, b: Transform): Transform {
   })
 }
 
+export function invertScaleOrZero(scale: IVec2): IVec2 {
+  return {
+    x: scale.x === 0 ? 0 : 1 / scale.x,
+    y: scale.y === 0 ? 0 : 1 / scale.y,
+  }
+}
+
 export function invertPoseTransform(a: Transform): Transform {
   return getTransform({
-    scale: {
-      x: a.scale.x === 0 ? 0 : 1 / a.scale.x,
-      y: a.scale.y === 0 ? 0 : 1 / a.scale.y,
-    },
+    scale: invertScaleOrZero(a.scale),
     rotate: -a.rotate,
     translate: multi(a.translate, -1),
   })

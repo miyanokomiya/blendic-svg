@@ -36,6 +36,7 @@ import {
   applyTransform,
   invertPoseTransform,
   applyScale,
+  invertScaleOrZero,
 } from '../utils/armatures'
 
 interface State {
@@ -94,10 +95,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     const parent = animationStore.currentPosedBones.value[bone.parentId]
     if (parent) {
       return rotate(
-        applyScale(vec, {
-          x: 1 / parent.transform.scale.x,
-          y: 1 / parent.transform.scale.y,
-        }),
+        applyScale(vec, invertScaleOrZero(parent.transform.scale)),
         (-parent.transform.rotate / 180) * Math.PI
       )
     } else {

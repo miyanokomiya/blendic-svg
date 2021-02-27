@@ -90,6 +90,17 @@ describe('utils/poseResolver.ts', () => {
     it('return identy affine if matrixes are undefined', () => {
       expect(getPoseDeformMatrix()).toEqual(IDENTITY_AFFINE)
     })
+    it('prevent inverting zero scaled matrix', () => {
+      const a: AffineMatrix = [0, 0, 3, 4, 5, 6]
+      const b: AffineMatrix = [10, 20, 30, 40, 50, 60]
+      const c: AffineMatrix = [100, 200, 300, 400, 500, 600]
+      const exp = [0, 0, 0, 0, expect.any(Number), expect.any(Number)]
+      expect(getPoseDeformMatrix(a, b, c)).toEqual(exp)
+      expect(getPoseDeformMatrix(b, c, a)).toEqual(exp)
+      expect(getPoseDeformMatrix(c, a, b)).toEqual(
+        [...Array(6)].map((_, i) => expect.any(Number))
+      )
+    })
     it('return multi affine matrix: b^-1 * a', () => {
       const a: AffineMatrix = [1, 2, 3, 4, 5, 6]
       const b: AffineMatrix = [10, 20, 30, 40, 50, 60]

@@ -1,5 +1,11 @@
 <script lang="ts">
 import {
+  AffineMatrix,
+  affineToTransform,
+  multiAffines,
+  parseTransform,
+} from 'okageo'
+import {
   computed,
   ComputedRef,
   defineComponent,
@@ -9,10 +15,12 @@ import {
 } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { BElement, Bone, ElementNode, IdMap } from '/@/models'
+import { poseToAffine } from '/@/utils/armatures'
 import { parseStyle, toStyle } from '/@/utils/helpers'
 import {
+  getNativeDeformMatrix,
+  getPoseDeformMatrix,
   resolveRelativePose,
-  toTransformStr,
   TransformCache,
 } from '/@/utils/poseResolver'
 
@@ -29,6 +37,10 @@ const NativeElement: any = defineComponent({
     groupSelected: {
       type: Boolean,
       default: false,
+    },
+    nativeMatrix: {
+      type: Object as PropType<AffineMatrix | undefined>,
+      default: undefined,
     },
   },
   emits: ['click-element'],
@@ -77,22 +89,6 @@ const NativeElement: any = defineComponent({
 
     const transformCache = inject<TransformCache>('transformCache')
 
-    const posedTransform = computed(() => {
-      return resolveRelativePose(
-        boneMap.value,
-        props.relativeRootBoneId,
-        myElement.value.boneId,
-        transformCache
-      )
-    })
-
-    const transformStr = computed(() => {
-      return toTransformStr(
-        element.value.attributs.transform,
-        posedTransform.value
-      )
-    })
-
     // eslint-disable-next-line no-unused-vars
     const onClickElement = inject<(id: string, shift: boolean) => void>(
       'onClickElement',
@@ -105,6 +101,44 @@ const NativeElement: any = defineComponent({
       onClickElement(element.value.id, e.shiftKey)
     }
 
+    const groupSelected = computed(() => {
+      if (!isElement.value) return props.groupSelected
+      return props.groupSelected || selectedMap.value[element.value.id]
+    })
+
+    const relativePoseMatrix = computed(() => {
+      const t = resolveRelativePose(
+        boneMap.value,
+        props.relativeRootBoneId,
+        myElement.value.boneId,
+        transformCache
+      )
+      return t ? poseToAffine(t) : undefined
+    })
+
+    const nativeMatrix = computed(() => {
+      if (!isElement.value) return
+
+      return getNativeDeformMatrix(
+        props.nativeMatrix,
+        element.value.attributs.transform
+          ? parseTransform(element.value.attributs.transform)
+          : undefined
+      )
+    })
+
+    const transformStr = computed(() => {
+      if (!isElement.value) return
+      return affineToTransform(
+        multiAffines(
+          [
+            getPoseDeformMatrix(relativePoseMatrix.value, props.nativeMatrix),
+            nativeMatrix.value,
+          ].filter((m): m is AffineMatrix => !!m)
+        )
+      )
+    })
+
     const attributs = computed(() => {
       return {
         ...element.value.attributs,
@@ -115,18 +149,15 @@ const NativeElement: any = defineComponent({
       }
     })
 
-    const groupSelected = computed(() => {
-      if (!isElement.value) return props.groupSelected
-      return props.groupSelected || selectedMap.value[element.value.id]
-    })
-
     const children = computed(() => {
       return Array.isArray(element.value.children)
         ? element.value.children.map((c) =>
             h(NativeElement, {
               element: c,
-              relativeRootBoneId: myElement.value.boneId,
+              relativeRootBoneId:
+                myElement.value.boneId || props.relativeRootBoneId,
               groupSelected: groupSelected.value,
+              nativeMatrix: nativeMatrix.value,
             })
           )
         : element.value.children

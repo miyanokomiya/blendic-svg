@@ -18,17 +18,17 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g>
+  <g v-if="elementRoot">
     <NativeElement
-      v-for="element in elementNodeList"
-      :key="getId(element)"
-      :element="element"
+      v-for="node in elementRoot.children"
+      :key="getId(node)"
+      :element="node"
     />
   </g>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, provide, watch } from 'vue'
+import { computed, defineComponent, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
 import { ElementNode, toMap } from '/@/models'
@@ -36,7 +36,7 @@ import { useCanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '/@/store/animation'
 import { useStore } from '/@/store'
 import { convolutePoseTransforms } from '/@/utils/armatures'
-import { TransformCache } from '/@/utils/poseResolver'
+import { getPosedElementTree } from '/@/utils/poseResolver'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -80,16 +80,14 @@ export default defineComponent({
       )
     })
 
-    // keep the same object without using 'ref'
-    const transformCache: TransformCache = {}
-    // clear cache
-    watch(boneMap, () => {
-      for (let k in transformCache) {
-        delete transformCache[k]
-      }
+    const posedElementRoot = computed(() => {
+      if (!elementStore.lastSelectedActor.value) return
+      return getPosedElementTree(
+        boneMap.value,
+        elementMap.value,
+        elementStore.lastSelectedActor.value.svgTree
+      )
     })
-    // provide and each elements uses the same object
-    provide('transformCache', transformCache)
 
     function clickElement(id: string, shift: boolean) {
       if (canvasMode.value !== 'weight') return
@@ -97,11 +95,10 @@ export default defineComponent({
     }
 
     provide('onClickElement', clickElement)
-    provide('boneMap', boneMap)
     provide('selectedMap', selectedMap)
-    provide('elementMap', elementMap)
 
     return {
+      elementRoot: posedElementRoot,
       elementNodeList,
       getId,
     }

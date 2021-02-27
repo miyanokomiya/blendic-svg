@@ -19,12 +19,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import {
-  AffineMatrix,
-  affineToTransform,
-  multiAffines,
-  parseTransform,
-} from 'okageo'
-import {
   computed,
   ComputedRef,
   defineComponent,
@@ -33,15 +27,8 @@ import {
   PropType,
 } from 'vue'
 import { useSettings } from '/@/composables/settings'
-import { BElement, Bone, ElementNode, IdMap } from '/@/models'
-import { poseToAffine } from '/@/utils/armatures'
+import { ElementNode } from '/@/models'
 import { parseStyle, toStyle } from '/@/utils/helpers'
-import {
-  getNativeDeformMatrix,
-  getPoseDeformMatrix,
-  resolveRelativePose,
-  TransformCache,
-} from '/@/utils/poseResolver'
 
 const NativeElement: any = defineComponent({
   props: {
@@ -49,17 +36,9 @@ const NativeElement: any = defineComponent({
       type: [Object, String] as PropType<ElementNode | string>,
       required: true,
     },
-    relativeRootBoneId: {
-      type: String,
-      default: '',
-    },
     groupSelected: {
       type: Boolean,
       default: false,
-    },
-    nativeMatrix: {
-      type: Object as PropType<AffineMatrix | undefined>,
-      default: undefined,
     },
   },
   emits: ['click-element'],
@@ -68,16 +47,6 @@ const NativeElement: any = defineComponent({
 
     const selectedMap = inject<ComputedRef<{ [id: string]: boolean }>>(
       'selectedMap',
-      computed(() => ({}))
-    )
-
-    const elementMap = inject<ComputedRef<IdMap<BElement>>>(
-      'elementMap',
-      computed(() => ({}))
-    )
-
-    const boneMap = inject<ComputedRef<IdMap<Bone>>>(
-      'boneMap',
       computed(() => ({}))
     )
 
@@ -104,9 +73,6 @@ const NativeElement: any = defineComponent({
 
     const isElement = computed(() => typeof props.element !== 'string')
     const element = computed(() => props.element as ElementNode)
-    const myElement = computed(() => elementMap.value[element.value.id])
-
-    const transformCache = inject<TransformCache>('transformCache')
 
     // eslint-disable-next-line no-unused-vars
     const onClickElement = inject<(id: string, shift: boolean) => void>(
@@ -125,64 +91,12 @@ const NativeElement: any = defineComponent({
       return props.groupSelected || selectedMap.value[element.value.id]
     })
 
-    const spacePoseMatrix = computed(() => {
-      const t = resolveRelativePose(
-        boneMap.value,
-        '',
-        props.relativeRootBoneId,
-        transformCache
-      )
-      return t ? poseToAffine(t) : undefined
-    })
-
-    const boundBoneId = computed(() => {
-      return myElement.value.boneId || props.relativeRootBoneId
-    })
-
-    const selfPoseMatrix = computed(() => {
-      const t = resolveRelativePose(
-        boneMap.value,
-        '',
-        boundBoneId.value,
-        transformCache
-      )
-      return t ? poseToAffine(t) : undefined
-    })
-
-    const nativeMatrix = computed(() => {
-      if (!isElement.value) return
-
-      return getNativeDeformMatrix(
-        props.nativeMatrix,
-        element.value.attributs.transform
-          ? parseTransform(element.value.attributs.transform)
-          : undefined
-      )
-    })
-
-    const transformStr = computed(() => {
-      if (!isElement.value) return
-      return affineToTransform(
-        multiAffines(
-          [
-            getPoseDeformMatrix(
-              spacePoseMatrix.value,
-              selfPoseMatrix.value,
-              props.nativeMatrix
-            ),
-            nativeMatrix.value,
-          ].filter((m): m is AffineMatrix => !!m)
-        )
-      )
-    })
-
     const attributs = computed(() => {
       return {
         ...element.value.attributs,
         ...overrideAttrs.value,
         style: overrideStyle.value,
         onClick,
-        transform: transformStr.value,
       }
     })
 
@@ -191,9 +105,7 @@ const NativeElement: any = defineComponent({
         ? element.value.children.map((c) =>
             h(NativeElement, {
               element: c,
-              relativeRootBoneId: boundBoneId.value,
               groupSelected: groupSelected.value,
-              nativeMatrix: nativeMatrix.value,
             })
           )
         : element.value.children

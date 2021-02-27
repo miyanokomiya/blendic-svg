@@ -17,9 +17,16 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { AffineMatrix, invertTransform, multiAffines } from 'okageo'
-import { Bone, IdMap, toMap, Transform } from '../models'
-import { getTransformedBoneMap } from './armatures'
+import {
+  AffineMatrix,
+  affineToTransform,
+  IDENTITY_AFFINE,
+  invertTransform,
+  multiAffines,
+  parseTransform,
+} from 'okageo'
+import { BElement, Bone, ElementNode, IdMap, toMap, Transform } from '../models'
+import { getTransformedBoneMap, poseToAffine } from './armatures'
 import { getParentIdPath } from './commons'
 import { getTnansformStr } from './helpers'
 
@@ -99,5 +106,94 @@ export function getNativeDeformMatrix(
     [elementSpaceMatrix, elementSlefMatrix].filter(
       (m): m is AffineMatrix => !!m
     )
+  )
+}
+
+export function getPosedElementTree(
+  boneMap: IdMap<Bone>,
+  elementMap: IdMap<BElement>,
+  svgTree: ElementNode
+) {
+  return getPosedElementNode(
+    boneMap,
+    elementMap,
+    svgTree,
+    undefined,
+    undefined,
+    {}
+  )
+}
+
+function getPosedElementNode(
+  boneMap: IdMap<Bone>,
+  elementMap: IdMap<BElement>,
+  node: ElementNode,
+  relativeRootBoneId = '',
+  spaceNativeMatrix = IDENTITY_AFFINE,
+  transformCache?: TransformCache
+): ElementNode {
+  const bElement = elementMap[node.id]
+  const spacePoseMatrix = getSpacePoseMatrix(
+    boneMap,
+    relativeRootBoneId,
+    transformCache
+  )
+  const boundBoneId = bElement?.boneId || relativeRootBoneId
+  const selfPoseMatrix = getSelfPoseMatrix(boneMap, boundBoneId, transformCache)
+  const nativeMatrix = getnativeMatrix(node, spaceNativeMatrix)
+  const transformStr = affineToTransform(
+    multiAffines(
+      [
+        getPoseDeformMatrix(spacePoseMatrix, selfPoseMatrix, spaceNativeMatrix),
+        nativeMatrix,
+      ].filter((m): m is AffineMatrix => !!m)
+    )
+  )
+
+  return {
+    id: node.id,
+    tag: node.tag,
+    attributs: {
+      ...node.attributs,
+      transform: transformStr,
+    },
+    children: node.children.map((c) => {
+      if (typeof c === 'string') return c
+      return getPosedElementNode(
+        boneMap,
+        elementMap,
+        c,
+        boundBoneId,
+        nativeMatrix,
+        transformCache
+      )
+    }),
+  }
+}
+
+function getSpacePoseMatrix(
+  boneMap: IdMap<Bone>,
+  relativeRootBoneId: string,
+  transformCache?: TransformCache
+) {
+  const t = resolveRelativePose(boneMap, '', relativeRootBoneId, transformCache)
+  return t ? poseToAffine(t) : undefined
+}
+
+function getSelfPoseMatrix(
+  boneMap: IdMap<Bone>,
+  boundBoneId: string,
+  transformCache?: TransformCache
+) {
+  const t = resolveRelativePose(boneMap, '', boundBoneId, transformCache)
+  return t ? poseToAffine(t) : undefined
+}
+
+function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {
+  return getNativeDeformMatrix(
+    spaceNativeMatrix,
+    node.attributs.transform
+      ? parseTransform(node.attributs.transform)
+      : undefined
   )
 }

@@ -1,5 +1,16 @@
+import {
+  AffineMatrix,
+  IDENTITY_AFFINE,
+  invertTransform,
+  multiAffine,
+} from 'okageo'
 import { getBone, getTransform } from '/@/models'
-import { resolveRelativePose, TransformCache } from '/@/utils/poseResolver'
+import {
+  getNativeDeformMatrix,
+  getPoseDeformMatrix,
+  resolveRelativePose,
+  TransformCache,
+} from '/@/utils/poseResolver'
 
 describe('utils/poseResolver.ts', () => {
   describe('resolveRelativePose', () => {
@@ -52,6 +63,30 @@ describe('utils/poseResolver.ts', () => {
           }),
         },
       })
+    })
+  })
+
+  describe('getPoseDeformMatrix', () => {
+    it('return identy affine if matrixes are undefined', () => {
+      expect(getPoseDeformMatrix()).toEqual(IDENTITY_AFFINE)
+    })
+    it('return multi affine matrix: b^-1 * a', () => {
+      const a: AffineMatrix = [1, 2, 3, 4, 5, 6]
+      const b: AffineMatrix = [10, 20, 30, 40, 50, 60]
+      expect(getPoseDeformMatrix(a, b)).toEqual(
+        multiAffine(invertTransform(b), a)
+      )
+    })
+  })
+
+  describe('getNativeDeformMatrix', () => {
+    it('return identy affine if matrixes are undefined', () => {
+      expect(getPoseDeformMatrix()).toEqual(IDENTITY_AFFINE)
+    })
+    it('return multi affine matrix: a * b', () => {
+      const a: AffineMatrix = [1, 2, 3, 4, 5, 6]
+      const b: AffineMatrix = [10, 20, 30, 40, 50, 60]
+      expect(getNativeDeformMatrix(a, b)).toEqual(multiAffine(a, b))
     })
   })
 })

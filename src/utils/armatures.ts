@@ -83,7 +83,7 @@ export function convolutePoseTransforms(transforms: Transform[]): Transform {
   }, getTransform())
 }
 
-export function scale(
+export function applyScale(
   p: IVec2,
   scale: IVec2,
   origin: IVec2 = { x: 0, y: 0 }
@@ -96,7 +96,7 @@ export function scale(
 
 export function applyTransform(p: IVec2, transform: Transform): IVec2 {
   return add(
-    scale(
+    applyScale(
       rotate(p, (transform.rotate / 180) * Math.PI, transform.origin),
       transform.scale,
       transform.origin

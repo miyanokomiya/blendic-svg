@@ -32,7 +32,11 @@ import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '../store/animation'
 import { mapReduce } from '../utils/commons'
-import { applyTransform, invertPoseTransform, scale } from '../utils/armatures'
+import {
+  applyTransform,
+  invertPoseTransform,
+  applyScale,
+} from '../utils/armatures'
 
 interface State {
   command: EditMode
@@ -90,7 +94,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     const parent = animationStore.currentPosedBones.value[bone.parentId]
     if (parent) {
       return rotate(
-        scale(vec, {
+        applyScale(vec, {
           x: 1 / parent.transform.scale.x,
           y: 1 / parent.transform.scale.y,
         }),

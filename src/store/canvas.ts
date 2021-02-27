@@ -24,7 +24,13 @@ import { BonePoseMode, useBonePoseMode } from '../composables/armaturePoseMode'
 import { ObjectMode, useObjectMode } from '../composables/objectMode'
 import { useWeightPaintMode } from '../composables/weightPaintMode'
 import { HistoryItem, useHistoryStore } from './history'
-import { BoneSelectedState, CanvasMode, EditMode, Transform } from '/@/models'
+import {
+  BoneSelectedState,
+  CanvasMode,
+  EditMode,
+  getTransform,
+  Transform,
+} from '/@/models'
 
 export type AxisGrid = '' | 'x' | 'y'
 
@@ -116,6 +122,11 @@ function getEditTransforms(id: string): Transform {
   return canvasEditMode.value.getEditTransforms(id)
 }
 
+function getEditPoseTransforms(id: string): Transform {
+  if (state.canvasMode !== 'pose') return getTransform()
+  return canvasEditMode.value.getEditTransforms(id)
+}
+
 export function useCanvasStore() {
   return {
     initState,
@@ -130,6 +141,7 @@ export function useCanvasStore() {
     snapTranslate,
     isOppositeSide,
     getEditTransforms,
+    getEditPoseTransforms,
     mousemove: (arg: { current: IVec2; start: IVec2 }) =>
       canvasEditMode.value.mousemove(arg),
     clickAny: () => canvasEditMode.value.clickAny(),

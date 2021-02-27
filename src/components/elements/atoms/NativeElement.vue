@@ -1,5 +1,12 @@
 <script lang="ts">
 import {
+  AffineMatrix,
+  affineToTransform,
+  invertTransform,
+  multiAffines,
+  parseTransform,
+} from 'okageo'
+import {
   computed,
   ComputedRef,
   defineComponent,
@@ -9,12 +16,9 @@ import {
 } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { BElement, Bone, ElementNode, IdMap } from '/@/models'
+import { poseToAffine } from '/@/utils/armatures'
 import { parseStyle, toStyle } from '/@/utils/helpers'
-import {
-  resolveRelativePose,
-  toTransformStr,
-  TransformCache,
-} from '/@/utils/poseResolver'
+import { resolveRelativePose, TransformCache } from '/@/utils/poseResolver'
 
 const NativeElement: any = defineComponent({
   props: {
@@ -29,6 +33,10 @@ const NativeElement: any = defineComponent({
     groupSelected: {
       type: Boolean,
       default: false,
+    },
+    nativeMatrix: {
+      type: Object as PropType<AffineMatrix | undefined>,
+      default: undefined,
     },
   },
   emits: ['click-element'],
@@ -77,22 +85,6 @@ const NativeElement: any = defineComponent({
 
     const transformCache = inject<TransformCache>('transformCache')
 
-    const posedTransform = computed(() => {
-      return resolveRelativePose(
-        boneMap.value,
-        props.relativeRootBoneId,
-        myElement.value.boneId,
-        transformCache
-      )
-    })
-
-    const transformStr = computed(() => {
-      return toTransformStr(
-        element.value.attributs.transform,
-        posedTransform.value
-      )
-    })
-
     // eslint-disable-next-line no-unused-vars
     const onClickElement = inject<(id: string, shift: boolean) => void>(
       'onClickElement',
@@ -105,6 +97,55 @@ const NativeElement: any = defineComponent({
       onClickElement(element.value.id, e.shiftKey)
     }
 
+    const groupSelected = computed(() => {
+      if (!isElement.value) return props.groupSelected
+      return props.groupSelected || selectedMap.value[element.value.id]
+    })
+
+    const posedTransform = computed(() => {
+      return resolveRelativePose(
+        boneMap.value,
+        props.relativeRootBoneId,
+        myElement.value.boneId,
+        transformCache
+      )
+    })
+
+    const poseTransformMatrix = computed(() => {
+      return multiAffines(
+        [
+          props.nativeMatrix ? invertTransform(props.nativeMatrix) : undefined,
+          posedTransform.value ? poseToAffine(posedTransform.value) : undefined,
+        ].filter((m): m is AffineMatrix => !!m)
+      )
+    })
+
+    const nativeMatrix = computed(() => {
+      if (!isElement.value) return
+      return multiAffines(
+        [
+          props.nativeMatrix,
+          element.value.attributs.transform
+            ? parseTransform(element.value.attributs.transform)
+            : undefined,
+        ].filter((m): m is AffineMatrix => !!m)
+      )
+    })
+
+    const resolvedTransformMatrix = computed(() => {
+      if (!isElement.value) return
+      return multiAffines(
+        [poseTransformMatrix.value, nativeMatrix.value].filter(
+          (m): m is AffineMatrix => !!m
+        )
+      )
+    })
+
+    const transformStr = computed(() => {
+      if (!resolvedTransformMatrix.value) return ''
+      return affineToTransform(resolvedTransformMatrix.value)
+    })
+
     const attributs = computed(() => {
       return {
         ...element.value.attributs,
@@ -115,18 +156,15 @@ const NativeElement: any = defineComponent({
       }
     })
 
-    const groupSelected = computed(() => {
-      if (!isElement.value) return props.groupSelected
-      return props.groupSelected || selectedMap.value[element.value.id]
-    })
-
     const children = computed(() => {
       return Array.isArray(element.value.children)
         ? element.value.children.map((c) =>
             h(NativeElement, {
               element: c,
-              relativeRootBoneId: myElement.value.boneId,
+              relativeRootBoneId:
+                myElement.value.boneId || props.relativeRootBoneId,
               groupSelected: groupSelected.value,
+              nativeMatrix: nativeMatrix.value,
             })
           )
         : element.value.children

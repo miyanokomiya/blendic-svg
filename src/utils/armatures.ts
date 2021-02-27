@@ -12,18 +12,32 @@ import {
 } from '../models/index'
 import {
   add,
+  AffineMatrix,
   getPolygonCenter,
-  getRadian,
   interpolateScaler,
   interpolateVector,
   isSame,
   IVec2,
   multi,
+  multiAffines,
   rotate,
   sub,
 } from 'okageo'
 import { dropMapIfFalse, mapReduce, toList } from './commons'
 import { getNextName } from './relations'
+
+export function poseToAffine(transform: Transform): AffineMatrix {
+  const rad = (transform.rotate / 180) * Math.PI
+  const cos = Math.cos(rad)
+  const sin = Math.sin(rad)
+  return multiAffines([
+    [1, 0, 0, 1, transform.translate.x, transform.translate.y],
+    [1, 0, 0, 1, transform.origin.x, transform.origin.y],
+    [transform.scale.x, 0, 0, transform.scale.y, 0, 0],
+    [cos, sin, -sin, cos, 0, 0],
+    [1, 0, 0, 1, -transform.origin.x, -transform.origin.y],
+  ])
+}
 
 export function multiPoseTransform(a: Transform, b: Transform): Transform {
   return getTransform({

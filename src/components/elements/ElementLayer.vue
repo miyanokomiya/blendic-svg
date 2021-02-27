@@ -73,7 +73,7 @@ export default defineComponent({
             ...b,
             transform: convolutePoseTransforms([
               animationStore.getCurrentSelfTransforms(b.id),
-              canvasStore.getEditTransforms(b.id),
+              canvasStore.getEditPoseTransforms(b.id),
             ]),
           }
         })

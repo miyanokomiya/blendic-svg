@@ -60,8 +60,8 @@ Copyright (C) 2021, Tomoya Komiyama.
         :height="originalViewBox.height"
         fill="none"
         stroke="black"
-        stroke-width="1"
-        stroke-dasharray="4 4"
+        :stroke-width="1 * scale"
+        :stroke-dasharray="`${4 * scale} ${4 * scale}`"
       ></rect>
       <line
         v-if="gridLineElm"

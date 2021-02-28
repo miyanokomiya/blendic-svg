@@ -28,6 +28,7 @@ import {
   getElementNode,
   toMap,
 } from '../models'
+import { extractMap, toList } from './commons'
 
 export function parseFromSvg(svgText: string): Actor {
   const domParser = new DOMParser()
@@ -112,4 +113,14 @@ export function cleanActors(actors: Actor[], armatures: Armature[]): Actor[] {
       })),
     }
   })
+}
+
+export function inheritWeight(old: Actor, next: Actor): Actor {
+  const oldMap = toMap(old.elements)
+  const nextMap = toMap(next.elements)
+  const elements = toList({
+    ...toMap(next.elements),
+    ...extractMap(oldMap, nextMap),
+  })
+  return { ...next, armatureId: old.armatureId, elements }
 }

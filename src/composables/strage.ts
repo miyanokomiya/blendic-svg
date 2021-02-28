@@ -26,7 +26,7 @@ import { useCanvasStore } from '../store/canvas'
 import { useElementStore } from '../store/element'
 import { useHistoryStore } from '../store/history'
 import { cleanActions } from '../utils/animations'
-import { cleanActors, parseFromSvg } from '../utils/elements'
+import { cleanActors, inheritWeight, parseFromSvg } from '../utils/elements'
 import { bakeKeyframes } from '../utils/poseResolver'
 
 interface Root {
@@ -87,12 +87,22 @@ export function useStrage() {
     saveJson(json, state.currentFileName)
   }
 
-  async function loadSvgFile() {
+  async function loadSvgFile(isInheritWeight = false) {
     try {
       const file = await showOpenFileDialog('.svg, image/svg+xml')
       const svg = await readAsText(file)
       const actor = parseFromSvg(svg)
-      elementStore.initState([actor])
+
+      if (isInheritWeight) {
+        const oldActor = elementStore.lastSelectedActor.value
+        if (oldActor) {
+          elementStore.initState([inheritWeight(oldActor, actor)])
+        } else {
+          elementStore.initState([actor])
+        }
+      } else {
+        elementStore.initState([actor])
+      }
     } catch (e) {
       alert('Failed to load: Invalid file.')
     }

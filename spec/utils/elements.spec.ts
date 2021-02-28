@@ -24,7 +24,7 @@ import {
   getBone,
   getElementNode,
 } from '/@/models'
-import { cleanActors, parseFromSvg } from '/@/utils/elements'
+import { cleanActors, inheritWeight, parseFromSvg } from '/@/utils/elements'
 
 const svgText_1 = `
 <svg id="svg_1" xmlns="http://www.w3.org/2000/svg" viewBox="1 2  3   4">
@@ -156,6 +156,46 @@ describe('utils/elements.ts', () => {
           ],
         }),
       ])
+    })
+  })
+
+  describe('inheritWeight', () => {
+    it('inhefit old weight info to new elements', () => {
+      expect(
+        inheritWeight(
+          getActor({
+            id: 'old_act',
+            armatureId: 'old_arm',
+            elements: [
+              getBElement({ id: 'old_elm_1', boneId: 'old_bone_1' }),
+              getBElement({ id: 'old_elm_2', boneId: 'old_bone_2' }),
+              getBElement({ id: 'old_elm_3', boneId: 'old_bone_3' }),
+            ],
+            svgTree: getElementNode({ id: 'old_svg' }),
+          }),
+          getActor({
+            id: 'new_act',
+            armatureId: '',
+            elements: [
+              getBElement({ id: 'old_elm_1', boneId: 'old_bone_1' }),
+              getBElement({ id: 'old_elm_2', boneId: 'old_bone_2' }),
+              getBElement({ id: 'new_elm_3', boneId: 'new_bone_3' }),
+            ],
+            svgTree: getElementNode({ id: 'new_svg' }),
+          })
+        )
+      ).toEqual(
+        getActor({
+          id: 'new_act',
+          armatureId: 'old_arm',
+          elements: [
+            getBElement({ id: 'old_elm_1', boneId: 'old_bone_1' }),
+            getBElement({ id: 'old_elm_2', boneId: 'old_bone_2' }),
+            getBElement({ id: 'new_elm_3', boneId: 'new_bone_3' }),
+          ],
+          svgTree: getElementNode({ id: 'new_svg' }),
+        })
+      )
     })
   })
 })

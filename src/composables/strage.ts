@@ -36,6 +36,8 @@ interface Root {
 }
 
 interface BakedData {
+  // data format version (not same as app version)
+  version: string
   matrixMapPerFrame: IdMap<AffineMatrix>[]
   svgTree: ElementNode
 }
@@ -123,6 +125,7 @@ export function useStrage() {
     )
 
     const data: BakedData = {
+      version: '0.0.1',
       matrixMapPerFrame,
       svgTree: actor.svgTree,
     }

@@ -30,7 +30,6 @@ Copyright (C) 2021, Tomoya Komiyama.
     </ul>
     <div v-if="currentTab !== ''" class="tab-content">
       <ItemPanel v-if="currentTab === 'item'" />
-      <WeightPanel v-else-if="currentTab === 'weight'" />
       <ViewPanel v-else-if="currentTab === 'view'" />
     </div>
   </div>
@@ -39,19 +38,17 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
 import ItemPanel from '/@/components/panelContents/ItemPanel.vue'
-import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
 import ViewPanel from '/@/components/panelContents/ViewPanel.vue'
 
 type TabName = '' | 'item' | 'weight' | 'view'
 
 export default defineComponent({
-  components: { ItemPanel, WeightPanel, ViewPanel },
+  components: { ItemPanel, ViewPanel },
   setup() {
     const currentTab = ref<TabName>('item')
 
     const tabs = computed((): { key: TabName; label: string }[] => [
       { key: 'item', label: 'Item' },
-      { key: 'weight', label: 'Weight' },
       { key: 'view', label: 'View' },
     ])
 

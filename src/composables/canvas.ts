@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ref, reactive, computed } from 'vue'
-import { IVec2, multi, sub, add, getRectCenter } from 'okageo'
+import { IVec2, multi, sub, add, getRectCenter, IRectangle } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import { scaleRate } from '../models'
 
@@ -135,5 +135,54 @@ export function useCanvas(
         )
       )
     },
+  }
+}
+
+export function centerizeView(
+  targetViewSize: {
+    width: number
+    height: number
+  },
+  viewSize: {
+    width: number
+    height: number
+  },
+  margin = 0
+): {
+  viewOrigin: IVec2
+  scale: number
+} {
+  const adjustedViewbox = {
+    width: viewSize.width - margin,
+    height: viewSize.height - margin,
+  }
+  const rateW = adjustedViewbox.width / targetViewSize.width
+  const rateH = adjustedViewbox.height / targetViewSize.height
+
+  if (rateW < rateH) {
+    const scale = 1 / rateW
+    const m = (-margin * scale) / 2
+    return {
+      viewOrigin: {
+        x: m,
+        y:
+          m +
+          ((targetViewSize.height / scale - adjustedViewbox.height) / 2) *
+            scale,
+      },
+      scale,
+    }
+  } else {
+    const scale = 1 / rateH
+    const m = (-margin * scale) / 2
+    return {
+      viewOrigin: {
+        x:
+          m +
+          ((targetViewSize.width / scale - adjustedViewbox.width) / 2) * scale,
+        y: m,
+      },
+      scale,
+    }
   }
 }

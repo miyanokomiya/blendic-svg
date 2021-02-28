@@ -114,6 +114,7 @@ import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import { useWindow } from '../composables/window'
 import { useAnimationStore } from '../store/animation'
+import { centerizeView } from '../composables/canvas'
 
 export default defineComponent({
   components: { ScaleMarker, CanvasModepanel, CommandExamPanel },
@@ -186,6 +187,14 @@ export default defineComponent({
     const viewCenter = computed(() =>
       getRectCenter({ x: 0, y: 0, ...viewSize })
     )
+
+    function initView() {
+      const ret = centerizeView(props.originalViewBox, viewSize, 50)
+      viewOrigin.value = ret.viewOrigin
+      scale.value = ret.scale
+    }
+    watch(viewSize, initView)
+    watch(() => props.originalViewBox, initView)
 
     const gridLineElm = computed(() => {
       if (canvasStore.state.axisGrid === '') return

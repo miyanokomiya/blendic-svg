@@ -25,9 +25,18 @@ import {
   multiAffine,
   multiAffines,
 } from 'okageo'
-import { getBElement, getBone, getElementNode, getTransform } from '/@/models'
+import {
+  getBElement,
+  getBone,
+  getElementNode,
+  getKeyframe,
+  getTransform,
+} from '/@/models'
+import { poseToAffine } from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
 import {
+  bakeKeyframe,
+  bakeKeyframes,
   getNativeDeformMatrix,
   getPoseDeformMatrix,
   getPosedElementMatrixMap,
@@ -188,6 +197,70 @@ describe('utils/poseResolver.ts', () => {
       expect(
         JSON.stringify(mapReduce(map, affineToTransform), null, ' ')
       ).toMatchSnapshot()
+    })
+  })
+
+  describe('bake', () => {
+    const keyMap = {
+      bone_a: [
+        getKeyframe({
+          id: 'a',
+          boneId: 'bone_a',
+          transform: getTransform({ rotate: 10 }),
+          frame: 1,
+        }),
+        getKeyframe({
+          id: 'a',
+          boneId: 'bone_a',
+          transform: getTransform({ rotate: 30 }),
+          frame: 3,
+        }),
+      ],
+    }
+    const boneMap = {
+      bone_a: getBone({ id: 'bone_a' }),
+    }
+    const elementMap = {
+      elm_a: getBElement({ id: 'elm_a', boneId: 'bone_a' }),
+      elm_b: getBElement({ id: 'elm_b', boneId: '' }),
+    }
+    const root = getElementNode({
+      id: 'root',
+      children: [
+        getElementNode({ id: 'elm_a' }),
+        getElementNode({ id: 'elm_b' }),
+      ],
+    })
+
+    describe('bakeKeyframes', () => {
+      it('bake poses from frame 0 to endFrame', () => {
+        const res = bakeKeyframes(keyMap, boneMap, elementMap, root, 5)
+        expect(Object.keys(res).sort()).toEqual(['0', '1', '2', '3', '4', '5'])
+        expect(res[2]).toEqual({
+          root: IDENTITY_AFFINE,
+          elm_a: poseToAffine(getTransform({ rotate: 20 })),
+          elm_b: IDENTITY_AFFINE,
+        })
+      })
+    })
+
+    describe('bakeKeyframe', () => {
+      it('bake interpolated poses', () => {
+        expect(bakeKeyframe(keyMap, boneMap, elementMap, root, 2)).toEqual({
+          root: IDENTITY_AFFINE,
+          elm_a: poseToAffine(getTransform({ rotate: 20 })),
+          elm_b: IDENTITY_AFFINE,
+        })
+      })
+      it('json snapshot', () => {
+        expect(
+          JSON.stringify(
+            bakeKeyframe(keyMap, boneMap, elementMap, root, 2),
+            null,
+            ' '
+          )
+        ).toMatchSnapshot()
+      })
     })
   })
 })

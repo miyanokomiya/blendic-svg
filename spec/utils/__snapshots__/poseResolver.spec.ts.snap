@@ -1,5 +1,34 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`utils/poseResolver.ts bake bakeKeyframe json snapshot 1`] = `
+"{
+ \\"root\\": [
+  1,
+  0,
+  0,
+  1,
+  0,
+  0
+ ],
+ \\"elm_a\\": [
+  0.9396926207859084,
+  0.3420201433256687,
+  -0.3420201433256687,
+  0.9396926207859084,
+  0,
+  0
+ ],
+ \\"elm_b\\": [
+  1,
+  0,
+  0,
+  1,
+  0,
+  0
+ ]
+}"
+`;
+
 exports[`utils/poseResolver.ts getPosedElementMatrixMap get matrix tree 1`] = `
 "{
  \\"root\\": \\"matrix(1,0,0,1,0,0)\\",

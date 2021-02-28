@@ -25,9 +25,18 @@ import {
   multiAffines,
   parseTransform,
 } from 'okageo'
-import { BElement, Bone, ElementNode, IdMap, toMap, Transform } from '../models'
+import {
+  Keyframe,
+  BElement,
+  Bone,
+  ElementNode,
+  IdMap,
+  toMap,
+  Transform,
+} from '../models'
+import { getInterpolatedTransformMapByBoneId } from './animations'
 import { getTransformedBoneMap, poseToAffine } from './armatures'
-import { getParentIdPath } from './commons'
+import { getParentIdPath, mapReduce } from './commons'
 import { getTnansformStr } from './helpers'
 
 export type TransformCache = {
@@ -220,4 +229,32 @@ function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {
       ? parseTransform(node.attributs.transform)
       : undefined
   )
+}
+
+export function bakeKeyframes(
+  keyframeMapByBoneId: IdMap<Keyframe[]>,
+  boneMap: IdMap<Bone>,
+  elementMap: IdMap<BElement>,
+  svgRoot: ElementNode,
+  endFrame: number
+): { [frame: number]: IdMap<AffineMatrix> } {
+  return [...Array(endFrame + 1)].reduce((p, _, i) => {
+    p[i] = bakeKeyframe(keyframeMapByBoneId, boneMap, elementMap, svgRoot, i)
+    return p
+  }, {})
+}
+
+export function bakeKeyframe(
+  keyframeMapByBoneId: IdMap<Keyframe[]>,
+  boneMap: IdMap<Bone>,
+  elementMap: IdMap<BElement>,
+  svgRoot: ElementNode,
+  currentFrame: number
+): IdMap<AffineMatrix> {
+  const interpolatedBoneMap = mapReduce(
+    getInterpolatedTransformMapByBoneId(keyframeMapByBoneId, currentFrame),
+    (transform, id) => ({ ...boneMap[id], transform })
+  )
+
+  return getPosedElementMatrixMap(interpolatedBoneMap, elementMap, svgRoot)
 }

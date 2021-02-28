@@ -38,6 +38,7 @@ import {
   applyScale,
   invertScaleOrZero,
 } from '../utils/armatures'
+import { normalizeRad } from '../utils/geometry'
 
 interface State {
   command: EditMode
@@ -113,11 +114,10 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
 
     if (state.command === 'rotate') {
       const origin = animationStore.selectedPosedBoneOrigin.value
-      const rotate =
-        ((getRadian(state.editMovement.current, origin) -
-          getRadian(state.editMovement.start, origin)) /
-          Math.PI) *
-        180
+      const rad =
+        getRadian(state.editMovement.current, origin) -
+        getRadian(state.editMovement.start, origin)
+      const rotate = (normalizeRad(rad) / Math.PI) * 180
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>
       >((map, id) => {

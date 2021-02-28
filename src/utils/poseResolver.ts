@@ -17,10 +17,26 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { AffineMatrix, invertTransform, multiAffines } from 'okageo'
-import { Bone, IdMap, toMap, Transform } from '../models'
-import { getTransformedBoneMap } from './armatures'
-import { getParentIdPath } from './commons'
+import {
+  AffineMatrix,
+  affineToTransform,
+  IDENTITY_AFFINE,
+  invertTransform,
+  multiAffines,
+  parseTransform,
+} from 'okageo'
+import {
+  Keyframe,
+  BElement,
+  Bone,
+  ElementNode,
+  IdMap,
+  toMap,
+  Transform,
+} from '../models'
+import { getInterpolatedTransformMapByBoneId } from './animations'
+import { getTransformedBoneMap, poseToAffine } from './armatures'
+import { getParentIdPath, mapReduce } from './commons'
 import { getTnansformStr } from './helpers'
 
 export type TransformCache = {
@@ -100,4 +116,144 @@ export function getNativeDeformMatrix(
       (m): m is AffineMatrix => !!m
     )
   )
+}
+
+export function getPosedElementTree(
+  boneMap: IdMap<Bone>,
+  elementMap: IdMap<BElement>,
+  svgTree: ElementNode
+) {
+  return getPosedElementNode(
+    getPosedElementMatrixMap(
+      boneMap,
+      elementMap,
+      svgTree,
+      undefined,
+      undefined,
+      {}
+    ),
+    elementMap,
+    svgTree
+  )
+}
+
+export function getPosedElementMatrixMap(
+  boneMap: IdMap<Bone>,
+  elementMap: IdMap<BElement>,
+  node: ElementNode,
+  relativeRootBoneId = '',
+  spaceNativeMatrix = IDENTITY_AFFINE,
+  transformCache?: TransformCache
+): IdMap<AffineMatrix> {
+  const bElement = elementMap[node.id]
+  const spacePoseMatrix = getSpacePoseMatrix(
+    boneMap,
+    relativeRootBoneId,
+    transformCache
+  )
+  const boundBoneId = bElement?.boneId || relativeRootBoneId
+  const selfPoseMatrix = getSelfPoseMatrix(boneMap, boundBoneId, transformCache)
+  const nativeMatrix = getnativeMatrix(node, spaceNativeMatrix)
+  const transform = multiAffines(
+    [
+      getPoseDeformMatrix(spacePoseMatrix, selfPoseMatrix, spaceNativeMatrix),
+      nativeMatrix,
+    ].filter((m): m is AffineMatrix => !!m)
+  )
+
+  return {
+    [node.id]: transform,
+    ...node.children.reduce<IdMap<AffineMatrix>>((p, c) => {
+      if (typeof c === 'string') return p
+      p = {
+        ...p,
+        ...getPosedElementMatrixMap(
+          boneMap,
+          elementMap,
+          c,
+          boundBoneId,
+          nativeMatrix,
+          transformCache
+        ),
+      }
+      return p
+    }, {}),
+  }
+}
+
+function getPosedElementNode(
+  matrixMap: IdMap<AffineMatrix>,
+  elementMap: IdMap<BElement>,
+  node: ElementNode
+): ElementNode {
+  const transformStr = matrixMap[node.id]
+    ? affineToTransform(matrixMap[node.id])
+    : ''
+
+  return {
+    id: node.id,
+    tag: node.tag,
+    attributs: {
+      ...node.attributs,
+      transform: transformStr,
+    },
+    children: node.children.map((c) => {
+      if (typeof c === 'string') return c
+      return getPosedElementNode(matrixMap, elementMap, c)
+    }),
+  }
+}
+
+function getSpacePoseMatrix(
+  boneMap: IdMap<Bone>,
+  relativeRootBoneId: string,
+  transformCache?: TransformCache
+) {
+  const t = resolveRelativePose(boneMap, '', relativeRootBoneId, transformCache)
+  return t ? poseToAffine(t) : undefined
+}
+
+function getSelfPoseMatrix(
+  boneMap: IdMap<Bone>,
+  boundBoneId: string,
+  transformCache?: TransformCache
+) {
+  const t = resolveRelativePose(boneMap, '', boundBoneId, transformCache)
+  return t ? poseToAffine(t) : undefined
+}
+
+function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {
+  return getNativeDeformMatrix(
+    spaceNativeMatrix,
+    node.attributs.transform
+      ? parseTransform(node.attributs.transform)
+      : undefined
+  )
+}
+
+export function bakeKeyframes(
+  keyframeMapByBoneId: IdMap<Keyframe[]>,
+  boneMap: IdMap<Bone>,
+  elementMap: IdMap<BElement>,
+  svgRoot: ElementNode,
+  endFrame: number
+): IdMap<AffineMatrix>[] {
+  return [...Array(endFrame + 1)].map((_, i) => {
+    return bakeKeyframe(keyframeMapByBoneId, boneMap, elementMap, svgRoot, i)
+  })
+}
+
+export function bakeKeyframe(
+  keyframeMapByBoneId: IdMap<Keyframe[]>,
+  boneMap: IdMap<Bone>,
+  elementMap: IdMap<BElement>,
+  svgRoot: ElementNode,
+  currentFrame: number
+): IdMap<AffineMatrix> {
+  const interpolatedBoneMap = mapReduce(
+    getInterpolatedTransformMapByBoneId(keyframeMapByBoneId, currentFrame),
+    (transform, id) => ({ ...boneMap[id], transform })
+  )
+
+  return getPosedElementMatrixMap(interpolatedBoneMap, elementMap, svgRoot)
 }

@@ -17,8 +17,9 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { AffineMatrix } from 'okageo'
 import { reactive } from 'vue'
-import { Action, Actor, Armature } from '../models'
+import { Action, Actor, Armature, ElementNode, IdMap, toMap } from '../models'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import { useCanvasStore } from '../store/canvas'
@@ -26,11 +27,17 @@ import { useElementStore } from '../store/element'
 import { useHistoryStore } from '../store/history'
 import { cleanActions } from '../utils/animations'
 import { cleanActors, parseFromSvg } from '../utils/elements'
+import { bakeKeyframes } from '../utils/poseResolver'
 
 interface Root {
   armatures: Armature[]
   actions: Action[]
   actors: Actor[]
+}
+
+interface BakedData {
+  matrixMapPerFrame: IdMap<AffineMatrix>[]
+  svgTree: ElementNode
 }
 
 export function useStrage() {
@@ -91,10 +98,33 @@ export function useStrage() {
     }
   }
 
+  function bakeAction() {
+    const armature = store.lastSelectedArmature.value
+    const action = animationStore.selectedAction.value
+    const actor = elementStore.lastSelectedActor.value
+    if (!armature || !action || !actor) return
+
+    const matrixMapPerFrame = bakeKeyframes(
+      animationStore.keyframeMapByBoneId.value,
+      store.boneMap.value,
+      toMap(actor.elements),
+      actor.svgTree,
+      animationStore.endFrame.value
+    )
+
+    const data: BakedData = {
+      matrixMapPerFrame,
+      svgTree: actor.svgTree,
+    }
+
+    saveJson(JSON.stringify(data), action.name + '.json')
+  }
+
   return {
     loadProjectFile,
     saveProjectFile,
     loadSvgFile,
+    bakeAction,
   }
 }
 

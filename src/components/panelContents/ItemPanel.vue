@@ -18,8 +18,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div class="item-panel">
-    <h4>Item</h4>
+  <WeightPanel v-if="canvasMode === 'weight'" />
+  <div v-else-if="canvasMode === 'pose'" class="item-panel">
+    <h4>Pose</h4>
     <form v-if="targetTransform" @submit.prevent>
       <h5>Translate</h5>
       <div class="field">
@@ -59,7 +60,13 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
       </div>
     </form>
-    <form v-else-if="targetBone" @submit.prevent>
+    <div v-else>
+      <p>No Item</p>
+    </div>
+  </div>
+  <div v-else-if="canvasMode === 'edit'" class="item-panel">
+    <h4>Bone</h4>
+    <form v-if="targetBone" @submit.prevent>
       <h5>Head</h5>
       <div class="field">
         <label>x</label>
@@ -105,9 +112,10 @@ import { useAnimationStore } from '/@/store/animation'
 import { useCanvasStore } from '/@/store/canvas'
 import { convolutePoseTransforms, editTransform } from '/@/utils/armatures'
 import NumberInput from '/@/components/atoms/NumberInput.vue'
+import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
 
 export default defineComponent({
-  components: { NumberInput },
+  components: { NumberInput, WeightPanel },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
@@ -236,6 +244,7 @@ export default defineComponent({
     })
 
     return {
+      canvasMode: computed(() => canvasStore.state.canvasMode),
       targetBone,
       draftBone,
       changeBoneHeadX,

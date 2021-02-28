@@ -60,8 +60,15 @@ export default defineComponent({
     provide('selectedMap', selectedMap)
 
     const boneMap = computed(() => {
+      if (!['pose', 'weight'].includes(canvasMode.value)) return {}
+
+      const armature = store.state.armatures.find(
+        (a) => a.id === elementStore.lastSelectedActor.value?.armatureId
+      )
+      if (!armature) return {}
+
       return toMap(
-        (store.lastSelectedArmature.value?.bones ?? []).map((b) => {
+        armature.bones.map((b) => {
           return {
             ...b,
             transform: convolutePoseTransforms([

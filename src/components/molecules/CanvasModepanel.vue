@@ -26,16 +26,16 @@ Copyright (C) 2021, Tomoya Komiyama.
       Object
     </button>
     <button
-      :class="{ selected: canvasMode === 'pose' }"
-      @click="changeMode('pose')"
-    >
-      Pose
-    </button>
-    <button
       :class="{ selected: canvasMode === 'edit' }"
       @click="changeMode('edit')"
     >
       Edit
+    </button>
+    <button
+      :class="{ selected: canvasMode === 'pose' }"
+      @click="changeMode('pose')"
+    >
+      Pose
     </button>
     <button
       :class="{ selected: canvasMode === 'weight' }"

@@ -28,6 +28,10 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div class="menu-list">
       <button type="button" @click="importSvg">SVG (Ctrl + O)</button>
     </div>
+    <h3>Export</h3>
+    <div class="menu-list">
+      <button type="button" @click="bakeAction">Bake</button>
+    </div>
   </div>
 </template>
 
@@ -50,6 +54,10 @@ export default defineComponent({
       importSvg() {
         const strage = useStrage()
         strage.loadSvgFile()
+      },
+      bakeAction() {
+        const strage = useStrage()
+        strage.bakeAction()
       },
     }
   },

@@ -237,11 +237,10 @@ export function bakeKeyframes(
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
   endFrame: number
-): { [frame: number]: IdMap<AffineMatrix> } {
-  return [...Array(endFrame + 1)].reduce((p, _, i) => {
-    p[i] = bakeKeyframe(keyframeMapByBoneId, boneMap, elementMap, svgRoot, i)
-    return p
-  }, {})
+): IdMap<AffineMatrix>[] {
+  return [...Array(endFrame + 1)].map((_, i) => {
+    return bakeKeyframe(keyframeMapByBoneId, boneMap, elementMap, svgRoot, i)
+  })
 }
 
 export function bakeKeyframe(

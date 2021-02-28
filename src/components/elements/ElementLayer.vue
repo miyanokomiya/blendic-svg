@@ -53,18 +53,11 @@ export default defineComponent({
 
     const canvasMode = computed(() => canvasStore.state.canvasMode)
 
-    const elementNodeList = computed(() => {
-      return elementStore.lastSelectedActor.value?.svgTree.children ?? []
-    })
-
-    const elementMap = computed(() => {
-      return toMap(elementStore.lastSelectedActor.value?.elements ?? [])
-    })
-
     const selectedMap = computed(() => {
       if (canvasMode.value !== 'weight') return {}
       return elementStore.selectedElements.value
     })
+    provide('selectedMap', selectedMap)
 
     const boneMap = computed(() => {
       return toMap(
@@ -84,7 +77,7 @@ export default defineComponent({
       if (!elementStore.lastSelectedActor.value) return
       return getPosedElementTree(
         boneMap.value,
-        elementMap.value,
+        toMap(elementStore.lastSelectedActor.value?.elements ?? []),
         elementStore.lastSelectedActor.value.svgTree
       )
     })
@@ -93,13 +86,10 @@ export default defineComponent({
       if (canvasMode.value !== 'weight') return
       elementStore.selectElement(id, shift)
     }
-
     provide('onClickElement', clickElement)
-    provide('selectedMap', selectedMap)
 
     return {
       elementRoot: posedElementRoot,
-      elementNodeList,
       getId,
     }
   },

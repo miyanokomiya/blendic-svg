@@ -27,15 +27,16 @@ export interface BoneConstraintOption {
   LIMIT_ROTATION: { min: number; max: number; influence: number }
 }
 
-export interface BoneConstraint<N extends BoneConstraintName> {
+interface _BoneConstraint<N extends BoneConstraintName> {
   name: N
   option: BoneConstraintOption[N]
 }
+export type BoneConstraint = _BoneConstraint<BoneConstraintName>
 
 export function CreateConstraint<N extends BoneConstraintName>(
   name: N,
   option: BoneConstraintOption[N]
-): BoneConstraint<N> {
+): _BoneConstraint<N> {
   return {
     name,
     option,
@@ -44,7 +45,7 @@ export function CreateConstraint<N extends BoneConstraintName>(
 
 export function applyConstraint<N extends BoneConstraintName>(
   boneId: string,
-  constraint: BoneConstraint<N>,
+  constraint: _BoneConstraint<N>,
   boneMap: IdMap<Bone>
 ): IdMap<Bone> {
   if (constraint.name === 'IK') {

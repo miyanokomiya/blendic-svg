@@ -35,8 +35,12 @@ import { ElementNode, toMap } from '/@/models'
 import { useCanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '/@/store/animation'
 import { useStore } from '/@/store'
-import { convolutePoseTransforms } from '/@/utils/armatures'
+import {
+  convolutePoseTransforms,
+  getTransformedBoneMap,
+} from '/@/utils/armatures'
 import { getPosedElementTree } from '/@/utils/poseResolver'
+import { applyAllConstraints } from '/@/utils/constraints'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -67,16 +71,20 @@ export default defineComponent({
       )
       if (!armature) return {}
 
-      return toMap(
-        armature.bones.map((b) => {
-          return {
-            ...b,
-            transform: convolutePoseTransforms([
-              animationStore.getCurrentSelfTransforms(b.id),
-              canvasStore.getEditPoseTransforms(b.id),
-            ]),
-          }
-        })
+      return applyAllConstraints(
+        getTransformedBoneMap(
+          toMap(
+            armature.bones.map((b) => {
+              return {
+                ...b,
+                transform: convolutePoseTransforms([
+                  animationStore.getCurrentSelfTransforms(b.id),
+                  canvasStore.getEditPoseTransforms(b.id),
+                ]),
+              }
+            })
+          )
+        )
       )
     })
 

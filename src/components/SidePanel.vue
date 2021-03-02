@@ -40,7 +40,10 @@ Copyright (C) 2021, Tomoya Komiyama.
             />
           </div>
         </form>
-        <form v-if="selectedObjectType === 'bone'" @submit.prevent>
+        <form
+          v-if="selectedObjectType === 'bone' && lastSelectedBone"
+          @submit.prevent
+        >
           <h3>Bone</h3>
           <div class="field inline">
             <label>Name</label>
@@ -48,11 +51,30 @@ Copyright (C) 2021, Tomoya Komiyama.
           </div>
           <div class="field inline">
             <label>Parent</label>
-            <SelectField v-model="parentId" :options="parentOptions" />
+            <SelectField v-model="parentId" :options="otherBoneOptions" />
           </div>
           <div class="field inline">
             <label>Connect</label>
             <input v-model="connected" type="checkbox" :disabled="!parentId" />
+          </div>
+          <div class="field inline">
+            <label>Constraints</label>
+            <SelectField
+              v-model="boneConstraintName"
+              :options="[{ value: 'IK', label: 'IK' }]"
+            />
+          </div>
+          <div v-for="(c, i) in lastSelectedBone.constraints" :key="c.name">
+            <div v-if="c.name === 'IK'">
+              <IKOptionField
+                :model-value="c.option"
+                :bone-options="otherBoneOptions"
+                @update:modelValue="(option) => updateConstraint(i, option)"
+              />
+              <div class="delete-constraint">
+                <button type="button" @click="deleteConstraint(i)">x</button>
+              </div>
+            </div>
           </div>
         </form>
       </template>
@@ -75,6 +97,12 @@ import SelectField from './atoms/SelectField.vue'
 import HistoryStack from '/@/components/panelContents/HistoryStack.vue'
 import FilePanel from '/@/components/panelContents/FilePanel.vue'
 import TreePanel from '/@/components/panelContents/TreePanel.vue'
+import {
+  BoneConstraintName,
+  BoneConstraintOption,
+  CreateConstraint,
+} from '../utils/constraints'
+import IKOptionField from '/@/components/molecules/constraints/IKOptionField.vue'
 
 export default defineComponent({
   components: {
@@ -83,44 +111,79 @@ export default defineComponent({
     SelectField,
     FilePanel,
     TreePanel,
+    IKOptionField,
   },
   setup() {
     const store = useStore()
     const draftName = ref('')
 
-    const parentOptions = computed(() => {
-      if (!store.lastSelectedArmature.value) return []
+    const lastSelectedBone = computed(() => {
+      return store.lastSelectedBone.value
+    })
+
+    const otherBoneOptions = computed(() => {
+      if (!store.lastSelectedArmature.value || !lastSelectedBone.value)
+        return []
+
       return store.lastSelectedArmature.value.bones
-        .filter((b) => b.id !== store.lastSelectedBone.value?.id)
+        .filter((b) => b.id !== lastSelectedBone.value?.id)
         .map((b) => ({ value: b.id, label: b.name }))
     })
 
     const selectedObjectType = computed((): 'bone' | 'armature' | '' => {
-      if (store.lastSelectedBone.value) return 'bone'
+      if (lastSelectedBone.value) return 'bone'
       if (store.lastSelectedArmature.value) return 'armature'
       return ''
     })
 
     function initDraftName() {
-      if (store.lastSelectedBone.value)
-        draftName.value = store.lastSelectedBone.value.name
+      if (lastSelectedBone.value) draftName.value = lastSelectedBone.value.name
       else if (store.lastSelectedArmature.value)
         draftName.value = store.lastSelectedArmature.value.name
       else draftName.value = ''
     }
 
+    function addConstraint(name: BoneConstraintName) {
+      if (!lastSelectedBone.value) return
+
+      const constraints = [
+        ...lastSelectedBone.value.constraints,
+        CreateConstraint(name, {
+          targetId: '',
+          poleTargetId: '',
+          iterations: 20,
+          chainLength: 2,
+        }),
+      ]
+      store.updateBone({ constraints })
+    }
+
+    function updateConstraint(index: number, option: BoneConstraintOption) {
+      if (!lastSelectedBone.value) return
+
+      const constraints = lastSelectedBone.value.constraints.concat()
+      constraints.splice(index, 1, { ...constraints[index], option })
+      store.updateBone({ constraints })
+    }
+
+    function deleteConstraint(index: number) {
+      const constraints = lastSelectedBone.value.constraints.concat()
+      constraints.splice(index, 1)
+      store.updateBone({ constraints })
+    }
+
     watch(store.lastSelectedArmature, initDraftName)
-    watch(store.lastSelectedBone, initDraftName)
+    watch(lastSelectedBone, initDraftName)
 
     return {
       draftName,
       lastSelectedArmature: store.lastSelectedArmature,
-      lastSelectedBone: store.lastSelectedBone,
-      parentOptions,
+      lastSelectedBone,
+      otherBoneOptions,
       selectedObjectType,
       connected: computed({
         get(): boolean {
-          return store.lastSelectedBone.value?.connected ?? false
+          return lastSelectedBone.value?.connected ?? false
         },
         set(val: boolean) {
           store.updateBone({ connected: val })
@@ -128,10 +191,19 @@ export default defineComponent({
       }),
       parentId: computed({
         get(): string {
-          return store.lastSelectedBone.value?.parentId ?? ''
+          return lastSelectedBone.value?.parentId ?? ''
         },
         set(val: string) {
           store.updateBone({ parentId: val })
+        },
+      }),
+      boneConstraintName: computed({
+        get(): BoneConstraintName | '' {
+          return ''
+        },
+        set(val: BoneConstraintName | '') {
+          if (!val) return
+          addConstraint(val)
         },
       }),
       changeArmatureName() {
@@ -142,6 +214,8 @@ export default defineComponent({
         if (!draftName.value) return
         store.updateBone({ name: draftName.value })
       },
+      updateConstraint,
+      deleteConstraint,
     }
   },
 })
@@ -173,6 +247,14 @@ form {
         flex: 1;
         min-width: 50px; // a magic to fix flex width
       }
+    }
+  }
+  .delete-constraint {
+    text-align: right;
+    > button {
+      border: solid 1px #ccc;
+      border-radius: 8px;
+      width: 60px;
     }
   }
 }

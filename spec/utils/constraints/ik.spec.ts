@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getBone } from '/@/models'
+import { getTransform, getBone } from '/@/models'
 import { apply, straightToPoleTarget } from '/@/utils/constraints/ik'
 
 describe('utils/constraints/ik.ts', () => {
@@ -143,6 +143,42 @@ describe('utils/constraints/ik.ts', () => {
         expect(res.b.transform.rotate).toBeCloseTo(-24.29491472973583)
         expect(res.a.transform.translate.x).toBeCloseTo(0)
         expect(res.a.transform.translate.y).toBeCloseTo(0)
+      })
+    })
+    describe('default rotated and translated', () => {
+      const boneMap = {
+        target: getBone({
+          id: 'target',
+          head: { x: 4, y: -2 },
+        }),
+        a: getBone({
+          id: 'a',
+          head: { x: 0, y: 0 },
+          tail: { x: 0, y: 1 },
+          transform: getTransform({
+            translate: { x: -1, y: -2 },
+          }),
+        }),
+        b: getBone({
+          id: 'b',
+          head: { x: 0, y: 1 },
+          tail: { x: 0, y: 2 },
+          parentId: 'a',
+          connected: true,
+        }),
+      }
+      it('2 chain', () => {
+        const option = {
+          targetId: 'target',
+          poleTargetId: '',
+          iterations: 20,
+          chainLength: 2,
+        }
+        const res = apply('b', option, boneMap)
+        expect(res.a.transform.rotate).toBeCloseTo(-90)
+        expect(res.b.transform.rotate).toBeCloseTo(-90)
+        expect(res.a.transform.translate.x).toBeCloseTo(-1)
+        expect(res.a.transform.translate.y).toBeCloseTo(-2)
       })
     })
   })

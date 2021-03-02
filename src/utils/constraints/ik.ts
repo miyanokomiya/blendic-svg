@@ -107,7 +107,7 @@ function getStickInfoTarget(
 ): { rotate: number; translate: IVec2 } {
   const head = add(bone.head, bone.transform.translate)
   const tail = add(bone.tail, bone.transform.translate)
-  const rad = getRadian(targetPoint, head)
+  const rad = getRadian(targetPoint, head) - getRadian(tail, head)
   const rotatedTail = rotate(tail, rad, head)
   return {
     rotate: (rad / Math.PI) * 180,

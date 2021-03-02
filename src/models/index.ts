@@ -21,7 +21,7 @@ import { IRectangle, IVec2 } from 'okageo'
 import { v4 } from 'uuid'
 import { ComputedRef } from 'vue'
 import { toKeyMap } from '../utils/commons'
-import { BoneConstraintName, BoneConstraint } from '../utils/constraints'
+import { BoneConstraint } from '../utils/constraints'
 
 export type IdMap<T> = {
   [id: string]: T
@@ -57,7 +57,7 @@ export interface Bone {
   connected: boolean
   head: IVec2
   tail: IVec2
-  constraints: BoneConstraint<BoneConstraintName>[]
+  constraints: BoneConstraint[]
 }
 
 export interface Armature {

@@ -122,6 +122,8 @@ import { useHistoryStore } from './store/history'
 import { useAnimationStore } from './store/animation'
 import { useStrage } from './composables/strage'
 import { useElementStore } from './store/element'
+import { mapReduce } from './utils/commons'
+import { applyConstraint } from './utils/constraints'
 
 export default defineComponent({
   components: {
@@ -158,7 +160,7 @@ export default defineComponent({
     const posedMap = computed(() => {
       if (!lastSelectedArmature.value) return {}
 
-      return getTransformedBoneMap(
+      const posedMap = getTransformedBoneMap(
         toMap(
           lastSelectedArmature.value.bones.map((b) => {
             return {
@@ -171,6 +173,16 @@ export default defineComponent({
           })
         )
       )
+      let appliedMap = posedMap
+      mapReduce(posedMap, (b) => {
+        appliedMap = b.constraints.reduce((p, c) => {
+          return {
+            ...p,
+            ...applyConstraint(b.id, c, appliedMap),
+          }
+        }, appliedMap)
+      })
+      return appliedMap
     })
 
     const visibledBoneMap = computed(() => {

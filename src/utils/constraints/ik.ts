@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, getRadian, IVec2, rotate, sub } from 'okageo'
+import { add, getRadian, IVec2, multi, rotate, sub } from 'okageo'
 import { getParentIdPath } from '../commons'
 import { Bone, getTransform, IdMap, toMap, Transform } from '/@/models'
 
@@ -33,15 +33,18 @@ export function apply(
   option: Option,
   boneMap: IdMap<Bone>
 ): IdMap<Bone> {
-  const bones = getIKBones(boneId, option, boneMap)
   const target = boneMap[option.targetId]
+  if (!target) return boneMap
+
+  const bones = getIKBones(boneId, option, boneMap)
   const poleTarget = boneMap[option.poleTargetId]
+  const targetPoint = add(target.head, target.transform.translate)
 
   let applied = poleTarget
     ? straightToPoleTarget(poleTarget.head, bones)
     : bones
   for (let i = 0; i < option.iterations; i++) {
-    applied = step(target.head, applied)
+    applied = step(targetPoint, applied)
   }
 
   return {
@@ -85,12 +88,15 @@ function step(targetPoint: IVec2, bones: Bone[]): Bone[] {
     })
     .reverse()
 
-  const stickRootVec = sub(bones[0].head, stickedList[0].transform.translate)
+  const diff = sub(
+    bones[0].transform.translate,
+    stickedList[0].transform.translate
+  )
   return stickedList.map((b) => ({
     ...b,
     transform: {
       ...b.transform,
-      translate: add(b.transform.translate, stickRootVec),
+      translate: add(b.transform.translate, diff),
     },
   }))
 }

@@ -31,49 +31,15 @@ import {
   Bone,
   ElementNode,
   IdMap,
-  toMap,
   Transform,
 } from '../models'
 import { getInterpolatedTransformMapByBoneId } from './animations'
-import { getTransformedBoneMap, poseToAffine } from './armatures'
-import { getParentIdPath, mapReduce } from './commons'
+import { poseToAffine } from './armatures'
+import { mapReduce } from './commons'
 import { getTnansformStr } from './helpers'
 
 export type TransformCache = {
   [relativeRootBoneId: string]: { [boneId: string]: Transform }
-}
-
-export function resolveRelativePose(
-  boneMap: IdMap<Bone>,
-  relativeRootBoneId: string,
-  boneId: string,
-  cacheEffect?: TransformCache
-): Transform | undefined {
-  if (!boneId || !boneMap[boneId]) return
-
-  if (cacheEffect?.[relativeRootBoneId]?.[boneId]) {
-    return cacheEffect[relativeRootBoneId][boneId]
-  }
-
-  // get relative bone's transformation from relativeRootBoneId's tail
-  const parentIdPath = getParentIdPath(boneMap, boneId, relativeRootBoneId)
-  const posedMap = getTransformedBoneMap(
-    toMap([...parentIdPath, boneId].map((id) => boneMap[id]))
-  )
-  const ret = {
-    ...posedMap[boneId].transform,
-    origin: posedMap[boneId].head,
-  }
-
-  if (cacheEffect) {
-    if (cacheEffect[relativeRootBoneId]) {
-      cacheEffect[relativeRootBoneId][boneId] = ret
-    } else {
-      cacheEffect[relativeRootBoneId] = { [boneId]: ret }
-    }
-  }
-
-  return ret
 }
 
 export function toTransformStr(
@@ -129,8 +95,7 @@ export function getPosedElementTree(
       elementMap,
       svgTree,
       undefined,
-      undefined,
-      {}
+      undefined
     ),
     elementMap,
     svgTree
@@ -142,18 +107,15 @@ export function getPosedElementMatrixMap(
   elementMap: IdMap<BElement>,
   node: ElementNode,
   relativeRootBoneId = '',
-  spaceNativeMatrix = IDENTITY_AFFINE,
-  transformCache?: TransformCache
+  spaceNativeMatrix = IDENTITY_AFFINE
 ): IdMap<AffineMatrix> {
   const bElement = elementMap[node.id]
-  const spacePoseMatrix = getSpacePoseMatrix(
-    boneMap,
-    relativeRootBoneId,
-    transformCache
-  )
+  const spacePoseMatrix =
+    getSelfPoseMatrix(boneMap, relativeRootBoneId) ?? IDENTITY_AFFINE
   const boundBoneId = bElement?.boneId || relativeRootBoneId
-  const selfPoseMatrix = getSelfPoseMatrix(boneMap, boundBoneId, transformCache)
+  const selfPoseMatrix = getSelfPoseMatrix(boneMap, boundBoneId)
   const nativeMatrix = getnativeMatrix(node, spaceNativeMatrix)
+
   const transform = multiAffines(
     [
       getPoseDeformMatrix(spacePoseMatrix, selfPoseMatrix, spaceNativeMatrix),
@@ -172,8 +134,7 @@ export function getPosedElementMatrixMap(
           elementMap,
           c,
           boundBoneId,
-          nativeMatrix,
-          transformCache
+          nativeMatrix
         ),
       }
       return p
@@ -204,22 +165,9 @@ function getPosedElementNode(
   }
 }
 
-function getSpacePoseMatrix(
-  boneMap: IdMap<Bone>,
-  relativeRootBoneId: string,
-  transformCache?: TransformCache
-) {
-  const t = resolveRelativePose(boneMap, '', relativeRootBoneId, transformCache)
-  return t ? poseToAffine(t) : undefined
-}
-
-function getSelfPoseMatrix(
-  boneMap: IdMap<Bone>,
-  boundBoneId: string,
-  transformCache?: TransformCache
-) {
-  const t = resolveRelativePose(boneMap, '', boundBoneId, transformCache)
-  return t ? poseToAffine(t) : undefined
+function getSelfPoseMatrix(boneMap: IdMap<Bone>, boundBoneId: string) {
+  const b = boneMap[boundBoneId]
+  return b ? poseToAffine({ ...b.transform, origin: b.head }) : undefined
 }
 
 function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {

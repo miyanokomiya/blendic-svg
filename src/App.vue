@@ -122,8 +122,7 @@ import { useHistoryStore } from './store/history'
 import { useAnimationStore } from './store/animation'
 import { useStrage } from './composables/strage'
 import { useElementStore } from './store/element'
-import { mapReduce } from './utils/commons'
-import { applyConstraint } from './utils/constraints'
+import { applyAllConstraints } from './utils/constraints'
 
 export default defineComponent({
   components: {
@@ -173,16 +172,7 @@ export default defineComponent({
           })
         )
       )
-      let appliedMap = posedMap
-      mapReduce(posedMap, (b) => {
-        appliedMap = b.constraints.reduce((p, c) => {
-          return {
-            ...p,
-            ...applyConstraint(b.id, c, appliedMap),
-          }
-        }, appliedMap)
-      })
-      return appliedMap
+      return applyAllConstraints(posedMap)
     })
 
     const visibledBoneMap = computed(() => {

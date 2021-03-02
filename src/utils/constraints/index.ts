@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { mapReduce } from '../commons'
 import * as ik from './ik'
 import { Bone, IdMap } from '/@/models'
 
@@ -57,4 +58,18 @@ export function applyConstraint<N extends BoneConstraintName>(
   } else {
     return boneMap
   }
+}
+
+export function applyAllConstraints(posedMap: IdMap<Bone>): IdMap<Bone> {
+  let appliedMap = posedMap
+  Object.keys(appliedMap).forEach((id) => {
+    const b = appliedMap[id]
+    appliedMap = b.constraints.reduce((p, c) => {
+      return {
+        ...p,
+        ...applyConstraint(b.id, c, appliedMap),
+      }
+    }, appliedMap)
+  })
+  return appliedMap
 }

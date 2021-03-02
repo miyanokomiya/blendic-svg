@@ -194,7 +194,6 @@ export default defineComponent({
       scale.value = ret.scale
     }
     watch(viewSize, initView)
-    watch(() => props.originalViewBox, initView)
 
     const gridLineElm = computed(() => {
       if (canvasStore.state.axisGrid === '') return

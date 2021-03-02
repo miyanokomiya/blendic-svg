@@ -41,7 +41,10 @@ export function apply(
   const targetPoint = add(target.head, target.transform.translate)
 
   let applied = poleTarget
-    ? straightToPoleTarget(poleTarget.head, bones)
+    ? straightToPoleTarget(
+        add(poleTarget.head, poleTarget.transform.translate),
+        bones
+      )
     : bones
   for (let i = 0; i < option.iterations; i++) {
     applied = step(targetPoint, applied)
@@ -115,27 +118,37 @@ function getStickInfoTarget(
   }
 }
 
-export function straightToPoleTarget(poleTarget: IVec2, bones: Bone[]): Bone[] {
+export function straightToPoleTarget(
+  poleTargetPoint: IVec2,
+  bones: Bone[]
+): Bone[] {
   if (bones.length === 0) return bones
 
   const root = bones[0]
-  const rad = getRadian(poleTarget, root.head)
-  const angle = (rad / Math.PI) * 180
+  const rad = getRadian(
+    poleTargetPoint,
+    add(root.head, root.transform.translate)
+  )
   let parent = root
-  return bones.map((b, i) => {
-    const parentTailDiff =
-      i === 0
-        ? { x: 0, y: 0 }
-        : sub(rotate(parent.tail, rad, parent.head), parent.tail)
+  let parentTailTranslate = { x: 0, y: 0 }
+  return bones.map((b) => {
+    const head = add(b.head, b.transform.translate)
+    const tail = add(b.tail, b.transform.translate)
+    const selfRad = rad - getRadian(tail, head)
+    const angle = (selfRad / Math.PI) * 180
     const next = {
       ...b,
       transform: {
         ...b.transform,
         rotate: angle,
-        translate: add(b.transform.translate, parentTailDiff),
+        translate: add(b.transform.translate, parentTailTranslate),
       },
     }
     parent = next
+    parentTailTranslate = sub(
+      rotate(parent.tail, selfRad, parent.head),
+      parent.tail
+    )
     return next
   })
 }

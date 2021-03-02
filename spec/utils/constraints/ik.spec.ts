@@ -196,5 +196,17 @@ describe('utils/constraints/ik.ts', () => {
       expect(res[1].transform.translate.x).toBeCloseTo(1 / Math.sqrt(2) - 1)
       expect(res[1].transform.translate.y).toBeCloseTo(1 / Math.sqrt(2))
     })
+    it('inclined bones', () => {
+      const res = straightToPoleTarget({ x: 0, y: 10 }, [
+        getBone({ id: 'a', head: { x: 0, y: 0 }, tail: { x: 1, y: 1 } }),
+        getBone({ id: 'b', head: { x: 1, y: 1 }, tail: { x: 2, y: 2 } }),
+      ])
+      expect(res[0].transform.rotate).toBeCloseTo(45)
+      expect(res[0].transform.translate.x).toBeCloseTo(0)
+      expect(res[0].transform.translate.y).toBeCloseTo(0)
+      expect(res[1].transform.rotate).toBeCloseTo(45)
+      expect(res[1].transform.translate.x).toBeCloseTo(-1)
+      expect(res[1].transform.translate.y).toBeCloseTo(Math.sqrt(2) - 1)
+    })
   })
 })

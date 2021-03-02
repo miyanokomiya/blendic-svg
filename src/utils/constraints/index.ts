@@ -43,11 +43,16 @@ export function CreateConstraint<N extends BoneConstraintName>(
 }
 
 export function applyConstraint<N extends BoneConstraintName>(
+  boneId: string,
   constraint: BoneConstraint<N>,
   boneMap: IdMap<Bone>
 ): IdMap<Bone> {
   if (constraint.name === 'IK') {
-    return ik.apply(constraint.option as BoneConstraintOption['IK'], boneMap)
+    return ik.apply(
+      boneId,
+      constraint.option as BoneConstraintOption['IK'],
+      boneMap
+    )
   } else {
     return boneMap
   }

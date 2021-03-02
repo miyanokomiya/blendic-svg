@@ -35,8 +35,11 @@ export function apply(
 ): IdMap<Bone> {
   const bones = getIKBones(boneId, option, boneMap)
   const target = boneMap[option.targetId]
+  const poleTarget = boneMap[option.poleTargetId]
 
-  let applied = bones
+  let applied = poleTarget
+    ? straightToPoleTarget(poleTarget.head, bones)
+    : bones
   for (let i = 0; i < option.iterations; i++) {
     applied = step(target.head, applied)
   }
@@ -104,4 +107,29 @@ function getStickInfoTarget(
     rotate: (rad / Math.PI) * 180,
     translate: add(bone.transform.translate, sub(targetPoint, rotatedTail)),
   }
+}
+
+export function straightToPoleTarget(poleTarget: IVec2, bones: Bone[]): Bone[] {
+  if (bones.length === 0) return bones
+
+  const root = bones[0]
+  const rad = getRadian(poleTarget, root.head)
+  const angle = (rad / Math.PI) * 180
+  let parent = root
+  return bones.map((b, i) => {
+    const parentTailDiff =
+      i === 0
+        ? { x: 0, y: 0 }
+        : sub(rotate(parent.tail, rad, parent.head), parent.tail)
+    const next = {
+      ...b,
+      transform: {
+        ...b.transform,
+        rotate: angle,
+        translate: add(b.transform.translate, parentTailDiff),
+      },
+    }
+    parent = next
+    return next
+  })
 }

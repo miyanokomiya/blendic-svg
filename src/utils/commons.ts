@@ -131,3 +131,31 @@ export function getParentIdPath(
     return [...getParentIdPath(itemMap, b.parentId, preventId), b.parentId]
   }
 }
+
+export function hasLeftRightName(name: string): '' | 'r' | 'R' | 'l' | 'L' {
+  if (/\.r\.?/.test(name)) {
+    return 'r'
+  } else if (/\.R\.?/.test(name)) {
+    return 'R'
+  } else if (/\.l\.?/.test(name)) {
+    return 'l'
+  } else if (/\.L\.?/.test(name)) {
+    return 'L'
+  } else {
+    return ''
+  }
+}
+
+const symmetrizedNameMap = {
+  '': '',
+  r: 'l',
+  R: 'L',
+  l: 'r',
+  L: 'R',
+}
+
+export function symmetrizeName(name: string): string {
+  const d = hasLeftRightName(name)
+  if (!symmetrizedNameMap[d]) return name
+  return name.replace(`.${d}`, `.${symmetrizedNameMap[d]}`)
+}

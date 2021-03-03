@@ -17,26 +17,26 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { mapReduce } from '../commons'
 import * as ik from './ik'
 import { Bone, IdMap } from '/@/models'
 
 export type BoneConstraintName = 'IK' | 'LIMIT_ROTATION'
 
-export interface BoneConstraintOption {
+export interface BoneConstraintOptions {
   IK: ik.Option
   LIMIT_ROTATION: { min: number; max: number; influence: number }
 }
 
 interface _BoneConstraint<N extends BoneConstraintName> {
   name: N
-  option: BoneConstraintOption[N]
+  option: BoneConstraintOptions[N]
 }
 export type BoneConstraint = _BoneConstraint<BoneConstraintName>
+export type BoneConstraintOption = BoneConstraintOptions[BoneConstraintName]
 
 export function CreateConstraint<N extends BoneConstraintName>(
   name: N,
-  option: BoneConstraintOption[N]
+  option: BoneConstraintOptions[N]
 ): _BoneConstraint<N> {
   return {
     name,
@@ -52,7 +52,7 @@ export function applyConstraint<N extends BoneConstraintName>(
   if (constraint.name === 'IK') {
     return ik.apply(
       boneId,
-      constraint.option as BoneConstraintOption['IK'],
+      constraint.option as BoneConstraintOptions['IK'],
       boneMap
     )
   } else {

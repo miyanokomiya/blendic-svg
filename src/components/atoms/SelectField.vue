@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <span class="select-root">
     <select v-model="value">
-      <option value="">-- None --</option>
+      <option value="">-- {{ placeholder }} --</option>
       <option
         v-for="option in options"
         :key="option.value"
@@ -44,6 +44,10 @@ export default defineComponent({
     modelValue: {
       type: [Number, String],
       default: '',
+    },
+    placeholder: {
+      type: String,
+      default: 'None',
     },
   },
   emits: ['update:modelValue'],

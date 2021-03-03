@@ -29,14 +29,18 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <div class="field">
       <label>Chain Length</label>
-      <NumberInput v-model="chainLength" />
+      <NumberInput v-model="chainLength" integer :min="0" />
+    </div>
+    <div class="field">
+      <label>Iterations</label>
+      <NumberInput v-model="iterations" integer :min="0" :max="500" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
-import { BoneConstraintOption } from '/@/utils/constraints'
+import { BoneConstraintOptions } from '/@/utils/constraints'
 import NumberInput from '/@/components/atoms/NumberInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 
@@ -44,7 +48,7 @@ export default defineComponent({
   components: { NumberInput, SelectField },
   props: {
     modelValue: {
-      type: Object as PropType<BoneConstraintOption['IK']>,
+      type: Object as PropType<BoneConstraintOptions['IK']>,
       required: true,
     },
     boneOptions: {
@@ -54,7 +58,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    function emitUpdated(val: Partial<BoneConstraintOption['IK']>) {
+    function emitUpdated(val: Partial<BoneConstraintOptions['IK']>) {
       emit('update:modelValue', { ...props.modelValue, ...val })
     }
 
@@ -81,6 +85,14 @@ export default defineComponent({
         },
         set(val: number) {
           emitUpdated({ chainLength: val })
+        },
+      }),
+      iterations: computed({
+        get(): number {
+          return props.modelValue.iterations
+        },
+        set(val: number) {
+          emitUpdated({ iterations: val })
         },
       }),
     }

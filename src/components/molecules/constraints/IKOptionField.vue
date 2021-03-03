@@ -29,7 +29,11 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <div class="field">
       <label>Chain Length</label>
-      <NumberInput v-model="chainLength" />
+      <NumberInput v-model="chainLength" integer :min="0" />
+    </div>
+    <div class="field">
+      <label>Iterations</label>
+      <NumberInput v-model="iterations" integer :min="0" :max="500" />
     </div>
   </div>
 </template>
@@ -81,6 +85,14 @@ export default defineComponent({
         },
         set(val: number) {
           emitUpdated({ chainLength: val })
+        },
+      }),
+      iterations: computed({
+        get(): number {
+          return props.modelValue.iterations
+        },
+        set(val: number) {
+          emitUpdated({ iterations: val })
         },
       }),
     }

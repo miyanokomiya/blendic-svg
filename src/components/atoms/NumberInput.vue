@@ -31,6 +31,14 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    min: {
+      type: Number,
+      default: undefined,
+    },
+    max: {
+      type: Number,
+      default: undefined,
+    },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
@@ -52,6 +60,15 @@ export default defineComponent({
       draftValue,
       input() {
         if (parseDraftValue.value === props.modelValue) return
+        if (!isNaN(props.min) && parseDraftValue.value < props.min) {
+          draftValue.value = props.min.toString()
+          return
+        }
+        if (!isNaN(props.max) && props.max < parseDraftValue.value) {
+          draftValue.value = props.max.toString()
+          return
+        }
+
         emit('update:modelValue', parseDraftValue.value)
       },
     }

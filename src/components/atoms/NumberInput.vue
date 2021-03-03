@@ -58,3 +58,9 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+input {
+  max-width: 100%;
+}
+</style>

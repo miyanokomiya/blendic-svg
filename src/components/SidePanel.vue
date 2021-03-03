@@ -64,8 +64,12 @@ Copyright (C) 2021, Tomoya Komiyama.
               :options="[{ value: 'IK', label: 'IK' }]"
             />
           </div>
-          <div v-for="(c, i) in lastSelectedBone.constraints" :key="c.name">
-            <div v-if="c.name === 'IK'">
+          <div
+            v-for="(c, i) in lastSelectedBone.constraints"
+            :key="c.name"
+            class="constraints-item"
+          >
+            <template v-if="c.name === 'IK'">
               <IKOptionField
                 :model-value="c.option"
                 :bone-options="otherBoneOptions"
@@ -74,7 +78,7 @@ Copyright (C) 2021, Tomoya Komiyama.
               <div class="delete-constraint">
                 <button type="button" @click="deleteConstraint(i)">x</button>
               </div>
-            </div>
+            </template>
           </div>
         </form>
       </template>
@@ -167,6 +171,8 @@ export default defineComponent({
     }
 
     function deleteConstraint(index: number) {
+      if (!lastSelectedBone.value) return
+
       const constraints = lastSelectedBone.value.constraints.concat()
       constraints.splice(index, 1)
       store.updateBone({ constraints })
@@ -249,12 +255,16 @@ form {
       }
     }
   }
-  .delete-constraint {
-    text-align: right;
-    > button {
-      border: solid 1px #ccc;
-      border-radius: 8px;
-      width: 60px;
+  .constraints-item {
+    width: 100%;
+    margin-bottom: 10px;
+    .delete-constraint {
+      text-align: right;
+      > button {
+        border: solid 1px #ccc;
+        border-radius: 8px;
+        width: 60px;
+      }
     }
   }
 }

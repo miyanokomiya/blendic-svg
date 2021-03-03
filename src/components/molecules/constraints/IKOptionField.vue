@@ -36,7 +36,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
-import { BoneConstraintOption } from '/@/utils/constraints'
+import { BoneConstraintOptions } from '/@/utils/constraints'
 import NumberInput from '/@/components/atoms/NumberInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 
@@ -44,7 +44,7 @@ export default defineComponent({
   components: { NumberInput, SelectField },
   props: {
     modelValue: {
-      type: Object as PropType<BoneConstraintOption['IK']>,
+      type: Object as PropType<BoneConstraintOptions['IK']>,
       required: true,
     },
     boneOptions: {
@@ -54,7 +54,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    function emitUpdated(val: Partial<BoneConstraintOption['IK']>) {
+    function emitUpdated(val: Partial<BoneConstraintOptions['IK']>) {
       emit('update:modelValue', { ...props.modelValue, ...val })
     }
 

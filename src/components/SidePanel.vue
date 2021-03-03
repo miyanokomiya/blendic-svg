@@ -21,10 +21,10 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div>
     <TabPanel
       :tabs="[
-        { key: 'detail', label: 'Detail' },
-        { key: 'history', label: 'History' },
-        { key: 'tree', label: 'Tree' },
         { key: 'file', label: 'File' },
+        { key: 'detail', label: 'Detail' },
+        { key: 'tree', label: 'Tree' },
+        { key: 'history', label: 'History' },
       ]"
       initial-tab="file"
     >

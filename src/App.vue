@@ -353,6 +353,8 @@ input[type='number'] {
 </style>
 
 <style lang="scss" scoped>
+$wide-panel-width: 240px;
+
 .main {
   margin: 10px 0;
   padding: 0 10px;
@@ -362,14 +364,14 @@ input[type='number'] {
   justify-content: center;
   align-items: stretch;
   .canvas {
-    width: calc(100% - 226px);
+    width: calc(100% - (26px + #{$wide-panel-width}));
   }
   .side-bar {
     margin-right: auto;
     flex-shrink: 0;
   }
   .side-panel {
-    width: 200px;
+    width: $wide-panel-width;
     flex-shrink: 0;
   }
 }

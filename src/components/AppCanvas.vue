@@ -81,11 +81,19 @@ Copyright (C) 2021, Tomoya Komiyama.
         :side="scaleNaviElm.side"
       />
     </svg>
-    <CanvasModepanel
-      class="mode-panel"
-      :canvas-mode="canvasMode"
-      @change-mode="changeMode"
-    />
+    <div class="left-top-space">
+      <CanvasModepanel
+        class="mode-panel"
+        :canvas-mode="canvasMode"
+        @change-mode="changeMode"
+      />
+      <CanvasArmatureMenu
+        v-if="canvasMode === 'edit'"
+        class="armature-menu"
+        @symmetrize="symmetrize"
+        @delete="editKeyDown('x')"
+      />
+    </div>
     <CommandExamPanel
       class="command-exam-panel"
       :available-command-list="availableCommandList"
@@ -111,13 +119,19 @@ import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
+import CanvasArmatureMenu from '/@/components/molecules/CanvasArmatureMenu.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import { useWindow } from '../composables/window'
 import { useAnimationStore } from '../store/animation'
 import { centerizeView } from '../composables/canvas'
 
 export default defineComponent({
-  components: { ScaleMarker, CanvasModepanel, CommandExamPanel },
+  components: {
+    ScaleMarker,
+    CanvasModepanel,
+    CommandExamPanel,
+    CanvasArmatureMenu,
+  },
   props: {
     originalViewBox: {
       type: Object as PropType<IRectangle>,
@@ -336,6 +350,10 @@ export default defineComponent({
         emit('change-mode', canvasMode)
       },
       availableCommandList: canvasStore.availableCommandList,
+      symmetrize() {
+        // TODO
+        console.log('symmetrize')
+      },
     }
   },
 })
@@ -345,10 +363,16 @@ export default defineComponent({
 .app-canvas-root {
   position: relative;
 }
-.mode-panel {
+.left-top-space {
   position: absolute;
   top: 4px;
   left: 4px;
+  display: flex;
+  align-items: center;
+
+  .armature-menu {
+    margin-left: 10px;
+  }
 }
 .command-exam-panel {
   position: absolute;

@@ -45,9 +45,9 @@ Copyright (C) 2021, Tomoya Komiyama.
       </div>
       <div class="field inline">
         <label>Constraints</label>
-        <SelectField
-          v-model="boneConstraintName"
+        <SelectButton
           :options="[{ value: 'IK', label: 'IK' }]"
+          @select="setBoneConstraintName"
         />
       </div>
       <div
@@ -74,6 +74,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { defineComponent, ref, watch, computed } from 'vue'
 import { useStore } from '/@/store/index'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import SelectButton from '/@/components/atoms/SelectButton.vue'
 import {
   BoneConstraintName,
   BoneConstraintOption,
@@ -84,6 +85,7 @@ import IKOptionField from '/@/components/molecules/constraints/IKOptionField.vue
 export default defineComponent({
   components: {
     SelectField,
+    SelectButton,
     IKOptionField,
   },
   setup() {
@@ -172,15 +174,10 @@ export default defineComponent({
           store.updateBone({ parentId: val })
         },
       }),
-      boneConstraintName: computed({
-        get(): BoneConstraintName | '' {
-          return ''
-        },
-        set(val: BoneConstraintName | '') {
-          if (!val) return
-          addConstraint(val)
-        },
-      }),
+      setBoneConstraintName(val: BoneConstraintName) {
+        if (!val) return
+        addConstraint(val)
+      },
       changeArmatureName() {
         if (!draftName.value) return
         store.updateArmatureName(draftName.value)

@@ -34,9 +34,10 @@ import {
   Transform,
 } from '../models'
 import { getInterpolatedTransformMapByBoneId } from './animations'
-import { poseToAffine } from './armatures'
+import { getTransformedBoneMap, poseToAffine } from './armatures'
 import { mapReduce } from './commons'
 import { getTnansformStr } from './helpers'
+import { applyAllConstraints } from '/@/utils/constraints'
 
 export type TransformCache = {
   [relativeRootBoneId: string]: { [boneId: string]: Transform }
@@ -202,6 +203,9 @@ export function bakeKeyframe(
     getInterpolatedTransformMapByBoneId(keyframeMapByBoneId, currentFrame),
     (transform, id) => ({ ...boneMap[id], transform })
   )
+  const resolvedBoneMap = applyAllConstraints(
+    getTransformedBoneMap(interpolatedBoneMap)
+  )
 
-  return getPosedElementMatrixMap(interpolatedBoneMap, elementMap, svgRoot)
+  return getPosedElementMatrixMap(resolvedBoneMap, elementMap, svgRoot)
 }

@@ -51,6 +51,7 @@ import {
   toList,
 } from './commons'
 import { getNextName } from './relations'
+import { immigrateConstraints } from '/@/utils/constraints'
 
 export function poseToAffine(transform: Transform): AffineMatrix {
   const rad = (transform.rotate / 180) * Math.PI
@@ -437,6 +438,7 @@ export function immigrateBoneRelations(
       ...src,
       parentId,
       connected,
+      constraints: immigrateConstraints(duplicatedIdMap, src.constraints),
     }
   })
 }

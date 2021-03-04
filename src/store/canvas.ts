@@ -127,6 +127,11 @@ function getEditPoseTransforms(id: string): Transform {
   return canvasEditMode.value.getEditTransforms(id)
 }
 
+function symmetrizeBones() {
+  if (state.canvasMode !== 'edit') return
+  ;(canvasEditMode.value as BoneEditMode).symmetrize()
+}
+
 export function useCanvasStore() {
   return {
     initState,
@@ -159,6 +164,7 @@ export function useCanvasStore() {
     paste: () => canvasEditMode.value.paste(),
     duplicate: () => canvasEditMode.value.duplicate(),
     availableCommandList,
+    symmetrizeBones,
   }
 }
 export type CanvasStore = ReturnType<typeof useCanvasStore>

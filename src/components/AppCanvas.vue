@@ -351,8 +351,7 @@ export default defineComponent({
       },
       availableCommandList: canvasStore.availableCommandList,
       symmetrize() {
-        // TODO
-        console.log('symmetrize')
+        canvasStore.symmetrizeBones()
       },
     }
   },

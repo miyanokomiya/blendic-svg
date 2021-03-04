@@ -643,6 +643,18 @@ describe('utils/armatures', () => {
     })
   })
 
+  describe('immigrateBoneRelations', () => {
+    it('switch new parent if the parent is duplicated together', () => {
+      const ret = target.immigrateBoneRelations({ a: 'aa', b: 'bb' }, [
+        getBone({ id: 'aa', parentId: 'c', connected: true }),
+        getBone({ id: 'bb', parentId: 'a' }),
+      ])
+      expect(ret[0].parentId).toBe('c')
+      expect(ret[0].connected).toBe(false)
+      expect(ret[1].parentId).toBe('aa')
+    })
+  })
+
   describe('duplicateBones', () => {
     it('duplicate bones with new ids & names, sorted by new name', () => {
       const ret = target.duplicateBones(
@@ -658,31 +670,82 @@ describe('utils/armatures', () => {
       expect(ret[1].id).not.toBe('b')
       expect(ret[1].name).toBe('b.001')
     })
-    it('switch new parent if the parent is duplicated together', () => {
-      const ret = target.duplicateBones(
+  })
+
+  describe('symmetrizeBones', () => {
+    it('symmetrize bones having special name', () => {
+      const res = target.symmetrizeBones(
         {
-          a: getBone({ id: 'a', name: 'a' }),
-          b: getBone({ id: 'b', name: 'b', parentId: 'a', connected: true }),
-          c: getBone({ id: 'b', name: 'b', parentId: 'a', connected: false }),
+          a: getBone({
+            id: 'a',
+            name: 'a.R',
+            tail: { x: 1, y: 1 },
+          }),
+          b: getBone({
+            id: 'b',
+            name: 'b.R',
+            head: { x: 0, y: 0 },
+            tail: { x: 1, y: 1 },
+            parentId: 'a',
+          }),
         },
-        ['b', 'a', 'c']
+        ['b']
       )
-      expect(ret.length).toBe(3)
-      expect(ret[1].parentId).toBe(ret[0].id)
-      expect(ret[1].connected).toBe(true)
-      expect(ret[2].parentId).toBe(ret[0].id)
-      expect(ret[2].connected).toBe(false)
+      expect(res[0].id).not.toBe('b')
+      expect(res[0].name).toBe('b.L')
+      expect(res[0].head.x).toBeCloseTo(2)
+      expect(res[0].head.y).toBeCloseTo(0)
+      expect(res[0].tail.x).toBeCloseTo(1)
+      expect(res[0].tail.y).toBeCloseTo(1)
     })
-    it('unconnect current parent if the parent is not duplicated together', () => {
-      const ret = target.duplicateBones(
+    it('not symmetrize bones not having special name', () => {
+      const res = target.symmetrizeBones(
         {
-          b: getBone({ id: 'b', name: 'b', parentId: 'a', connected: true }),
+          a: getBone({
+            id: 'a',
+            name: 'a.R',
+          }),
+          b: getBone({
+            id: 'b',
+            name: 'b.Rbb',
+          }),
         },
-        ['b', 'a']
+        ['a', 'b']
       )
-      expect(ret.length).toBe(1)
-      expect(ret[0].parentId).toBe('a')
-      expect(ret[0].connected).toBe(false)
+      expect(res.length).toBe(0)
+    })
+    it('prevent duplicated name', () => {
+      const res = target.symmetrizeBones(
+        {
+          a: getBone({
+            id: 'a',
+            name: 'a.R',
+            parentId: 'b',
+          }),
+          b: getBone({
+            id: 'b',
+            name: 'a.L',
+          }),
+        },
+        ['a']
+      )
+      expect(res[0].name).toBe('a.L.001')
+    })
+  })
+
+  describe('symmetrizeBone', () => {
+    it('symmetrize to x axis at origin', () => {
+      const res = target.symmetrizeBone(
+        getBone({
+          head: { x: 0, y: 0 },
+          tail: { x: 1, y: 1 },
+        }),
+        { x: 10, y: 10 }
+      )
+      expect(res.head.x).toBeCloseTo(20)
+      expect(res.head.y).toBeCloseTo(0)
+      expect(res.tail.x).toBeCloseTo(19)
+      expect(res.tail.y).toBeCloseTo(1)
     })
   })
 })

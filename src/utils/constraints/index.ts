@@ -73,3 +73,28 @@ export function applyAllConstraints(posedMap: IdMap<Bone>): IdMap<Bone> {
   })
   return appliedMap
 }
+
+export function immigrateConstraints(
+  duplicatedIdMap: IdMap<string>,
+  constraints: BoneConstraint[]
+): BoneConstraint[] {
+  return constraints.map((src) => {
+    return {
+      ...src,
+      option: immigrateOption(duplicatedIdMap, src.name, src.option),
+    }
+  })
+}
+
+function immigrateOption(
+  duplicatedIdMap: IdMap<string>,
+  name: BoneConstraintName,
+  option: BoneConstraintOption
+): BoneConstraintOption {
+  switch (name) {
+    case 'IK':
+      return ik.immigrate(duplicatedIdMap, option as ik.Option)
+    case 'LIMIT_ROTATION':
+      return option
+  }
+}

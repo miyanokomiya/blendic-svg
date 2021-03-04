@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform, getBone } from '/@/models'
-import { apply, straightToPoleTarget } from '/@/utils/constraints/ik'
+import { apply, immigrate, straightToPoleTarget } from '/@/utils/constraints/ik'
 
 describe('utils/constraints/ik.ts', () => {
   describe('apply', () => {
@@ -207,6 +207,27 @@ describe('utils/constraints/ik.ts', () => {
       expect(res[1].transform.rotate).toBeCloseTo(45)
       expect(res[1].transform.translate.x).toBeCloseTo(-1)
       expect(res[1].transform.translate.y).toBeCloseTo(Math.sqrt(2) - 1)
+    })
+  })
+
+  describe('immigrate', () => {
+    it('immigrate bone relations', () => {
+      expect(
+        immigrate(
+          { a: 'aa', b: 'bb' },
+          {
+            targetId: 'a',
+            poleTargetId: 'b',
+            iterations: 1,
+            chainLength: 10,
+          }
+        )
+      ).toEqual({
+        targetId: 'aa',
+        poleTargetId: 'bb',
+        iterations: 1,
+        chainLength: 10,
+      })
     })
   })
 })

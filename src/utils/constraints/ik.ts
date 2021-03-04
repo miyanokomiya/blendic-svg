@@ -152,3 +152,14 @@ export function straightToPoleTarget(
     return next
   })
 }
+
+export function immigrate(
+  duplicatedIdMap: IdMap<string>,
+  option: Option
+): Option {
+  return {
+    ...option,
+    targetId: duplicatedIdMap[option.targetId] ?? option.targetId,
+    poleTargetId: duplicatedIdMap[option.poleTargetId] ?? option.poleTargetId,
+  }
+}

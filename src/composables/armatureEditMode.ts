@@ -28,22 +28,27 @@ import {
   IdMap,
   CanvasEditModeBase,
   EditMovement,
+  toMap,
 } from '../models/index'
 import {
   duplicateBones,
   editTransform,
   extrudeFromParent,
+  symmetrizeBones,
 } from '/@/utils/armatures'
 import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
+import { mapReduce } from '/@/utils/commons'
 
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
 }
 
-export interface BoneEditMode extends CanvasEditModeBase {}
+export interface BoneEditMode extends CanvasEditModeBase {
+  symmetrize(): void
+}
 
 export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
   const state = reactive<State>({
@@ -279,6 +284,17 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     }
   })
 
+  function symmetrize() {
+    const newBones = symmetrizeBones(
+      store.boneMap.value,
+      Object.keys(store.allSelectedBones.value)
+    )
+    store.addBones(
+      newBones,
+      mapReduce(toMap(newBones), (b) => ({ head: true, tail: true }))
+    )
+  }
+
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
@@ -299,5 +315,6 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     paste: () => {},
     duplicate,
     availableCommandList,
+    symmetrize,
   }
 }

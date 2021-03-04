@@ -17,6 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { getNextName } from '/@/utils/relations'
+
 export function toKeyMap<T extends object>(
   list: T[],
   key: string | number
@@ -130,4 +132,48 @@ export function getParentIdPath(
   } else {
     return [...getParentIdPath(itemMap, b.parentId, preventId), b.parentId]
   }
+}
+
+export function hasLeftRightName(name: string): '' | 'r' | 'R' | 'l' | 'L' {
+  if (/\.r\.?/.test(name)) {
+    return 'r'
+  } else if (/\.R\.?/.test(name)) {
+    return 'R'
+  } else if (/\.l\.?/.test(name)) {
+    return 'l'
+  } else if (/\.L\.?/.test(name)) {
+    return 'L'
+  } else {
+    return ''
+  }
+}
+
+const symmetrizedNameMap = {
+  '': '',
+  r: 'l',
+  R: 'L',
+  l: 'r',
+  L: 'R',
+}
+
+export function symmetrizeName(name: string): string {
+  const d = hasLeftRightName(name)
+  if (!symmetrizedNameMap[d]) return name
+  return name.replace(`.${d}`, `.${symmetrizedNameMap[d]}`)
+}
+
+export function getUnduplicatedNameMap(
+  originalNames: string[],
+  newNames: string[]
+): { [name: string]: string } {
+  const allNames = originalNames.concat()
+  return newNames.reduce<{ [name: string]: string }>((p, n) => {
+    if (allNames.includes(n)) {
+      p[n] = getNextName(n, allNames)
+    } else {
+      p[n] = n
+    }
+    allNames.push(p[n])
+    return p
+  }, {})
 }

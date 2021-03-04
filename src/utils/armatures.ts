@@ -42,8 +42,17 @@ import {
   rotate,
   sub,
 } from 'okageo'
-import { dropMapIfFalse, mapReduce, toList } from './commons'
+import {
+  dropMapIfFalse,
+  getParentIdPath,
+  getUnduplicatedNameMap,
+  hasLeftRightName,
+  mapReduce,
+  symmetrizeName,
+  toList,
+} from './commons'
 import { getNextName } from './relations'
+import { immigrateConstraints } from '/@/utils/constraints'
 
 export function poseToAffine(transform: Transform): AffineMatrix {
   const rad = (transform.rotate / 180) * Math.PI
@@ -416,23 +425,106 @@ export function interpolateTransform(
   })
 }
 
+export function immigrateBoneRelations(
+  duplicatedIdMap: IdMap<string>,
+  bones: Bone[]
+): Bone[] {
+  return bones.map((src) => {
+    // switch new parent if current parent is duplicated together
+    const parentId = duplicatedIdMap[src.parentId] ?? src.parentId
+    // connect if current parent is duplicated together
+    const connected = src.connected && !!duplicatedIdMap[src.parentId]
+
+    return {
+      ...src,
+      parentId,
+      connected,
+      constraints: immigrateConstraints(duplicatedIdMap, src.constraints),
+    }
+  })
+}
+
+/**
+ * @return duplicated bones
+ */
 export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
   const duplicatedIdMap = mapReduce(srcBones, () => v4())
-  return toList(
-    mapReduce(srcBones, (src) => {
-      // switch new parent if current parent is duplicated together
-      const parentId = duplicatedIdMap[src.parentId] ?? src.parentId
-      // connect if current parent is duplicated together
-      const connected = src.connected && !!duplicatedIdMap[src.parentId]
-      const b = getBone({
-        ...src,
-        id: duplicatedIdMap[src.id],
-        parentId,
-        connected,
-        name: getNextName(src.name, names),
+  return immigrateBoneRelations(
+    duplicatedIdMap,
+    toList(
+      mapReduce(srcBones, (src) => {
+        const b = {
+          ...src,
+          id: duplicatedIdMap[src.id],
+          name: getNextName(src.name, names),
+        }
+        names.push(b.name)
+        return b
       })
-      names.push(b.name)
-      return b
-    })
-  ).sort((a, b) => (a.name >= b.name ? 1 : -1))
+    ).sort((a, b) => (a.name >= b.name ? 1 : -1))
+  )
+}
+
+/**
+ * @return symmetrized bones
+ */
+export function symmetrizeBones(
+  boneMap: IdMap<Bone>,
+  selectedIds: string[]
+): Bone[] {
+  const symmetrizedIdMap = selectedIds
+    .filter((id) => canSymmetrize(boneMap, id))
+    .reduce<{ [id: string]: string }>((p, c) => ({ ...p, [c]: v4() }), {})
+
+  const newBones = immigrateBoneRelations(
+    symmetrizedIdMap,
+    Object.keys(symmetrizedIdMap)
+      .map((id) => {
+        const b = boneMap[id]
+        const name = symmetrizeName(b.name)
+        // symmetrize at root parent's tail
+        const parentPath = getParentIdPath(boneMap, b.id)
+        return getBone({
+          ...symmetrizeBone(
+            b,
+            parentPath[0] ? boneMap[parentPath[0]].tail : b.head
+          ),
+          id: symmetrizedIdMap[id],
+          name,
+        })
+      })
+      .filter((b): b is Bone => !!b)
+  )
+
+  const nameMap = getUnduplicatedNameMap(
+    Object.keys(boneMap).map((k) => boneMap[k].name),
+    newBones.map((b) => b.name)
+  )
+
+  return newBones.map((b) => ({ ...b, name: nameMap[b.name] }))
+}
+
+function canSymmetrize(boneMap: IdMap<Bone>, id: string): boolean {
+  if (!boneMap[id]) return false
+  if (!boneMap[id].name) return false
+  if (!hasLeftRightName(boneMap[id].name)) return false
+  if (getParentIdPath(boneMap, id).length === 0) return false
+  return true
+}
+
+export function symmetrizeBone(bone: Bone, origin: IVec2): Bone {
+  const translate = {
+    x: sub(origin, bone.head).x * 2,
+    y: 0,
+  }
+  const head = add(bone.head, translate)
+  const tail = {
+    x: add(add(bone.tail, translate), multi(sub(bone.head, bone.tail), 2)).x,
+    y: bone.tail.y,
+  }
+  return {
+    ...bone,
+    head,
+    tail,
+  }
 }

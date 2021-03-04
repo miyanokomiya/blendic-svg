@@ -58,18 +58,19 @@ Copyright (C) 2021, Tomoya Komiyama.
       :stroke-dasharray="`${2 * scale} ${2 * scale}`"
       class="view-only"
     />
-    <text
+    <g
       v-if="name"
-      :x="(head.x + tail.x) / 2"
-      :y="(head.y + tail.y) / 2"
+      :transform="`translate(${(head.x + tail.x) / 2}, ${
+        (head.y + tail.y) / 2
+      })`"
       :font-size="Math.min(16 * scale, 16)"
       text-anchor="middle"
       dominant-baseline="middle"
-      fill="black"
-      stroke="none"
       class="view-only"
-      >{{ name }}</text
     >
+      <text fill="#fff" stroke="#fff">{{ name }}</text>
+      <text fill="#000" stroke="none">{{ name }}</text>
+    </g>
   </g>
 </template>
 

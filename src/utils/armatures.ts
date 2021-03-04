@@ -423,25 +423,43 @@ export function interpolateTransform(
   })
 }
 
+export function immigrateBoneRelations(
+  duplicatedIdMap: IdMap<string>,
+  bones: Bone[]
+): Bone[] {
+  return bones.map((src) => {
+    // switch new parent if current parent is duplicated together
+    const parentId = duplicatedIdMap[src.parentId] ?? src.parentId
+    // connect if current parent is duplicated together
+    const connected = src.connected && !!duplicatedIdMap[src.parentId]
+
+    return {
+      ...src,
+      parentId,
+      connected,
+    }
+  })
+}
+
+/**
+ * @return duplicated bones
+ */
 export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
   const duplicatedIdMap = mapReduce(srcBones, () => v4())
-  return toList(
-    mapReduce(srcBones, (src) => {
-      // switch new parent if current parent is duplicated together
-      const parentId = duplicatedIdMap[src.parentId] ?? src.parentId
-      // connect if current parent is duplicated together
-      const connected = src.connected && !!duplicatedIdMap[src.parentId]
-      const b = getBone({
-        ...src,
-        id: duplicatedIdMap[src.id],
-        parentId,
-        connected,
-        name: getNextName(src.name, names),
+  return immigrateBoneRelations(
+    duplicatedIdMap,
+    toList(
+      mapReduce(srcBones, (src) => {
+        const b = {
+          ...src,
+          id: duplicatedIdMap[src.id],
+          name: getNextName(src.name, names),
+        }
+        names.push(b.name)
+        return b
       })
-      names.push(b.name)
-      return b
-    })
-  ).sort((a, b) => (a.name >= b.name ? 1 : -1))
+    ).sort((a, b) => (a.name >= b.name ? 1 : -1))
+  )
 }
 
 /**
@@ -451,22 +469,27 @@ export function symmetrizeBones(
   boneMap: IdMap<Bone>,
   selectedIds: string[]
 ): Bone[] {
-  const newBones = selectedIds
-    .map((id) => {
-      const b = boneMap[id]
-      const name = symmetrizeName(b.name)
-      if (name === b.name) return
-      const parentPath = getParentIdPath(boneMap, b.id)
-      if (parentPath.length === 0) return
-      return getBone(
-        {
+  const duplicatedIdMap = selectedIds.reduce<{ [id: string]: string }>(
+    (p, c) => ({ ...p, [c]: v4() }),
+    {}
+  )
+  const newBones = immigrateBoneRelations(
+    duplicatedIdMap,
+    selectedIds
+      .map((id) => {
+        const b = boneMap[id]
+        const name = symmetrizeName(b.name)
+        if (name === b.name) return
+        const parentPath = getParentIdPath(boneMap, b.id)
+        if (parentPath.length === 0) return
+        return getBone({
           ...symmetrizeBone(b, boneMap[parentPath[0]].tail),
+          id: duplicatedIdMap[id],
           name,
-        },
-        true
-      )
-    })
-    .filter((b): b is Bone => !!b)
+        })
+      })
+      .filter((b): b is Bone => !!b)
+  )
 
   const nameMap = getUnduplicatedNameMap(
     Object.keys(boneMap).map((k) => boneMap[k].name),

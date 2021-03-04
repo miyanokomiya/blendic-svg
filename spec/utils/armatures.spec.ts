@@ -643,6 +643,18 @@ describe('utils/armatures', () => {
     })
   })
 
+  describe('immigrateBoneRelations', () => {
+    it('switch new parent if the parent is duplicated together', () => {
+      const ret = target.immigrateBoneRelations({ a: 'aa', b: 'bb' }, [
+        getBone({ id: 'aa', parentId: 'c', connected: true }),
+        getBone({ id: 'bb', parentId: 'a' }),
+      ])
+      expect(ret[0].parentId).toBe('c')
+      expect(ret[0].connected).toBe(false)
+      expect(ret[1].parentId).toBe('aa')
+    })
+  })
+
   describe('duplicateBones', () => {
     it('duplicate bones with new ids & names, sorted by new name', () => {
       const ret = target.duplicateBones(
@@ -657,32 +669,6 @@ describe('utils/armatures', () => {
       expect(ret[0].name).toBe('aa.002')
       expect(ret[1].id).not.toBe('b')
       expect(ret[1].name).toBe('b.001')
-    })
-    it('switch new parent if the parent is duplicated together', () => {
-      const ret = target.duplicateBones(
-        {
-          a: getBone({ id: 'a', name: 'a' }),
-          b: getBone({ id: 'b', name: 'b', parentId: 'a', connected: true }),
-          c: getBone({ id: 'b', name: 'b', parentId: 'a', connected: false }),
-        },
-        ['b', 'a', 'c']
-      )
-      expect(ret.length).toBe(3)
-      expect(ret[1].parentId).toBe(ret[0].id)
-      expect(ret[1].connected).toBe(true)
-      expect(ret[2].parentId).toBe(ret[0].id)
-      expect(ret[2].connected).toBe(false)
-    })
-    it('unconnect current parent if the parent is not duplicated together', () => {
-      const ret = target.duplicateBones(
-        {
-          b: getBone({ id: 'b', name: 'b', parentId: 'a', connected: true }),
-        },
-        ['b', 'a']
-      )
-      expect(ret.length).toBe(1)
-      expect(ret[0].parentId).toBe('a')
-      expect(ret[0].connected).toBe(false)
     })
   })
 
@@ -705,6 +691,7 @@ describe('utils/armatures', () => {
         },
         ['b']
       )
+      expect(res[0].id).not.toBe('b')
       expect(res[0].name).toBe('b.L')
       expect(res[0].head.x).toBeCloseTo(2)
       expect(res[0].head.y).toBeCloseTo(0)

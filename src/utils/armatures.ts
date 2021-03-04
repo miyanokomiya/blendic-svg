@@ -46,6 +46,7 @@ import {
   dropMapIfFalse,
   getParentIdPath,
   getUnduplicatedNameMap,
+  hasLeftRightName,
   mapReduce,
   symmetrizeName,
   toList,
@@ -471,22 +472,24 @@ export function symmetrizeBones(
   boneMap: IdMap<Bone>,
   selectedIds: string[]
 ): Bone[] {
-  const duplicatedIdMap = selectedIds.reduce<{ [id: string]: string }>(
-    (p, c) => ({ ...p, [c]: v4() }),
-    {}
-  )
+  const symmetrizedIdMap = selectedIds
+    .filter((id) => canSymmetrize(boneMap, id))
+    .reduce<{ [id: string]: string }>((p, c) => ({ ...p, [c]: v4() }), {})
+
   const newBones = immigrateBoneRelations(
-    duplicatedIdMap,
-    selectedIds
+    symmetrizedIdMap,
+    Object.keys(symmetrizedIdMap)
       .map((id) => {
         const b = boneMap[id]
         const name = symmetrizeName(b.name)
-        if (name === b.name) return
+        // symmetrize at root parent's tail
         const parentPath = getParentIdPath(boneMap, b.id)
-        if (parentPath.length === 0) return
         return getBone({
-          ...symmetrizeBone(b, boneMap[parentPath[0]].tail),
-          id: duplicatedIdMap[id],
+          ...symmetrizeBone(
+            b,
+            parentPath[0] ? boneMap[parentPath[0]].tail : b.head
+          ),
+          id: symmetrizedIdMap[id],
           name,
         })
       })
@@ -499,6 +502,14 @@ export function symmetrizeBones(
   )
 
   return newBones.map((b) => ({ ...b, name: nameMap[b.name] }))
+}
+
+function canSymmetrize(boneMap: IdMap<Bone>, id: string): boolean {
+  if (!boneMap[id]) return false
+  if (!boneMap[id].name) return false
+  if (!hasLeftRightName(boneMap[id].name)) return false
+  if (getParentIdPath(boneMap, id).length === 0) return false
+  return true
 }
 
 export function symmetrizeBone(bone: Bone, origin: IVec2): Bone {

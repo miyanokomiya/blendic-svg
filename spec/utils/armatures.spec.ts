@@ -685,4 +685,80 @@ describe('utils/armatures', () => {
       expect(ret[0].connected).toBe(false)
     })
   })
+
+  describe('symmetrizeBones', () => {
+    it('symmetrize bones having special name', () => {
+      const res = target.symmetrizeBones(
+        {
+          a: getBone({
+            id: 'a',
+            name: 'a.R',
+            tail: { x: 1, y: 1 },
+          }),
+          b: getBone({
+            id: 'b',
+            name: 'b.R',
+            head: { x: 0, y: 0 },
+            tail: { x: 1, y: 1 },
+            parentId: 'a',
+          }),
+        },
+        ['b']
+      )
+      expect(res[0].name).toBe('b.L')
+      expect(res[0].head.x).toBeCloseTo(2)
+      expect(res[0].head.y).toBeCloseTo(0)
+      expect(res[0].tail.x).toBeCloseTo(1)
+      expect(res[0].tail.y).toBeCloseTo(1)
+    })
+    it('not symmetrize bones not having special name', () => {
+      const res = target.symmetrizeBones(
+        {
+          a: getBone({
+            id: 'a',
+            name: 'a.R',
+          }),
+          b: getBone({
+            id: 'b',
+            name: 'b.Rbb',
+          }),
+        },
+        ['a', 'b']
+      )
+      expect(res.length).toBe(0)
+    })
+    it('prevent duplicated name', () => {
+      const res = target.symmetrizeBones(
+        {
+          a: getBone({
+            id: 'a',
+            name: 'a.R',
+            parentId: 'b',
+          }),
+          b: getBone({
+            id: 'b',
+            name: 'a.L',
+          }),
+        },
+        ['a']
+      )
+      expect(res[0].name).toBe('a.L.001')
+    })
+  })
+
+  describe('symmetrizeBone', () => {
+    it('symmetrize to x axis at origin', () => {
+      const res = target.symmetrizeBone(
+        getBone({
+          head: { x: 0, y: 0 },
+          tail: { x: 1, y: 1 },
+        }),
+        { x: 10, y: 10 }
+      )
+      expect(res.head.x).toBeCloseTo(20)
+      expect(res.head.y).toBeCloseTo(0)
+      expect(res.tail.x).toBeCloseTo(19)
+      expect(res.tail.y).toBeCloseTo(1)
+    })
+  })
 })

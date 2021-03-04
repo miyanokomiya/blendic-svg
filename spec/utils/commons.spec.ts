@@ -24,6 +24,7 @@ import {
   extractMap,
   flatKeyListMap,
   getParentIdPath,
+  getUnduplicatedNameMap,
   hasLeftRightName,
   mapReduce,
   mergeListByKey,
@@ -322,6 +323,18 @@ describe('utils/commons.ts', () => {
       ['r.001', 'r.001'],
     ])('%s -> %s', (a, expected) => {
       expect(symmetrizeName(a)).toBe(expected)
+    })
+  })
+
+  describe('getUnduplicatedNameMap', () => {
+    it('get unduplicated name map', () => {
+      expect(
+        getUnduplicatedNameMap(['a', 'b', 'c', 'c.001'], ['b', 'c', 'd'])
+      ).toEqual({
+        b: 'b.001',
+        c: 'c.002',
+        d: 'd',
+      })
     })
   })
 })

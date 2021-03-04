@@ -17,6 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { getNextName } from '/@/utils/relations'
+
 export function toKeyMap<T extends object>(
   list: T[],
   key: string | number
@@ -158,4 +160,20 @@ export function symmetrizeName(name: string): string {
   const d = hasLeftRightName(name)
   if (!symmetrizedNameMap[d]) return name
   return name.replace(`.${d}`, `.${symmetrizedNameMap[d]}`)
+}
+
+export function getUnduplicatedNameMap(
+  originalNames: string[],
+  newNames: string[]
+): { [name: string]: string } {
+  const allNames = originalNames.concat()
+  return newNames.reduce<{ [name: string]: string }>((p, n) => {
+    if (allNames.includes(n)) {
+      p[n] = getNextName(n, allNames)
+    } else {
+      p[n] = n
+    }
+    allNames.push(p[n])
+    return p
+  }, {})
 }

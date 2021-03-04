@@ -42,7 +42,14 @@ import {
   rotate,
   sub,
 } from 'okageo'
-import { dropMapIfFalse, mapReduce, toList } from './commons'
+import {
+  dropMapIfFalse,
+  getParentIdPath,
+  getUnduplicatedNameMap,
+  mapReduce,
+  symmetrizeName,
+  toList,
+} from './commons'
 import { getNextName } from './relations'
 
 export function poseToAffine(transform: Transform): AffineMatrix {
@@ -435,4 +442,53 @@ export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
       return b
     })
   ).sort((a, b) => (a.name >= b.name ? 1 : -1))
+}
+
+/**
+ * @return symmetrized bones
+ */
+export function symmetrizeBones(
+  boneMap: IdMap<Bone>,
+  selectedIds: string[]
+): Bone[] {
+  const newBones = selectedIds
+    .map((id) => {
+      const b = boneMap[id]
+      const name = symmetrizeName(b.name)
+      if (name === b.name) return
+      const parentPath = getParentIdPath(boneMap, b.id)
+      if (parentPath.length === 0) return
+      return getBone(
+        {
+          ...symmetrizeBone(b, boneMap[parentPath[0]].tail),
+          name,
+        },
+        true
+      )
+    })
+    .filter((b): b is Bone => !!b)
+
+  const nameMap = getUnduplicatedNameMap(
+    Object.keys(boneMap).map((k) => boneMap[k].name),
+    newBones.map((b) => b.name)
+  )
+
+  return newBones.map((b) => ({ ...b, name: nameMap[b.name] }))
+}
+
+export function symmetrizeBone(bone: Bone, origin: IVec2): Bone {
+  const translate = {
+    x: sub(origin, bone.head).x * 2,
+    y: 0,
+  }
+  const head = add(bone.head, translate)
+  const tail = {
+    x: add(add(bone.tail, translate), multi(sub(bone.head, bone.tail), 2)).x,
+    y: bone.tail.y,
+  }
+  return {
+    ...bone,
+    head,
+    tail,
+  }
 }

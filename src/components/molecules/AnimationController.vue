@@ -32,7 +32,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <template v-if="playing !== 'pause'">
       <button
         type="button"
-        title="reverse"
+        title="pause"
         class="pause-button"
         @click="emit('pause')"
       >

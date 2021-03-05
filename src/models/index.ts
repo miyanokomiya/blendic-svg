@@ -57,6 +57,7 @@ export interface Bone {
   connected: boolean
   head: IVec2
   tail: IVec2
+  inheritRotation: boolean
   constraints: BoneConstraint[]
 }
 
@@ -173,6 +174,7 @@ export function getBone(arg: Partial<Bone> = {}, generateId = false): Bone {
     connected: false,
     head: { x: 0, y: 0 },
     tail: { x: 0, y: 0 },
+    inheritRotation: true,
     constraints: [],
     ...arg,
     id,

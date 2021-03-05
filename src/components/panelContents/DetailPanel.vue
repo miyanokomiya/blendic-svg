@@ -39,9 +39,15 @@ Copyright (C) 2021, Tomoya Komiyama.
         <label>Parent</label>
         <SelectField v-model="parentId" :options="otherBoneOptions" />
       </div>
-      <div class="field inline">
-        <label>Connect</label>
-        <input v-model="connected" type="checkbox" :disabled="!parentId" />
+      <div class="field">
+        <CheckboxInput
+          v-model="connected"
+          :disabled="!parentId"
+          label="Connect"
+        />
+      </div>
+      <div class="field">
+        <CheckboxInput v-model="inheritRotation" label="Inherit Rotation" />
       </div>
       <div class="field inline">
         <label>Constraints</label>
@@ -74,6 +80,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { defineComponent, ref, watch, computed } from 'vue'
 import { useStore } from '/@/store/index'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import SelectButton from '/@/components/atoms/SelectButton.vue'
 import {
   BoneConstraintName,
@@ -87,6 +94,7 @@ export default defineComponent({
   components: {
     SelectField,
     SelectButton,
+    CheckboxInput,
     IKOptionField,
   },
   setup() {
@@ -166,6 +174,14 @@ export default defineComponent({
         },
         set(val: boolean) {
           store.updateBone({ connected: val })
+        },
+      }),
+      inheritRotation: computed({
+        get(): boolean {
+          return lastSelectedBone.value?.inheritRotation ?? false
+        },
+        set(val: boolean) {
+          store.updateBone({ inheritRotation: val })
         },
       }),
       parentId: computed({

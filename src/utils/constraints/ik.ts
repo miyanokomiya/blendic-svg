@@ -17,9 +17,9 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, getRadian, IVec2, multi, rotate, sub } from 'okageo'
+import { add, getRadian, IVec2, rotate, sub } from 'okageo'
 import { getParentIdPath } from '../commons'
-import { Bone, getTransform, IdMap, toMap, Transform } from '/@/models'
+import { Bone, IdMap, toMap } from '/@/models'
 
 export interface Option {
   targetId: string
@@ -161,5 +161,15 @@ export function immigrate(
     ...option,
     targetId: duplicatedIdMap[option.targetId] ?? option.targetId,
     poleTargetId: duplicatedIdMap[option.poleTargetId] ?? option.poleTargetId,
+  }
+}
+
+export function getOption(src: Partial<Option> = {}): Option {
+  return {
+    targetId: '',
+    poleTargetId: '',
+    iterations: 20,
+    chainLength: 2,
+    ...src,
   }
 }

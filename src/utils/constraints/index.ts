@@ -22,9 +22,16 @@ import { Bone, IdMap } from '/@/models'
 
 export type BoneConstraintName = 'IK' | 'LIMIT_ROTATION'
 
+// TODO
+interface TODO_LimitRotationOption {
+  min: number
+  max: number
+  influence: number
+}
+
 export interface BoneConstraintOptions {
   IK: ik.Option
-  LIMIT_ROTATION: { min: number; max: number; influence: number }
+  LIMIT_ROTATION: TODO_LimitRotationOption
 }
 
 interface _BoneConstraint<N extends BoneConstraintName> {
@@ -96,5 +103,27 @@ function immigrateOption(
       return ik.immigrate(duplicatedIdMap, option as ik.Option)
     case 'LIMIT_ROTATION':
       return option
+  }
+}
+
+export function getConstraintByName(
+  name: BoneConstraintName,
+  src: Partial<BoneConstraintOption> = {}
+): BoneConstraint {
+  return {
+    name,
+    option: getOptionByName(name, src),
+  }
+}
+
+export function getOptionByName(
+  name: BoneConstraintName,
+  src: Partial<BoneConstraintOption> = {}
+): BoneConstraintOption {
+  switch (name) {
+    case 'IK':
+      return ik.getOption(src as ik.Option)
+    case 'LIMIT_ROTATION':
+      return { min: 0, max: 360, influence: 1 }
   }
 }

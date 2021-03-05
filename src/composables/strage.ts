@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { AffineMatrix } from 'okageo'
 import { reactive } from 'vue'
-import { Action, Actor, Armature, ElementNode, IdMap, toMap } from '../models'
+import { ElementNode, IdMap, toMap } from '../models'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import { useCanvasStore } from '../store/canvas'
@@ -28,12 +28,7 @@ import { useHistoryStore } from '../store/history'
 import { cleanActions } from '../utils/animations'
 import { cleanActors, inheritWeight, parseFromSvg } from '../utils/elements'
 import { bakeKeyframes } from '../utils/poseResolver'
-
-interface Root {
-  armatures: Armature[]
-  actions: Action[]
-  actors: Actor[]
-}
+import { initialize, StrageRoot } from '/@/models/strage'
 
 interface BakedData {
   // data format version (not same as app version)
@@ -57,12 +52,12 @@ export function useStrage() {
     const armatures = store.state.armatures
     const actions = cleanActions(animationStore.actions.value, armatures)
     const actors = cleanActors(elementStore.actors.value, armatures)
-    const root: Root = { armatures, actions, actors }
+    const root: StrageRoot = { armatures, actions, actors }
     return JSON.stringify(root)
   }
   function deserialize(src: string) {
     try {
-      const root: Root = JSON.parse(src)
+      const root: StrageRoot = initialize(JSON.parse(src))
       historyStore.clearHistory()
       canvasStore.initState()
       store.initState(root.armatures)

@@ -36,6 +36,7 @@ import {
   findPrevFrameWithKeyframe,
   getAfterKeyframe,
   isSameKeyframeStatus,
+  getSameRangeFrameMapByBoneId,
 } from '/@/utils/animations'
 
 describe('utils/animations.ts', () => {
@@ -369,6 +370,35 @@ describe('utils/animations.ts', () => {
           5
         )
       ).toBe(5)
+    })
+  })
+
+  describe('getSameRangeFrameMapByBoneId', () => {
+    it('get same range frame map by bone id', () => {
+      const t1 = getTransform()
+      const t2 = getTransform({ rotate: 45 })
+      const res = getSameRangeFrameMapByBoneId({
+        a: [
+          getKeyframe({ frame: 0, transform: t1 }),
+          getKeyframe({ frame: 3, transform: t1 }),
+          getKeyframe({ frame: 5, transform: t2 }),
+          getKeyframe({ frame: 6, transform: t1 }),
+          getKeyframe({ frame: 7, transform: t1 }),
+        ],
+        b: [getKeyframe({ frame: 0, transform: t1 })],
+        c: [],
+      })
+      expect(res.a).toEqual({
+        0: 3,
+        3: 0,
+        5: 0,
+        6: 1,
+        7: 0,
+      })
+      expect(res.b).toEqual({
+        0: 0,
+      })
+      expect(res.c).toEqual({})
     })
   })
 })

@@ -247,3 +247,32 @@ export function findPrevFrameWithKeyframe(
     .filter((frame) => frame < currentFrame)
   return gt.length > 0 ? gt[gt.length - 1] : currentFrame
 }
+
+/*
+ * @return { bone_id: { 0: 1, 2: 4 } }
+ */
+export function getSameRangeFrameMapByBoneId(
+  keyframeMapByBoneId: IdMap<Keyframe[]>
+): IdMap<IdMap<number>> {
+  return Object.keys(keyframeMapByBoneId).reduce<IdMap<IdMap<number>>>(
+    (p, boneId) => {
+      p[boneId] = keyframeMapByBoneId[boneId].reduce<IdMap<number>>(
+        (p, k, i) => {
+          const after = getAfterKeyframe(
+            keyframeMapByBoneId[boneId].slice(i),
+            k.frame
+          )
+          if (after && isSameKeyframeStatus(k, after)) {
+            p[k.frame] = after.frame - k.frame
+          } else {
+            p[k.frame] = 0
+          }
+          return p
+        },
+        {}
+      )
+      return p
+    },
+    {}
+  )
+}

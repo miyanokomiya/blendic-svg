@@ -81,6 +81,7 @@ import {
   CreateConstraint,
 } from '/@/utils/constraints'
 import IKOptionField from '/@/components/molecules/constraints/IKOptionField.vue'
+import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
 
 export default defineComponent({
   components: {
@@ -97,12 +98,13 @@ export default defineComponent({
     })
 
     const otherBoneOptions = computed(() => {
-      if (!store.lastSelectedArmature.value || !lastSelectedBone.value)
-        return []
+      if (!lastSelectedBone.value) return []
 
-      return store.lastSelectedArmature.value.bones
-        .filter((b) => b.id !== lastSelectedBone.value?.id)
-        .map((b) => ({ value: b.id, label: b.name }))
+      const boneMap = store.boneMap.value
+      return getBoneIdsWithoutDescendants(
+        boneMap,
+        lastSelectedBone.value.id
+      ).map((id) => ({ value: id, label: boneMap[id].name }))
     })
 
     const selectedObjectType = computed((): 'bone' | 'armature' | '' => {

@@ -355,7 +355,9 @@ export function extendTransform(parent: Bone, child: Bone): Bone {
     ...child,
     transform: {
       translate: add(child.transform.translate, headDiff),
-      rotate: child.transform.rotate + parent.transform.rotate,
+      rotate: child.inheritRotation
+        ? child.transform.rotate + parent.transform.rotate
+        : child.transform.rotate,
       scale: {
         x: child.transform.scale.x * parent.transform.scale.x,
         y: child.transform.scale.y * parent.transform.scale.y,

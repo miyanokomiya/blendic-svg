@@ -528,3 +528,14 @@ export function symmetrizeBone(bone: Bone, origin: IVec2): Bone {
     tail,
   }
 }
+
+export function getBoneIdsWithoutDescendants(
+  boneMap: IdMap<Bone>,
+  targetId: string
+): string[] {
+  const tree = getTree({
+    ...boneMap,
+    [targetId]: { ...boneMap[targetId], parentId: '' },
+  }) as BoneNode[]
+  return flatBoneTree(tree.filter((b) => b.id !== targetId)).map((b) => b.id)
+}

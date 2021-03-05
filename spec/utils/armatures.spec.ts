@@ -748,4 +748,22 @@ describe('utils/armatures', () => {
       expect(res.tail.y).toBeCloseTo(1)
     })
   })
+
+  describe('getBoneIdsWithoutDescendants', () => {
+    it('get bone ids without its descenedants', () => {
+      expect(
+        target.getBoneIdsWithoutDescendants(
+          {
+            parent: getBone({ id: 'parent', parentId: '' }),
+            target: getBone({ id: 'target', parentId: 'parent' }),
+            a: getBone({ id: 'a', parentId: 'target' }),
+            b: getBone({ id: 'b', parentId: 'a' }),
+            c: getBone({ id: 'c', parentId: 'b' }),
+            d: getBone({ id: 'd', parentId: '' }),
+          },
+          'target'
+        )
+      ).toEqual(['parent', 'd'])
+    })
+  })
 })

@@ -31,6 +31,7 @@ import {
   BElement,
   getBElement,
 } from '../models'
+import { getConstraintByName } from '/@/utils/constraints'
 
 export interface StrageRoot {
   armatures: Armature[]
@@ -54,7 +55,11 @@ function initializeArmature(armature: Partial<Armature>): Armature {
 }
 
 function initializeBone(bone: Bone): Bone {
-  return getBone(bone)
+  return getBone({
+    ...bone,
+    constraints:
+      bone.constraints?.map((c) => getConstraintByName(c.name, c.option)) ?? [],
+  })
 }
 
 function initializeAction(action: Partial<Action>): Action {

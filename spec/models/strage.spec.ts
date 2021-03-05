@@ -26,6 +26,7 @@ import {
   getKeyframe,
 } from '/@/models'
 import { initialize, StrageRoot } from '/@/models/strage'
+import { getConstraintByName, getOptionByName } from '/@/utils/constraints'
 
 describe('src/models/strage.ts', () => {
   describe('initialize', () => {
@@ -34,17 +35,19 @@ describe('src/models/strage.ts', () => {
         armatures: [
           {
             id: 'arm',
-            bones: [{ id: 'bone' }],
+            bones: [
+              { id: 'bone' },
+              {
+                id: 'bone_2',
+                constraints: [{ name: 'IK', option: { targetId: 'a' } }],
+              },
+            ],
           },
         ],
         actions: [
           {
             id: 'act',
-            keyframes: [
-              {
-                id: 'key',
-              },
-            ],
+            keyframes: [{ id: 'key' }],
           },
         ],
         actors: [
@@ -58,17 +61,19 @@ describe('src/models/strage.ts', () => {
         armatures: [
           getArmature({
             id: 'arm',
-            bones: [getBone({ id: 'bone' })],
+            bones: [
+              getBone({ id: 'bone' }),
+              getBone({
+                id: 'bone_2',
+                constraints: [getConstraintByName('IK', { targetId: 'a' })],
+              }),
+            ],
           }),
         ],
         actions: [
           getAction({
             id: 'act',
-            keyframes: [
-              getKeyframe({
-                id: 'key',
-              }),
-            ],
+            keyframes: [getKeyframe({ id: 'key' })],
           }),
         ],
         actors: [

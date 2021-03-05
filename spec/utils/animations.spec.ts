@@ -34,6 +34,8 @@ import {
   sortKeyframeMap,
   findNextFrameWithKeyframe,
   findPrevFrameWithKeyframe,
+  getAfterKeyframe,
+  isSameKeyframeStatus,
 } from '/@/utils/animations'
 
 describe('utils/animations.ts', () => {
@@ -109,6 +111,43 @@ describe('utils/animations.ts', () => {
           3
         )
       ).toEqual([getKeyframe({ frame: 2 }), getKeyframe({ frame: 4 })])
+    })
+  })
+
+  describe('getAfterKeyframe', () => {
+    it('get undefined if no after keyframe', () => {
+      expect(getAfterKeyframe([getKeyframe({ frame: 1 })], 1)).toBe(undefined)
+    })
+    it('get the after keyframe', () => {
+      expect(
+        getAfterKeyframe(
+          [
+            getKeyframe({ frame: 1 }),
+            getKeyframe({ frame: 3 }),
+            getKeyframe({ frame: 4 }),
+          ],
+          1
+        )
+      ).toEqual(getKeyframe({ frame: 3 }))
+    })
+  })
+
+  describe('isSameKeyframeStatus', () => {
+    it('return false if different transform', () => {
+      expect(
+        isSameKeyframeStatus(
+          getKeyframe({ transform: getTransform() }),
+          getKeyframe({ transform: getTransform({ rotate: 10 }) })
+        )
+      ).toBe(false)
+    })
+    it('return false if same transform', () => {
+      expect(
+        isSameKeyframeStatus(
+          getKeyframe({ boneId: 'a', frame: 1 }),
+          getKeyframe({ boneId: 'b', frame: 2 })
+        )
+      ).toBe(true)
     })
   })
 

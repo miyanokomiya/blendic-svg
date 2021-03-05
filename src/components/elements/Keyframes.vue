@@ -28,6 +28,13 @@ Copyright (C) 2021, Tomoya Komiyama.
       :transform="`translate(${parseInt(f) * frameWidth}, 0)`"
     >
       <g :transform="`scale(${scale}) translate(0, 36)`">
+        <rect
+          y="-3"
+          :width="(summarySameRangeMapByFrame[f] * frameWidth) / scale"
+          height="6"
+          fill="#aaa"
+          fill-opacity="0.5"
+        />
         <circle
           v-if="keyframes.length > 0"
           key="all"
@@ -39,6 +46,15 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <g :transform="`translate(0, ${-scrollY})`">
           <g v-for="k in keyframes" :key="k.id">
+            <rect
+              :y="boneRowMap[k.boneId] - 3"
+              :width="
+                (getSameRangeFrame(k.boneId, k.frame) * frameWidth) / scale
+              "
+              height="6"
+              fill="#aaa"
+              fill-opacity="0.5"
+            />
             <circle
               v-if="boneRowMap[k.boneId] > scrollY + headerHeight / 2"
               :cy="boneRowMap[k.boneId]"
@@ -59,6 +75,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { IdMap, Keyframe, frameWidth } from '/@/models'
+import {
+  getAfterKeyframe,
+  getKeyframeMapByBoneId,
+  isSameKeyframeStatus,
+} from '/@/utils/animations'
 import { mapReduce } from '/@/utils/commons'
 
 export default defineComponent({
@@ -99,14 +120,61 @@ export default defineComponent({
 
     const sortedKeyframeMapByFrame = computed(() => {
       return Object.keys(props.keyframeMapByFrame).reduce<IdMap<Keyframe[]>>(
-        (p, boneId) => {
-          p[boneId] = sortAndFilterKeyframesByBoneId(
-            props.keyframeMapByFrame[boneId]
+        (p, frame) => {
+          p[frame] = sortAndFilterKeyframesByBoneId(
+            props.keyframeMapByFrame[frame]
           )
           return p
         },
         {}
       )
+    })
+
+    const keyframeMapByBoneId = computed(() => {
+      return getKeyframeMapByBoneId(
+        Object.keys(props.keyframeMapByFrame).flatMap((frame) => {
+          return props.keyframeMapByFrame[frame]
+        })
+      )
+    })
+
+    const sameRangeFrameMapByBoneId = computed(() => {
+      return Object.keys(keyframeMapByBoneId.value).reduce<
+        IdMap<IdMap<number>>
+      >((p, boneId) => {
+        p[boneId] = keyframeMapByBoneId.value[boneId].reduce<IdMap<number>>(
+          (p, k, i) => {
+            const after = getAfterKeyframe(
+              keyframeMapByBoneId.value[k.boneId].slice(i),
+              k.frame
+            )
+            if (after && isSameKeyframeStatus(k, after)) {
+              p[k.frame] = after.frame - k.frame
+            } else {
+              p[k.frame] = 0
+            }
+            return p
+          },
+          {}
+        )
+        return p
+      }, {})
+    })
+
+    function getSameRangeFrame(boneId: string, frame: number): number {
+      return sameRangeFrameMapByBoneId.value[boneId][frame]
+    }
+
+    const summarySameRangeMapByFrame = computed(() => {
+      return mapReduce(sortedKeyframeMapByFrame.value, (keyframes) => {
+        if (keyframes.length === 0) return 0
+        const [head, ...body] = keyframes
+        const sameRange = getSameRangeFrame(head.boneId, head.frame)
+        const different = body.some(
+          (k) => getSameRangeFrame(k.boneId, k.frame) !== sameRange
+        )
+        return different ? 0 : sameRange
+      })
     })
 
     const selectedFrameMap = computed(() => {
@@ -147,6 +215,8 @@ export default defineComponent({
       frameWidth,
       boneIndexMap,
       sortedKeyframeMapByFrame,
+      getSameRangeFrame,
+      summarySameRangeMapByFrame,
       selectedFrameMap,
       select,
       shiftSelect,

@@ -39,6 +39,7 @@ import {
   toMap,
   Transform,
 } from '/@/models'
+import { isSameTransform } from '/@/utils/geometry'
 
 export function getScaleLog(scale: number): number {
   return Math.round(Math.log(scale) / Math.log(scaleRate))
@@ -119,6 +120,20 @@ export function getNeighborKeyframes(
   const before = sortedKeyframes[afterIndex - 1]
   if (before.frame === frame) return [before]
   return [before, after]
+}
+
+export function getAfterKeyframe(
+  sortedKeyframes: Keyframe[],
+  frame: number
+): Keyframe | undefined {
+  if (sortedKeyframes.length === 0) return
+  const afterIndex = sortedKeyframes.findIndex((k) => frame < k.frame)
+  if (afterIndex === -1) return
+  return sortedKeyframes[afterIndex]
+}
+
+export function isSameKeyframeStatus(a: Keyframe, b: Keyframe): boolean {
+  return isSameTransform(a.transform, b.transform)
 }
 
 type InterpolateCurve = (val: number) => number

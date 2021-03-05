@@ -17,9 +17,20 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { isSame } from 'okageo'
+import { Transform } from '/@/models'
+
 // normalize in (-pi <= r <= pi)
 export function normalizeRad(rad: number): number {
   if (rad < -Math.PI) return rad + Math.PI * 2
   else if (Math.PI < rad) return rad - Math.PI * 2
   else return rad
+}
+
+export function isSameTransform(a: Transform, b: Transform): boolean {
+  if (!isSame(a.translate, b.translate)) return false
+  if (!isSame(a.scale, b.scale)) return false
+  if (!isSame(a.origin, b.origin)) return false
+  if (a.rotate !== b.rotate) return false
+  return true
 }

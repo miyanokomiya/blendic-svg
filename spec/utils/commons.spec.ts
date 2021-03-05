@@ -28,6 +28,7 @@ import {
   hasLeftRightName,
   mapReduce,
   mergeListByKey,
+  sortByValue,
   symmetrizeName,
   toKeyListMap,
   toKeyMap,
@@ -335,6 +336,30 @@ describe('utils/commons.ts', () => {
         c: 'c.002',
         d: 'd',
       })
+    })
+  })
+
+  describe('sortByValue', () => {
+    it('sorte by name', () => {
+      const src = [
+        { id: 'a', name: 'dd' },
+        { id: 'b', name: 'bb' },
+        { id: 'c', name: 'cc' },
+        { id: 'd', name: 'aa' },
+      ]
+      expect(sortByValue(src, 'name')).toEqual([
+        { id: 'd', name: 'aa' },
+        { id: 'b', name: 'bb' },
+        { id: 'c', name: 'cc' },
+        { id: 'a', name: 'dd' },
+      ])
+      // not override src array
+      expect(src).toEqual([
+        { id: 'a', name: 'dd' },
+        { id: 'b', name: 'bb' },
+        { id: 'c', name: 'cc' },
+        { id: 'd', name: 'aa' },
+      ])
     })
   })
 })

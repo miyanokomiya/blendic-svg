@@ -48,6 +48,7 @@ import {
   getUnduplicatedNameMap,
   hasLeftRightName,
   mapReduce,
+  sortByValue,
   symmetrizeName,
   toList,
 } from './commons'
@@ -539,5 +540,11 @@ export function getBoneIdsWithoutDescendants(
     ...boneMap,
     [targetId]: { ...boneMap[targetId], parentId: '' },
   }) as BoneNode[]
-  return flatBoneTree(tree.filter((b) => b.id !== targetId)).map((b) => b.id)
+  return sortBoneByName(
+    flatBoneTree(tree.filter((b) => b.id !== targetId))
+  ).map((b) => b.id)
+}
+
+export function sortBoneByName(bones: Bone[]): Bone[] {
+  return sortByValue(bones, 'name')
 }

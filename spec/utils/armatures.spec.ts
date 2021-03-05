@@ -779,5 +779,35 @@ describe('utils/armatures', () => {
         )
       ).toEqual(['parent', 'd'])
     })
+    it('sorted by name', () => {
+      expect(
+        target.getBoneIdsWithoutDescendants(
+          {
+            d: getBone({ id: 'd', name: 'dd' }),
+            b: getBone({ id: 'b', name: 'bb' }),
+            c: getBone({ id: 'c', name: 'cc' }),
+            a: getBone({ id: 'a', name: 'aa' }),
+          },
+          'c'
+        )
+      ).toEqual(['a', 'b', 'd'])
+    })
+  })
+
+  describe('sortBoneByName', () => {
+    it('sorte by name', () => {
+      const src = [
+        getBone({ id: 'd', name: 'dd' }),
+        getBone({ id: 'b', name: 'bb' }),
+        getBone({ id: 'c', name: 'cc' }),
+        getBone({ id: 'a', name: 'aa' }),
+      ]
+      expect(target.sortBoneByName(src)).toEqual([
+        getBone({ id: 'a', name: 'aa' }),
+        getBone({ id: 'b', name: 'bb' }),
+        getBone({ id: 'c', name: 'cc' }),
+        getBone({ id: 'd', name: 'dd' }),
+      ])
+    })
   })
 })

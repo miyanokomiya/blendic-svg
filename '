@@ -68,7 +68,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       class="view-only"
     >
       <text fill="#fff" stroke="#fff">{{ name }}</text>
-      <text fill="#000" stroke="none">{{ name }}</text>
+      <text fill="#000" stroke="none">{{ name + ss }}</text>
     </g>
   </g>
 </template>
@@ -124,10 +124,15 @@ export default defineComponent({
       return posedTransformBone.value.head
     })
     const tail = computed(() => {
+      console.log(1111)
       return posedTransformBone.value.tail
     })
     const side1 = computed(() => d1(head.value, tail.value))
     const side2 = computed(() => d1(head.value, tail.value, true))
+
+    const ss = computed(() => {
+      return props.selectedState.tail
+    })
 
     const selectedAll = computed(() => {
       if (props.poseMode) {
@@ -140,6 +145,7 @@ export default defineComponent({
     const circleR = computed(() => getCircleR(head.value, tail.value))
 
     return {
+      ss,
       adjustedOpacity: computed(() => props.opacity * settings.boneOpacity),
       name: computed(() => (settings.showBoneName ? props.bone.name : '')),
       circleR,

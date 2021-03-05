@@ -42,6 +42,7 @@ import { useStore } from '/@/store'
 import { useCanvasStore } from '/@/store/canvas'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import { useElementStore } from '/@/store/element'
+import { sortByValue } from '/@/utils/commons'
 
 export default defineComponent({
   components: { SelectField },
@@ -74,7 +75,10 @@ export default defineComponent({
     })
 
     const armatureOptions = computed(() => {
-      return store.state.armatures.map((a) => ({ value: a.id, label: a.name }))
+      return sortByValue(
+        store.state.armatures.map((a) => ({ value: a.id, label: a.name })),
+        'label'
+      )
     })
 
     const boneId = computed({
@@ -87,11 +91,14 @@ export default defineComponent({
     })
 
     const boneOptions = computed(() => {
-      return (
+      if (!currentArmature.value) return []
+
+      return sortByValue(
         currentArmature.value?.bones.map((b) => ({
           value: b.id,
           label: b.name,
-        })) ?? []
+        })),
+        'label'
       )
     })
 

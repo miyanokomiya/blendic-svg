@@ -39,6 +39,15 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <g :transform="`translate(0, ${-scrollY})`">
           <g v-for="k in keyframes" :key="k.id">
+            <rect
+              :y="boneRowMap[k.boneId] - 3"
+              :width="
+                (getSameRangeFrame(k.boneId, k.frame) * frameWidth) / scale
+              "
+              height="6"
+              fill="#aaa"
+              fill-opacity="0.5"
+            />
             <circle
               v-if="boneRowMap[k.boneId] > scrollY + headerHeight / 2"
               :cy="boneRowMap[k.boneId]"
@@ -59,6 +68,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { IdMap, Keyframe, frameWidth } from '/@/models'
+import {
+  getKeyframeMapByBoneId,
+  getSameRangeFrameMapByBoneId,
+} from '/@/utils/animations'
 import { mapReduce } from '/@/utils/commons'
 
 export default defineComponent({
@@ -99,15 +112,31 @@ export default defineComponent({
 
     const sortedKeyframeMapByFrame = computed(() => {
       return Object.keys(props.keyframeMapByFrame).reduce<IdMap<Keyframe[]>>(
-        (p, boneId) => {
-          p[boneId] = sortAndFilterKeyframesByBoneId(
-            props.keyframeMapByFrame[boneId]
+        (p, frame) => {
+          p[frame] = sortAndFilterKeyframesByBoneId(
+            props.keyframeMapByFrame[frame]
           )
           return p
         },
         {}
       )
     })
+
+    const keyframeMapByBoneId = computed(() => {
+      return getKeyframeMapByBoneId(
+        Object.keys(props.keyframeMapByFrame).flatMap((frame) => {
+          return props.keyframeMapByFrame[frame]
+        })
+      )
+    })
+
+    const sameRangeFrameMapByBoneId = computed(() => {
+      return getSameRangeFrameMapByBoneId(keyframeMapByBoneId.value)
+    })
+
+    function getSameRangeFrame(boneId: string, frame: number): number {
+      return sameRangeFrameMapByBoneId.value[boneId]?.[frame] ?? 0
+    }
 
     const selectedFrameMap = computed(() => {
       return mapReduce(props.keyframeMapByFrame, (keyframes) => {
@@ -147,6 +176,7 @@ export default defineComponent({
       frameWidth,
       boneIndexMap,
       sortedKeyframeMapByFrame,
+      getSameRangeFrame,
       selectedFrameMap,
       select,
       shiftSelect,

@@ -34,6 +34,9 @@ import {
   sortKeyframeMap,
   findNextFrameWithKeyframe,
   findPrevFrameWithKeyframe,
+  getAfterKeyframe,
+  isSameKeyframeStatus,
+  getSameRangeFrameMapByBoneId,
 } from '/@/utils/animations'
 
 describe('utils/animations.ts', () => {
@@ -109,6 +112,43 @@ describe('utils/animations.ts', () => {
           3
         )
       ).toEqual([getKeyframe({ frame: 2 }), getKeyframe({ frame: 4 })])
+    })
+  })
+
+  describe('getAfterKeyframe', () => {
+    it('get undefined if no after keyframe', () => {
+      expect(getAfterKeyframe([getKeyframe({ frame: 1 })], 1)).toBe(undefined)
+    })
+    it('get the after keyframe', () => {
+      expect(
+        getAfterKeyframe(
+          [
+            getKeyframe({ frame: 1 }),
+            getKeyframe({ frame: 3 }),
+            getKeyframe({ frame: 4 }),
+          ],
+          1
+        )
+      ).toEqual(getKeyframe({ frame: 3 }))
+    })
+  })
+
+  describe('isSameKeyframeStatus', () => {
+    it('return false if different transform', () => {
+      expect(
+        isSameKeyframeStatus(
+          getKeyframe({ transform: getTransform() }),
+          getKeyframe({ transform: getTransform({ rotate: 10 }) })
+        )
+      ).toBe(false)
+    })
+    it('return false if same transform', () => {
+      expect(
+        isSameKeyframeStatus(
+          getKeyframe({ boneId: 'a', frame: 1 }),
+          getKeyframe({ boneId: 'b', frame: 2 })
+        )
+      ).toBe(true)
     })
   })
 
@@ -330,6 +370,35 @@ describe('utils/animations.ts', () => {
           5
         )
       ).toBe(5)
+    })
+  })
+
+  describe('getSameRangeFrameMapByBoneId', () => {
+    it('get same range frame map by bone id', () => {
+      const t1 = getTransform()
+      const t2 = getTransform({ rotate: 45 })
+      const res = getSameRangeFrameMapByBoneId({
+        a: [
+          getKeyframe({ frame: 0, transform: t1 }),
+          getKeyframe({ frame: 3, transform: t1 }),
+          getKeyframe({ frame: 5, transform: t2 }),
+          getKeyframe({ frame: 6, transform: t1 }),
+          getKeyframe({ frame: 7, transform: t1 }),
+        ],
+        b: [getKeyframe({ frame: 0, transform: t1 })],
+        c: [],
+      })
+      expect(res.a).toEqual({
+        0: 3,
+        3: 0,
+        5: 0,
+        6: 1,
+        7: 0,
+      })
+      expect(res.b).toEqual({
+        0: 0,
+      })
+      expect(res.c).toEqual({})
     })
   })
 })

@@ -39,6 +39,7 @@ import {
   toMap,
   Transform,
 } from '/@/models'
+import { isSameTransform } from '/@/utils/geometry'
 
 export function getScaleLog(scale: number): number {
   return Math.round(Math.log(scale) / Math.log(scaleRate))
@@ -119,6 +120,20 @@ export function getNeighborKeyframes(
   const before = sortedKeyframes[afterIndex - 1]
   if (before.frame === frame) return [before]
   return [before, after]
+}
+
+export function getAfterKeyframe(
+  sortedKeyframes: Keyframe[],
+  frame: number
+): Keyframe | undefined {
+  if (sortedKeyframes.length === 0) return
+  const afterIndex = sortedKeyframes.findIndex((k) => frame < k.frame)
+  if (afterIndex === -1) return
+  return sortedKeyframes[afterIndex]
+}
+
+export function isSameKeyframeStatus(a: Keyframe, b: Keyframe): boolean {
+  return isSameTransform(a.transform, b.transform)
 }
 
 type InterpolateCurve = (val: number) => number
@@ -231,4 +246,33 @@ export function findPrevFrameWithKeyframe(
     .map((s) => parseInt(s))
     .filter((frame) => frame < currentFrame)
   return gt.length > 0 ? gt[gt.length - 1] : currentFrame
+}
+
+/*
+ * @return { bone_id: { 0: 1, 2: 4 } }
+ */
+export function getSameRangeFrameMapByBoneId(
+  keyframeMapByBoneId: IdMap<Keyframe[]>
+): IdMap<IdMap<number>> {
+  return Object.keys(keyframeMapByBoneId).reduce<IdMap<IdMap<number>>>(
+    (p, boneId) => {
+      p[boneId] = keyframeMapByBoneId[boneId].reduce<IdMap<number>>(
+        (p, k, i) => {
+          const after = getAfterKeyframe(
+            keyframeMapByBoneId[boneId].slice(i),
+            k.frame
+          )
+          if (after && isSameKeyframeStatus(k, after)) {
+            p[k.frame] = after.frame - k.frame
+          } else {
+            p[k.frame] = 0
+          }
+          return p
+        },
+        {}
+      )
+      return p
+    },
+    {}
+  )
 }

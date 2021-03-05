@@ -21,7 +21,6 @@ Copyright (C) 2021, Tomoya Komiyama.
   <g
     stroke="black"
     :fill="fill"
-    :transform="transform"
     :opacity="adjustedOpacity"
     :stroke-width="Math.min(2 * scale, 2)"
   >
@@ -140,16 +139,10 @@ export default defineComponent({
 
     const circleR = computed(() => getCircleR(head.value, tail.value))
 
-    const transformStr = computed(() => {
-      // return transform(props.bone.transform)
-      return ''
-    })
-
     return {
       adjustedOpacity: computed(() => props.opacity * settings.boneOpacity),
       name: computed(() => (settings.showBoneName ? props.bone.name : '')),
       circleR,
-      transform: transformStr,
       head,
       tail,
       headPath: computed(() => d([head.value, side1.value, side2.value], true)),

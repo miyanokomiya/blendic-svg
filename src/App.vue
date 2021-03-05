@@ -67,17 +67,13 @@ Copyright (C) 2021, Tomoya Komiyama.
               :scale="scale"
               class="view-only"
             />
-            <BoneElm
-              v-for="bone in visibledBoneMap"
-              :key="bone.id"
-              :bone="bone"
-              :parent="visibledBoneMap[bone.parentId]"
-              :selected-state="selectedBones[bone.id]"
+            <BoneLayer
               :scale="scale"
-              :pose-mode="canvasMode === 'pose'"
-              :class="{ 'view-only': canvasMode === 'weight' }"
-              @select="(state) => selectBone(bone.id, state)"
-              @shift-select="(state) => shiftSelectBone(bone.id, state)"
+              :bone-map="visibledBoneMap"
+              :selected-bones="selectedBones"
+              :canvas-mode="canvasMode"
+              @select="selectBone"
+              @shift-select="shiftSelectBone"
             />
           </g>
         </template>
@@ -99,7 +95,7 @@ import AnimationPanel from './components/AnimationPanel.vue'
 import ElementLayer from './components/elements/ElementLayer.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import SideBar from '/@/components/SideBar.vue'
-import BoneElm from './components/elements/Bone.vue'
+import BoneLayer from '/@/components/elements/BoneLayer.vue'
 import {
   Bone,
   BoneSelectedState,
@@ -128,11 +124,11 @@ export default defineComponent({
   components: {
     AppCanvas,
     ArmatureElm,
-    BoneElm,
     SidePanel,
     AnimationPanel,
     SideBar,
     ElementLayer,
+    BoneLayer,
   },
   setup() {
     const store = useStore()

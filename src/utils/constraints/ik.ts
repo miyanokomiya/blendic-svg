@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { add, getRadian, IVec2, rotate, sub } from 'okageo'
-import { getParentIdPath } from '../commons'
+import { getParentIdPath, sumReduce } from '../commons'
 import { Bone, IdMap, toMap } from '/@/models'
 
 export interface Option {
@@ -172,4 +172,11 @@ export function getOption(src: Partial<Option> = {}): Option {
     chainLength: 2,
     ...src,
   }
+}
+
+export function getDependentCountMap(option: Option): IdMap<number> {
+  return sumReduce([
+    option.targetId ? { [option.targetId]: 1 } : {},
+    option.poleTargetId ? { [option.poleTargetId]: 1 } : {},
+  ])
 }

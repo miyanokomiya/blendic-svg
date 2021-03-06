@@ -18,7 +18,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import * as ik from './ik'
-import { Bone, IdMap } from '/@/models'
+import { Bone, IdMap, mergeMap, toMap } from '/@/models'
+import {
+  dropMap,
+  dropMapIfFalse,
+  mapReduce,
+  sumReduce,
+  toList,
+} from '/@/utils/commons'
 
 export type BoneConstraintName = 'IK' | 'LIMIT_ROTATION'
 
@@ -69,8 +76,7 @@ export function applyConstraint<N extends BoneConstraintName>(
 
 export function applyAllConstraints(posedMap: IdMap<Bone>): IdMap<Bone> {
   let appliedMap = posedMap
-  Object.keys(appliedMap).forEach((id) => {
-    const b = appliedMap[id]
+  sortBoneByHighDependency(toList(appliedMap)).forEach((b) => {
     appliedMap = b.constraints.reduce((p, c) => {
       return {
         ...p,
@@ -126,4 +132,56 @@ export function getOptionByName(
     case 'LIMIT_ROTATION':
       return { min: 0, max: 360, influence: 1 }
   }
+}
+
+export function sortBoneByHighDependency(bones: Bone[]): Bone[] {
+  const boneMap = toMap(bones)
+  const dmap = getDependentCountMap(boneMap)
+  const sortedIds = sortByDependency(dmap)
+  return sortedIds.map((id) => boneMap[id])
+}
+
+function getDependentCountMap(boneMap: IdMap<Bone>): IdMap<IdMap<number>> {
+  return mapReduce(boneMap, (b) => {
+    return sumReduce(b.constraints.map(getDependentCountMapOfConstrain))
+  })
+}
+
+function getDependentCountMapOfConstrain(
+  constraint: BoneConstraint
+): IdMap<number> {
+  switch (constraint.name) {
+    case 'IK':
+      return ik.getDependentCountMap(constraint.option as ik.Option)
+    case 'LIMIT_ROTATION':
+      return {}
+  }
+}
+
+export function sortByDependency(map: IdMap<IdMap<number>>): string[] {
+  let ret: string[] = []
+  let resolved: IdMap<boolean> = {}
+  let unresolved = map
+  while (Object.keys(unresolved).length > 0) {
+    const keys = sortByDependencyStep(resolved, unresolved)
+    if (keys.length === 0) {
+      ret = ret.concat(Object.keys(unresolved).sort())
+      break
+    }
+    ret = ret.concat(keys)
+    ;(resolved = keys.reduce((p, c) => ({ ...p, [c]: true }), resolved)),
+      (unresolved = dropMap(unresolved, resolved))
+  }
+  return ret
+}
+
+function sortByDependencyStep(
+  resolved: IdMap<boolean>,
+  unresolved: IdMap<IdMap<number>>
+): string[] {
+  return Object.keys(
+    dropMapIfFalse(unresolved, (map) => {
+      return Object.keys(map).every((key) => resolved[key])
+    })
+  )
 }

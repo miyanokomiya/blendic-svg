@@ -29,6 +29,8 @@ import {
   mapReduce,
   mergeListByKey,
   sortByValue,
+  sumMap,
+  sumReduce,
   symmetrizeName,
   toKeyListMap,
   toKeyMap,
@@ -360,6 +362,33 @@ describe('utils/commons.ts', () => {
         { id: 'c', name: 'cc' },
         { id: 'd', name: 'aa' },
       ])
+    })
+  })
+
+  describe('sumReduce', () => {
+    it('sum values of maps', () => {
+      expect(
+        sumReduce([
+          { a: 1, b: 2, d: 3 },
+          { b: 20, c: 21 },
+        ])
+      ).toEqual({
+        a: 1,
+        b: 22,
+        c: 21,
+        d: 3,
+      })
+    })
+  })
+
+  describe('sumMap', () => {
+    it('sum values of two maps', () => {
+      expect(sumMap({ a: 1, b: 2, d: 3 }, { b: 20, c: 21 })).toEqual({
+        a: 1,
+        b: 22,
+        c: 21,
+        d: 3,
+      })
     })
   })
 })

@@ -32,13 +32,13 @@ import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '../store/animation'
 import { mapReduce } from '../utils/commons'
+import { applyScale, invertScaleOrZero } from '../utils/armatures'
 import {
-  applyTransform,
-  invertPoseTransform,
-  applyScale,
-  invertScaleOrZero,
-} from '../utils/armatures'
-import { normalizeRad, snapGrid, snapRotate } from '../utils/geometry'
+  normalizeRad,
+  snapGrid,
+  snapRotate,
+  snapScale,
+} from '../utils/geometry'
 
 interface State {
   command: EditMode
@@ -120,6 +120,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
         getRadian(editMovement.start, origin)
       const rotate = (normalizeRad(rad) / Math.PI) * 180
       const snappedRotate = editMovement.ctrl ? snapRotate(rotate) : rotate
+
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>
       >((map, id) => {
@@ -142,7 +143,9 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
         getDistance(editMovement.current, origin) /
           getDistance(editMovement.start, origin)
       )
-      const snappedScale = canvasStore.snapScale(scale)
+      const gridScale = editMovement.ctrl ? snapScale(scale) : scale
+      const snappedScale = canvasStore.snapScale(gridScale)
+
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>
       >((map, id) => {

@@ -29,7 +29,6 @@ import {
   CanvasEditModeBase,
   EditMovement,
   toMap,
-  scaleRate,
 } from '../models/index'
 import {
   duplicateBones,
@@ -41,7 +40,7 @@ import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { mapReduce } from '/@/utils/commons'
-import { getGridSize, snapGrid, snapRotate } from '/@/utils/geometry'
+import { snapGrid, snapRotate, snapScale } from '/@/utils/geometry'
 
 interface State {
   command: EditMode
@@ -145,7 +144,9 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
         getDistance(editMovement.current, origin) /
           getDistance(editMovement.start, origin)
       )
-      const snappedScale = canvasStore.snapScale(scale)
+      const gridScale = editMovement.ctrl ? snapScale(scale) : scale
+      const snappedScale = canvasStore.snapScale(gridScale)
+
       return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
         (map, id) => {
           map[id] = getTransform({ origin, scale: snappedScale })

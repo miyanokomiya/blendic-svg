@@ -52,5 +52,16 @@ export function snapGrid(scale: number, vec: IVec2): IVec2 {
 }
 
 export function snapRotate(rotate: number, angle = 15): number {
-  return Math.round(rotate / angle) * angle
+  return snapNumber(rotate, angle)
+}
+
+export function snapScale(scale: IVec2, step = 0.1): IVec2 {
+  return {
+    x: snapNumber(scale.x, step),
+    y: snapNumber(scale.y, step),
+  }
+}
+
+export function snapNumber(value: number, step = 1): number {
+  return Math.round(value / step) * step
 }

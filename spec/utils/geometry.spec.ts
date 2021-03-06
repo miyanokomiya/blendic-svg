@@ -23,7 +23,9 @@ import {
   isSameTransform,
   normalizeRad,
   snapGrid,
+  snapNumber,
   snapRotate,
+  snapScale,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -120,6 +122,34 @@ describe('src/utils/geometry.ts', () => {
     })
     it('option angle', () => {
       expect(snapRotate(19, 20)).toBe(20)
+    })
+  })
+
+  describe('snapScale', () => {
+    it.each([
+      [
+        { x: 0, y: 0 },
+        { x: 0, y: 0 },
+      ],
+      [
+        { x: 0.06, y: 0.04 },
+        { x: 0.1, y: 0 },
+      ],
+    ])('scale: %s => %s', (scale, expected) => {
+      expect(snapScale(scale)).toEqual(expected)
+    })
+  })
+
+  describe('snapNumber', () => {
+    it.each([
+      [0, 0],
+      [0.4, 0],
+      [0.5, 1],
+    ])('value: %s => %s', (value, expected) => {
+      expect(snapNumber(value)).toBe(expected)
+    })
+    it('option angle', () => {
+      expect(snapNumber(19, 20)).toBe(20)
     })
   })
 })

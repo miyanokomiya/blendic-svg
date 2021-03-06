@@ -50,3 +50,7 @@ export function snapGrid(scale: number, vec: IVec2): IVec2 {
     y: Math.round(vec.y / gridSpan) * gridSpan,
   }
 }
+
+export function snapRotate(rotate: number, angle = 15): number {
+  return Math.round(rotate / angle) * angle
+}

@@ -110,7 +110,6 @@ import {
   getTransformedBoneMap,
   posedTransform,
 } from './utils/armatures'
-import { IVec2 } from 'okageo'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'

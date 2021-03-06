@@ -38,7 +38,7 @@ import {
   applyScale,
   invertScaleOrZero,
 } from '../utils/armatures'
-import { normalizeRad, snapGrid } from '../utils/geometry'
+import { normalizeRad, snapGrid, snapRotate } from '../utils/geometry'
 
 interface State {
   command: EditMode
@@ -119,10 +119,11 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
         getRadian(editMovement.current, origin) -
         getRadian(editMovement.start, origin)
       const rotate = (normalizeRad(rad) / Math.PI) * 180
+      const snappedRotate = editMovement.ctrl ? snapRotate(rotate) : rotate
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>
       >((map, id) => {
-        map[id] = getTransform({ rotate: rotate * rotateDirection(id) })
+        map[id] = getTransform({ rotate: snappedRotate * rotateDirection(id) })
         return map
       }, {})
     }

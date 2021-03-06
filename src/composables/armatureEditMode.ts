@@ -41,7 +41,7 @@ import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { mapReduce } from '/@/utils/commons'
-import { getGridSize } from '/@/utils/geometry'
+import { getGridSize, snapGrid, snapRotate } from '/@/utils/geometry'
 
 interface State {
   command: EditMode
@@ -162,11 +162,13 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
           getRadian(editMovement.start, origin)) /
           Math.PI) *
         180
+      const snappedRotate = editMovement.ctrl ? snapRotate(rotate) : rotate
+
       return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
         (map, id) => {
           map[id] = getTransform({
             origin,
-            rotate,
+            rotate: snappedRotate,
           })
           return map
         },
@@ -175,15 +177,11 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     }
 
     const translate = sub(editMovement.current, editMovement.start)
-    const gridSpan = getGridSize(editMovement.scale)
     const gridTranslate = editMovement.ctrl
-      ? {
-          x: Math.round(translate.x / gridSpan) * gridSpan,
-          y: Math.round(translate.y / gridSpan) * gridSpan,
-        }
+      ? snapGrid(editMovement.scale, translate)
       : translate
-
     const snappedTranslate = canvasStore.snapTranslate(gridTranslate)
+
     return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
       (map, id) => {
         map[id] = getTransform({ translate: snappedTranslate })

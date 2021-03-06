@@ -18,7 +18,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform, getBone } from '/@/models'
-import { apply, immigrate, straightToPoleTarget } from '/@/utils/constraints/ik'
+import {
+  apply,
+  getDependentCountMap,
+  getOption,
+  immigrate,
+  straightToPoleTarget,
+} from '/@/utils/constraints/ik'
 
 describe('utils/constraints/ik.ts', () => {
   describe('apply', () => {
@@ -228,6 +234,28 @@ describe('utils/constraints/ik.ts', () => {
         iterations: 1,
         chainLength: 10,
       })
+    })
+  })
+
+  describe('getDependentCountMap', () => {
+    it('get dependent count map', () => {
+      expect(getDependentCountMap(getOption({}))).toEqual({})
+      expect(
+        getDependentCountMap(
+          getOption({
+            targetId: 'a',
+            poleTargetId: 'b',
+          })
+        )
+      ).toEqual({ a: 1, b: 1 })
+      expect(
+        getDependentCountMap(
+          getOption({
+            targetId: 'a',
+            poleTargetId: 'a',
+          })
+        )
+      ).toEqual({ a: 2 })
     })
   })
 })

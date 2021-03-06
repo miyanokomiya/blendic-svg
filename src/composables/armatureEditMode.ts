@@ -29,6 +29,7 @@ import {
   CanvasEditModeBase,
   EditMovement,
   toMap,
+  scaleRate,
 } from '../models/index'
 import {
   duplicateBones,
@@ -40,6 +41,7 @@ import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { mapReduce } from '/@/utils/commons'
+import { getGridSize } from '/@/utils/geometry'
 
 interface State {
   command: EditMode
@@ -128,19 +130,20 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
   }
 
   const editTransforms = computed(() => {
-    if (!state.editMovement) return {}
+    const editMovement = state.editMovement
+    if (!editMovement) return {}
 
     if (state.command === 'scale') {
       const origin = store.selectedBonesOrigin.value
       const isOppositeSide = canvasStore.isOppositeSide(
         origin,
-        state.editMovement.start,
-        state.editMovement.current
+        editMovement.start,
+        editMovement.current
       )
       const scale = multi(
         multi({ x: 1, y: 1 }, isOppositeSide ? -1 : 1),
-        getDistance(state.editMovement.current, origin) /
-          getDistance(state.editMovement.start, origin)
+        getDistance(editMovement.current, origin) /
+          getDistance(editMovement.start, origin)
       )
       const snappedScale = canvasStore.snapScale(scale)
       return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
@@ -155,8 +158,8 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     if (state.command === 'rotate') {
       const origin = store.selectedBonesOrigin.value
       const rotate =
-        ((getRadian(state.editMovement.current, origin) -
-          getRadian(state.editMovement.start, origin)) /
+        ((getRadian(editMovement.current, origin) -
+          getRadian(editMovement.start, origin)) /
           Math.PI) *
         180
       return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
@@ -171,8 +174,16 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
       )
     }
 
-    const translate = sub(state.editMovement.current, state.editMovement.start)
-    const snappedTranslate = canvasStore.snapTranslate(translate)
+    const translate = sub(editMovement.current, editMovement.start)
+    const gridSpan = getGridSize(editMovement.scale)
+    const gridTranslate = editMovement.ctrl
+      ? {
+          x: Math.round(translate.x / gridSpan) * gridSpan,
+          y: Math.round(translate.y / gridSpan) * gridSpan,
+        }
+      : translate
+
+    const snappedTranslate = canvasStore.snapTranslate(gridTranslate)
     return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
       (map, id) => {
         map[id] = getTransform({ translate: snappedTranslate })
@@ -291,7 +302,7 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     )
     store.addBones(
       newBones,
-      mapReduce(toMap(newBones), (b) => ({ head: true, tail: true }))
+      mapReduce(toMap(newBones), () => ({ head: true, tail: true }))
     )
   }
 

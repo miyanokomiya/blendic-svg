@@ -38,7 +38,7 @@ import {
   applyScale,
   invertScaleOrZero,
 } from '../utils/armatures'
-import { normalizeRad } from '../utils/geometry'
+import { normalizeRad, snapGrid } from '../utils/geometry'
 
 interface State {
   command: EditMode
@@ -110,13 +110,14 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
   }
 
   const editTransforms = computed(() => {
-    if (!state.editMovement) return {}
+    const editMovement = state.editMovement
+    if (!editMovement) return {}
 
     if (state.command === 'rotate') {
       const origin = animationStore.selectedPosedBoneOrigin.value
       const rad =
-        getRadian(state.editMovement.current, origin) -
-        getRadian(state.editMovement.start, origin)
+        getRadian(editMovement.current, origin) -
+        getRadian(editMovement.start, origin)
       const rotate = (normalizeRad(rad) / Math.PI) * 180
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>
@@ -126,19 +127,19 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
       }, {})
     }
 
-    const translate = sub(state.editMovement.current, state.editMovement.start)
+    const translate = sub(editMovement.current, editMovement.start)
 
     if (state.command === 'scale') {
       const origin = animationStore.selectedPosedBoneOrigin.value
       const isOppositeSide = canvasStore.isOppositeSide(
         origin,
-        state.editMovement.start,
-        state.editMovement.current
+        editMovement.start,
+        editMovement.current
       )
       const scale = multi(
         multi({ x: 1, y: 1 }, isOppositeSide ? -1 : 1),
-        getDistance(state.editMovement.current, origin) /
-          getDistance(state.editMovement.start, origin)
+        getDistance(editMovement.current, origin) /
+          getDistance(editMovement.start, origin)
       )
       const snappedScale = canvasStore.snapScale(scale)
       return Object.keys(animationStore.selectedBones.value).reduce<
@@ -149,7 +150,11 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
       }, {})
     }
 
-    const snappedTranslate = canvasStore.snapTranslate(translate)
+    const gridTranslate = editMovement.ctrl
+      ? snapGrid(editMovement.scale, translate)
+      : translate
+    const snappedTranslate = canvasStore.snapTranslate(gridTranslate)
+
     return Object.keys(animationStore.selectedBones.value).reduce<
       IdMap<Transform>
     >((map, id) => {

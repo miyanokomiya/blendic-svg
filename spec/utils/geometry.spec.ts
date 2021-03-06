@@ -17,8 +17,13 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getTransform } from '/@/models'
-import { isSameTransform, normalizeRad } from '/@/utils/geometry'
+import { getTransform, scaleRate } from '/@/models'
+import {
+  getGridSize,
+  isSameTransform,
+  normalizeRad,
+  snapGrid,
+} from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
   describe('normalizeRad', () => {
@@ -74,6 +79,31 @@ describe('src/utils/geometry.ts', () => {
           getTransform({ rotate: 20 })
         )
       ).toBe(false)
+    })
+  })
+
+  describe('getGridSize', () => {
+    it.each([
+      [Math.pow(scaleRate, 1), 10],
+      [Math.pow(scaleRate, 4), 10],
+      [Math.pow(scaleRate, 5), 20],
+      [Math.pow(scaleRate, 10), 50],
+      [Math.pow(scaleRate, 11), 100],
+    ])('scale: %s => %s', (scale, expected) => {
+      expect(getGridSize(scale)).toBe(expected)
+    })
+  })
+
+  describe('snapGrid', () => {
+    it.each([
+      [1, { x: 1, y: 1 }, { x: 0, y: 0 }],
+      [1, { x: 6, y: 6 }, { x: 10, y: 10 }],
+      [1, { x: 14, y: 14 }, { x: 10, y: 10 }],
+      [1, { x: 16, y: 16 }, { x: 20, y: 20 }],
+      [1, { x: 16, y: 6 }, { x: 20, y: 10 }],
+      [1, { x: -16, y: -6 }, { x: -20, y: -10 }],
+    ])('scale: %s vec: %s => %s', (scale, vec, expected) => {
+      expect(snapGrid(scale, vec)).toEqual(expected)
     })
   })
 })

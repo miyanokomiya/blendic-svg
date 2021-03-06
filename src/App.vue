@@ -25,7 +25,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         :current-command="canvasCommand"
         class="canvas"
         @change-mode="changeMode"
-        @mousemove="mousemove"
         @click-any="clickAny"
         @click-empty="clickEmpty"
         @escape="escape"
@@ -262,9 +261,6 @@ export default defineComponent({
       selectedBones,
       canvasMode,
       canvasCommand,
-      mousemove(arg: { current: IVec2; start: IVec2 }) {
-        canvasStore.mousemove(arg)
-      },
       clickAny() {
         canvasStore.clickAny()
       },

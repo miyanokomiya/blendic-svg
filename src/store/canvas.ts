@@ -28,6 +28,7 @@ import {
   BoneSelectedState,
   CanvasMode,
   EditMode,
+  EditMovement,
   getTransform,
   Transform,
 } from '/@/models'
@@ -147,8 +148,7 @@ export function useCanvasStore() {
     isOppositeSide,
     getEditTransforms,
     getEditPoseTransforms,
-    mousemove: (arg: { current: IVec2; start: IVec2 }) =>
-      canvasEditMode.value.mousemove(arg),
+    mousemove: (arg: EditMovement) => canvasEditMode.value.mousemove(arg),
     clickAny: () => canvasEditMode.value.clickAny(),
     clickEmpty: () => canvasEditMode.value.clickEmpty(),
     cancel: () => canvasEditMode.value.cancel(),

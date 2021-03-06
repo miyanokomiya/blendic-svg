@@ -203,7 +203,12 @@ export type CanvasMode = 'object' | 'edit' | 'pose' | 'weight'
 export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
 export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude'
 
-export type EditMovement = { current: IVec2; start: IVec2 }
+export type EditMovement = {
+  current: IVec2
+  start: IVec2
+  ctrl: boolean
+  scale: number
+}
 
 export type CommandExam = { command: string; title: string }
 

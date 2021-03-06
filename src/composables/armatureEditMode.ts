@@ -270,14 +270,19 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
   }
 
   const availableCommandList = computed(() => {
+    const ctrl = { command: 'Ctrl', title: 'Snap' }
+
     if (state.command === 'grab' || state.command === 'scale') {
       return [
-        { command: 'x', title: 'Fix Axis X' },
-        { command: 'y', title: 'Fix Axis Y' },
+        { command: 'x', title: 'On Axis X' },
+        { command: 'y', title: 'On Axis Y' },
+        ctrl,
       ]
+    } else if (state.command === 'rotate') {
+      return [ctrl]
     } else if (isAnySelected.value) {
       return [
-        { command: 'e', title: 'Extlude' },
+        { command: 'e', title: 'Extrude' },
         { command: 'g', title: 'Grab' },
         { command: 'r', title: 'Rotate' },
         { command: 's', title: 'Scale' },

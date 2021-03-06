@@ -221,11 +221,16 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
   }
 
   const availableCommandList = computed(() => {
+    const ctrl = { command: 'Ctrl', title: 'Snap' }
+
     if (state.command === 'grab') {
       return [
-        { command: 'x', title: 'Fix Axis X' },
-        { command: 'y', title: 'Fix Axis Y' },
+        { command: 'x', title: 'On Axis X' },
+        { command: 'y', title: 'On Axis Y' },
+        ctrl,
       ]
+    } else if (state.command === 'rotate') {
+      return [ctrl]
     } else if (isAnySelected.value) {
       return [
         { command: 'i', title: 'Insert Keyframe' },

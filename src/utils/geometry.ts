@@ -17,8 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { isSame } from 'okageo'
-import { Transform } from '/@/models'
+import { isSame, IVec2 } from 'okageo'
+import { scaleRate, Transform } from '/@/models'
 
 // normalize in (-pi <= r <= pi)
 export function normalizeRad(rad: number): number {
@@ -33,4 +33,35 @@ export function isSameTransform(a: Transform, b: Transform): boolean {
   if (!isSame(a.origin, b.origin)) return false
   if (a.rotate !== b.rotate) return false
   return true
+}
+
+export function getGridSize(scale: number): number {
+  const log = Math.round(Math.log(scale) / Math.log(scaleRate))
+  if (log < 5) return 10
+  if (log < 8) return 20
+  else if (log < 11) return 50
+  else return 100
+}
+
+export function snapGrid(scale: number, vec: IVec2): IVec2 {
+  const gridSpan = getGridSize(scale)
+  return {
+    x: Math.round(vec.x / gridSpan) * gridSpan,
+    y: Math.round(vec.y / gridSpan) * gridSpan,
+  }
+}
+
+export function snapRotate(rotate: number, angle = 15): number {
+  return snapNumber(rotate, angle)
+}
+
+export function snapScale(scale: IVec2, step = 0.1): IVec2 {
+  return {
+    x: snapNumber(scale.x, step),
+    y: snapNumber(scale.y, step),
+  }
+}
+
+export function snapNumber(value: number, step = 1): number {
+  return Math.round(value / step) * step
 }

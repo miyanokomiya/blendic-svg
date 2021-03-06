@@ -40,6 +40,7 @@ import { getNextName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { mapReduce } from '/@/utils/commons'
+import { snapGrid, snapRotate, snapScale } from '/@/utils/geometry'
 
 interface State {
   command: EditMode
@@ -128,21 +129,24 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
   }
 
   const editTransforms = computed(() => {
-    if (!state.editMovement) return {}
+    const editMovement = state.editMovement
+    if (!editMovement) return {}
 
     if (state.command === 'scale') {
       const origin = store.selectedBonesOrigin.value
       const isOppositeSide = canvasStore.isOppositeSide(
         origin,
-        state.editMovement.start,
-        state.editMovement.current
+        editMovement.start,
+        editMovement.current
       )
       const scale = multi(
         multi({ x: 1, y: 1 }, isOppositeSide ? -1 : 1),
-        getDistance(state.editMovement.current, origin) /
-          getDistance(state.editMovement.start, origin)
+        getDistance(editMovement.current, origin) /
+          getDistance(editMovement.start, origin)
       )
-      const snappedScale = canvasStore.snapScale(scale)
+      const gridScale = editMovement.ctrl ? snapScale(scale) : scale
+      const snappedScale = canvasStore.snapScale(gridScale)
+
       return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
         (map, id) => {
           map[id] = getTransform({ origin, scale: snappedScale })
@@ -155,15 +159,17 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     if (state.command === 'rotate') {
       const origin = store.selectedBonesOrigin.value
       const rotate =
-        ((getRadian(state.editMovement.current, origin) -
-          getRadian(state.editMovement.start, origin)) /
+        ((getRadian(editMovement.current, origin) -
+          getRadian(editMovement.start, origin)) /
           Math.PI) *
         180
+      const snappedRotate = editMovement.ctrl ? snapRotate(rotate) : rotate
+
       return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
         (map, id) => {
           map[id] = getTransform({
             origin,
-            rotate,
+            rotate: snappedRotate,
           })
           return map
         },
@@ -171,8 +177,12 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
       )
     }
 
-    const translate = sub(state.editMovement.current, state.editMovement.start)
-    const snappedTranslate = canvasStore.snapTranslate(translate)
+    const translate = sub(editMovement.current, editMovement.start)
+    const gridTranslate = editMovement.ctrl
+      ? snapGrid(editMovement.scale, translate)
+      : translate
+    const snappedTranslate = canvasStore.snapTranslate(gridTranslate)
+
     return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
       (map, id) => {
         map[id] = getTransform({ translate: snappedTranslate })
@@ -260,14 +270,19 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
   }
 
   const availableCommandList = computed(() => {
+    const ctrl = { command: 'Ctrl', title: 'Snap' }
+
     if (state.command === 'grab' || state.command === 'scale') {
       return [
-        { command: 'x', title: 'Fix Axis X' },
-        { command: 'y', title: 'Fix Axis Y' },
+        { command: 'x', title: 'On Axis X' },
+        { command: 'y', title: 'On Axis Y' },
+        ctrl,
       ]
+    } else if (state.command === 'rotate') {
+      return [ctrl]
     } else if (isAnySelected.value) {
       return [
-        { command: 'e', title: 'Extlude' },
+        { command: 'e', title: 'Extrude' },
         { command: 'g', title: 'Grab' },
         { command: 'r', title: 'Rotate' },
         { command: 's', title: 'Scale' },
@@ -291,7 +306,7 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     )
     store.addBones(
       newBones,
-      mapReduce(toMap(newBones), (b) => ({ head: true, tail: true }))
+      mapReduce(toMap(newBones), () => ({ head: true, tail: true }))
     )
   }
 

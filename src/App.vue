@@ -25,7 +25,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         :current-command="canvasCommand"
         class="canvas"
         @change-mode="changeMode"
-        @mousemove="mousemove"
         @click-any="clickAny"
         @click-empty="clickEmpty"
         @escape="escape"
@@ -111,7 +110,6 @@ import {
   getTransformedBoneMap,
   posedTransform,
 } from './utils/armatures'
-import { IVec2 } from 'okageo'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
@@ -262,9 +260,6 @@ export default defineComponent({
       selectedBones,
       canvasMode,
       canvasCommand,
-      mousemove(arg: { current: IVec2; start: IVec2 }) {
-        canvasStore.mousemove(arg)
-      },
       clickAny() {
         canvasStore.clickAny()
       },

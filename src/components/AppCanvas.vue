@@ -31,6 +31,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :height="viewSize.height"
       @wheel.prevent="wheel"
       @click.left.exact="clickAny"
+      @click.left.ctrl.exact="clickAny"
       @click.right.prevent="keyDownEscape"
       @mouseenter="focus"
       @mousemove.prevent="mousemove"
@@ -144,7 +145,6 @@ export default defineComponent({
   },
   emits: [
     'change-mode',
-    'mousemove',
     'click-any',
     'click-empty',
     'escape',
@@ -296,9 +296,11 @@ export default defineComponent({
           )
         } else {
           if (!editStartPoint.value) return
-          emit('mousemove', {
+          canvasStore.mousemove({
             current: viewToCanvas(mousePoint.value),
             start: viewToCanvas(editStartPoint.value),
+            ctrl: e.ctrlKey,
+            scale: scale.value,
           })
         }
       },

@@ -308,10 +308,6 @@ form {
         display: flex;
         align-items: center;
         justify-content: center;
-        &:disabled {
-          opacity: 0.5;
-          cursor: default;
-        }
         .icon {
           height: 100%;
         }

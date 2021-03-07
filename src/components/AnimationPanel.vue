@@ -24,8 +24,19 @@ Copyright (C) 2021, Tomoya Komiyama.
         <SelectField v-model="selectedActionId" :options="actionOptions" />
       </div>
       <input v-model="draftName" type="text" @change="changeActionName" />
-      <button class="add-action" @click="addAction">+</button>
-      <button class="delete-action" @click="deleteAction">x</button>
+      <div class="action-buttons">
+        <button class="add-action" title="Add action" @click="addAction">
+          <AddIcon />
+        </button>
+        <button
+          class="delete-action"
+          title="Delete action"
+          :disabled="!selectedActionId"
+          @click="deleteAction"
+        >
+          <DeleteIcon />
+        </button>
+      </div>
       <AnimationController
         :playing="playing"
         @play="setPlaying('play')"
@@ -111,6 +122,8 @@ import TimelineAxis from './elements/atoms/TimelineAxis.vue'
 import TimelineBones from './elements/TimelineBones.vue'
 import Keyframes from './elements/Keyframes.vue'
 import AnimationController from './molecules/AnimationController.vue'
+import AddIcon from '/@/components/atoms/AddIcon.vue'
+import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import {
   getKeyframeMapByFrame,
@@ -130,6 +143,8 @@ export default defineComponent({
     Keyframes,
     AnimationController,
     CommandExamPanel,
+    AddIcon,
+    DeleteIcon,
   },
   setup() {
     const labelWidth = 140
@@ -302,10 +317,16 @@ export default defineComponent({
       width: 4rem;
     }
   }
-  button {
-    width: 20px;
-    height: 20px;
-    border: solid 1px #000;
+  .action-buttons {
+    display: flex;
+    align-items: center;
+    button {
+      width: 20px;
+      height: 20px;
+      & + button {
+        margin-left: 4px;
+      }
+    }
   }
 }
 .middle {

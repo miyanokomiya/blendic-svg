@@ -43,7 +43,11 @@ Copyright (C) 2021, Tomoya Komiyama.
         @shift-d="duplicate"
       >
         <template #default="{ scale }">
-          <ElementLayer :class="{ 'view-only': canvasMode !== 'weight' }" />
+          <ElementLayer
+            :bone-map="posedMap"
+            :canvas-mode="canvasMode"
+            :class="{ 'view-only': canvasMode !== 'weight' }"
+          />
           <g v-if="canvasMode === 'object'">
             <ArmatureElm
               v-for="armature in armatures"
@@ -254,6 +258,7 @@ export default defineComponent({
       lastSelectedArmatureId: computed(
         () => store.lastSelectedArmature.value?.id
       ),
+      posedMap,
       visibledBoneMap,
       selectedBones,
       canvasMode,

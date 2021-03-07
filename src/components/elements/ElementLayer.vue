@@ -40,7 +40,6 @@ import {
   getTransformedBoneMap,
 } from '/@/utils/armatures'
 import { getPosedElementTree } from '/@/utils/poseResolver'
-import { applyAllConstraints } from '/@/utils/constraints'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -71,19 +70,17 @@ export default defineComponent({
       )
       if (!armature) return {}
 
-      return applyAllConstraints(
-        getTransformedBoneMap(
-          toMap(
-            armature.bones.map((b) => {
-              return {
-                ...b,
-                transform: convolutePoseTransforms([
-                  animationStore.getCurrentSelfTransforms(b.id),
-                  canvasStore.getEditPoseTransforms(b.id),
-                ]),
-              }
-            })
-          )
+      return getTransformedBoneMap(
+        toMap(
+          armature.bones.map((b) => {
+            return {
+              ...b,
+              transform: convolutePoseTransforms([
+                animationStore.getCurrentSelfTransforms(b.id),
+                canvasStore.getEditPoseTransforms(b.id),
+              ]),
+            }
+          })
         )
       )
     })

@@ -58,7 +58,7 @@ export function CreateConstraint<N extends BoneConstraintName>(
   }
 }
 
-export function applyConstraint<N extends BoneConstraintName>(
+function applyConstraint<N extends BoneConstraintName>(
   boneId: string,
   constraint: _BoneConstraint<N>,
   boneMap: IdMap<Bone>
@@ -74,17 +74,19 @@ export function applyConstraint<N extends BoneConstraintName>(
   }
 }
 
-export function applyAllConstraints(posedMap: IdMap<Bone>): IdMap<Bone> {
-  let appliedMap = posedMap
-  sortBoneByHighDependency(toList(appliedMap)).forEach((b) => {
-    appliedMap = b.constraints.reduce((p, c) => {
-      return {
-        ...p,
-        ...applyConstraint(b.id, c, appliedMap),
-      }
-    }, appliedMap)
-  })
-  return appliedMap
+export function applyBoneConstraints(
+  posedMap: IdMap<Bone>,
+  boneId: string
+): IdMap<Bone> {
+  const b = posedMap[boneId]
+  if (!b) return posedMap
+
+  return b.constraints.reduce((p, c) => {
+    return {
+      ...p,
+      ...applyConstraint(b.id, c, p),
+    }
+  }, posedMap)
 }
 
 export function immigrateConstraints(
@@ -143,7 +145,15 @@ export function sortBoneByHighDependency(bones: Bone[]): Bone[] {
 
 function getDependentCountMap(boneMap: IdMap<Bone>): IdMap<IdMap<number>> {
   return mapReduce(boneMap, (b) => {
-    return sumReduce(b.constraints.map(getDependentCountMapOfConstrain))
+    return sumReduce(
+      b.constraints.map(getDependentCountMapOfConstrain).concat(
+        b.parentId
+          ? {
+              [b.parentId]: 1,
+            }
+          : {}
+      )
+    )
   })
 }
 

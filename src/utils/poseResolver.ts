@@ -32,12 +32,12 @@ import {
   ElementNode,
   IdMap,
   Transform,
+  getTransform,
 } from '../models'
 import { getInterpolatedTransformMapByBoneId } from './animations'
 import { getTransformedBoneMap, poseToAffine } from './armatures'
 import { mapReduce } from './commons'
 import { getTnansformStr } from './helpers'
-import { applyAllConstraints } from '/@/utils/constraints'
 
 export type TransformCache = {
   [relativeRootBoneId: string]: { [boneId: string]: Transform }
@@ -199,13 +199,14 @@ export function bakeKeyframe(
   svgRoot: ElementNode,
   currentFrame: number
 ): IdMap<AffineMatrix> {
-  const interpolatedBoneMap = mapReduce(
-    getInterpolatedTransformMapByBoneId(keyframeMapByBoneId, currentFrame),
-    (transform, id) => ({ ...boneMap[id], transform })
+  const interpolatedTransformMap = getInterpolatedTransformMapByBoneId(
+    keyframeMapByBoneId,
+    currentFrame
   )
-  const resolvedBoneMap = applyAllConstraints(
-    getTransformedBoneMap(interpolatedBoneMap)
-  )
-
+  const interpolatedBoneMap = mapReduce(boneMap, (bone, id) => ({
+    ...bone,
+    transform: interpolatedTransformMap[id] ?? getTransform(),
+  }))
+  const resolvedBoneMap = getTransformedBoneMap(interpolatedBoneMap)
   return getPosedElementMatrixMap(resolvedBoneMap, elementMap, svgRoot)
 }

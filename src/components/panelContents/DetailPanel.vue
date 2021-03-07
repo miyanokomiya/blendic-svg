@@ -52,7 +52,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <div class="field inline">
         <label>Constraints</label>
         <SelectButton
-          :options="[{ value: 'IK', label: 'IK' }]"
+          :options="constraintOptions"
           @select="setBoneConstraintName"
         />
       </div>
@@ -67,10 +67,16 @@ Copyright (C) 2021, Tomoya Komiyama.
             :bone-options="otherBoneOptions"
             @update:modelValue="(option) => updateConstraint(i, option)"
           />
-          <div class="delete-constraint">
-            <button type="button" @click="deleteConstraint(i)">x</button>
-          </div>
         </template>
+        <template v-else-if="c.name === 'LIMIT_ROTATION'">
+          <LimitRotationOptionField
+            :model-value="c.option"
+            @update:modelValue="(option) => updateConstraint(i, option)"
+          />
+        </template>
+        <div class="delete-constraint">
+          <button type="button" @click="deleteConstraint(i)">x</button>
+        </div>
       </div>
     </form>
   </div>
@@ -85,9 +91,10 @@ import SelectButton from '/@/components/atoms/SelectButton.vue'
 import {
   BoneConstraintName,
   BoneConstraintOption,
-  CreateConstraint,
+  getConstraintByName,
 } from '/@/utils/constraints'
 import IKOptionField from '/@/components/molecules/constraints/IKOptionField.vue'
+import LimitRotationOptionField from '/@/components/molecules/constraints/LimitRotationOptionField.vue'
 import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
 
 export default defineComponent({
@@ -96,6 +103,7 @@ export default defineComponent({
     SelectButton,
     CheckboxInput,
     IKOptionField,
+    LimitRotationOptionField,
   },
   setup() {
     const store = useStore()
@@ -133,12 +141,7 @@ export default defineComponent({
 
       const constraints = [
         ...lastSelectedBone.value.constraints,
-        CreateConstraint(name, {
-          targetId: '',
-          poleTargetId: '',
-          iterations: 20,
-          chainLength: 2,
-        }),
+        getConstraintByName(name),
       ]
       store.updateBone({ constraints })
     }
@@ -161,6 +164,15 @@ export default defineComponent({
 
     watch(store.lastSelectedArmature, initDraftName)
     watch(lastSelectedBone, initDraftName)
+
+    const constraintOptions = computed<
+      { value: BoneConstraintName; label: string }[]
+    >(() => {
+      return [
+        { value: 'IK', label: 'IK' },
+        { value: 'LIMIT_ROTATION', label: 'Limit Rotation' },
+      ]
+    })
 
     return {
       draftName,
@@ -206,6 +218,7 @@ export default defineComponent({
       },
       updateConstraint,
       deleteConstraint,
+      constraintOptions,
     }
   },
 })
@@ -242,6 +255,7 @@ form {
   .constraints-item {
     width: 100%;
     margin-bottom: 10px;
+    border-top: solid 1px #aaa;
     .delete-constraint {
       text-align: right;
       > button {

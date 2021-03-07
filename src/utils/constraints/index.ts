@@ -42,30 +42,27 @@ interface _BoneConstraint<N extends BoneConstraintName> {
 export type BoneConstraint = _BoneConstraint<BoneConstraintName>
 export type BoneConstraintOption = BoneConstraintOptions[BoneConstraintName]
 
-export function CreateConstraint<N extends BoneConstraintName>(
-  name: N,
-  option: BoneConstraintOptions[N]
-): _BoneConstraint<N> {
-  return {
-    name,
-    option,
-  }
-}
-
 function applyConstraint<N extends BoneConstraintName>(
   boneId: string,
   constraint: _BoneConstraint<N>,
   boneMap: IdMap<Bone>
 ): IdMap<Bone> {
-  if (constraint.name === 'IK') {
-    return ik.apply(
-      boneId,
-      constraint.option as BoneConstraintOptions['IK'],
-      boneMap
-    )
-  } else {
-    return boneMap
+  switch (constraint.name) {
+    case 'IK':
+      return ik.apply(
+        boneId,
+        constraint.option as BoneConstraintOptions['IK'],
+        boneMap
+      )
+    case 'LIMIT_ROTATION':
+      return limitRotation.apply(
+        boneId,
+        constraint.option as BoneConstraintOptions['LIMIT_ROTATION'],
+        boneMap
+      )
   }
+
+  return boneMap
 }
 
 export function applyBoneConstraints(
@@ -104,7 +101,10 @@ function immigrateOption(
     case 'IK':
       return ik.immigrate(duplicatedIdMap, option as ik.Option)
     case 'LIMIT_ROTATION':
-      return option
+      return limitRotation.immigrate(
+        duplicatedIdMap,
+        option as limitRotation.Option
+      )
   }
 }
 

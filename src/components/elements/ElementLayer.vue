@@ -28,17 +28,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, provide } from 'vue'
+import { computed, defineComponent, PropType, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
-import { ElementNode, toMap } from '/@/models'
-import { useCanvasStore } from '/@/store/canvas'
-import { useAnimationStore } from '/@/store/animation'
-import { useStore } from '/@/store'
-import {
-  convolutePoseTransforms,
-  getTransformedBoneMap,
-} from '/@/utils/armatures'
+import { Bone, CanvasMode, ElementNode, IdMap, toMap } from '/@/models'
 import { getPosedElementTree } from '/@/utils/poseResolver'
 
 function getId(elm: ElementNode | string): string {
@@ -48,41 +41,29 @@ function getId(elm: ElementNode | string): string {
 
 export default defineComponent({
   components: { NativeElement },
-  setup() {
-    const store = useStore()
+  props: {
+    boneMap: {
+      type: Object as PropType<IdMap<Bone>>,
+      default: () => ({}),
+    },
+    canvasMode: {
+      type: String as PropType<CanvasMode>,
+      default: 'object',
+    },
+  },
+  setup(props) {
     const elementStore = useElementStore()
-    const canvasStore = useCanvasStore()
-    const animationStore = useAnimationStore()
-
-    const canvasMode = computed(() => canvasStore.state.canvasMode)
 
     const selectedMap = computed(() => {
-      if (canvasMode.value !== 'weight') return {}
+      if (props.canvasMode !== 'weight') return {}
       return elementStore.selectedElements.value
     })
     provide('selectedMap', selectedMap)
 
     const boneMap = computed(() => {
-      if (!['pose', 'weight'].includes(canvasMode.value)) return {}
+      if (!['pose', 'weight'].includes(props.canvasMode)) return {}
 
-      const armature = store.state.armatures.find(
-        (a) => a.id === elementStore.lastSelectedActor.value?.armatureId
-      )
-      if (!armature) return {}
-
-      return getTransformedBoneMap(
-        toMap(
-          armature.bones.map((b) => {
-            return {
-              ...b,
-              transform: convolutePoseTransforms([
-                animationStore.getCurrentSelfTransforms(b.id),
-                canvasStore.getEditPoseTransforms(b.id),
-              ]),
-            }
-          })
-        )
-      )
+      return props.boneMap
     })
 
     const posedElementRoot = computed(() => {
@@ -95,7 +76,7 @@ export default defineComponent({
     })
 
     function clickElement(id: string, shift: boolean) {
-      if (canvasMode.value !== 'weight') return
+      if (props.canvasMode !== 'weight') return
       elementStore.selectElement(id, shift)
     }
     provide('onClickElement', clickElement)

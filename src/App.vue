@@ -43,7 +43,11 @@ Copyright (C) 2021, Tomoya Komiyama.
         @shift-d="duplicate"
       >
         <template #default="{ scale }">
-          <ElementLayer :class="{ 'view-only': canvasMode !== 'weight' }" />
+          <ElementLayer
+            :bone-map="posedMap"
+            :canvas-mode="canvasMode"
+            :class="{ 'view-only': canvasMode !== 'weight' }"
+          />
           <g v-if="canvasMode === 'object'">
             <ArmatureElm
               v-for="armature in armatures"
@@ -152,19 +156,23 @@ export default defineComponent({
     const posedMap = computed(() => {
       if (!lastSelectedArmature.value) return {}
 
-      return getTransformedBoneMap(
-        toMap(
-          lastSelectedArmature.value.bones.map((b) => {
-            return {
-              ...b,
-              transform: convolutePoseTransforms([
-                animationStore.getCurrentSelfTransforms(b.id),
-                canvasStore.getEditTransforms(b.id),
-              ]),
-            }
-          })
+      if (canvasStore.command.value) {
+        return getTransformedBoneMap(
+          toMap(
+            lastSelectedArmature.value.bones.map((b) => {
+              return {
+                ...b,
+                transform: convolutePoseTransforms([
+                  animationStore.getCurrentSelfTransforms(b.id),
+                  canvasStore.getEditTransforms(b.id),
+                ]),
+              }
+            })
+          )
         )
-      )
+      } else {
+        return animationStore.currentPosedBones.value
+      }
     })
 
     const visibledBoneMap = computed(() => {
@@ -254,6 +262,7 @@ export default defineComponent({
       lastSelectedArmatureId: computed(
         () => store.lastSelectedArmature.value?.id
       ),
+      posedMap,
       visibledBoneMap,
       selectedBones,
       canvasMode,

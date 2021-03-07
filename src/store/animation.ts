@@ -164,10 +164,7 @@ const selectedAllBones = computed(() => {
 })
 
 const selectedBones = computed(() => {
-  return getPoseSelectedBones(
-    currentPosedBones.value,
-    store.state.selectedBones
-  )
+  return getPoseSelectedBones(store.boneMap.value, store.state.selectedBones)
 })
 
 const selectedPosedBoneOrigin = computed(
@@ -206,7 +203,7 @@ function pastePoses(mapByBoneId: IdMap<Transform>) {
       ...mapReduce(
         dropMapIfFalse(mapByBoneId, (_, boneId) => {
           // drop poses of unexisted bones
-          return !!currentPosedBones.value[boneId]
+          return !!store.boneMap.value[boneId]
         }),
         (t, boneId) => {
           // invert keyframe's pose & paste the pose

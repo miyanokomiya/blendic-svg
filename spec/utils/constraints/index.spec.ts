@@ -37,9 +37,7 @@ describe('src/utils/constraints/index.ts', () => {
         }),
         getBone({
           id: 'b',
-          constraints: [
-            getConstraintByName('IK', ik.getOption({ targetId: 'a' })),
-          ],
+          parentId: 'a',
         }),
         getBone({ id: 'c' }),
       ]

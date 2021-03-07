@@ -163,7 +163,8 @@ describe('utils/poseResolver.ts', () => {
       ],
     }
     const boneMap = {
-      bone_a: getBone({ id: 'bone_a' }),
+      bone_a: getBone({ id: 'bone_a', parentId: 'bone_b' }),
+      bone_b: getBone({ id: 'bone_b' }),
     }
     const elementMap = {
       elm_a: getBElement({ id: 'elm_a', boneId: 'bone_a' }),

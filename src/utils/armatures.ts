@@ -53,7 +53,11 @@ import {
   toList,
 } from './commons'
 import { getNextName } from './relations'
-import { immigrateConstraints } from '/@/utils/constraints'
+import {
+  applyBoneConstraints,
+  immigrateConstraints,
+  sortBoneByHighDependency,
+} from '/@/utils/constraints'
 
 export function poseToAffine(transform: Transform): AffineMatrix {
   const rad = (transform.rotate / 180) * Math.PI
@@ -321,28 +325,46 @@ interface BoneNode extends Bone, TreeNode {
 }
 
 export function getTransformedBoneMap(boneMap: IdMap<Bone>): IdMap<Bone> {
-  return toMap(flatBoneTree(getTransformBoneTree(boneMap)))
+  return sortBoneByHighDependency(toList(boneMap)).reduce((p, c) => {
+    return resolveBonePose(boneMap, p, c.id)
+  }, {})
 }
 
-function getTransformBoneTree(boneMap: IdMap<Bone>): BoneNode[] {
-  return (getTree<Bone>(boneMap) as BoneNode[]).map((b) => {
-    return { ...b, children: getChildTransforms(b) }
-  })
-}
+/**
+ * @return next resolved bones map
+ */
+function resolveBonePose(
+  originalMap: IdMap<Bone>,
+  resolvedMap: IdMap<Bone>,
+  boneId: string
+): IdMap<Bone> {
+  if (resolvedMap[boneId]) return resolvedMap
 
-function getChildTransforms(parent: BoneNode): BoneNode[] {
-  return (
-    parent.children.map((b) => {
-      const extended = extendTransform(parent, b)
-      return {
-        ...extended,
-        children: getChildTransforms({
-          ...extended,
-          children: b.children,
-        }),
+  let ret = resolvedMap
+  const b = originalMap[boneId]
+
+  if (b.parentId) {
+    if (!ret[b.parentId]) {
+      // a parent of the target must be resolved earlier
+      ret = {
+        ...ret,
+        ...resolveBonePose(originalMap, ret, b.parentId),
       }
-    }) ?? []
-  )
+    }
+
+    ret = {
+      ...ret,
+      [boneId]: extendTransform(ret[b.parentId], b),
+    }
+  } else {
+    ret = { ...ret, [boneId]: b }
+  }
+
+  ret = {
+    ...ret,
+    ...applyBoneConstraints(ret, boneId),
+  }
+  return ret
 }
 
 export function extendTransform(parent: Bone, child: Bone): Bone {

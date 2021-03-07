@@ -18,27 +18,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import * as ik from './ik'
-import { Bone, IdMap, mergeMap, toMap } from '/@/models'
-import {
-  dropMap,
-  dropMapIfFalse,
-  mapReduce,
-  sumReduce,
-  toList,
-} from '/@/utils/commons'
+import * as limitRotation from './limitRotation'
+import { Bone, IdMap, toMap } from '/@/models'
+import { dropMap, dropMapIfFalse, mapReduce, sumReduce } from '/@/utils/commons'
 
 export type BoneConstraintName = 'IK' | 'LIMIT_ROTATION'
 
-// TODO
-interface TODO_LimitRotationOption {
-  min: number
-  max: number
-  influence: number
-}
-
 export interface BoneConstraintOptions {
   IK: ik.Option
-  LIMIT_ROTATION: TODO_LimitRotationOption
+  LIMIT_ROTATION: limitRotation.Option
 }
 
 interface _BoneConstraint<N extends BoneConstraintName> {
@@ -48,33 +36,43 @@ interface _BoneConstraint<N extends BoneConstraintName> {
 export type BoneConstraint = _BoneConstraint<BoneConstraintName>
 export type BoneConstraintOption = BoneConstraintOptions[BoneConstraintName]
 
-export function CreateConstraint<N extends BoneConstraintName>(
-  name: N,
-  option: BoneConstraintOptions[N]
-): _BoneConstraint<N> {
-  return {
-    name,
-    option,
+interface BoneConstraintModule {
+  apply(
+    boneId: string,
+    option: any,
+    localMap: IdMap<Bone>,
+    boneMap: IdMap<Bone>
+  ): IdMap<Bone>
+  immigrate(duplicatedIdMap: IdMap<string>, option: any): any
+  getOption(src: Partial<any>): any
+  getDependentCountMap(option: BoneConstraintOption): IdMap<number>
+}
+
+function getConstraintModule(name: BoneConstraintName): BoneConstraintModule {
+  switch (name) {
+    case 'IK':
+      return ik
+    case 'LIMIT_ROTATION':
+      return limitRotation
   }
 }
 
-function applyConstraint<N extends BoneConstraintName>(
-  boneId: string,
-  constraint: _BoneConstraint<N>,
-  boneMap: IdMap<Bone>
+function applyConstraint(
+  localMap: IdMap<Bone>,
+  boneMap: IdMap<Bone>,
+  constraint: BoneConstraint,
+  boneId: string
 ): IdMap<Bone> {
-  if (constraint.name === 'IK') {
-    return ik.apply(
-      boneId,
-      constraint.option as BoneConstraintOptions['IK'],
-      boneMap
-    )
-  } else {
-    return boneMap
-  }
+  return getConstraintModule(constraint.name).apply(
+    boneId,
+    constraint.option,
+    localMap,
+    boneMap
+  )
 }
 
 export function applyBoneConstraints(
+  localMap: IdMap<Bone>,
   posedMap: IdMap<Bone>,
   boneId: string
 ): IdMap<Bone> {
@@ -84,7 +82,7 @@ export function applyBoneConstraints(
   return b.constraints.reduce((p, c) => {
     return {
       ...p,
-      ...applyConstraint(b.id, c, p),
+      ...applyConstraint(localMap, p, c, b.id),
     }
   }, posedMap)
 }
@@ -106,12 +104,7 @@ function immigrateOption(
   name: BoneConstraintName,
   option: BoneConstraintOption
 ): BoneConstraintOption {
-  switch (name) {
-    case 'IK':
-      return ik.immigrate(duplicatedIdMap, option as ik.Option)
-    case 'LIMIT_ROTATION':
-      return option
-  }
+  return getConstraintModule(name).immigrate(duplicatedIdMap, option)
 }
 
 export function getConstraintByName(
@@ -128,12 +121,7 @@ export function getOptionByName(
   name: BoneConstraintName,
   src: Partial<BoneConstraintOption> = {}
 ): BoneConstraintOption {
-  switch (name) {
-    case 'IK':
-      return ik.getOption(src as ik.Option)
-    case 'LIMIT_ROTATION':
-      return { min: 0, max: 360, influence: 1 }
-  }
+  return getConstraintModule(name).getOption(src)
 }
 
 export function sortBoneByHighDependency(bones: Bone[]): Bone[] {
@@ -160,12 +148,9 @@ function getDependentCountMap(boneMap: IdMap<Bone>): IdMap<IdMap<number>> {
 function getDependentCountMapOfConstrain(
   constraint: BoneConstraint
 ): IdMap<number> {
-  switch (constraint.name) {
-    case 'IK':
-      return ik.getDependentCountMap(constraint.option as ik.Option)
-    case 'LIMIT_ROTATION':
-      return {}
-  }
+  return getConstraintModule(constraint.name).getDependentCountMap(
+    constraint.option
+  )
 }
 
 export function sortByDependency(map: IdMap<IdMap<number>>): string[] {

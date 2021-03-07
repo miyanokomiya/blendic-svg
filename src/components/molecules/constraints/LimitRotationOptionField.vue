@@ -18,22 +18,26 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div class="ik-option-field">
+  <div class="limit-rotation-option-field">
     <div class="field">
-      <label>Target</label>
-      <SelectField v-model="targetId" :options="boneOptions" />
+      <label>Space Type</label>
+      <SelectField
+        v-model="spaceType"
+        :options="spaceTypeOptions"
+        no-placeholder
+      />
     </div>
     <div class="field">
-      <label>Pole Target</label>
-      <SelectField v-model="poleTargetId" :options="boneOptions" />
+      <label>Min</label>
+      <NumberInput v-model="min" />
     </div>
     <div class="field">
-      <label>Chain Length</label>
-      <NumberInput v-model="chainLength" integer :min="0" />
+      <label>Max</label>
+      <NumberInput v-model="max" />
     </div>
     <div class="field">
-      <label>Iterations</label>
-      <NumberInput v-model="iterations" integer :min="0" :max="500" />
+      <label>Influence</label>
+      <NumberInput v-model="influence" :min="0" :max="1" />
     </div>
   </div>
 </template>
@@ -43,56 +47,65 @@ import { computed, defineComponent, PropType } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import NumberInput from '/@/components/atoms/NumberInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import { SpaceType } from '/@/models'
 
 export default defineComponent({
   components: { NumberInput, SelectField },
   props: {
     modelValue: {
-      type: Object as PropType<BoneConstraintOptions['IK']>,
-      required: true,
-    },
-    boneOptions: {
-      type: Array as PropType<{ value: string; label: string }[]>,
+      type: Object as PropType<BoneConstraintOptions['LIMIT_ROTATION']>,
       required: true,
     },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    function emitUpdated(val: Partial<BoneConstraintOptions['IK']>) {
+    function emitUpdated(
+      val: Partial<BoneConstraintOptions['LIMIT_ROTATION']>
+    ) {
       emit('update:modelValue', { ...props.modelValue, ...val })
     }
 
+    const spaceTypeOptions = computed<{ value: SpaceType; label: string }[]>(
+      () => {
+        return [
+          { value: 'world', label: 'World' },
+          { value: 'local', label: 'Local' },
+        ]
+      }
+    )
+
     return {
-      targetId: computed({
-        get(): string {
-          return props.modelValue.targetId
+      spaceTypeOptions,
+      spaceType: computed({
+        get(): SpaceType {
+          return props.modelValue.spaceType
         },
-        set(val: string) {
-          emitUpdated({ targetId: val })
-        },
-      }),
-      poleTargetId: computed({
-        get(): string {
-          return props.modelValue.poleTargetId
-        },
-        set(val: string) {
-          emitUpdated({ poleTargetId: val })
+        set(val: SpaceType) {
+          emitUpdated({ spaceType: val })
         },
       }),
-      chainLength: computed({
+      min: computed({
         get(): number {
-          return props.modelValue.chainLength
+          return props.modelValue.min
         },
         set(val: number) {
-          emitUpdated({ chainLength: val })
+          emitUpdated({ min: val })
         },
       }),
-      iterations: computed({
+      max: computed({
         get(): number {
-          return props.modelValue.iterations
+          return props.modelValue.max
         },
         set(val: number) {
-          emitUpdated({ iterations: val })
+          emitUpdated({ max: val })
+        },
+      }),
+      influence: computed({
+        get(): number {
+          return props.modelValue.influence
+        },
+        set(val: number) {
+          emitUpdated({ influence: val })
         },
       }),
     }
@@ -101,7 +114,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.ik-option-field {
+.limit-rotation-option-field {
   text-align: left;
   padding: 8px 0;
   box-sizing: border-box;
@@ -114,7 +127,7 @@ export default defineComponent({
     }
     > label {
       display: block;
-      width: 110px;
+      width: 100px;
       flex-shrink: 0;
       & + * {
         flex: 1;

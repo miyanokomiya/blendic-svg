@@ -339,6 +339,10 @@ input[type='number'] {
   padding: 2px 0 2px 4px;
   border: solid 1px #777;
 }
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 </style>
 
 <style lang="scss" scoped>

@@ -57,7 +57,7 @@ describe('utils/constraints/ik.ts', () => {
           iterations: 20,
           chainLength: 1,
         }
-        const res = apply('a', option, boneMap)
+        const res = apply('a', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(45)
       })
       it('2 chain', () => {
@@ -67,7 +67,7 @@ describe('utils/constraints/ik.ts', () => {
           iterations: 20,
           chainLength: 2,
         }
-        const res = apply('b', option, boneMap)
+        const res = apply('b', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(45)
         expect(res.b.transform.rotate).toBeCloseTo(45)
       })
@@ -78,7 +78,7 @@ describe('utils/constraints/ik.ts', () => {
           iterations: 20,
           chainLength: 3,
         }
-        const res = apply('c', option, boneMap)
+        const res = apply('c', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(45)
         expect(res.b.transform.rotate).toBeCloseTo(45)
         expect(res.c.transform.rotate).toBeCloseTo(45)
@@ -119,7 +119,7 @@ describe('utils/constraints/ik.ts', () => {
           iterations: 20,
           chainLength: 1,
         }
-        const res = apply('a', option, boneMap)
+        const res = apply('a', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(45)
         expect(res.a.transform.translate.x).toBeCloseTo(0)
         expect(res.a.transform.translate.y).toBeCloseTo(0)
@@ -131,7 +131,7 @@ describe('utils/constraints/ik.ts', () => {
           iterations: 20,
           chainLength: 2,
         }
-        const res = apply('b', option, boneMap)
+        const res = apply('b', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(-24.29491472973583)
         expect(res.b.transform.rotate).toBeCloseTo(114.2955545667173)
         expect(res.a.transform.translate.x).toBeCloseTo(0)
@@ -144,7 +144,7 @@ describe('utils/constraints/ik.ts', () => {
           iterations: 20,
           chainLength: 2,
         }
-        const res = apply('b', option, boneMap)
+        const res = apply('b', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(114.2955545667173)
         expect(res.b.transform.rotate).toBeCloseTo(-24.29491472973583)
         expect(res.a.transform.translate.x).toBeCloseTo(0)
@@ -180,7 +180,7 @@ describe('utils/constraints/ik.ts', () => {
           iterations: 20,
           chainLength: 2,
         }
-        const res = apply('b', option, boneMap)
+        const res = apply('b', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(-90)
         expect(res.b.transform.rotate).toBeCloseTo(-90)
         expect(res.a.transform.translate.x).toBeCloseTo(-1)

@@ -160,11 +160,14 @@ const currentPosedBones = computed(
 )
 
 const selectedAllBones = computed(() => {
-  return getAnySelectedBones(store.boneMap.value, store.state.selectedBones)
+  return getAnySelectedBones(currentPosedBones.value, store.state.selectedBones)
 })
 
 const selectedBones = computed(() => {
-  return getPoseSelectedBones(store.boneMap.value, store.state.selectedBones)
+  return getPoseSelectedBones(
+    currentPosedBones.value,
+    store.state.selectedBones
+  )
 })
 
 const selectedPosedBoneOrigin = computed(

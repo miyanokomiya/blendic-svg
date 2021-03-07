@@ -362,7 +362,7 @@ function resolveBonePose(
 
   ret = {
     ...ret,
-    ...applyBoneConstraints(ret, boneId),
+    ...applyBoneConstraints(originalMap, ret, boneId),
   }
   return ret
 }

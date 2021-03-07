@@ -58,7 +58,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       </div>
       <div
         v-for="(c, i) in lastSelectedBone.constraints"
-        :key="c.name"
+        :key="i"
         class="constraints-item"
       >
         <template v-if="c.name === 'IK'">

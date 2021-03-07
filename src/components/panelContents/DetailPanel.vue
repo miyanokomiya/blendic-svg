@@ -74,8 +74,22 @@ Copyright (C) 2021, Tomoya Komiyama.
             @update:modelValue="(option) => updateConstraint(i, option)"
           />
         </template>
-        <div class="delete-constraint">
-          <button type="button" @click="deleteConstraint(i)">x</button>
+        <div class="constraint-buttons">
+          <button :disabled="i === 0" type="button" @click="upConstraint(i)">
+            <UpIcon class="icon" />
+          </button>
+          <button
+            :disabled="
+              !lastSelectedBone || i === lastSelectedBone.constraints.length - 1
+            "
+            type="button"
+            @click="downConstraint(i)"
+          >
+            <UpIcon class="icon" flipped />
+          </button>
+          <button type="button" @click="deleteConstraint(i)">
+            <DeleteIcon class="icon" />
+          </button>
         </div>
       </div>
     </form>
@@ -95,6 +109,8 @@ import {
 } from '/@/utils/constraints'
 import IKOptionField from '/@/components/molecules/constraints/IKOptionField.vue'
 import LimitRotationOptionField from '/@/components/molecules/constraints/LimitRotationOptionField.vue'
+import UpIcon from '/@/components/atoms/UpIcon.vue'
+import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
 
 export default defineComponent({
@@ -104,6 +120,8 @@ export default defineComponent({
     CheckboxInput,
     IKOptionField,
     LimitRotationOptionField,
+    UpIcon,
+    DeleteIcon,
   },
   setup() {
     const store = useStore()
@@ -159,6 +177,26 @@ export default defineComponent({
 
       const constraints = lastSelectedBone.value.constraints.concat()
       constraints.splice(index, 1)
+      store.updateBone({ constraints })
+    }
+    function upConstraint(index: number) {
+      if (!lastSelectedBone.value) return
+      if (index === 0) return
+
+      const constraints = lastSelectedBone.value.constraints.concat()
+      const tmp = constraints[index - 1]
+      constraints[index - 1] = constraints[index]
+      constraints[index] = tmp
+      store.updateBone({ constraints })
+    }
+    function downConstraint(index: number) {
+      if (!lastSelectedBone.value) return
+      if (index === lastSelectedBone.value.constraints.length - 1) return
+
+      const constraints = lastSelectedBone.value.constraints.concat()
+      const tmp = constraints[index + 1]
+      constraints[index + 1] = constraints[index]
+      constraints[index] = tmp
       store.updateBone({ constraints })
     }
 
@@ -218,6 +256,8 @@ export default defineComponent({
       },
       updateConstraint,
       deleteConstraint,
+      upConstraint,
+      downConstraint,
       constraintOptions,
     }
   },
@@ -256,12 +296,25 @@ form {
     width: 100%;
     margin-bottom: 10px;
     border-top: solid 1px #aaa;
-    .delete-constraint {
-      text-align: right;
+    .constraint-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
       > button {
-        border: solid 1px #ccc;
+        margin-left: 8px;
         border-radius: 8px;
-        width: 60px;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &:disabled {
+          opacity: 0.5;
+          cursor: default;
+        }
+        .icon {
+          height: 100%;
+        }
       }
     }
   }

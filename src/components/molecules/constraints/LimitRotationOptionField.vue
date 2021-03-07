@@ -21,7 +21,11 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="limit-rotation-option-field">
     <div class="field">
       <label>Space Type</label>
-      <SelectField v-model="spaceType" :options="spaceTypeOptions" />
+      <SelectField
+        v-model="spaceType"
+        :options="spaceTypeOptions"
+        no-placeholder
+      />
     </div>
     <div class="field">
       <label>Min</label>

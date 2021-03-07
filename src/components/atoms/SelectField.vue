@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <span class="select-root">
     <select v-model="value">
-      <option value="">-- {{ placeholder }} --</option>
+      <option v-if="!noPlaceholder" value="">-- {{ placeholder }} --</option>
       <option
         v-for="option in options"
         :key="option.value"
@@ -48,6 +48,10 @@ export default defineComponent({
     placeholder: {
       type: String,
       default: 'None',
+    },
+    noPlaceholder: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ['update:modelValue'],

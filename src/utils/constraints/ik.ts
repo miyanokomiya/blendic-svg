@@ -31,6 +31,7 @@ export interface Option {
 export function apply(
   boneId: string,
   option: Option,
+  _localMap: IdMap<Bone>,
   boneMap: IdMap<Bone>
 ): IdMap<Bone> {
   const target = boneMap[option.targetId]

@@ -27,12 +27,12 @@ import {
 
 describe('utils/limitRotation.ts', () => {
   describe('apply', () => {
-    const boneMap = {
-      a: getBone({
-        transform: getTransform({ rotate: 180 }),
-      }),
-    }
     describe('world space', () => {
+      const boneMap = {
+        a: getBone({
+          transform: getTransform({ rotate: 180 }),
+        }),
+      }
       it('limit rotation max', () => {
         expect(
           apply(
@@ -42,6 +42,7 @@ describe('utils/limitRotation.ts', () => {
               max: 90,
               influence: 0.5,
             }),
+            {},
             boneMap
           )
         ).toEqual({
@@ -59,6 +60,7 @@ describe('utils/limitRotation.ts', () => {
               max: 600,
               influence: 0.5,
             }),
+            {},
             boneMap
           )
         ).toEqual({
@@ -69,19 +71,41 @@ describe('utils/limitRotation.ts', () => {
       })
     })
     describe('local space', () => {
-      it('identity', () => {
+      const localMap = {
+        a: getBone({
+          parentId: 'b',
+          transform: getTransform({ rotate: 0 }),
+        }),
+      }
+      const boneMap = {
+        a: getBone({
+          parentId: 'b',
+          transform: getTransform({ rotate: 180 }),
+        }),
+        b: getBone({
+          transform: getTransform({ rotate: 180 }),
+        }),
+      }
+      it('limit locally', () => {
         expect(
           apply(
             'a',
             getOption({
-              min: 0,
+              min: 90,
               max: 90,
               influence: 0.5,
               spaceType: 'local',
             }),
+            localMap,
             boneMap
           )
-        ).toEqual(boneMap)
+        ).toEqual({
+          ...boneMap,
+          a: getBone({
+            parentId: 'b',
+            transform: getTransform({ rotate: 225 }),
+          }),
+        })
       })
     })
   })

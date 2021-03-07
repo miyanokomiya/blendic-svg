@@ -69,7 +69,7 @@ export default defineComponent({
       () => {
         return [
           { value: 'world', label: 'World' },
-          // { value: 'local', label: 'Local' },
+          { value: 'local', label: 'Local' },
         ]
       }
     )

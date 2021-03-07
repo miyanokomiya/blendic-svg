@@ -17,9 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, getRadian, IVec2, rotate, sub } from 'okageo'
-import { getParentIdPath, sumReduce } from '../commons'
-import { Bone, IdMap, SpaceType, toMap } from '/@/models'
+import { Bone, IdMap, SpaceType } from '/@/models'
 
 export interface Option {
   spaceType: SpaceType
@@ -31,6 +29,7 @@ export interface Option {
 export function apply(
   boneId: string,
   option: Option,
+  localMap: IdMap<Bone>,
   boneMap: IdMap<Bone>
 ): IdMap<Bone> {
   const b = boneMap[boneId]
@@ -49,6 +48,25 @@ export function apply(
             option.influence,
             b.transform.rotate
           ),
+        },
+      },
+    }
+  } else if (option.spaceType === 'local') {
+    const localRotate = limitRotation(
+      option.min,
+      option.max,
+      option.influence,
+      localMap[boneId].transform.rotate
+    )
+    return {
+      ...boneMap,
+      [boneId]: {
+        ...b,
+        transform: {
+          ...b.transform,
+          rotate: b.inheritRotation
+            ? localRotate + boneMap[b.parentId]?.transform.rotate ?? 0
+            : localRotate,
         },
       },
     }

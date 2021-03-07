@@ -37,7 +37,12 @@ export type BoneConstraint = _BoneConstraint<BoneConstraintName>
 export type BoneConstraintOption = BoneConstraintOptions[BoneConstraintName]
 
 interface BoneConstraintModule {
-  apply(boneId: string, option: any, boneMap: IdMap<Bone>): IdMap<Bone>
+  apply(
+    boneId: string,
+    option: any,
+    localMap: IdMap<Bone>,
+    boneMap: IdMap<Bone>
+  ): IdMap<Bone>
   immigrate(duplicatedIdMap: IdMap<string>, option: any): any
   getOption(src: Partial<any>): any
   getDependentCountMap(option: BoneConstraintOption): IdMap<number>
@@ -53,18 +58,21 @@ function getConstraintModule(name: BoneConstraintName): BoneConstraintModule {
 }
 
 function applyConstraint(
-  boneId: string,
+  localMap: IdMap<Bone>,
+  boneMap: IdMap<Bone>,
   constraint: BoneConstraint,
-  boneMap: IdMap<Bone>
+  boneId: string
 ): IdMap<Bone> {
   return getConstraintModule(constraint.name).apply(
     boneId,
     constraint.option,
+    localMap,
     boneMap
   )
 }
 
 export function applyBoneConstraints(
+  localMap: IdMap<Bone>,
   posedMap: IdMap<Bone>,
   boneId: string
 ): IdMap<Bone> {
@@ -74,7 +82,7 @@ export function applyBoneConstraints(
   return b.constraints.reduce((p, c) => {
     return {
       ...p,
-      ...applyConstraint(b.id, c, p),
+      ...applyConstraint(localMap, p, c, b.id),
     }
   }, posedMap)
 }

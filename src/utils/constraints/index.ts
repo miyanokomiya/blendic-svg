@@ -18,7 +18,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import * as ik from './ik'
-import { Bone, IdMap, mergeMap, toMap } from '/@/models'
+import * as limitRotation from './limitRotation'
+import { Bone, IdMap, toMap } from '/@/models'
 import {
   dropMap,
   dropMapIfFalse,
@@ -29,16 +30,9 @@ import {
 
 export type BoneConstraintName = 'IK' | 'LIMIT_ROTATION'
 
-// TODO
-interface TODO_LimitRotationOption {
-  min: number
-  max: number
-  influence: number
-}
-
 export interface BoneConstraintOptions {
   IK: ik.Option
-  LIMIT_ROTATION: TODO_LimitRotationOption
+  LIMIT_ROTATION: limitRotation.Option
 }
 
 interface _BoneConstraint<N extends BoneConstraintName> {
@@ -132,7 +126,7 @@ export function getOptionByName(
     case 'IK':
       return ik.getOption(src as ik.Option)
     case 'LIMIT_ROTATION':
-      return { min: 0, max: 360, influence: 1 }
+      return limitRotation.getOption(src as limitRotation.Option)
   }
 }
 
@@ -164,7 +158,9 @@ function getDependentCountMapOfConstrain(
     case 'IK':
       return ik.getDependentCountMap(constraint.option as ik.Option)
     case 'LIMIT_ROTATION':
-      return {}
+      return limitRotation.getDependentCountMap(
+        constraint.option as limitRotation.Option
+      )
   }
 }
 

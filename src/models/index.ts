@@ -88,6 +88,8 @@ export interface Actor {
   viewBox: IRectangle
 }
 
+export type SpaceType = 'world' | 'local'
+
 export function getElementNode(
   arg: Partial<ElementNode> = {},
   generateId = false

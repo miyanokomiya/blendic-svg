@@ -70,7 +70,7 @@ export default defineComponent({
       if (!elementStore.lastSelectedActor.value) return
       return getPosedElementTree(
         boneMap.value,
-        toMap(elementStore.lastSelectedActor.value?.elements ?? []),
+        toMap(elementStore.lastSelectedActor.value.elements),
         elementStore.lastSelectedActor.value.svgTree
       )
     })

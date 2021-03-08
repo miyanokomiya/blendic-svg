@@ -27,8 +27,9 @@ import { useElementStore } from '../store/element'
 import { useHistoryStore } from '../store/history'
 import { cleanActions } from '../utils/animations'
 import { cleanActors, inheritWeight, parseFromSvg } from '../utils/elements'
-import { bakeKeyframes } from '../utils/poseResolver'
+import { bakeKeyframes, getPosedElementTree } from '../utils/poseResolver'
 import { initialize, StrageRoot } from '/@/models/strage'
+import { makeSvg } from '/@/utils/svgMaker'
 
 interface BakedData {
   // data format version (not same as app version)
@@ -128,17 +129,40 @@ export function useStrage() {
     saveJson(JSON.stringify(data), action.name + '.json')
   }
 
+  function bakeSvg() {
+    const action = animationStore.selectedAction.value
+    const actor = elementStore.lastSelectedActor.value
+    if (!action || !actor) return
+
+    const svgNode = getPosedElementTree(
+      animationStore.currentPosedBones.value,
+      toMap(actor.elements ?? []),
+      actor.svgTree
+    )
+
+    const svg = makeSvg(svgNode)
+    saveSvg(svg.outerHTML, action.name + '.svg')
+  }
+
   return {
     loadProjectFile,
     saveProjectFile,
     loadSvgFile,
     bakeAction,
+    bakeSvg,
   }
 }
 
 function saveJson(json: string, filename: string) {
   saveFileInWeb(
     URL.createObjectURL(new Blob([json], { type: 'text/plain' })),
+    filename
+  )
+}
+
+function saveSvg(svg: string, filename: string) {
+  saveFileInWeb(
+    URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })),
     filename
   )
 }

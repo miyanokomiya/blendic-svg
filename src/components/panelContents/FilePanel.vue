@@ -34,7 +34,8 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <h3>Export</h3>
     <div class="menu-list">
-      <button type="button" @click="bakeAction">Bake</button>
+      <button type="button" @click="bakeAction">Baked Action</button>
+      <button type="button" @click="exportSvg">Posed SVG</button>
     </div>
   </div>
 </template>
@@ -65,6 +66,10 @@ export default defineComponent({
       bakeAction() {
         const strage = useStrage()
         strage.bakeAction()
+      },
+      exportSvg() {
+        const strage = useStrage()
+        strage.bakeSvg()
       },
     }
   },

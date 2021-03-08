@@ -27,10 +27,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <h3>Import</h3>
     <div class="menu-list">
       <button type="button" @click="importSvg">SVG (Ctrl + O)</button>
-      <label class="checkbox-field">
-        Inherit weight
-        <input v-model="isInheritWeight" type="checkbox" />
-      </label>
+      <CheckboxInput v-model="isInheritWeight" label="Inherit weight" />
     </div>
     <h3>Export</h3>
     <div class="menu-list">
@@ -43,8 +40,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import { useStrage } from '/@/composables/strage'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 
 export default defineComponent({
+  components: { CheckboxInput },
   emits: [],
   setup() {
     const isInheritWeight = ref(false)

@@ -55,12 +55,13 @@ Copyright (C) 2021, Tomoya Komiyama.
       @keydown.d.shift.exact.prevent="editKeyDown('shift-d')"
     >
       <rect
+        v-if="showViewbox"
         :x="originalViewBox.x"
         :y="originalViewBox.y"
         :width="originalViewBox.width"
         :height="originalViewBox.height"
         fill="none"
-        stroke="black"
+        stroke="#777"
         :stroke-width="1 * scale"
         :stroke-dasharray="`${4 * scale} ${4 * scale}`"
       ></rect>
@@ -125,6 +126,7 @@ import { useCanvasStore } from '/@/store/canvas'
 import { useWindow } from '../composables/window'
 import { useAnimationStore } from '../store/animation'
 import { centerizeView } from '../composables/canvas'
+import { useSettings } from '/@/composables/settings'
 
 export default defineComponent({
   components: {
@@ -176,6 +178,7 @@ export default defineComponent({
     const store = useStore()
     const canvasStore = useCanvasStore()
     const animationStore = useAnimationStore()
+    const { settings } = useSettings()
 
     function viewToCanvas(v: IVec2): IVec2 {
       return add(viewOrigin.value, multi(v, scale.value))
@@ -252,6 +255,7 @@ export default defineComponent({
     watch(() => windowState.state.size, adjustSvgSize)
 
     return {
+      showViewbox: computed(() => settings.showViewbox),
       scale,
       viewSize,
       svg,

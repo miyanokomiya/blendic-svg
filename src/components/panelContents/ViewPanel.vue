@@ -21,9 +21,8 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="view-panel">
     <h4>View</h4>
     <form>
-      <div class="field inline">
-        <label>Bone Name</label>
-        <input v-model="settings.showBoneName" type="checkbox" />
+      <div class="field">
+        <CheckboxInput v-model="settings.showBoneName" label="Bone Name" />
       </div>
       <div class="field break">
         <label>Bone Opacity</label>
@@ -35,6 +34,9 @@ Copyright (C) 2021, Tomoya Komiyama.
           step="0.1"
         />
       </div>
+      <div class="field">
+        <CheckboxInput v-model="settings.showViewbox" label="Viewbox" />
+      </div>
     </form>
   </div>
 </template>
@@ -42,8 +44,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { useSettings } from '/@/composables/settings'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 
 export default defineComponent({
+  components: { CheckboxInput },
   setup() {
     const { settings } = useSettings()
 
@@ -71,15 +75,6 @@ form {
     display: flex;
     &:last-child {
       margin-bottom: 0;
-    }
-    &.inline {
-      align-items: center;
-      > label {
-        margin-right: 6px;
-      }
-      > label + * {
-        margin-left: auto;
-      }
     }
     &.break {
       flex-direction: column;

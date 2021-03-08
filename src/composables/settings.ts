@@ -24,6 +24,7 @@ const settings = reactive({
   historyMax: 64,
   showBoneName: true,
   boneOpacity: 1,
+  showViewbox: true,
 })
 
 export function useSettings() {

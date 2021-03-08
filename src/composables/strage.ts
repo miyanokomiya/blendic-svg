@@ -91,15 +91,12 @@ export function useStrage() {
       const svg = await readAsText(file)
       const actor = parseFromSvg(svg)
 
-      if (isInheritWeight) {
-        const oldActor = elementStore.lastSelectedActor.value
-        if (oldActor) {
-          elementStore.initState([inheritWeight(oldActor, actor)])
-        } else {
-          elementStore.initState([actor])
-        }
+      if (isInheritWeight && elementStore.lastSelectedActor.value) {
+        elementStore.importActor(
+          inheritWeight(elementStore.lastSelectedActor.value, actor)
+        )
       } else {
-        elementStore.initState([actor])
+        elementStore.importActor(actor)
       }
     } catch (e) {
       alert('Failed to load: Invalid file.')

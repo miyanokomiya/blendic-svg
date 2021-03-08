@@ -54,6 +54,12 @@ function initState(actors: Actor[]) {
   }
 }
 
+function importActor(actor: Actor) {
+  const item = getImportActorItem(actor)
+  item.redo()
+  historyStore.push(item)
+}
+
 function selectElement(id = '', shift = false) {
   if (!id && Object.keys(selectedElements.value).length === 0) return
   if (
@@ -99,6 +105,7 @@ function updateElement(val: { boneId: string }) {
 export function useElementStore() {
   return {
     initState,
+    importActor,
     actors: computed(() => actorsState.state.list),
     lastSelectedActor,
     lastSelectedElement,
@@ -200,6 +207,27 @@ export function getUpdateElementItem(val: { boneId: string }): HistoryItem {
         ...elementMap.value,
         ...current,
       })
+    },
+    redo,
+  }
+}
+
+export function getImportActorItem(actor: Actor): HistoryItem {
+  const current = actorsState.state.list.concat()
+  const lastSelectedId = actorsState.state.lastSelectedId
+  const selectedMap = { ...actorsState.state.selectedMap }
+
+  const redo = () => {
+    actorsState.state.list = [actor]
+    actorsState.state.lastSelectedId = actor.id
+    actorsState.state.selectedMap = { [actor.id]: true }
+  }
+  return {
+    name: 'Import Actor',
+    undo: () => {
+      actorsState.state.list = current.concat()
+      actorsState.state.lastSelectedId = lastSelectedId
+      actorsState.state.selectedMap = { ...selectedMap }
     },
     redo,
   }

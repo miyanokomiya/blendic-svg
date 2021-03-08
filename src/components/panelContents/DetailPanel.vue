@@ -147,6 +147,18 @@ export default defineComponent({
       return ''
     })
 
+    const isArmatureNameDuplicated = computed(() => {
+      if (draftName.value === store.lastSelectedArmature.value?.name)
+        return false
+      return store.state.armatures.map((a) => a.name).includes(draftName.value)
+    })
+
+    const isBoneNameDuplicated = computed(() => {
+      return otherBoneOptions.value
+        .map((o) => o.label)
+        .includes(draftName.value)
+    })
+
     function initDraftName() {
       if (lastSelectedBone.value) draftName.value = lastSelectedBone.value.name
       else if (store.lastSelectedArmature.value)
@@ -248,10 +260,20 @@ export default defineComponent({
       },
       changeArmatureName() {
         if (!draftName.value) return
+        if (
+          isArmatureNameDuplicated.value &&
+          store.lastSelectedArmature.value
+        ) {
+          draftName.value = store.lastSelectedArmature.value.name
+          return
+        }
         store.updateArmatureName(draftName.value)
       },
       changeBoneName() {
         if (!draftName.value) return
+        if (isBoneNameDuplicated.value && lastSelectedBone.value) {
+          draftName.value = lastSelectedBone.value.name
+        }
         store.updateBone({ name: draftName.value })
       },
       updateConstraint,

@@ -79,12 +79,13 @@ import { Bone, BoneSelectedState } from '../../models/index'
 import { d } from '../../utils/helpers'
 import { IVec2, add, sub, multi, rotate, getDistance } from 'okageo'
 import { useSettings } from '../../composables/settings'
-import { posedTransform } from '/@/utils/armatures'
 
-function d1(head: IVec2, tail: IVec2, invert = false): IVec2 {
+function d1(head: IVec2, tail: IVec2, scaleX: number, invert = false): IVec2 {
+  const v = multi(sub(tail, head), 0.15)
+  const origin = add(head, v)
   return add(
-    head,
-    rotate(multi(sub(tail, head), 0.15), (Math.PI / 4) * (invert ? -1 : 1))
+    origin,
+    multi(rotate(v, (Math.PI / 2) * (invert ? -1 : 1)), scaleX)
   )
 }
 
@@ -117,17 +118,18 @@ export default defineComponent({
   setup(props, { emit }) {
     const { settings } = useSettings()
 
-    const posedTransformBone = computed(() => {
-      return posedTransform(props.bone, [props.bone.transform])
-    })
     const head = computed(() => {
-      return posedTransformBone.value.head
+      return props.bone.head
     })
     const tail = computed(() => {
-      return posedTransformBone.value.tail
+      return props.bone.tail
     })
-    const side1 = computed(() => d1(head.value, tail.value))
-    const side2 = computed(() => d1(head.value, tail.value, true))
+    const side1 = computed(() =>
+      d1(head.value, tail.value, props.bone.transform.scale.x)
+    )
+    const side2 = computed(() =>
+      d1(head.value, tail.value, props.bone.transform.scale.x, true)
+    )
 
     const selectedAll = computed(() => {
       if (props.poseMode) {

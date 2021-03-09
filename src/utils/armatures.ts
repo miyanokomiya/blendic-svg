@@ -167,7 +167,11 @@ export function posedTransform(bone: Bone, transforms: Transform[]): Bone {
     ...bone,
     head,
     tail: add(multi(sub(tail, head), convoluted.scale.y), head),
-    transform: getTransform(),
+    transform: getTransform({
+      // scale x does not affect bone's head and tail
+      // => it affects bone's width
+      scale: { x: convoluted.scale.x, y: 1 },
+    }),
   }
 }
 

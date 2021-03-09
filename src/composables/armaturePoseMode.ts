@@ -18,7 +18,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { reactive, computed } from 'vue'
-import { getDistance, getRadian, IVec2, multi, rotate, sub } from 'okageo'
+import {
+  getDistance,
+  getRadian,
+  IRectangle,
+  IVec2,
+  multi,
+  rotate,
+  sub,
+} from 'okageo'
 import {
   Transform,
   getTransform,
@@ -32,7 +40,13 @@ import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '../store/animation'
 import { mapReduce } from '../utils/commons'
-import { applyScale, invertScaleOrZero } from '../utils/armatures'
+import {
+  applyScale,
+  convolutePoseTransforms,
+  getTransformedBoneMap,
+  invertScaleOrZero,
+  selectBoneInRect,
+} from '../utils/armatures'
 import {
   normalizeRad,
   snapGrid,
@@ -195,6 +209,23 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     store.selectBone(id, selectedState, true, true)
   }
 
+  function rectSelect(rect: IRectangle, shift = false) {
+    // FIXME: it may be performance issue someday to resolve poses here
+    const boneMap = getTransformedBoneMap(
+      mapReduce(store.boneMap.value, (b) => {
+        return {
+          ...b,
+          transform: convolutePoseTransforms([
+            animationStore.getCurrentSelfTransforms(b.id),
+            getEditTransforms(b.id),
+          ]),
+        }
+      })
+    )
+    const stateMap = selectBoneInRect(rect, boneMap)
+    store.selectBones(stateMap, shift)
+  }
+
   function selectAll() {
     if (state.command) {
       completeEdit()
@@ -248,16 +279,19 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     }
   })
 
+  function getEditTransforms(id: string) {
+    return editTransforms.value[id] ?? getTransform()
+  }
+
   return {
     command: computed(() => state.command),
-    getEditTransforms(id: string) {
-      return editTransforms.value[id] ?? getTransform()
-    },
+    getEditTransforms,
     end: () => cancel(),
     cancel,
     setEditMode,
     select,
     shiftSelect,
+    rectSelect,
     selectAll,
     mousemove,
     clickAny,

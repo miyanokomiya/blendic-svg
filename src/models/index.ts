@@ -222,6 +222,7 @@ export interface CanvasEditModeBase {
   setEditMode: (mode: EditMode) => void
   select: (id: string, selectedState: BoneSelectedState) => void
   shiftSelect: (id: string, selectedState: BoneSelectedState) => void
+  rectSelect: (rect: IRectangle, shift: boolean) => void
   selectAll: () => void
   mousemove: (arg: EditMovement) => void
   clickAny: () => void

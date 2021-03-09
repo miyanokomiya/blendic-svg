@@ -35,6 +35,8 @@ import {
   getPolygonCenter,
   interpolateScaler,
   interpolateVector,
+  IRectangle,
+  isOnPolygon,
   isSame,
   IVec2,
   multi,
@@ -203,7 +205,7 @@ export function selectBone(
   id: string,
   selectedState: BoneSelectedState,
   ignoreConnection = false
-): IdMap<Partial<BoneSelectedState>> {
+): IdMap<BoneSelectedState> {
   const target = findBone(armature.bones, id)
   if (!target) return {}
 
@@ -229,6 +231,29 @@ export function selectBone(
   }
 
   return ret
+}
+
+export function selectBoneInRect(
+  rect: IRectangle,
+  boneMap: IdMap<Bone>
+): IdMap<BoneSelectedState> {
+  const polygon = [
+    { x: rect.x, y: rect.y },
+    { x: rect.x + rect.width, y: rect.y },
+    { x: rect.x + rect.width, y: rect.y + rect.height },
+    { x: rect.x, y: rect.y + rect.height },
+  ]
+  return toList(boneMap).reduce<IdMap<BoneSelectedState>>((p, b) => {
+    const transformed = posedTransform(b, [b.transform])
+    const head = isOnPolygon(transformed.head, polygon)
+    const tail = isOnPolygon(transformed.tail, polygon)
+    if (head || tail) {
+      p[b.id] = { head, tail }
+      if (!head) delete p[b.id].head
+      if (!tail) delete p[b.id].tail
+    }
+    return p
+  }, {})
 }
 
 export function fixConnection(bones: Bone[], b: Bone): Bone {

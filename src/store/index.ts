@@ -244,6 +244,19 @@ function selectBone(
   item.redo()
   historyStore.push(item)
 }
+function selectBones(
+  selectedStateMap: IdMap<BoneSelectedState>,
+  shift = false
+) {
+  // select nothing -> nothing
+  if (Object.keys(selectedStateMap).length === 0 && !state.lastSelectedBoneId)
+    return
+
+  const item = getSelectBonesItem(selectedStateMap, shift)
+  item.redo()
+  historyStore.push(item)
+}
+
 function deleteBone() {
   if (!lastSelectedArmature.value) return
 
@@ -317,6 +330,7 @@ export function useStore() {
     addArmature,
     selectAllBone,
     selectBone,
+    selectBones,
     deleteBone,
     addBone,
     addBones,
@@ -446,6 +460,35 @@ function getSelectAllBoneItem(): HistoryItem {
   }
   return {
     name: 'Select All Bone',
+    undo: () => {
+      state.selectedBones = { ...current }
+      state.lastSelectedBoneId = currentLast
+    },
+    redo,
+  }
+}
+
+function getSelectBonesItem(
+  selectedStateMap: IdMap<BoneSelectedState>,
+  shift = false
+): HistoryItem {
+  const current = { ...state.selectedBones }
+  const currentLast = state.lastSelectedBoneId
+
+  const redo = () => {
+    if (shift) {
+      state.selectedBones = mergeMap(state.selectedBones, selectedStateMap)
+    } else {
+      state.selectedBones = selectedStateMap
+    }
+
+    const last = Object.keys(state.selectedBones).find(
+      (s) => state.selectedBones[s].head || state.selectedBones[s].tail
+    )
+    state.lastSelectedBoneId = last ?? ''
+  }
+  return {
+    name: 'Select Bones',
     undo: () => {
       state.selectedBones = { ...current }
       state.lastSelectedBoneId = currentLast

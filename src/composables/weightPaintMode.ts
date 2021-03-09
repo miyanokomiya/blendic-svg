@@ -62,6 +62,8 @@ export function useWeightPaintMode(): WeightPaintMode {
     completeEdit()
   }
 
+  function rectSelect() {}
+
   function selectAll() {
     completeEdit()
     elementStore.selectAllElement()
@@ -87,6 +89,7 @@ export function useWeightPaintMode(): WeightPaintMode {
     setEditMode,
     select,
     shiftSelect,
+    rectSelect,
     selectAll,
     mousemove,
     clickAny,

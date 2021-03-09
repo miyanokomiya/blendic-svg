@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getInner, IVec2, sub } from 'okageo'
+import { getInner, IRectangle, IVec2, sub } from 'okageo'
 import { computed, reactive, watch } from 'vue'
 import { BoneEditMode, useBoneEditMode } from '../composables/armatureEditMode'
 import { BonePoseMode, useBonePoseMode } from '../composables/armaturePoseMode'
@@ -159,6 +159,8 @@ export function useCanvasStore() {
       canvasEditMode.value.select(id, selectedState),
     shiftSelect: (id: string, selectedState: BoneSelectedState) =>
       canvasEditMode.value.shiftSelect(id, selectedState),
+    rectSelect: (rect: IRectangle, shift = false) =>
+      canvasEditMode.value.rectSelect(rect, shift),
     selectAll: () => canvasEditMode.value.selectAll(),
     clip: () => canvasEditMode.value.clip(),
     paste: () => canvasEditMode.value.paste(),

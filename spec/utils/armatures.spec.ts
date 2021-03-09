@@ -229,6 +229,25 @@ describe('utils/armatures', () => {
     })
   })
 
+  describe('selectBoneInRect', () => {
+    it('get bone selected state map in the rect', () => {
+      const rect = { x: 0, y: 0, width: 10, height: 20 }
+      const boneMap = {
+        a: getBone({ id: 'a', head: { x: 1, y: 1 }, tail: { x: 20, y: 20 } }),
+        b: getBone({
+          id: 'b',
+          head: { x: -1, y: -1 },
+          tail: { x: -20, y: -20 },
+        }),
+        c: getBone({ id: 'c', head: { x: 0, y: 0 }, tail: { x: 10, y: 20 } }),
+      }
+      expect(target.selectBoneInRect(rect, boneMap)).toEqual({
+        a: { head: true },
+        c: { head: true, tail: true },
+      })
+    })
+  })
+
   describe('fixConnections', () => {
     it("connected: true => connect child's head to parent's tail", () => {
       const parent = getBone({ id: 'parent', tail: { x: 1, y: 2 } })

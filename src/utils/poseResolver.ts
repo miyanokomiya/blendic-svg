@@ -35,7 +35,7 @@ import {
   getTransform,
 } from '../models'
 import { getInterpolatedTransformMapByBoneId } from './animations'
-import { getTransformedBoneMap, poseToAffine } from './armatures'
+import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce } from './commons'
 import { getTnansformStr } from './helpers'
 
@@ -168,7 +168,7 @@ function getPosedElementNode(
 
 function getSelfPoseMatrix(boneMap: IdMap<Bone>, boundBoneId: string) {
   const b = boneMap[boundBoneId]
-  return b ? poseToAffine({ ...b.transform, origin: b.head }) : undefined
+  return b ? boneToAffine(b) : undefined
 }
 
 function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {

@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, getRadian, IVec2, rotate, sub } from 'okageo'
+import { add, getRadian, IVec2, multi, rotate, sub } from 'okageo'
 import { getParentIdPath, sumReduce } from '../commons'
 import { Bone, IdMap, toMap } from '/@/models'
 
@@ -105,12 +105,19 @@ function step(targetPoint: IVec2, bones: Bone[]): Bone[] {
   }))
 }
 
+function getScaledTail(bone: Bone): IVec2 {
+  return add(
+    bone.head,
+    multi(sub(bone.tail, bone.head), bone.transform.scale.y)
+  )
+}
+
 function getStickInfoTarget(
   targetPoint: IVec2,
   bone: Bone
 ): { rotate: number; translate: IVec2 } {
   const head = add(bone.head, bone.transform.translate)
-  const tail = add(bone.tail, bone.transform.translate)
+  const tail = add(getScaledTail(bone), bone.transform.translate)
   const rad = getRadian(targetPoint, head) - getRadian(tail, head)
   const rotatedTail = rotate(tail, rad, head)
   return {

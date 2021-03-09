@@ -32,7 +32,7 @@ import {
   getKeyframe,
   getTransform,
 } from '/@/models'
-import { poseToAffine } from '/@/utils/armatures'
+import { boneToAffine } from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
 import {
   bakeKeyframe,
@@ -184,7 +184,9 @@ describe('utils/poseResolver.ts', () => {
         expect(Object.keys(res).sort()).toEqual(['0', '1', '2', '3', '4', '5'])
         expect(res[2]).toEqual({
           root: IDENTITY_AFFINE,
-          elm_a: poseToAffine(getTransform({ rotate: 20 })),
+          elm_a: boneToAffine(
+            getBone({ transform: getTransform({ rotate: 20 }) })
+          ),
           elm_b: IDENTITY_AFFINE,
         })
       })
@@ -194,7 +196,9 @@ describe('utils/poseResolver.ts', () => {
       it('bake interpolated poses', () => {
         expect(bakeKeyframe(keyMap, boneMap, elementMap, root, 2)).toEqual({
           root: IDENTITY_AFFINE,
-          elm_a: poseToAffine(getTransform({ rotate: 20 })),
+          elm_a: boneToAffine(
+            getBone({ transform: getTransform({ rotate: 20 }) })
+          ),
           elm_b: IDENTITY_AFFINE,
         })
       })

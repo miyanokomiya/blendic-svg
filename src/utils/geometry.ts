@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { isSame, IVec2 } from 'okageo'
+import { IRectangle, isSame, IVec2 } from 'okageo'
 import { scaleRate, Transform } from '/@/models'
 
 // normalize in (-pi <= r <= pi)
@@ -64,4 +64,15 @@ export function snapScale(scale: IVec2, step = 0.1): IVec2 {
 
 export function snapNumber(value: number, step = 1): number {
   return Math.round(value / step) * step
+}
+
+export function getNormalRectangle(rect: IRectangle): IRectangle {
+  const x = rect.width > 0 ? rect.x : rect.x + rect.width
+  const y = rect.height > 0 ? rect.y : rect.y + rect.height
+  return {
+    x,
+    y,
+    width: Math.abs(rect.width),
+    height: Math.abs(rect.height),
+  }
 }

@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { getTransform, scaleRate } from '/@/models'
 import {
   getGridSize,
+  getNormalRectangle,
   isSameTransform,
   normalizeRad,
   snapGrid,
@@ -150,6 +151,39 @@ describe('src/utils/geometry.ts', () => {
     })
     it('option angle', () => {
       expect(snapNumber(19, 20)).toBe(20)
+    })
+  })
+
+  describe('getNormalRectangle', () => {
+    it('get the same rectangle if it has positive width and height', () => {
+      expect(
+        getNormalRectangle({
+          x: 0,
+          y: 0,
+          width: 1,
+          height: 2,
+        })
+      ).toEqual({
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 2,
+      })
+    })
+    it('get reversed rectangle if it has negative width or height', () => {
+      expect(
+        getNormalRectangle({
+          x: 0,
+          y: 0,
+          width: -1,
+          height: -2,
+        })
+      ).toEqual({
+        x: -1,
+        y: -2,
+        width: 1,
+        height: 2,
+      })
     })
   })
 })

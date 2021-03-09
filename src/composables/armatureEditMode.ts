@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { reactive, computed } from 'vue'
-import { getDistance, getRadian, multi, sub } from 'okageo'
+import { getDistance, getRadian, IRectangle, multi, sub } from 'okageo'
 import {
   Transform,
   Bone,
@@ -34,6 +34,7 @@ import {
   duplicateBones,
   editTransform,
   extrudeFromParent,
+  selectBoneInRect,
   symmetrizeBones,
 } from '/@/utils/armatures'
 import { getNextName } from '/@/utils/relations'
@@ -228,6 +229,11 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     store.selectBone(id, selectedState, true)
   }
 
+  function rectSelect(rect: IRectangle, shift = false) {
+    const stateMap = selectBoneInRect(rect, store.boneMap.value)
+    store.selectBones(stateMap, shift)
+  }
+
   function selectAll() {
     if (state.command) {
       completeEdit()
@@ -321,6 +327,7 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     select,
     shiftSelect,
     selectAll,
+    rectSelect,
     mousemove,
     clickAny,
     clickEmpty,

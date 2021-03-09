@@ -25,8 +25,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         :current-command="canvasCommand"
         class="canvas"
         @change-mode="changeMode"
-        @click-any="clickAny"
-        @click-empty="clickEmpty"
         @escape="escape"
         @tab="toggleCanvasMode"
         @ctrl-tab="ctrlToggleCanvasMode"
@@ -267,12 +265,6 @@ export default defineComponent({
       selectedBones,
       canvasMode,
       canvasCommand,
-      clickAny() {
-        canvasStore.clickAny()
-      },
-      clickEmpty() {
-        canvasStore.clickEmpty()
-      },
       selectBone(id: string, state: BoneSelectedState) {
         canvasStore.select(id, state)
       },

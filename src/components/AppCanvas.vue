@@ -30,10 +30,10 @@ Copyright (C) 2021, Tomoya Komiyama.
       :width="viewSize.width"
       :height="viewSize.height"
       @wheel.prevent="wheel"
-      @click.left.exact="clickAny"
-      @click.left.ctrl.exact="clickAny"
       @click.right.prevent="keyDownEscape"
       @mouseenter="focus"
+      @mousedown.left.prevent="downLeft"
+      @mouseup.left.prevent="upLeft"
       @mousemove.prevent="mousemove"
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
@@ -82,6 +82,18 @@ Copyright (C) 2021, Tomoya Komiyama.
         :scale="scale"
         :side="scaleNaviElm.side"
       />
+      <rect
+        v-if="dragRectangle"
+        :x="dragRectangle.x"
+        :y="dragRectangle.y"
+        :width="dragRectangle.width"
+        :height="dragRectangle.height"
+        fill="none"
+        stroke="green"
+        :stroke-width="2 * scale"
+        :stroke-dasharray="`${4 * scale} ${4 * scale}`"
+        class="view-only"
+      />
     </svg>
     <div class="left-top-space">
       <CanvasModepanel
@@ -104,18 +116,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  PropType,
-  ref,
-  reactive,
-  computed,
-  watch,
-  onMounted,
-} from 'vue'
+import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
 import { getPointInTarget } from 'okanvas'
-import { IVec2, IRectangle, multi, sub, add, getRectCenter } from 'okageo'
-import { CanvasCommand, CanvasMode, scaleRate } from '/@/models'
+import { IRectangle } from 'okageo'
+import { CanvasCommand, CanvasMode } from '/@/models'
 import * as helpers from '/@/utils/helpers'
 import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
@@ -125,8 +129,22 @@ import CanvasArmatureMenu from '/@/components/molecules/CanvasArmatureMenu.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import { useWindow } from '../composables/window'
 import { useAnimationStore } from '../store/animation'
-import { centerizeView } from '../composables/canvas'
 import { useSettings } from '/@/composables/settings'
+import { centerizeView, useCanvas } from '../composables/canvas'
+
+type KeyType =
+  | 'g'
+  | 's'
+  | 'r'
+  | 'e'
+  | 'x'
+  | 'y'
+  | 'a'
+  | 'shift-a'
+  | 'i'
+  | 'ctrl-c'
+  | 'ctrl-v'
+  | 'shift-d'
 
 export default defineComponent({
   components: {
@@ -147,8 +165,6 @@ export default defineComponent({
   },
   emits: [
     'change-mode',
-    'click-any',
-    'click-empty',
     'escape',
     'tab',
     'ctrl-tab',
@@ -166,23 +182,14 @@ export default defineComponent({
     'shift-d',
   ],
   setup(props, { emit }) {
-    const viewSize = reactive({ width: 600, height: 400 })
     const svg = ref<SVGElement>()
     const wrapper = ref<SVGElement>()
-    const editStartPoint = ref<IVec2>()
-    const mousePoint = ref<IVec2>()
-    const scale = ref(1)
-    const viewOrigin = ref<IVec2>({ x: 0, y: 0 })
-    const viewMovingInfo = ref<{ origin: IVec2; downAt: IVec2 }>()
 
     const store = useStore()
     const canvasStore = useCanvasStore()
     const animationStore = useAnimationStore()
     const { settings } = useSettings()
-
-    function viewToCanvas(v: IVec2): IVec2 {
-      return add(viewOrigin.value, multi(v, scale.value))
-    }
+    const canvas = useCanvas()
 
     const selectedBonesOrigin = computed(() => {
       if (canvasStore.state.canvasMode === 'edit') {
@@ -193,30 +200,24 @@ export default defineComponent({
     })
 
     const viewCanvasRect = computed(() => ({
-      x: viewOrigin.value.x,
-      y: viewOrigin.value.y,
-      width: viewSize.width * scale.value,
-      height: viewSize.height * scale.value,
+      x: canvas.viewOrigin.value.x,
+      y: canvas.viewOrigin.value.y,
+      width: canvas.viewSize.width * canvas.scale.value,
+      height: canvas.viewSize.height * canvas.scale.value,
     }))
 
-    const viewBox = computed(() => helpers.viewbox(viewCanvasRect.value))
-
-    const viewCenter = computed(() =>
-      getRectCenter({ x: 0, y: 0, ...viewSize })
-    )
-
     function initView() {
-      const ret = centerizeView(props.originalViewBox, viewSize, 50)
-      viewOrigin.value = ret.viewOrigin
-      scale.value = ret.scale
+      const ret = centerizeView(props.originalViewBox, canvas.viewSize, 50)
+      canvas.viewOrigin.value = ret.viewOrigin
+      canvas.scale.value = ret.scale
     }
-    watch(viewSize, initView)
+    watch(canvas.viewSize, initView)
 
     const gridLineElm = computed(() => {
       if (canvasStore.state.axisGrid === '') return
-      if (!editStartPoint.value) return
+      if (!canvas.editStartPoint.value) return
       return helpers.gridLineElm(
-        scale.value,
+        canvas.scale.value,
         canvasStore.state.axisGrid,
         viewCanvasRect.value,
         selectedBonesOrigin.value
@@ -224,11 +225,11 @@ export default defineComponent({
     })
 
     const scaleNaviElm = computed(() => {
-      if (!mousePoint.value) return
+      if (!canvas.mousePoint.value) return
       if (!['scale', 'rotate'].includes(props.currentCommand)) return
       return {
         origin: selectedBonesOrigin.value,
-        current: viewToCanvas(mousePoint.value),
+        current: canvas.viewToCanvas(canvas.mousePoint.value),
         side: props.currentCommand === 'rotate',
       }
     })
@@ -238,7 +239,7 @@ export default defineComponent({
       (to) => {
         canvasStore.setAxisGrid('')
         if (to === '') {
-          editStartPoint.value = undefined
+          canvas.editStartPoint.value = undefined
         }
       }
     )
@@ -246,8 +247,8 @@ export default defineComponent({
     function adjustSvgSize() {
       if (!wrapper.value) return
       const rect = wrapper.value.getBoundingClientRect()
-      viewSize.width = rect.width
-      viewSize.height = rect.height
+      canvas.viewSize.width = rect.width
+      canvas.viewSize.height = rect.height
     }
 
     const windowState = useWindow()
@@ -256,64 +257,61 @@ export default defineComponent({
 
     return {
       showViewbox: computed(() => settings.showViewbox),
-      scale,
-      viewSize,
+      scale: canvas.scale,
+      viewSize: computed(() => canvas.viewSize),
       svg,
       wrapper,
-      viewBox,
+      viewBox: canvas.viewBox,
       gridLineElm,
       scaleNaviElm,
+      dragRectangle: canvas.dragRectangle,
       canvasMode: computed(() => canvasStore.state.canvasMode),
       focus() {
         if (svg.value) svg.value.focus()
       },
-      wheel(e: WheelEvent) {
-        const origin = mousePoint.value ? mousePoint.value : viewCenter.value
-        const beforeOrigin = viewToCanvas(origin)
-        scale.value = scale.value * Math.pow(scaleRate, e.deltaY > 0 ? 1 : -1)
-        const afterOrigin = viewToCanvas(origin)
-        viewOrigin.value = add(viewOrigin.value, sub(beforeOrigin, afterOrigin))
+      wheel: canvas.wheel,
+      downMiddle: canvas.downMiddle,
+      upMiddle: canvas.upMiddle,
+      downLeft: () => {
+        if (!canvas.mousePoint.value) return
+        if (canvasStore.command.value) return
+        if (canvasStore.state.canvasMode === 'object') return
+        if (canvasStore.state.canvasMode === 'weight') return
+        canvas.downLeft('rect-select')
       },
-      downMiddle() {
-        if (!mousePoint.value) return
-        viewMovingInfo.value = {
-          origin: { ...viewOrigin.value },
-          downAt: { ...mousePoint.value },
+      upLeft: (e: MouseEvent) => {
+        if (
+          canvas.dragRectangle.value &&
+          (Math.abs(canvas.dragRectangle.value.width) > 0 ||
+            Math.abs(canvas.dragRectangle.value.height) > 0)
+        ) {
+          canvasStore.rectSelect(canvas.dragRectangle.value, e.shiftKey)
+        } else {
+          if (e.target === svg.value) {
+            canvas.editStartPoint.value = undefined
+            canvasStore.clickEmpty()
+          } else {
+            canvasStore.clickAny()
+          }
         }
+        canvas.upLeft()
       },
-      upMiddle() {
-        viewMovingInfo.value = undefined
-      },
-      leave() {
-        viewMovingInfo.value = undefined
-      },
+      leave: canvas.leave,
       mousemove: (e: MouseEvent) => {
-        mousePoint.value = getPointInTarget(e)
+        canvas.mousePoint.value = getPointInTarget(e)
 
-        if (viewMovingInfo.value) {
-          viewOrigin.value = add(
-            viewMovingInfo.value.origin,
-            multi(
-              sub(viewMovingInfo.value.downAt, mousePoint.value),
-              scale.value
-            )
-          )
+        if (canvas.dragInfo.value) {
+          // rect select
+        } else if (canvas.viewMovingInfo.value) {
+          canvas.viewMove()
         } else {
-          if (!editStartPoint.value) return
+          if (!canvas.editStartPoint.value) return
           canvasStore.mousemove({
-            current: viewToCanvas(mousePoint.value),
-            start: viewToCanvas(editStartPoint.value),
+            current: canvas.viewToCanvas(canvas.mousePoint.value),
+            start: canvas.viewToCanvas(canvas.editStartPoint.value),
             ctrl: e.ctrlKey,
-            scale: scale.value,
+            scale: canvas.scale.value,
           })
-        }
-      },
-      clickAny(e: any) {
-        if (e.target === svg.value) {
-          editStartPoint.value = undefined
-          emit('click-empty')
-        } else {
-          emit('click-any')
         }
       },
       keyDownTab: () => {
@@ -323,22 +321,8 @@ export default defineComponent({
       keyDownEscape: () => {
         emit('escape')
       },
-      editKeyDown(
-        key:
-          | 'g'
-          | 's'
-          | 'r'
-          | 'e'
-          | 'x'
-          | 'y'
-          | 'a'
-          | 'shift-a'
-          | 'i'
-          | 'ctrl-c'
-          | 'ctrl-v'
-          | 'shift-d'
-      ) {
-        if (!mousePoint.value) return
+      editKeyDown(key: KeyType) {
+        if (!canvas.mousePoint.value) return
 
         if (
           (['grab', 'scale'] as CanvasCommand[]).includes(props.currentCommand)
@@ -349,7 +333,7 @@ export default defineComponent({
           }
         }
 
-        editStartPoint.value = mousePoint.value
+        canvas.editStartPoint.value = canvas.mousePoint.value
         emit(key)
       },
       changeMode(canvasMode: CanvasMode) {
@@ -387,5 +371,8 @@ export default defineComponent({
 svg {
   border: solid 1px black;
   user-select: none;
+}
+.view-only {
+  pointer-events: none;
 }
 </style>

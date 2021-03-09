@@ -174,6 +174,8 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     animationStore.selectKeyframeByFrame(frame, true)
   }
 
+  function rectSelect(rect: IRectangle, shift = false) {}
+
   function selectAll() {
     if (state.command) {
       completeEdit()
@@ -263,6 +265,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     shiftSelect,
     selectFrame,
     shiftSelectFrame,
+    rectSelect,
     selectAll,
     mousemove,
     clickAny,

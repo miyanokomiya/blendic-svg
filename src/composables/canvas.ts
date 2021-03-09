@@ -21,11 +21,14 @@ import { ref, reactive, computed } from 'vue'
 import { IVec2, multi, sub, add, getRectCenter, IRectangle } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import { scaleRate } from '../models'
+import { getNormalRectangle } from '/@/utils/geometry'
 
 export interface MoveInfo {
   origin: IVec2
   downAt: IVec2
 }
+
+export type Dragtype = '' | 'rect-select'
 
 export function useCanvas(
   options: {
@@ -41,7 +44,30 @@ export function useCanvas(
   const scale = ref(1)
   const viewOrigin = ref<IVec2>({ x: 0, y: 0 })
   const viewMovingInfo = ref<MoveInfo>()
-  const dragInfo = ref<{}>()
+  const dragInfo = ref<{ dragType: Dragtype; downAt: IVec2 }>()
+
+  const viewDragRectangle = computed<IRectangle | undefined>(() => {
+    if (
+      !mousePoint.value ||
+      !dragInfo.value ||
+      dragInfo.value.dragType !== 'rect-select'
+    )
+      return
+    const diff = sub(mousePoint.value, dragInfo.value.downAt)
+    return getNormalRectangle({
+      ...dragInfo.value.downAt,
+      width: diff.x,
+      height: diff.y,
+    })
+  })
+  const dragRectangle = computed<IRectangle | undefined>(() => {
+    if (!viewDragRectangle.value) return
+    return {
+      ...viewToCanvas(viewDragRectangle.value),
+      width: viewDragRectangle.value.width * scale.value,
+      height: viewDragRectangle.value.height * scale.value,
+    }
+  })
 
   const viewCanvasRect = computed(() => ({
     x: viewOrigin.value.x,
@@ -75,6 +101,7 @@ export function useCanvas(
     mousePoint,
     scale,
     viewOrigin,
+    dragRectangle,
     dragInfo,
     viewMovingInfo,
     viewCenter,
@@ -104,9 +131,9 @@ export function useCanvas(
         )
       }
     },
-    downLeft() {
+    downLeft(dragType: Dragtype = '') {
       if (!mousePoint.value) return
-      dragInfo.value = {}
+      dragInfo.value = { dragType, downAt: mousePoint.value }
     },
     upLeft() {
       dragInfo.value = undefined

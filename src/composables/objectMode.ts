@@ -100,6 +100,8 @@ export function useObjectMode(): ObjectMode {
     store.selectBone(id, selectedState, true)
   }
 
+  function rectSelect() {}
+
   function selectAll() {
     if (state.command) {
       completeEdit()
@@ -151,6 +153,7 @@ export function useObjectMode(): ObjectMode {
     setEditMode,
     select,
     shiftSelect,
+    rectSelect,
     selectAll,
     mousemove,
     clickAny,

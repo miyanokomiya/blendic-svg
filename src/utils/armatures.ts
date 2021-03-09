@@ -32,7 +32,9 @@ import {
 import {
   add,
   AffineMatrix,
+  getPedal,
   getPolygonCenter,
+  getRadian,
   interpolateScaler,
   interpolateVector,
   IRectangle,
@@ -61,16 +63,22 @@ import {
   sortBoneByHighDependency,
 } from '/@/utils/constraints'
 
-export function poseToAffine(transform: Transform): AffineMatrix {
-  const rad = (transform.rotate / 180) * Math.PI
+export function boneToAffine(bone: Bone): AffineMatrix {
+  const origin = bone.head
+  const boneRad = getRadian(bone.tail, bone.head)
+  const boneCos = Math.cos(boneRad)
+  const boneSin = Math.sin(boneRad)
+  const rad = (bone.transform.rotate / 180) * Math.PI
   const cos = Math.cos(rad)
   const sin = Math.sin(rad)
   return multiAffines([
-    [1, 0, 0, 1, transform.translate.x, transform.translate.y],
-    [1, 0, 0, 1, transform.origin.x, transform.origin.y],
-    [transform.scale.x, 0, 0, transform.scale.y, 0, 0],
+    [1, 0, 0, 1, bone.transform.translate.x, bone.transform.translate.y],
+    [1, 0, 0, 1, origin.x, origin.y],
     [cos, sin, -sin, cos, 0, 0],
-    [1, 0, 0, 1, -transform.origin.x, -transform.origin.y],
+    [boneCos, boneSin, -boneSin, boneCos, 0, 0],
+    [bone.transform.scale.y, 0, 0, bone.transform.scale.x, 0, 0],
+    [boneCos, -boneSin, boneSin, boneCos, 0, 0],
+    [1, 0, 0, 1, -origin.x, -origin.y],
   ])
 }
 
@@ -116,9 +124,9 @@ export function applyScale(
 
 export function applyTransform(p: IVec2, transform: Transform): IVec2 {
   return add(
-    applyScale(
-      rotate(p, (transform.rotate / 180) * Math.PI, transform.origin),
-      transform.scale,
+    rotate(
+      applyScale(p, transform.scale, transform.origin),
+      (transform.rotate / 180) * Math.PI,
       transform.origin
     ),
     transform.translate
@@ -152,15 +160,59 @@ export function posedTransform(bone: Bone, transforms: Transform[]): Bone {
   )
   const tail = applyTransform(
     bone.tail,
-    getTransform({ ...convoluted, origin: bone.head })
+    getTransform({ ...convoluted, origin: bone.head, scale: { x: 1, y: 1 } })
   )
 
   return {
     ...bone,
     head,
-    tail,
-    transform: getTransform(),
+    tail: add(multi(sub(tail, head), convoluted.scale.y), head),
+    transform: getTransform({
+      // scale x does not affect bone's head and tail
+      // => it affects bone's width
+      scale: { x: convoluted.scale.x, y: 1 },
+    }),
   }
+}
+
+export function applyPosedTransformToPoint(parent: Bone, point: IVec2): IVec2 {
+  const head = applyTransform(
+    parent.head,
+    getTransform({ translate: parent.transform.translate })
+  )
+  const tail = applyTransform(
+    parent.tail,
+    getTransform({
+      ...parent.transform,
+      origin: parent.head,
+      scale: { x: 1, y: 1 },
+    })
+  )
+  const rotatedAndTranslatedPoint = applyTransform(
+    point,
+    getTransform({
+      ...parent.transform,
+      origin: parent.head,
+      scale: { x: 1, y: 1 },
+    })
+  )
+  if (isSame(head, tail)) {
+    return rotatedAndTranslatedPoint
+  }
+
+  const pedal = getPedal(rotatedAndTranslatedPoint, [head, tail])
+  // scale y affects bone's height
+  const vecY = sub(pedal, head)
+  // scale x affects bone's width
+  const vecX = sub(rotatedAndTranslatedPoint, pedal)
+
+  return add(
+    add(
+      multi(vecY, parent.transform.scale.y),
+      multi(vecX, parent.transform.scale.x)
+    ),
+    head
+  )
 }
 
 export function extrudeFromParent(parent: Bone, fromHead = false): Bone {
@@ -394,11 +446,9 @@ function resolveBonePose(
 
 export function extendTransform(parent: Bone, child: Bone): Bone {
   const childPosedHead = add(child.head, child.transform.translate)
-  const appliedChildHead = applyTransform(childPosedHead, {
-    ...parent.transform,
-    origin: parent.head,
-  })
+  const appliedChildHead = applyPosedTransformToPoint(parent, child.head)
   const headDiff = sub(appliedChildHead, childPosedHead)
+
   return {
     ...child,
     transform: {

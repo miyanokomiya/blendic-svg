@@ -82,6 +82,24 @@ describe('utils/armatures', () => {
     })
   })
 
+  describe('applyPosedTransformToPoint', () => {
+    it('apply parent bone scale', () => {
+      const parent = getBone({
+        head: { x: 1, y: 1 },
+        tail: { x: 2, y: 1 },
+        transform: getTransform({
+          scale: { x: 2, y: 3 },
+        }),
+      })
+      expect(target.applyPosedTransformToPoint(parent, { x: 3, y: 2 })).toEqual(
+        {
+          x: 7,
+          y: 3,
+        }
+      )
+    })
+  })
+
   describe('extrudeFromParent', () => {
     const parent = getBone({ id: 'parent', tail: { x: 1, y: 2 } })
 
@@ -408,6 +426,7 @@ describe('utils/armatures', () => {
         target.extendTransform(
           getBone({
             head: { x: 1, y: 1 },
+            tail: { x: 2, y: 1 },
             transform: getTransform({
               scale: { x: 2, y: 3 },
             }),
@@ -424,7 +443,7 @@ describe('utils/armatures', () => {
         getBone({
           head: { x: 2, y: 3 },
           transform: getTransform({
-            translate: { x: 1, y: 4 },
+            translate: { x: 2, y: 2 },
             scale: { x: 4, y: 9 },
             rotate: 45,
           }),
@@ -434,6 +453,7 @@ describe('utils/armatures', () => {
     describe('rotate', () => {
       const parent = getBone({
         head: { x: 1, y: 1 },
+        tail: { x: 2, y: 1 },
         transform: getTransform({
           rotate: 90,
         }),

@@ -21,7 +21,7 @@ Copyright (C) 2021, Tomoya Komiyama.
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 10 10"
-    :transform="`scale(1, ${flipped ? -1 : 1})`"
+    :transform="`rotate(${right ? 90 : 0}) scale(1, ${flipped ? -1 : 1})`"
   >
     <rect width="10" height="10" stroke="none" fill="#888" />
     <path d="M2 7L8 7L5 2z" stroke-linejoin="round" stroke="none" fill="#fff" />
@@ -34,6 +34,7 @@ import { defineComponent } from 'vue'
 export default defineComponent({
   props: {
     flipped: { type: Boolean, default: false },
+    right: { type: Boolean, default: false },
   },
 })
 </script>

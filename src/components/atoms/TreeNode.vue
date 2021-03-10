@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div class="tree-node" :class="{ odd: rowIndex % 2 === 0 }">
+  <div class="tree-node" :class="{ 'g-tag': node.tag === 'g' }">
     <div class="node-view">
       <div class="spacer" :style="{ width: `${nestIndex * 10}px` }" />
       <a
@@ -31,11 +31,10 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <div class="children-space">
       <TreeNode
-        v-for="(c, i) in children"
+        v-for="c in children"
         :key="c.id"
         :node="c"
         :nest-index="nestIndex + 1"
-        :row-index="rowIndex + i + 1"
       />
     </div>
   </div>
@@ -57,10 +56,6 @@ export default defineComponent({
       required: true,
     },
     nestIndex: {
-      type: Number,
-      default: 0,
-    },
-    rowIndex: {
       type: Number,
       default: 0,
     },
@@ -111,7 +106,8 @@ export default defineComponent({
   width: fit-content;
   background-color: #fff;
   user-select: none;
-  &.odd {
+  &.g-tag {
+    border: solid 1px #ccc;
     background-color: #eee;
   }
 }

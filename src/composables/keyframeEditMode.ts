@@ -33,6 +33,7 @@ import { useAnimationStore } from '../store/animation'
 import { mapReduce, toList } from '../utils/commons'
 import { getFrameX, getNearestFrameAtPoint } from '../utils/animations'
 import { applyTransform } from '../utils/armatures'
+import { getCtrlOrMetaStr } from '/@/utils/devices'
 
 interface State {
   command: EditMode
@@ -238,14 +239,14 @@ export function useKeyframeEditMode(): KeyframeEditMode {
         { command: 'a', title: 'All Select' },
         { command: 'x', title: 'Delete' },
         { command: 'D', title: 'Duplicate' },
-        { command: 'Ctrl + c', title: 'Clip' },
-        { command: 'Ctrl + v', title: 'Paste' },
+        { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
+        { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
         { command: 'Space', title: 'Play/Stop' },
       ]
     } else {
       return [
         { command: 'a', title: 'All Select' },
-        { command: 'Ctrl + v', title: 'Paste' },
+        { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
         { command: 'Space', title: 'Play/Stop' },
       ]
     }

@@ -53,6 +53,7 @@ import {
   snapRotate,
   snapScale,
 } from '../utils/geometry'
+import { getCtrlOrMetaStr } from '/@/utils/devices'
 
 interface State {
   command: EditMode
@@ -252,7 +253,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
   }
 
   const availableCommandList = computed(() => {
-    const ctrl = { command: 'Ctrl', title: 'Snap' }
+    const ctrl = { command: getCtrlOrMetaStr(), title: 'Snap' }
 
     if (state.command === 'grab') {
       return [
@@ -268,13 +269,13 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
         { command: 'g', title: 'Grab' },
         { command: 'r', title: 'Rotate' },
         { command: 'a', title: 'All Select' },
-        { command: 'Ctrl + c', title: 'Clip' },
-        { command: 'Ctrl + v', title: 'Paste' },
+        { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
+        { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
       ]
     } else {
       return [
         { command: 'a', title: 'All Select' },
-        { command: 'Ctrl + v', title: 'Paste' },
+        { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
       ]
     }
   })

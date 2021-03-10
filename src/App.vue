@@ -118,6 +118,7 @@ import { useHistoryStore } from './store/history'
 import { useAnimationStore } from './store/animation'
 import { useStrage } from './composables/strage'
 import { useElementStore } from './store/element'
+import { isCtrlOrMeta } from '/@/utils/devices'
 
 export default defineComponent({
   components: {
@@ -206,7 +207,7 @@ export default defineComponent({
       )
         return
 
-      if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+      if (isCtrlOrMeta(e) && e.key.toLowerCase() === 'z') {
         e.preventDefault()
         if (e.shiftKey) {
           historyStore.redo()
@@ -216,11 +217,11 @@ export default defineComponent({
       } else if (e.key.toLowerCase() === ' ') {
         e.preventDefault()
         animationStore.togglePlaying()
-      } else if (e.ctrlKey && e.key.toLowerCase() === 's') {
+      } else if (isCtrlOrMeta(e) && e.key.toLowerCase() === 's') {
         e.preventDefault()
         const strage = useStrage()
         strage.saveProjectFile()
-      } else if (e.ctrlKey && e.key.toLowerCase() === 'o') {
+      } else if (isCtrlOrMeta(e) && e.key.toLowerCase() === 'o') {
         e.preventDefault()
         if (e.shiftKey) {
           const strage = useStrage()

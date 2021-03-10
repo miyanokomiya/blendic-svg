@@ -21,12 +21,12 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="file-panel">
     <h3>Project</h3>
     <div class="menu-list">
-      <button type="button" @click="openFile">Open (Ctrl + o)</button>
-      <button type="button" @click="saveProjectFile">Save (Ctrl + s)</button>
+      <button type="button" @click="openFile">Open</button>
+      <button type="button" @click="saveProjectFile">Save</button>
     </div>
     <h3>Import</h3>
     <div class="menu-list">
-      <button type="button" @click="importSvg">SVG (Ctrl + O)</button>
+      <button type="button" @click="importSvg">SVG</button>
       <CheckboxInput v-model="isInheritWeight" label="Inherit weight" />
     </div>
     <h3>Export</h3>

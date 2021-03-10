@@ -1,4 +1,4 @@
-<!--
+/*
 This file is part of Blendic SVG.
 
 Blendic SVG is free software: you can redistribute it and/or modify
@@ -15,26 +15,18 @@ You should have received a copy of the GNU General Public License
 along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 
 Copyright (C) 2021, Tomoya Komiyama.
--->
+*/
 
-<template>
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 10 10"
-    :transform="`rotate(${right ? 90 : 0}) scale(1, ${flipped ? -1 : 1})`"
-  >
-    <rect width="10" height="10" stroke="none" fill="#888" />
-    <path d="M2 7L8 7L5 2z" stroke-linejoin="round" stroke="none" fill="#fff" />
-  </svg>
-</template>
+const ua = window.navigator.userAgent.toLowerCase()
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+function isMac(): boolean {
+  return ua.indexOf('mac os x') !== -1
+}
 
-export default defineComponent({
-  props: {
-    flipped: { type: Boolean, default: false },
-    right: { type: Boolean, default: false },
-  },
-})
-</script>
+export function isCtrlOrMeta(e: MouseEvent | KeyboardEvent): boolean {
+  return e.ctrlKey || e.metaKey
+}
+
+export function getCtrlOrMetaStr(): string {
+  return isMac() ? 'Command' : 'Ctrl'
+}

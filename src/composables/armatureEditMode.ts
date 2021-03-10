@@ -42,6 +42,7 @@ import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { mapReduce } from '/@/utils/commons'
 import { snapGrid, snapRotate, snapScale } from '/@/utils/geometry'
+import { getCtrlOrMetaStr } from '/@/utils/devices'
 
 interface State {
   command: EditMode
@@ -276,7 +277,7 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
   }
 
   const availableCommandList = computed(() => {
-    const ctrl = { command: 'Ctrl', title: 'Snap' }
+    const ctrl = { command: getCtrlOrMetaStr(), title: 'Snap' }
 
     if (state.command === 'grab' || state.command === 'scale') {
       return [

@@ -39,24 +39,26 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <g :transform="`translate(0, ${-scrollY})`">
           <g v-for="k in keyframes" :key="k.id">
-            <rect
-              :y="boneRowMap[k.boneId] - 3"
-              :width="
-                (getSameRangeFrame(k.boneId, k.frame) * frameWidth) / scale
-              "
-              height="6"
-              fill="#aaa"
-              fill-opacity="0.5"
-            />
-            <circle
-              v-if="boneRowMap[k.boneId] > scrollY + headerHeight / 2"
-              :cy="boneRowMap[k.boneId]"
-              r="5"
-              stroke="#000"
-              :fill="selectedKeyframeMap[k.id] ? selectedColor : '#fff'"
-              @click.left.exact="select(k.id)"
-              @click.left.shift.exact="shiftSelect(k.id)"
-            />
+            <template v-if="boneRowMap[k.boneId] > scrollY + headerHeight / 2">
+              <rect
+                :y="boneRowMap[k.boneId] - 3"
+                :width="
+                  (getSameRangeFrame(k.boneId, k.frame) * frameWidth) / scale
+                "
+                height="6"
+                fill="#aaa"
+                fill-opacity="0.5"
+                class="view-only"
+              />
+              <circle
+                :cy="boneRowMap[k.boneId]"
+                r="5"
+                stroke="#000"
+                :fill="selectedKeyframeMap[k.id] ? selectedColor : '#fff'"
+                @click.left.exact="select(k.id)"
+                @click.left.shift.exact="shiftSelect(k.id)"
+              />
+            </template>
           </g>
         </g>
       </g>
@@ -188,3 +190,9 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.view-only {
+  pointer-events: none;
+}
+</style>

@@ -46,7 +46,7 @@ import { computed, ComputedRef, defineComponent, inject, PropType } from 'vue'
 import { ElementNode } from '/@/models'
 
 function shouldHide(tag: string): boolean {
-  return /defs|metadata|namedview/.test(tag)
+  return /defs|metadata|namedview|script|style|tspan/.test(tag)
 }
 
 export default defineComponent({

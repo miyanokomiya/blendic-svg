@@ -1,7 +1,8 @@
 ![CI](https://github.com/miyanokomiya/blendic-svg/workflows/CI/badge.svg)
 
-# Blendic SVG
-wip
+# Blendic SVG (wip)
+
+SVG Animation Editor for Web
 
 ## Early demo
 https://miyanokomiya.github.io/blendic-svg/

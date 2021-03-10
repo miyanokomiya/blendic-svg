@@ -445,9 +445,9 @@ function resolveBonePose(
 }
 
 export function extendTransform(parent: Bone, child: Bone): Bone {
-  const childPosedHead = add(child.head, child.transform.translate)
-  const appliedChildHead = applyPosedTransformToPoint(parent, child.head)
-  const headDiff = sub(appliedChildHead, childPosedHead)
+  const posedHead = add(child.head, child.transform.translate)
+  const extendedPosedHead = applyPosedTransformToPoint(parent, posedHead)
+  const headDiff = sub(extendedPosedHead, posedHead)
 
   return {
     ...child,

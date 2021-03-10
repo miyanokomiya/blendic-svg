@@ -420,35 +420,69 @@ describe('utils/armatures', () => {
   })
 
   describe('extendTransform', () => {
-    it('scale', () => {
-      expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())
-      expect(
-        target.extendTransform(
-          getBone({
-            head: { x: 1, y: 1 },
-            tail: { x: 2, y: 1 },
-            transform: getTransform({
-              scale: { x: 2, y: 3 },
+    describe('scale', () => {
+      it('inheritScale: true', () => {
+        expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())
+        expect(
+          target.extendTransform(
+            getBone({
+              head: { x: 1, y: 1 },
+              tail: { x: 2, y: 1 },
+              transform: getTransform({
+                scale: { x: 2, y: 3 },
+              }),
             }),
-          }),
+            getBone({
+              head: { x: 2, y: 3 },
+              transform: getTransform({
+                scale: { x: 2, y: 3 },
+                rotate: 45,
+              }),
+            })
+          )
+        ).toEqual(
           getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
-              scale: { x: 2, y: 3 },
+              translate: { x: 2, y: 2 },
+              scale: { x: 4, y: 9 },
               rotate: 45,
             }),
           })
         )
-      ).toEqual(
-        getBone({
-          head: { x: 2, y: 3 },
-          transform: getTransform({
-            translate: { x: 2, y: 2 },
-            scale: { x: 4, y: 9 },
-            rotate: 45,
-          }),
-        })
-      )
+      })
+      it('inheritScale: false', () => {
+        expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())
+        expect(
+          target.extendTransform(
+            getBone({
+              head: { x: 1, y: 1 },
+              tail: { x: 2, y: 1 },
+              transform: getTransform({
+                scale: { x: 2, y: 3 },
+              }),
+            }),
+            getBone({
+              head: { x: 2, y: 3 },
+              transform: getTransform({
+                scale: { x: 2, y: 3 },
+                rotate: 45,
+              }),
+              inheritScale: false,
+            })
+          )
+        ).toEqual(
+          getBone({
+            head: { x: 2, y: 3 },
+            transform: getTransform({
+              translate: { x: 2, y: 2 },
+              scale: { x: 2, y: 3 },
+              rotate: 45,
+            }),
+            inheritScale: false,
+          })
+        )
+      })
     })
     describe('rotate', () => {
       const parent = getBone({
@@ -464,7 +498,7 @@ describe('utils/armatures', () => {
           rotate: 45,
         }),
       })
-      it('rotate', () => {
+      it('inheritRotation: true', () => {
         expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())
         expect(target.extendTransform(parent, child)).toEqual(
           getBone({

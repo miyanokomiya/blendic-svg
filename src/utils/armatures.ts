@@ -456,10 +456,12 @@ export function extendTransform(parent: Bone, child: Bone): Bone {
       rotate: child.inheritRotation
         ? child.transform.rotate + parent.transform.rotate
         : child.transform.rotate,
-      scale: {
-        x: child.transform.scale.x * parent.transform.scale.x,
-        y: child.transform.scale.y * parent.transform.scale.y,
-      },
+      scale: child.inheritScale
+        ? {
+            x: child.transform.scale.x * parent.transform.scale.x,
+            y: child.transform.scale.y * parent.transform.scale.y,
+          }
+        : child.transform.scale,
       origin: { x: 0, y: 0 },
     },
   }

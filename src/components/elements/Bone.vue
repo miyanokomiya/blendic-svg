@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     stroke="black"
     :fill="fill"
     :opacity="adjustedOpacity"
-    :stroke-width="Math.min(2 * scale, 2)"
+    :stroke-width="1.2 * Math.min(scale, 1)"
   >
     <g
       stroke-linejoin="bevel"
@@ -85,12 +85,12 @@ function d1(head: IVec2, tail: IVec2, scaleX: number, invert = false): IVec2 {
   const origin = add(head, v)
   return add(
     origin,
-    multi(rotate(v, (Math.PI / 2) * (invert ? -1 : 1)), scaleX)
+    multi(rotate(multi(v, 0.6), (Math.PI / 2) * (invert ? -1 : 1)), scaleX)
   )
 }
 
 function getCircleR(head: IVec2, tail: IVec2): number {
-  return getDistance(head, tail) * 0.04
+  return getDistance(head, tail) * 0.05
 }
 
 export default defineComponent({

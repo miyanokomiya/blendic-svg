@@ -49,6 +49,9 @@ Copyright (C) 2021, Tomoya Komiyama.
       <div class="field">
         <CheckboxInput v-model="inheritRotation" label="Inherit Rotation" />
       </div>
+      <div class="field">
+        <CheckboxInput v-model="inheritScale" label="Inherit Scale" />
+      </div>
       <div class="field inline">
         <label>Constraints</label>
         <SelectButton
@@ -244,6 +247,14 @@ export default defineComponent({
         },
         set(val: boolean) {
           store.updateBone({ inheritRotation: val })
+        },
+      }),
+      inheritScale: computed({
+        get(): boolean {
+          return lastSelectedBone.value?.inheritScale ?? false
+        },
+        set(val: boolean) {
+          store.updateBone({ inheritScale: val })
         },
       }),
       parentId: computed({

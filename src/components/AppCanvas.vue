@@ -131,6 +131,7 @@ import { useWindow } from '../composables/window'
 import { useAnimationStore } from '../store/animation'
 import { useSettings } from '/@/composables/settings'
 import { centerizeView, useCanvas } from '../composables/canvas'
+import { isCtrlOrMeta } from '/@/utils/devices'
 
 type KeyType =
   | 'g'
@@ -309,7 +310,7 @@ export default defineComponent({
           canvasStore.mousemove({
             current: canvas.viewToCanvas(canvas.mousePoint.value),
             start: canvas.viewToCanvas(canvas.editStartPoint.value),
-            ctrl: e.ctrlKey,
+            ctrl: isCtrlOrMeta(e),
             scale: canvas.scale.value,
           })
         }

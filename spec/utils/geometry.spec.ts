@@ -21,6 +21,7 @@ import { getBone, getTransform, scaleRate } from '/@/models'
 import {
   getBoneBodyRotation,
   getBoneWorldRotation,
+  getContinuousRadDiff,
   getGridSize,
   getNormalRectangle,
   isSameTransform,
@@ -41,6 +42,33 @@ describe('src/utils/geometry.ts', () => {
       [-Math.PI * 1.5, Math.PI * 0.5],
     ])('normalizeRad(%s) => %s', (a, expected) => {
       expect(normalizeRad(a)).toBeCloseTo(expected)
+    })
+  })
+
+  describe('getContinuousRadDiff', () => {
+    it.each([
+      [-45, 45, 90],
+      [0, 90, 90],
+      [45, 135, 90],
+      [90, 180, 90],
+      [135, 225, 90],
+      [180, 270, 90],
+    ])('%s, %s => %s', (a, b, expected) => {
+      expect(
+        getContinuousRadDiff((a / 180) * Math.PI, (b / 180) * Math.PI)
+      ).toBeCloseTo((expected / 180) * Math.PI)
+    })
+    it.each([
+      [45, -45, -90],
+      [0, -90, -90],
+      [-45, -135, -90],
+      [-90, -180, -90],
+      [-135, -225, -90],
+      [-180, -270, -90],
+    ])('%s, %s => %s', (a, b, expected) => {
+      expect(
+        getContinuousRadDiff((a / 180) * Math.PI, (b / 180) * Math.PI)
+      ).toBeCloseTo((expected / 180) * Math.PI)
     })
   })
 

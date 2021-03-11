@@ -27,6 +27,37 @@ export function normalizeRad(rad: number): number {
   else return rad
 }
 
+function getContinuousRad(
+  normalizedCurrentRad: number,
+  normalizedNextRad: number
+): number {
+  if (
+    normalizedCurrentRad >= Math.PI / 2 &&
+    normalizedNextRad <= -Math.PI / 2
+  ) {
+    return normalizedNextRad + Math.PI * 2
+  } else if (
+    normalizedCurrentRad <= -Math.PI / 2 &&
+    normalizedNextRad >= Math.PI / 2
+  ) {
+    return normalizedNextRad - Math.PI * 2
+  } else {
+    return normalizedNextRad
+  }
+}
+
+export function getContinuousRadDiff(
+  currentRad: number,
+  nextRad: number
+): number {
+  const normalizedCurrentRad = normalizeRad(currentRad)
+  const normalizedNextRad = normalizeRad(nextRad)
+  return (
+    getContinuousRad(normalizedCurrentRad, normalizedNextRad) -
+    normalizedCurrentRad
+  )
+}
+
 export function isSameTransform(a: Transform, b: Transform): boolean {
   if (!isSame(a.translate, b.translate)) return false
   if (!isSame(a.scale, b.scale)) return false

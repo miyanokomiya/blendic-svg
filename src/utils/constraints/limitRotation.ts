@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { Bone, IdMap, SpaceType } from '/@/models'
+import { getBoneBodyRotation, getBoneWorldRotation } from '/@/utils/geometry'
 
 export interface Option {
   spaceType: SpaceType
@@ -36,6 +37,7 @@ export function apply(
   if (!b) return boneMap
 
   if (option.spaceType === 'world') {
+    const bodyRotation = getBoneBodyRotation(b)
     return {
       ...boneMap,
       [boneId]: {
@@ -43,8 +45,8 @@ export function apply(
         transform: {
           ...b.transform,
           rotate: limitRotation(
-            option.min,
-            option.max,
+            option.min - bodyRotation,
+            option.max - bodyRotation,
             option.influence,
             b.transform.rotate
           ),

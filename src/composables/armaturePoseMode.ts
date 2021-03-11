@@ -17,16 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive, computed, ref } from 'vue'
-import {
-  getDistance,
-  getRadian,
-  IRectangle,
-  IVec2,
-  multi,
-  rotate,
-  sub,
-} from 'okageo'
+import { reactive, computed } from 'vue'
+import { getDistance, getRadian, IRectangle, IVec2, multi, sub } from 'okageo'
 import {
   Transform,
   getTransform,
@@ -41,10 +33,10 @@ import { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '../store/animation'
 import { mapReduce } from '../utils/commons'
 import {
-  applyScale,
+  applyTransform,
   convolutePoseTransforms,
   getTransformedBoneMap,
-  invertScaleOrZero,
+  invertPoseTransform,
   selectBoneInRect,
 } from '../utils/armatures'
 import {
@@ -118,9 +110,12 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     const bone = animationStore.currentPosedBones.value[boneId]
     const parent = animationStore.currentPosedBones.value[bone.parentId]
     if (parent) {
-      return rotate(
-        applyScale(vec, invertScaleOrZero(parent.transform.scale)),
-        (-parent.transform.rotate / 180) * Math.PI
+      return applyTransform(
+        vec,
+        invertPoseTransform({
+          ...parent.transform,
+          translate: { x: 0, y: 0 },
+        })
       )
     } else {
       return vec

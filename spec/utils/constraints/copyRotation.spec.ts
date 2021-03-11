@@ -57,13 +57,13 @@ describe('utils/copyRotation.ts', () => {
       }),
       parent,
     }
+
     describe('target: world, owner: world', () => {
       it('copy rotation', () => {
         const ret = apply(
           'b',
           getOption({
             targetId: 'a',
-            influence: 0.5,
           }),
           localMap,
           boneMap
@@ -78,13 +78,54 @@ describe('utils/copyRotation.ts', () => {
         )
       })
     })
-    describe('target: world, owner: local', () => {
+    describe('target: world, owner: world, invert: true', () => {
+      it('copy rotation', () => {
+        const ret = apply(
+          'b',
+          getOption({
+            targetId: 'a',
+            invert: true,
+          }),
+          localMap,
+          boneMap
+        )
+        expect(ret.b).toEqual(
+          getBone({
+            id: 'b',
+            tail: { x: 0, y: 1 },
+            transform: getTransform({ rotate: -315 }),
+            parentId: 'parent',
+          })
+        )
+      })
+    })
+    describe('target: world, owner: world, influence: 0.5', () => {
       it('copy rotation', () => {
         const ret = apply(
           'b',
           getOption({
             targetId: 'a',
             influence: 0.5,
+          }),
+          localMap,
+          boneMap
+        )
+        expect(ret.b).toEqual(
+          getBone({
+            id: 'b',
+            tail: { x: 0, y: 1 },
+            transform: getTransform({ rotate: 225 / 2 - 90 }),
+            parentId: 'parent',
+          })
+        )
+      })
+    })
+    describe('target: world, owner: local', () => {
+      it('copy rotation', () => {
+        const ret = apply(
+          'b',
+          getOption({
+            targetId: 'a',
             ownerSpaceType: 'local',
           }),
           localMap,
@@ -104,7 +145,6 @@ describe('utils/copyRotation.ts', () => {
           'b',
           getOption({
             targetId: 'a',
-            influence: 0.5,
             ownerSpaceType: 'local',
           }),
           localMap,
@@ -127,7 +167,6 @@ describe('utils/copyRotation.ts', () => {
           'b',
           getOption({
             targetId: 'a',
-            influence: 0.5,
             targetSpaceType: 'local',
           }),
           localMap,
@@ -149,7 +188,6 @@ describe('utils/copyRotation.ts', () => {
           'b',
           getOption({
             targetId: 'a',
-            influence: 0.5,
             targetSpaceType: 'local',
             ownerSpaceType: 'local',
           }),

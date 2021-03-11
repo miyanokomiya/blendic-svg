@@ -44,9 +44,10 @@ export function apply(
     : 0
 
   const targetRotate =
-    option.targetSpaceType === 'world'
+    (option.targetSpaceType === 'world'
       ? getBoneWorldRotation(target)
-      : localMap[option.targetId]?.transform?.rotate ?? 0
+      : localMap[option.targetId]?.transform?.rotate ?? 0) *
+    (option.invert ? -option.influence : option.influence)
 
   return {
     ...boneMap,

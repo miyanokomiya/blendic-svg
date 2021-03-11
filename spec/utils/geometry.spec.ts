@@ -17,8 +17,10 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getTransform, scaleRate } from '/@/models'
+import { getBone, getTransform, scaleRate } from '/@/models'
 import {
+  getBoneBodyRotation,
+  getBoneWorldRotation,
   getGridSize,
   getNormalRectangle,
   isSameTransform,
@@ -184,6 +186,38 @@ describe('src/utils/geometry.ts', () => {
         width: 1,
         height: 2,
       })
+    })
+  })
+
+  describe('getBoneBodyRotation', () => {
+    it('get bone body rotation', () => {
+      expect(
+        getBoneBodyRotation(
+          getBone({
+            head: { x: 0, y: 1 },
+            tail: { x: 1, y: 2 },
+            transform: getTransform({
+              rotate: 10,
+            }),
+          })
+        )
+      ).toBeCloseTo(45)
+    })
+  })
+
+  describe('getBoneWorldRotation', () => {
+    it('get bone world rotation', () => {
+      expect(
+        getBoneWorldRotation(
+          getBone({
+            head: { x: 0, y: 1 },
+            tail: { x: 1, y: 2 },
+            transform: getTransform({
+              rotate: 10,
+            }),
+          })
+        )
+      ).toBeCloseTo(55)
     })
   })
 })

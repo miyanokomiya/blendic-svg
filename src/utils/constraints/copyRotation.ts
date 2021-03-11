@@ -17,7 +17,9 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { getRadian } from 'okageo'
 import { Bone, IdMap, SpaceType } from '/@/models'
+import { getBoneBodyRotation, getBoneWorldRotation } from '/@/utils/geometry'
 
 export interface Option {
   targetSpaceType: SpaceType
@@ -43,7 +45,7 @@ export function apply(
 
   const targetRotate =
     option.targetSpaceType === 'world'
-      ? target.transform.rotate
+      ? getBoneWorldRotation(target)
       : localMap[option.targetId]?.transform?.rotate ?? 0
 
   return {
@@ -54,7 +56,7 @@ export function apply(
         ...b.transform,
         rotate:
           option.ownerSpaceType === 'world'
-            ? targetRotate
+            ? targetRotate - getBoneBodyRotation(b)
             : targetRotate + parentRotate,
       },
     },

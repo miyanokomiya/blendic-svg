@@ -34,10 +34,12 @@ describe('utils/copyRotation.ts', () => {
     const boneMap = {
       a: getBone({
         id: 'a',
+        tail: { x: 1, y: 1 },
         transform: getTransform({ rotate: 180 }),
       }),
       b: getBone({
         id: 'b',
+        tail: { x: 0, y: 1 },
         transform: getTransform({ rotate: 10 }),
         parentId: 'parent',
       }),
@@ -57,135 +59,111 @@ describe('utils/copyRotation.ts', () => {
     }
     describe('target: world, owner: world', () => {
       it('copy rotation', () => {
-        expect(
-          apply(
-            'b',
-            getOption({
-              targetId: 'a',
-              influence: 0.5,
-            }),
-            localMap,
-            boneMap
-          )
-        ).toEqual({
-          a: getBone({
-            id: 'a',
-            transform: getTransform({ rotate: 180 }),
+        const ret = apply(
+          'b',
+          getOption({
+            targetId: 'a',
+            influence: 0.5,
           }),
-          b: getBone({
+          localMap,
+          boneMap
+        )
+        expect(ret.b).toEqual(
+          getBone({
             id: 'b',
-            transform: getTransform({ rotate: 180 }),
+            tail: { x: 0, y: 1 },
+            transform: getTransform({ rotate: 135 }),
             parentId: 'parent',
-          }),
-          parent,
-        })
+          })
+        )
       })
     })
     describe('target: world, owner: local', () => {
       it('copy rotation', () => {
-        expect(
-          apply(
-            'b',
-            getOption({
-              targetId: 'a',
-              influence: 0.5,
-              ownerSpaceType: 'local',
-            }),
-            localMap,
-            boneMap
-          )
-        ).toEqual({
-          a: getBone({
-            id: 'a',
-            transform: getTransform({ rotate: 180 }),
+        const ret = apply(
+          'b',
+          getOption({
+            targetId: 'a',
+            influence: 0.5,
+            ownerSpaceType: 'local',
           }),
-          b: getBone({
+          localMap,
+          boneMap
+        )
+        expect(ret.b).toEqual(
+          getBone({
             id: 'b',
-            transform: getTransform({ rotate: 190 }),
+            tail: { x: 0, y: 1 },
+            transform: getTransform({ rotate: 235 }),
             parentId: 'parent',
-          }),
-          parent,
-        })
+          })
+        )
       })
       it('inheritRotation: false', () => {
-        expect(
-          apply(
-            'b',
-            getOption({
-              targetId: 'a',
-              influence: 0.5,
-            }),
-            localMap,
-            { ...boneMap, b: { ...boneMap.b, inheritRotation: false } }
-          )
-        ).toEqual({
-          a: getBone({
-            id: 'a',
-            transform: getTransform({ rotate: 180 }),
+        const ret = apply(
+          'b',
+          getOption({
+            targetId: 'a',
+            influence: 0.5,
+            ownerSpaceType: 'local',
           }),
-          b: getBone({
+          localMap,
+          { ...boneMap, b: { ...boneMap.b, inheritRotation: false } }
+        )
+        expect(ret.b).toEqual(
+          getBone({
             id: 'b',
-            transform: getTransform({ rotate: 180 }),
+            tail: { x: 0, y: 1 },
+            transform: getTransform({ rotate: 225 }),
             parentId: 'parent',
             inheritRotation: false,
-          }),
-          parent,
-        })
+          })
+        )
       })
     })
     describe('target: local, owner: world', () => {
       it('copy rotation', () => {
-        expect(
-          apply(
-            'b',
-            getOption({
-              targetId: 'a',
-              influence: 0.5,
-              targetSpaceType: 'local',
-            }),
-            localMap,
-            boneMap
-          )
-        ).toEqual({
-          a: getBone({
-            id: 'a',
-            transform: getTransform({ rotate: 180 }),
+        const ret = apply(
+          'b',
+          getOption({
+            targetId: 'a',
+            influence: 0.5,
+            targetSpaceType: 'local',
           }),
-          b: getBone({
+          localMap,
+          boneMap
+        )
+        expect(ret.b).toEqual(
+          getBone({
             id: 'b',
-            transform: getTransform({ rotate: 90 }),
+            tail: { x: 0, y: 1 },
+            transform: getTransform({ rotate: 0 }),
             parentId: 'parent',
-          }),
-          parent,
-        })
+          })
+        )
       })
     })
     describe('target: local, owner: local', () => {
       it('copy rotation', () => {
-        expect(
-          apply(
-            'b',
-            getOption({
-              targetId: 'a',
-              influence: 0.5,
-              targetSpaceType: 'local',
-              ownerSpaceType: 'local',
-            }),
-            localMap,
-            boneMap
-          )
-        ).toEqual({
-          a: getBone({
-            id: 'a',
-            transform: getTransform({ rotate: 180 }),
+        const ret = apply(
+          'b',
+          getOption({
+            targetId: 'a',
+            influence: 0.5,
+            targetSpaceType: 'local',
+            ownerSpaceType: 'local',
           }),
-          b: getBone({
+          localMap,
+          boneMap
+        )
+        expect(ret.b).toEqual(
+          getBone({
             id: 'b',
+            tail: { x: 0, y: 1 },
             transform: getTransform({ rotate: 100 }),
             parentId: 'parent',
-          }),
-          parent,
-        })
+          })
+        )
       })
     })
   })

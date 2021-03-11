@@ -30,7 +30,8 @@ describe('utils/limitRotation.ts', () => {
     describe('world space', () => {
       const boneMap = {
         a: getBone({
-          transform: getTransform({ rotate: 180 }),
+          tail: { x: 1, y: 1 },
+          transform: getTransform({ rotate: 135 }),
         }),
       }
       it('limit rotation max', () => {
@@ -47,7 +48,8 @@ describe('utils/limitRotation.ts', () => {
           )
         ).toEqual({
           a: getBone({
-            transform: getTransform({ rotate: 135 }),
+            tail: { x: 1, y: 1 },
+            transform: getTransform({ rotate: 90 }),
           }),
         })
       })
@@ -65,7 +67,8 @@ describe('utils/limitRotation.ts', () => {
           )
         ).toEqual({
           a: getBone({
-            transform: getTransform({ rotate: 270 }),
+            tail: { x: 1, y: 1 },
+            transform: getTransform({ rotate: 225 }),
           }),
         })
       })
@@ -80,6 +83,7 @@ describe('utils/limitRotation.ts', () => {
       const boneMap = {
         a: getBone({
           parentId: 'b',
+          tail: { x: 0, y: 1 },
           transform: getTransform({ rotate: 180 }),
         }),
         b: getBone({
@@ -103,6 +107,7 @@ describe('utils/limitRotation.ts', () => {
           ...boneMap,
           a: getBone({
             parentId: 'b',
+            tail: { x: 0, y: 1 },
             transform: getTransform({ rotate: 225 }),
           }),
         })

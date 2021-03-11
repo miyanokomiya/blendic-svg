@@ -17,8 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IRectangle, isSame, IVec2 } from 'okageo'
-import { scaleRate, Transform } from '/@/models'
+import { getRadian, IRectangle, isSame, IVec2 } from 'okageo'
+import { Bone, scaleRate, Transform } from '/@/models'
 
 // normalize in (-pi <= r <= pi)
 export function normalizeRad(rad: number): number {
@@ -75,4 +75,12 @@ export function getNormalRectangle(rect: IRectangle): IRectangle {
     width: Math.abs(rect.width),
     height: Math.abs(rect.height),
   }
+}
+
+export function getBoneBodyRotation(bone: Bone): number {
+  return (getRadian(bone.tail, bone.head) / Math.PI) * 180
+}
+
+export function getBoneWorldRotation(bone: Bone): number {
+  return bone.transform.rotate + getBoneBodyRotation(bone)
 }

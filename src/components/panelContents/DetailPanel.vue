@@ -77,6 +77,13 @@ Copyright (C) 2021, Tomoya Komiyama.
             @update:modelValue="(option) => updateConstraint(i, option)"
           />
         </template>
+        <template v-else-if="c.name === 'COPY_ROTATION'">
+          <CopyRotationOptionField
+            :model-value="c.option"
+            :bone-options="otherBoneOptions"
+            @update:modelValue="(option) => updateConstraint(i, option)"
+          />
+        </template>
         <div class="constraint-buttons">
           <button :disabled="i === 0" type="button" @click="upConstraint(i)">
             <UpIcon class="icon" />
@@ -112,6 +119,7 @@ import {
 } from '/@/utils/constraints'
 import IKOptionField from '/@/components/molecules/constraints/IKOptionField.vue'
 import LimitRotationOptionField from '/@/components/molecules/constraints/LimitRotationOptionField.vue'
+import CopyRotationOptionField from '/@/components/molecules/constraints/CopyRotationOptionField.vue'
 import UpIcon from '/@/components/atoms/UpIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
@@ -123,6 +131,7 @@ export default defineComponent({
     CheckboxInput,
     IKOptionField,
     LimitRotationOptionField,
+    CopyRotationOptionField,
     UpIcon,
     DeleteIcon,
   },
@@ -224,6 +233,7 @@ export default defineComponent({
       return [
         { value: 'IK', label: 'IK' },
         { value: 'LIMIT_ROTATION', label: 'Limit Rotation' },
+        { value: 'COPY_ROTATION', label: 'Copy Rotation' },
       ]
     })
 

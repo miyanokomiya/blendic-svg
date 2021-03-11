@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive, computed } from 'vue'
+import { reactive, computed, ref } from 'vue'
 import {
   getDistance,
   getRadian,
@@ -48,7 +48,7 @@ import {
   selectBoneInRect,
 } from '../utils/armatures'
 import {
-  normalizeRad,
+  getContinuousRadDiff,
   snapGrid,
   snapRotate,
   snapScale,
@@ -59,6 +59,8 @@ interface State {
   command: EditMode
   editMovement: EditMovement | undefined
   clipboard: IdMap<Transform>
+  currentRad: number
+  currentTotalRad: number
 }
 
 export interface BonePoseMode extends CanvasEditModeBase {}
@@ -68,6 +70,10 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     command: '',
     editMovement: undefined,
     clipboard: {},
+
+    // to rotate continously
+    currentRad: 0,
+    currentTotalRad: 0,
   })
 
   const store = useStore()
@@ -80,6 +86,8 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
   function cancel() {
     state.command = ''
     state.editMovement = undefined
+    state.currentRad = 0
+    state.currentTotalRad = 0
   }
 
   function clickAny() {
@@ -133,7 +141,14 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
       const rad =
         getRadian(editMovement.current, origin) -
         getRadian(editMovement.start, origin)
-      const rotate = (normalizeRad(rad) / Math.PI) * 180
+
+      const continuousRad =
+        state.currentTotalRad + getContinuousRadDiff(state.currentRad, rad)
+      const rotate = (continuousRad / Math.PI) * 180
+
+      state.currentRad = rad
+      state.currentTotalRad = continuousRad
+
       const snappedRotate = editMovement.ctrl ? snapRotate(rotate) : rotate
 
       return Object.keys(animationStore.selectedBones.value).reduce<
@@ -192,6 +207,8 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     animationStore.applyEditedTransforms(editTransforms.value)
     state.editMovement = undefined
     state.command = ''
+    state.currentRad = 0
+    state.currentTotalRad = 0
   }
 
   function select(id: string, selectedState: BoneSelectedState) {

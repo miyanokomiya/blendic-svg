@@ -19,14 +19,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import * as ik from './ik'
 import * as limitRotation from './limitRotation'
+import * as copyRotation from './copyRotation'
 import { Bone, IdMap, toMap } from '/@/models'
 import { dropMap, dropMapIfFalse, mapReduce, sumReduce } from '/@/utils/commons'
 
-export type BoneConstraintName = 'IK' | 'LIMIT_ROTATION'
+export type BoneConstraintName = 'IK' | 'LIMIT_ROTATION' | 'COPY_ROTATION'
 
 export interface BoneConstraintOptions {
   IK: ik.Option
   LIMIT_ROTATION: limitRotation.Option
+  COPY_ROTATION: copyRotation.Option
 }
 
 interface _BoneConstraint<N extends BoneConstraintName> {
@@ -54,6 +56,8 @@ function getConstraintModule(name: BoneConstraintName): BoneConstraintModule {
       return ik
     case 'LIMIT_ROTATION':
       return limitRotation
+    case 'COPY_ROTATION':
+      return copyRotation
   }
 }
 

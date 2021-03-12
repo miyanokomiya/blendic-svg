@@ -441,6 +441,7 @@ export function extendTransform(parent: Bone, child: Bone): Bone {
 function flatBoneTree(children: BoneNode[]): Bone[] {
   return children
     .map((b) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { children, ...bone } = b
       return bone
     })
@@ -478,6 +479,7 @@ function filterPoseSelectedBone(
 ): Bone[] {
   return boneTree.flatMap((node) => {
     if (isBoneSelected(selectedState[node.id])) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { children, ...bone } = node
       return [bone]
     } else {

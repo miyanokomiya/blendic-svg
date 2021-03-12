@@ -25,8 +25,8 @@ import {
   getBone,
   getKeyframe,
 } from '/@/models'
-import { initialize, StrageRoot } from '/@/models/strage'
-import { getConstraintByName, getOptionByName } from '/@/utils/constraints'
+import { initialize } from '/@/models/strage'
+import { getConstraintByName } from '/@/utils/constraints'
 
 describe('src/models/strage.ts', () => {
   describe('initialize', () => {

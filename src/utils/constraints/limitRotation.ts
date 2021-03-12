@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { Bone, IdMap, SpaceType } from '/@/models'
-import { getBoneBodyRotation, getBoneWorldRotation } from '/@/utils/geometry'
+import { getBoneBodyRotation } from '/@/utils/geometry'
 
 export interface Option {
   spaceType: SpaceType

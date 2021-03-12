@@ -19,6 +19,6 @@ module.exports = {
   plugins: ['vue', '@typescript-eslint'],
   rules: {
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error'],
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
   },
 }

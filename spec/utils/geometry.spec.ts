@@ -19,11 +19,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { getBone, getTransform, scaleRate } from '/@/models'
 import {
+  applyScale,
+  applyTransform,
+  applyTransformToVec,
   getBoneBodyRotation,
   getBoneWorldRotation,
   getContinuousRadDiff,
   getGridSize,
   getNormalRectangle,
+  invertScaleOrZero,
   isSameTransform,
   normalizeRad,
   snapGrid,
@@ -246,6 +250,60 @@ describe('src/utils/geometry.ts', () => {
           })
         )
       ).toBeCloseTo(55)
+    })
+  })
+
+  describe('applyScale', () => {
+    it('apply scale x and y', () => {
+      expect(applyScale({ x: 10, y: 2 }, { x: -2, y: 3 })).toEqual({
+        x: -20,
+        y: 6,
+      })
+    })
+  })
+
+  describe('invertScaleOrZero', () => {
+    it('return zero vector if scale is zero', () => {
+      expect(invertScaleOrZero({ x: 0, y: 0 })).toEqual({
+        x: 0,
+        y: 0,
+      })
+    })
+    it('return inverted each axis vector if scale is not zero', () => {
+      expect(invertScaleOrZero({ x: 2, y: 3 })).toEqual({
+        x: 1 / 2,
+        y: 1 / 3,
+      })
+    })
+  })
+
+  describe('applyTransform', () => {
+    it('apply scale -> rotate -> translate', () => {
+      const ret = applyTransform(
+        { x: 1, y: 0 },
+        getTransform({
+          rotate: 90,
+          scale: { x: 2, y: 1 },
+          translate: { x: 1, y: 2 },
+        })
+      )
+      expect(ret.x).toBeCloseTo(1)
+      expect(ret.y).toBeCloseTo(4)
+    })
+  })
+
+  describe('applyTransformToVec', () => {
+    it('apply scale -> rotate', () => {
+      const ret = applyTransformToVec(
+        { x: 1, y: 0 },
+        getTransform({
+          rotate: 90,
+          scale: { x: 2, y: 1 },
+          translate: { x: 1, y: 2 },
+        })
+      )
+      expect(ret.x).toBeCloseTo(0)
+      expect(ret.y).toBeCloseTo(2)
     })
   })
 })

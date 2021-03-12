@@ -32,8 +32,8 @@ import {
 import { useAnimationStore } from '../store/animation'
 import { mapReduce, toList } from '../utils/commons'
 import { getFrameX, getNearestFrameAtPoint } from '../utils/animations'
-import { applyTransform } from '../utils/armatures'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
+import { applyTransform } from '/@/utils/geometry'
 
 interface State {
   command: EditMode

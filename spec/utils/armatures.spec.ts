@@ -21,21 +21,6 @@ import * as target from '../../src/utils/armatures'
 import { getArmature, getBone, getTransform } from '../../src/models/index'
 
 describe('utils/armatures', () => {
-  describe('invertScaleOrZero', () => {
-    it('return zero vector if scale is zero', () => {
-      expect(target.invertScaleOrZero({ x: 0, y: 0 })).toEqual({
-        x: 0,
-        y: 0,
-      })
-    })
-    it('return inverted each axis vector if scale is not zero', () => {
-      expect(target.invertScaleOrZero({ x: 2, y: 3 })).toEqual({
-        x: 1 / 2,
-        y: 1 / 3,
-      })
-    })
-  })
-
   describe('invertPoseTransform', () => {
     it('invert pose transform', () => {
       expect(
@@ -70,15 +55,6 @@ describe('utils/armatures', () => {
           rotate: -45,
         })
       )
-    })
-  })
-
-  describe('applyScale', () => {
-    it('apply scale x and y', () => {
-      expect(target.applyScale({ x: 10, y: 2 }, { x: -2, y: 3 })).toEqual({
-        x: -20,
-        y: 6,
-      })
     })
   })
 

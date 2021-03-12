@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getRadian, IRectangle, isSame, IVec2 } from 'okageo'
+import { add, getRadian, IRectangle, isSame, IVec2, rotate } from 'okageo'
 import { Bone, scaleRate, Transform } from '/@/models'
 
 // normalize in (-pi <= r <= pi)
@@ -114,4 +114,40 @@ export function getBoneBodyRotation(bone: Bone): number {
 
 export function getBoneWorldRotation(bone: Bone): number {
   return bone.transform.rotate + getBoneBodyRotation(bone)
+}
+
+export function applyScale(
+  p: IVec2,
+  scale: IVec2,
+  origin: IVec2 = { x: 0, y: 0 }
+): IVec2 {
+  return {
+    x: origin.x + (p.x - origin.x) * scale.x,
+    y: origin.y + (p.y - origin.y) * scale.y,
+  }
+}
+
+export function invertScaleOrZero(scale: IVec2): IVec2 {
+  return {
+    x: scale.x === 0 ? 0 : 1 / scale.x,
+    y: scale.y === 0 ? 0 : 1 / scale.y,
+  }
+}
+
+export function applyTransform(p: IVec2, transform: Transform): IVec2 {
+  return add(
+    rotate(
+      applyScale(p, transform.scale, transform.origin),
+      (transform.rotate / 180) * Math.PI,
+      transform.origin
+    ),
+    transform.translate
+  )
+}
+
+export function applyTransformToVec(vec: IVec2, transform: Transform): IVec2 {
+  return applyTransform(vec, {
+    ...transform,
+    translate: { x: 0, y: 0 },
+  })
 }

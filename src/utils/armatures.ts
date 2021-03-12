@@ -43,7 +43,6 @@ import {
   IVec2,
   multi,
   multiAffines,
-  rotate,
   sub,
 } from 'okageo'
 import {
@@ -62,6 +61,7 @@ import {
   immigrateConstraints,
   sortBoneByHighDependency,
 } from '/@/utils/constraints'
+import { applyTransform, invertScaleOrZero } from '/@/utils/geometry'
 
 export function boneToAffine(bone: Bone): AffineMatrix {
   const origin = bone.head
@@ -90,13 +90,6 @@ export function multiPoseTransform(a: Transform, b: Transform): Transform {
   })
 }
 
-export function invertScaleOrZero(scale: IVec2): IVec2 {
-  return {
-    x: scale.x === 0 ? 0 : 1 / scale.x,
-    y: scale.y === 0 ? 0 : 1 / scale.y,
-  }
-}
-
 export function invertPoseTransform(a: Transform): Transform {
   return getTransform({
     scale: invertScaleOrZero(a.scale),
@@ -109,28 +102,6 @@ export function convolutePoseTransforms(transforms: Transform[]): Transform {
   return transforms.reduce((ret, t) => {
     return multiPoseTransform(ret, t)
   }, getTransform())
-}
-
-export function applyScale(
-  p: IVec2,
-  scale: IVec2,
-  origin: IVec2 = { x: 0, y: 0 }
-): IVec2 {
-  return {
-    x: origin.x + (p.x - origin.x) * scale.x,
-    y: origin.y + (p.y - origin.y) * scale.y,
-  }
-}
-
-export function applyTransform(p: IVec2, transform: Transform): IVec2 {
-  return add(
-    rotate(
-      applyScale(p, transform.scale, transform.origin),
-      (transform.rotate / 180) * Math.PI,
-      transform.origin
-    ),
-    transform.translate
-  )
 }
 
 export function editTransform(

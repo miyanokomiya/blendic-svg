@@ -207,7 +207,7 @@ describe('utils/constraints/copyRotation.ts', () => {
   })
 
   describe('immigrate', () => {
-    it('immigrate identically', () => {
+    it('immigrate bone ids', () => {
       expect(immigrate({ a: 'aa', b: 'bb' }, getOption())).toEqual(getOption())
       expect(
         immigrate({ a: 'aa', b: 'bb' }, getOption({ targetId: 'a' }))

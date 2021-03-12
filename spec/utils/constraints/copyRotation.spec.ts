@@ -25,7 +25,7 @@ import {
   immigrate,
 } from '/@/utils/constraints/copyRotation'
 
-describe('utils/copyRotation.ts', () => {
+describe('utils/constraints/copyRotation.ts', () => {
   describe('apply', () => {
     const parent = getBone({
       id: 'parent',
@@ -99,8 +99,8 @@ describe('utils/copyRotation.ts', () => {
         )
       })
     })
-    describe('target: world, owner: world, influence: 0.5', () => {
-      it('copy rotation', () => {
+    describe('influence: 0.5', () => {
+      it('target: world, owner: world', () => {
         const ret = apply(
           'b',
           getOption({
@@ -114,7 +114,7 @@ describe('utils/copyRotation.ts', () => {
           getBone({
             id: 'b',
             tail: { x: 0, y: 1 },
-            transform: getTransform({ rotate: 225 / 2 - 90 }),
+            transform: getTransform({ rotate: 72.5 }),
             parentId: 'parent',
           })
         )
@@ -207,7 +207,7 @@ describe('utils/copyRotation.ts', () => {
   })
 
   describe('immigrate', () => {
-    it('immigrate identically', () => {
+    it('immigrate bone ids', () => {
       expect(immigrate({ a: 'aa', b: 'bb' }, getOption())).toEqual(getOption())
       expect(
         immigrate({ a: 'aa', b: 'bb' }, getOption({ targetId: 'a' }))

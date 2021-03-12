@@ -116,6 +116,10 @@ export function getBoneWorldRotation(bone: Bone): number {
   return bone.transform.rotate + getBoneBodyRotation(bone)
 }
 
+export function getBoneWorldLocation(bone: Bone): IVec2 {
+  return add(bone.head, bone.transform.translate)
+}
+
 export function applyScale(
   p: IVec2,
   scale: IVec2,

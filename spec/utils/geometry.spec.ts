@@ -23,6 +23,7 @@ import {
   applyTransform,
   applyTransformToVec,
   getBoneBodyRotation,
+  getBoneWorldLocation,
   getBoneWorldRotation,
   getContinuousRadDiff,
   getGridSize,
@@ -250,6 +251,21 @@ describe('src/utils/geometry.ts', () => {
           })
         )
       ).toBeCloseTo(55)
+    })
+  })
+
+  describe('getBoneWorldLocation', () => {
+    it('get bone world location', () => {
+      expect(
+        getBoneWorldLocation(
+          getBone({
+            head: { x: 1, y: 2 },
+            transform: getTransform({
+              translate: { x: 10, y: 20 },
+            }),
+          })
+        )
+      ).toEqual({ x: 11, y: 22 })
     })
   })
 

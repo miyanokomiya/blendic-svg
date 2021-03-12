@@ -18,23 +18,19 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div class="ik-option-field">
-    <div class="field">
-      <label>Target</label>
+  <div>
+    <InlineField label="Target" :label-width="labelWidth">
       <SelectField v-model="targetId" :options="boneOptions" />
-    </div>
-    <div class="field">
-      <label>Pole Target</label>
+    </InlineField>
+    <InlineField label="Pole Target" :label-width="labelWidth">
       <SelectField v-model="poleTargetId" :options="boneOptions" />
-    </div>
-    <div class="field">
-      <label>Chain Length</label>
+    </InlineField>
+    <InlineField label="Chain Length" :label-width="labelWidth">
       <NumberInput v-model="chainLength" integer :min="0" />
-    </div>
-    <div class="field">
-      <label>Iterations</label>
+    </InlineField>
+    <InlineField label="Iterations" :label-width="labelWidth">
       <NumberInput v-model="iterations" integer :min="0" :max="500" />
-    </div>
+    </InlineField>
   </div>
 </template>
 
@@ -43,9 +39,10 @@ import { computed, defineComponent, PropType } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import NumberInput from '/@/components/atoms/NumberInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
 
 export default defineComponent({
-  components: { NumberInput, SelectField },
+  components: { NumberInput, SelectField, InlineField },
   props: {
     modelValue: {
       type: Object as PropType<BoneConstraintOptions['IK']>,
@@ -63,6 +60,7 @@ export default defineComponent({
     }
 
     return {
+      labelWidth: '100px',
       targetId: computed({
         get(): string {
           return props.modelValue.targetId
@@ -99,28 +97,3 @@ export default defineComponent({
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.ik-option-field {
-  text-align: left;
-  padding: 8px 0;
-  box-sizing: border-box;
-  .field {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    &:last-child {
-      margin-bottom: 0;
-    }
-    > label {
-      display: block;
-      width: 110px;
-      flex-shrink: 0;
-      & + * {
-        flex: 1;
-        min-width: 0;
-      }
-    }
-  }
-}
-</style>

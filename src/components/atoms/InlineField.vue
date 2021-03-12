@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div class="field inline">
-    <label>{{ label }}</label>
+    <label v-if="label" :style="{ width: labelWidth }">{{ label }}</label>
     <div><slot /></div>
   </div>
 </template>
@@ -31,7 +31,11 @@ export default defineComponent({
   props: {
     label: {
       type: String,
-      required: true,
+      default: '',
+    },
+    labelWidth: {
+      type: String,
+      default: undefined,
     },
   },
 })

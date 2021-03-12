@@ -25,6 +25,22 @@ Copyright (C) 2021, Tomoya Komiyama.
     />
   </InlineField>
   <div v-for="(c, i) in constraints" :key="i" class="constraints-item">
+    <div class="constraint-header">
+      <p class="name">{{ constraintNameMap[c.name] }}</p>
+      <button :disabled="i === 0" type="button" @click="upConstraint(i)">
+        <UpIcon class="icon" />
+      </button>
+      <button
+        :disabled="i === constraints.length - 1"
+        type="button"
+        @click="downConstraint(i)"
+      >
+        <UpIcon class="icon" flipped />
+      </button>
+      <button type="button" @click="deleteConstraint(i)">
+        <DeleteIcon class="icon" />
+      </button>
+    </div>
     <template v-if="c.name === 'IK'">
       <IKOptionField
         :model-value="c.option"
@@ -52,21 +68,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         @update:modelValue="(option) => updateConstraint(i, option)"
       />
     </template>
-    <div class="constraint-buttons">
-      <button :disabled="i === 0" type="button" @click="upConstraint(i)">
-        <UpIcon class="icon" />
-      </button>
-      <button
-        :disabled="i === constraints.length - 1"
-        type="button"
-        @click="downConstraint(i)"
-      >
-        <UpIcon class="icon" flipped />
-      </button>
-      <button type="button" @click="deleteConstraint(i)">
-        <DeleteIcon class="icon" />
-      </button>
-    </div>
   </div>
 </template>
 
@@ -110,15 +111,24 @@ export default defineComponent({
   },
   emits: ['update'],
   setup(props, { emit }) {
+    const constraintNameMap = computed<{ [key in BoneConstraintName]: string }>(
+      () => {
+        return {
+          IK: 'IK',
+          LIMIT_ROTATION: 'Limit Rotation',
+          COPY_LOCATION: 'Copy Location',
+          COPY_ROTATION: 'Copy Rotation',
+        }
+      }
+    )
+
     const constraintOptions = computed<
       { value: BoneConstraintName; label: string }[]
     >(() => {
-      return [
-        { value: 'IK', label: 'IK' },
-        { value: 'LIMIT_ROTATION', label: 'Limit Rotation' },
-        { value: 'COPY_LOCATION', label: 'Copy Location' },
-        { value: 'COPY_ROTATION', label: 'Copy Rotation' },
-      ]
+      return Object.keys(constraintNameMap.value).map((key) => ({
+        value: key as BoneConstraintName,
+        label: constraintNameMap.value[key as BoneConstraintName],
+      }))
     })
 
     function setBoneConstraintName(val: BoneConstraintName) {
@@ -167,6 +177,7 @@ export default defineComponent({
     }
 
     return {
+      constraintNameMap,
       constraintOptions,
       setBoneConstraintName,
       deleteConstraint,
@@ -180,15 +191,17 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .constraints-item {
+  padding-top: 8px;
   width: 100%;
   margin-top: 10px;
   border-top: solid 1px #aaa;
-  .constraint-buttons {
+  .constraint-header {
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     > button {
-      margin-left: 8px;
+      margin-left: 6px;
       border-radius: 8px;
       width: 18px;
       height: 18px;
@@ -198,6 +211,11 @@ export default defineComponent({
       .icon {
         height: 100%;
       }
+    }
+    .name {
+      margin-right: auto;
+      font-size: 14px;
+      font-weight: 600;
     }
   }
 }

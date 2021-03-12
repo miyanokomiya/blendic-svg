@@ -18,43 +18,39 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div class="copy-location-option-field">
-    <div class="field">
-      <label>Target</label>
+  <div>
+    <InlineField label="Target" :label-width="labelWidth">
       <SelectField v-model="targetId" :options="boneOptions" />
-    </div>
-    <div class="field">
-      <label>Target Space</label>
+    </InlineField>
+    <InlineField label="Target Space" :label-width="labelWidth">
       <SelectField
         v-model="targetSpaceType"
         :options="spaceTypeOptions"
         no-placeholder
       />
-    </div>
-    <div class="field">
-      <label>Owner Space</label>
+    </InlineField>
+    <InlineField label="Owner Space" :label-width="labelWidth">
       <SelectField
         v-model="ownerSpaceType"
         :options="spaceTypeOptions"
         no-placeholder
       />
-    </div>
-    <div class="field">
+    </InlineField>
+    <InlineField>
       <CheckboxInput v-model="copyX" label="Axis X" />
-    </div>
-    <div class="field">
+    </InlineField>
+    <InlineField>
       <CheckboxInput v-model="copyY" label="Axis Y" />
-    </div>
-    <div class="field">
+    </InlineField>
+    <InlineField>
       <CheckboxInput v-model="invertX" label="Invert X" />
-    </div>
-    <div class="field">
+    </InlineField>
+    <InlineField>
       <CheckboxInput v-model="invertY" label="Invert Y" />
-    </div>
-    <div class="field">
-      <label>Influence</label>
+    </InlineField>
+    <InlineField label="Influence" :label-width="labelWidth">
       <NumberInput v-model="influence" :min="0" :max="1" />
-    </div>
+    </InlineField>
   </div>
 </template>
 
@@ -64,10 +60,11 @@ import { BoneConstraintOptions } from '/@/utils/constraints'
 import NumberInput from '/@/components/atoms/NumberInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
 import { SpaceType } from '/@/models'
 
 export default defineComponent({
-  components: { NumberInput, SelectField, CheckboxInput },
+  components: { NumberInput, SelectField, CheckboxInput, InlineField },
   props: {
     modelValue: {
       type: Object as PropType<BoneConstraintOptions['COPY_LOCATION']>,
@@ -94,6 +91,7 @@ export default defineComponent({
     )
 
     return {
+      labelWidth: '100px',
       spaceTypeOptions,
       targetSpaceType: computed({
         get(): SpaceType {
@@ -163,28 +161,3 @@ export default defineComponent({
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.copy-location-option-field {
-  text-align: left;
-  padding: 8px 0;
-  box-sizing: border-box;
-  .field {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    &:last-child {
-      margin-bottom: 0;
-    }
-    > label {
-      display: block;
-      width: 110px;
-      flex-shrink: 0;
-      & + * {
-        flex: 1;
-        min-width: 0;
-      }
-    }
-  }
-}
-</style>

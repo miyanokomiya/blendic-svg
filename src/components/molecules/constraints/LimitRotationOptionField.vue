@@ -18,27 +18,23 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div class="limit-rotation-option-field">
-    <div class="field">
-      <label>Space Type</label>
+  <div>
+    <InlineField label="Space Type" :label-width="labelWidth">
       <SelectField
         v-model="spaceType"
         :options="spaceTypeOptions"
         no-placeholder
       />
-    </div>
-    <div class="field">
-      <label>Min</label>
+    </InlineField>
+    <InlineField label="Min" :label-width="labelWidth">
       <NumberInput v-model="min" />
-    </div>
-    <div class="field">
-      <label>Max</label>
+    </InlineField>
+    <InlineField label="Max" :label-width="labelWidth">
       <NumberInput v-model="max" />
-    </div>
-    <div class="field">
-      <label>Influence</label>
+    </InlineField>
+    <InlineField label="Influence" :label-width="labelWidth">
       <NumberInput v-model="influence" :min="0" :max="1" />
-    </div>
+    </InlineField>
   </div>
 </template>
 
@@ -47,10 +43,11 @@ import { computed, defineComponent, PropType } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import NumberInput from '/@/components/atoms/NumberInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
 import { SpaceType } from '/@/models'
 
 export default defineComponent({
-  components: { NumberInput, SelectField },
+  components: { NumberInput, SelectField, InlineField },
   props: {
     modelValue: {
       type: Object as PropType<BoneConstraintOptions['LIMIT_ROTATION']>,
@@ -75,6 +72,7 @@ export default defineComponent({
     )
 
     return {
+      labelWidth: '100px',
       spaceTypeOptions,
       spaceType: computed({
         get(): SpaceType {
@@ -112,28 +110,3 @@ export default defineComponent({
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.limit-rotation-option-field {
-  text-align: left;
-  padding: 8px 0;
-  box-sizing: border-box;
-  .field {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    &:last-child {
-      margin-bottom: 0;
-    }
-    > label {
-      display: block;
-      width: 100px;
-      flex-shrink: 0;
-      & + * {
-        flex: 1;
-        min-width: 0;
-      }
-    }
-  }
-}
-</style>

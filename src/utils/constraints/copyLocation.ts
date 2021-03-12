@@ -17,15 +17,19 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { add, sub } from 'okageo'
 import { Bone, IdMap, SpaceType } from '/@/models'
-import { getBoneBodyRotation, getBoneWorldRotation } from '/@/utils/geometry'
+import { applyScale, getBoneWorldLocation } from '/@/utils/geometry'
 
 export interface Option {
   targetSpaceType: SpaceType
   ownerSpaceType: SpaceType
   targetId: string
   influence: number
-  invert: boolean
+  copyX: boolean
+  copyY: boolean
+  invertX: boolean
+  invertY: boolean
 }
 
 export function apply(
@@ -38,15 +42,30 @@ export function apply(
   const b = boneMap[boneId]
   if (!target || !b) return boneMap
 
-  const parentRotate = b.inheritRotation
-    ? boneMap[b.parentId]?.transform.rotate ?? 0
-    : 0
+  const parentTranslate = boneMap[b.parentId]?.transform.translate ?? {
+    x: 0,
+    y: 0,
+  }
 
-  const targetRotate =
-    (option.targetSpaceType === 'world'
-      ? getBoneWorldRotation(target)
-      : localMap[option.targetId]?.transform?.rotate ?? 0) *
-    (option.invert ? -option.influence : option.influence)
+  const targetLocation = applyScale(
+    option.targetSpaceType === 'world'
+      ? getBoneWorldLocation(target)
+      : localMap[option.targetId]?.transform?.translate ?? { x: 0, y: 0 },
+    {
+      x: option.invertX ? -1 : 1,
+      y: option.invertY ? -1 : 1,
+    }
+  )
+
+  const ownerLocation =
+    option.ownerSpaceType === 'world'
+      ? getBoneWorldLocation(b)
+      : localMap[boneId]?.transform?.translate ?? { x: 0, y: 0 }
+
+  const diff = applyScale(sub(targetLocation, ownerLocation), {
+    x: option.copyX ? option.influence : 0,
+    y: option.copyY ? option.influence : 0,
+  })
 
   return {
     ...boneMap,
@@ -54,10 +73,10 @@ export function apply(
       ...b,
       transform: {
         ...b.transform,
-        rotate:
+        translate:
           option.ownerSpaceType === 'world'
-            ? targetRotate - getBoneBodyRotation(b)
-            : targetRotate + parentRotate,
+            ? sub(add(ownerLocation, diff), b.head)
+            : add(add(ownerLocation, diff), parentTranslate),
       },
     },
   }
@@ -79,7 +98,10 @@ export function getOption(src: Partial<Option> = {}): Option {
     ownerSpaceType: 'world',
     targetId: '',
     influence: 1,
-    invert: false,
+    copyX: true,
+    copyY: true,
+    invertX: false,
+    invertY: false,
     ...src,
   }
 }

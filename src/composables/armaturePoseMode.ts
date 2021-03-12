@@ -33,13 +33,13 @@ import { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '../store/animation'
 import { mapReduce } from '../utils/commons'
 import {
-  applyTransform,
   convolutePoseTransforms,
   getTransformedBoneMap,
   invertPoseTransform,
   selectBoneInRect,
 } from '../utils/armatures'
 import {
+  applyTransformToVec,
   getContinuousRadDiff,
   snapGrid,
   snapRotate,
@@ -110,13 +110,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     const bone = animationStore.currentPosedBones.value[boneId]
     const parent = animationStore.currentPosedBones.value[bone.parentId]
     if (parent) {
-      return applyTransform(
-        vec,
-        invertPoseTransform({
-          ...parent.transform,
-          translate: { x: 0, y: 0 },
-        })
-      )
+      return applyTransformToVec(vec, invertPoseTransform(parent.transform))
     } else {
       return vec
     }

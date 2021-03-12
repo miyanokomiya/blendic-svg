@@ -25,7 +25,7 @@ import {
   immigrate,
 } from '/@/utils/constraints/copyRotation'
 
-describe('utils/copyRotation.ts', () => {
+describe('utils/constraints/copyRotation.ts', () => {
   describe('apply', () => {
     const parent = getBone({
       id: 'parent',

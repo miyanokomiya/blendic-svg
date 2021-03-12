@@ -25,7 +25,7 @@ import {
   immigrate,
 } from '/@/utils/constraints/copyLocation'
 
-describe('utils/copyLocation.ts', () => {
+describe('utils/constraints/copyLocation.ts', () => {
   describe('apply', () => {
     const parent = getBone({
       id: 'parent',

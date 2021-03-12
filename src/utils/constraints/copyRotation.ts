@@ -46,7 +46,14 @@ export function apply(
     (option.targetSpaceType === 'world'
       ? getBoneWorldRotation(target)
       : localMap[option.targetId]?.transform?.rotate ?? 0) *
-    (option.invert ? -option.influence : option.influence)
+    (option.invert ? -1 : 1)
+
+  const ownerRotate =
+    option.ownerSpaceType === 'world'
+      ? getBoneWorldRotation(b)
+      : localMap[boneId]?.transform?.rotate ?? 0
+
+  const diff = (targetRotate - ownerRotate) * option.influence
 
   return {
     ...boneMap,
@@ -56,8 +63,8 @@ export function apply(
         ...b.transform,
         rotate:
           option.ownerSpaceType === 'world'
-            ? targetRotate - getBoneBodyRotation(b)
-            : targetRotate + parentRotate,
+            ? ownerRotate + diff - getBoneBodyRotation(b)
+            : ownerRotate + diff + parentRotate,
       },
     },
   }

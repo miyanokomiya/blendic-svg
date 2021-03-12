@@ -99,8 +99,8 @@ describe('utils/copyRotation.ts', () => {
         )
       })
     })
-    describe('target: world, owner: world, influence: 0.5', () => {
-      it('copy rotation', () => {
+    describe('influence: 0.5', () => {
+      it('target: world, owner: world', () => {
         const ret = apply(
           'b',
           getOption({
@@ -114,7 +114,7 @@ describe('utils/copyRotation.ts', () => {
           getBone({
             id: 'b',
             tail: { x: 0, y: 1 },
-            transform: getTransform({ rotate: 225 / 2 - 90 }),
+            transform: getTransform({ rotate: 72.5 }),
             parentId: 'parent',
           })
         )

@@ -49,7 +49,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <CheckboxInput v-model="invertY" label="Invert Y" />
     </InlineField>
     <InlineField label="Influence" :label-width="labelWidth">
-      <SliderInput v-model="influence" />
+      <SliderInput v-model="influence" :min="0" :max="1" />
     </InlineField>
   </div>
 </template>

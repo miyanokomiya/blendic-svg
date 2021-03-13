@@ -39,7 +39,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { useDrag } from 'okanvas'
-import { computed, defineComponent, ref, watchEffect } from 'vue'
+import { computed, defineComponent, PropType, ref, watchEffect } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import { clamp, decimalRound } from '/@/utils/geometry'
 
@@ -51,12 +51,12 @@ export default defineComponent({
       default: false,
     },
     min: {
-      type: Number,
-      default: 0,
+      type: Number as PropType<number | undefined>,
+      default: undefined,
     },
     max: {
-      type: Number,
-      default: 1,
+      type: Number as PropType<number | undefined>,
+      default: undefined,
     },
   },
   emits: ['update:modelValue'],
@@ -66,6 +66,14 @@ export default defineComponent({
     const dragStartRate = ref(0)
     const focused = ref(false)
     const dragged = ref(false)
+
+    const range = computed<number | undefined>(() => {
+      if (props.min !== undefined && props.max !== undefined) {
+        return props.max - props.min
+      } else {
+        return undefined
+      }
+    })
 
     const draftValue = ref('0')
 
@@ -82,8 +90,9 @@ export default defineComponent({
     })
 
     const rate = computed(() => {
+      if (!range.value) return 0
       if (props.max === props.min) return 0
-      return props.modelValue / (props.max - props.min)
+      return props.modelValue / (props.max! - props.min!)
     })
 
     function onUpForward() {
@@ -97,25 +106,41 @@ export default defineComponent({
     const drag = useDrag((arg) => {
       if (!el.value) return
       const width = el.value.getBoundingClientRect().width
-      const rateDiff = (arg.p.x - arg.base.x) / width
+      if (width === 0) return
 
+      const rateDiff = (arg.p.x - arg.base.x) / width
       if (Math.abs(rateDiff) > 0) {
         dragged.value = true
       }
 
-      const val =
-        decimalRound(
-          2,
-          clamp(props.min, props.max, dragStartRate.value + rateDiff)
-        ) *
-          (props.max - props.min) +
-        props.min
+      if (range.value) {
+        const val =
+          decimalRound(2, clamp(0, 1, dragStartRate.value + rateDiff)) *
+            range.value +
+          props.min!
+        draftValue.value = clampValue(
+          props.integer ? Math.round(val) : val
+        ).toString()
+      } else {
+        const val = arg.d.x
+        draftValue.value = clampValue(parseDraftValue.value + val).toString()
+      }
 
-      draftValue.value = (props.integer ? Math.round(val) : val).toString()
       input()
     })
     useGlobalMousemove(drag.onMove)
     useGlobalMouseup(drag.onUp)
+
+    function clampValue(val: number) {
+      let ret = val
+      if (props.min !== undefined) {
+        ret = Math.max(ret, props.min)
+      }
+      if (props.max !== undefined) {
+        ret = Math.min(ret, props.max)
+      }
+      return ret
+    }
 
     function input() {
       if (isNaN(parseDraftValue.value)) {
@@ -124,10 +149,7 @@ export default defineComponent({
       }
       if (parseDraftValue.value === props.modelValue) return
 
-      emit(
-        'update:modelValue',
-        clamp(props.min, props.max, parseDraftValue.value)
-      )
+      emit('update:modelValue', clampValue(parseDraftValue.value))
     }
 
     return {
@@ -138,6 +160,7 @@ export default defineComponent({
       el,
       inputEl,
       onDown: (e: MouseEvent) => {
+        e.preventDefault()
         dragged.value = false
         dragStartRate.value = rate.value
         drag.onDown(e)
@@ -155,6 +178,9 @@ export default defineComponent({
   position: relative;
   display: flex;
   align-items: center;
+}
+input {
+  text-align: center;
 }
 .slider-background {
   position: absolute;

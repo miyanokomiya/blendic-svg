@@ -24,9 +24,18 @@ Copyright (C) 2021, Tomoya Komiyama.
       <BlockField label="Armature">
         <SelectField v-model="armatureId" :options="armatureOptions" />
       </BlockField>
-      <BlockField label="Bone">
-        <SelectField v-model="boneId" :options="boneOptions" />
-      </BlockField>
+      <template v-if="targetElement && targetNativeElement">
+        <template v-if="targetNativeElement.tag === 'svg'">
+          <BlockField label="Viewbox">
+            <SelectField v-model="viewBoxBoneId" :options="boneOptions" />
+          </BlockField>
+        </template>
+        <template v-else>
+          <BlockField label="Transform">
+            <SelectField v-model="boneId" :options="boneOptions" />
+          </BlockField>
+        </template>
+      </template>
     </form>
     <div v-else>
       <p>No Item</p>
@@ -59,6 +68,9 @@ export default defineComponent({
     const targetElement = computed(() => {
       return elementStore.lastSelectedElement.value
     })
+    const targetNativeElement = computed(() => {
+      return elementStore.lastSelectedNativeElement.value
+    })
 
     const armatureId = computed({
       get(): string {
@@ -89,6 +101,15 @@ export default defineComponent({
       },
     })
 
+    const viewBoxBoneId = computed({
+      get(): string {
+        return targetElement.value?.viewBoxBoneId ?? ''
+      },
+      set(val: string) {
+        elementStore.updateElement({ viewBoxBoneId: val })
+      },
+    })
+
     const boneOptions = computed(() => {
       if (!currentArmature.value) return []
 
@@ -105,10 +126,12 @@ export default defineComponent({
       canvasMode,
       targetActor,
       targetElement,
+      targetNativeElement,
       armatureId,
       armatureOptions,
-      boneId,
       boneOptions,
+      boneId,
+      viewBoxBoneId,
     }
   },
 })

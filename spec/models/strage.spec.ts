@@ -23,6 +23,7 @@ import {
   getArmature,
   getBElement,
   getBone,
+  getElementNode,
   getKeyframe,
 } from '/@/models'
 import { initialize } from '/@/models/strage'
@@ -80,6 +81,34 @@ describe('src/models/strage.ts', () => {
           getActor({
             id: 'actor',
             elements: [getBElement({ id: 'elm' })],
+          }),
+        ],
+      })
+    })
+
+    it('complete BElement for SVG root', () => {
+      const src = {
+        armatures: [],
+        actions: [],
+        actors: [
+          {
+            id: 'actor',
+            svgTree: getElementNode({ tag: 'svg', id: 'svg_id' }),
+            elements: [{ id: 'elm' }],
+          },
+        ],
+      }
+      expect(initialize(src as any)).toEqual({
+        armatures: [],
+        actions: [],
+        actors: [
+          getActor({
+            id: 'actor',
+            svgTree: getElementNode({ tag: 'svg', id: 'svg_id' }),
+            elements: [
+              getBElement({ id: 'svg_id' }),
+              getBElement({ id: 'elm' }),
+            ],
           }),
         ],
       })

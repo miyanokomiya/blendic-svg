@@ -79,6 +79,7 @@ export interface ElementNode {
 export interface BElement {
   id: string
   boneId: string
+  viewBoxBoneId?: string
 }
 
 export interface Actor {

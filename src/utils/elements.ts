@@ -40,10 +40,7 @@ export function parseFromSvg(svgText: string): Actor {
   const viewBox = parseViewBox(svg)
   const svgTree = parseElementNode(svg)
 
-  return getActor(
-    { svgTree, viewBox, elements: svgTree.children.flatMap(toBElements) },
-    true
-  )
+  return getActor({ svgTree, viewBox, elements: toBElements(svgTree) }, true)
 }
 
 function toBElements(tree: ElementNode | string): BElement[] {
@@ -123,4 +120,13 @@ export function inheritWeight(old: Actor, next: Actor): Actor {
     ...extractMap(oldMap, nextMap),
   })
   return { ...next, armatureId: old.armatureId, elements }
+}
+
+export function flatElementTree(
+  children: (ElementNode | string)[]
+): ElementNode[] {
+  const filtered = children.filter(
+    (n): n is ElementNode => typeof n !== 'string'
+  )
+  return filtered.concat(filtered.flatMap((c) => flatElementTree(c.children)))
 }

@@ -27,7 +27,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <div v-else class="spacer" :style="{ width: '16px' }" />
       <a
         class="node-name"
-        :class="{ selected, disabled: !canSelect }"
+        :class="{ selected }"
         @click.left.exact.prevent="click"
         @click.left.shift.exact.prevent="shiftClick"
         >{{ node.tag }} #{{ node.id }}</a
@@ -95,8 +95,6 @@ export default defineComponent({
       return !!selectedMap.value[props.node.id]
     })
 
-    const canSelect = computed(() => props.node.tag !== 'svg')
-
     const isG = computed(() => props.node.tag === 'g')
     const closed = ref(false)
     function toggleClosed() {
@@ -107,12 +105,9 @@ export default defineComponent({
       isG,
       closed,
       toggleClosed,
-      canSelect,
       children,
-      click: () =>
-        canSelect.value ? onClickElement(props.node.id, false) : '',
-      shiftClick: () =>
-        canSelect.value ? onClickElement(props.node.id, true) : '',
+      click: () => onClickElement(props.node.id, false),
+      shiftClick: () => onClickElement(props.node.id, true),
       selected,
     }
   },
@@ -162,9 +157,6 @@ export default defineComponent({
   }
   &.selected {
     color: orange;
-  }
-  &.disabled {
-    pointer-events: none;
   }
 }
 </style>

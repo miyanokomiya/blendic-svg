@@ -26,10 +26,21 @@ Copyright (C) 2021, Tomoya Komiyama.
       <SelectField v-model="poleTargetId" :options="boneOptions" />
     </InlineField>
     <InlineField label="Chain Length" :label-width="labelWidth">
-      <SliderInput v-model="chainLength" integer :min="0" />
+      <SliderInput
+        :model-value="chainLength"
+        integer
+        :min="0"
+        @update:modelValue="updateChainLength"
+      />
     </InlineField>
     <InlineField label="Iterations" :label-width="labelWidth">
-      <SliderInput v-model="iterations" integer :min="0" :max="500" />
+      <SliderInput
+        :model-value="iterations"
+        integer
+        :min="0"
+        :max="500"
+        @update:modelValue="updateIterations"
+      />
     </InlineField>
   </div>
 </template>
@@ -55,8 +66,11 @@ export default defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    function emitUpdated(val: Partial<BoneConstraintOptions['IK']>) {
-      emit('update:modelValue', { ...props.modelValue, ...val })
+    function emitUpdated(
+      val: Partial<BoneConstraintOptions['IK']>,
+      seriesKey?: string
+    ) {
+      emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
     }
 
     return {
@@ -77,22 +91,18 @@ export default defineComponent({
           emitUpdated({ poleTargetId: val })
         },
       }),
-      chainLength: computed({
-        get(): number {
-          return props.modelValue.chainLength
-        },
-        set(val: number) {
-          emitUpdated({ chainLength: val })
-        },
+      chainLength: computed(() => {
+        return props.modelValue.chainLength
       }),
-      iterations: computed({
-        get(): number {
-          return props.modelValue.iterations
-        },
-        set(val: number) {
-          emitUpdated({ iterations: val })
-        },
+      updateChainLength(val: number, seriesKey?: string) {
+        emitUpdated({ chainLength: val }, seriesKey)
+      },
+      iterations: computed(() => {
+        return props.modelValue.iterations
       }),
+      updateIterations(val: number, seriesKey?: string) {
+        emitUpdated({ iterations: val }, seriesKey)
+      },
     }
   },
 })

@@ -49,7 +49,12 @@ Copyright (C) 2021, Tomoya Komiyama.
       <CheckboxInput v-model="invertY" label="Invert Y" />
     </InlineField>
     <InlineField label="Influence" :label-width="labelWidth">
-      <SliderInput v-model="influence" :min="0" :max="1" />
+      <SliderInput
+        :model-value="influence"
+        :min="0"
+        :max="1"
+        @update:modelValue="updateInfluence"
+      />
     </InlineField>
   </div>
 </template>
@@ -77,8 +82,11 @@ export default defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    function emitUpdated(val: Partial<BoneConstraintOptions['COPY_LOCATION']>) {
-      emit('update:modelValue', { ...props.modelValue, ...val })
+    function emitUpdated(
+      val: Partial<BoneConstraintOptions['COPY_LOCATION']>,
+      seriesKey?: string
+    ) {
+      emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
     }
 
     const spaceTypeOptions = computed<{ value: SpaceType; label: string }[]>(
@@ -117,14 +125,12 @@ export default defineComponent({
           emitUpdated({ targetId: val })
         },
       }),
-      influence: computed({
-        get(): number {
-          return props.modelValue.influence
-        },
-        set(val: number) {
-          emitUpdated({ influence: val })
-        },
+      influence: computed(() => {
+        return props.modelValue.influence
       }),
+      updateInfluence(val: number, seriesKey?: string) {
+        emitUpdated({ influence: val }, seriesKey)
+      },
       copyX: computed({
         get(): boolean {
           return props.modelValue.copyX

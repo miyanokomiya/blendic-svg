@@ -45,27 +45,35 @@ Copyright (C) 2021, Tomoya Komiyama.
       <IKOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
-        @update:modelValue="(option) => updateConstraint(i, option)"
+        @update:modelValue="
+          (option, seriesKey) => updateConstraint(i, option, seriesKey)
+        "
       />
     </template>
     <template v-else-if="c.name === 'LIMIT_ROTATION'">
       <LimitRotationOptionField
         :model-value="c.option"
-        @update:modelValue="(option) => updateConstraint(i, option)"
+        @update:modelValue="
+          (option, seriesKey) => updateConstraint(i, option, seriesKey)
+        "
       />
     </template>
     <template v-else-if="c.name === 'COPY_LOCATION'">
       <CopyLocationOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
-        @update:modelValue="(option) => updateConstraint(i, option)"
+        @update:modelValue="
+          (option, seriesKey) => updateConstraint(i, option, seriesKey)
+        "
       />
     </template>
     <template v-else-if="c.name === 'COPY_ROTATION'">
       <CopyRotationOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
-        @update:modelValue="(option) => updateConstraint(i, option)"
+        @update:modelValue="
+          (option, seriesKey) => updateConstraint(i, option, seriesKey)
+        "
       />
     </template>
   </div>
@@ -136,18 +144,22 @@ export default defineComponent({
       addConstraint(val)
     }
 
-    function update(constraints: BoneConstraint[]) {
-      emit('update', constraints)
+    function update(constraints: BoneConstraint[], seriesKey?: string) {
+      emit('update', constraints, seriesKey)
     }
 
     function addConstraint(name: BoneConstraintName) {
       update([...props.constraints, getConstraintByName(name)])
     }
 
-    function updateConstraint(index: number, option: BoneConstraintOption) {
+    function updateConstraint(
+      index: number,
+      option: BoneConstraintOption,
+      seriesKey?: string
+    ) {
       const constraints = props.constraints.concat()
       constraints.splice(index, 1, { ...constraints[index], option })
-      update(constraints)
+      update(constraints, seriesKey)
     }
 
     function deleteConstraint(index: number) {

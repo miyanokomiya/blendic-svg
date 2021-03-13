@@ -118,9 +118,12 @@ export default defineComponent({
       else draftName.value = ''
     }
 
-    function updateConstraints(constraints: BoneConstraint[]) {
+    function updateConstraints(
+      constraints: BoneConstraint[],
+      seriesKey?: string
+    ) {
       if (!lastSelectedBone.value) return
-      store.updateBone({ constraints })
+      store.updateBone({ constraints }, seriesKey)
     }
 
     watch(store.lastSelectedArmature, initDraftName)

@@ -27,13 +27,18 @@ Copyright (C) 2021, Tomoya Komiyama.
       />
     </InlineField>
     <InlineField label="Min" :label-width="labelWidth">
-      <SliderInput v-model="min" />
+      <SliderInput :model-value="min" @update:modelValue="updateMin" />
     </InlineField>
     <InlineField label="Max" :label-width="labelWidth">
-      <SliderInput v-model="max" />
+      <SliderInput :model-value="max" @update:modelValue="updateMax" />
     </InlineField>
     <InlineField label="Influence" :label-width="labelWidth">
-      <SliderInput v-model="influence" :min="0" :max="1" />
+      <SliderInput
+        :model-value="influence"
+        :min="0"
+        :max="1"
+        @update:modelValue="updateInfluence"
+      />
     </InlineField>
   </div>
 </template>
@@ -57,9 +62,10 @@ export default defineComponent({
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     function emitUpdated(
-      val: Partial<BoneConstraintOptions['LIMIT_ROTATION']>
+      val: Partial<BoneConstraintOptions['LIMIT_ROTATION']>,
+      seriesKey?: string
     ) {
-      emit('update:modelValue', { ...props.modelValue, ...val })
+      emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
     }
 
     const spaceTypeOptions = computed<{ value: SpaceType; label: string }[]>(
@@ -82,30 +88,24 @@ export default defineComponent({
           emitUpdated({ spaceType: val })
         },
       }),
-      min: computed({
-        get(): number {
-          return props.modelValue.min
-        },
-        set(val: number) {
-          emitUpdated({ min: val })
-        },
+      min: computed(() => {
+        return props.modelValue.min
       }),
-      max: computed({
-        get(): number {
-          return props.modelValue.max
-        },
-        set(val: number) {
-          emitUpdated({ max: val })
-        },
+      updateMin(val: number, seriesKey?: string) {
+        emitUpdated({ min: val }, seriesKey)
+      },
+      max: computed(() => {
+        return props.modelValue.max
       }),
-      influence: computed({
-        get(): number {
-          return props.modelValue.influence
-        },
-        set(val: number) {
-          emitUpdated({ influence: val })
-        },
+      updateMax(val: number, seriesKey?: string) {
+        emitUpdated({ max: val }, seriesKey)
+      },
+      influence: computed(() => {
+        return props.modelValue.influence
       }),
+      updateInfluence(val: number, seriesKey?: string) {
+        emitUpdated({ influence: val }, seriesKey)
+      },
     }
   },
 })

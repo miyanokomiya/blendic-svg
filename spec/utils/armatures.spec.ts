@@ -396,6 +396,60 @@ describe('utils/armatures', () => {
   })
 
   describe('extendTransform', () => {
+    describe('translate', () => {
+      it('connected: false => add parent translate', () => {
+        expect(
+          target.extendTransform(
+            getBone({
+              tail: { x: 1, y: 1 },
+              transform: getTransform({
+                translate: { x: 10, y: 20 },
+              }),
+            }),
+            getBone({
+              head: { x: 2, y: 3 },
+              transform: getTransform({
+                translate: { x: 2, y: 3 },
+              }),
+            })
+          )
+        ).toEqual(
+          getBone({
+            head: { x: 2, y: 3 },
+            transform: getTransform({
+              translate: { x: 12, y: 23 },
+            }),
+          })
+        )
+      })
+      it('connected: true => replace by parent translate', () => {
+        expect(
+          target.extendTransform(
+            getBone({
+              tail: { x: 1, y: 1 },
+              transform: getTransform({
+                translate: { x: 10, y: 20 },
+              }),
+            }),
+            getBone({
+              head: { x: 2, y: 3 },
+              transform: getTransform({
+                translate: { x: 2, y: 3 },
+              }),
+              connected: true,
+            })
+          )
+        ).toEqual(
+          getBone({
+            head: { x: 2, y: 3 },
+            transform: getTransform({
+              translate: { x: 10, y: 20 },
+            }),
+            connected: true,
+          })
+        )
+      })
+    })
     describe('scale', () => {
       it('inheritScale: true', () => {
         expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())

@@ -24,6 +24,7 @@ export interface HistoryItem {
   name: string
   undo: () => void
   redo: () => void
+  seriesKey?: string
 }
 
 const { settings } = useSettings()
@@ -47,7 +48,22 @@ function clearHistory() {
   state.redoStack = []
 }
 function push(item: HistoryItem) {
-  state.undoStack.push(item)
+  const last = state.undoStack[state.undoStack.length - 1]
+  if (
+    last &&
+    last.seriesKey !== undefined &&
+    last.seriesKey === item.seriesKey
+  ) {
+    // replace history and inherit undo if two items are same series
+    state.undoStack.pop()
+    state.undoStack.push({
+      ...item,
+      undo: last.undo,
+    })
+  } else {
+    state.undoStack.push(item)
+  }
+
   if (state.undoStack.length > settings.historyMax) {
     state.undoStack = state.undoStack.slice(
       state.undoStack.length - settings.historyMax

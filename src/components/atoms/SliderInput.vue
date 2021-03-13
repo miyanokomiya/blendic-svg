@@ -75,6 +75,7 @@ export default defineComponent({
     const dragStartRate = ref(0)
     const focused = ref(false)
     const dragged = ref(false)
+    const seriesKey = ref<string>()
 
     const range = computed<number | undefined>(() => {
       if (props.min !== undefined && props.max !== undefined) {
@@ -144,7 +145,11 @@ export default defineComponent({
       input()
     })
     useGlobalMousemove(drag.onMove)
-    useGlobalMouseup(drag.onUp)
+    useGlobalMouseup(() => {
+      drag.onUp()
+      dragged.value = false
+      seriesKey.value = undefined
+    })
 
     function clampValue(val: number) {
       let ret = val
@@ -164,7 +169,11 @@ export default defineComponent({
       }
       if (parseDraftValue.value === props.modelValue) return
 
-      emit('update:modelValue', clampValue(parseDraftValue.value))
+      emit(
+        'update:modelValue',
+        clampValue(parseDraftValue.value),
+        seriesKey.value
+      )
     }
 
     return {
@@ -177,6 +186,7 @@ export default defineComponent({
       onDown: (e: MouseEvent) => {
         e.preventDefault()
         dragged.value = false
+        seriesKey.value = `slider_${Date.now()}`
         dragStartRate.value = rate.value
         drag.onDown(e)
       },

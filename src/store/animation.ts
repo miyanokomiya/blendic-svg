@@ -177,9 +177,10 @@ const selectedPosedBoneOrigin = computed(
   }
 )
 
-function setEndFrame(val: number) {
+function setEndFrame(val: number, seriesKey?: string) {
   if (endFrame.value === val) return
-  const item = getUpdateEndFrameItem(val)
+
+  const item = getUpdateEndFrameItem(val, seriesKey)
   item.redo()
   historyStore.push(item)
 }
@@ -450,7 +451,7 @@ export function useAnimationStore() {
   }
 }
 
-function getUpdateEndFrameItem(val: number): HistoryItem {
+function getUpdateEndFrameItem(val: number, seriesKey?: string): HistoryItem {
   const current = endFrame.value
 
   const redo = () => {
@@ -462,6 +463,7 @@ function getUpdateEndFrameItem(val: number): HistoryItem {
       endFrame.value = current
     },
     redo,
+    seriesKey,
   }
 }
 

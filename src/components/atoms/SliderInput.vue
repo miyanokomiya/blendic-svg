@@ -24,12 +24,13 @@ Copyright (C) 2021, Tomoya Komiyama.
       ref="inputEl"
       v-model="draftValue"
       type="text"
+      :disabled="disabled"
       @change="input"
       @focus="onFocus"
       @blur="onBlur"
     />
     <div
-      v-if="!focused"
+      v-if="!focused && !disabled"
       class="slider-forward"
       @mouseup="onUpForward"
       @mousedown="onDown"
@@ -61,6 +62,10 @@ export default defineComponent({
     step: {
       type: Number,
       default: 1,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ['update:modelValue'],

@@ -26,12 +26,14 @@ Copyright (C) 2021, Tomoya Komiyama.
       <InlineField label="x" :label-width="labelWidth">
         <SliderInput
           :model-value="draftTransform.translateX"
+          :disabled="connected"
           @update:modelValue="changeTranslateX"
         />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
         <SliderInput
           :model-value="draftTransform.translateY"
+          :disabled="connected"
           @update:modelValue="changeTranslateY"
         />
       </InlineField>
@@ -153,6 +155,10 @@ export default defineComponent({
       return store.lastSelectedBone.value
     })
 
+    const connected = computed(() => {
+      return targetBone.value?.connected
+    })
+
     const targetTransform = computed((): Transform | undefined => {
       if (!targetBone.value) return undefined
       if (canvasStore.state.canvasMode !== 'pose') return undefined
@@ -257,6 +263,7 @@ export default defineComponent({
       changeRotate,
       changeScaleX,
       changeScaleY,
+      connected,
     }
   },
 })

@@ -336,6 +336,10 @@ export default defineComponent({
 input {
   max-width: 100%;
 }
+input:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 input[type='text'] {
   padding: 2px 4px;
   border: solid 1px #777;

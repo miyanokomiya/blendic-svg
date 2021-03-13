@@ -203,8 +203,10 @@ export default defineComponent({
       })
     )
 
+    const moveCurrentFrameSeriesKey = ref<string>()
     function downCurrentFrame() {
       editMode.value = 'move-current-frame'
+      moveCurrentFrameSeriesKey.value = `move-current-frame_${Date.now()}`
     }
     function downLeft(current: IVec2) {
       drag(current)
@@ -212,12 +214,14 @@ export default defineComponent({
     function drag(current: IVec2) {
       if (editMode.value === 'move-current-frame') {
         animationStore.setCurrentFrame(
-          getNearestFrameAtPoint(current.x - labelWidth - axisPadding)
+          getNearestFrameAtPoint(current.x - labelWidth - axisPadding),
+          moveCurrentFrameSeriesKey.value
         )
       }
     }
     function upLeft() {
       editMode.value = ''
+      moveCurrentFrameSeriesKey.value = undefined
     }
 
     function animationCallback(tickFrame: number) {

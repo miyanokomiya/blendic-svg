@@ -235,15 +235,12 @@ function getCurrentSelfTransforms(boneId: string): Transform {
   return currentSelfTransforms.value[boneId] ?? getTransform()
 }
 
-function setCurrentFrame(val: number) {
+function setCurrentFrame(val: number, seriesKey?: string) {
   if (currentFrame.value === val) return
 
-  const item = getUpdateCurrentFrameItem(val)
+  const item = getUpdateCurrentFrameItem(val, seriesKey)
   item.redo()
-  // save only first operation
-  if (item.name !== historyStore.currentItemName.value) {
-    historyStore.push(item)
-  }
+  historyStore.push(item)
 }
 
 function setPlaying(val: PlayState) {
@@ -727,7 +724,10 @@ function getCompleteDuplicateKeyframes(
   }
 }
 
-function getUpdateCurrentFrameItem(frame: number): HistoryItem {
+function getUpdateCurrentFrameItem(
+  frame: number,
+  seriesKey?: string
+): HistoryItem {
   const preFrame = currentFrame.value
   const preEditTransforms = { ...editTransforms.value }
 
@@ -741,5 +741,6 @@ function getUpdateCurrentFrameItem(frame: number): HistoryItem {
       currentFrame.value = frame
       editTransforms.value = {}
     },
+    seriesKey,
   }
 }

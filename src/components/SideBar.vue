@@ -93,5 +93,6 @@ export default defineComponent({
   border-radius: 0 0 0 4px;
   background-color: #fff;
   min-width: 140px;
+  max-width: 140px;
 }
 </style>

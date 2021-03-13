@@ -47,10 +47,17 @@ Copyright (C) 2021, Tomoya Komiyama.
         @jump-next="jumpNextKey"
         @jump-prev="jumpPrevKey"
       />
-      <label class="end-frame-field"
-        >End:
-        <input v-model="draftEndFrame" type="number" @change="changeEndFrame" />
-      </label>
+      <div class="end-frame-field">
+        <InlineField label="End">
+          <SliderInput
+            :model-value="endFrame"
+            :min="0"
+            integer
+            class="slider"
+            @update:modelValue="updateEndFrame"
+          />
+        </InlineField>
+      </div>
     </div>
     <div class="middle">
       <TimelineCanvas
@@ -124,7 +131,9 @@ import Keyframes from './elements/Keyframes.vue'
 import AnimationController from './molecules/AnimationController.vue'
 import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
 import {
   getKeyframeMapByFrame,
   getNearestFrameAtPoint,
@@ -142,9 +151,11 @@ export default defineComponent({
     TimelineBones,
     Keyframes,
     AnimationController,
+    SliderInput,
     CommandExamPanel,
     AddIcon,
     DeleteIcon,
+    InlineField,
   },
   setup() {
     const labelWidth = 140
@@ -157,7 +168,6 @@ export default defineComponent({
 
     const editMode = ref<'' | 'move-current-frame'>('')
     const draftName = ref('')
-    const draftEndFrame = ref('')
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
     const selectedAllBoneList = computed(() =>
@@ -220,9 +230,6 @@ export default defineComponent({
     watchEffect(() => {
       draftName.value = selectedAction.value?.name ?? ''
     })
-    watchEffect(() => {
-      draftEndFrame.value = animationStore.endFrame.value.toString()
-    })
 
     let animationLoop: ReturnType<typeof useAnimationLoop>
     watchEffect(() => {
@@ -241,27 +248,19 @@ export default defineComponent({
       keyframeMapByFrame,
       selectedKeyframeMap: animationStore.selectedKeyframeMap,
       draftName,
-      draftEndFrame,
       labelWidth,
       axisPadding,
       currentFrame: animationStore.currentFrame,
-      endFrame: animationStore.endFrame,
       setPlaying: animationStore.setPlaying,
       jumpStartFrame: animationStore.jumpStartFrame,
       jumpEndFrame: animationStore.jumpEndFrame,
       jumpNextKey: animationStore.jumpNextKey,
       jumpPrevKey: animationStore.jumpPrevKey,
-      changeActionName: () => {
-        if (!draftName.value) return
-        animationStore.updateAction({ name: draftName.value })
-      },
-      changeEndFrame: () => {
-        const val = parseInt(draftEndFrame.value, 10)
-        if (!isNaN(val) && val >= 0) {
-          animationStore.setEndFrame(val)
-        } else {
-          draftEndFrame.value = animationStore.endFrame.value.toString()
-        }
+      endFrame: computed(() => {
+        return animationStore.endFrame.value
+      }),
+      updateEndFrame(val: number, seriesKey?: string) {
+        animationStore.setEndFrame(val, seriesKey)
       },
       addAction: animationStore.addAction,
       deleteAction: animationStore.deleteAction,
@@ -313,8 +312,8 @@ export default defineComponent({
   }
   .end-frame-field {
     margin: 0 0 0 auto;
-    input {
-      width: 4rem;
+    .slider {
+      width: 80px;
     }
   }
   .action-buttons {

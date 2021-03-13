@@ -21,14 +21,12 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="weight-panel">
     <h4>Weight Paint</h4>
     <form v-if="canvasMode === 'weight' && targetActor" @submit.prevent>
-      <div class="field">
-        <label>Armature</label>
+      <BlockField label="Armature">
         <SelectField v-model="armatureId" :options="armatureOptions" />
-      </div>
-      <div v-if="targetElement" class="field">
-        <label>Bone</label>
+      </BlockField>
+      <BlockField label="Bone">
         <SelectField v-model="boneId" :options="boneOptions" />
-      </div>
+      </BlockField>
     </form>
     <div v-else>
       <p>No Item</p>
@@ -41,11 +39,12 @@ import { computed, defineComponent } from 'vue'
 import { useStore } from '/@/store'
 import { useCanvasStore } from '/@/store/canvas'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import BlockField from '/@/components/atoms/BlockField.vue'
 import { useElementStore } from '/@/store/element'
 import { sortByValue } from '/@/utils/commons'
 
 export default defineComponent({
-  components: { SelectField },
+  components: { SelectField, BlockField },
   setup() {
     const store = useStore()
     const canvasStore = useCanvasStore()
@@ -121,28 +120,5 @@ export default defineComponent({
 }
 h4 {
   margin-bottom: 8px;
-}
-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  .field {
-    margin-bottom: 8px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    &:last-child {
-      margin-bottom: 0;
-    }
-    > label {
-      margin-bottom: 6px;
-    }
-    > label + * {
-      margin-left: auto;
-      width: 100%;
-    }
-  }
 }
 </style>

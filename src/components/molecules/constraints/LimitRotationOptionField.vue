@@ -18,39 +18,41 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div class="limit-rotation-option-field">
-    <div class="field">
-      <label>Space Type</label>
+  <div>
+    <InlineField label="Space Type" :label-width="labelWidth">
       <SelectField
         v-model="spaceType"
         :options="spaceTypeOptions"
         no-placeholder
       />
-    </div>
-    <div class="field">
-      <label>Min</label>
-      <NumberInput v-model="min" />
-    </div>
-    <div class="field">
-      <label>Max</label>
-      <NumberInput v-model="max" />
-    </div>
-    <div class="field">
-      <label>Influence</label>
-      <NumberInput v-model="influence" :min="0" :max="1" />
-    </div>
+    </InlineField>
+    <InlineField label="Min" :label-width="labelWidth">
+      <SliderInput :model-value="min" @update:modelValue="updateMin" />
+    </InlineField>
+    <InlineField label="Max" :label-width="labelWidth">
+      <SliderInput :model-value="max" @update:modelValue="updateMax" />
+    </InlineField>
+    <InlineField label="Influence" :label-width="labelWidth">
+      <SliderInput
+        :model-value="influence"
+        :min="0"
+        :max="1"
+        @update:modelValue="updateInfluence"
+      />
+    </InlineField>
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
-import NumberInput from '/@/components/atoms/NumberInput.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
 import { SpaceType } from '/@/models'
 
 export default defineComponent({
-  components: { NumberInput, SelectField },
+  components: { SliderInput, SelectField, InlineField },
   props: {
     modelValue: {
       type: Object as PropType<BoneConstraintOptions['LIMIT_ROTATION']>,
@@ -60,9 +62,10 @@ export default defineComponent({
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     function emitUpdated(
-      val: Partial<BoneConstraintOptions['LIMIT_ROTATION']>
+      val: Partial<BoneConstraintOptions['LIMIT_ROTATION']>,
+      seriesKey?: string
     ) {
-      emit('update:modelValue', { ...props.modelValue, ...val })
+      emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
     }
 
     const spaceTypeOptions = computed<{ value: SpaceType; label: string }[]>(
@@ -75,6 +78,7 @@ export default defineComponent({
     )
 
     return {
+      labelWidth: '100px',
       spaceTypeOptions,
       spaceType: computed({
         get(): SpaceType {
@@ -84,56 +88,25 @@ export default defineComponent({
           emitUpdated({ spaceType: val })
         },
       }),
-      min: computed({
-        get(): number {
-          return props.modelValue.min
-        },
-        set(val: number) {
-          emitUpdated({ min: val })
-        },
+      min: computed(() => {
+        return props.modelValue.min
       }),
-      max: computed({
-        get(): number {
-          return props.modelValue.max
-        },
-        set(val: number) {
-          emitUpdated({ max: val })
-        },
+      updateMin(val: number, seriesKey?: string) {
+        emitUpdated({ min: val }, seriesKey)
+      },
+      max: computed(() => {
+        return props.modelValue.max
       }),
-      influence: computed({
-        get(): number {
-          return props.modelValue.influence
-        },
-        set(val: number) {
-          emitUpdated({ influence: val })
-        },
+      updateMax(val: number, seriesKey?: string) {
+        emitUpdated({ max: val }, seriesKey)
+      },
+      influence: computed(() => {
+        return props.modelValue.influence
       }),
+      updateInfluence(val: number, seriesKey?: string) {
+        emitUpdated({ influence: val }, seriesKey)
+      },
     }
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.limit-rotation-option-field {
-  text-align: left;
-  padding: 8px 0;
-  box-sizing: border-box;
-  .field {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    &:last-child {
-      margin-bottom: 0;
-    }
-    > label {
-      display: block;
-      width: 100px;
-      flex-shrink: 0;
-      & + * {
-        flex: 1;
-        min-width: 0;
-      }
-    }
-  }
-}
-</style>

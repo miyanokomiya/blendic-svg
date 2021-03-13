@@ -177,9 +177,10 @@ const selectedPosedBoneOrigin = computed(
   }
 )
 
-function setEndFrame(val: number) {
+function setEndFrame(val: number, seriesKey?: string) {
   if (endFrame.value === val) return
-  const item = getUpdateEndFrameItem(val)
+
+  const item = getUpdateEndFrameItem(val, seriesKey)
   item.redo()
   historyStore.push(item)
 }
@@ -199,7 +200,7 @@ function applyEditedTransforms(mapByBoneId: IdMap<Transform>) {
     })
   )
 }
-function pastePoses(mapByBoneId: IdMap<Transform>) {
+function pastePoses(mapByBoneId: IdMap<Transform>, seriesKey?: string) {
   const item = getUpdateEditedTransformsItem(
     {
       ...editTransforms.value,
@@ -217,7 +218,8 @@ function pastePoses(mapByBoneId: IdMap<Transform>) {
         }
       ),
     },
-    'Paste Pose'
+    'Paste Pose',
+    seriesKey
   )
   item.redo()
   historyStore.push(item)
@@ -450,7 +452,7 @@ export function useAnimationStore() {
   }
 }
 
-function getUpdateEndFrameItem(val: number): HistoryItem {
+function getUpdateEndFrameItem(val: number, seriesKey?: string): HistoryItem {
   const current = endFrame.value
 
   const redo = () => {
@@ -462,12 +464,14 @@ function getUpdateEndFrameItem(val: number): HistoryItem {
       endFrame.value = current
     },
     redo,
+    seriesKey,
   }
 }
 
 function getUpdateEditedTransformsItem(
   val: IdMap<Transform>,
-  name = 'Update Pose'
+  name = 'Update Pose',
+  seriesKey?: string
 ): HistoryItem {
   const current = { ...editTransforms.value }
 
@@ -480,6 +484,7 @@ function getUpdateEditedTransformsItem(
       editTransforms.value = current
     },
     redo,
+    seriesKey,
   }
 }
 

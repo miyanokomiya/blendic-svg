@@ -18,34 +18,42 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div class="ik-option-field">
-    <div class="field">
-      <label>Target</label>
+  <div>
+    <InlineField label="Target" :label-width="labelWidth">
       <SelectField v-model="targetId" :options="boneOptions" />
-    </div>
-    <div class="field">
-      <label>Pole Target</label>
+    </InlineField>
+    <InlineField label="Pole Target" :label-width="labelWidth">
       <SelectField v-model="poleTargetId" :options="boneOptions" />
-    </div>
-    <div class="field">
-      <label>Chain Length</label>
-      <NumberInput v-model="chainLength" integer :min="0" />
-    </div>
-    <div class="field">
-      <label>Iterations</label>
-      <NumberInput v-model="iterations" integer :min="0" :max="500" />
-    </div>
+    </InlineField>
+    <InlineField label="Chain Length" :label-width="labelWidth">
+      <SliderInput
+        :model-value="chainLength"
+        integer
+        :min="0"
+        @update:modelValue="updateChainLength"
+      />
+    </InlineField>
+    <InlineField label="Iterations" :label-width="labelWidth">
+      <SliderInput
+        :model-value="iterations"
+        integer
+        :min="0"
+        :max="500"
+        @update:modelValue="updateIterations"
+      />
+    </InlineField>
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
-import NumberInput from '/@/components/atoms/NumberInput.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
 
 export default defineComponent({
-  components: { NumberInput, SelectField },
+  components: { SliderInput, SelectField, InlineField },
   props: {
     modelValue: {
       type: Object as PropType<BoneConstraintOptions['IK']>,
@@ -58,11 +66,15 @@ export default defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    function emitUpdated(val: Partial<BoneConstraintOptions['IK']>) {
-      emit('update:modelValue', { ...props.modelValue, ...val })
+    function emitUpdated(
+      val: Partial<BoneConstraintOptions['IK']>,
+      seriesKey?: string
+    ) {
+      emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
     }
 
     return {
+      labelWidth: '100px',
       targetId: computed({
         get(): string {
           return props.modelValue.targetId
@@ -79,48 +91,19 @@ export default defineComponent({
           emitUpdated({ poleTargetId: val })
         },
       }),
-      chainLength: computed({
-        get(): number {
-          return props.modelValue.chainLength
-        },
-        set(val: number) {
-          emitUpdated({ chainLength: val })
-        },
+      chainLength: computed(() => {
+        return props.modelValue.chainLength
       }),
-      iterations: computed({
-        get(): number {
-          return props.modelValue.iterations
-        },
-        set(val: number) {
-          emitUpdated({ iterations: val })
-        },
+      updateChainLength(val: number, seriesKey?: string) {
+        emitUpdated({ chainLength: val }, seriesKey)
+      },
+      iterations: computed(() => {
+        return props.modelValue.iterations
       }),
+      updateIterations(val: number, seriesKey?: string) {
+        emitUpdated({ iterations: val }, seriesKey)
+      },
     }
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.ik-option-field {
-  text-align: left;
-  padding: 8px 0;
-  box-sizing: border-box;
-  .field {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    &:last-child {
-      margin-bottom: 0;
-    }
-    > label {
-      display: block;
-      width: 110px;
-      flex-shrink: 0;
-      & + * {
-        flex: 1;
-        min-width: 0;
-      }
-    }
-  }
-}
-</style>

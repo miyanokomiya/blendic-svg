@@ -23,42 +23,42 @@ Copyright (C) 2021, Tomoya Komiyama.
     <h4>Pose</h4>
     <form v-if="targetTransform" @submit.prevent>
       <h5>Translate</h5>
-      <div class="field">
-        <label>x</label>
-        <NumberInput
+      <InlineField label="x" :label-width="labelWidth">
+        <SliderInput
           :model-value="draftTransform.translateX"
+          :disabled="connected"
           @update:modelValue="changeTranslateX"
         />
-      </div>
-      <div class="field">
-        <label>y</label>
-        <NumberInput
+      </InlineField>
+      <InlineField label="y" :label-width="labelWidth">
+        <SliderInput
           :model-value="draftTransform.translateY"
+          :disabled="connected"
           @update:modelValue="changeTranslateY"
         />
-      </div>
+      </InlineField>
       <h5>Rotate</h5>
-      <div class="field">
-        <NumberInput
+      <InlineField :label-width="labelWidth">
+        <SliderInput
           :model-value="draftTransform.rotate"
           @update:modelValue="changeRotate"
         />
-      </div>
+      </InlineField>
       <h5>Scale</h5>
-      <div class="field">
-        <label>x</label>
-        <NumberInput
+      <InlineField label="x" :label-width="labelWidth">
+        <SliderInput
+          :step="0.1"
           :model-value="draftTransform.scaleX"
           @update:modelValue="changeScaleX"
         />
-      </div>
-      <div class="field">
-        <label>y</label>
-        <NumberInput
+      </InlineField>
+      <InlineField label="y" :label-width="labelWidth">
+        <SliderInput
+          :step="0.1"
           :model-value="draftTransform.scaleY"
           @update:modelValue="changeScaleY"
         />
-      </div>
+      </InlineField>
     </form>
     <div v-else>
       <p>No Item</p>
@@ -68,39 +68,38 @@ Copyright (C) 2021, Tomoya Komiyama.
     <h4>Bone</h4>
     <form v-if="targetBone" @submit.prevent>
       <h5>Head</h5>
-      <div class="field">
-        <label>x</label>
-        <NumberInput
+      <InlineField label="x" :label-width="labelWidth">
+        <SliderInput
           :model-value="draftBone.headX"
           @update:modelValue="changeBoneHeadX"
         />
-      </div>
-      <div class="field">
-        <label>y</label>
-        <NumberInput
+      </InlineField>
+      <InlineField label="y" :label-width="labelWidth">
+        <SliderInput
           :model-value="draftBone.headY"
           @update:modelValue="changeBoneHeadY"
         />
-      </div>
+      </InlineField>
       <h5>Tail</h5>
-      <div class="field">
-        <label>x</label>
-        <NumberInput
+      <InlineField label="x" :label-width="labelWidth">
+        <SliderInput
           :model-value="draftBone.tailX"
           @update:modelValue="changeBoneTailX"
         />
-      </div>
-      <div class="field">
-        <label>y</label>
-        <NumberInput
+      </InlineField>
+      <InlineField label="y" :label-width="labelWidth">
+        <SliderInput
           :model-value="draftBone.tailY"
           @update:modelValue="changeBoneTailY"
         />
-      </div>
+      </InlineField>
     </form>
     <div v-else>
       <p>No Item</p>
     </div>
+  </div>
+  <div v-else>
+    <p>No Item</p>
   </div>
 </template>
 
@@ -111,11 +110,12 @@ import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
 import { useCanvasStore } from '/@/store/canvas'
 import { convolutePoseTransforms, editTransform } from '/@/utils/armatures'
-import NumberInput from '/@/components/atoms/NumberInput.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
 import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
 
 export default defineComponent({
-  components: { NumberInput, WeightPanel },
+  components: { SliderInput, WeightPanel, InlineField },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
@@ -155,6 +155,10 @@ export default defineComponent({
       return store.lastSelectedBone.value
     })
 
+    const connected = computed(() => {
+      return targetBone.value?.connected
+    })
+
     const targetTransform = computed((): Transform | undefined => {
       if (!targetBone.value) return undefined
       if (canvasStore.state.canvasMode !== 'pose') return undefined
@@ -164,65 +168,71 @@ export default defineComponent({
       ])
     })
 
-    function changeBoneHeadX(val: number) {
+    function changeBoneHeadX(val: number, seriesKey?: string) {
       draftBone.headX = val
-      changeBone()
+      changeBone(seriesKey)
     }
-    function changeBoneHeadY(val: number) {
+    function changeBoneHeadY(val: number, seriesKey?: string) {
       draftBone.headY = val
-      changeBone()
+      changeBone(seriesKey)
     }
-    function changeBoneTailX(val: number) {
+    function changeBoneTailX(val: number, seriesKey?: string) {
       draftBone.tailX = val
-      changeBone()
+      changeBone(seriesKey)
     }
-    function changeBoneTailY(val: number) {
+    function changeBoneTailY(val: number, seriesKey?: string) {
       draftBone.tailY = val
-      changeBone()
+      changeBone(seriesKey)
     }
-    function changeBone() {
+    function changeBone(seriesKey?: string) {
       if (!targetBone.value) return
-      store.updateBones({
-        [targetBone.value.id]: {
-          head: { x: draftBone.headX, y: draftBone.headY },
-          tail: { x: draftBone.tailX, y: draftBone.tailY },
-        },
-      })
-    }
-
-    function changeTranslateX(val: number) {
-      draftTransform.translateX = val
-      changeTransform()
-    }
-    function changeTranslateY(val: number) {
-      draftTransform.translateY = val
-      changeTransform()
-    }
-    function changeRotate(val: number) {
-      draftTransform.rotate = val
-      changeTransform()
-    }
-    function changeScaleX(val: number) {
-      draftTransform.scaleX = val
-      changeTransform()
-    }
-    function changeScaleY(val: number) {
-      draftTransform.scaleY = val
-      changeTransform()
-    }
-
-    function changeTransform() {
-      if (!targetBone.value) return
-      animationStore.pastePoses({
-        [targetBone.value.id]: getTransform({
-          translate: {
-            x: draftTransform.translateX,
-            y: draftTransform.translateY,
+      store.updateBones(
+        {
+          [targetBone.value.id]: {
+            head: { x: draftBone.headX, y: draftBone.headY },
+            tail: { x: draftBone.tailX, y: draftBone.tailY },
           },
-          rotate: draftTransform.rotate,
-          scale: { x: draftTransform.scaleX, y: draftTransform.scaleY },
-        }),
-      })
+        },
+        seriesKey
+      )
+    }
+
+    function changeTranslateX(val: number, seriesKey?: string) {
+      draftTransform.translateX = val
+      changeTransform(seriesKey)
+    }
+    function changeTranslateY(val: number, seriesKey?: string) {
+      draftTransform.translateY = val
+      changeTransform(seriesKey)
+    }
+    function changeRotate(val: number, seriesKey?: string) {
+      draftTransform.rotate = val
+      changeTransform(seriesKey)
+    }
+    function changeScaleX(val: number, seriesKey?: string) {
+      draftTransform.scaleX = val
+      changeTransform(seriesKey)
+    }
+    function changeScaleY(val: number, seriesKey?: string) {
+      draftTransform.scaleY = val
+      changeTransform(seriesKey)
+    }
+
+    function changeTransform(seriesKey?: string) {
+      if (!targetBone.value) return
+      animationStore.pastePoses(
+        {
+          [targetBone.value.id]: getTransform({
+            translate: {
+              x: draftTransform.translateX,
+              y: draftTransform.translateY,
+            },
+            rotate: draftTransform.rotate,
+            scale: { x: draftTransform.scaleX, y: draftTransform.scaleY },
+          }),
+        },
+        seriesKey
+      )
     }
 
     watchEffect(() => {
@@ -244,6 +254,7 @@ export default defineComponent({
     })
 
     return {
+      labelWidth: '20px',
       canvasMode: computed(() => canvasStore.state.canvasMode),
       targetBone,
       draftBone,
@@ -258,6 +269,7 @@ export default defineComponent({
       changeRotate,
       changeScaleX,
       changeScaleY,
+      connected,
     }
   },
 })
@@ -273,28 +285,5 @@ h5 {
 }
 * + h5 {
   margin-top: 8px;
-}
-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  .field {
-    margin-bottom: 4px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: right;
-    &:last-child {
-      margin-bottom: 0;
-    }
-    > label {
-      margin-right: 10px;
-      min-width: 10px;
-      text-align: left;
-    }
-    > input {
-      width: 90px;
-    }
-  }
 }
 </style>

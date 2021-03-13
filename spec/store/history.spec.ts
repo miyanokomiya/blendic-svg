@@ -43,6 +43,28 @@ describe('store/history.ts', () => {
       expect(historyStore.state.undoStack[0].name).toBe('undo')
       expect(historyStore.state.redoStack.length).toBe(0)
     })
+
+    it('replace history and inherit undo if two items are same series', () => {
+      const undoFirst = jest.fn()
+      const redoSecond = jest.fn()
+      historyStore.state.undoStack = [
+        {
+          name: '1st',
+          undo: undoFirst,
+          redo: () => {},
+          seriesKey: 'series',
+        },
+      ]
+      historyStore.push({
+        name: '2nd',
+        undo: () => {},
+        redo: redoSecond,
+        seriesKey: 'series',
+      })
+      expect(historyStore.state.undoStack.length).toBe(1)
+      expect(historyStore.state.undoStack[0].undo).toBe(undoFirst)
+      expect(historyStore.state.undoStack[0].redo).toBe(redoSecond)
+    })
   })
 
   describe('undo', () => {

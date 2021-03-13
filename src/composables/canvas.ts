@@ -162,6 +162,9 @@ export function useCanvas(
         )
       )
     },
+    isSomeAction: computed(() => {
+      return !!(editStartPoint.value || dragRectangle.value)
+    }),
   }
 }
 

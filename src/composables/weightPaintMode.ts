@@ -17,29 +17,18 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive, computed } from 'vue'
-import { getRadian, IVec2, rotate, sub } from 'okageo'
+import { computed } from 'vue'
 import {
-  Transform,
   getTransform,
-  BoneSelectedState,
   EditMode,
-  IdMap,
   EditMovement,
   CanvasEditModeBase,
 } from '../models/index'
-import { useStore } from '/@/store/index'
-import { CanvasStore } from '/@/store/canvas'
-import { useAnimationStore } from '../store/animation'
-import { mapReduce } from '../utils/commons'
 import { useElementStore } from '../store/element'
-
-interface State {}
 
 export interface WeightPaintMode extends CanvasEditModeBase {}
 
 export function useWeightPaintMode(): WeightPaintMode {
-  const store = useStore()
   const elementStore = useElementStore()
 
   function cancel() {}

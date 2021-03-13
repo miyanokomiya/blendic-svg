@@ -17,5 +17,8 @@ module.exports = {
     warnOnUnsupportedTypeScriptVersion: false,
   },
   plugins: ['vue', '@typescript-eslint'],
-  rules: {},
+  rules: {
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+  },
 }

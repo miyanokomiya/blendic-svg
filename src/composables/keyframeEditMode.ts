@@ -34,6 +34,7 @@ import { mapReduce, toList } from '../utils/commons'
 import { getFrameX, getNearestFrameAtPoint } from '../utils/animations'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { applyTransform } from '/@/utils/geometry'
+import { IRectangle } from 'okageo'
 
 interface State {
   command: EditMode
@@ -175,7 +176,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     animationStore.selectKeyframeByFrame(frame, true)
   }
 
-  function rectSelect(rect: IRectangle, shift = false) {}
+  function rectSelect(_rect: IRectangle, _shift = false) {}
 
   function selectAll() {
     if (state.command) {

@@ -281,6 +281,8 @@ export default defineComponent({
         canvas.downLeft('rect-select')
       },
       upLeft: (e: MouseEvent) => {
+        if (!canvas.isSomeAction.value) return
+
         if (
           canvas.dragRectangle.value &&
           (Math.abs(canvas.dragRectangle.value.width) > 0 ||

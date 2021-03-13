@@ -54,6 +54,10 @@ Copyright (C) 2021, Tomoya Komiyama.
       @keydown.v.ctrl.exact.prevent="editKeyDown('ctrl-v')"
       @keydown.d.shift.exact.prevent="editKeyDown('shift-d')"
     >
+      <g v-if="showAxis" :stroke-width="1 * scale" stroke-opacity="0.3">
+        <line x1="-20000" x2="20000" stroke="red" />
+        <line y1="-20000" y2="20000" stroke="green" />
+      </g>
       <rect
         v-if="showViewbox"
         :x="originalViewBox.x"
@@ -258,6 +262,7 @@ export default defineComponent({
 
     return {
       showViewbox: computed(() => settings.showViewbox),
+      showAxis: computed(() => settings.showAxis),
       scale: canvas.scale,
       viewSize: computed(() => canvas.viewSize),
       svg,

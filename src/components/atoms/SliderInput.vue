@@ -217,7 +217,6 @@ input {
   opacity: 0.3;
   pointer-events: none;
   transform-origin: 0;
-  z-index: -1;
 }
 .slider-forward {
   position: absolute;

@@ -25,16 +25,18 @@ Copyright (C) 2021, Tomoya Komiyama.
         <CheckboxInput v-model="settings.showBoneName" label="Bone Name" />
       </InlineField>
       <BlockField label="Bone Opacity">
-        <input
+        <SliderInput
           v-model="settings.boneOpacity"
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
+          :min="0"
+          :max="1"
+          :step="0.1"
         />
       </BlockField>
       <InlineField>
         <CheckboxInput v-model="settings.showViewbox" label="Viewbox" />
+      </InlineField>
+      <InlineField>
+        <CheckboxInput v-model="settings.showAxis" label="Axis" />
       </InlineField>
     </form>
   </div>
@@ -46,9 +48,10 @@ import { useSettings } from '/@/composables/settings'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
 
 export default defineComponent({
-  components: { CheckboxInput, InlineField, BlockField },
+  components: { CheckboxInput, InlineField, BlockField, SliderInput },
   setup() {
     const { settings } = useSettings()
 

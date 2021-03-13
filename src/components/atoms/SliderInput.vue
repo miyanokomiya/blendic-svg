@@ -128,10 +128,10 @@ export default defineComponent({
       }
 
       if (range.value) {
-        const val =
-          logRound(-2, clamp(0, 1, dragStartRate.value + rateDiff)) *
-            range.value +
-          props.min!
+        const val = logRound(
+          -2,
+          clamp(0, 1, dragStartRate.value + rateDiff) * range.value + props.min!
+        )
         draftValue.value = clampValue(
           props.integer ? Math.round(val) : val
         ).toString()

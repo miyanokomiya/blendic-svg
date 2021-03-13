@@ -41,7 +41,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { useDrag } from 'okanvas'
 import { computed, defineComponent, PropType, ref, watchEffect } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
-import { clamp, decimalRound } from '/@/utils/geometry'
+import { clamp, logRound } from '/@/utils/geometry'
 
 export default defineComponent({
   props: {
@@ -57,6 +57,10 @@ export default defineComponent({
     max: {
       type: Number as PropType<number | undefined>,
       default: undefined,
+    },
+    step: {
+      type: Number,
+      default: 1,
     },
   },
   emits: ['update:modelValue'],
@@ -74,6 +78,10 @@ export default defineComponent({
         return undefined
       }
     })
+
+    const stepLog = computed(() =>
+      Math.round(Math.log(props.step) / Math.log(10))
+    )
 
     const draftValue = ref('0')
 
@@ -115,15 +123,17 @@ export default defineComponent({
 
       if (range.value) {
         const val =
-          decimalRound(2, clamp(0, 1, dragStartRate.value + rateDiff)) *
+          logRound(-2, clamp(0, 1, dragStartRate.value + rateDiff)) *
             range.value +
           props.min!
         draftValue.value = clampValue(
           props.integer ? Math.round(val) : val
         ).toString()
       } else {
-        const val = arg.d.x
-        draftValue.value = clampValue(parseDraftValue.value + val).toString()
+        draftValue.value = logRound(
+          stepLog.value,
+          clampValue(parseDraftValue.value + arg.d.x * props.step)
+        ).toString()
       }
 
       input()

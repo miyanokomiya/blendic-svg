@@ -24,33 +24,35 @@ Copyright (C) 2021, Tomoya Komiyama.
     <form v-if="targetTransform" @submit.prevent>
       <h5>Translate</h5>
       <InlineField label="x" :label-width="labelWidth">
-        <NumberInput
+        <SliderInput
           :model-value="draftTransform.translateX"
           @update:modelValue="changeTranslateX"
         />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
-        <NumberInput
+        <SliderInput
           :model-value="draftTransform.translateY"
           @update:modelValue="changeTranslateY"
         />
       </InlineField>
       <h5>Rotate</h5>
       <InlineField :label-width="labelWidth">
-        <NumberInput
+        <SliderInput
           :model-value="draftTransform.rotate"
           @update:modelValue="changeRotate"
         />
       </InlineField>
       <h5>Scale</h5>
       <InlineField label="x" :label-width="labelWidth">
-        <NumberInput
+        <SliderInput
+          :step="0.1"
           :model-value="draftTransform.scaleX"
           @update:modelValue="changeScaleX"
         />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
-        <NumberInput
+        <SliderInput
+          :step="0.1"
           :model-value="draftTransform.scaleY"
           @update:modelValue="changeScaleY"
         />
@@ -65,26 +67,26 @@ Copyright (C) 2021, Tomoya Komiyama.
     <form v-if="targetBone" @submit.prevent>
       <h5>Head</h5>
       <InlineField label="x" :label-width="labelWidth">
-        <NumberInput
+        <SliderInput
           :model-value="draftBone.headX"
           @update:modelValue="changeBoneHeadX"
         />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
-        <NumberInput
+        <SliderInput
           :model-value="draftBone.headY"
           @update:modelValue="changeBoneHeadY"
         />
       </InlineField>
       <h5>Tail</h5>
       <InlineField label="x" :label-width="labelWidth">
-        <NumberInput
+        <SliderInput
           :model-value="draftBone.tailX"
           @update:modelValue="changeBoneTailX"
         />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
-        <NumberInput
+        <SliderInput
           :model-value="draftBone.tailY"
           @update:modelValue="changeBoneTailY"
         />
@@ -106,12 +108,12 @@ import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
 import { useCanvasStore } from '/@/store/canvas'
 import { convolutePoseTransforms, editTransform } from '/@/utils/armatures'
-import NumberInput from '/@/components/atoms/NumberInput.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
 import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 
 export default defineComponent({
-  components: { NumberInput, WeightPanel, InlineField },
+  components: { SliderInput, WeightPanel, InlineField },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()

@@ -24,8 +24,8 @@ export function clamp(min: number, max: number, val: number) {
   return Math.max(Math.min(val, max), min)
 }
 
-export function decimalRound(decimal: number, val: number) {
-  const pow = Math.pow(10, decimal)
+export function logRound(log: number, val: number) {
+  const pow = Math.pow(10, -log)
   return Math.round(val * pow) / pow
 }
 

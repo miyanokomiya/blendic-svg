@@ -21,20 +21,27 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div>
     <InlineField label="Space Type" :label-width="labelWidth">
       <SelectField
-        v-model="spaceType"
+        :model-value="modelValue.spaceType"
         :options="spaceTypeOptions"
         no-placeholder
+        @update:modelValue="updateSpaceType"
       />
     </InlineField>
     <InlineField label="Min" :label-width="labelWidth">
-      <SliderInput :model-value="min" @update:modelValue="updateMin" />
+      <SliderInput
+        :model-value="modelValue.min"
+        @update:modelValue="updateMin"
+      />
     </InlineField>
     <InlineField label="Max" :label-width="labelWidth">
-      <SliderInput :model-value="max" @update:modelValue="updateMax" />
+      <SliderInput
+        :model-value="modelValue.max"
+        @update:modelValue="updateMax"
+      />
     </InlineField>
     <InlineField label="Influence" :label-width="labelWidth">
       <SliderInput
-        :model-value="influence"
+        :model-value="modelValue.influence"
         :min="0"
         :max="1"
         @update:modelValue="updateInfluence"
@@ -80,29 +87,15 @@ export default defineComponent({
     return {
       labelWidth: '100px',
       spaceTypeOptions,
-      spaceType: computed({
-        get(): SpaceType {
-          return props.modelValue.spaceType
-        },
-        set(val: SpaceType) {
-          emitUpdated({ spaceType: val })
-        },
-      }),
-      min: computed(() => {
-        return props.modelValue.min
-      }),
+      updateSpaceType(val: SpaceType) {
+        emitUpdated({ spaceType: val })
+      },
       updateMin(val: number, seriesKey?: string) {
         emitUpdated({ min: val }, seriesKey)
       },
-      max: computed(() => {
-        return props.modelValue.max
-      }),
       updateMax(val: number, seriesKey?: string) {
         emitUpdated({ max: val }, seriesKey)
       },
-      influence: computed(() => {
-        return props.modelValue.influence
-      }),
       updateInfluence(val: number, seriesKey?: string) {
         emitUpdated({ influence: val }, seriesKey)
       },

@@ -20,14 +20,22 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div>
     <InlineField label="Target" :label-width="labelWidth">
-      <SelectField v-model="targetId" :options="boneOptions" />
+      <SelectField
+        :model-value="modelValue.targetId"
+        :options="boneOptions"
+        @update:modelValue="updateTargetId"
+      />
     </InlineField>
     <InlineField label="Pole Target" :label-width="labelWidth">
-      <SelectField v-model="poleTargetId" :options="boneOptions" />
+      <SelectField
+        :model-value="modelValue.poleTargetId"
+        :options="boneOptions"
+        @update:modelValue="updatePoleTargetId"
+      />
     </InlineField>
     <InlineField label="Chain Length" :label-width="labelWidth">
       <SliderInput
-        :model-value="chainLength"
+        :model-value="modelValue.chainLength"
         integer
         :min="0"
         @update:modelValue="updateChainLength"
@@ -35,7 +43,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     </InlineField>
     <InlineField label="Iterations" :label-width="labelWidth">
       <SliderInput
-        :model-value="iterations"
+        :model-value="modelValue.iterations"
         integer
         :min="0"
         :max="500"
@@ -46,7 +54,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+import { defineComponent, PropType } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
@@ -75,31 +83,15 @@ export default defineComponent({
 
     return {
       labelWidth: '100px',
-      targetId: computed({
-        get(): string {
-          return props.modelValue.targetId
-        },
-        set(val: string) {
-          emitUpdated({ targetId: val })
-        },
-      }),
-      poleTargetId: computed({
-        get(): string {
-          return props.modelValue.poleTargetId
-        },
-        set(val: string) {
-          emitUpdated({ poleTargetId: val })
-        },
-      }),
-      chainLength: computed(() => {
-        return props.modelValue.chainLength
-      }),
+      updateTargetId(val: string) {
+        emitUpdated({ targetId: val })
+      },
+      updatePoleTargetId(val: string) {
+        emitUpdated({ poleTargetId: val })
+      },
       updateChainLength(val: number, seriesKey?: string) {
         emitUpdated({ chainLength: val }, seriesKey)
       },
-      iterations: computed(() => {
-        return props.modelValue.iterations
-      }),
       updateIterations(val: number, seriesKey?: string) {
         emitUpdated({ iterations: val }, seriesKey)
       },

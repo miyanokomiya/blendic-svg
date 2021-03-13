@@ -20,28 +20,38 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div>
     <InlineField label="Target" :label-width="labelWidth">
-      <SelectField v-model="targetId" :options="boneOptions" />
+      <SelectField
+        :model-value="modelValue.targetId"
+        :options="boneOptions"
+        @update:modelValue="updateTargetId"
+      />
     </InlineField>
     <InlineField label="Target Space" :label-width="labelWidth">
       <SelectField
-        v-model="targetSpaceType"
+        :model-value="modelValue.targetSpaceType"
         :options="spaceTypeOptions"
         no-placeholder
+        @update:modelValue="updateTargetSpaceType"
       />
     </InlineField>
     <InlineField label="Owner Space" :label-width="labelWidth">
       <SelectField
-        v-model="ownerSpaceType"
+        :model-value="modelValue.ownerSpaceType"
         :options="spaceTypeOptions"
         no-placeholder
+        @update:modelValue="updateOwnerSpaceType"
       />
     </InlineField>
     <InlineField>
-      <CheckboxInput v-model="invert" label="Invert" />
+      <CheckboxInput
+        :model-value="modelValue.invert"
+        label="Invert"
+        @update:modelValue="updateInvert"
+      />
     </InlineField>
     <InlineField label="Influence" :label-width="labelWidth">
       <SliderInput
-        :model-value="influence"
+        :model-value="modelValue.influence"
         :min="0"
         :max="1"
         @update:modelValue="updateInfluence"
@@ -97,44 +107,21 @@ export default defineComponent({
     return {
       labelWidth: '100px',
       spaceTypeOptions,
-      targetSpaceType: computed({
-        get(): SpaceType {
-          return props.modelValue.targetSpaceType
-        },
-        set(val: SpaceType) {
-          emitUpdated({ targetSpaceType: val })
-        },
-      }),
-      ownerSpaceType: computed({
-        get(): SpaceType {
-          return props.modelValue.ownerSpaceType
-        },
-        set(val: SpaceType) {
-          emitUpdated({ ownerSpaceType: val })
-        },
-      }),
-      targetId: computed({
-        get(): string {
-          return props.modelValue.targetId
-        },
-        set(val: string) {
-          emitUpdated({ targetId: val })
-        },
-      }),
-      influence: computed(() => {
-        return props.modelValue.influence
-      }),
+      updateTargetId(val: string) {
+        emitUpdated({ targetId: val })
+      },
+      updateTargetSpaceType(val: SpaceType) {
+        emitUpdated({ targetSpaceType: val })
+      },
+      updateOwnerSpaceType(val: SpaceType) {
+        emitUpdated({ ownerSpaceType: val })
+      },
       updateInfluence(val: number, seriesKey?: string) {
         emitUpdated({ influence: val }, seriesKey)
       },
-      invert: computed({
-        get(): boolean {
-          return props.modelValue.invert
-        },
-        set(val: boolean) {
-          emitUpdated({ invert: val })
-        },
-      }),
+      updateInvert(val: boolean) {
+        emitUpdated({ invert: val })
+      },
     }
   },
 })

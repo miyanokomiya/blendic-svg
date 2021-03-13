@@ -168,65 +168,71 @@ export default defineComponent({
       ])
     })
 
-    function changeBoneHeadX(val: number) {
+    function changeBoneHeadX(val: number, seriesKey?: string) {
       draftBone.headX = val
-      changeBone()
+      changeBone(seriesKey)
     }
-    function changeBoneHeadY(val: number) {
+    function changeBoneHeadY(val: number, seriesKey?: string) {
       draftBone.headY = val
-      changeBone()
+      changeBone(seriesKey)
     }
-    function changeBoneTailX(val: number) {
+    function changeBoneTailX(val: number, seriesKey?: string) {
       draftBone.tailX = val
-      changeBone()
+      changeBone(seriesKey)
     }
-    function changeBoneTailY(val: number) {
+    function changeBoneTailY(val: number, seriesKey?: string) {
       draftBone.tailY = val
-      changeBone()
+      changeBone(seriesKey)
     }
-    function changeBone() {
+    function changeBone(seriesKey?: string) {
       if (!targetBone.value) return
-      store.updateBones({
-        [targetBone.value.id]: {
-          head: { x: draftBone.headX, y: draftBone.headY },
-          tail: { x: draftBone.tailX, y: draftBone.tailY },
-        },
-      })
-    }
-
-    function changeTranslateX(val: number) {
-      draftTransform.translateX = val
-      changeTransform()
-    }
-    function changeTranslateY(val: number) {
-      draftTransform.translateY = val
-      changeTransform()
-    }
-    function changeRotate(val: number) {
-      draftTransform.rotate = val
-      changeTransform()
-    }
-    function changeScaleX(val: number) {
-      draftTransform.scaleX = val
-      changeTransform()
-    }
-    function changeScaleY(val: number) {
-      draftTransform.scaleY = val
-      changeTransform()
-    }
-
-    function changeTransform() {
-      if (!targetBone.value) return
-      animationStore.pastePoses({
-        [targetBone.value.id]: getTransform({
-          translate: {
-            x: draftTransform.translateX,
-            y: draftTransform.translateY,
+      store.updateBones(
+        {
+          [targetBone.value.id]: {
+            head: { x: draftBone.headX, y: draftBone.headY },
+            tail: { x: draftBone.tailX, y: draftBone.tailY },
           },
-          rotate: draftTransform.rotate,
-          scale: { x: draftTransform.scaleX, y: draftTransform.scaleY },
-        }),
-      })
+        },
+        seriesKey
+      )
+    }
+
+    function changeTranslateX(val: number, seriesKey?: string) {
+      draftTransform.translateX = val
+      changeTransform(seriesKey)
+    }
+    function changeTranslateY(val: number, seriesKey?: string) {
+      draftTransform.translateY = val
+      changeTransform(seriesKey)
+    }
+    function changeRotate(val: number, seriesKey?: string) {
+      draftTransform.rotate = val
+      changeTransform(seriesKey)
+    }
+    function changeScaleX(val: number, seriesKey?: string) {
+      draftTransform.scaleX = val
+      changeTransform(seriesKey)
+    }
+    function changeScaleY(val: number, seriesKey?: string) {
+      draftTransform.scaleY = val
+      changeTransform(seriesKey)
+    }
+
+    function changeTransform(seriesKey?: string) {
+      if (!targetBone.value) return
+      animationStore.pastePoses(
+        {
+          [targetBone.value.id]: getTransform({
+            translate: {
+              x: draftTransform.translateX,
+              y: draftTransform.translateY,
+            },
+            rotate: draftTransform.rotate,
+            scale: { x: draftTransform.scaleX, y: draftTransform.scaleY },
+          }),
+        },
+        seriesKey
+      )
     }
 
     watchEffect(() => {

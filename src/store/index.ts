@@ -293,10 +293,10 @@ function addBones(bones: Bone[], selectedState?: BoneSelectedState) {
   item.redo()
   historyStore.push(item)
 }
-function updateBones(diffMap: IdMap<Partial<Bone>>) {
+function updateBones(diffMap: IdMap<Partial<Bone>>, seriesKey?: string) {
   if (!lastSelectedArmature.value) return
 
-  const item = getUpdateBonesItem(diffMap)
+  const item = getUpdateBonesItem(diffMap, seriesKey)
   item.redo()
   historyStore.push(item)
 }
@@ -519,7 +519,10 @@ function getUpdateBoneItem(updated: Partial<Bone>): HistoryItem {
     redo,
   }
 }
-function getUpdateBonesItem(updated: IdMap<Partial<Bone>>): HistoryItem {
+function getUpdateBonesItem(
+  updated: IdMap<Partial<Bone>>,
+  seriesKey?: string
+): HistoryItem {
   const updatedMap = mergeMap<Partial<Bone>>(
     updated,
     armatureUtils.updateConnections(
@@ -558,6 +561,7 @@ function getUpdateBonesItem(updated: IdMap<Partial<Bone>>): HistoryItem {
       )
     },
     redo,
+    seriesKey,
   }
 }
 function getDeleteBoneItem(): HistoryItem {

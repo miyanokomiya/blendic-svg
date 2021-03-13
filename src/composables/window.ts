@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive } from 'vue'
+import { onMounted, onUnmounted, reactive } from 'vue'
 
 const state = reactive({
   size: { width: 100, height: 100 },
@@ -32,4 +32,26 @@ window.addEventListener('resize', () => {
 
 export function useWindow() {
   return { state }
+}
+
+export function useGlobalMousemove(fn: (e: MouseEvent) => void) {
+  onMounted(() => {
+    window.addEventListener('mousemove', fn)
+  })
+  onUnmounted(() => {
+    window.removeEventListener('mousemove', fn)
+  })
+  return {}
+}
+
+export function useGlobalMouseup(fn: (e: MouseEvent) => void) {
+  onMounted(() => {
+    window.addEventListener('mouseup', fn)
+    window.addEventListener('mouseleave', fn)
+  })
+  onUnmounted(() => {
+    window.removeEventListener('mouseup', fn)
+    window.removeEventListener('mouseleave', fn)
+  })
+  return {}
 }

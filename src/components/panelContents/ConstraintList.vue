@@ -191,7 +191,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .constraints-item {
-  padding-top: 8px;
+  padding: 8px 0;
   width: 100%;
   margin-top: 10px;
   border-top: solid 1px #aaa;

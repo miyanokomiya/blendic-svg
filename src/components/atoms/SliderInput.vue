@@ -1,0 +1,179 @@
+<!--
+This file is part of Blendic SVG.
+
+Blendic SVG is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Blendic SVG is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
+
+Copyright (C) 2021, Tomoya Komiyama.
+-->
+
+<template>
+  <div ref="el" class="slider-wrapper">
+    <div class="slider-background" :style="{ transform: `scaleX(${rate})` }" />
+    <input
+      ref="inputEl"
+      v-model="draftValue"
+      type="text"
+      @change="input"
+      @focus="onFocus"
+      @blur="onBlur"
+    />
+    <div
+      v-if="!focused"
+      class="slider-forward"
+      @mouseup="onUpForward"
+      @mousedown="onDown"
+    />
+  </div>
+</template>
+
+<script lang="ts">
+import { useDrag } from 'okanvas'
+import { computed, defineComponent, ref, watchEffect } from 'vue'
+import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
+import { clamp, decimalRound } from '/@/utils/geometry'
+
+export default defineComponent({
+  props: {
+    modelValue: { type: Number, default: 0 },
+    integer: {
+      type: Boolean,
+      default: false,
+    },
+    min: {
+      type: Number,
+      default: 0,
+    },
+    max: {
+      type: Number,
+      default: 1,
+    },
+  },
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    const el = ref<Element>()
+    const inputEl = ref<HTMLInputElement>()
+    const dragStartRate = ref(0)
+    const focused = ref(false)
+    const dragged = ref(false)
+
+    const draftValue = ref('0')
+
+    watchEffect(() => {
+      draftValue.value = props.modelValue.toString()
+    })
+
+    const parseDraftValue = computed(() => {
+      if (props.integer) {
+        return parseInt(draftValue.value)
+      } else {
+        return parseFloat(draftValue.value)
+      }
+    })
+
+    const rate = computed(() => {
+      if (props.max === props.min) return 0
+      return props.modelValue / (props.max - props.min)
+    })
+
+    function onUpForward() {
+      // focus and select the input element if not dragged
+      if (!dragged.value) {
+        focused.value = true
+        inputEl.value?.select()
+      }
+    }
+
+    const drag = useDrag((arg) => {
+      if (!el.value) return
+      const width = el.value.getBoundingClientRect().width
+      const rateDiff = (arg.p.x - arg.base.x) / width
+
+      if (Math.abs(rateDiff) > 0) {
+        dragged.value = true
+      }
+
+      const val =
+        decimalRound(
+          2,
+          clamp(props.min, props.max, dragStartRate.value + rateDiff)
+        ) *
+          (props.max - props.min) +
+        props.min
+
+      draftValue.value = (props.integer ? Math.round(val) : val).toString()
+      input()
+    })
+    useGlobalMousemove(drag.onMove)
+    useGlobalMouseup(drag.onUp)
+
+    function input() {
+      if (isNaN(parseDraftValue.value)) {
+        draftValue.value = props.modelValue.toString()
+        return
+      }
+      if (parseDraftValue.value === props.modelValue) return
+
+      emit(
+        'update:modelValue',
+        clamp(props.min, props.max, parseDraftValue.value)
+      )
+    }
+
+    return {
+      focused,
+      onFocus: () => (focused.value = true),
+      onBlur: () => (focused.value = false),
+      draftValue,
+      el,
+      inputEl,
+      onDown: (e: MouseEvent) => {
+        dragged.value = false
+        dragStartRate.value = rate.value
+        drag.onDown(e)
+      },
+      onUpForward,
+      input,
+      rate,
+    }
+  },
+})
+</script>
+
+<style lang="scss" scoped>
+.slider-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.slider-background {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #4169e1;
+  opacity: 0.3;
+  pointer-events: none;
+  transform-origin: 0;
+  z-index: -1;
+}
+.slider-forward {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  cursor: col-resize;
+}
+</style>

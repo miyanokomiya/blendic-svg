@@ -20,6 +20,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { add, getRadian, IRectangle, isSame, IVec2, rotate } from 'okageo'
 import { Bone, scaleRate, Transform } from '/@/models'
 
+export function clamp(min: number, max: number, val: number) {
+  return Math.max(Math.min(val, max), min)
+}
+
+export function decimalRound(decimal: number, val: number) {
+  const pow = Math.pow(10, decimal)
+  return Math.round(val * pow) / pow
+}
+
 // normalize in (-pi <= r <= pi)
 export function normalizeRad(rad: number): number {
   if (rad < -Math.PI) return rad + Math.PI * 2

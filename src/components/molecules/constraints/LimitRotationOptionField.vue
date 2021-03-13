@@ -33,7 +33,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <NumberInput v-model="max" />
     </InlineField>
     <InlineField label="Influence" :label-width="labelWidth">
-      <NumberInput v-model="influence" :min="0" :max="1" />
+      <SliderInput v-model="influence" />
     </InlineField>
   </div>
 </template>
@@ -42,12 +42,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import NumberInput from '/@/components/atoms/NumberInput.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import { SpaceType } from '/@/models'
 
 export default defineComponent({
-  components: { NumberInput, SelectField, InlineField },
+  components: { NumberInput, SliderInput, SelectField, InlineField },
   props: {
     modelValue: {
       type: Object as PropType<BoneConstraintOptions['LIMIT_ROTATION']>,

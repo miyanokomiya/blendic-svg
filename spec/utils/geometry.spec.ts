@@ -22,6 +22,8 @@ import {
   applyScale,
   applyTransform,
   applyTransformToVec,
+  clamp,
+  decimalRound,
   getBoneBodyRotation,
   getBoneWorldLocation,
   getBoneWorldRotation,
@@ -38,6 +40,27 @@ import {
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
+  describe('clamp', () => {
+    it.each([
+      [0, 1, 2, 1],
+      [0, 1, -1, 0],
+      [0, 1, 0.2, 0.2],
+    ])('clamp(%s, &s, %s) => %s', (min, max, val, expected) => {
+      expect(clamp(min, max, val)).toBe(expected)
+    })
+  })
+
+  describe('decimalRound', () => {
+    it.each([
+      [0, 0.111, 0],
+      [1, 0.111, 0.1],
+      [2, 0.111, 0.11],
+      [2, 0.666, 0.67],
+    ])('decimalRound(&s, %s) => %s', (decimal, val, expected) => {
+      expect(decimalRound(decimal, val)).toBe(expected)
+    })
+  })
+
   describe('normalizeRad', () => {
     it.each([
       [0, 0],

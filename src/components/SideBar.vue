@@ -71,9 +71,10 @@ export default defineComponent({
     margin-bottom: 4px;
     padding: 4px 2px;
     border: solid 1px #aaa;
-    border-left: none;
-    border-radius: 0 4px 4px 0;
-    writing-mode: sideways-lr;
+    border-right: none;
+    border-radius: 4px 0 0 4px;
+    writing-mode: vertical-lr;
+    transform: scale(-1);
     &.current {
       background-color: #ddd;
     }

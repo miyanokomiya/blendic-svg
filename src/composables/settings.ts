@@ -25,6 +25,7 @@ const settings = reactive({
   showBoneName: true,
   boneOpacity: 1,
   showViewbox: true,
+  showAxis: true,
 })
 
 export function useSettings() {

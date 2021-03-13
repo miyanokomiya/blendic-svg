@@ -36,6 +36,9 @@ Copyright (C) 2021, Tomoya Komiyama.
       <InlineField>
         <CheckboxInput v-model="settings.showViewbox" label="Viewbox" />
       </InlineField>
+      <InlineField>
+        <CheckboxInput v-model="settings.showAxis" label="Axis" />
+      </InlineField>
     </form>
   </div>
 </template>

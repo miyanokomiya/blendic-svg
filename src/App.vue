@@ -333,6 +333,9 @@ export default defineComponent({
   text-align: center;
   color: #2c3e50;
 }
+input {
+  max-width: 100%;
+}
 input[type='text'] {
   padding: 2px 4px;
   border: solid 1px #777;

@@ -21,37 +21,34 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div>
     <form v-if="selectedObjectType === 'armature'" @submit.prevent>
       <h3>Armature</h3>
-      <div class="field inline">
-        <label>Name</label>
+      <InlineField label="Name">
         <input v-model="draftName" type="text" @change="changeArmatureName" />
-      </div>
+      </InlineField>
     </form>
     <form
       v-if="selectedObjectType === 'bone' && lastSelectedBone"
       @submit.prevent
     >
       <h3>Bone</h3>
-      <div class="field inline">
-        <label>Name</label>
+      <InlineField label="Name">
         <input v-model="draftName" type="text" @change="changeBoneName" />
-      </div>
-      <div class="field inline">
-        <label>Parent</label>
+      </InlineField>
+      <InlineField label="Parent">
         <SelectField v-model="parentId" :options="otherBoneOptions" />
-      </div>
-      <div class="field">
+      </InlineField>
+      <InlineField>
         <CheckboxInput
           v-model="connected"
           :disabled="!parentId"
           label="Connect"
         />
-      </div>
-      <div class="field">
+      </InlineField>
+      <InlineField>
         <CheckboxInput v-model="inheritRotation" label="Inherit Rotation" />
-      </div>
-      <div class="field">
+      </InlineField>
+      <InlineField>
         <CheckboxInput v-model="inheritScale" label="Inherit Scale" />
-      </div>
+      </InlineField>
       <ConstraintList
         :constraints="lastSelectedBone.constraints"
         :bone-options="otherBoneOptions"
@@ -69,12 +66,14 @@ import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import { BoneConstraint } from '/@/utils/constraints'
 import ConstraintList from '/@/components/panelContents/ConstraintList.vue'
 import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
+import InlineField from '/@/components/atoms/InlineField.vue'
 
 export default defineComponent({
   components: {
     SelectField,
     CheckboxInput,
     ConstraintList,
+    InlineField,
   },
   setup() {
     const store = useStore()
@@ -191,32 +190,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 h3 {
+  text-align: left;
   margin-bottom: 10px;
-}
-form {
-  padding-bottom: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  .field {
-    margin-bottom: 10px;
-    width: 100%;
-    &:last-child {
-      margin-bottom: 0;
-    }
-    &.inline {
-      display: flex;
-      align-items: center;
-      > label {
-        margin-right: 10px;
-        min-width: 60px;
-        text-align: left;
-      }
-      > label + * {
-        flex: 1;
-        min-width: 50px; // a magic to fix flex width
-      }
-    }
-  }
 }
 </style>

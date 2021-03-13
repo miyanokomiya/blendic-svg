@@ -18,9 +18,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <RowBlock class="inline-field">
-    <label v-if="label" :style="{ width: labelWidth }">{{ label }}</label>
-    <div class="inline-content"><slot /></div>
+  <RowBlock>
+    <label v-if="label" class="label">{{ label }}</label>
+    <div class="block-content"><slot /></div>
   </RowBlock>
 </template>
 
@@ -35,29 +35,14 @@ export default defineComponent({
       type: String,
       default: '',
     },
-    labelWidth: {
-      type: String,
-      default: undefined,
-    },
   },
 })
 </script>
 
 <style lang="scss" scoped>
-.inline-field {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  & + .inline-field {
-    margin-top: 10px;
-  }
-  > label {
-    margin-right: 10px;
-    text-align: left;
-  }
-  .inline-content {
-    flex: 1;
-    min-width: 50px; // a magic to fix flex width
-  }
+.label {
+  display: block;
+  margin-bottom: 8px;
+  text-align: left;
 }
 </style>

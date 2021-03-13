@@ -18,46 +18,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <RowBlock class="inline-field">
-    <label v-if="label" :style="{ width: labelWidth }">{{ label }}</label>
-    <div class="inline-content"><slot /></div>
-  </RowBlock>
+  <div class="row-block">
+    <slot />
+  </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-import RowBlock from '/@/components/atoms/RowBlock.vue'
-
-export default defineComponent({
-  components: { RowBlock },
-  props: {
-    label: {
-      type: String,
-      default: '',
-    },
-    labelWidth: {
-      type: String,
-      default: undefined,
-    },
-  },
-})
-</script>
-
 <style lang="scss" scoped>
-.inline-field {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  & + .inline-field {
+.row-block {
+  & + .row-block {
     margin-top: 10px;
-  }
-  > label {
-    margin-right: 10px;
-    text-align: left;
-  }
-  .inline-content {
-    flex: 1;
-    min-width: 50px; // a magic to fix flex width
   }
 }
 </style>

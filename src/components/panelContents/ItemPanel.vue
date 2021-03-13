@@ -23,42 +23,38 @@ Copyright (C) 2021, Tomoya Komiyama.
     <h4>Pose</h4>
     <form v-if="targetTransform" @submit.prevent>
       <h5>Translate</h5>
-      <div class="field">
-        <label>x</label>
+      <InlineField label="x" :label-width="labelWidth">
         <NumberInput
           :model-value="draftTransform.translateX"
           @update:modelValue="changeTranslateX"
         />
-      </div>
-      <div class="field">
-        <label>y</label>
+      </InlineField>
+      <InlineField label="y" :label-width="labelWidth">
         <NumberInput
           :model-value="draftTransform.translateY"
           @update:modelValue="changeTranslateY"
         />
-      </div>
+      </InlineField>
       <h5>Rotate</h5>
-      <div class="field">
+      <InlineField :label-width="labelWidth">
         <NumberInput
           :model-value="draftTransform.rotate"
           @update:modelValue="changeRotate"
         />
-      </div>
+      </InlineField>
       <h5>Scale</h5>
-      <div class="field">
-        <label>x</label>
+      <InlineField label="x" :label-width="labelWidth">
         <NumberInput
           :model-value="draftTransform.scaleX"
           @update:modelValue="changeScaleX"
         />
-      </div>
-      <div class="field">
-        <label>y</label>
+      </InlineField>
+      <InlineField label="y" :label-width="labelWidth">
         <NumberInput
           :model-value="draftTransform.scaleY"
           @update:modelValue="changeScaleY"
         />
-      </div>
+      </InlineField>
     </form>
     <div v-else>
       <p>No Item</p>
@@ -68,39 +64,38 @@ Copyright (C) 2021, Tomoya Komiyama.
     <h4>Bone</h4>
     <form v-if="targetBone" @submit.prevent>
       <h5>Head</h5>
-      <div class="field">
-        <label>x</label>
+      <InlineField label="x" :label-width="labelWidth">
         <NumberInput
           :model-value="draftBone.headX"
           @update:modelValue="changeBoneHeadX"
         />
-      </div>
-      <div class="field">
-        <label>y</label>
+      </InlineField>
+      <InlineField label="y" :label-width="labelWidth">
         <NumberInput
           :model-value="draftBone.headY"
           @update:modelValue="changeBoneHeadY"
         />
-      </div>
+      </InlineField>
       <h5>Tail</h5>
-      <div class="field">
-        <label>x</label>
+      <InlineField label="x" :label-width="labelWidth">
         <NumberInput
           :model-value="draftBone.tailX"
           @update:modelValue="changeBoneTailX"
         />
-      </div>
-      <div class="field">
-        <label>y</label>
+      </InlineField>
+      <InlineField label="y" :label-width="labelWidth">
         <NumberInput
           :model-value="draftBone.tailY"
           @update:modelValue="changeBoneTailY"
         />
-      </div>
+      </InlineField>
     </form>
     <div v-else>
       <p>No Item</p>
     </div>
+  </div>
+  <div v-else>
+    <p>No Item</p>
   </div>
 </template>
 
@@ -113,9 +108,10 @@ import { useCanvasStore } from '/@/store/canvas'
 import { convolutePoseTransforms, editTransform } from '/@/utils/armatures'
 import NumberInput from '/@/components/atoms/NumberInput.vue'
 import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
 
 export default defineComponent({
-  components: { NumberInput, WeightPanel },
+  components: { NumberInput, WeightPanel, InlineField },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
@@ -244,6 +240,7 @@ export default defineComponent({
     })
 
     return {
+      labelWidth: '20px',
       canvasMode: computed(() => canvasStore.state.canvasMode),
       targetBone,
       draftBone,
@@ -273,28 +270,5 @@ h5 {
 }
 * + h5 {
   margin-top: 8px;
-}
-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  .field {
-    margin-bottom: 4px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: right;
-    &:last-child {
-      margin-bottom: 0;
-    }
-    > label {
-      margin-right: 10px;
-      min-width: 10px;
-      text-align: left;
-    }
-    > input {
-      width: 90px;
-    }
-  }
 }
 </style>

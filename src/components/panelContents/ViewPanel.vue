@@ -21,11 +21,10 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="view-panel">
     <h4>View</h4>
     <form>
-      <div class="field">
+      <InlineField>
         <CheckboxInput v-model="settings.showBoneName" label="Bone Name" />
-      </div>
-      <div class="field break">
-        <label>Bone Opacity</label>
+      </InlineField>
+      <BlockField label="Bone Opacity">
         <input
           v-model="settings.boneOpacity"
           type="range"
@@ -33,10 +32,10 @@ Copyright (C) 2021, Tomoya Komiyama.
           max="1"
           step="0.1"
         />
-      </div>
-      <div class="field">
+      </BlockField>
+      <InlineField>
         <CheckboxInput v-model="settings.showViewbox" label="Viewbox" />
-      </div>
+      </InlineField>
     </form>
   </div>
 </template>
@@ -45,9 +44,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { defineComponent } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
+import BlockField from '/@/components/atoms/BlockField.vue'
 
 export default defineComponent({
-  components: { CheckboxInput },
+  components: { CheckboxInput, InlineField, BlockField },
   setup() {
     const { settings } = useSettings()
 
@@ -64,28 +65,5 @@ export default defineComponent({
 }
 h4 {
   margin-bottom: 8px;
-}
-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  .field {
-    margin-bottom: 8px;
-    width: 100%;
-    display: flex;
-    &:last-child {
-      margin-bottom: 0;
-    }
-    &.break {
-      flex-direction: column;
-      align-items: flex-start;
-      > label {
-        margin-bottom: 6px;
-      }
-    }
-  }
-  input[type='range'] {
-    width: 100%;
-  }
 }
 </style>

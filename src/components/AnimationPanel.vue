@@ -248,6 +248,14 @@ export default defineComponent({
       keyframeMapByFrame,
       selectedKeyframeMap: animationStore.selectedKeyframeMap,
       draftName,
+      changeActionName() {
+        const allNames = animationStore.actions.value.map((a) => a.name)
+        if (allNames.includes(draftName.value)) {
+          draftName.value = selectedAction.value?.name ?? ''
+        } else {
+          animationStore.updateAction({ name: draftName.value })
+        }
+      },
       labelWidth,
       axisPadding,
       currentFrame: animationStore.currentFrame,

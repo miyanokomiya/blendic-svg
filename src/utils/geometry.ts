@@ -17,7 +17,16 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, getRadian, IRectangle, isSame, IVec2, rotate, sub } from 'okageo'
+import {
+  add,
+  AffineMatrix,
+  getRadian,
+  IDENTITY_AFFINE,
+  IRectangle,
+  isSame,
+  IVec2,
+  rotate,
+} from 'okageo'
 import { Bone, scaleRate, Transform } from '/@/models'
 
 export function clamp(min: number, max: number, val: number) {
@@ -175,4 +184,8 @@ export function transformRect(
     width: rect.width * transform.scale.x,
     height: rect.height * transform.scale.y,
   }
+}
+
+export function isIdentityAffine(matrix: AffineMatrix): boolean {
+  return matrix.every((v, i) => v === IDENTITY_AFFINE[i])
 }

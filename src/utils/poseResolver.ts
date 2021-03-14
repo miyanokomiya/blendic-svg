@@ -34,13 +34,14 @@ import {
   Transform,
   getTransform,
   ElementNodeAttributes,
+  toMap,
 } from '../models'
 import { getInterpolatedTransformMapByBoneId } from './animations'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce } from './commons'
 import { getTnansformStr, viewbox } from './helpers'
-import { parseViewBoxFromStr } from '/@/utils/elements'
-import { transformRect } from '/@/utils/geometry'
+import { flatElementTree, parseViewBoxFromStr } from '/@/utils/elements'
+import { isIdentityAffine, transformRect } from '/@/utils/geometry'
 
 export type TransformCache = {
   [relativeRootBoneId: string]: { [boneId: string]: Transform }
@@ -146,7 +147,7 @@ export function getPosedElementMatrixMap(
 
 function getPosedAttributes(
   boneMap: IdMap<Bone>,
-  matrixMap: IdMap<AffineMatrix>,
+  matrix: AffineMatrix | undefined,
   element: BElement,
   node: ElementNode
 ): ElementNodeAttributes {
@@ -155,8 +156,8 @@ function getPosedAttributes(
     element,
     node
   )
-  if (matrixMap[element.id]) {
-    ret.transform = affineToTransform(matrixMap[element.id])
+  if (matrix && !isIdentityAffine(matrix)) {
+    ret.transform = affineToTransform(matrix)
   }
 
   return ret
@@ -195,7 +196,7 @@ function getPosedElementNode(
 ): ElementNode {
   const attributs = getPosedAttributes(
     boneMap,
-    matrixMap,
+    matrixMap[node.id],
     elementMap[node.id],
     node
   )
@@ -233,7 +234,7 @@ export function bakeKeyframes(
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
   endFrame: number
-): IdMap<AffineMatrix>[] {
+): IdMap<ElementNodeAttributes>[] {
   return [...Array(endFrame + 1)].map((_, i) => {
     return bakeKeyframe(keyframeMapByBoneId, boneMap, elementMap, svgRoot, i)
   })
@@ -245,7 +246,7 @@ export function bakeKeyframe(
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
   currentFrame: number
-): IdMap<AffineMatrix> {
+): IdMap<ElementNodeAttributes> {
   const interpolatedTransformMap = getInterpolatedTransformMapByBoneId(
     keyframeMapByBoneId,
     currentFrame
@@ -255,5 +256,19 @@ export function bakeKeyframe(
     transform: interpolatedTransformMap[id] ?? getTransform(),
   }))
   const resolvedBoneMap = getTransformedBoneMap(interpolatedBoneMap)
-  return getPosedElementMatrixMap(resolvedBoneMap, elementMap, svgRoot)
+  const matrixMap = getPosedElementMatrixMap(
+    resolvedBoneMap,
+    elementMap,
+    svgRoot
+  )
+  const nodeMap = toMap(flatElementTree([svgRoot]))
+
+  return mapReduce(matrixMap, (matrix, nodeId) => {
+    return getPosedAttributes(
+      boneMap,
+      matrix,
+      elementMap[nodeId],
+      nodeMap[nodeId]
+    )
+  })
 }

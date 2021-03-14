@@ -38,6 +38,7 @@ import {
   snapRotate,
   snapScale,
   transformRect,
+  isIdentityAffine,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -412,6 +413,15 @@ describe('src/utils/geometry.ts', () => {
         width: 1,
         height: 1,
       })
+    })
+  })
+
+  describe('isIdentityAffine', () => {
+    it('return true if it is identy affine', () => {
+      expect(isIdentityAffine([1, 0, 0, 1, 0, 0])).toBe(true)
+    })
+    it('return false if it is not identy affine', () => {
+      expect(isIdentityAffine([2, 0, 0, 1, 0, 0])).toBe(false)
     })
   })
 })

@@ -224,25 +224,28 @@ export default defineComponent({
       moveCurrentFrameSeriesKey.value = undefined
     }
 
-    function animationCallback(tickFrame: number) {
-      animationStore.stepFrame(
-        tickFrame,
-        animationStore.playing.value === 'reverse'
-      )
-    }
-
     watchEffect(() => {
       draftName.value = selectedAction.value?.name ?? ''
     })
 
+    const animationSeriesKey = ref<string>()
     let animationLoop: ReturnType<typeof useAnimationLoop>
     watchEffect(() => {
       animationLoop?.stop()
       if (animationStore.playing.value === 'pause') return
 
+      animationSeriesKey.value = `play_${Date.now()}`
       animationLoop = useAnimationLoop(animationCallback, 60)
       animationLoop.begin()
     })
+
+    function animationCallback(tickFrame: number) {
+      animationStore.stepFrame(
+        tickFrame,
+        animationStore.playing.value === 'reverse',
+        animationSeriesKey.value
+      )
+    }
 
     return {
       playing: animationStore.playing,

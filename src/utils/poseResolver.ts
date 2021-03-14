@@ -173,19 +173,25 @@ export function getPosedAttributesWithoutTransform(
   if (element.viewBoxBoneId) {
     const viewBoxBone = boneMap[element.viewBoxBoneId]
     if (viewBoxBone) {
-      const orgViewBox = parseViewBoxFromStr(node.attributs.viewBox)
-      if (orgViewBox) {
-        ret.viewBox = viewbox(
-          transformRect(orgViewBox, {
-            ...viewBoxBone.transform,
-            origin: viewBoxBone.head,
-          })
-        )
+      const viewBox = posedViewBox(node, viewBoxBone)
+      if (viewBox) {
+        ret.viewBox = viewBox
       }
     }
   }
 
   return ret
+}
+
+function posedViewBox(node: ElementNode, bone: Bone): string | undefined {
+  const orgViewBox = parseViewBoxFromStr(node.attributs.viewBox)
+  if (!orgViewBox) return
+  return viewbox(
+    transformRect(orgViewBox, {
+      ...bone.transform,
+      origin: bone.head,
+    })
+  )
 }
 
 function getPosedElementNode(

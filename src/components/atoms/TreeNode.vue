@@ -116,11 +116,11 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .tree-node {
+  width: 100%;
   display: flex;
   flex-direction: column;
   text-align: left;
   font-size: 16px;
-  width: fit-content;
   background-color: #fff;
   user-select: none;
   &.g-tag {

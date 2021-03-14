@@ -68,8 +68,8 @@ const NativeElement: any = defineComponent({
       if (typeof props.element === 'string') return ''
       return toStyle({
         ...dropMap(
-          parseStyle(props.element.attributs.style),
-          element.value.attributs
+          parseStyle(props.element.attributes.style),
+          element.value.attributes
         ),
         ...overrideAttrs.value,
       })
@@ -95,9 +95,9 @@ const NativeElement: any = defineComponent({
       return props.groupSelected || selectedMap.value[element.value.id]
     })
 
-    const attributs = computed(() => {
+    const attributes = computed(() => {
       return {
-        ...element.value.attributs,
+        ...element.value.attributes,
         ...overrideAttrs.value,
         style: overrideStyle.value,
         onClick,
@@ -117,7 +117,7 @@ const NativeElement: any = defineComponent({
 
     return () => {
       if (!isElement.value) return props.element
-      return h(element.value.tag, attributs.value, children.value)
+      return h(element.value.tag, attributes.value, children.value)
     }
   },
 })

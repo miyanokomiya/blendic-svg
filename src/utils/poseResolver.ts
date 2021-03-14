@@ -170,7 +170,7 @@ function getPosedElementNode(
   elementMap: IdMap<BElement>,
   node: ElementNode
 ): ElementNode {
-  const attributs = getPosedAttributes(
+  const attributes = getPosedAttributes(
     boneMap,
     matrixMap[node.id],
     elementMap[node.id],
@@ -179,9 +179,9 @@ function getPosedElementNode(
 
   return {
     ...node,
-    attributs: {
-      ...node.attributs,
-      ...attributs,
+    attributes: {
+      ...node.attributes,
+      ...attributes,
     },
     children: node.children.map((c) => {
       if (typeof c === 'string') return c
@@ -198,8 +198,8 @@ function getSelfPoseMatrix(boneMap: IdMap<Bone>, boundBoneId: string) {
 function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {
   return getNativeDeformMatrix(
     spaceNativeMatrix,
-    node.attributs.transform
-      ? parseTransform(node.attributs.transform)
+    node.attributes.transform
+      ? parseTransform(node.attributes.transform)
       : undefined
   )
 }

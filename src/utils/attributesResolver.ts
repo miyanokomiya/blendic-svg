@@ -67,7 +67,7 @@ export function getPosedAttributesWithoutTransform(
 }
 
 function posedViewBox(node: ElementNode, bone: Bone): string | undefined {
-  const orgViewBox = parseViewBoxFromStr(node.attributs.viewBox)
+  const orgViewBox = parseViewBoxFromStr(node.attributes.viewBox)
   if (!orgViewBox) return
   return viewbox(
     transformRect(orgViewBox, {

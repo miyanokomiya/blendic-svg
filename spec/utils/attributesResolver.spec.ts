@@ -21,7 +21,7 @@ import { getBElement, getBone, getElementNode, getTransform } from '/@/models'
 import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
 
 describe('getPosedAttributesWithoutTransform', () => {
-  it('no posed attributs', () => {
+  it('no posed attributes', () => {
     const boneMap = { bone: getBone() }
     const element = getBElement()
     const node = getElementNode()
@@ -37,7 +37,7 @@ describe('getPosedAttributesWithoutTransform', () => {
       }),
     }
     const element = getBElement({ viewBoxBoneId: 'bone' })
-    const node = getElementNode({ attributs: { viewBox: '0 0 1 2' } })
+    const node = getElementNode({ attributes: { viewBox: '0 0 1 2' } })
     expect(getPosedAttributesWithoutTransform(boneMap, element, node)).toEqual({
       viewBox: '1 2 1 2',
     })

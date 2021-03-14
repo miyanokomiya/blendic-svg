@@ -115,12 +115,12 @@ describe('utils/poseResolver.ts', () => {
             getElementNode({
               id: 'elm_a',
               tag: 'g',
-              attributs: { transform: 'matrix(1,2,3,4,5,6)' },
+              attributes: { transform: 'matrix(1,2,3,4,5,6)' },
               children: [
                 getElementNode({
                   id: 'elm_b',
                   tag: 'g',
-                  attributs: { transform: 'rotate(10,29,39)' },
+                  attributes: { transform: 'rotate(10,29,39)' },
                   children: [],
                 }),
               ],
@@ -133,7 +133,7 @@ describe('utils/poseResolver.ts', () => {
             getElementNode({
               id: 'elm_d',
               tag: 'g',
-              attributs: { transform: 'matrix(1,2,3,4,5,6)' },
+              attributes: { transform: 'matrix(1,2,3,4,5,6)' },
               children: [],
             }),
           ],
@@ -173,7 +173,7 @@ describe('utils/poseResolver.ts', () => {
     }
     const root = getElementNode({
       id: 'root',
-      attributs: { viewBox: '1 2 3 4' },
+      attributes: { viewBox: '1 2 3 4' },
       children: [
         getElementNode({ id: 'elm_a' }),
         getElementNode({ id: 'elm_b' }),

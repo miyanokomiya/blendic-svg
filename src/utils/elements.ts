@@ -58,7 +58,7 @@ function parseElementNode(parentElm: SVGElement): ElementNode {
     {
       id,
       tag: parentElm.tagName.toLowerCase(),
-      attributs: Array.from(parentElm.attributes).reduce<{
+      attributes: Array.from(parentElm.attributes).reduce<{
         [name: string]: string
       }>((p, c) => ({ ...p, [c.name]: c.value }), {}),
       children: parseHTMLCollection(parentElm.childNodes),

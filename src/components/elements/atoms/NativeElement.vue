@@ -29,6 +29,7 @@ import {
 import { useSettings } from '/@/composables/settings'
 import { ElementNode } from '/@/models'
 import { dropMap } from '/@/utils/commons'
+import { testEditableTag } from '/@/utils/elements'
 import { parseStyle, toStyle } from '/@/utils/helpers'
 
 const NativeElement: any = defineComponent({
@@ -85,7 +86,7 @@ const NativeElement: any = defineComponent({
     )
 
     function onClick(e: MouseEvent) {
-      if (element.value.tag === 'g') return
+      if (!testEditableTag(element.value.tag)) return
       e.stopPropagation()
       onClickElement(element.value.id, e.shiftKey)
     }

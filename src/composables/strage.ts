@@ -17,15 +17,14 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { AffineMatrix } from 'okageo'
 import { reactive } from 'vue'
-import { ElementNode, IdMap, toMap } from '../models'
+import { ElementNode, ElementNodeAttributes, IdMap, toMap } from '../models'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import { useCanvasStore } from '../store/canvas'
 import { useElementStore } from '../store/element'
 import { useHistoryStore } from '../store/history'
-import { cleanActions } from '../utils/animations'
+import { cleanActions, getLastFrame } from '../utils/animations'
 import { cleanActors, inheritWeight, parseFromSvg } from '../utils/elements'
 import { bakeKeyframes, getPosedElementTree } from '../utils/poseResolver'
 import { initialize, StrageRoot } from '/@/models/strage'
@@ -34,7 +33,11 @@ import { makeSvg } from '/@/utils/svgMaker'
 interface BakedData {
   // data format version (not same as app version)
   version: string
-  matrixMapPerFrame: IdMap<AffineMatrix>[]
+  appVersion: string
+  actions: {
+    name: string
+    attributesMapPerFrame: IdMap<ElementNodeAttributes>[]
+  }[]
   svgTree: ElementNode
 }
 
@@ -109,17 +112,23 @@ export function useStrage() {
     const actor = elementStore.lastSelectedActor.value
     if (!armature || !action || !actor) return
 
-    const matrixMapPerFrame = bakeKeyframes(
+    const attributesMapPerFrame = bakeKeyframes(
       animationStore.keyframeMapByBoneId.value,
       store.boneMap.value,
       toMap(actor.elements),
       actor.svgTree,
-      animationStore.endFrame.value
+      getLastFrame(action.keyframes)
     )
 
     const data: BakedData = {
-      version: '0.0.1',
-      matrixMapPerFrame,
+      version: '1.0.0',
+      appVersion: '0.0.0',
+      actions: [
+        {
+          name: action.name,
+          attributesMapPerFrame,
+        },
+      ],
       svgTree: actor.svgTree,
     }
 

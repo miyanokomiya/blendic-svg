@@ -19,9 +19,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { computed, ref } from 'vue'
 import { useListState } from '../composables/listState'
-import { Actor, IdMap, toMap } from '../models'
+import { Actor, BElement, IdMap, toMap } from '../models'
 import { extractMap, mapReduce, toList } from '../utils/commons'
 import { HistoryItem, useHistoryStore } from './history'
+import { flatElementTree } from '/@/utils/elements'
 
 const historyStore = useHistoryStore()
 
@@ -37,9 +38,19 @@ const elementMap = computed(() =>
   toMap(lastSelectedActor.value?.elements ?? [])
 )
 
+const nativeElementMap = computed(() => {
+  if (!lastSelectedActor.value) return {}
+  return toMap(flatElementTree([lastSelectedActor.value.svgTree]))
+})
+
 const lastSelectedElement = computed(() => {
   if (!lastSelectedElementId.value) return
   return elementMap.value[lastSelectedElementId.value]
+})
+
+const lastSelectedNativeElement = computed(() => {
+  if (!lastSelectedElementId.value) return
+  return nativeElementMap.value[lastSelectedElementId.value]
 })
 
 const selectedElementCount = computed(() => {
@@ -94,7 +105,7 @@ function updateArmatureId(id: string) {
   historyStore.push(item)
 }
 
-function updateElement(val: { boneId: string }) {
+function updateElement(val: Partial<BElement>) {
   if (!lastSelectedElement.value) return
 
   const item = getUpdateElementItem(val)
@@ -109,6 +120,7 @@ export function useElementStore() {
     actors: computed(() => actorsState.state.list),
     lastSelectedActor,
     lastSelectedElement,
+    lastSelectedNativeElement,
 
     updateArmatureId,
     updateElement,
@@ -191,7 +203,7 @@ export function getUpdateArmatureIdItem(id: string): HistoryItem {
   }
 }
 
-export function getUpdateElementItem(val: { boneId: string }): HistoryItem {
+export function getUpdateElementItem(val: Partial<BElement>): HistoryItem {
   const current = extractMap(elementMap.value, selectedElements.value)
 
   const redo = () => {

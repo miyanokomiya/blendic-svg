@@ -37,6 +37,8 @@ import {
   snapNumber,
   snapRotate,
   snapScale,
+  transformRect,
+  isIdentityAffine,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -347,6 +349,79 @@ describe('src/utils/geometry.ts', () => {
       )
       expect(ret.x).toBeCloseTo(0)
       expect(ret.y).toBeCloseTo(2)
+    })
+  })
+
+  describe('transformRect', () => {
+    it('traslate', () => {
+      expect(
+        transformRect(
+          { x: 0, y: 0, width: 1, height: 2 },
+          getTransform({
+            translate: { x: 1, y: 2 },
+          })
+        )
+      ).toEqual({
+        x: 1,
+        y: 2,
+        width: 1,
+        height: 2,
+      })
+    })
+    it('scale', () => {
+      expect(
+        transformRect(
+          { x: 0, y: 0, width: 1, height: 1 },
+          getTransform({
+            scale: { x: 10, y: 20 },
+          })
+        )
+      ).toEqual({
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 20,
+      })
+    })
+    it('scale with origin', () => {
+      expect(
+        transformRect(
+          { x: 0, y: 0, width: 1, height: 2 },
+          getTransform({
+            scale: { x: 2, y: 4 },
+            origin: { x: 2, y: 4 },
+          })
+        )
+      ).toEqual({
+        x: -2,
+        y: -12,
+        width: 2,
+        height: 8,
+      })
+    })
+    it('ignore rotate', () => {
+      expect(
+        transformRect(
+          { x: 0, y: 0, width: 1, height: 1 },
+          getTransform({
+            rotate: 90,
+          })
+        )
+      ).toEqual({
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      })
+    })
+  })
+
+  describe('isIdentityAffine', () => {
+    it('return true if it is identy affine', () => {
+      expect(isIdentityAffine([1, 0, 0, 1, 0, 0])).toBe(true)
+    })
+    it('return false if it is not identy affine', () => {
+      expect(isIdentityAffine([2, 0, 0, 1, 0, 0])).toBe(false)
     })
   })
 })

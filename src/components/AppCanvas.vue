@@ -58,17 +58,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         <line x1="-20000" x2="20000" stroke="red" />
         <line y1="-20000" y2="20000" stroke="green" />
       </g>
-      <rect
-        v-if="showViewbox"
-        :x="originalViewBox.x"
-        :y="originalViewBox.y"
-        :width="originalViewBox.width"
-        :height="originalViewBox.height"
-        fill="none"
-        stroke="#777"
-        :stroke-width="1 * scale"
-        :stroke-dasharray="`${4 * scale} ${4 * scale}`"
-      ></rect>
       <line
         v-if="gridLineElm"
         :x1="gridLineElm.from.x"
@@ -261,7 +250,6 @@ export default defineComponent({
     watch(() => windowState.state.size, adjustSvgSize)
 
     return {
-      showViewbox: computed(() => settings.showViewbox),
       showAxis: computed(() => settings.showAxis),
       scale: canvas.scale,
       viewSize: computed(() => canvas.viewSize),

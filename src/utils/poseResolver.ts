@@ -33,11 +33,15 @@ import {
   IdMap,
   Transform,
   getTransform,
+  ElementNodeAttributes,
+  toMap,
 } from '../models'
 import { getInterpolatedTransformMapByBoneId } from './animations'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce } from './commons'
-import { getTnansformStr } from './helpers'
+import { getTnansformStr, viewbox } from './helpers'
+import { flatElementTree, parseViewBoxFromStr } from '/@/utils/elements'
+import { isIdentityAffine, transformRect } from '/@/utils/geometry'
 
 export type TransformCache = {
   [relativeRootBoneId: string]: { [boneId: string]: Transform }
@@ -89,18 +93,16 @@ export function getPosedElementTree(
   boneMap: IdMap<Bone>,
   elementMap: IdMap<BElement>,
   svgTree: ElementNode
-) {
-  return getPosedElementNode(
-    getPosedElementMatrixMap(
-      boneMap,
-      elementMap,
-      svgTree,
-      undefined,
-      undefined
-    ),
+): ElementNode {
+  const transformMap = getPosedElementMatrixMap(
+    boneMap,
     elementMap,
-    svgTree
+    svgTree,
+    undefined,
+    undefined
   )
+
+  return getPosedElementNode(boneMap, transformMap, elementMap, svgTree)
 }
 
 export function getPosedElementMatrixMap(
@@ -143,25 +145,71 @@ export function getPosedElementMatrixMap(
   }
 }
 
+function getPosedAttributes(
+  boneMap: IdMap<Bone>,
+  matrix: AffineMatrix | undefined,
+  element: BElement,
+  node: ElementNode
+): ElementNodeAttributes {
+  const ret: ElementNodeAttributes = getPosedAttributesWithoutTransform(
+    boneMap,
+    element,
+    node
+  )
+  if (matrix && !isIdentityAffine(matrix)) {
+    ret.transform = affineToTransform(matrix)
+  }
+
+  return ret
+}
+
+export function getPosedAttributesWithoutTransform(
+  boneMap: IdMap<Bone>,
+  element: BElement,
+  node: ElementNode
+): ElementNodeAttributes {
+  const ret: ElementNodeAttributes = {}
+
+  if (element.viewBoxBoneId) {
+    const viewBoxBone = boneMap[element.viewBoxBoneId]
+    if (viewBoxBone) {
+      const orgViewBox = parseViewBoxFromStr(node.attributs.viewBox)
+      if (orgViewBox) {
+        ret.viewBox = viewbox(
+          transformRect(orgViewBox, {
+            ...viewBoxBone.transform,
+            origin: viewBoxBone.head,
+          })
+        )
+      }
+    }
+  }
+
+  return ret
+}
+
 function getPosedElementNode(
+  boneMap: IdMap<Bone>,
   matrixMap: IdMap<AffineMatrix>,
   elementMap: IdMap<BElement>,
   node: ElementNode
 ): ElementNode {
-  const transformStr = matrixMap[node.id]
-    ? affineToTransform(matrixMap[node.id])
-    : ''
+  const attributs = getPosedAttributes(
+    boneMap,
+    matrixMap[node.id],
+    elementMap[node.id],
+    node
+  )
 
   return {
-    id: node.id,
-    tag: node.tag,
+    ...node,
     attributs: {
       ...node.attributs,
-      transform: transformStr,
+      ...attributs,
     },
     children: node.children.map((c) => {
       if (typeof c === 'string') return c
-      return getPosedElementNode(matrixMap, elementMap, c)
+      return getPosedElementNode(boneMap, matrixMap, elementMap, c)
     }),
   }
 }
@@ -186,7 +234,7 @@ export function bakeKeyframes(
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
   endFrame: number
-): IdMap<AffineMatrix>[] {
+): IdMap<ElementNodeAttributes>[] {
   return [...Array(endFrame + 1)].map((_, i) => {
     return bakeKeyframe(keyframeMapByBoneId, boneMap, elementMap, svgRoot, i)
   })
@@ -198,7 +246,7 @@ export function bakeKeyframe(
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
   currentFrame: number
-): IdMap<AffineMatrix> {
+): IdMap<ElementNodeAttributes> {
   const interpolatedTransformMap = getInterpolatedTransformMapByBoneId(
     keyframeMapByBoneId,
     currentFrame
@@ -208,5 +256,19 @@ export function bakeKeyframe(
     transform: interpolatedTransformMap[id] ?? getTransform(),
   }))
   const resolvedBoneMap = getTransformedBoneMap(interpolatedBoneMap)
-  return getPosedElementMatrixMap(resolvedBoneMap, elementMap, svgRoot)
+  const matrixMap = getPosedElementMatrixMap(
+    resolvedBoneMap,
+    elementMap,
+    svgRoot
+  )
+  const nodeMap = toMap(flatElementTree([svgRoot]))
+
+  return mapReduce(matrixMap, (matrix, nodeId) => {
+    return getPosedAttributes(
+      resolvedBoneMap,
+      matrix,
+      elementMap[nodeId],
+      nodeMap[nodeId]
+    )
+  })
 }

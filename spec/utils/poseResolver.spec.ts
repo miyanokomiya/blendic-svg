@@ -38,6 +38,7 @@ import {
   bakeKeyframe,
   bakeKeyframes,
   getNativeDeformMatrix,
+  getPosedAttributesWithoutTransform,
   getPoseDeformMatrix,
   getPosedElementMatrixMap,
 } from '/@/utils/poseResolver'
@@ -167,11 +168,13 @@ describe('utils/poseResolver.ts', () => {
       bone_b: getBone({ id: 'bone_b' }),
     }
     const elementMap = {
+      root: getBElement({ id: 'root', viewBoxBoneId: 'bone_a' }),
       elm_a: getBElement({ id: 'elm_a', boneId: 'bone_a' }),
       elm_b: getBElement({ id: 'elm_b', boneId: '' }),
     }
     const root = getElementNode({
       id: 'root',
+      attributs: { viewBox: '1 2 3 4' },
       children: [
         getElementNode({ id: 'elm_a' }),
         getElementNode({ id: 'elm_b' }),
@@ -183,11 +186,13 @@ describe('utils/poseResolver.ts', () => {
         const res = bakeKeyframes(keyMap, boneMap, elementMap, root, 5)
         expect(Object.keys(res).sort()).toEqual(['0', '1', '2', '3', '4', '5'])
         expect(res[2]).toEqual({
-          root: IDENTITY_AFFINE,
-          elm_a: boneToAffine(
-            getBone({ transform: getTransform({ rotate: 20 }) })
-          ),
-          elm_b: IDENTITY_AFFINE,
+          root: { viewBox: '1 2 3 4' },
+          elm_a: {
+            transform: affineToTransform(
+              boneToAffine(getBone({ transform: getTransform({ rotate: 20 }) }))
+            ),
+          },
+          elm_b: {},
         })
       })
     })
@@ -195,11 +200,13 @@ describe('utils/poseResolver.ts', () => {
     describe('bakeKeyframe', () => {
       it('bake interpolated poses', () => {
         expect(bakeKeyframe(keyMap, boneMap, elementMap, root, 2)).toEqual({
-          root: IDENTITY_AFFINE,
-          elm_a: boneToAffine(
-            getBone({ transform: getTransform({ rotate: 20 }) })
-          ),
-          elm_b: IDENTITY_AFFINE,
+          root: { viewBox: '1 2 3 4' },
+          elm_a: {
+            transform: affineToTransform(
+              boneToAffine(getBone({ transform: getTransform({ rotate: 20 }) }))
+            ),
+          },
+          elm_b: {},
         })
       })
       it('json snapshot', () => {
@@ -211,6 +218,29 @@ describe('utils/poseResolver.ts', () => {
           )
         ).toMatchSnapshot()
       })
+    })
+  })
+
+  describe('getPosedAttributesWithoutTransform', () => {
+    it('no posed attributs', () => {
+      const boneMap = { bone: getBone() }
+      const element = getBElement()
+      const node = getElementNode()
+      expect(
+        getPosedAttributesWithoutTransform(boneMap, element, node)
+      ).toEqual({})
+    })
+    it('viewBox', () => {
+      const boneMap = {
+        bone: getBone({
+          transform: getTransform({ translate: { x: 1, y: 2 } }),
+        }),
+      }
+      const element = getBElement({ viewBoxBoneId: 'bone' })
+      const node = getElementNode({ attributs: { viewBox: '0 0 1 2' } })
+      expect(
+        getPosedAttributesWithoutTransform(boneMap, element, node)
+      ).toEqual({ viewBox: '1 2 1 2' })
     })
   })
 })

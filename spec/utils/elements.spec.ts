@@ -24,7 +24,12 @@ import {
   getBone,
   getElementNode,
 } from '/@/models'
-import { cleanActors, inheritWeight, parseFromSvg } from '/@/utils/elements'
+import {
+  cleanActors,
+  flatElementTree,
+  inheritWeight,
+  parseFromSvg,
+} from '/@/utils/elements'
 
 const svgText_1 = `
 <svg id="svg_1" xmlns="http://www.w3.org/2000/svg" viewBox="1 2  3   4">
@@ -87,6 +92,7 @@ describe('utils/elements.ts', () => {
         })
       )
       expect(ret.elements).toEqual([
+        getBElement({ id: 'svg_1' }),
         getBElement({ id: 'g_1' }),
         getBElement({ id: 'rect_1' }),
         getBElement({ id: 'text_1' }),
@@ -95,8 +101,9 @@ describe('utils/elements.ts', () => {
     it('assing a new id if a element has no id', () => {
       const ret = parseFromSvg(svgText_2)
 
-      expect(ret.elements[0].id).toBe('rect_1')
-      expect(ret.elements[1].id).not.toBe('')
+      expect(ret.elements[0].id).not.toBe('')
+      expect(ret.elements[1].id).toBe('rect_1')
+      expect(ret.elements[2].id).not.toBe('')
     })
   })
 
@@ -196,6 +203,39 @@ describe('utils/elements.ts', () => {
           svgTree: getElementNode({ id: 'new_svg' }),
         })
       )
+    })
+  })
+
+  describe('flatElementTree', () => {
+    it('flat element nodes tree', () => {
+      const tree = getElementNode({
+        id: 'svg_1',
+        tag: 'svg',
+        children: [
+          getElementNode({
+            id: 'g_1',
+            tag: 'g',
+            children: [
+              getElementNode({
+                id: 'rect_1',
+                tag: 'rect',
+              }),
+              getElementNode({
+                id: 'text_1',
+                tag: 'text',
+                children: ['message'],
+              }),
+            ],
+          }),
+        ],
+      })
+
+      expect(flatElementTree([tree]).map((n) => n.id)).toEqual([
+        'svg_1',
+        'g_1',
+        'rect_1',
+        'text_1',
+      ])
     })
   })
 })

@@ -276,3 +276,9 @@ export function getSameRangeFrameMapByBoneId(
     {}
   )
 }
+
+export function getLastFrame(keyframes: Keyframe[]): number {
+  return keyframes.reduce((p, c) => {
+    return Math.max(p, c.frame)
+  }, 0)
+}

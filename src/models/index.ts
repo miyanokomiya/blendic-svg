@@ -84,6 +84,10 @@ export interface BElement {
   id: string
   boneId: string
   viewBoxBoneId?: string
+  fillBoneId?: string
+  fillType?: 'rgb' | 'hsl'
+  strokeBoneId?: string
+  strokeType?: 'rgb' | 'hsl'
 }
 
 export interface Actor {

@@ -39,9 +39,10 @@ import {
 import { getInterpolatedTransformMapByBoneId } from './animations'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce } from './commons'
-import { getTnansformStr, viewbox } from './helpers'
-import { flatElementTree, parseViewBoxFromStr } from '/@/utils/elements'
-import { isIdentityAffine, transformRect } from '/@/utils/geometry'
+import { getTnansformStr } from './helpers'
+import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
+import { flatElementTree } from '/@/utils/elements'
+import { isIdentityAffine } from '/@/utils/geometry'
 
 export type TransformCache = {
   [relativeRootBoneId: string]: { [boneId: string]: Transform }
@@ -161,37 +162,6 @@ function getPosedAttributes(
   }
 
   return ret
-}
-
-export function getPosedAttributesWithoutTransform(
-  boneMap: IdMap<Bone>,
-  element: BElement,
-  node: ElementNode
-): ElementNodeAttributes {
-  const ret: ElementNodeAttributes = {}
-
-  if (element.viewBoxBoneId) {
-    const viewBoxBone = boneMap[element.viewBoxBoneId]
-    if (viewBoxBone) {
-      const viewBox = posedViewBox(node, viewBoxBone)
-      if (viewBox) {
-        ret.viewBox = viewBox
-      }
-    }
-  }
-
-  return ret
-}
-
-function posedViewBox(node: ElementNode, bone: Bone): string | undefined {
-  const orgViewBox = parseViewBoxFromStr(node.attributs.viewBox)
-  if (!orgViewBox) return
-  return viewbox(
-    transformRect(orgViewBox, {
-      ...bone.transform,
-      origin: bone.head,
-    })
-  )
 }
 
 function getPosedElementNode(

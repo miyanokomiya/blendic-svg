@@ -77,7 +77,7 @@ export default defineComponent({
   align-items: center;
   select {
     width: 100%;
-    padding: 1px 12px 0 0;
+    padding: 2px 12px 2px 4px;
     border: solid 1px #777;
   }
   &::after {

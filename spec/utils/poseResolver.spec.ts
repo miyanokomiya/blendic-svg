@@ -38,7 +38,6 @@ import {
   bakeKeyframe,
   bakeKeyframes,
   getNativeDeformMatrix,
-  getPosedAttributesWithoutTransform,
   getPoseDeformMatrix,
   getPosedElementMatrixMap,
 } from '/@/utils/poseResolver'
@@ -218,29 +217,6 @@ describe('utils/poseResolver.ts', () => {
           )
         ).toMatchSnapshot()
       })
-    })
-  })
-
-  describe('getPosedAttributesWithoutTransform', () => {
-    it('no posed attributs', () => {
-      const boneMap = { bone: getBone() }
-      const element = getBElement()
-      const node = getElementNode()
-      expect(
-        getPosedAttributesWithoutTransform(boneMap, element, node)
-      ).toEqual({})
-    })
-    it('viewBox', () => {
-      const boneMap = {
-        bone: getBone({
-          transform: getTransform({ translate: { x: 1, y: 2 } }),
-        }),
-      }
-      const element = getBElement({ viewBoxBoneId: 'bone' })
-      const node = getElementNode({ attributs: { viewBox: '0 0 1 2' } })
-      expect(
-        getPosedAttributesWithoutTransform(boneMap, element, node)
-      ).toEqual({ viewBox: '1 2 1 2' })
     })
   })
 })

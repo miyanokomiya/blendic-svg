@@ -28,6 +28,7 @@ import {
 } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { ElementNode } from '/@/models'
+import { dropMap } from '/@/utils/commons'
 import { parseStyle, toStyle } from '/@/utils/helpers'
 
 const NativeElement: any = defineComponent({
@@ -66,7 +67,10 @@ const NativeElement: any = defineComponent({
     const overrideStyle = computed(() => {
       if (typeof props.element === 'string') return ''
       return toStyle({
-        ...parseStyle(props.element.attributs.style),
+        ...dropMap(
+          parseStyle(props.element.attributs.style),
+          element.value.attributs
+        ),
         ...overrideAttrs.value,
       })
     })

@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <RowBlock class="inline-field">
+  <RowBlock class="inline-field" :class="{ between }">
     <label v-if="label" :style="{ width: labelWidth }">{{ label }}</label>
     <div class="inline-content"><slot /></div>
   </RowBlock>
@@ -39,6 +39,10 @@ export default defineComponent({
       type: String,
       default: undefined,
     },
+    between: {
+      type: Boolean,
+      default: false,
+    },
   },
 })
 </script>
@@ -58,6 +62,13 @@ export default defineComponent({
   .inline-content {
     flex: 1;
     min-width: 50px; // a magic to fix flex width
+  }
+  &.between {
+    justify-content: space-between;
+    .inline-content {
+      flex: 0;
+      min-width: auto;
+    }
   }
 }
 </style>

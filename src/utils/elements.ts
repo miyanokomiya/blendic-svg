@@ -134,3 +134,7 @@ export function flatElementTree(
   )
   return filtered.concat(filtered.flatMap((c) => flatElementTree(c.children)))
 }
+
+export function testEditableTag(tag: string): boolean {
+  return !/defs|metadata|namedview|script|style|tspan/.test(tag.toLowerCase())
+}

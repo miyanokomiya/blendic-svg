@@ -55,10 +55,7 @@ import {
 } from 'vue'
 import { ElementNode } from '/@/models'
 import UpIcon from '/@/components/atoms/UpIcon.vue'
-
-function shouldHide(tag: string): boolean {
-  return /defs|metadata|namedview|script|style|tspan/.test(tag)
-}
+import { testEditableTag } from '/@/utils/elements'
 
 export default defineComponent({
   name: 'TreeNode',
@@ -77,7 +74,7 @@ export default defineComponent({
     const children = computed(() => {
       return props.node.children
         .filter((c): c is ElementNode => typeof c !== 'string')
-        .filter((elm) => !shouldHide(elm.tag))
+        .filter((elm) => testEditableTag(elm.tag))
     })
 
     // eslint-disable-next-line no-unused-vars

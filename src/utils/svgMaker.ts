@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ElementNode } from '../models'
+import { normalizeAttributes } from '/@/utils/helpers'
 
 export function makeSvg(svgNode: ElementNode): SVGElement {
   return makeNode(svgNode) as SVGElement
@@ -27,7 +28,7 @@ function makeNode(svgNode: ElementNode | string): SVGElement | string {
   if (typeof svgNode === 'string') return svgNode
   return createSVGElement(
     svgNode.tag,
-    svgNode.attributes,
+    normalizeAttributes(svgNode.attributes),
     svgNode.children.map(makeNode)
   )
 }

@@ -18,7 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { parseStyle, toStyle, getTnansformStr } from '/@/utils/helpers'
+import {
+  parseStyle,
+  toStyle,
+  getTnansformStr,
+  normalizeAttributes,
+} from '/@/utils/helpers'
 
 describe('utils/helpers.ts', () => {
   describe('transform', () => {
@@ -109,6 +114,22 @@ describe('utils/helpers.ts', () => {
           stroke: 'green',
         })
       ).toEqual('fill:red;stroke:green;')
+    })
+  })
+
+  describe('normalizeAttributes', () => {
+    it('drop styles duplicated with attributes', () => {
+      expect(
+        normalizeAttributes({
+          style: 'fill:black;opacity:0.1;stroke:black;',
+          fill: 'red',
+          stroke: 'green',
+        })
+      ).toEqual({
+        style: 'opacity:0.1;',
+        fill: 'red',
+        stroke: 'green',
+      })
     })
   })
 })

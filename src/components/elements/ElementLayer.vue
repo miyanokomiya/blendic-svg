@@ -19,6 +19,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g v-if="elementRoot">
+    <rect
+      v-if="viewBox && settings.showViewbox"
+      :x="viewBox.x"
+      :y="viewBox.y"
+      :width="viewBox.width"
+      :height="viewBox.height"
+      fill="none"
+      stroke="#777"
+      stroke-dasharray="2 2"
+    ></rect>
     <NativeElement
       v-for="node in elementRoot.children"
       :key="getId(node)"
@@ -33,6 +43,8 @@ import { useElementStore } from '/@/store/element'
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
 import { Bone, CanvasMode, ElementNode, IdMap, toMap } from '/@/models'
 import { getPosedElementTree } from '/@/utils/poseResolver'
+import { parseViewBoxFromStr } from '/@/utils/elements'
+import { useSettings } from '/@/composables/settings'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -53,6 +65,7 @@ export default defineComponent({
   },
   setup(props) {
     const elementStore = useElementStore()
+    const { settings } = useSettings()
 
     const selectedMap = computed(() => {
       if (props.canvasMode !== 'weight') return {}
@@ -75,6 +88,12 @@ export default defineComponent({
       )
     })
 
+    const viewBox = computed(() => {
+      if (!posedElementRoot.value) return
+
+      return parseViewBoxFromStr(posedElementRoot.value.attributs.viewBox)
+    })
+
     function clickElement(id: string, shift: boolean) {
       if (props.canvasMode !== 'weight') return
       elementStore.selectElement(id, shift)
@@ -84,6 +103,8 @@ export default defineComponent({
     return {
       elementRoot: posedElementRoot,
       getId,
+      viewBox,
+      settings,
     }
   },
 })

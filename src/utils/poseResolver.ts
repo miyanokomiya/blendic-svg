@@ -33,11 +33,14 @@ import {
   IdMap,
   Transform,
   getTransform,
+  ElementNodeAttributes,
 } from '../models'
 import { getInterpolatedTransformMapByBoneId } from './animations'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce } from './commons'
-import { getTnansformStr } from './helpers'
+import { getTnansformStr, viewbox } from './helpers'
+import { parseViewBoxFromStr } from '/@/utils/elements'
+import { transformRect } from '/@/utils/geometry'
 
 export type TransformCache = {
   [relativeRootBoneId: string]: { [boneId: string]: Transform }
@@ -89,18 +92,16 @@ export function getPosedElementTree(
   boneMap: IdMap<Bone>,
   elementMap: IdMap<BElement>,
   svgTree: ElementNode
-) {
-  return getPosedElementNode(
-    getPosedElementMatrixMap(
-      boneMap,
-      elementMap,
-      svgTree,
-      undefined,
-      undefined
-    ),
+): ElementNode {
+  const transformMap = getPosedElementMatrixMap(
+    boneMap,
     elementMap,
-    svgTree
+    svgTree,
+    undefined,
+    undefined
   )
+
+  return getPosedElementNode(boneMap, transformMap, elementMap, svgTree)
 }
 
 export function getPosedElementMatrixMap(
@@ -143,25 +144,71 @@ export function getPosedElementMatrixMap(
   }
 }
 
+function getPosedAttributes(
+  boneMap: IdMap<Bone>,
+  matrixMap: IdMap<AffineMatrix>,
+  element: BElement,
+  node: ElementNode
+): ElementNodeAttributes {
+  const ret: ElementNodeAttributes = getPosedAttributesWithoutTransform(
+    boneMap,
+    element,
+    node
+  )
+  if (matrixMap[element.id]) {
+    ret.transform = affineToTransform(matrixMap[element.id])
+  }
+
+  return ret
+}
+
+export function getPosedAttributesWithoutTransform(
+  boneMap: IdMap<Bone>,
+  element: BElement,
+  node: ElementNode
+): ElementNodeAttributes {
+  const ret: ElementNodeAttributes = {}
+
+  if (element.viewBoxBoneId) {
+    const viewBoxBone = boneMap[element.viewBoxBoneId]
+    if (viewBoxBone) {
+      const orgViewBox = parseViewBoxFromStr(node.attributs.viewBox)
+      if (orgViewBox) {
+        ret.viewBox = viewbox(
+          transformRect(orgViewBox, {
+            ...viewBoxBone.transform,
+            origin: viewBoxBone.head,
+          })
+        )
+      }
+    }
+  }
+
+  return ret
+}
+
 function getPosedElementNode(
+  boneMap: IdMap<Bone>,
   matrixMap: IdMap<AffineMatrix>,
   elementMap: IdMap<BElement>,
   node: ElementNode
 ): ElementNode {
-  const transformStr = matrixMap[node.id]
-    ? affineToTransform(matrixMap[node.id])
-    : ''
+  const attributs = getPosedAttributes(
+    boneMap,
+    matrixMap,
+    elementMap[node.id],
+    node
+  )
 
   return {
-    id: node.id,
-    tag: node.tag,
+    ...node,
     attributs: {
       ...node.attributs,
-      transform: transformStr,
+      ...attributs,
     },
     children: node.children.map((c) => {
       if (typeof c === 'string') return c
-      return getPosedElementNode(matrixMap, elementMap, c)
+      return getPosedElementNode(boneMap, matrixMap, elementMap, c)
     }),
   }
 }

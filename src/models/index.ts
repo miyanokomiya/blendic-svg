@@ -69,10 +69,14 @@ export interface Armature {
   bones: Bone[]
 }
 
+export interface ElementNodeAttributes {
+  [name: string]: string
+}
+
 export interface ElementNode {
   id: string
   tag: string
-  attributs: { [name: string]: string }
+  attributs: ElementNodeAttributes
   children: (ElementNode | string)[]
 }
 

@@ -82,9 +82,13 @@ function parseHTMLCollection(
 
 function parseViewBox(root: SVGElement): IRectangle | undefined {
   const viewBox = root.getAttribute('viewBox')
-  if (!viewBox) return
+  return parseViewBoxFromStr(viewBox || undefined)
+}
 
-  const list = viewBox.split(/ +/).map((s) => parseFloat(s))
+export function parseViewBoxFromStr(value?: string): IRectangle | undefined {
+  if (!value) return
+
+  const list = value.split(/ +/).map((s) => parseFloat(s))
   if (list.length < 4) return
 
   return {

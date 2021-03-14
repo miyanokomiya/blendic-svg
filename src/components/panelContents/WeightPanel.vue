@@ -34,6 +34,18 @@ Copyright (C) 2021, Tomoya Komiyama.
           <BlockField label="Transform">
             <SelectField v-model="boneId" :options="boneOptions" />
           </BlockField>
+          <InlineField label="Fill" between>
+            <CheckboxInput v-model="fillType" label="HSL" />
+          </InlineField>
+          <BlockField>
+            <SelectField v-model="fillBoneId" :options="boneOptions" />
+          </BlockField>
+          <InlineField label="Stroke" between>
+            <CheckboxInput v-model="strokeType" label="HSL" />
+          </InlineField>
+          <BlockField>
+            <SelectField v-model="strokeBoneId" :options="boneOptions" />
+          </BlockField>
         </template>
       </template>
     </form>
@@ -49,11 +61,13 @@ import { useStore } from '/@/store'
 import { useCanvasStore } from '/@/store/canvas'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import { useElementStore } from '/@/store/element'
 import { sortByValue } from '/@/utils/commons'
 
 export default defineComponent({
-  components: { SelectField, BlockField },
+  components: { SelectField, BlockField, InlineField, CheckboxInput },
   setup() {
     const store = useStore()
     const canvasStore = useCanvasStore()
@@ -100,6 +114,38 @@ export default defineComponent({
         elementStore.updateElement({ boneId: val })
       },
     })
+    const fillBoneId = computed({
+      get(): string {
+        return targetElement.value?.fillBoneId ?? ''
+      },
+      set(val: string) {
+        elementStore.updateElement({ fillBoneId: val })
+      },
+    })
+    const fillType = computed({
+      get(): boolean {
+        return targetElement.value?.fillType === 'hsl'
+      },
+      set(hsl: boolean) {
+        elementStore.updateElement({ fillType: hsl ? 'hsl' : 'rgb' })
+      },
+    })
+    const strokeBoneId = computed({
+      get(): string {
+        return targetElement.value?.strokeBoneId ?? ''
+      },
+      set(val: string) {
+        elementStore.updateElement({ strokeBoneId: val })
+      },
+    })
+    const strokeType = computed({
+      get(): boolean {
+        return targetElement.value?.strokeType === 'hsl'
+      },
+      set(hsl: boolean) {
+        elementStore.updateElement({ strokeType: hsl ? 'hsl' : 'rgb' })
+      },
+    })
 
     const viewBoxBoneId = computed({
       get(): string {
@@ -131,6 +177,10 @@ export default defineComponent({
       armatureOptions,
       boneOptions,
       boneId,
+      fillBoneId,
+      fillType,
+      strokeBoneId,
+      strokeType,
       viewBoxBoneId,
     }
   },

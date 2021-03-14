@@ -76,7 +76,7 @@ export interface ElementNodeAttributes {
 export interface ElementNode {
   id: string
   tag: string
-  attributs: ElementNodeAttributes
+  attributes: ElementNodeAttributes
   children: (ElementNode | string)[]
 }
 
@@ -84,6 +84,10 @@ export interface BElement {
   id: string
   boneId: string
   viewBoxBoneId?: string
+  fillBoneId?: string
+  fillType?: 'rgb' | 'hsl'
+  strokeBoneId?: string
+  strokeType?: 'rgb' | 'hsl'
 }
 
 export interface Actor {
@@ -103,7 +107,7 @@ export function getElementNode(
   const id = generateId ? v4() : arg.id ?? ''
   return {
     tag: '',
-    attributs: {},
+    attributes: {},
     children: [],
     ...arg,
     id,

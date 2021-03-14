@@ -39,9 +39,10 @@ import {
 import { getInterpolatedTransformMapByBoneId } from './animations'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce } from './commons'
-import { getTnansformStr, viewbox } from './helpers'
-import { flatElementTree, parseViewBoxFromStr } from '/@/utils/elements'
-import { isIdentityAffine, transformRect } from '/@/utils/geometry'
+import { getTnansformStr } from './helpers'
+import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
+import { flatElementTree } from '/@/utils/elements'
+import { isIdentityAffine } from '/@/utils/geometry'
 
 export type TransformCache = {
   [relativeRootBoneId: string]: { [boneId: string]: Transform }
@@ -163,38 +164,13 @@ function getPosedAttributes(
   return ret
 }
 
-export function getPosedAttributesWithoutTransform(
-  boneMap: IdMap<Bone>,
-  element: BElement,
-  node: ElementNode
-): ElementNodeAttributes {
-  const ret: ElementNodeAttributes = {}
-
-  if (element.viewBoxBoneId) {
-    const viewBoxBone = boneMap[element.viewBoxBoneId]
-    if (viewBoxBone) {
-      const orgViewBox = parseViewBoxFromStr(node.attributs.viewBox)
-      if (orgViewBox) {
-        ret.viewBox = viewbox(
-          transformRect(orgViewBox, {
-            ...viewBoxBone.transform,
-            origin: viewBoxBone.head,
-          })
-        )
-      }
-    }
-  }
-
-  return ret
-}
-
 function getPosedElementNode(
   boneMap: IdMap<Bone>,
   matrixMap: IdMap<AffineMatrix>,
   elementMap: IdMap<BElement>,
   node: ElementNode
 ): ElementNode {
-  const attributs = getPosedAttributes(
+  const attributes = getPosedAttributes(
     boneMap,
     matrixMap[node.id],
     elementMap[node.id],
@@ -203,9 +179,9 @@ function getPosedElementNode(
 
   return {
     ...node,
-    attributs: {
-      ...node.attributs,
-      ...attributs,
+    attributes: {
+      ...node.attributes,
+      ...attributes,
     },
     children: node.children.map((c) => {
       if (typeof c === 'string') return c
@@ -222,8 +198,8 @@ function getSelfPoseMatrix(boneMap: IdMap<Bone>, boundBoneId: string) {
 function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {
   return getNativeDeformMatrix(
     spaceNativeMatrix,
-    node.attributs.transform
-      ? parseTransform(node.attributs.transform)
+    node.attributes.transform
+      ? parseTransform(node.attributes.transform)
       : undefined
   )
 }

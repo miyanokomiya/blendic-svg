@@ -91,7 +91,7 @@ export default defineComponent({
     const viewBox = computed(() => {
       if (!posedElementRoot.value) return
 
-      return parseViewBoxFromStr(posedElementRoot.value.attributs.viewBox)
+      return parseViewBoxFromStr(posedElementRoot.value.attributes.viewBox)
     })
 
     function clickElement(id: string, shift: boolean) {

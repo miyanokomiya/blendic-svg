@@ -27,7 +27,7 @@ function makeNode(svgNode: ElementNode | string): SVGElement | string {
   if (typeof svgNode === 'string') return svgNode
   return createSVGElement(
     svgNode.tag,
-    svgNode.attributs,
+    svgNode.attributes,
     svgNode.children.map(makeNode)
   )
 }

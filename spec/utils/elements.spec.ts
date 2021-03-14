@@ -57,7 +57,7 @@ describe('utils/elements.ts', () => {
         getElementNode({
           id: 'svg_1',
           tag: 'svg',
-          attributs: {
+          attributes: {
             id: 'svg_1',
             xmlns: 'http://www.w3.org/2000/svg',
             viewBox: '1 2  3   4',
@@ -66,14 +66,14 @@ describe('utils/elements.ts', () => {
             getElementNode({
               id: 'g_1',
               tag: 'g',
-              attributs: {
+              attributes: {
                 id: 'g_1',
               },
               children: [
                 getElementNode({
                   id: 'rect_1',
                   tag: 'rect',
-                  attributs: {
+                  attributes: {
                     id: 'rect_1',
                   },
                   children: [],
@@ -81,7 +81,7 @@ describe('utils/elements.ts', () => {
                 getElementNode({
                   id: 'text_1',
                   tag: 'text',
-                  attributs: {
+                  attributes: {
                     id: 'text_1',
                   },
                   children: ['message'],

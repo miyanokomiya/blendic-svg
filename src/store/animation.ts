@@ -265,15 +265,15 @@ function jumpPrevKey() {
     findPrevFrameWithKeyframe(keyframeList.value, currentFrame.value)
   )
 }
-function stepFrame(tickFrame: number, reverse = false) {
+function stepFrame(tickFrame: number, reverse = false, seriesKey?: string) {
   if (endFrame.value === 0) return
 
   if (reverse) {
     const val = currentFrame.value - tickFrame
-    setCurrentFrame(val <= 0 ? endFrame.value : val)
+    setCurrentFrame(val <= 0 ? endFrame.value : val, seriesKey)
   } else {
     const val = currentFrame.value + tickFrame
-    setCurrentFrame(endFrame.value <= val ? 0 : val)
+    setCurrentFrame(endFrame.value <= val ? 0 : val, seriesKey)
   }
   editTransforms.value = {}
 }

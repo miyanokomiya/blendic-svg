@@ -37,6 +37,7 @@ import {
   getAfterKeyframe,
   isSameKeyframeStatus,
   getSameRangeFrameMapByBoneId,
+  getLastFrame,
 } from '/@/utils/animations'
 
 describe('utils/animations.ts', () => {
@@ -399,6 +400,19 @@ describe('utils/animations.ts', () => {
         0: 0,
       })
       expect(res.c).toEqual({})
+    })
+  })
+
+  describe('getLastFrame', () => {
+    it('get last frame', () => {
+      expect(
+        getLastFrame([
+          getKeyframe({ frame: 6 }),
+          getKeyframe({ frame: 10 }),
+          getKeyframe({ frame: 3 }),
+          getKeyframe({ frame: 4 }),
+        ])
+      ).toBe(10)
     })
   })
 })

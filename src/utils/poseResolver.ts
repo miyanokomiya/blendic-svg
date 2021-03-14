@@ -265,7 +265,7 @@ export function bakeKeyframe(
 
   return mapReduce(matrixMap, (matrix, nodeId) => {
     return getPosedAttributes(
-      boneMap,
+      resolvedBoneMap,
       matrix,
       elementMap[nodeId],
       nodeMap[nodeId]

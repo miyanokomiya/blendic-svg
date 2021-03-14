@@ -33,7 +33,11 @@ import { makeSvg } from '/@/utils/svgMaker'
 interface BakedData {
   // data format version (not same as app version)
   version: string
-  attributesMapPerFrame: IdMap<ElementNodeAttributes>[]
+  appVersion: string
+  actions: {
+    name: string
+    attributesMapPerFrame: IdMap<ElementNodeAttributes>[]
+  }[]
   svgTree: ElementNode
 }
 
@@ -117,8 +121,14 @@ export function useStrage() {
     )
 
     const data: BakedData = {
-      version: '0.1.0',
-      attributesMapPerFrame,
+      version: '1.0.0',
+      appVersion: '0.0.0',
+      actions: [
+        {
+          name: action.name,
+          attributesMapPerFrame,
+        },
+      ],
       svgTree: actor.svgTree,
     }
 

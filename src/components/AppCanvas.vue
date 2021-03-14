@@ -274,7 +274,9 @@ export default defineComponent({
         canvas.downLeft('rect-select')
       },
       upLeft: (e: MouseEvent) => {
-        if (!canvas.isSomeAction.value) return
+        if (!['object', 'weight'].includes(canvasStore.state.canvasMode)) {
+          if (!canvas.isSomeAction.value) return
+        }
 
         if (
           canvas.dragRectangle.value &&

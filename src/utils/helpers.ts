@@ -18,7 +18,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { IVec2, IRectangle, isZero } from 'okageo'
-import { Transform } from '../models/index'
+import { ElementNodeAttributes, Transform } from '../models/index'
+import { dropMap } from '/@/utils/commons'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
   if (scale.x === 1 && scale.y === 1) return ''
@@ -107,4 +108,13 @@ export function toStyle(obj: { [name: string]: string | undefined }): string {
     .filter((e) => e[1])
     .map((e) => `${e[0]}:${e[1]};`)
     .join('')
+}
+
+export function normalizeAttributes(
+  attributes: ElementNodeAttributes
+): ElementNodeAttributes {
+  return {
+    ...attributes,
+    style: toStyle(dropMap(parseStyle(attributes.style), attributes)),
+  }
 }

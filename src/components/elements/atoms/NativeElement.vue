@@ -28,9 +28,8 @@ import {
 } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { ElementNode } from '/@/models'
-import { dropMap } from '/@/utils/commons'
 import { testEditableTag } from '/@/utils/elements'
-import { parseStyle, toStyle } from '/@/utils/helpers'
+import { normalizeAttributes } from '/@/utils/helpers'
 
 const NativeElement: any = defineComponent({
   props: {
@@ -65,21 +64,9 @@ const NativeElement: any = defineComponent({
       }
     })
 
-    const overrideStyle = computed(() => {
-      if (typeof props.element === 'string') return ''
-      return toStyle({
-        ...dropMap(
-          parseStyle(props.element.attributes.style),
-          element.value.attributes
-        ),
-        ...overrideAttrs.value,
-      })
-    })
-
     const isElement = computed(() => typeof props.element !== 'string')
     const element = computed(() => props.element as ElementNode)
 
-    // eslint-disable-next-line no-unused-vars
     const onClickElement = inject<(id: string, shift: boolean) => void>(
       'onClickElement',
       () => {}
@@ -98,9 +85,10 @@ const NativeElement: any = defineComponent({
 
     const attributes = computed(() => {
       return {
-        ...element.value.attributes,
-        ...overrideAttrs.value,
-        style: overrideStyle.value,
+        ...normalizeAttributes({
+          ...element.value.attributes,
+          ...overrideAttrs.value,
+        }),
         onClick,
       }
     })

@@ -35,13 +35,13 @@ Copyright (C) 2021, Tomoya Komiyama.
             <SelectField v-model="boneId" :options="boneOptions" />
           </BlockField>
           <InlineField label="Fill" between>
-            <CheckboxInput v-model="fillType" label="HSL" />
+            <CheckboxInput v-model="fillType" label="RGB" />
           </InlineField>
           <BlockField>
             <SelectField v-model="fillBoneId" :options="boneOptions" />
           </BlockField>
           <InlineField label="Stroke" between>
-            <CheckboxInput v-model="strokeType" label="HSL" />
+            <CheckboxInput v-model="strokeType" label="RGB" />
           </InlineField>
           <BlockField>
             <SelectField v-model="strokeBoneId" :options="boneOptions" />
@@ -124,10 +124,10 @@ export default defineComponent({
     })
     const fillType = computed({
       get(): boolean {
-        return targetElement.value?.fillType === 'hsl'
+        return targetElement.value?.fillType === 'rgb'
       },
-      set(hsl: boolean) {
-        elementStore.updateElement({ fillType: hsl ? 'hsl' : 'rgb' })
+      set(rgb: boolean) {
+        elementStore.updateElement({ fillType: rgb ? 'rgb' : 'hsl' })
       },
     })
     const strokeBoneId = computed({
@@ -140,10 +140,10 @@ export default defineComponent({
     })
     const strokeType = computed({
       get(): boolean {
-        return targetElement.value?.strokeType === 'hsl'
+        return targetElement.value?.strokeType === 'rgb'
       },
-      set(hsl: boolean) {
-        elementStore.updateElement({ strokeType: hsl ? 'hsl' : 'rgb' })
+      set(rgb: boolean) {
+        elementStore.updateElement({ strokeType: rgb ? 'rgb' : 'hsl' })
       },
     })
 

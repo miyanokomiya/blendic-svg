@@ -77,7 +77,7 @@ function posedViewBox(node: ElementNode, bone: Bone): string | undefined {
   )
 }
 
-function posedColor(bone: Bone, colorType = 'rgb'): string {
+function posedColor(bone: Bone, colorType = 'hsl'): string {
   if (colorType === 'rgb') {
     const r = bone.transform.translate.x
     const g = bone.transform.translate.y

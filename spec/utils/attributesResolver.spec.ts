@@ -61,7 +61,8 @@ describe('getPosedAttributesWithoutTransform', () => {
       const node = getElementNode()
       const ret = getPosedAttributesWithoutTransform(boneMap, element, node)
       expect(ret.fill).not.toContain('hsva')
-      expect(ret.fill).toContain('rgba')
+      expect(ret.fill).toContain('rgb')
+      expect(ret['fill-opacity']).toBe('0.2')
     })
   })
 
@@ -80,7 +81,8 @@ describe('getPosedAttributesWithoutTransform', () => {
       const node = getElementNode()
       const ret = getPosedAttributesWithoutTransform(boneMap, element, node)
       expect(ret.stroke).not.toContain('hsva')
-      expect(ret.stroke).toContain('rgba')
+      expect(ret.stroke).toContain('rgb')
+      expect(ret['stroke-opacity']).toBe('0.2')
     })
   })
 

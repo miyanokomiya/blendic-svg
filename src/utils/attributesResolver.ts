@@ -49,18 +49,20 @@ export function getPosedAttributesWithoutTransform(
   if (element.fillBoneId) {
     const fillBone = boneMap[element.fillBoneId]
     if (fillBone) {
-      const fill = posedColor(fillBone.transform)
+      const fill = posedColorAttributes(fillBone.transform)
       if (fill) {
-        ret.fill = fill
+        ret.fill = fill.color
+        ret['fill-opacity'] = fill.opacity
       }
     }
   }
   if (element.strokeBoneId) {
     const strokeBone = boneMap[element.strokeBoneId]
     if (strokeBone) {
-      const stroke = posedColor(strokeBone.transform)
+      const stroke = posedColorAttributes(strokeBone.transform)
       if (stroke) {
-        ret.stroke = stroke
+        ret.stroke = stroke.color
+        ret['stroke-opacity'] = stroke.opacity
       }
     }
   }
@@ -77,6 +79,16 @@ function posedViewBox(node: ElementNode, bone: Bone): string | undefined {
       origin: bone.head,
     })
   )
+}
+
+export function posedColorAttributes(
+  transform: Transform
+): { color: string; opacity: string } {
+  const hsva = hsvaToRgba(posedHsva(transform))
+  return {
+    color: `rgb(${hsva.r},${hsva.g},${hsva.b})`,
+    opacity: hsva.a.toString(),
+  }
 }
 
 export function posedColor(transform: Transform): string {

@@ -49,7 +49,7 @@ export function getPosedAttributesWithoutTransform(
   if (element.fillBoneId) {
     const fillBone = boneMap[element.fillBoneId]
     if (fillBone) {
-      const fill = posedColor(fillBone.transform, element.fillType)
+      const fill = posedColor(fillBone.transform)
       if (fill) {
         ret.fill = fill
       }
@@ -58,7 +58,7 @@ export function getPosedAttributesWithoutTransform(
   if (element.strokeBoneId) {
     const strokeBone = boneMap[element.strokeBoneId]
     if (strokeBone) {
-      const stroke = posedColor(strokeBone.transform, element.strokeType)
+      const stroke = posedColor(strokeBone.transform)
       if (stroke) {
         ret.stroke = stroke
       }
@@ -79,20 +79,8 @@ function posedViewBox(node: ElementNode, bone: Bone): string | undefined {
   )
 }
 
-export function posedColor(transform: Transform, colorType = 'hsv'): string {
-  if (colorType === 'rgb') {
-    const r = transform.translate.x
-    const g = transform.translate.y
-    const b = transform.rotate
-    const a = transform.scale.x
-    return `rgba(${r},${g},${b},${a})`
-  } else {
-    const h = transform.rotate
-    const s = transform.translate.x / 100
-    const v = transform.translate.y / 100
-    const a = transform.scale.x
-    return rednerRGBA(hsvaToRgba({ h, s, v, a }))
-  }
+export function posedColor(transform: Transform): string {
+  return rednerRGBA(hsvaToRgba(posedHsva(transform)))
 }
 
 export function posedHsva(transform: Transform): HSVA {

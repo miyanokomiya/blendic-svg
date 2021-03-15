@@ -50,20 +50,13 @@ describe('getPosedAttributesWithoutTransform', () => {
     const boneMap = {
       bone: getBone({
         transform: getTransform({
-          translate: { x: 1, y: 2 },
+          translate: { x: 0, y: 50 },
           scale: { x: 0.2, y: 2 },
-          rotate: 90,
+          rotate: 120,
         }),
       }),
     }
-    it('rgb', () => {
-      const element = getBElement({ fillBoneId: 'bone', fillType: 'rgb' })
-      const node = getElementNode()
-      expect(
-        getPosedAttributesWithoutTransform(boneMap, element, node)
-      ).toEqual({ fill: 'rgba(1,2,90,0.2)' })
-    })
-    it('default: hsl -> rgb text', () => {
+    it('hsl -> rgb text', () => {
       const element = getBElement({ fillBoneId: 'bone' })
       const node = getElementNode()
       const ret = getPosedAttributesWithoutTransform(boneMap, element, node)
@@ -82,14 +75,7 @@ describe('getPosedAttributesWithoutTransform', () => {
         }),
       }),
     }
-    it('rgb', () => {
-      const element = getBElement({ strokeBoneId: 'bone', strokeType: 'rgb' })
-      const node = getElementNode()
-      expect(
-        getPosedAttributesWithoutTransform(boneMap, element, node)
-      ).toEqual({ stroke: 'rgba(1,2,90,0.2)' })
-    })
-    it('default: hsl -> rgb text', () => {
+    it('hsl -> rgb text', () => {
       const element = getBElement({ strokeBoneId: 'bone' })
       const node = getElementNode()
       const ret = getPosedAttributesWithoutTransform(boneMap, element, node)

@@ -34,16 +34,10 @@ Copyright (C) 2021, Tomoya Komiyama.
           <BlockField label="Transform">
             <SelectField v-model="boneId" :options="boneOptions" />
           </BlockField>
-          <InlineField label="Fill" between>
-            <CheckboxInput v-model="fillType" label="RGB" />
-          </InlineField>
-          <BlockField>
+          <BlockField label="Fill">
             <SelectField v-model="fillBoneId" :options="boneOptions" />
           </BlockField>
-          <InlineField label="Stroke" between>
-            <CheckboxInput v-model="strokeType" label="RGB" />
-          </InlineField>
-          <BlockField>
+          <BlockField label="Stroke">
             <SelectField v-model="strokeBoneId" :options="boneOptions" />
           </BlockField>
         </template>
@@ -61,13 +55,11 @@ import { useStore } from '/@/store'
 import { useCanvasStore } from '/@/store/canvas'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
-import InlineField from '/@/components/atoms/InlineField.vue'
-import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import { useElementStore } from '/@/store/element'
 import { sortByValue } from '/@/utils/commons'
 
 export default defineComponent({
-  components: { SelectField, BlockField, InlineField, CheckboxInput },
+  components: { SelectField, BlockField },
   setup() {
     const store = useStore()
     const canvasStore = useCanvasStore()
@@ -122,28 +114,12 @@ export default defineComponent({
         elementStore.updateElement({ fillBoneId: val })
       },
     })
-    const fillType = computed({
-      get(): boolean {
-        return targetElement.value?.fillType === 'rgb'
-      },
-      set(rgb: boolean) {
-        elementStore.updateElement({ fillType: rgb ? 'rgb' : 'hsl' })
-      },
-    })
     const strokeBoneId = computed({
       get(): string {
         return targetElement.value?.strokeBoneId ?? ''
       },
       set(val: string) {
         elementStore.updateElement({ strokeBoneId: val })
-      },
-    })
-    const strokeType = computed({
-      get(): boolean {
-        return targetElement.value?.strokeType === 'rgb'
-      },
-      set(rgb: boolean) {
-        elementStore.updateElement({ strokeType: rgb ? 'rgb' : 'hsl' })
       },
     })
 
@@ -178,9 +154,7 @@ export default defineComponent({
       boneOptions,
       boneId,
       fillBoneId,
-      fillType,
       strokeBoneId,
-      strokeType,
       viewBoxBoneId,
     }
   },

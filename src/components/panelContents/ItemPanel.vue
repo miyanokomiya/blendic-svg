@@ -69,7 +69,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <div v-if="showColorPicker" class="color-popup">
           <ColorPicker
             class="color-picker"
-            :model-value="color"
+            :hsva="hsva"
             @update:modelValue="updatePoseByColor"
           />
         </div>
@@ -129,8 +129,8 @@ import SliderInput from '/@/components/atoms/SliderInput.vue'
 import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
-import { posedColor } from '/@/utils/attributesResolver'
-import { HSLA } from '/@/utils/color'
+import { posedColor, posedHsva } from '/@/utils/attributesResolver'
+import { HSVA } from '/@/utils/color'
 
 export default defineComponent({
   components: { SliderInput, WeightPanel, InlineField, ColorPicker },
@@ -195,6 +195,17 @@ export default defineComponent({
       if (!targetTransform.value) return ''
       return posedColor(targetTransform.value)
     })
+    const hsva = computed(() => {
+      if (!targetTransform.value) return ''
+      return posedHsva(targetTransform.value)
+    })
+    function updatePoseByColor(_str: string, hsva: HSVA, seriesKey?: string) {
+      draftTransform.translateX = hsva.s * 100
+      draftTransform.translateY = hsva.v * 100
+      draftTransform.rotate = hsva.h
+      draftTransform.scaleX = hsva.a
+      changeTransform(seriesKey)
+    }
 
     function changeBoneHeadX(val: number, seriesKey?: string) {
       draftBone.headX = val
@@ -245,13 +256,6 @@ export default defineComponent({
       draftTransform.scaleY = val
       changeTransform(seriesKey)
     }
-    function updatePoseByColor(_str: string, hsla: HSLA, seriesKey?: string) {
-      draftTransform.translateX = hsla.s * 100
-      draftTransform.translateY = hsla.l * 100
-      draftTransform.rotate = hsla.h
-      draftTransform.scaleX = hsla.a
-      changeTransform(seriesKey)
-    }
 
     function changeTransform(seriesKey?: string) {
       if (!targetBone.value) return
@@ -293,6 +297,7 @@ export default defineComponent({
       canvasMode: computed(() => canvasStore.state.canvasMode),
       targetBone,
       color,
+      hsva,
       draftBone,
       changeBoneHeadX,
       changeBoneHeadY,

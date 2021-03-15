@@ -18,7 +18,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getBElement, getBone, getElementNode, getTransform } from '/@/models'
-import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
+import {
+  getPosedAttributesWithoutTransform,
+  posedHsva,
+} from '/@/utils/attributesResolver'
 
 describe('getPosedAttributesWithoutTransform', () => {
   it('no posed attributes', () => {
@@ -60,12 +63,12 @@ describe('getPosedAttributesWithoutTransform', () => {
         getPosedAttributesWithoutTransform(boneMap, element, node)
       ).toEqual({ fill: 'rgba(1,2,90,0.2)' })
     })
-    it('default: hsl', () => {
+    it('default: hsl -> rgb text', () => {
       const element = getBElement({ fillBoneId: 'bone' })
       const node = getElementNode()
-      expect(
-        getPosedAttributesWithoutTransform(boneMap, element, node)
-      ).toEqual({ fill: 'hsla(90,1%,2%,0.2)' })
+      const ret = getPosedAttributesWithoutTransform(boneMap, element, node)
+      expect(ret.fill).not.toContain('hsva')
+      expect(ret.fill).toContain('rgba')
     })
   })
 
@@ -86,12 +89,31 @@ describe('getPosedAttributesWithoutTransform', () => {
         getPosedAttributesWithoutTransform(boneMap, element, node)
       ).toEqual({ stroke: 'rgba(1,2,90,0.2)' })
     })
-    it('default: hsl', () => {
+    it('default: hsl -> rgb text', () => {
       const element = getBElement({ strokeBoneId: 'bone' })
       const node = getElementNode()
+      const ret = getPosedAttributesWithoutTransform(boneMap, element, node)
+      expect(ret.stroke).not.toContain('hsva')
+      expect(ret.stroke).toContain('rgba')
+    })
+  })
+
+  describe('posedHsva', () => {
+    it('bone to HSVA', () => {
       expect(
-        getPosedAttributesWithoutTransform(boneMap, element, node)
-      ).toEqual({ stroke: 'hsla(90,1%,2%,0.2)' })
+        posedHsva(
+          getTransform({
+            translate: { x: 10, y: 20 },
+            rotate: 3,
+            scale: { x: 0.5, y: 2 },
+          })
+        )
+      ).toEqual({
+        h: 3,
+        s: 0.1,
+        v: 0.2,
+        a: 0.5,
+      })
     })
   })
 })

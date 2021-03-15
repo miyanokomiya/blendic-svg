@@ -19,18 +19,25 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { clamp } from '/@/utils/geometry'
 
+export interface RGBA {
+  r: number // 0 ~ 255
+  g: number // 0 ~ 255
+  b: number // 0 ~ 255
+  a: number // 0 ~ 1
+}
+
 export interface HSLA {
-  h: number
-  s: number
-  l: number
-  a: number
+  h: number // 0 ~ 360
+  s: number // 0 ~ 1
+  l: number // 0 ~ 1
+  a: number // 0 ~ 1
 }
 
 export interface HSVA {
-  h: number
-  s: number
-  v: number
-  a: number
+  h: number // 0 ~ 360
+  s: number // 0 ~ 1
+  v: number // 0 ~ 1
+  a: number // 0 ~ 1
 }
 
 export function parseHSLA(str: string): HSLA | undefined {
@@ -44,8 +51,66 @@ export function parseHSLA(str: string): HSLA | undefined {
   }
 }
 
+export function parseHSVA(str: string): HSVA | undefined {
+  const splited = str.replace(/ /g, '').match(/hsva\((.+),(.+)%,(.+)%,(.+)\)/)
+  if (!splited || splited.length < 5) return
+  return {
+    h: clamp(0, 360, parseFloat(splited[1])),
+    s: clamp(0, 1, parseFloat(splited[2]) / 100),
+    v: clamp(0, 1, parseFloat(splited[3]) / 100),
+    a: clamp(0, 1, parseFloat(splited[4])),
+  }
+}
+
+export function parseRGBA(str: string): RGBA | undefined {
+  const splited = str.replace(/ /g, '').match(/rgba\((.+),(.+),(.+),(.+)\)/)
+  if (!splited || splited.length < 5) return
+  return {
+    r: clamp(0, 255, parseFloat(splited[1])),
+    g: clamp(0, 255, parseFloat(splited[2])),
+    b: clamp(0, 255, parseFloat(splited[3])),
+    a: clamp(0, 1, parseFloat(splited[4])),
+  }
+}
+
 export function rednerHSLA(hsla: HSLA): string {
   return `hsla(${hsla.h},${hsla.s * 100}%,${hsla.l * 100}%,${hsla.a})`
+}
+
+export function rednerHSVA(hsva: HSVA): string {
+  return `hsva(${hsva.h},${hsva.s * 100}%,${hsva.v * 100}%,${hsva.a})`
+}
+
+export function rednerRGBA(rgba: RGBA): string {
+  return `rgba(${rgba.r},${rgba.g},${rgba.b},${rgba.a})`
+}
+
+export function rgbaToHsva(rgba: RGBA): HSVA {
+  const r = rgba.r / 255
+  const g = rgba.g / 255
+  const b = rgba.b / 255
+
+  const v = Math.max(r, g, b),
+    c = v - Math.min(r, g, b)
+  const h =
+    c && (v == r ? (g - b) / c : v == g ? 2 + (b - r) / c : 4 + (r - g) / c)
+  return {
+    h: clamp(0, 360, 60 * (h < 0 ? h + 6 : h)),
+    s: clamp(0, 1, v && c / v),
+    v: clamp(0, 1, v),
+    a: rgba.a,
+  }
+}
+
+export function hsvaToRgba(hsva: HSVA): RGBA {
+  const f = (n: number, k = (n + hsva.h / 60) % 6) =>
+    hsva.v - hsva.v * hsva.s * Math.max(Math.min(k, 4 - k, 1), 0)
+  return {
+    r: clamp(0, 1, f(5)) * 255,
+    g: clamp(0, 1, f(3)) * 255,
+    b: clamp(0, 1, f(1)) * 255,
+    a: hsva.a,
+  }
 }
 
 export function hslaToHsva(hsla: HSLA): HSVA {

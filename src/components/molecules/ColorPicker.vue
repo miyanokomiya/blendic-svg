@@ -40,7 +40,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <div>
         <InlineField label="H" label-width="10px">
           <SliderInput
-            :model-value="hsla.h"
+            :model-value="localHsva.h"
             :min="0"
             :max="360"
             integer
@@ -51,7 +51,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <div>
         <InlineField label="A" label-width="10px">
           <SliderInput
-            :model-value="hsla.a"
+            :model-value="localHsva.a"
             :min="0"
             :max="1"
             @update:modelValue="updateAlpha"
@@ -65,14 +65,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { IVec2, sub } from 'okageo'
 import { getPagePosition, useDrag } from 'okanvas'
-import { computed, defineComponent, ref } from 'vue'
+import { computed, defineComponent, PropType, ref } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import {
-  HSLA,
-  hslaToHsva,
-  hsvaToHsla,
-  parseHSLA,
-  rednerHSLA,
+  HSVA,
+  hsvaToRgba,
+  parseRGBA,
+  rednerRGBA,
+  rgbaToHsva,
 } from '/@/utils/color'
 import { clamp } from '/@/utils/geometry'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
@@ -85,39 +85,45 @@ export default defineComponent({
   props: {
     modelValue: {
       type: String,
-      default: '',
+      default: undefined,
+    },
+    hsva: {
+      type: Object as PropType<HSVA>,
+      default: undefined,
     },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     const colorRect = ref<Element>()
-    const dragStartRate = ref({ x: 0, y: 0 })
     const dragged = ref(false)
     const seriesKey = ref<string>()
 
-    const hsla = computed(() => {
-      return parseHSLA(props.modelValue) ?? { h: 0, s: 0, l: 0, a: 1 }
-    })
-    const hsva = computed(() => {
-      return hslaToHsva(hsla.value)
+    const localHsva = computed(() => {
+      if (props.hsva) return props.hsva
+
+      const rgba = parseRGBA(props.modelValue)
+      if (!rgba) return { h: 0, s: 0, v: 0, a: 1 }
+      console.log(rgba)
+      console.log(rgbaToHsva(rgba))
+      return rgbaToHsva(rgba)
     })
     const rateInRect = computed(() => {
-      return { x: hsva.value.s, y: 1 - hsva.value.v }
+      return { x: localHsva.value.s, y: 1 - localHsva.value.v }
     })
 
     const baseColor = computed(() => {
-      return rednerHSLA({ h: hsla.value.h, s: 1, l: 0.5, a: 1 })
+      return rednerRGBA(hsvaToRgba({ h: localHsva.value.h, s: 1, v: 1, a: 1 }))
     })
 
-    function update(hsla: HSLA, seriesKey?: string) {
-      emit('update:modelValue', rednerHSLA(hsla), hsla, seriesKey)
+    function update(hsva: HSVA, seriesKey?: string) {
+      emit('update:modelValue', rednerRGBA(hsvaToRgba(hsva)), hsva, seriesKey)
     }
 
     function updateHue(val: number, seriesKey?: string) {
-      update({ ...hsla.value, h: val }, seriesKey)
+      update({ ...localHsva.value, h: val }, seriesKey)
     }
     function updateAlpha(val: number, seriesKey?: string) {
-      update({ ...hsla.value, a: val }, seriesKey)
+      update({ ...localHsva.value, a: val }, seriesKey)
     }
 
     function updateByRect(windowP: IVec2) {
@@ -134,10 +140,7 @@ export default defineComponent({
         s: clamp(0, 1, next.x),
         v: 1 - clamp(0, 1, next.y),
       }
-      update(
-        hsvaToHsla({ h: hsla.value.h, s: sv.s, v: sv.v, a: hsla.value.a }),
-        seriesKey.value
-      )
+      update({ ...localHsva.value, s: sv.s, v: sv.v }, seriesKey.value)
     }
 
     const drag = useDrag((arg) => {
@@ -153,7 +156,6 @@ export default defineComponent({
     function onDown(e: MouseEvent) {
       dragged.value = false
       seriesKey.value = `color_${Date.now()}`
-      dragStartRate.value = { ...rateInRect.value }
       updateByRect(getPagePosition(e))
       drag.onDown(e)
     }
@@ -162,10 +164,10 @@ export default defineComponent({
       RECT_SIZE,
       colorRect,
       baseColor,
+      localHsva,
       onDown,
       updateHue,
       updateAlpha,
-      hsla,
       rateInRect,
     }
   },

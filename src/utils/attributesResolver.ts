@@ -26,6 +26,7 @@ import {
   Transform,
 } from '../models'
 import { viewbox } from './helpers'
+import { HSVA, hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { parseViewBoxFromStr } from '/@/utils/elements'
 import { transformRect } from '/@/utils/geometry'
 
@@ -78,7 +79,7 @@ function posedViewBox(node: ElementNode, bone: Bone): string | undefined {
   )
 }
 
-export function posedColor(transform: Transform, colorType = 'hsl'): string {
+export function posedColor(transform: Transform, colorType = 'hsv'): string {
   if (colorType === 'rgb') {
     const r = transform.translate.x
     const g = transform.translate.y
@@ -87,9 +88,18 @@ export function posedColor(transform: Transform, colorType = 'hsl'): string {
     return `rgba(${r},${g},${b},${a})`
   } else {
     const h = transform.rotate
-    const s = transform.translate.x
-    const l = transform.translate.y
+    const s = transform.translate.x / 100
+    const v = transform.translate.y / 100
     const a = transform.scale.x
-    return `hsla(${h},${s}%,${l}%,${a})`
+    return rednerRGBA(hsvaToRgba({ h, s, v, a }))
+  }
+}
+
+export function posedHsva(transform: Transform): HSVA {
+  return {
+    h: transform.rotate,
+    s: transform.translate.x / 100,
+    v: transform.translate.y / 100,
+    a: transform.scale.x,
   }
 }

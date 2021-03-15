@@ -103,8 +103,6 @@ export default defineComponent({
 
       const rgba = parseRGBA(props.modelValue)
       if (!rgba) return { h: 0, s: 0, v: 0, a: 1 }
-      console.log(rgba)
-      console.log(rgbaToHsva(rgba))
       return rgbaToHsva(rgba)
     })
     const rateInRect = computed(() => {

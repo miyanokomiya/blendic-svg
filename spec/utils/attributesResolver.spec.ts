@@ -96,12 +96,18 @@ describe('getPosedAttributesWithoutTransform', () => {
             scale: { x: 0.5, y: 2 },
           })
         )
-      ).toEqual({
-        h: 3,
-        s: 0.1,
-        v: 0.2,
-        a: 0.5,
-      })
+      ).toEqual({ h: 3, s: 0.1, v: 0.2, a: 0.5 })
+    })
+    it('clmap in HSVA range', () => {
+      expect(
+        posedHsva(
+          getTransform({
+            translate: { x: 1000, y: -20 },
+            rotate: 400,
+            scale: { x: 1.5, y: 2 },
+          })
+        )
+      ).toEqual({ h: 360, s: 1, v: 0, a: 1 })
     })
   })
 })

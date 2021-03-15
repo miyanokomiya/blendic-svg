@@ -200,6 +200,8 @@ export default defineComponent({
       return posedHsva(targetTransform.value)
     })
     function updatePoseByColor(_str: string, hsva: HSVA, seriesKey?: string) {
+      if (!targetTransform.value) return
+
       draftTransform.translateX = hsva.s * 100
       draftTransform.translateY = hsva.v * 100
       draftTransform.rotate = hsva.h

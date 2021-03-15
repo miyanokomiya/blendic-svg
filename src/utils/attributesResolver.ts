@@ -28,7 +28,7 @@ import {
 import { viewbox } from './helpers'
 import { HSVA, hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { parseViewBoxFromStr } from '/@/utils/elements'
-import { transformRect } from '/@/utils/geometry'
+import { clamp, transformRect } from '/@/utils/geometry'
 
 export function getPosedAttributesWithoutTransform(
   boneMap: IdMap<Bone>,
@@ -97,9 +97,9 @@ export function posedColor(transform: Transform): string {
 
 export function posedHsva(transform: Transform): HSVA {
   return {
-    h: transform.rotate,
-    s: transform.translate.x / 100,
-    v: transform.translate.y / 100,
-    a: transform.scale.x,
+    h: clamp(0, 360, transform.rotate),
+    s: clamp(0, 1, transform.translate.x / 100),
+    v: clamp(0, 1, transform.translate.y / 100),
+    a: clamp(0, 1, transform.scale.x),
   }
 }

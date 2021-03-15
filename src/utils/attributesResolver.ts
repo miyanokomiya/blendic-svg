@@ -23,6 +23,7 @@ import {
   ElementNode,
   IdMap,
   ElementNodeAttributes,
+  Transform,
 } from '../models'
 import { viewbox } from './helpers'
 import { parseViewBoxFromStr } from '/@/utils/elements'
@@ -47,7 +48,7 @@ export function getPosedAttributesWithoutTransform(
   if (element.fillBoneId) {
     const fillBone = boneMap[element.fillBoneId]
     if (fillBone) {
-      const fill = posedColor(fillBone, element.fillType)
+      const fill = posedColor(fillBone.transform, element.fillType)
       if (fill) {
         ret.fill = fill
       }
@@ -56,7 +57,7 @@ export function getPosedAttributesWithoutTransform(
   if (element.strokeBoneId) {
     const strokeBone = boneMap[element.strokeBoneId]
     if (strokeBone) {
-      const stroke = posedColor(strokeBone, element.strokeType)
+      const stroke = posedColor(strokeBone.transform, element.strokeType)
       if (stroke) {
         ret.stroke = stroke
       }
@@ -77,18 +78,18 @@ function posedViewBox(node: ElementNode, bone: Bone): string | undefined {
   )
 }
 
-function posedColor(bone: Bone, colorType = 'hsl'): string {
+export function posedColor(transform: Transform, colorType = 'hsl'): string {
   if (colorType === 'rgb') {
-    const r = bone.transform.translate.x
-    const g = bone.transform.translate.y
-    const b = bone.transform.rotate
-    const a = bone.transform.scale.x
+    const r = transform.translate.x
+    const g = transform.translate.y
+    const b = transform.rotate
+    const a = transform.scale.x
     return `rgba(${r},${g},${b},${a})`
   } else {
-    const h = bone.transform.rotate
-    const s = bone.transform.translate.x
-    const l = bone.transform.translate.y
-    const a = bone.transform.scale.x
+    const h = transform.rotate
+    const s = transform.translate.x
+    const l = transform.translate.y
+    const a = transform.scale.x
     return `hsla(${h},${s}%,${l}%,${a})`
   }
 }

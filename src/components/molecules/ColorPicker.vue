@@ -41,8 +41,8 @@ Copyright (C) 2021, Tomoya Komiyama.
         <InlineField label="H" label-width="10px">
           <SliderInput
             :model-value="localHsva.h"
-            :min="0"
-            :max="360"
+            :min="extraHue ? undefined : 0"
+            :max="extraHue ? undefined : 360"
             integer
             @update:modelValue="updateHue"
           />
@@ -86,6 +86,10 @@ export default defineComponent({
     modelValue: {
       type: [String, Object] as PropType<string | HSVA>,
       default: undefined,
+    },
+    extraHue: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ['update:modelValue'],

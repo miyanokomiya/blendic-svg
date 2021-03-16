@@ -70,6 +70,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           <ColorPicker
             class="color-picker"
             :model-value="hsva"
+            extra-hue
             @update:modelValue="updatePoseByColor"
           />
         </div>

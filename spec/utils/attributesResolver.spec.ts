@@ -98,7 +98,7 @@ describe('getPosedAttributesWithoutTransform', () => {
         )
       ).toEqual({ h: 3, s: 0.1, v: 0.2, a: 0.5 })
     })
-    it('clmap in HSVA range', () => {
+    it('clmap in SVA range', () => {
       expect(
         posedHsva(
           getTransform({
@@ -107,7 +107,7 @@ describe('getPosedAttributesWithoutTransform', () => {
             scale: { x: 1.5, y: 2 },
           })
         )
-      ).toEqual({ h: 360, s: 1, v: 0, a: 1 })
+      ).toEqual({ h: 400, s: 1, v: 0, a: 1 })
     })
   })
 })

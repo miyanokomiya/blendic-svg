@@ -92,12 +92,20 @@ export function posedColorAttributes(
 }
 
 export function posedColor(transform: Transform): string {
-  return rednerRGBA(hsvaToRgba(posedHsva(transform)))
+  const hsva = posedHsva(transform)
+  const h = hsva.h % 360
+  return rednerRGBA(
+    hsvaToRgba({
+      ...hsva,
+      h: h < 0 ? h + 360 : h,
+    })
+  )
 }
 
 export function posedHsva(transform: Transform): HSVA {
   return {
-    h: clamp(0, 360, transform.rotate),
+    // hue is circular and not clamped
+    h: transform.rotate,
     s: clamp(0, 1, transform.translate.x / 100),
     v: clamp(0, 1, transform.translate.y / 100),
     a: clamp(0, 1, transform.scale.x),

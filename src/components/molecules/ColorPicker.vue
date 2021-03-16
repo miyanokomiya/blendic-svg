@@ -19,44 +19,40 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div class="color-picker-wrapper">
-    <div
-      ref="colorRect"
-      class="color-rect"
-      :style="{ 'background-color': baseColor }"
-      @mousedown="onDown"
-    >
+    <div class="color-picker-inner">
+      <HueCiclePicker
+        :model-value="localHsva.h"
+        class="hue-circle"
+        @update:modelValue="updateHue"
+      />
       <div
-        class="cursor"
-        :style="{
-          transform: `translate(${rateInRect.x * RECT_SIZE}px,${
-            rateInRect.y * RECT_SIZE
-          }px)`,
-        }"
+        ref="colorRect"
+        class="color-rect"
+        :style="{ 'background-color': baseColor }"
+        @mousedown="onDown"
       >
-        <div />
+        <div
+          class="cursor"
+          :style="{
+            transform: `translate(${rateInRect.x * RECT_SIZE}px,${
+              rateInRect.y * RECT_SIZE
+            }px)`,
+          }"
+        >
+          <div />
+        </div>
       </div>
-    </div>
-    <div class="input-block">
-      <div>
-        <InlineField label="H" label-width="10px">
-          <SliderInput
-            :model-value="localHsva.h"
-            :min="0"
-            :max="360"
-            integer
-            @update:modelValue="updateHue"
-          />
-        </InlineField>
-      </div>
-      <div>
-        <InlineField label="A" label-width="10px">
-          <SliderInput
-            :model-value="localHsva.a"
-            :min="0"
-            :max="1"
-            @update:modelValue="updateAlpha"
-          />
-        </InlineField>
+      <div class="input-block">
+        <div>
+          <InlineField label="A" label-width="10px">
+            <SliderInput
+              :model-value="localHsva.a"
+              :min="0"
+              :max="1"
+              @update:modelValue="updateAlpha"
+            />
+          </InlineField>
+        </div>
       </div>
     </div>
   </div>
@@ -77,15 +73,20 @@ import {
 import { clamp } from '/@/utils/geometry'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import HueCiclePicker from '/@/components/atoms/HueCiclePicker.vue'
 
-const RECT_SIZE = 200
+const RECT_SIZE = 110
 
 export default defineComponent({
-  components: { SliderInput, InlineField },
+  components: { SliderInput, InlineField, HueCiclePicker },
   props: {
     modelValue: {
       type: [String, Object] as PropType<string | HSVA>,
       default: undefined,
+    },
+    extraHue: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ['update:modelValue'],
@@ -178,13 +179,21 @@ export default defineComponent({
 $size: 200px;
 
 .color-picker-wrapper {
-  width: $size;
+  padding: 2px;
   background-color: #fff;
 }
-.color-rect {
+.color-picker-inner {
   position: relative;
-  width: 100%;
-  height: $size;
+  width: $size;
+}
+.color-rect {
+  $margin: 44px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: $margin;
+  width: calc(#{$size} - #{$margin * 2});
+  height: calc(#{$size} - #{$margin * 2});
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0)),
     linear-gradient(to right, rgb(255, 255, 255), rgba(255, 255, 255, 0));
   .cursor {
@@ -200,10 +209,7 @@ $size: 200px;
   }
 }
 .input-block {
-  padding: 2px 2px 0 8px;
-  > div {
-    padding-bottom: 2px;
-  }
+  padding-left: 8px;
 }
 .alpha {
   width: 100%;

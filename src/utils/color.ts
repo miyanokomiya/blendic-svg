@@ -90,25 +90,34 @@ export function rgbaToHsva(rgba: RGBA): HSVA {
   const g = rgba.g / 255
   const b = rgba.b / 255
 
-  const v = Math.max(r, g, b),
-    c = v - Math.min(r, g, b)
+  const v = Math.max(r, g, b)
+  const c = v - Math.min(r, g, b)
   const h =
-    c && (v == r ? (g - b) / c : v == g ? 2 + (b - r) / c : 4 + (r - g) / c)
+    c === 0
+      ? c
+      : v === r
+      ? (g - b) / c
+      : v === g
+      ? 2 + (b - r) / c
+      : 4 + (r - g) / c
   return {
     h: clamp(0, 360, 60 * (h < 0 ? h + 6 : h)),
-    s: clamp(0, 1, v && c / v),
+    s: clamp(0, 1, v === 0 ? v : c / v),
     v: clamp(0, 1, v),
     a: rgba.a,
   }
 }
 
+function getHsvToRgbParam(h: number, s: number, v: number, n: number) {
+  const k = (n + h / 60) % 6
+  return v - v * s * Math.max(Math.min(k, 4 - k, 1), 0)
+}
+
 export function hsvaToRgba(hsva: HSVA): RGBA {
-  const f = (n: number, k = (n + hsva.h / 60) % 6) =>
-    hsva.v - hsva.v * hsva.s * Math.max(Math.min(k, 4 - k, 1), 0)
   return {
-    r: clamp(0, 1, f(5)) * 255,
-    g: clamp(0, 1, f(3)) * 255,
-    b: clamp(0, 1, f(1)) * 255,
+    r: clamp(0, 1, getHsvToRgbParam(hsva.h, hsva.s, hsva.v, 5)) * 255,
+    g: clamp(0, 1, getHsvToRgbParam(hsva.h, hsva.s, hsva.v, 3)) * 255,
+    b: clamp(0, 1, getHsvToRgbParam(hsva.h, hsva.s, hsva.v, 1)) * 255,
     a: hsva.a,
   }
 }
@@ -135,18 +144,16 @@ export function hsvaToHsla(hsva: HSVA): HSLA {
 
 function svToSl(s: number, v: number): { s: number; l: number } {
   const l = ((2 - s) * v) / 2
+  const ss =
+    l === 0
+      ? s
+      : l === 1
+      ? 0
+      : l < 0.5
+      ? (s * v) / (l * 2)
+      : (s * v) / (2 - l * 2)
 
-  if (l != 0) {
-    if (l == 1) {
-      s = 0
-    } else if (l < 0.5) {
-      s = (s * v) / (l * 2)
-    } else {
-      s = (s * v) / (2 - l * 2)
-    }
-  }
-
-  return { s, l }
+  return { s: ss, l }
 }
 
 function slToSv(s: number, l: number): { s: number; v: number } {

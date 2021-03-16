@@ -84,11 +84,7 @@ export default defineComponent({
   components: { SliderInput, InlineField },
   props: {
     modelValue: {
-      type: String,
-      default: undefined,
-    },
-    hsva: {
-      type: Object as PropType<HSVA>,
+      type: [String, Object] as PropType<string | HSVA>,
       default: undefined,
     },
   },
@@ -99,7 +95,7 @@ export default defineComponent({
     const seriesKey = ref<string>()
 
     const localHsva = computed(() => {
-      if (props.hsva) return props.hsva
+      if (typeof props.modelValue !== 'string') return props.modelValue
 
       const rgba = parseRGBA(props.modelValue)
       if (!rgba) return { h: 0, s: 0, v: 0, a: 1 }
@@ -114,7 +110,13 @@ export default defineComponent({
     })
 
     function update(hsva: HSVA, seriesKey?: string) {
-      emit('update:modelValue', rednerRGBA(hsvaToRgba(hsva)), hsva, seriesKey)
+      emit(
+        'update:modelValue',
+        typeof props.modelValue === 'string'
+          ? rednerRGBA(hsvaToRgba(hsva))
+          : hsva,
+        seriesKey
+      )
     }
 
     function updateHue(val: number, seriesKey?: string) {

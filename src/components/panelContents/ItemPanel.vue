@@ -69,7 +69,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <div v-if="showColorPicker" class="color-popup">
           <ColorPicker
             class="color-picker"
-            :hsva="hsva"
+            :model-value="hsva"
             @update:modelValue="updatePoseByColor"
           />
         </div>
@@ -199,7 +199,7 @@ export default defineComponent({
       if (!targetTransform.value) return ''
       return posedHsva(targetTransform.value)
     })
-    function updatePoseByColor(_str: string, hsva: HSVA, seriesKey?: string) {
+    function updatePoseByColor(hsva: HSVA, seriesKey?: string) {
       if (!targetTransform.value) return
 
       draftTransform.translateX = hsva.s * 100

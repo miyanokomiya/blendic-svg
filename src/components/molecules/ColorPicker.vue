@@ -180,11 +180,11 @@ $size: 200px;
 
 .color-picker-wrapper {
   padding: 2px;
+  background-color: #fff;
 }
 .color-picker-inner {
   position: relative;
   width: $size;
-  background-color: #fff;
 }
 .color-rect {
   $margin: 44px;

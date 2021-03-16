@@ -51,12 +51,12 @@ function getContinuousRad(
 ): number {
   if (
     normalizedCurrentRad >= Math.PI / 2 &&
-    normalizedNextRad <= -Math.PI / 2
+    normalizedNextRad < normalizedCurrentRad - Math.PI
   ) {
     return normalizedNextRad + Math.PI * 2
   } else if (
     normalizedCurrentRad <= -Math.PI / 2 &&
-    normalizedNextRad >= Math.PI / 2
+    normalizedNextRad > normalizedCurrentRad + Math.PI
   ) {
     return normalizedNextRad - Math.PI * 2
   } else {

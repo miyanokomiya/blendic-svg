@@ -18,7 +18,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getBElement, getBone, getElementNode, getTransform } from '/@/models'
-import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
+import {
+  getPosedAttributesWithoutTransform,
+  posedHsva,
+} from '/@/utils/attributesResolver'
 
 describe('getPosedAttributesWithoutTransform', () => {
   it('no posed attributes', () => {
@@ -47,25 +50,19 @@ describe('getPosedAttributesWithoutTransform', () => {
     const boneMap = {
       bone: getBone({
         transform: getTransform({
-          translate: { x: 1, y: 2 },
+          translate: { x: 0, y: 50 },
           scale: { x: 0.2, y: 2 },
-          rotate: 90,
+          rotate: 120,
         }),
       }),
     }
-    it('rgb', () => {
-      const element = getBElement({ fillBoneId: 'bone', fillType: 'rgb' })
-      const node = getElementNode()
-      expect(
-        getPosedAttributesWithoutTransform(boneMap, element, node)
-      ).toEqual({ fill: 'rgba(1,2,90,0.2)' })
-    })
-    it('default: hsl', () => {
+    it('hsl -> rgb text', () => {
       const element = getBElement({ fillBoneId: 'bone' })
       const node = getElementNode()
-      expect(
-        getPosedAttributesWithoutTransform(boneMap, element, node)
-      ).toEqual({ fill: 'hsla(90,1%,2%,0.2)' })
+      const ret = getPosedAttributesWithoutTransform(boneMap, element, node)
+      expect(ret.fill).not.toContain('hsva')
+      expect(ret.fill).toContain('rgb')
+      expect(ret['fill-opacity']).toBe('0.2')
     })
   })
 
@@ -79,19 +76,38 @@ describe('getPosedAttributesWithoutTransform', () => {
         }),
       }),
     }
-    it('rgb', () => {
-      const element = getBElement({ strokeBoneId: 'bone', strokeType: 'rgb' })
-      const node = getElementNode()
-      expect(
-        getPosedAttributesWithoutTransform(boneMap, element, node)
-      ).toEqual({ stroke: 'rgba(1,2,90,0.2)' })
-    })
-    it('default: hsl', () => {
+    it('hsl -> rgb text', () => {
       const element = getBElement({ strokeBoneId: 'bone' })
       const node = getElementNode()
+      const ret = getPosedAttributesWithoutTransform(boneMap, element, node)
+      expect(ret.stroke).not.toContain('hsva')
+      expect(ret.stroke).toContain('rgb')
+      expect(ret['stroke-opacity']).toBe('0.2')
+    })
+  })
+
+  describe('posedHsva', () => {
+    it('bone to HSVA', () => {
       expect(
-        getPosedAttributesWithoutTransform(boneMap, element, node)
-      ).toEqual({ stroke: 'hsla(90,1%,2%,0.2)' })
+        posedHsva(
+          getTransform({
+            translate: { x: 10, y: 20 },
+            rotate: 3,
+            scale: { x: 0.5, y: 2 },
+          })
+        )
+      ).toEqual({ h: 3, s: 0.1, v: 0.2, a: 0.5 })
+    })
+    it('clmap in HSVA range', () => {
+      expect(
+        posedHsva(
+          getTransform({
+            translate: { x: 1000, y: -20 },
+            rotate: 400,
+            scale: { x: 1.5, y: 2 },
+          })
+        )
+      ).toEqual({ h: 360, s: 1, v: 0, a: 1 })
     })
   })
 })

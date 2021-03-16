@@ -23,10 +23,12 @@ import {
   ElementNode,
   IdMap,
   ElementNodeAttributes,
+  Transform,
 } from '../models'
 import { viewbox } from './helpers'
+import { HSVA, hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { parseViewBoxFromStr } from '/@/utils/elements'
-import { transformRect } from '/@/utils/geometry'
+import { clamp, transformRect } from '/@/utils/geometry'
 
 export function getPosedAttributesWithoutTransform(
   boneMap: IdMap<Bone>,
@@ -47,18 +49,20 @@ export function getPosedAttributesWithoutTransform(
   if (element.fillBoneId) {
     const fillBone = boneMap[element.fillBoneId]
     if (fillBone) {
-      const fill = posedColor(fillBone, element.fillType)
+      const fill = posedColorAttributes(fillBone.transform)
       if (fill) {
-        ret.fill = fill
+        ret.fill = fill.color
+        ret['fill-opacity'] = fill.opacity
       }
     }
   }
   if (element.strokeBoneId) {
     const strokeBone = boneMap[element.strokeBoneId]
     if (strokeBone) {
-      const stroke = posedColor(strokeBone, element.strokeType)
+      const stroke = posedColorAttributes(strokeBone.transform)
       if (stroke) {
-        ret.stroke = stroke
+        ret.stroke = stroke.color
+        ret['stroke-opacity'] = stroke.opacity
       }
     }
   }
@@ -77,18 +81,25 @@ function posedViewBox(node: ElementNode, bone: Bone): string | undefined {
   )
 }
 
-function posedColor(bone: Bone, colorType = 'hsl'): string {
-  if (colorType === 'rgb') {
-    const r = bone.transform.translate.x
-    const g = bone.transform.translate.y
-    const b = bone.transform.rotate
-    const a = bone.transform.scale.x
-    return `rgba(${r},${g},${b},${a})`
-  } else {
-    const h = bone.transform.rotate
-    const s = bone.transform.translate.x
-    const l = bone.transform.translate.y
-    const a = bone.transform.scale.x
-    return `hsla(${h},${s}%,${l}%,${a})`
+export function posedColorAttributes(
+  transform: Transform
+): { color: string; opacity: string } {
+  const hsva = hsvaToRgba(posedHsva(transform))
+  return {
+    color: `rgb(${hsva.r},${hsva.g},${hsva.b})`,
+    opacity: hsva.a.toString(),
+  }
+}
+
+export function posedColor(transform: Transform): string {
+  return rednerRGBA(hsvaToRgba(posedHsva(transform)))
+}
+
+export function posedHsva(transform: Transform): HSVA {
+  return {
+    h: clamp(0, 360, transform.rotate),
+    s: clamp(0, 1, transform.translate.x / 100),
+    v: clamp(0, 1, transform.translate.y / 100),
+    a: clamp(0, 1, transform.scale.x),
   }
 }

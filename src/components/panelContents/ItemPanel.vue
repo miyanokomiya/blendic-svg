@@ -59,6 +59,21 @@ Copyright (C) 2021, Tomoya Komiyama.
           @update:modelValue="changeScaleY"
         />
       </InlineField>
+      <InlineField>
+        <button
+          type="button"
+          class="color-block"
+          :style="{ 'background-color': color }"
+          @click="toggleShowColorPicker"
+        />
+        <div v-if="showColorPicker" class="color-popup">
+          <ColorPicker
+            class="color-picker"
+            :model-value="hsva"
+            @update:modelValue="updatePoseByColor"
+          />
+        </div>
+      </InlineField>
     </form>
     <div v-else>
       <p>No Item</p>
@@ -104,7 +119,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, reactive, watchEffect } from 'vue'
+import { computed, defineComponent, reactive, ref, watchEffect } from 'vue'
 import { Bone, getTransform, Transform } from '/@/models'
 import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
@@ -113,9 +128,12 @@ import { convolutePoseTransforms, editTransform } from '/@/utils/armatures'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import ColorPicker from '/@/components/molecules/ColorPicker.vue'
+import { posedColor, posedHsva } from '/@/utils/attributesResolver'
+import { HSVA } from '/@/utils/color'
 
 export default defineComponent({
-  components: { SliderInput, WeightPanel, InlineField },
+  components: { SliderInput, WeightPanel, InlineField, ColorPicker },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
@@ -167,6 +185,29 @@ export default defineComponent({
         canvasStore.getEditTransforms(targetBone.value.id),
       ])
     })
+
+    const showColorPicker = ref(false)
+    function toggleShowColorPicker() {
+      showColorPicker.value = !showColorPicker.value
+    }
+
+    const color = computed(() => {
+      if (!targetTransform.value) return ''
+      return posedColor(targetTransform.value)
+    })
+    const hsva = computed(() => {
+      if (!targetTransform.value) return ''
+      return posedHsva(targetTransform.value)
+    })
+    function updatePoseByColor(hsva: HSVA, seriesKey?: string) {
+      if (!targetTransform.value) return
+
+      draftTransform.translateX = hsva.s * 100
+      draftTransform.translateY = hsva.v * 100
+      draftTransform.rotate = hsva.h
+      draftTransform.scaleX = hsva.a
+      changeTransform(seriesKey)
+    }
 
     function changeBoneHeadX(val: number, seriesKey?: string) {
       draftBone.headX = val
@@ -257,6 +298,8 @@ export default defineComponent({
       labelWidth: '20px',
       canvasMode: computed(() => canvasStore.state.canvasMode),
       targetBone,
+      color,
+      hsva,
       draftBone,
       changeBoneHeadX,
       changeBoneHeadY,
@@ -270,6 +313,9 @@ export default defineComponent({
       changeScaleX,
       changeScaleY,
       connected,
+      showColorPicker,
+      toggleShowColorPicker,
+      updatePoseByColor,
     }
   },
 })
@@ -285,5 +331,22 @@ h5 {
 }
 * + h5 {
   margin-top: 8px;
+}
+.color-block {
+  display: block;
+  width: 100%;
+  height: 20px;
+  border: solid 1px #aaa;
+}
+.color-popup {
+  position: relative;
+  z-index: 1;
+  .color-picker {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: solid 1px #aaa;
+  }
 }
 </style>

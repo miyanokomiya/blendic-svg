@@ -106,6 +106,14 @@ describe('src/utils/geometry.ts', () => {
         getContinuousRadDiff((a / 180) * Math.PI, (b / 180) * Math.PI)
       ).toBeCloseTo((expected / 180) * Math.PI)
     })
+    it.each([
+      [-35, 175, -150],
+      [35, -175, 150],
+    ])('%s, %s => %s', (a, b, expected) => {
+      expect(
+        getContinuousRadDiff((a / 180) * Math.PI, (b / 180) * Math.PI)
+      ).toBeCloseTo((expected / 180) * Math.PI)
+    })
   })
 
   describe('isSameTransform', () => {

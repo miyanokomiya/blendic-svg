@@ -23,6 +23,7 @@ import {
   applyTransform,
   applyTransformToVec,
   clamp,
+  circleClamp,
   logRound,
   getBoneBodyRotation,
   getBoneWorldLocation,
@@ -52,6 +53,18 @@ describe('src/utils/geometry.ts', () => {
     })
   })
 
+  describe('circleClamp', () => {
+    it.each([
+      [0, 0, 1.2, 0],
+      [0, 1, 1.2, 0.2],
+      [0, 1, -0.2, 0.8],
+      [-1, 3, -2, 2],
+      [-1, 3, 3.5, -0.5],
+    ])('circleClamp(%s, %s, %s) => %s', (min, max, val, expected) => {
+      expect(circleClamp(min, max, val)).toBeCloseTo(expected)
+    })
+  })
+
   describe('logRound', () => {
     it.each([
       [0, 0.111, 0],
@@ -73,7 +86,9 @@ describe('src/utils/geometry.ts', () => {
       [Math.PI, Math.PI],
       [Math.PI / 2, Math.PI / 2],
       [Math.PI * 1.5, -Math.PI * 0.5],
-      [-Math.PI * 1.5, Math.PI * 0.5],
+      [Math.PI * 3.5, Math.PI * -0.5],
+      [Math.PI * 1.8, Math.PI * -0.2],
+      [-Math.PI * -1.5, -Math.PI * 0.5],
     ])('normalizeRad(%s) => %s', (a, expected) => {
       expect(normalizeRad(a)).toBeCloseTo(expected)
     })
@@ -85,13 +100,16 @@ describe('src/utils/geometry.ts', () => {
       [0, 90, 90],
       [45, 135, 90],
       [90, 180, 90],
-      [135, 225, 90],
-      [155, 245, 90],
-      [180, 270, 90],
+      [90, -180, 90],
+      [135, -135, 90],
+      [155, -115, 90],
+      [180, -90, 90],
+      [880, -160, 40],
     ])('%s, %s => %s', (a, b, expected) => {
       expect(
-        getContinuousRadDiff((a / 180) * Math.PI, (b / 180) * Math.PI)
-      ).toBeCloseTo((expected / 180) * Math.PI)
+        (getContinuousRadDiff((a / 180) * Math.PI, (b / 180) * Math.PI) * 180) /
+          Math.PI
+      ).toBeCloseTo(expected)
     })
     it.each([
       [45, -45, -90],

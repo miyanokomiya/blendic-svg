@@ -33,6 +33,18 @@ export function clamp(min: number, max: number, val: number) {
   return Math.max(Math.min(val, max), min)
 }
 
+export function circleClamp(min: number, max: number, val: number) {
+  if (min === max) return min
+
+  if (max < val) {
+    return ((val - max) % (max - min)) + min
+  } else if (val < min) {
+    return max - ((min - val) % (max - min))
+  } else {
+    return val
+  }
+}
+
 export function logRound(log: number, val: number) {
   const pow = Math.pow(10, -log)
   return Math.round(val * pow) / pow
@@ -40,9 +52,7 @@ export function logRound(log: number, val: number) {
 
 // normalize in (-pi <= r <= pi)
 export function normalizeRad(rad: number): number {
-  if (rad < -Math.PI) return rad + Math.PI * 2
-  else if (Math.PI < rad) return rad - Math.PI * 2
-  else return rad
+  return circleClamp(-Math.PI, Math.PI, rad)
 }
 
 function getContinuousRad(

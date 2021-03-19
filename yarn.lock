@@ -4704,10 +4704,10 @@ object.values@^1.1.1:
     es-abstract "^1.18.0-next.1"
     has "^1.0.3"
 
-okageo@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/okageo/-/okageo-2.0.2.tgz#12f2d2e36452775e7b8d497a22c3a696488ffcf9"
-  integrity sha512-5Iehi5AJzlHucowIRH5WMWIEwrMFrc5hPdz66tSU/9vHpv/s/lp1aRhjojskEaMyO82+/QqzYUa49Gl80joyZg==
+okageo@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/okageo/-/okageo-2.0.3.tgz#c039a04db8b7ab9b69243008a47a8529609c5b7d"
+  integrity sha512-ob8rBnuVHjMg2j6iUfjK8eH8wA0FVB6tNOIvZScD2ESWNGOCizaTd1uYMXpCkm3jdpgsU5NwjKDxBJUDwJeG7Q==
 
 okanvas@^0.0.4:
   version "0.0.4"

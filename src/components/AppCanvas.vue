@@ -150,7 +150,7 @@ export default defineComponent({
   props: {
     originalViewBox: {
       type: Object as PropType<IRectangle>,
-      default: () => ({ x: 0, y: 0, width: 600, height: 400 }),
+      required: true,
     },
     currentCommand: {
       type: String as PropType<CanvasCommand>,
@@ -205,7 +205,7 @@ export default defineComponent({
       canvas.viewOrigin.value = ret.viewOrigin
       canvas.scale.value = ret.scale
     }
-    watch(canvas.viewSize, initView)
+    watch(() => props.originalViewBox, initView)
 
     const gridLineElm = computed(() => {
       if (canvasStore.state.axisGrid === '') return

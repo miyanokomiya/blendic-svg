@@ -154,7 +154,14 @@ export default defineComponent({
     const elementStore = useElementStore()
 
     const viewBox = computed(() => {
-      return elementStore.lastSelectedActor.value?.viewBox
+      return (
+        elementStore.lastSelectedActor.value?.viewBox ?? {
+          x: 0,
+          y: 0,
+          width: 400,
+          height: 400,
+        }
+      )
     })
 
     const canvasMode = computed(() => canvasStore.state.canvasMode)

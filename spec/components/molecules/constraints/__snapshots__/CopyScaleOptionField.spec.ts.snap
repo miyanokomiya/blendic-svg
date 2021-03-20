@@ -1,0 +1,226 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`/@/src/components/molecules/constraints/CopyScaleOptionField.vue snapshot 1`] = `
+<div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Target
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <span
+        class="select-root"
+      >
+        <select>
+          <option
+            value=""
+          >
+            -- None --
+          </option>
+          
+          <option
+            value="a"
+          >
+            bone_a
+          </option>
+          <option
+            value="b"
+          >
+            bone_b
+          </option>
+          
+        </select>
+      </span>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Target Space
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <span
+        class="select-root"
+      >
+        <select>
+          <!--v-if-->
+          
+          <option
+            value="world"
+          >
+            World
+          </option>
+          <option
+            value="local"
+          >
+            Local
+          </option>
+          
+        </select>
+      </span>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Owner Space
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <span
+        class="select-root"
+      >
+        <select>
+          <!--v-if-->
+          
+          <option
+            value="world"
+          >
+            World
+          </option>
+          <option
+            value="local"
+          >
+            Local
+          </option>
+          
+        </select>
+      </span>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <!--v-if-->
+    <div
+      class="inline-content"
+    >
+      
+      <label
+        class=""
+      >
+        <input
+          type="checkbox"
+        />
+        <span>
+          Axis X
+        </span>
+      </label>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <!--v-if-->
+    <div
+      class="inline-content"
+    >
+      
+      <label
+        class=""
+      >
+        <input
+          type="checkbox"
+        />
+        <span>
+          Axis Y
+        </span>
+      </label>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Power
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Influence
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(1);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+</div>
+`;

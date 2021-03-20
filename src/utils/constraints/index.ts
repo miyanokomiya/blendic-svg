@@ -21,6 +21,7 @@ import * as ik from './ik'
 import * as limitRotation from './limitRotation'
 import * as copyRotation from './copyRotation'
 import * as copyLocation from './copyLocation'
+import * as copyScale from './copyScale'
 import { Bone, IdMap, toMap } from '/@/models'
 import { dropMap, dropMapIfFalse, mapReduce, sumReduce } from '/@/utils/commons'
 
@@ -29,12 +30,14 @@ export type BoneConstraintName =
   | 'LIMIT_ROTATION'
   | 'COPY_LOCATION'
   | 'COPY_ROTATION'
+  | 'COPY_SCALE'
 
 export interface BoneConstraintOptions {
   IK: ik.Option
   LIMIT_ROTATION: limitRotation.Option
   COPY_LOCATION: copyLocation.Option
   COPY_ROTATION: copyRotation.Option
+  COPY_SCALE: copyScale.Option
 }
 
 interface _BoneConstraint<N extends BoneConstraintName> {
@@ -66,6 +69,8 @@ function getConstraintModule(name: BoneConstraintName): BoneConstraintModule {
       return copyLocation
     case 'COPY_ROTATION':
       return copyRotation
+    case 'COPY_SCALE':
+      return copyScale
   }
 }
 

@@ -1,0 +1,502 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`] = `
+<div
+  data-v-app=""
+>
+  
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label>
+      Constraints
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <span
+        class="select-root"
+      >
+        <select>
+          <option
+            value=""
+          >
+            -- Add --
+          </option>
+          
+          <option>
+            IK
+          </option>
+          <option
+            value="LIMIT_ROTATION"
+          >
+            Limit Rotation
+          </option>
+          <option
+            value="COPY_LOCATION"
+          >
+            Copy Location
+          </option>
+          <option
+            value="COPY_ROTATION"
+          >
+            Copy Rotation
+          </option>
+          <option
+            value="COPY_SCALE"
+          >
+            Copy Scale
+          </option>
+          
+        </select>
+      </span>
+      
+    </div>
+    
+  </div>
+  
+  <div
+    class="constraints-item"
+  >
+    <div
+      class="constraint-header"
+    >
+      <p
+        class="name"
+      >
+        IK
+      </p>
+      <button
+        disabled=""
+        type="button"
+      >
+        <svg
+          class="icon"
+          transform="rotate(0) scale(1, 1)"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="#888"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2 7L8 7L5 2z"
+            fill="#fff"
+            stroke="none"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button
+        type="button"
+      >
+        <svg
+          class="icon"
+          transform="rotate(0) scale(1, -1)"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="#888"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2 7L8 7L5 2z"
+            fill="#fff"
+            stroke="none"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button
+        type="button"
+      >
+        <svg
+          class="icon"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="#888"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
+            fill="none"
+            stroke="#fff"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+    </div>
+    <div>
+      <div
+        class="row-block inline-field"
+      >
+        
+        <label
+          style="width: 100px;"
+        >
+          Target
+        </label>
+        <div
+          class="inline-content"
+        >
+          
+          <span
+            class="select-root"
+          >
+            <select>
+              <option
+                value=""
+              >
+                -- None --
+              </option>
+              
+              <option
+                value="a"
+              >
+                bone_a
+              </option>
+              <option
+                value="b"
+              >
+                bone_b
+              </option>
+              
+            </select>
+          </span>
+          
+        </div>
+        
+      </div>
+      <div
+        class="row-block inline-field"
+      >
+        
+        <label
+          style="width: 100px;"
+        >
+          Pole Target
+        </label>
+        <div
+          class="inline-content"
+        >
+          
+          <span
+            class="select-root"
+          >
+            <select>
+              <option
+                value=""
+              >
+                -- None --
+              </option>
+              
+              <option
+                value="a"
+              >
+                bone_a
+              </option>
+              <option
+                value="b"
+              >
+                bone_b
+              </option>
+              
+            </select>
+          </span>
+          
+        </div>
+        
+      </div>
+      <div
+        class="row-block inline-field"
+      >
+        
+        <label
+          style="width: 100px;"
+        >
+          Chain Length
+        </label>
+        <div
+          class="inline-content"
+        >
+          
+          <div
+            class="slider-wrapper"
+          >
+            <div
+              class="slider-background"
+              style="transform: scaleX(0);"
+            />
+            <input
+              type="text"
+            />
+            <div
+              class="slider-forward"
+            />
+          </div>
+          
+        </div>
+        
+      </div>
+      <div
+        class="row-block inline-field"
+      >
+        
+        <label
+          style="width: 100px;"
+        >
+          Iterations
+        </label>
+        <div
+          class="inline-content"
+        >
+          
+          <div
+            class="slider-wrapper"
+          >
+            <div
+              class="slider-background"
+              style="transform: scaleX(0.04);"
+            />
+            <input
+              type="text"
+            />
+            <div
+              class="slider-forward"
+            />
+          </div>
+          
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  <div
+    class="constraints-item"
+  >
+    <div
+      class="constraint-header"
+    >
+      <p
+        class="name"
+      >
+        Limit Rotation
+      </p>
+      <button
+        type="button"
+      >
+        <svg
+          class="icon"
+          transform="rotate(0) scale(1, 1)"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="#888"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2 7L8 7L5 2z"
+            fill="#fff"
+            stroke="none"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button
+        disabled=""
+        type="button"
+      >
+        <svg
+          class="icon"
+          transform="rotate(0) scale(1, -1)"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="#888"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2 7L8 7L5 2z"
+            fill="#fff"
+            stroke="none"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button
+        type="button"
+      >
+        <svg
+          class="icon"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="#888"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
+            fill="none"
+            stroke="#fff"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+    </div>
+    <div>
+      <div
+        class="row-block inline-field"
+      >
+        
+        <label
+          style="width: 100px;"
+        >
+          Space Type
+        </label>
+        <div
+          class="inline-content"
+        >
+          
+          <span
+            class="select-root"
+          >
+            <select>
+              <!--v-if-->
+              
+              <option
+                value="world"
+              >
+                World
+              </option>
+              <option
+                value="local"
+              >
+                Local
+              </option>
+              
+            </select>
+          </span>
+          
+        </div>
+        
+      </div>
+      <div
+        class="row-block inline-field"
+      >
+        
+        <label
+          style="width: 100px;"
+        >
+          Min
+        </label>
+        <div
+          class="inline-content"
+        >
+          
+          <div
+            class="slider-wrapper"
+          >
+            <div
+              class="slider-background"
+              style="transform: scaleX(0);"
+            />
+            <input
+              type="text"
+            />
+            <div
+              class="slider-forward"
+            />
+          </div>
+          
+        </div>
+        
+      </div>
+      <div
+        class="row-block inline-field"
+      >
+        
+        <label
+          style="width: 100px;"
+        >
+          Max
+        </label>
+        <div
+          class="inline-content"
+        >
+          
+          <div
+            class="slider-wrapper"
+          >
+            <div
+              class="slider-background"
+              style="transform: scaleX(0);"
+            />
+            <input
+              type="text"
+            />
+            <div
+              class="slider-forward"
+            />
+          </div>
+          
+        </div>
+        
+      </div>
+      <div
+        class="row-block inline-field"
+      >
+        
+        <label
+          style="width: 100px;"
+        >
+          Influence
+        </label>
+        <div
+          class="inline-content"
+        >
+          
+          <div
+            class="slider-wrapper"
+          >
+            <div
+              class="slider-background"
+              style="transform: scaleX(1);"
+            />
+            <input
+              type="text"
+            />
+            <div
+              class="slider-forward"
+            />
+          </div>
+          
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  
+  
+</div>
+`;

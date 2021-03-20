@@ -1,0 +1,148 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`/@/src/components/molecules/constraints/IKOptionField.vue snapshot 1`] = `
+<div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Target
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <span
+        class="select-root"
+      >
+        <select>
+          <option
+            value=""
+          >
+            -- None --
+          </option>
+          
+          <option
+            value="a"
+          >
+            bone_a
+          </option>
+          <option
+            value="b"
+          >
+            bone_b
+          </option>
+          
+        </select>
+      </span>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Pole Target
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <span
+        class="select-root"
+      >
+        <select>
+          <option
+            value=""
+          >
+            -- None --
+          </option>
+          
+          <option
+            value="a"
+          >
+            bone_a
+          </option>
+          <option
+            value="b"
+          >
+            bone_b
+          </option>
+          
+        </select>
+      </span>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Chain Length
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Iterations
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0.04);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+</div>
+`;

@@ -161,5 +161,7 @@ export default defineComponent({
 svg {
   border: solid 1px black;
   user-select: none;
+  outline: none;
+  overflow-anchor: none;
 }
 </style>

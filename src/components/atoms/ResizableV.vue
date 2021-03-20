@@ -33,7 +33,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { useDrag } from 'okanvas'
-import { computed, defineComponent, ref } from 'vue'
+import { computed, defineComponent, ref, nextTick } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import { clamp, logRound } from '/@/utils/geometry'
 
@@ -65,7 +65,7 @@ export default defineComponent({
       return `calc((100% - ${anchorHeight}px) * ${1 - rate.value})`
     })
 
-    const drag = useDrag((arg) => {
+    const drag = useDrag(async (arg) => {
       if (!root.value) return
 
       const rootRect = root.value.getBoundingClientRect()
@@ -77,6 +77,7 @@ export default defineComponent({
           (arg.p.y - rootRect.top) / rootRect.height
         )
       )
+      await nextTick()
       window.dispatchEvent(new Event('resize'))
     })
     useGlobalMousemove((e) => {

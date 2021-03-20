@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div class="top" :style="{ height: topSize }">
       <slot name="top" />
     </div>
-    <div class="anchor" @mousedown="onDown">
+    <div class="anchor" @mousedown.prevent="onDown">
       <div />
     </div>
     <div class="bottom" :style="{ height: bottomSize }">

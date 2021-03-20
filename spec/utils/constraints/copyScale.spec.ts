@@ -81,7 +81,8 @@ describe('utils/constraints/copyScale.ts', () => {
         'b',
         getOption({
           targetId: 'a',
-          power: -0.5,
+          power: 2,
+          influence: 0.5,
         }),
         localMap,
         boneMap
@@ -90,7 +91,10 @@ describe('utils/constraints/copyScale.ts', () => {
         getBone({
           ...boneMap.b,
           transform: getTransform({
-            scale: { x: -35, y: -70 },
+            scale: {
+              x: (Math.pow(100, 2) - 10) / 2 + 10,
+              y: (Math.pow(200, 2) - 20) / 2 + 20,
+            },
           }),
         })
       )

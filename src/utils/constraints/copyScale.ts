@@ -56,10 +56,19 @@ export function apply(
       ? b.transform.scale
       : localMap[boneId]?.transform?.scale ?? { x: 1, y: 1 }
 
-  const diff = applyScale(sub(targetScale, ownerScale), {
-    x: option.copyX ? option.influence * option.power : 0,
-    y: option.copyY ? option.influence * option.power : 0,
-  })
+  const diff = applyScale(
+    sub(
+      {
+        x: Math.pow(targetScale.x, option.power),
+        y: Math.pow(targetScale.y, option.power),
+      },
+      ownerScale
+    ),
+    {
+      x: option.copyX ? option.influence : 0,
+      y: option.copyY ? option.influence : 0,
+    }
+  )
 
   return {
     ...boneMap,

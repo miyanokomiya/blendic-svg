@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/ResizableV.vue snapshot 1`] = `
+<div
+  class="resizable-h-wrapper"
+>
+  <div
+    class="top"
+  >
+    
+    slot_top
+    
+  </div>
+  <div
+    class="anchor"
+  >
+    <div />
+  </div>
+  <div
+    class="bottom"
+  >
+    
+    slot_bottom
+    
+  </div>
+</div>
+`;

@@ -16,7 +16,7 @@
     "okanvas": "^0.0.4",
     "ress": "^3.0.0",
     "uuid": "^8.3.2",
-    "vue": "^3.0.5"
+    "vue": "^3.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.13.10",
@@ -29,6 +29,7 @@
     "@vitejs/plugin-vue": "^1.1.5",
     "@vue/compiler-sfc": "^3.0.7",
     "@vue/eslint-config-typescript": "^7.0.0",
+    "@vue/test-utils": "^2.0.0-rc.4",
     "@vuedx/typecheck": "^0.6.0",
     "@vuedx/typescript-plugin-vue": "^0.6.0",
     "babel-jest": "^26.6.3",
@@ -44,6 +45,7 @@
     "sass": "^1.32.8",
     "ts-jest": "^26.5.3",
     "typescript": "^4.2.3",
-    "vite": "^2.0.5"
+    "vite": "^2.0.5",
+    "vue-jest": "^5.0.0-alpha.7"
   }
 }

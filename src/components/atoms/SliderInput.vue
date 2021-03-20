@@ -144,7 +144,10 @@ export default defineComponent({
 
       input()
     })
-    useGlobalMousemove(drag.onMove)
+    useGlobalMousemove((e) => {
+      e.preventDefault()
+      drag.onMove(e)
+    })
     useGlobalMouseup(() => {
       drag.onUp()
       dragged.value = false

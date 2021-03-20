@@ -8,10 +8,11 @@ module.exports = {
     prefix: '<rootDir>/',
   }),
 
-  moduleFileExtensions: ['ts', 'js'],
+  moduleFileExtensions: ['ts', 'js', 'vue'],
   preset: 'ts-jest',
   transform: {
     '^.+\\.ts$': 'ts-jest',
+    '^.+\\.vue$': 'vue-jest',
   },
   globals: {
     'ts-jest': {

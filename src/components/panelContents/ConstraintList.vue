@@ -76,6 +76,15 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
+    <template v-else-if="c.name === 'COPY_SCALE'">
+      <CopyScaleOptionField
+        :model-value="c.option"
+        :bone-options="boneOptions"
+        @update:modelValue="
+          (option, seriesKey) => updateConstraint(i, option, seriesKey)
+        "
+      />
+    </template>
   </div>
 </template>
 
@@ -95,6 +104,7 @@ import IKOptionField from '/@/components/molecules/constraints/IKOptionField.vue
 import LimitRotationOptionField from '/@/components/molecules/constraints/LimitRotationOptionField.vue'
 import CopyLocationOptionField from '/@/components/molecules/constraints/CopyLocationOptionField.vue'
 import CopyRotationOptionField from '/@/components/molecules/constraints/CopyRotationOptionField.vue'
+import CopyScaleOptionField from '/@/components/molecules/constraints/CopyScaleOptionField.vue'
 
 export default defineComponent({
   components: {
@@ -106,6 +116,7 @@ export default defineComponent({
     LimitRotationOptionField,
     CopyLocationOptionField,
     CopyRotationOptionField,
+    CopyScaleOptionField,
   },
   props: {
     constraints: {
@@ -126,6 +137,7 @@ export default defineComponent({
           LIMIT_ROTATION: 'Limit Rotation',
           COPY_LOCATION: 'Copy Location',
           COPY_ROTATION: 'Copy Rotation',
+          COPY_SCALE: 'Copy Scale',
         }
       }
     )

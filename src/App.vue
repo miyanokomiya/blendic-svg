@@ -18,74 +18,86 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div>
-    <div class="main">
-      <AppCanvas
-        :original-view-box="viewBox"
-        :current-command="canvasCommand"
-        class="canvas"
-        @change-mode="changeMode"
-        @escape="escape"
-        @tab="toggleCanvasMode"
-        @ctrl-tab="ctrlToggleCanvasMode"
-        @g="setEditMode('grab')"
-        @s="setEditMode('scale')"
-        @r="setEditMode('rotate')"
-        @e="setEditMode('extrude')"
-        @x="execDelete"
-        @a="selectAll"
-        @shift-a="addItem"
-        @i="saveKeyframe"
-        @ctrl-c="clip"
-        @ctrl-v="paste"
-        @shift-d="duplicate"
-      >
-        <template #default="{ scale }">
-          <ElementLayer
-            :bone-map="posedMap"
-            :canvas-mode="canvasMode"
-            :class="{ 'view-only': canvasMode !== 'weight' }"
-          />
-          <g v-if="canvasMode === 'object'">
-            <ArmatureElm
-              v-for="armature in armatures"
-              :key="armature.id"
-              :armature="armature"
-              :selected="lastSelectedArmatureId === armature.id"
-              :scale="scale"
-              @select="(selected) => selectArmature(armature.id, selected)"
-              @shift-select="
-                (selected) => shiftSelectArmature(armature.id, selected)
-              "
-            />
-          </g>
-          <g v-else>
-            <ArmatureElm
-              v-for="armature in otherArmatures"
-              :key="armature.id"
-              :armature="armature"
-              :opacity="0.3"
-              :scale="scale"
-              class="view-only"
-            />
-            <BoneLayer
-              :scale="scale"
-              :bone-map="visibledBoneMap"
-              :selected-bones="selectedBones"
-              :canvas-mode="canvasMode"
-              @select="selectBone"
-              @shift-select="shiftSelectBone"
-            />
-          </g>
+  <ResizableV :initial-rate="0.7" class="app-root">
+    <template #top>
+      <ResizableH :initial-rate="0.8" class="top">
+        <template #left>
+          <div class="main">
+            <AppCanvas
+              :original-view-box="viewBox"
+              :current-command="canvasCommand"
+              class="canvas"
+              @change-mode="changeMode"
+              @escape="escape"
+              @tab="toggleCanvasMode"
+              @ctrl-tab="ctrlToggleCanvasMode"
+              @g="setEditMode('grab')"
+              @s="setEditMode('scale')"
+              @r="setEditMode('rotate')"
+              @e="setEditMode('extrude')"
+              @x="execDelete"
+              @a="selectAll"
+              @shift-a="addItem"
+              @i="saveKeyframe"
+              @ctrl-c="clip"
+              @ctrl-v="paste"
+              @shift-d="duplicate"
+            >
+              <template #default="{ scale }">
+                <ElementLayer
+                  :bone-map="posedMap"
+                  :canvas-mode="canvasMode"
+                  :class="{ 'view-only': canvasMode !== 'weight' }"
+                />
+                <g v-if="canvasMode === 'object'">
+                  <ArmatureElm
+                    v-for="armature in armatures"
+                    :key="armature.id"
+                    :armature="armature"
+                    :selected="lastSelectedArmatureId === armature.id"
+                    :scale="scale"
+                    @select="
+                      (selected) => selectArmature(armature.id, selected)
+                    "
+                    @shift-select="
+                      (selected) => shiftSelectArmature(armature.id, selected)
+                    "
+                  />
+                </g>
+                <g v-else>
+                  <ArmatureElm
+                    v-for="armature in otherArmatures"
+                    :key="armature.id"
+                    :armature="armature"
+                    :opacity="0.3"
+                    :scale="scale"
+                    class="view-only"
+                  />
+                  <BoneLayer
+                    :scale="scale"
+                    :bone-map="visibledBoneMap"
+                    :selected-bones="selectedBones"
+                    :canvas-mode="canvasMode"
+                    @select="selectBone"
+                    @shift-select="shiftSelectBone"
+                  />
+                </g>
+              </template>
+            </AppCanvas>
+            <SideBar class="side-bar" />
+          </div>
         </template>
-      </AppCanvas>
-      <SideBar class="side-bar" />
-      <SidePanel class="side-panel" />
-    </div>
-    <div class="bottom">
-      <AnimationPanel />
-    </div>
-  </div>
+        <template #right>
+          <SidePanel class="side-panel" />
+        </template>
+      </ResizableH>
+    </template>
+    <template #bottom>
+      <div class="bottom">
+        <AnimationPanel />
+      </div>
+    </template>
+  </ResizableV>
 </template>
 
 <script lang="ts">
@@ -119,6 +131,8 @@ import { useAnimationStore } from './store/animation'
 import { useStrage } from './composables/strage'
 import { useElementStore } from './store/element'
 import { isCtrlOrMeta } from '/@/utils/devices'
+import ResizableV from '/@/components/atoms/ResizableV.vue'
+import ResizableH from '/@/components/atoms/ResizableH.vue'
 
 export default defineComponent({
   components: {
@@ -129,6 +143,8 @@ export default defineComponent({
     SideBar,
     ElementLayer,
     BoneLayer,
+    ResizableV,
+    ResizableH,
   },
   setup() {
     const store = useStore()
@@ -138,7 +154,14 @@ export default defineComponent({
     const elementStore = useElementStore()
 
     const viewBox = computed(() => {
-      return elementStore.lastSelectedActor.value?.viewBox
+      return (
+        elementStore.lastSelectedActor.value?.viewBox ?? {
+          x: 0,
+          y: 0,
+          width: 400,
+          height: 400,
+        }
+      )
     })
 
     const canvasMode = computed(() => canvasStore.state.canvasMode)
@@ -357,29 +380,27 @@ button:disabled {
 <style lang="scss" scoped>
 $wide-panel-width: 240px;
 
+.app-root {
+  height: 100vh;
+}
+.top {
+  height: 100%;
+}
 .main {
-  margin: 10px 0;
-  padding: 0 10px;
-  min-height: 400px;
-  height: calc(100vh - 330px);
+  height: 100%;
   display: flex;
-  justify-content: center;
-  align-items: stretch;
   .canvas {
-    width: calc(100% - (26px + #{$wide-panel-width}));
+    width: calc(100% - 24px);
   }
   .side-bar {
-    margin-right: auto;
-    flex-shrink: 0;
-  }
-  .side-panel {
-    width: $wide-panel-width;
     flex-shrink: 0;
   }
 }
+.side-panel {
+  height: 100%;
+}
 .bottom {
-  padding: 0 10px;
-  height: 300px;
+  height: 100%;
 }
 .view-only {
   pointer-events: none;

@@ -33,7 +33,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       v-if="!focused && !disabled"
       class="slider-forward"
       @mouseup="onUpForward"
-      @mousedown="onDown"
+      @mousedown.prevent="onDown"
     />
   </div>
 </template>
@@ -144,7 +144,10 @@ export default defineComponent({
 
       input()
     })
-    useGlobalMousemove(drag.onMove)
+    useGlobalMousemove((e) => {
+      e.preventDefault()
+      drag.onMove(e)
+    })
     useGlobalMouseup(() => {
       drag.onUp()
       dragged.value = false

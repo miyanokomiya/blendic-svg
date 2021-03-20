@@ -1,0 +1,135 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`/@/src/components/molecules/constraints/LimitRotationOptionField.vue snapshot 1`] = `
+<div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Space Type
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <span
+        class="select-root"
+      >
+        <select>
+          <!--v-if-->
+          
+          <option
+            value="world"
+          >
+            World
+          </option>
+          <option
+            value="local"
+          >
+            Local
+          </option>
+          
+        </select>
+      </span>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Min
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Max
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 100px;"
+    >
+      Influence
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(1);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+</div>
+`;

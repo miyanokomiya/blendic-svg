@@ -164,6 +164,30 @@ describe('utils/limitRotation.ts', () => {
           }),
         })
       })
+      it('ignore parent rotation if inherit rotation is false', () => {
+        expect(
+          apply(
+            'a',
+            getOption({
+              min: 90,
+              max: 90,
+              influence: 0.5,
+              spaceType: 'local',
+              ...useAll,
+            }),
+            localMap,
+            { ...boneMap, a: { ...boneMap.a, inheritRotation: false } }
+          )
+        ).toEqual({
+          ...boneMap,
+          a: getBone({
+            parentId: 'b',
+            tail: { x: 0, y: 1 },
+            inheritRotation: false,
+            transform: getTransform({ rotate: 45 }),
+          }),
+        })
+      })
     })
   })
 

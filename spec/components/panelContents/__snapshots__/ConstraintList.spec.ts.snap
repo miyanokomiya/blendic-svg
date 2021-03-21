@@ -30,6 +30,11 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
             IK
           </option>
           <option
+            value="LIMIT_LOCATION"
+          >
+            Limit Location
+          </option>
+          <option
             value="LIMIT_ROTATION"
           >
             Limit Rotation

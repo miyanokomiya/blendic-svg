@@ -32,7 +32,6 @@ import {
 import {
   add,
   AffineMatrix,
-  getPedal,
   getPolygonCenter,
   getRadian,
   interpolateScaler,
@@ -61,7 +60,11 @@ import {
   immigrateConstraints,
   sortBoneByHighDependency,
 } from '/@/utils/constraints'
-import { applyTransform, invertScaleOrZero } from '/@/utils/geometry'
+import {
+  applyPosedTransformToPoint,
+  applyTransform,
+  invertScaleOrZero,
+} from '/@/utils/geometry'
 
 export function boneToAffine(bone: Bone): AffineMatrix {
   const origin = bone.head
@@ -144,46 +147,6 @@ export function posedTransform(bone: Bone, transforms: Transform[]): Bone {
       scale: { x: convoluted.scale.x, y: 1 },
     }),
   }
-}
-
-export function applyPosedTransformToPoint(parent: Bone, point: IVec2): IVec2 {
-  const head = applyTransform(
-    parent.head,
-    getTransform({ translate: parent.transform.translate })
-  )
-  const tail = applyTransform(
-    parent.tail,
-    getTransform({
-      ...parent.transform,
-      origin: parent.head,
-      scale: { x: 1, y: 1 },
-    })
-  )
-  const rotatedAndTranslatedPoint = applyTransform(
-    point,
-    getTransform({
-      ...parent.transform,
-      origin: parent.head,
-      scale: { x: 1, y: 1 },
-    })
-  )
-  if (isSame(head, tail)) {
-    return rotatedAndTranslatedPoint
-  }
-
-  const pedal = getPedal(rotatedAndTranslatedPoint, [head, tail])
-  // scale y affects bone's height
-  const vecY = sub(pedal, head)
-  // scale x affects bone's width
-  const vecX = sub(rotatedAndTranslatedPoint, pedal)
-
-  return add(
-    add(
-      multi(vecY, parent.transform.scale.y),
-      multi(vecX, parent.transform.scale.x)
-    ),
-    head
-  )
 }
 
 export function extrudeFromParent(parent: Bone, fromHead = false): Bone {

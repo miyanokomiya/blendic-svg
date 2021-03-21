@@ -17,16 +17,25 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { add, IVec2, multi, sub } from 'okageo'
 import { Bone, IdMap, SpaceType } from '/@/models'
-import { clamp, getBoneBodyRotation } from '/@/utils/geometry'
+import {
+  applyPosedTransformToPoint,
+  clamp,
+  getBoneWorldLocation,
+} from '/@/utils/geometry'
 
 export interface Option {
   spaceType: SpaceType
-  min: number
-  max: number
-  useMin: boolean
-  useMax: boolean
   influence: number
+  minX: number
+  maxX: number
+  minY: number
+  maxY: number
+  useMinX: boolean
+  useMaxX: boolean
+  useMinY: boolean
+  useMaxY: boolean
 }
 
 export function apply(
@@ -37,45 +46,64 @@ export function apply(
 ): IdMap<Bone> {
   const b = boneMap[boneId]
   if (!b) return boneMap
+  if (b.connected) return boneMap
 
   if (option.spaceType === 'world') {
-    const bodyRotation = getBoneBodyRotation(b)
+    const ownerLocation = getBoneWorldLocation(b)
+    const diff = limitLocationDiff(option, ownerLocation)
+
     return {
       ...boneMap,
       [boneId]: {
         ...b,
         transform: {
           ...b.transform,
-          rotate: limitRotation(option, b.transform.rotate - bodyRotation),
+          translate: sub(add(ownerLocation, diff), b.head),
         },
       },
     }
-  } else if (option.spaceType === 'local') {
-    const localRotate = limitRotation(option, localMap[boneId].transform.rotate)
+  } else {
+    const localB = localMap[boneId]
+    if (!localB) return boneMap
+
+    const ownerTranslate = localB.transform.translate
+    const diff = limitLocationDiff(option, ownerTranslate)
+    const nextLocalTranslate = add(ownerTranslate, diff)
+
+    // recalc extended translation
+    const posedHead = add(localB.head, nextLocalTranslate)
+    const extendedPosedHead = boneMap[b.parentId]
+      ? applyPosedTransformToPoint(boneMap[b.parentId], posedHead)
+      : posedHead
+    const headDiff = sub(extendedPosedHead, posedHead)
+
     return {
       ...boneMap,
       [boneId]: {
         ...b,
         transform: {
           ...b.transform,
-          rotate: b.inheritRotation
-            ? localRotate + boneMap[b.parentId]?.transform.rotate ?? 0
-            : localRotate,
+          translate: add(nextLocalTranslate, headDiff),
         },
       },
     }
   }
-  return boneMap
 }
 
-function limitRotation(option: Option, current: number): number {
-  const limited = clamp(
-    option.useMin ? option.min : undefined,
-    option.useMax ? option.max : undefined,
-    current
-  )
-  const diff = limited - current
-  return current + diff * option.influence
+function limitLocationDiff(option: Option, location: IVec2): IVec2 {
+  const targetLocation = {
+    x: clamp(
+      option.useMinX ? option.minX : undefined,
+      option.useMaxX ? option.maxX : undefined,
+      location.x
+    ),
+    y: clamp(
+      option.useMinY ? option.minY : undefined,
+      option.useMaxY ? option.maxY : undefined,
+      location.y
+    ),
+  }
+  return multi(sub(targetLocation, location), option.influence)
 }
 
 export function immigrate(
@@ -88,11 +116,15 @@ export function immigrate(
 export function getOption(src: Partial<Option> = {}): Option {
   return {
     spaceType: 'world',
-    min: 0,
-    max: 0,
-    useMin: false,
-    useMax: false,
     influence: 1,
+    minX: 0,
+    maxX: 0,
+    minY: 0,
+    maxY: 0,
+    useMinX: false,
+    useMaxX: false,
+    useMinY: false,
+    useMaxY: false,
     ...src,
   }
 }

@@ -1,13 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`/@/src/components/molecules/constraints/LimitRotationOptionField.vue snapshot 1`] = `
+exports[`/@/src/components/molecules/constraints/LimitLocationOptionField.vue snapshot 1`] = `
 <div>
   <div
     class="row-block inline-field"
   >
     
     <label
-      style="width: 100px;"
+      style="width: 90px;"
     >
       Space Type
     </label>
@@ -43,9 +43,9 @@ exports[`/@/src/components/molecules/constraints/LimitRotationOptionField.vue sn
   >
     
     <label
-      style="width: 100px;"
+      style="width: 90px;"
     >
-      Min
+      Min X
     </label>
     <div
       class="inline-content"
@@ -86,9 +86,9 @@ exports[`/@/src/components/molecules/constraints/LimitRotationOptionField.vue sn
   >
     
     <label
-      style="width: 100px;"
+      style="width: 90px;"
     >
-      Max
+      Min Y
     </label>
     <div
       class="inline-content"
@@ -129,7 +129,93 @@ exports[`/@/src/components/molecules/constraints/LimitRotationOptionField.vue sn
   >
     
     <label
-      style="width: 100px;"
+      style="width: 90px;"
+    >
+      Max X
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="inline"
+      >
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <!--v-if-->
+        </label>
+        <div
+          class="slider-wrapper"
+        >
+          <div
+            class="slider-background"
+            style="transform: scaleX(0);"
+          />
+          <input
+            type="text"
+          />
+          <div
+            class="slider-forward"
+          />
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 90px;"
+    >
+      Max Y
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="inline"
+      >
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <!--v-if-->
+        </label>
+        <div
+          class="slider-wrapper"
+        >
+          <div
+            class="slider-background"
+            style="transform: scaleX(0);"
+          />
+          <input
+            type="text"
+          />
+          <div
+            class="slider-forward"
+          />
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 90px;"
     >
       Influence
     </label>

@@ -208,6 +208,7 @@ export default defineComponent({
   align-items: center;
 }
 input {
+  width: 100%;
   text-align: center;
 }
 .slider-background {

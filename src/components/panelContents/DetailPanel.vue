@@ -21,7 +21,7 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div>
     <form v-if="selectedObjectType === 'armature'" @submit.prevent>
       <h3>Armature</h3>
-      <InlineField label="Name">
+      <InlineField label="Name" label-width="50px">
         <input v-model="draftName" type="text" @change="changeArmatureName" />
       </InlineField>
     </form>
@@ -30,10 +30,10 @@ Copyright (C) 2021, Tomoya Komiyama.
       @submit.prevent
     >
       <h3>Bone</h3>
-      <InlineField label="Name">
+      <InlineField label="Name" label-width="50px">
         <input v-model="draftName" type="text" @change="changeBoneName" />
       </InlineField>
-      <InlineField label="Parent">
+      <InlineField label="Parent" label-width="50px">
         <SelectField v-model="parentId" :options="otherBoneOptions" />
       </InlineField>
       <InlineField>
@@ -195,5 +195,8 @@ export default defineComponent({
 h3 {
   text-align: left;
   margin-bottom: 10px;
+}
+input[type='text'] {
+  width: 100%;
 }
 </style>

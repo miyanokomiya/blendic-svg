@@ -27,27 +27,51 @@ Copyright (C) 2021, Tomoya Komiyama.
         @update:modelValue="updateSpaceType"
       />
     </InlineField>
-    <InlineField label="Min" :label-width="labelWidth">
+    <InlineField label="Min X" :label-width="labelWidth">
       <div class="inline">
         <CheckboxInput
-          :model-value="modelValue.useMin"
-          @update:modelValue="updateUseMin"
+          :model-value="modelValue.useMinX"
+          @update:modelValue="updateUseMinX"
         />
         <SliderInput
-          :model-value="modelValue.min"
-          @update:modelValue="updateMin"
+          :model-value="modelValue.minX"
+          @update:modelValue="updateMinX"
         />
       </div>
     </InlineField>
-    <InlineField label="Max" :label-width="labelWidth">
+    <InlineField label="Min Y" :label-width="labelWidth">
       <div class="inline">
         <CheckboxInput
-          :model-value="modelValue.useMax"
-          @update:modelValue="updateUseMax"
+          :model-value="modelValue.useMinY"
+          @update:modelValue="updateUseMinY"
         />
         <SliderInput
-          :model-value="modelValue.max"
-          @update:modelValue="updateMax"
+          :model-value="modelValue.minY"
+          @update:modelValue="updateMinY"
+        />
+      </div>
+    </InlineField>
+    <InlineField label="Max X" :label-width="labelWidth">
+      <div class="inline">
+        <CheckboxInput
+          :model-value="modelValue.useMaxX"
+          @update:modelValue="updateUseMaxX"
+        />
+        <SliderInput
+          :model-value="modelValue.maxX"
+          @update:modelValue="updateMaxX"
+        />
+      </div>
+    </InlineField>
+    <InlineField label="Max Y" :label-width="labelWidth">
+      <div class="inline">
+        <CheckboxInput
+          :model-value="modelValue.useMaxY"
+          @update:modelValue="updateUseMaxY"
+        />
+        <SliderInput
+          :model-value="modelValue.maxY"
+          @update:modelValue="updateMaxY"
         />
       </div>
     </InlineField>
@@ -75,14 +99,14 @@ export default defineComponent({
   components: { SliderInput, SelectField, InlineField, CheckboxInput },
   props: {
     modelValue: {
-      type: Object as PropType<BoneConstraintOptions['LIMIT_ROTATION']>,
+      type: Object as PropType<BoneConstraintOptions['LIMIT_LOCATION']>,
       required: true,
     },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     function emitUpdated(
-      val: Partial<BoneConstraintOptions['LIMIT_ROTATION']>,
+      val: Partial<BoneConstraintOptions['LIMIT_LOCATION']>,
       seriesKey?: string
     ) {
       emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
@@ -98,22 +122,34 @@ export default defineComponent({
     )
 
     return {
-      labelWidth: '100px',
+      labelWidth: '90px',
       spaceTypeOptions,
       updateSpaceType(val: SpaceType) {
         emitUpdated({ spaceType: val })
       },
-      updateMin(val: number, seriesKey?: string) {
-        emitUpdated({ min: val }, seriesKey)
+      updateMinX(val: number, seriesKey?: string) {
+        emitUpdated({ minX: val }, seriesKey)
       },
-      updateMax(val: number, seriesKey?: string) {
-        emitUpdated({ max: val }, seriesKey)
+      updateMaxX(val: number, seriesKey?: string) {
+        emitUpdated({ maxX: val }, seriesKey)
       },
-      updateUseMin(val: boolean, seriesKey?: string) {
-        emitUpdated({ useMin: val }, seriesKey)
+      updateMinY(val: number, seriesKey?: string) {
+        emitUpdated({ minY: val }, seriesKey)
       },
-      updateUseMax(val: boolean, seriesKey?: string) {
-        emitUpdated({ useMax: val }, seriesKey)
+      updateMaxY(val: number, seriesKey?: string) {
+        emitUpdated({ maxY: val }, seriesKey)
+      },
+      updateUseMinX(val: boolean, seriesKey?: string) {
+        emitUpdated({ useMinX: val }, seriesKey)
+      },
+      updateUseMaxX(val: boolean, seriesKey?: string) {
+        emitUpdated({ useMaxX: val }, seriesKey)
+      },
+      updateUseMinY(val: boolean, seriesKey?: string) {
+        emitUpdated({ useMinY: val }, seriesKey)
+      },
+      updateUseMaxY(val: boolean, seriesKey?: string) {
+        emitUpdated({ useMaxY: val }, seriesKey)
       },
       updateInfluence(val: number, seriesKey?: string) {
         emitUpdated({ influence: val }, seriesKey)

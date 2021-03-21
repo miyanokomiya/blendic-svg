@@ -50,6 +50,14 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
+    <template v-else-if="c.name === 'LIMIT_LOCATION'">
+      <LimitLocationOptionField
+        :model-value="c.option"
+        @update:modelValue="
+          (option, seriesKey) => updateConstraint(i, option, seriesKey)
+        "
+      />
+    </template>
     <template v-else-if="c.name === 'LIMIT_ROTATION'">
       <LimitRotationOptionField
         :model-value="c.option"
@@ -101,6 +109,7 @@ import UpIcon from '/@/components/atoms/UpIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import IKOptionField from '/@/components/molecules/constraints/IKOptionField.vue'
+import LimitLocationOptionField from '/@/components/molecules/constraints/LimitLocationOptionField.vue'
 import LimitRotationOptionField from '/@/components/molecules/constraints/LimitRotationOptionField.vue'
 import CopyLocationOptionField from '/@/components/molecules/constraints/CopyLocationOptionField.vue'
 import CopyRotationOptionField from '/@/components/molecules/constraints/CopyRotationOptionField.vue'
@@ -113,6 +122,7 @@ export default defineComponent({
     DeleteIcon,
     InlineField,
     IKOptionField,
+    LimitLocationOptionField,
     LimitRotationOptionField,
     CopyLocationOptionField,
     CopyRotationOptionField,
@@ -134,6 +144,7 @@ export default defineComponent({
       () => {
         return {
           IK: 'IK',
+          LIMIT_LOCATION: 'Limit Location',
           LIMIT_ROTATION: 'Limit Rotation',
           COPY_LOCATION: 'Copy Location',
           COPY_ROTATION: 'Copy Rotation',

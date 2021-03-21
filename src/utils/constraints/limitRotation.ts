@@ -18,12 +18,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { Bone, IdMap, SpaceType } from '/@/models'
-import { getBoneBodyRotation } from '/@/utils/geometry'
+import { clamp, getBoneBodyRotation } from '/@/utils/geometry'
 
 export interface Option {
   spaceType: SpaceType
   min: number
   max: number
+  useMin: boolean
+  useMax: boolean
   influence: number
 }
 
@@ -44,22 +46,12 @@ export function apply(
         ...b,
         transform: {
           ...b.transform,
-          rotate: limitRotation(
-            option.min - bodyRotation,
-            option.max - bodyRotation,
-            option.influence,
-            b.transform.rotate
-          ),
+          rotate: limitRotation(option, b.transform.rotate - bodyRotation),
         },
       },
     }
   } else if (option.spaceType === 'local') {
-    const localRotate = limitRotation(
-      option.min,
-      option.max,
-      option.influence,
-      localMap[boneId].transform.rotate
-    )
+    const localRotate = limitRotation(option, localMap[boneId].transform.rotate)
     return {
       ...boneMap,
       [boneId]: {
@@ -76,15 +68,14 @@ export function apply(
   return boneMap
 }
 
-function limitRotation(
-  min: number,
-  max: number,
-  influence: number,
-  current: number
-): number {
-  const limited = Math.min(Math.max(current, min), max)
+function limitRotation(option: Option, current: number): number {
+  const limited = clamp(
+    option.useMin ? option.min : undefined,
+    option.useMax ? option.max : undefined,
+    current
+  )
   const diff = limited - current
-  return current + diff * influence
+  return current + diff * option.influence
 }
 
 export function immigrate(
@@ -99,6 +90,8 @@ export function getOption(src: Partial<Option> = {}): Option {
     spaceType: 'world',
     min: 0,
     max: 0,
+    useMin: false,
+    useMax: false,
     influence: 1,
     ...src,
   }

@@ -28,16 +28,28 @@ Copyright (C) 2021, Tomoya Komiyama.
       />
     </InlineField>
     <InlineField label="Min" :label-width="labelWidth">
-      <SliderInput
-        :model-value="modelValue.min"
-        @update:modelValue="updateMin"
-      />
+      <div class="inline">
+        <CheckboxInput
+          :model-value="modelValue.useMin"
+          @update:modelValue="updateUseMin"
+        />
+        <SliderInput
+          :model-value="modelValue.min"
+          @update:modelValue="updateMin"
+        />
+      </div>
     </InlineField>
     <InlineField label="Max" :label-width="labelWidth">
-      <SliderInput
-        :model-value="modelValue.max"
-        @update:modelValue="updateMax"
-      />
+      <div class="inline">
+        <CheckboxInput
+          :model-value="modelValue.useMax"
+          @update:modelValue="updateUseMax"
+        />
+        <SliderInput
+          :model-value="modelValue.max"
+          @update:modelValue="updateMax"
+        />
+      </div>
     </InlineField>
     <InlineField label="Influence" :label-width="labelWidth">
       <SliderInput
@@ -56,10 +68,11 @@ import { BoneConstraintOptions } from '/@/utils/constraints'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import { SpaceType } from '/@/models'
 
 export default defineComponent({
-  components: { SliderInput, SelectField, InlineField },
+  components: { SliderInput, SelectField, InlineField, CheckboxInput },
   props: {
     modelValue: {
       type: Object as PropType<BoneConstraintOptions['LIMIT_ROTATION']>,
@@ -96,6 +109,12 @@ export default defineComponent({
       updateMax(val: number, seriesKey?: string) {
         emitUpdated({ max: val }, seriesKey)
       },
+      updateUseMin(val: boolean, seriesKey?: string) {
+        emitUpdated({ useMin: val }, seriesKey)
+      },
+      updateUseMax(val: boolean, seriesKey?: string) {
+        emitUpdated({ useMax: val }, seriesKey)
+      },
       updateInfluence(val: number, seriesKey?: string) {
         emitUpdated({ influence: val }, seriesKey)
       },
@@ -103,3 +122,13 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.inline {
+  display: flex;
+  align-items: center;
+  > * + * {
+    margin-left: 10px;
+  }
+}
+</style>

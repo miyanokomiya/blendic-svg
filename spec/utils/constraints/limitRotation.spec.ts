@@ -25,8 +25,57 @@ import {
   immigrate,
 } from '/@/utils/constraints/limitRotation'
 
+const useAll = {
+  useMin: true,
+  useMax: true,
+}
+
 describe('utils/limitRotation.ts', () => {
   describe('apply', () => {
+    describe('use options', () => {
+      const boneMap = {
+        a: getBone({
+          transform: getTransform({ rotate: 135 }),
+        }),
+      }
+      it('not use min', () => {
+        expect(
+          apply(
+            'a',
+            getOption({
+              min: 150,
+              max: 180,
+              useMax: true,
+            }),
+            {},
+            boneMap
+          )
+        ).toEqual({
+          a: getBone({
+            transform: getTransform({ rotate: 135 }),
+          }),
+        })
+      })
+      it('not use max', () => {
+        expect(
+          apply(
+            'a',
+            getOption({
+              min: 0,
+              max: 100,
+              useMin: true,
+            }),
+            {},
+            boneMap
+          )
+        ).toEqual({
+          a: getBone({
+            transform: getTransform({ rotate: 135 }),
+          }),
+        })
+      })
+    })
+
     describe('world space', () => {
       const boneMap = {
         a: getBone({
@@ -42,6 +91,7 @@ describe('utils/limitRotation.ts', () => {
               min: 0,
               max: 90,
               influence: 0.5,
+              ...useAll,
             }),
             {},
             boneMap
@@ -61,6 +111,7 @@ describe('utils/limitRotation.ts', () => {
               min: 360,
               max: 600,
               influence: 0.5,
+              ...useAll,
             }),
             {},
             boneMap
@@ -99,6 +150,7 @@ describe('utils/limitRotation.ts', () => {
               max: 90,
               influence: 0.5,
               spaceType: 'local',
+              ...useAll,
             }),
             localMap,
             boneMap

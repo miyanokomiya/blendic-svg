@@ -19,7 +19,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { add, multi, sub } from 'okageo'
 import { Bone, IdMap, SpaceType } from '/@/models'
-import { clamp, getBoneWorldLocation } from '/@/utils/geometry'
+import {
+  applyPosedTransformToPoint,
+  clamp,
+  getBoneWorldLocation,
+} from '/@/utils/geometry'
 
 export interface Option {
   spaceType: SpaceType
@@ -38,36 +42,55 @@ export function apply(
 ): IdMap<Bone> {
   const b = boneMap[boneId]
   if (!b) return boneMap
+  if (b.connected) return boneMap
 
-  const parentTranslate = boneMap[b.parentId]?.transform.translate ?? {
-    x: 0,
-    y: 0,
-  }
+  if (option.spaceType === 'world') {
+    const ownerLocation = getBoneWorldLocation(b)
+    const targetLocation = {
+      x: clamp(option.minX, option.maxX, ownerLocation.x),
+      y: clamp(option.minY, option.maxY, ownerLocation.y),
+    }
+    const diff = multi(sub(targetLocation, ownerLocation), option.influence)
 
-  const ownerLocation =
-    option.spaceType === 'world'
-      ? getBoneWorldLocation(b)
-      : localMap[boneId]?.transform?.translate ?? { x: 0, y: 0 }
-
-  const targetLocation = {
-    x: clamp(option.minX, option.maxX, ownerLocation.x),
-    y: clamp(option.minY, option.maxY, ownerLocation.y),
-  }
-
-  const diff = multi(sub(targetLocation, ownerLocation), option.influence)
-
-  return {
-    ...boneMap,
-    [boneId]: {
-      ...b,
-      transform: {
-        ...b.transform,
-        translate:
-          option.spaceType === 'world'
-            ? sub(add(ownerLocation, diff), b.head)
-            : add(add(ownerLocation, diff), parentTranslate),
+    return {
+      ...boneMap,
+      [boneId]: {
+        ...b,
+        transform: {
+          ...b.transform,
+          translate: sub(add(ownerLocation, diff), b.head),
+        },
       },
-    },
+    }
+  } else {
+    const localB = localMap[boneId]
+    if (!localB) return boneMap
+
+    const ownerTranslate = localB.transform.translate
+    const targetLocation = {
+      x: clamp(option.minX, option.maxX, ownerTranslate.x),
+      y: clamp(option.minY, option.maxY, ownerTranslate.y),
+    }
+    const diff = multi(sub(targetLocation, ownerTranslate), option.influence)
+    const nextLocalTranslate = add(ownerTranslate, diff)
+
+    // recalc extended translation
+    const posedHead = add(localB.head, nextLocalTranslate)
+    const extendedPosedHead = boneMap[b.parentId]
+      ? applyPosedTransformToPoint(boneMap[b.parentId], posedHead)
+      : posedHead
+    const headDiff = sub(extendedPosedHead, posedHead)
+
+    return {
+      ...boneMap,
+      [boneId]: {
+        ...b,
+        transform: {
+          ...b.transform,
+          translate: add(nextLocalTranslate, headDiff),
+        },
+      },
+    }
   }
 }
 

@@ -21,6 +21,7 @@ import { getBone, getTransform, scaleRate } from '/@/models'
 import {
   applyScale,
   applyTransform,
+  applyPosedTransformToPoint,
   applyTransformToVec,
   clamp,
   circleClamp,
@@ -362,6 +363,22 @@ describe('src/utils/geometry.ts', () => {
       )
       expect(ret.x).toBeCloseTo(1)
       expect(ret.y).toBeCloseTo(4)
+    })
+  })
+
+  describe('applyPosedTransformToPoint', () => {
+    it('apply parent bone scale', () => {
+      const parent = getBone({
+        head: { x: 1, y: 1 },
+        tail: { x: 2, y: 1 },
+        transform: getTransform({
+          scale: { x: 2, y: 3 },
+        }),
+      })
+      expect(applyPosedTransformToPoint(parent, { x: 3, y: 2 })).toEqual({
+        x: 7,
+        y: 3,
+      })
     })
   })
 

@@ -20,14 +20,17 @@ Copyright (C) 2021, Tomoya Komiyama.
 import {
   add,
   AffineMatrix,
+  getPedal,
   getRadian,
   IDENTITY_AFFINE,
   IRectangle,
   isSame,
   IVec2,
+  multi,
   rotate,
+  sub,
 } from 'okageo'
-import { Bone, scaleRate, Transform } from '/@/models'
+import { Bone, getTransform, scaleRate, Transform } from '/@/models'
 
 export function clamp(min: number, max: number, val: number) {
   return Math.max(Math.min(val, max), min)
@@ -174,6 +177,46 @@ export function applyTransform(p: IVec2, transform: Transform): IVec2 {
       transform.origin
     ),
     transform.translate
+  )
+}
+
+export function applyPosedTransformToPoint(parent: Bone, point: IVec2): IVec2 {
+  const head = applyTransform(
+    parent.head,
+    getTransform({ translate: parent.transform.translate })
+  )
+  const tail = applyTransform(
+    parent.tail,
+    getTransform({
+      ...parent.transform,
+      origin: parent.head,
+      scale: { x: 1, y: 1 },
+    })
+  )
+  const rotatedAndTranslatedPoint = applyTransform(
+    point,
+    getTransform({
+      ...parent.transform,
+      origin: parent.head,
+      scale: { x: 1, y: 1 },
+    })
+  )
+  if (isSame(head, tail)) {
+    return rotatedAndTranslatedPoint
+  }
+
+  const pedal = getPedal(rotatedAndTranslatedPoint, [head, tail])
+  // scale y affects bone's height
+  const vecY = sub(pedal, head)
+  // scale x affects bone's width
+  const vecX = sub(rotatedAndTranslatedPoint, pedal)
+
+  return add(
+    add(
+      multi(vecY, parent.transform.scale.y),
+      multi(vecX, parent.transform.scale.x)
+    ),
+    head
   )
 }
 

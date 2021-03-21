@@ -27,6 +27,16 @@ import {
 
 describe('utils/limitLocation.ts', () => {
   describe('apply', () => {
+    it('do nothing if target is connected', () => {
+      const boneMap = {
+        a: getBone({
+          head: { x: 1, y: 2 },
+          connected: true,
+          transform: getTransform({ translate: { x: 10, y: 20 } }),
+        }),
+      }
+      expect(apply('a', getOption(), {}, boneMap)).toEqual(boneMap)
+    })
     describe('world space', () => {
       const boneMap = {
         a: getBone({
@@ -117,6 +127,37 @@ describe('utils/limitLocation.ts', () => {
             parentId: 'b',
             head: { x: 1, y: 2 },
             transform: getTransform({ translate: { x: 103.5, y: 205.5 } }),
+          }),
+        })
+      })
+      it('limit locally and extend parent transform', () => {
+        const map = {
+          ...boneMap,
+          b: {
+            ...boneMap.b,
+            transform: {
+              ...boneMap.b.transform,
+              rotate: 180,
+            },
+          },
+        }
+        expect(
+          apply(
+            'a',
+            getOption({
+              maxX: 3,
+              maxY: 5,
+              spaceType: 'local',
+            }),
+            localMap,
+            map
+          )
+        ).toEqual({
+          ...map,
+          a: getBone({
+            parentId: 'b',
+            head: { x: 1, y: 2 },
+            transform: getTransform({ translate: { x: 97, y: 195 } }),
           }),
         })
       })

@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import * as ik from './ik'
 import * as limitLocation from './limitLocation'
 import * as limitRotation from './limitRotation'
+import * as limitScale from './limitScale'
 import * as copyRotation from './copyRotation'
 import * as copyLocation from './copyLocation'
 import * as copyScale from './copyScale'
@@ -30,6 +31,7 @@ export type BoneConstraintName =
   | 'IK'
   | 'LIMIT_LOCATION'
   | 'LIMIT_ROTATION'
+  | 'LIMIT_SCALE'
   | 'COPY_LOCATION'
   | 'COPY_ROTATION'
   | 'COPY_SCALE'
@@ -38,6 +40,7 @@ export interface BoneConstraintOptions {
   IK: ik.Option
   LIMIT_LOCATION: limitLocation.Option
   LIMIT_ROTATION: limitRotation.Option
+  LIMIT_SCALE: limitScale.Option
   COPY_LOCATION: copyLocation.Option
   COPY_ROTATION: copyRotation.Option
   COPY_SCALE: copyScale.Option
@@ -70,6 +73,8 @@ function getConstraintModule(name: BoneConstraintName): BoneConstraintModule {
       return limitLocation
     case 'LIMIT_ROTATION':
       return limitRotation
+    case 'LIMIT_SCALE':
+      return limitScale
     case 'COPY_LOCATION':
       return copyLocation
     case 'COPY_ROTATION':

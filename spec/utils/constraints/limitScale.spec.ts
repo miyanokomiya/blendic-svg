@@ -23,73 +23,79 @@ import {
   getDependentCountMap,
   getOption,
   immigrate,
-} from '/@/utils/constraints/limitRotation'
+} from '/@/utils/constraints/limitScale'
 
 const useAll = {
-  useMin: true,
-  useMax: true,
+  useMinX: true,
+  useMaxX: true,
+  useMinY: true,
+  useMaxY: true,
 }
 
-describe('utils/limitRotation.ts', () => {
+describe('utils/limitScale.ts', () => {
   describe('apply', () => {
     describe('use options', () => {
-      const boneMap = {
-        a: getBone({
-          transform: getTransform({ rotate: 135 }),
-        }),
-      }
       it('not use min', () => {
+        const boneMap = {
+          a: getBone({
+            transform: getTransform({ scale: { x: 10, y: 20 } }),
+          }),
+        }
         expect(
           apply(
             'a',
             getOption({
-              min: 150,
-              max: 180,
-              useMax: true,
+              minX: 100,
+              maxX: 500,
+              minY: 100,
+              maxY: 500,
+              useMaxX: true,
+              useMaxY: true,
             }),
             {},
             boneMap
           )
-        ).toEqual({
-          a: getBone({
-            transform: getTransform({ rotate: 135 }),
-          }),
-        })
+        ).toEqual(boneMap)
       })
       it('not use max', () => {
+        const boneMap = {
+          a: getBone({
+            transform: getTransform({ scale: { x: 10, y: 20 } }),
+          }),
+        }
         expect(
           apply(
             'a',
             getOption({
-              min: 0,
-              max: 100,
-              useMin: true,
+              minX: 0,
+              maxX: 1,
+              minY: 0,
+              maxY: 1,
+              useMinX: true,
+              useMinY: true,
             }),
             {},
             boneMap
           )
-        ).toEqual({
-          a: getBone({
-            transform: getTransform({ rotate: 135 }),
-          }),
-        })
+        ).toEqual(boneMap)
       })
     })
 
     describe('world space', () => {
       const boneMap = {
         a: getBone({
-          tail: { x: 1, y: 1 },
-          transform: getTransform({ rotate: 135 }),
+          transform: getTransform({ scale: { x: 10, y: 20 } }),
         }),
       }
-      it('limit rotation max', () => {
+      it('limit scale max', () => {
         expect(
           apply(
             'a',
             getOption({
-              min: 0,
-              max: 90,
+              minX: 0,
+              maxX: 5,
+              minY: 0,
+              maxY: 15,
               influence: 0.5,
               ...useAll,
             }),
@@ -98,18 +104,21 @@ describe('utils/limitRotation.ts', () => {
           )
         ).toEqual({
           a: getBone({
-            tail: { x: 1, y: 1 },
-            transform: getTransform({ rotate: 90 }),
+            transform: getTransform({
+              scale: { x: 7.5, y: 17.5 },
+            }),
           }),
         })
       })
-      it('limit rotation min', () => {
+      it('limit scale min', () => {
         expect(
           apply(
             'a',
             getOption({
-              min: 360,
-              max: 600,
+              minX: 20,
+              maxX: 100,
+              minY: 30,
+              maxY: 100,
               influence: 0.5,
               ...useAll,
             }),
@@ -118,8 +127,9 @@ describe('utils/limitRotation.ts', () => {
           )
         ).toEqual({
           a: getBone({
-            tail: { x: 1, y: 1 },
-            transform: getTransform({ rotate: 225 }),
+            transform: getTransform({
+              scale: { x: 15, y: 25 },
+            }),
           }),
         })
       })
@@ -128,17 +138,16 @@ describe('utils/limitRotation.ts', () => {
       const localMap = {
         a: getBone({
           parentId: 'b',
-          transform: getTransform({ rotate: 0 }),
+          transform: getTransform({ scale: { x: 4, y: 6 } }),
         }),
       }
       const boneMap = {
         a: getBone({
           parentId: 'b',
-          tail: { x: 0, y: 1 },
-          transform: getTransform({ rotate: 180 }),
+          transform: getTransform({ scale: { x: 10, y: 20 } }),
         }),
         b: getBone({
-          transform: getTransform({ rotate: 180 }),
+          transform: getTransform({ scale: { x: 100, y: 200 } }),
         }),
       }
       it('limit locally', () => {
@@ -146,8 +155,8 @@ describe('utils/limitRotation.ts', () => {
           apply(
             'a',
             getOption({
-              min: 90,
-              max: 90,
+              maxX: 3,
+              maxY: 5,
               influence: 0.5,
               spaceType: 'local',
               ...useAll,
@@ -159,32 +168,30 @@ describe('utils/limitRotation.ts', () => {
           ...boneMap,
           a: getBone({
             parentId: 'b',
-            tail: { x: 0, y: 1 },
-            transform: getTransform({ rotate: 225 }),
+            transform: getTransform({ scale: { x: 350, y: 5.5 * 200 } }),
           }),
         })
       })
-      it('ignore parent rotation if inherit rotation is false', () => {
+      it('ignore parent scale if inherit scale is false', () => {
         expect(
           apply(
             'a',
             getOption({
-              min: 90,
-              max: 90,
+              maxX: 3,
+              maxY: 5,
               influence: 0.5,
               spaceType: 'local',
               ...useAll,
             }),
             localMap,
-            { ...boneMap, a: { ...boneMap.a, inheritRotation: false } }
+            { ...boneMap, a: { ...boneMap.a, inheritScale: false } }
           )
         ).toEqual({
           ...boneMap,
           a: getBone({
             parentId: 'b',
-            tail: { x: 0, y: 1 },
-            inheritRotation: false,
-            transform: getTransform({ rotate: 45 }),
+            inheritScale: false,
+            transform: getTransform({ scale: { x: 3.5, y: 5.5 } }),
           }),
         })
       })

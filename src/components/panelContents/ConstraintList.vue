@@ -66,6 +66,14 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
+    <template v-else-if="c.name === 'LIMIT_SCALE'">
+      <LimitScaleOptionField
+        :model-value="c.option"
+        @update:modelValue="
+          (option, seriesKey) => updateConstraint(i, option, seriesKey)
+        "
+      />
+    </template>
     <template v-else-if="c.name === 'COPY_LOCATION'">
       <CopyLocationOptionField
         :model-value="c.option"
@@ -111,6 +119,7 @@ import InlineField from '/@/components/atoms/InlineField.vue'
 import IKOptionField from '/@/components/molecules/constraints/IKOptionField.vue'
 import LimitLocationOptionField from '/@/components/molecules/constraints/LimitLocationOptionField.vue'
 import LimitRotationOptionField from '/@/components/molecules/constraints/LimitRotationOptionField.vue'
+import LimitScaleOptionField from '/@/components/molecules/constraints/LimitScaleOptionField.vue'
 import CopyLocationOptionField from '/@/components/molecules/constraints/CopyLocationOptionField.vue'
 import CopyRotationOptionField from '/@/components/molecules/constraints/CopyRotationOptionField.vue'
 import CopyScaleOptionField from '/@/components/molecules/constraints/CopyScaleOptionField.vue'
@@ -124,6 +133,7 @@ export default defineComponent({
     IKOptionField,
     LimitLocationOptionField,
     LimitRotationOptionField,
+    LimitScaleOptionField,
     CopyLocationOptionField,
     CopyRotationOptionField,
     CopyScaleOptionField,
@@ -146,6 +156,7 @@ export default defineComponent({
           IK: 'IK',
           LIMIT_LOCATION: 'Limit Location',
           LIMIT_ROTATION: 'Limit Rotation',
+          LIMIT_SCALE: 'Limit Scale',
           COPY_LOCATION: 'Copy Location',
           COPY_ROTATION: 'Copy Rotation',
           COPY_SCALE: 'Copy Scale',

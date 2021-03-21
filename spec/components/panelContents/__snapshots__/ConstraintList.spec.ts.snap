@@ -40,6 +40,11 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
             Limit Rotation
           </option>
           <option
+            value="LIMIT_SCALE"
+          >
+            Limit Scale
+          </option>
+          <option
             value="COPY_LOCATION"
           >
             Copy Location

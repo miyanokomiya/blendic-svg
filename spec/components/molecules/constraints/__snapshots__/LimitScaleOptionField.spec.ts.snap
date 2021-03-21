@@ -1,0 +1,245 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`/@/src/components/molecules/constraints/LimitScaleOptionField.vue snapshot 1`] = `
+<div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 90px;"
+    >
+      Space Type
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <span
+        class="select-root"
+      >
+        <select>
+          <!--v-if-->
+          
+          <option
+            value="world"
+          >
+            World
+          </option>
+          <option
+            value="local"
+          >
+            Local
+          </option>
+          
+        </select>
+      </span>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 90px;"
+    >
+      Min X
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="inline"
+      >
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <!--v-if-->
+        </label>
+        <div
+          class="slider-wrapper"
+        >
+          <div
+            class="slider-background"
+            style="transform: scaleX(0);"
+          />
+          <input
+            type="text"
+          />
+          <div
+            class="slider-forward"
+          />
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 90px;"
+    >
+      Min Y
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="inline"
+      >
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <!--v-if-->
+        </label>
+        <div
+          class="slider-wrapper"
+        >
+          <div
+            class="slider-background"
+            style="transform: scaleX(0);"
+          />
+          <input
+            type="text"
+          />
+          <div
+            class="slider-forward"
+          />
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 90px;"
+    >
+      Max X
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="inline"
+      >
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <!--v-if-->
+        </label>
+        <div
+          class="slider-wrapper"
+        >
+          <div
+            class="slider-background"
+            style="transform: scaleX(0);"
+          />
+          <input
+            type="text"
+          />
+          <div
+            class="slider-forward"
+          />
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 90px;"
+    >
+      Max Y
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="inline"
+      >
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <!--v-if-->
+        </label>
+        <div
+          class="slider-wrapper"
+        >
+          <div
+            class="slider-background"
+            style="transform: scaleX(0);"
+          />
+          <input
+            type="text"
+          />
+          <div
+            class="slider-forward"
+          />
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 90px;"
+    >
+      Influence
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(1);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+</div>
+`;

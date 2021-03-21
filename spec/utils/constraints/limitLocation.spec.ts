@@ -25,6 +25,13 @@ import {
   immigrate,
 } from '/@/utils/constraints/limitLocation'
 
+const useAll = {
+  useMinX: true,
+  useMaxX: true,
+  useMinY: true,
+  useMaxY: true,
+}
+
 describe('utils/limitLocation.ts', () => {
   describe('apply', () => {
     it('do nothing if target is connected', () => {
@@ -35,8 +42,58 @@ describe('utils/limitLocation.ts', () => {
           transform: getTransform({ translate: { x: 10, y: 20 } }),
         }),
       }
-      expect(apply('a', getOption(), {}, boneMap)).toEqual(boneMap)
+      expect(apply('a', getOption(useAll), {}, boneMap)).toEqual(boneMap)
     })
+
+    describe('use options', () => {
+      it('not use min', () => {
+        const boneMap = {
+          a: getBone({
+            head: { x: 1, y: 2 },
+            transform: getTransform({ translate: { x: 10, y: 20 } }),
+          }),
+        }
+        expect(
+          apply(
+            'a',
+            getOption({
+              minX: 100,
+              maxX: 500,
+              minY: 100,
+              maxY: 500,
+              useMaxX: true,
+              useMaxY: true,
+            }),
+            {},
+            boneMap
+          )
+        ).toEqual(boneMap)
+      })
+      it('not use max', () => {
+        const boneMap = {
+          a: getBone({
+            head: { x: 1, y: 2 },
+            transform: getTransform({ translate: { x: 10, y: 20 } }),
+          }),
+        }
+        expect(
+          apply(
+            'a',
+            getOption({
+              minX: 0,
+              maxX: 1,
+              minY: 0,
+              maxY: 1,
+              useMinX: true,
+              useMinY: true,
+            }),
+            {},
+            boneMap
+          )
+        ).toEqual(boneMap)
+      })
+    })
+
     describe('world space', () => {
       const boneMap = {
         a: getBone({
@@ -54,6 +111,7 @@ describe('utils/limitLocation.ts', () => {
               minY: 0,
               maxY: 15,
               influence: 0.5,
+              ...useAll,
             }),
             {},
             boneMap
@@ -77,6 +135,7 @@ describe('utils/limitLocation.ts', () => {
               minY: 30,
               maxY: 100,
               influence: 0.5,
+              ...useAll,
             }),
             {},
             boneMap
@@ -117,6 +176,7 @@ describe('utils/limitLocation.ts', () => {
               maxY: 5,
               influence: 0.5,
               spaceType: 'local',
+              ...useAll,
             }),
             localMap,
             boneMap
@@ -148,6 +208,7 @@ describe('utils/limitLocation.ts', () => {
               maxX: 3,
               maxY: 5,
               spaceType: 'local',
+              ...useAll,
             }),
             localMap,
             map

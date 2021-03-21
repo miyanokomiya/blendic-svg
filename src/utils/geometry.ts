@@ -32,7 +32,7 @@ import {
 } from 'okageo'
 import { Bone, getTransform, scaleRate, Transform } from '/@/models'
 
-export function clamp(min: number, max: number, val: number) {
+export function clamp(min = -Infinity, max = Infinity, val: number) {
   return Math.max(Math.min(val, max), min)
 }
 

@@ -52,6 +52,14 @@ describe('src/utils/geometry.ts', () => {
     ])('clamp(%s, %s, %s) => %s', (min, max, val, expected) => {
       expect(clamp(min, max, val)).toBe(expected)
     })
+    it('only min', () => {
+      expect(clamp(1, undefined, -1)).toBe(1)
+      expect(clamp(1, undefined, 2)).toBe(2)
+    })
+    it('only max', () => {
+      expect(clamp(undefined, 1, -1)).toBe(-1)
+      expect(clamp(undefined, 1, 2)).toBe(1)
+    })
   })
 
   describe('circleClamp', () => {

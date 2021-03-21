@@ -7,7 +7,7 @@ exports[`/@/src/components/molecules/constraints/LimitLocationOptionField.vue sn
   >
     
     <label
-      style="width: 100px;"
+      style="width: 90px;"
     >
       Space Type
     </label>
@@ -43,7 +43,7 @@ exports[`/@/src/components/molecules/constraints/LimitLocationOptionField.vue sn
   >
     
     <label
-      style="width: 100px;"
+      style="width: 90px;"
     >
       Min X
     </label>
@@ -52,18 +52,30 @@ exports[`/@/src/components/molecules/constraints/LimitLocationOptionField.vue sn
     >
       
       <div
-        class="slider-wrapper"
+        class="inline"
       >
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <!--v-if-->
+        </label>
         <div
-          class="slider-background"
-          style="transform: scaleX(0);"
-        />
-        <input
-          type="text"
-        />
-        <div
-          class="slider-forward"
-        />
+          class="slider-wrapper"
+        >
+          <div
+            class="slider-background"
+            style="transform: scaleX(0);"
+          />
+          <input
+            type="text"
+          />
+          <div
+            class="slider-forward"
+          />
+        </div>
       </div>
       
     </div>
@@ -74,38 +86,7 @@ exports[`/@/src/components/molecules/constraints/LimitLocationOptionField.vue sn
   >
     
     <label
-      style="width: 100px;"
-    >
-      Max X
-    </label>
-    <div
-      class="inline-content"
-    >
-      
-      <div
-        class="slider-wrapper"
-      >
-        <div
-          class="slider-background"
-          style="transform: scaleX(0);"
-        />
-        <input
-          type="text"
-        />
-        <div
-          class="slider-forward"
-        />
-      </div>
-      
-    </div>
-    
-  </div>
-  <div
-    class="row-block inline-field"
-  >
-    
-    <label
-      style="width: 100px;"
+      style="width: 90px;"
     >
       Min Y
     </label>
@@ -114,18 +95,30 @@ exports[`/@/src/components/molecules/constraints/LimitLocationOptionField.vue sn
     >
       
       <div
-        class="slider-wrapper"
+        class="inline"
       >
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <!--v-if-->
+        </label>
         <div
-          class="slider-background"
-          style="transform: scaleX(0);"
-        />
-        <input
-          type="text"
-        />
-        <div
-          class="slider-forward"
-        />
+          class="slider-wrapper"
+        >
+          <div
+            class="slider-background"
+            style="transform: scaleX(0);"
+          />
+          <input
+            type="text"
+          />
+          <div
+            class="slider-forward"
+          />
+        </div>
       </div>
       
     </div>
@@ -136,7 +129,50 @@ exports[`/@/src/components/molecules/constraints/LimitLocationOptionField.vue sn
   >
     
     <label
-      style="width: 100px;"
+      style="width: 90px;"
+    >
+      Max X
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="inline"
+      >
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <!--v-if-->
+        </label>
+        <div
+          class="slider-wrapper"
+        >
+          <div
+            class="slider-background"
+            style="transform: scaleX(0);"
+          />
+          <input
+            type="text"
+          />
+          <div
+            class="slider-forward"
+          />
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 90px;"
     >
       Max Y
     </label>
@@ -145,18 +181,30 @@ exports[`/@/src/components/molecules/constraints/LimitLocationOptionField.vue sn
     >
       
       <div
-        class="slider-wrapper"
+        class="inline"
       >
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <!--v-if-->
+        </label>
         <div
-          class="slider-background"
-          style="transform: scaleX(0);"
-        />
-        <input
-          type="text"
-        />
-        <div
-          class="slider-forward"
-        />
+          class="slider-wrapper"
+        >
+          <div
+            class="slider-background"
+            style="transform: scaleX(0);"
+          />
+          <input
+            type="text"
+          />
+          <div
+            class="slider-forward"
+          />
+        </div>
       </div>
       
     </div>
@@ -167,7 +215,7 @@ exports[`/@/src/components/molecules/constraints/LimitLocationOptionField.vue sn
   >
     
     <label
-      style="width: 100px;"
+      style="width: 90px;"
     >
       Influence
     </label>

@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, multi, sub } from 'okageo'
+import { add, IVec2, multi, sub } from 'okageo'
 import { Bone, IdMap, SpaceType } from '/@/models'
 import {
   applyPosedTransformToPoint,
@@ -32,6 +32,10 @@ export interface Option {
   maxX: number
   minY: number
   maxY: number
+  useMinX: boolean
+  useMaxX: boolean
+  useMinY: boolean
+  useMaxY: boolean
 }
 
 export function apply(
@@ -46,11 +50,7 @@ export function apply(
 
   if (option.spaceType === 'world') {
     const ownerLocation = getBoneWorldLocation(b)
-    const targetLocation = {
-      x: clamp(option.minX, option.maxX, ownerLocation.x),
-      y: clamp(option.minY, option.maxY, ownerLocation.y),
-    }
-    const diff = multi(sub(targetLocation, ownerLocation), option.influence)
+    const diff = limitLocationDiff(option, ownerLocation)
 
     return {
       ...boneMap,
@@ -67,11 +67,7 @@ export function apply(
     if (!localB) return boneMap
 
     const ownerTranslate = localB.transform.translate
-    const targetLocation = {
-      x: clamp(option.minX, option.maxX, ownerTranslate.x),
-      y: clamp(option.minY, option.maxY, ownerTranslate.y),
-    }
-    const diff = multi(sub(targetLocation, ownerTranslate), option.influence)
+    const diff = limitLocationDiff(option, ownerTranslate)
     const nextLocalTranslate = add(ownerTranslate, diff)
 
     // recalc extended translation
@@ -94,6 +90,22 @@ export function apply(
   }
 }
 
+function limitLocationDiff(option: Option, location: IVec2): IVec2 {
+  const targetLocation = {
+    x: clamp(
+      option.useMinX ? option.minX : undefined,
+      option.useMaxX ? option.maxX : undefined,
+      location.x
+    ),
+    y: clamp(
+      option.useMinY ? option.minY : undefined,
+      option.useMaxY ? option.maxY : undefined,
+      location.y
+    ),
+  }
+  return multi(sub(targetLocation, location), option.influence)
+}
+
 export function immigrate(
   _duplicatedIdMap: IdMap<string>,
   option: Option
@@ -109,6 +121,10 @@ export function getOption(src: Partial<Option> = {}): Option {
     maxX: 0,
     minY: 0,
     maxY: 0,
+    useMinX: false,
+    useMaxX: false,
+    useMinY: false,
+    useMaxY: false,
     ...src,
   }
 }

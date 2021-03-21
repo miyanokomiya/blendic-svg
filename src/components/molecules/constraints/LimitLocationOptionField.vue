@@ -28,28 +28,52 @@ Copyright (C) 2021, Tomoya Komiyama.
       />
     </InlineField>
     <InlineField label="Min X" :label-width="labelWidth">
-      <SliderInput
-        :model-value="modelValue.minX"
-        @update:modelValue="updateMinX"
-      />
-    </InlineField>
-    <InlineField label="Max X" :label-width="labelWidth">
-      <SliderInput
-        :model-value="modelValue.maxX"
-        @update:modelValue="updateMaxX"
-      />
+      <div class="inline">
+        <CheckboxInput
+          :model-value="modelValue.useMinX"
+          @update:modelValue="updateUseMinX"
+        />
+        <SliderInput
+          :model-value="modelValue.minX"
+          @update:modelValue="updateMinX"
+        />
+      </div>
     </InlineField>
     <InlineField label="Min Y" :label-width="labelWidth">
-      <SliderInput
-        :model-value="modelValue.minY"
-        @update:modelValue="updateMinY"
-      />
+      <div class="inline">
+        <CheckboxInput
+          :model-value="modelValue.useMinY"
+          @update:modelValue="updateUseMinY"
+        />
+        <SliderInput
+          :model-value="modelValue.minY"
+          @update:modelValue="updateMinY"
+        />
+      </div>
+    </InlineField>
+    <InlineField label="Max X" :label-width="labelWidth">
+      <div class="inline">
+        <CheckboxInput
+          :model-value="modelValue.useMaxX"
+          @update:modelValue="updateUseMaxX"
+        />
+        <SliderInput
+          :model-value="modelValue.maxX"
+          @update:modelValue="updateMaxX"
+        />
+      </div>
     </InlineField>
     <InlineField label="Max Y" :label-width="labelWidth">
-      <SliderInput
-        :model-value="modelValue.maxY"
-        @update:modelValue="updateMaxY"
-      />
+      <div class="inline">
+        <CheckboxInput
+          :model-value="modelValue.useMaxY"
+          @update:modelValue="updateUseMaxY"
+        />
+        <SliderInput
+          :model-value="modelValue.maxY"
+          @update:modelValue="updateMaxY"
+        />
+      </div>
     </InlineField>
     <InlineField label="Influence" :label-width="labelWidth">
       <SliderInput
@@ -68,10 +92,11 @@ import { BoneConstraintOptions } from '/@/utils/constraints'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import { SpaceType } from '/@/models'
 
 export default defineComponent({
-  components: { SliderInput, SelectField, InlineField },
+  components: { SliderInput, SelectField, InlineField, CheckboxInput },
   props: {
     modelValue: {
       type: Object as PropType<BoneConstraintOptions['LIMIT_LOCATION']>,
@@ -97,7 +122,7 @@ export default defineComponent({
     )
 
     return {
-      labelWidth: '100px',
+      labelWidth: '90px',
       spaceTypeOptions,
       updateSpaceType(val: SpaceType) {
         emitUpdated({ spaceType: val })
@@ -114,6 +139,18 @@ export default defineComponent({
       updateMaxY(val: number, seriesKey?: string) {
         emitUpdated({ maxY: val }, seriesKey)
       },
+      updateUseMinX(val: boolean, seriesKey?: string) {
+        emitUpdated({ useMinX: val }, seriesKey)
+      },
+      updateUseMaxX(val: boolean, seriesKey?: string) {
+        emitUpdated({ useMaxX: val }, seriesKey)
+      },
+      updateUseMinY(val: boolean, seriesKey?: string) {
+        emitUpdated({ useMinY: val }, seriesKey)
+      },
+      updateUseMaxY(val: boolean, seriesKey?: string) {
+        emitUpdated({ useMaxY: val }, seriesKey)
+      },
       updateInfluence(val: number, seriesKey?: string) {
         emitUpdated({ influence: val }, seriesKey)
       },
@@ -121,3 +158,13 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.inline {
+  display: flex;
+  align-items: center;
+  > * + * {
+    margin-left: 10px;
+  }
+}
+</style>

@@ -46,6 +46,9 @@ export interface Keyframe {
   id: string
   frame: number
   transform: Transform
+  useTranslate: boolean
+  useRotate: boolean
+  useScale: boolean
   boneId: string
 }
 
@@ -170,6 +173,9 @@ export function getKeyframe(
     frame: 0,
     boneId: '',
     transform: getTransform(),
+    useTranslate: true,
+    useRotate: true,
+    useScale: true,
     ...arg,
     id,
   }

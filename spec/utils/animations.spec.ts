@@ -38,6 +38,8 @@ import {
   isSameKeyframeStatus,
   getSameRangeFrameMapByBoneId,
   getLastFrame,
+  getPropsNeighborKeyframes,
+  interpolatePropsKeyframeTransform,
 } from '/@/utils/animations'
 
 describe('utils/animations.ts', () => {
@@ -113,6 +115,84 @@ describe('utils/animations.ts', () => {
           3
         )
       ).toEqual([getKeyframe({ frame: 2 }), getKeyframe({ frame: 4 })])
+    })
+  })
+
+  describe('getPropsNeighborKeyframes', () => {
+    it('translate: skip keyframes with use = false', () => {
+      expect(
+        getPropsNeighborKeyframes(
+          [
+            getKeyframe({ frame: 0 }),
+            getKeyframe({ frame: 1 }),
+            getKeyframe({ frame: 2, useTranslate: false }),
+            getKeyframe({ frame: 4, useTranslate: false }),
+            getKeyframe({ frame: 5, useTranslate: false }),
+            getKeyframe({ frame: 6 }),
+          ],
+          3
+        )
+      ).toEqual({
+        translate: [getKeyframe({ frame: 1 }), getKeyframe({ frame: 6 })],
+        rotate: [
+          getKeyframe({ frame: 2, useTranslate: false }),
+          getKeyframe({ frame: 4, useTranslate: false }),
+        ],
+        scale: [
+          getKeyframe({ frame: 2, useTranslate: false }),
+          getKeyframe({ frame: 4, useTranslate: false }),
+        ],
+      })
+    })
+    it('rotate: skip keyframes with use = false', () => {
+      expect(
+        getPropsNeighborKeyframes(
+          [
+            getKeyframe({ frame: 0 }),
+            getKeyframe({ frame: 1 }),
+            getKeyframe({ frame: 2, useRotate: false }),
+            getKeyframe({ frame: 4, useRotate: false }),
+            getKeyframe({ frame: 5, useRotate: false }),
+            getKeyframe({ frame: 6 }),
+          ],
+          3
+        )
+      ).toEqual({
+        translate: [
+          getKeyframe({ frame: 2, useRotate: false }),
+          getKeyframe({ frame: 4, useRotate: false }),
+        ],
+        rotate: [getKeyframe({ frame: 1 }), getKeyframe({ frame: 6 })],
+        scale: [
+          getKeyframe({ frame: 2, useRotate: false }),
+          getKeyframe({ frame: 4, useRotate: false }),
+        ],
+      })
+    })
+    it('scale: skip keyframes with use = false', () => {
+      expect(
+        getPropsNeighborKeyframes(
+          [
+            getKeyframe({ frame: 0 }),
+            getKeyframe({ frame: 1 }),
+            getKeyframe({ frame: 2, useScale: false }),
+            getKeyframe({ frame: 4, useScale: false }),
+            getKeyframe({ frame: 5, useScale: false }),
+            getKeyframe({ frame: 6 }),
+          ],
+          3
+        )
+      ).toEqual({
+        translate: [
+          getKeyframe({ frame: 2, useScale: false }),
+          getKeyframe({ frame: 4, useScale: false }),
+        ],
+        rotate: [
+          getKeyframe({ frame: 2, useScale: false }),
+          getKeyframe({ frame: 4, useScale: false }),
+        ],
+        scale: [getKeyframe({ frame: 1 }), getKeyframe({ frame: 6 })],
+      })
     })
   })
 
@@ -201,6 +281,71 @@ describe('utils/animations.ts', () => {
         (x: number) => Math.pow(x, 2)
       )
       expect(ret.rotate).toBeCloseTo(20.4)
+    })
+  })
+
+  describe('interpolatePropsKeyframeTransform', () => {
+    it('translate', () => {
+      const ret = interpolatePropsKeyframeTransform(
+        {
+          translate: [
+            getKeyframe({
+              frame: 10,
+              transform: getTransform({ translate: { x: 20, y: 30 } }),
+            }),
+            getKeyframe({
+              frame: 20,
+              transform: getTransform({ translate: { x: 30, y: 40 } }),
+            }),
+          ],
+          rotate: [],
+          scale: [],
+        },
+        15
+      )
+      expect(ret.translate.x).toBeCloseTo(25)
+      expect(ret.translate.y).toBeCloseTo(35)
+    })
+    it('rotate', () => {
+      const ret = interpolatePropsKeyframeTransform(
+        {
+          translate: [],
+          rotate: [
+            getKeyframe({
+              frame: 10,
+              transform: getTransform({ rotate: 20 }),
+            }),
+            getKeyframe({
+              frame: 20,
+              transform: getTransform({ rotate: 30 }),
+            }),
+          ],
+          scale: [],
+        },
+        15
+      )
+      expect(ret.rotate).toBeCloseTo(25)
+    })
+    it('scale', () => {
+      const ret = interpolatePropsKeyframeTransform(
+        {
+          translate: [],
+          rotate: [],
+          scale: [
+            getKeyframe({
+              frame: 10,
+              transform: getTransform({ scale: { x: 20, y: 30 } }),
+            }),
+            getKeyframe({
+              frame: 20,
+              transform: getTransform({ scale: { x: 30, y: 40 } }),
+            }),
+          ],
+        },
+        15
+      )
+      expect(ret.scale.x).toBeCloseTo(25)
+      expect(ret.scale.y).toBeCloseTo(35)
     })
   })
 

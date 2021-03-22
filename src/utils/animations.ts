@@ -91,16 +91,24 @@ export function getInterpolatedTransformMapByBoneId(
   curveFn?: InterpolateCurve
 ): IdMap<Transform> {
   return mapReduce(
-    getgetNeighborKeyframeMapByBoneId(sortedKeyframes, frame),
-    (neighbors) => interpolateKeyframeTransform(neighbors, frame, curveFn)
+    getPropsNeighborKeyframeMapByBoneId(sortedKeyframes, frame),
+    (neighbors) => interpolatePropsKeyframeTransform(neighbors, frame, curveFn)
   )
 }
 
-export function getgetNeighborKeyframeMapByBoneId(
+function getPropsNeighborKeyframeMapByBoneId(
   sortedKeyframes: IdMap<Keyframe[]>,
   frame: number
-): IdMap<NeighborKeyframes> {
-  return mapReduce(sortedKeyframes, (list) => getNeighborKeyframes(list, frame))
+): IdMap<PorpsNeighborKeyframes> {
+  return mapReduce(sortedKeyframes, (list) =>
+    getPropsNeighborKeyframes(list, frame)
+  )
+}
+
+type PorpsNeighborKeyframes = {
+  translate: NeighborKeyframes
+  rotate: NeighborKeyframes
+  scale: NeighborKeyframes
 }
 
 type NeighborKeyframes =
@@ -120,6 +128,26 @@ export function getNeighborKeyframes(
   const before = sortedKeyframes[afterIndex - 1]
   if (before.frame === frame) return [before]
   return [before, after]
+}
+
+export function getPropsNeighborKeyframes(
+  sortedKeyframes: Keyframe[],
+  frame: number
+): PorpsNeighborKeyframes {
+  const translateList: Keyframe[] = []
+  const rotateList: Keyframe[] = []
+  const scaleList: Keyframe[] = []
+  sortedKeyframes.forEach((k) => {
+    if (k.useTranslate) translateList.push(k)
+    if (k.useRotate) rotateList.push(k)
+    if (k.useScale) scaleList.push(k)
+  })
+
+  return {
+    translate: getNeighborKeyframes(translateList, frame),
+    rotate: getNeighborKeyframes(rotateList, frame),
+    scale: getNeighborKeyframes(scaleList, frame),
+  }
 }
 
 export function getAfterKeyframe(
@@ -150,6 +178,33 @@ export function interpolateKeyframeTransform(
   const b = keyframes[1]!
   const rate = curveFn((frame - a.frame) / (b.frame - a.frame))
   return interpolateTransform(a.transform, b.transform, rate)
+}
+
+export function interpolatePropsKeyframeTransform(
+  propsKeyframes: PorpsNeighborKeyframes,
+  frame: number,
+  curveFn: InterpolateCurve = (x) => x
+): Transform {
+  const translate = interpolateKeyframeTransform(
+    propsKeyframes.translate,
+    frame,
+    curveFn
+  ).translate
+  const rotate = interpolateKeyframeTransform(
+    propsKeyframes.rotate,
+    frame,
+    curveFn
+  ).rotate
+  const scale = interpolateKeyframeTransform(
+    propsKeyframes.scale,
+    frame,
+    curveFn
+  ).scale
+  return getTransform({
+    translate,
+    rotate,
+    scale,
+  })
 }
 
 export function slideKeyframesTo(

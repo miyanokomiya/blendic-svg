@@ -105,13 +105,22 @@ Copyright (C) 2021, Tomoya Komiyama.
       class="command-exam-panel"
       :available-command-list="availableCommandList"
     />
+    <PopupMenuList
+      v-if="popupMenuList.length > 0 && popupMenuListPosition"
+      class="popup-menu-list"
+      :popup-menu-list="popupMenuList"
+      :style="{
+        left: `${popupMenuListPosition.x}px`,
+        top: `${popupMenuListPosition.y}px`,
+      }"
+    />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
 import { getPointInTarget } from 'okanvas'
-import { IRectangle } from 'okageo'
+import { IRectangle, IVec2 } from 'okageo'
 import { CanvasCommand, CanvasMode } from '/@/models'
 import * as helpers from '/@/utils/helpers'
 import { useStore } from '../store'
@@ -119,6 +128,7 @@ import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import CanvasArmatureMenu from '/@/components/molecules/CanvasArmatureMenu.vue'
+import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import { useWindow } from '../composables/window'
 import { useAnimationStore } from '../store/animation'
@@ -146,6 +156,7 @@ export default defineComponent({
     CanvasModepanel,
     CommandExamPanel,
     CanvasArmatureMenu,
+    PopupMenuList,
   },
   props: {
     originalViewBox: {
@@ -249,6 +260,12 @@ export default defineComponent({
     onMounted(adjustSvgSize)
     watch(() => windowState.state.size, adjustSvgSize)
 
+    const popupMenuListPosition = ref<IVec2>()
+    const popupMenuList = computed(() => canvasStore.popupMenuList.value)
+    watch(popupMenuList, () => {
+      popupMenuListPosition.value = canvas.mousePoint.value
+    })
+
     return {
       showAxis: computed(() => settings.showAxis),
       scale: canvas.scale,
@@ -260,6 +277,8 @@ export default defineComponent({
       scaleNaviElm,
       dragRectangle: canvas.dragRectangle,
       canvasMode: computed(() => canvasStore.state.canvasMode),
+      popupMenuList,
+      popupMenuListPosition,
       focus() {
         if (svg.value) svg.value.focus()
       },
@@ -374,5 +393,8 @@ svg {
 }
 .view-only {
   pointer-events: none;
+}
+.popup-menu-list {
+  position: absolute;
 }
 </style>

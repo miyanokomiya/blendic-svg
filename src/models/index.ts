@@ -218,13 +218,18 @@ export interface BoneSelectedState {
 }
 export type CanvasMode = 'object' | 'edit' | 'pose' | 'weight'
 export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
-export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude'
+export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude' | 'insert'
 
 export type EditMovement = {
   current: IVec2
   start: IVec2
   ctrl: boolean
   scale: number
+}
+
+export interface PopupMenuItem {
+  label: string
+  exec: () => void
 }
 
 export type CommandExam = { command: string; title: string }
@@ -244,10 +249,12 @@ export interface CanvasEditModeBase {
   clickEmpty: () => void
   execDelete: () => void
   execAdd: () => void
+  insert: () => void
   clip: () => void
   paste: () => void
   duplicate: () => void
   availableCommandList: ComputedRef<CommandExam[]>
+  popupMenuList: ComputedRef<PopupMenuItem[]>
 }
 
 export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {

@@ -18,9 +18,28 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g :transform="`translate(0, ${index * height})`">
-    <rect :width="labelWidth" :height="height" fill="#fff" stroke="black" />
-    <text x="4" :y="height / 2" dominant-baseline="central">{{ label }}</text>
+  <g>
+    <rect
+      :width="labelWidth"
+      :height="labelHeight"
+      fill="#fff"
+      stroke="black"
+    />
+    <text x="4" :y="labelHeight / 2" dominant-baseline="central">{{
+      label
+    }}</text>
+    <g
+      v-if="showExpanded"
+      :transform="`translate(${labelWidth - 16}, ${labelHeight / 2 - 6})`"
+      class="toggle-expanded"
+      @click="toggleExpanded"
+    >
+      <rect width="12" height="12" stroke="none" fill="#888" />
+      <g stroke-linejoin="round" stroke="none" fill="#fff">
+        <path v-if="expanded" d="M2 9L10 9L6 3z" />
+        <path v-else d="M10 3L2 3L6 9z" />
+      </g>
+    </g>
   </g>
 </template>
 
@@ -33,19 +52,36 @@ export default defineComponent({
       type: Number,
       default: 100,
     },
-    index: {
+    labelHeight: {
       type: Number,
-      required: true,
+      default: 24,
     },
     label: {
       type: String,
       required: true,
     },
+    expanded: {
+      type: Boolean,
+      required: false,
+    },
+    showExpanded: {
+      type: Boolean,
+      required: false,
+    },
   },
-  setup() {
+  emits: ['toggle-expanded'],
+  setup(_props, { emit }) {
     return {
-      height: 24,
+      toggleExpanded() {
+        emit('toggle-expanded')
+      },
     }
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.toggle-expanded {
+  cursor: pointer;
+}
+</style>

@@ -85,9 +85,11 @@ export function useWeightPaintMode(): WeightPaintMode {
     clickEmpty,
     execDelete: () => {},
     execAdd: () => {},
+    insert: () => {},
     clip,
     paste,
     duplicate: () => {},
     availableCommandList,
+    popupMenuList: computed(() => []),
   }
 }

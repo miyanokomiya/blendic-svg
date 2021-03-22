@@ -274,9 +274,11 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     clickEmpty,
     execDelete,
     execAdd: () => {},
+    insert: () => {},
     clip,
     paste,
     duplicate,
     availableCommandList,
+    popupMenuList: computed(() => []),
   }
 }

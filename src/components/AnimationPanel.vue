@@ -86,6 +86,7 @@ Copyright (C) 2021, Tomoya Komiyama.
               :view-width="viewSize.width"
               :current-frame="currentFrame"
               :end-frame="endFrame"
+              :header-height="labelHeight"
               @down-current-frame="downCurrentFrame"
             />
             <Keyframes
@@ -94,6 +95,9 @@ Copyright (C) 2021, Tomoya Komiyama.
               :bone-ids="selectedAllBoneIdList"
               :selected-keyframe-map="selectedKeyframeMap"
               :scroll-y="viewOrigin.y"
+              :bone-expanded-map="boneExpandedMap"
+              :bone-top-map="boneTopMap"
+              :height="labelHeight"
               @select="selectKeyframe"
               @shift-select="shiftSelectKeyframe"
               @select-frame="selectKeyframeByFrame"
@@ -107,6 +111,10 @@ Copyright (C) 2021, Tomoya Komiyama.
               :selected-all-bone-list="selectedAllBoneList"
               :label-width="labelWidth"
               :scroll-y="viewOrigin.y"
+              :bone-expanded-map="boneExpandedMap"
+              :bone-top-map="boneTopMap"
+              :height="labelHeight"
+              @toggle-bone-expanded="toggleBoneExpanded"
             />
           </g>
         </template>
@@ -142,6 +150,9 @@ import { IVec2 } from 'okageo'
 import { mapReduce, toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
 import { useKeyframeEditMode } from '../composables/keyframeEditMode'
+import { IdMap } from '/@/models'
+
+const labelHeight = 24
 
 export default defineComponent({
   components: {
@@ -247,6 +258,24 @@ export default defineComponent({
       )
     }
 
+    const boneExpandedMap = ref<IdMap<boolean>>({})
+    watchEffect(() => {
+      boneExpandedMap.value = mapReduce(store.boneMap.value, () => false)
+    })
+    function toggleBoneExpanded(boneId: string) {
+      boneExpandedMap.value[boneId] = !boneExpandedMap.value[boneId]
+    }
+
+    const boneTopMap = computed(() => {
+      let current = 2 * labelHeight
+      return selectedAllBoneList.value.reduce<IdMap<number>>((p, b) => {
+        const top = current
+        current = current + labelHeight * (boneExpandedMap.value[b.id] ? 4 : 1)
+        p[b.id] = top
+        return p
+      }, {})
+    })
+
     return {
       playing: animationStore.playing,
       actions: animationStore.actions.value,
@@ -302,6 +331,10 @@ export default defineComponent({
       upLeft,
       mousemove: keyframeEditMode.mousemove,
       availableCommandList: keyframeEditMode.availableCommandList,
+      boneExpandedMap,
+      toggleBoneExpanded,
+      boneTopMap,
+      labelHeight,
     }
   },
 })

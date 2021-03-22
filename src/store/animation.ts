@@ -342,7 +342,13 @@ function selectAllKeyframes() {
     historyStore.push(item)
   }
 }
-function execInsertKeyframe() {
+function execInsertKeyframe(
+  options: {
+    useTranslate?: boolean
+    useRotate?: boolean
+    useScake?: boolean
+  } = {}
+) {
   if (Object.keys(selectedAllBones.value).length === 0) return
   if (!actions.lastSelectedItem.value) {
     addAction()
@@ -354,6 +360,7 @@ function execInsertKeyframe() {
         frame: currentFrame.value,
         boneId,
         transform: getCurrentSelfTransforms(boneId),
+        ...options,
       },
       true
     )

@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g>
-    <g :transform="`scale(${scale}) translate(0, ${headerHeight * 2})`">
+    <g :transform="`scale(${scale}) translate(0, ${height * 2})`">
       <line x1="-100000" x2="100000" stroke="#000" />
     </g>
     <g
@@ -27,10 +27,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       :key="f"
       :transform="`translate(${parseInt(f) * frameWidth}, 0)`"
     >
-      <g :transform="`scale(${scale}) translate(0, 36)`">
+      <g :transform="`scale(${scale}) translate(0, ${height / 2})`">
         <circle
           v-if="keyframes.length > 0"
           key="all"
+          :cy="height"
           r="5"
           stroke="#000"
           :fill="selectedFrameMap[f] ? selectedColor : '#fff'"
@@ -39,26 +40,19 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <g :transform="`translate(0, ${-scrollY})`">
           <g v-for="k in keyframes" :key="k.id">
-            <template v-if="boneRowMap[k.boneId] > scrollY + headerHeight / 2">
-              <rect
-                :y="boneRowMap[k.boneId] - 3"
-                :width="
-                  (getSameRangeFrame(k.boneId, k.frame) * frameWidth) / scale
-                "
-                height="6"
-                fill="#aaa"
-                fill-opacity="0.5"
-                class="view-only"
-              />
-              <circle
-                :cy="boneRowMap[k.boneId]"
-                r="5"
-                stroke="#000"
-                :fill="selectedKeyframeMap[k.id] ? selectedColor : '#fff'"
-                @click.left.exact="select(k.id)"
-                @click.left.shift.exact="shiftSelect(k.id)"
-              />
-            </template>
+            <KeyPointTransform
+              :key-frame="k"
+              :top="boneTopMap[k.boneId]"
+              :selected="selectedKeyframeMap[k.id]"
+              :expanded="boneExpandedMap[k.boneId]"
+              :same-range-width="
+                (getSameRangeFrame(k.boneId, k.frame) * frameWidth) / scale
+              "
+              :height="height"
+              :scroll-y="scrollY"
+              @select="select(k.id)"
+              @shift-select="shiftSelect(k.id)"
+            />
           </g>
         </g>
       </g>
@@ -68,6 +62,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
+import KeyPointTransform from '/@/components/elements/molecules/KeyPointTransform.vue'
 import { useSettings } from '/@/composables/settings'
 import { IdMap, Keyframe, frameWidth } from '/@/models'
 import {
@@ -77,6 +72,7 @@ import {
 import { mapReduce } from '/@/utils/commons'
 
 export default defineComponent({
+  components: { KeyPointTransform },
   props: {
     scale: {
       type: Number,
@@ -97,6 +93,18 @@ export default defineComponent({
     scrollY: {
       type: Number,
       default: 0,
+    },
+    height: {
+      type: Number,
+      default: 24,
+    },
+    boneExpandedMap: {
+      type: Object as PropType<IdMap<boolean>>,
+      default: () => ({}),
+    },
+    boneTopMap: {
+      type: Object as PropType<IdMap<number>>,
+      default: () => [],
     },
   },
   emits: ['select', 'shift-select', 'select-frame', 'shift-select-frame'],
@@ -149,7 +157,10 @@ export default defineComponent({
     })
 
     const boneRowMap = computed(() => {
-      return mapReduce(boneIndexMap.value, (index) => (index + 1) * 24)
+      return mapReduce(
+        boneIndexMap.value,
+        (index) => (index + 1) * props.height
+      )
     })
 
     function sortAndFilterKeyframesByBoneId(keyframes: Keyframe[]): Keyframe[] {
@@ -174,7 +185,6 @@ export default defineComponent({
     }
 
     return {
-      headerHeight: 24,
       frameWidth,
       boneIndexMap,
       sortedKeyframeMapByFrame,

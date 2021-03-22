@@ -338,7 +338,7 @@ export default defineComponent({
         canvasStore.execAdd()
       },
       saveKeyframe() {
-        animationStore.execInsertKeyframe()
+        canvasStore.insert()
       },
       clip: canvasStore.clip,
       paste: canvasStore.paste,

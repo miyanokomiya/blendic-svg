@@ -27,6 +27,7 @@ import {
   IdMap,
   EditMovement,
   CanvasEditModeBase,
+  PopupMenuItem,
 } from '../models/index'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
@@ -146,11 +147,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
         map[id] = getTransform({ rotate: snappedRotate * rotateDirection(id) })
         return map
       }, {})
-    }
-
-    const translate = sub(editMovement.current, editMovement.start)
-
-    if (state.command === 'scale') {
+    } else if (state.command === 'scale') {
       const origin = animationStore.selectedPosedBoneOrigin.value
       const isOppositeSide = canvasStore.isOppositeSide(
         origin,
@@ -171,23 +168,27 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
         map[id] = getTransform({ scale: snappedScale })
         return map
       }, {})
+    } else if (state.command === 'grab') {
+      const translate = sub(editMovement.current, editMovement.start)
+
+      const gridTranslate = editMovement.ctrl
+        ? snapGrid(editMovement.scale, translate)
+        : translate
+      const snappedTranslate = canvasStore.snapTranslate(gridTranslate)
+
+      return Object.keys(animationStore.selectedBones.value).reduce<
+        IdMap<Transform>
+      >((map, id) => {
+        if (!animationStore.selectedBones.value[id].connected) {
+          map[id] = getTransform({
+            translate: convertToPosedSpace(snappedTranslate, id),
+          })
+        }
+        return map
+      }, {})
+    } else {
+      return {}
     }
-
-    const gridTranslate = editMovement.ctrl
-      ? snapGrid(editMovement.scale, translate)
-      : translate
-    const snappedTranslate = canvasStore.snapTranslate(gridTranslate)
-
-    return Object.keys(animationStore.selectedBones.value).reduce<
-      IdMap<Transform>
-    >((map, id) => {
-      if (!animationStore.selectedBones.value[id].connected) {
-        map[id] = getTransform({
-          translate: convertToPosedSpace(snappedTranslate, id),
-        })
-      }
-      return map
-    }, {})
   })
 
   function completeEdit() {
@@ -290,6 +291,61 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     return editTransforms.value[id] ?? getTransform()
   }
 
+  function insert() {
+    cancel()
+    state.command = 'insert'
+  }
+
+  function execInsert(
+    useTranslate: boolean,
+    useRotate: boolean,
+    useScake: boolean
+  ) {
+    animationStore.execInsertKeyframe({
+      useTranslate,
+      useRotate,
+      useScake,
+    })
+    state.command = ''
+  }
+
+  const popupMenuList = computed<PopupMenuItem[]>(() => {
+    if (state.command === 'insert') {
+      return [
+        {
+          label: 'All Transforms',
+          exec: () => execInsert(true, true, true),
+        },
+        {
+          label: 'Location',
+          exec: () => execInsert(true, false, false),
+        },
+        {
+          label: 'Rotation',
+          exec: () => execInsert(false, true, false),
+        },
+        {
+          label: 'Scale',
+          exec: () => execInsert(false, false, true),
+        },
+        {
+          label: 'Location & Rotation',
+          exec: () => execInsert(true, true, false),
+        },
+        {
+          label: 'Location & Scale',
+          exec: () => execInsert(true, false, true),
+        },
+        {
+          label: 'Rotation & Scale',
+          exec: () => execInsert(false, true, true),
+        },
+      ]
+    } else {
+      return []
+    }
+  })
+
   return {
     command: computed(() => state.command),
     getEditTransforms,
@@ -305,9 +361,11 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     clickEmpty,
     execDelete: () => {},
     execAdd: () => {},
+    insert,
     clip,
     paste,
     duplicate: () => {},
     availableCommandList,
+    popupMenuList,
   }
 }

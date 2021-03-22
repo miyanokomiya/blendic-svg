@@ -30,6 +30,7 @@ import {
   EditMode,
   EditMovement,
   getTransform,
+  PopupMenuItem,
   Transform,
 } from '/@/models'
 
@@ -71,6 +72,10 @@ const command = computed((): EditMode => canvasEditMode.value.command.value)
 const availableCommandList = computed(
   () => canvasEditMode.value.availableCommandList.value
 )
+
+const popupMenuList = computed<PopupMenuItem[]>(() => {
+  return canvasEditMode.value.popupMenuList.value
+})
 
 function toggleCanvasMode() {
   if (state.canvasMode === 'edit') {
@@ -155,6 +160,7 @@ export function useCanvasStore() {
     setEditMode: (mode: EditMode) => canvasEditMode.value.setEditMode(mode),
     execDelete: () => canvasEditMode.value.execDelete(),
     execAdd: () => canvasEditMode.value.execAdd(),
+    insert: () => canvasEditMode.value.insert(),
     select: (id: string, selectedState: BoneSelectedState) =>
       canvasEditMode.value.select(id, selectedState),
     shiftSelect: (id: string, selectedState: BoneSelectedState) =>
@@ -167,6 +173,7 @@ export function useCanvasStore() {
     duplicate: () => canvasEditMode.value.duplicate(),
     availableCommandList,
     symmetrizeBones,
+    popupMenuList,
   }
 }
 export type CanvasStore = ReturnType<typeof useCanvasStore>

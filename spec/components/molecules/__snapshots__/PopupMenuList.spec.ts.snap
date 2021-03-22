@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/molecules/PopupMenuList.vue snapshot 1`] = `
+<div
+  class="popup-menu-list-wrapper"
+>
+  <ul>
+    
+    <li>
+      <button>
+        item
+      </button>
+    </li>
+    
+  </ul>
+</div>
+`;

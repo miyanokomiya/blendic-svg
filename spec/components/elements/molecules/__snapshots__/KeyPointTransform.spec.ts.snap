@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot default 1`] = `
+<g>
+  <!--v-if-->
+  <!--v-if-->
+</g>
+`;
+
+exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot expanded 1`] = `
+<g>
+  <!--v-if-->
+  
+  <!--v-if-->
+  <g>
+    <rect
+      class="view-only"
+      fill="#aaa"
+      fill-opacity="0.5"
+      height="6"
+      width="0"
+      y="45"
+    />
+    <circle
+      cy="48"
+      fill="#fff"
+      r="5"
+      stroke="#000"
+    />
+  </g>
+  <g>
+    <rect
+      class="view-only"
+      fill="#aaa"
+      fill-opacity="0.5"
+      height="6"
+      width="0"
+      y="69"
+    />
+    <circle
+      cy="72"
+      fill="#fff"
+      r="5"
+      stroke="#000"
+    />
+  </g>
+  
+</g>
+`;
+
+exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot selected 1`] = `
+<g>
+  <!--v-if-->
+  <!--v-if-->
+</g>
+`;

@@ -50,8 +50,8 @@ Copyright (C) 2021, Tomoya Komiyama.
               "
               :height="height"
               :scroll-y="scrollY"
-              @select="select(k.id)"
-              @shift-select="shiftSelect(k.id)"
+              @select="(state) => select(k.id, state)"
+              @shift-select="(state) => shiftSelect(k.id, state)"
             />
           </g>
         </g>
@@ -173,11 +173,11 @@ export default defineComponent({
         )
     }
 
-    function select(keyframeId: string) {
-      emit('select', keyframeId)
+    function select(keyframeId: string, state: KeyframeSelectedState) {
+      emit('select', keyframeId, state)
     }
-    function shiftSelect(keyframeId: string) {
-      emit('shift-select', keyframeId)
+    function shiftSelect(keyframeId: string, state: KeyframeSelectedState) {
+      emit('shift-select', keyframeId, state)
     }
     function selectFrame(keyframeId: string) {
       emit('select-frame', keyframeId)

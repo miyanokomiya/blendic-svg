@@ -36,7 +36,9 @@ exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot expand
 `;
 
 exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot selected 1`] = `
-<g>
+<g
+  selected="true"
+>
   <!--v-if-->
   <!--v-if-->
 </g>

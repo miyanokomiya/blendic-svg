@@ -25,7 +25,6 @@ import { ObjectMode, useObjectMode } from '../composables/objectMode'
 import { useWeightPaintMode } from '../composables/weightPaintMode'
 import { HistoryItem, useHistoryStore } from './history'
 import {
-  BoneSelectedState,
   CanvasMode,
   EditMode,
   EditMovement,
@@ -161,9 +160,9 @@ export function useCanvasStore() {
     execDelete: () => canvasEditMode.value.execDelete(),
     execAdd: () => canvasEditMode.value.execAdd(),
     insert: () => canvasEditMode.value.insert(),
-    select: (id: string, selectedState: BoneSelectedState) =>
+    select: (id: string, selectedState: { [id: string]: boolean }) =>
       canvasEditMode.value.select(id, selectedState),
-    shiftSelect: (id: string, selectedState: BoneSelectedState) =>
+    shiftSelect: (id: string, selectedState: { [id: string]: boolean }) =>
       canvasEditMode.value.shiftSelect(id, selectedState),
     rectSelect: (rect: IRectangle, shift = false) =>
       canvasEditMode.value.rectSelect(rect, shift),

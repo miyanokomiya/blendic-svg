@@ -22,10 +22,10 @@ Copyright (C) 2021, Tomoya Komiyama.
     <template v-if="isVisible(top)">
       <KeyPoint
         :top="top"
-        :selected="selectedAll"
+        :selected="selectedAny"
         :same-range-width="sameRangeWidth"
-        @select="select"
-        @shift-select="shiftSelect"
+        @select="selectAll"
+        @shift-select="shiftSelectAll"
       />
     </template>
     <template v-if="expanded">
@@ -33,26 +33,36 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-if="isVisible(top + height) && keyFrame.translateX"
         :top="top + height"
         :selected="selectedState.translateX"
+        @select="select({ translateX: true })"
+        @shift-select="shiftSelect({ translateX: true })"
       />
       <KeyPoint
         v-if="isVisible(top + height * 2) && keyFrame.translateY"
         :top="top + height * 2"
         :selected="selectedState.translateY"
+        @select="select({ translateY: true })"
+        @shift-select="shiftSelect({ translateY: true })"
       />
       <KeyPoint
         v-if="isVisible(top + height * 3) && keyFrame.rotate"
         :top="top + height * 3"
         :selected="selectedState.rotate"
+        @select="select({ rotate: true })"
+        @shift-select="shiftSelect({ rotate: true })"
       />
       <KeyPoint
         v-if="isVisible(top + height * 4) && keyFrame.scaleX"
         :top="top + height * 4"
         :selected="selectedState.scaleX"
+        @select="select({ scaleX: true })"
+        @shift-select="shiftSelect({ scaleX: true })"
       />
       <KeyPoint
         v-if="isVisible(top + height * 5) && keyFrame.scaleY"
         :top="top + height * 5"
         :selected="selectedState.scaleY"
+        @select="select({ scaleY: true })"
+        @shift-select="shiftSelect({ scaleY: true })"
       />
     </template>
   </g>
@@ -62,7 +72,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import KeyPoint from '/@/components/elements/atoms/KeyPoint.vue'
 import { KeyframeBone, KeyframeSelectedState } from '/@/models/keyframe'
-import { isAllSelected } from '/@/utils/keyframes'
+import {
+  getAllSelectedState,
+  inversedSelectedState,
+  isAnySelected,
+} from '/@/utils/keyframes'
 
 export default defineComponent({
   components: { KeyPoint },
@@ -102,16 +116,22 @@ export default defineComponent({
       return top > props.scrollY + props.height * 1.5
     }
 
-    const selectedAll = computed(() => isAllSelected(props.selectedState))
+    const selectedAny = computed(() => isAnySelected(props.selectedState))
 
     return {
       isVisible,
-      selectedAll,
-      select() {
-        emit('select')
+      selectedAny,
+      select(state: KeyframeSelectedState) {
+        emit('select', state)
       },
-      shiftSelect() {
-        emit('shift-select')
+      shiftSelect(state: KeyframeSelectedState) {
+        emit('shift-select', inversedSelectedState(props.selectedState, state))
+      },
+      selectAll() {
+        emit('select', getAllSelectedState())
+      },
+      shiftSelectAll() {
+        emit('shift-select', getAllSelectedState())
       },
     }
   },

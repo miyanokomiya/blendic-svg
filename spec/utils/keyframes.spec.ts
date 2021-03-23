@@ -149,4 +149,23 @@ describe('utils/keyframes.ts', () => {
       expect(fn(20)).toBeCloseTo(40)
     })
   })
+
+  describe('inversedSelectedState', () => {
+    it('inverse selected state', () => {
+      expect(
+        target.inversedSelectedState(
+          { translateX: true, scaleX: true },
+          { translateX: true, rotate: true }
+        )
+      ).toEqual({
+        rotate: true,
+        scaleX: true,
+      })
+    })
+    it('do nothing if target is empty', () => {
+      expect(
+        target.inversedSelectedState(target.getAllSelectedState(), {})
+      ).toEqual(target.getAllSelectedState())
+    })
+  })
 })

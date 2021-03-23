@@ -318,10 +318,14 @@ function deleteAction() {
   historyStore.push(item)
 }
 
-function selectKeyframe(keyframeId: string, shift = false) {
+function selectKeyframe(
+  keyframeId: string,
+  selectedState?: KeyframeSelectedState,
+  shift = false
+) {
   if (!keyframeId && !isAnyVisibledSelectedKeyframe.value) return
 
-  const item = getSelectKeyframesItem([keyframeId], shift)
+  const item = getSelectKeyframeItem(keyframeId, selectedState, shift)
   item.redo()
   historyStore.push(item)
 }
@@ -331,6 +335,7 @@ function selectKeyframeByFrame(frame: number, shift = false) {
 
   const item = getSelectKeyframesItem(
     frames.map((f) => f.id),
+    getAllSelectedState(),
     shift
   )
   item.redo()
@@ -584,7 +589,11 @@ function getSelectAllKeyframesItem(): HistoryItem {
     redo,
   }
 }
-function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
+function getSelectKeyframesItem(
+  ids: string[],
+  selectedState?: KeyframeSelectedState,
+  shift = false
+): HistoryItem {
   const current = { ...selectedKeyframeMap.value }
 
   const redo = () => {
@@ -611,6 +620,34 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
               ...idMap,
             }
           : dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value)
+    }
+  }
+  return {
+    name: 'Select Keyframe',
+    undo: () => {
+      selectedKeyframeMap.value = { ...current }
+    },
+    redo,
+  }
+}
+function getSelectKeyframeItem(
+  id: string,
+  selectedState?: KeyframeSelectedState,
+  shift = false
+): HistoryItem {
+  const current = { ...selectedKeyframeMap.value }
+
+  const redo = () => {
+    if (shift) {
+      selectedKeyframeMap.value = {
+        ...selectedKeyframeMap.value,
+        ...(selectedState ? { [id]: selectedState } : {}),
+      }
+    } else {
+      selectedKeyframeMap.value = {
+        ...dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value),
+        ...(selectedState ? { [id]: selectedState } : {}),
+      }
     }
   }
   return {

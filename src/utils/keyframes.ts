@@ -186,6 +186,49 @@ export function getAllSelectedState(): KeyframeSelectedState {
   }
 }
 
+export function getInversedSelectedState(
+  k?: KeyframeSelectedState
+): KeyframeSelectedState {
+  if (!k) return getAllSelectedState()
+
+  const ret: KeyframeSelectedState = {}
+  if (!k.translateX) ret.translateX = true
+  if (!k.translateY) ret.translateY = true
+  if (!k.rotate) ret.rotate = true
+  if (!k.scaleX) ret.scaleX = true
+  if (!k.scaleY) ret.scaleY = true
+  return ret
+}
+
+export function inversedSelectedState(
+  k: KeyframeSelectedState,
+  target: KeyframeSelectedState
+): KeyframeSelectedState {
+  const ret: KeyframeSelectedState = {}
+  if (
+    (target.translateX && !k.translateX) ||
+    (!target.translateX && k.translateX)
+  ) {
+    ret.translateX = true
+  }
+  if (
+    (target.translateY && !k.translateY) ||
+    (!target.translateY && k.translateY)
+  ) {
+    ret.translateY = true
+  }
+  if ((target.rotate && !k.rotate) || (!target.rotate && k.rotate)) {
+    ret.rotate = true
+  }
+  if ((target.scaleX && !k.scaleX) || (!target.scaleX && k.scaleX)) {
+    ret.scaleX = true
+  }
+  if ((target.scaleY && !k.scaleY) || (!target.scaleY && k.scaleY)) {
+    ret.scaleY = true
+  }
+  return ret
+}
+
 export function isAllSelected(k?: KeyframeSelectedState): boolean {
   if (!k) return false
   if (!k.translateX) return false
@@ -194,4 +237,14 @@ export function isAllSelected(k?: KeyframeSelectedState): boolean {
   if (!k.scaleX) return false
   if (!k.scaleY) return false
   return true
+}
+
+export function isAnySelected(k?: KeyframeSelectedState): boolean {
+  if (!k) return false
+  if (k.translateX) return true
+  if (k.translateY) return true
+  if (k.rotate) return true
+  if (k.scaleX) return true
+  if (k.scaleY) return true
+  return false
 }

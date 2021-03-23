@@ -33,7 +33,11 @@ import { getFrameX, getNearestFrameAtPoint } from '../utils/animations'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { applyTransform } from '/@/utils/geometry'
 import { IRectangle } from 'okageo'
-import { getKeyframeBone, KeyframeBone } from '/@/models/keyframe'
+import {
+  getKeyframeBone,
+  KeyframeBone,
+  KeyframeSelectedState,
+} from '/@/models/keyframe'
 
 interface State {
   command: EditMode
@@ -143,20 +147,20 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     state.command = ''
   }
 
-  function select(id: string) {
+  function select(id: string, selectedState: KeyframeSelectedState) {
     if (state.command) {
       completeEdit()
       return
     }
-    animationStore.selectKeyframe(id)
+    animationStore.selectKeyframe(id, selectedState)
   }
 
-  function shiftSelect(id: string) {
+  function shiftSelect(id: string, selectedState: KeyframeSelectedState) {
     if (state.command) {
       completeEdit()
       return
     }
-    animationStore.selectKeyframe(id, true)
+    animationStore.selectKeyframe(id, selectedState, true)
   }
 
   function selectFrame(frame: number) {

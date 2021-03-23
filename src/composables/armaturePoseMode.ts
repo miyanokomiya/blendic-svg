@@ -299,12 +299,12 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
   function execInsert(
     useTranslate: boolean,
     useRotate: boolean,
-    useScake: boolean
+    useScale: boolean
   ) {
     animationStore.execInsertKeyframe({
       useTranslate,
       useRotate,
-      useScake,
+      useScale,
     })
     state.command = ''
   }

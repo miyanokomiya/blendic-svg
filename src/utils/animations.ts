@@ -123,9 +123,10 @@ export function slideKeyframesTo<T extends KeyframeBase>(
 
 export function mergeKeyframes(
   src: KeyframeBone[],
-  override: KeyframeBone[]
+  override: KeyframeBone[],
+  mergeDeep = false
 ): KeyframeBone[] {
-  return mergeKeyframesWithDropped(src, override).merged
+  return mergeKeyframesWithDropped(src, override, mergeDeep).merged
 }
 
 export function mergeKeyframesWithDropped(

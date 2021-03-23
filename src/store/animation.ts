@@ -31,7 +31,6 @@ import {
   findPrevFrameWithKeyframe,
   getKeyframeMapByBoneId,
   getKeyframeMapByFrame,
-  mergeKeyframes,
   mergeKeyframesWithDropped,
   slideKeyframesTo,
 } from '../utils/animations'
@@ -734,13 +733,6 @@ function getExecDeleteKeyframesItem() {
   }
 }
 
-function overridedKeyframeList(keyframes: IdMap<KeyframeBone>): KeyframeBone[] {
-  return mergeKeyframes(
-    actions.lastSelectedItem.value!.keyframes,
-    toList(keyframes)
-  )
-}
-
 function getExecUpdateKeyframeItem(keyframes: IdMap<KeyframeBone>) {
   const { dropped } = mergeKeyframesWithDropped(
     actions.lastSelectedItem.value!.keyframes,
@@ -771,16 +763,28 @@ function getExecUpdateKeyframeItem(keyframes: IdMap<KeyframeBone>) {
 }
 
 function getExecPasteKeyframeItem(keyframes: IdMap<KeyframeBone>) {
+  const { merged, dropped } = mergeKeyframesWithDropped(
+    actions.lastSelectedItem.value!.keyframes,
+    toList(keyframes),
+    true
+  )
+
   const redo = () => {
-    const updated = overridedKeyframeList(keyframes)
+    const updated = merged
     actions.lastSelectedItem.value!.keyframes = updated
   }
   return {
     name: 'Paste Keyframe',
     undo: () => {
+      const dropPastedMap = dropMap(
+        toMap(actions.lastSelectedItem.value!.keyframes),
+        keyframes
+      )
       const reverted = toList({
-        ...dropMap(toMap(actions.lastSelectedItem.value!.keyframes), keyframes),
-        ...toMap(overridedKeyframeList(keyframes)),
+        ...dropPastedMap,
+        ...toMap(
+          mergeKeyframesWithDropped(toList(dropPastedMap), dropped).merged
+        ),
       })
       actions.lastSelectedItem.value!.keyframes = reverted
     },

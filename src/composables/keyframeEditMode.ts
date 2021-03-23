@@ -130,22 +130,19 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     })
   })
 
-  const editedKeyframeMap = computed<{
+  const keyframeSelectedInfoSet = computed<{
     selected: IdMap<KeyframeBone>
     notSelected: IdMap<KeyframeBone>
   }>(() => {
     const selected: IdMap<KeyframeBone> = {}
     const notSelected: IdMap<KeyframeBone> = {}
 
-    Object.keys(editTransforms.value).forEach((id) => {
-      const selectedState = animationStore.selectedKeyframeMap.value[id] ?? {}
+    Object.keys(animationStore.selectedKeyframeMap.value).forEach((id) => {
+      const selectedState = animationStore.selectedKeyframeMap.value[id]
       const keyframe = allKeyframes.value[id]
       const splited = splitKeyframeBoneBySelected(keyframe, selectedState)
       if (splited.selected) {
-        selected[id] = {
-          ...splited.selected,
-          frame: getEditFrames(id),
-        }
+        selected[id] = splited.selected
       }
       if (splited.notSelected) {
         const not = getKeyframeBone(splited.notSelected, true)
@@ -156,6 +153,26 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     return {
       selected,
       notSelected,
+    }
+  })
+
+  const editedKeyframeMap = computed<{
+    selected: IdMap<KeyframeBone>
+    notSelected: IdMap<KeyframeBone>
+  }>(() => {
+    if (!state.command) return { selected: {}, notSelected: {} }
+
+    return {
+      selected: mapReduce(
+        keyframeSelectedInfoSet.value.selected,
+        (keyframe, id) => {
+          return {
+            ...keyframe,
+            frame: getEditFrames(id),
+          }
+        }
+      ),
+      notSelected: keyframeSelectedInfoSet.value.notSelected,
     }
   })
 
@@ -245,7 +262,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   }
 
   function clip() {
-    state.clipboard = toList(editTargets.value)
+    state.clipboard = toList(keyframeSelectedInfoSet.value.selected)
   }
 
   function paste() {

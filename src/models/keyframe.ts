@@ -19,7 +19,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { v4 } from 'uuid'
 import { IVec2 } from 'okageo'
-import { Transform } from '/@/models'
 
 export interface KeyframeBase {
   id: string
@@ -54,6 +53,14 @@ export interface CurveBezier3 extends CurveBase {
   name: 'bezier3'
   c1: IVec2
   c2: IVec2
+}
+
+export interface KeyframeSelectedState {
+  translateX?: boolean
+  translateY?: boolean
+  rotate?: boolean
+  scaleX?: boolean
+  scaleY?: boolean
 }
 
 export function getKeyframeBone(

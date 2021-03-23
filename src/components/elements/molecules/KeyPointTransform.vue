@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <template v-if="isVisible(top)">
       <KeyPoint
         :top="top"
-        :selected="selected"
+        :selected="selectedAll"
         :same-range-width="sameRangeWidth"
         @select="select"
         @shift-select="shiftSelect"
@@ -32,31 +32,37 @@ Copyright (C) 2021, Tomoya Komiyama.
       <KeyPoint
         v-if="isVisible(top + height) && keyFrame.translateX"
         :top="top + height"
+        :selected="selectedState.translateX"
       />
       <KeyPoint
         v-if="isVisible(top + height * 2) && keyFrame.translateY"
         :top="top + height * 2"
+        :selected="selectedState.translateY"
       />
       <KeyPoint
         v-if="isVisible(top + height * 3) && keyFrame.rotate"
         :top="top + height * 3"
+        :selected="selectedState.rotate"
       />
       <KeyPoint
         v-if="isVisible(top + height * 4) && keyFrame.scaleX"
         :top="top + height * 4"
+        :selected="selectedState.scaleX"
       />
       <KeyPoint
         v-if="isVisible(top + height * 5) && keyFrame.scaleY"
         :top="top + height * 5"
+        :selected="selectedState.scaleY"
       />
     </template>
   </g>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 import KeyPoint from '/@/components/elements/atoms/KeyPoint.vue'
-import { KeyframeBone } from '/@/models/keyframe'
+import { KeyframeBone, KeyframeSelectedState } from '/@/models/keyframe'
+import { isAllSelected } from '/@/utils/keyframes'
 
 export default defineComponent({
   components: { KeyPoint },
@@ -69,9 +75,9 @@ export default defineComponent({
       type: Number,
       default: 0,
     },
-    selected: {
-      type: Boolean,
-      default: false,
+    selectedState: {
+      type: Object as PropType<KeyframeSelectedState>,
+      default: () => ({}),
     },
     expanded: {
       type: Boolean,
@@ -96,8 +102,11 @@ export default defineComponent({
       return top > props.scrollY + props.height * 1.5
     }
 
+    const selectedAll = computed(() => isAllSelected(props.selectedState))
+
     return {
       isVisible,
+      selectedAll,
       select() {
         emit('select')
       },

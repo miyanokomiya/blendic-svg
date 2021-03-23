@@ -24,6 +24,7 @@ import {
   KeyframeBase,
   KeyframeBone,
   KeyframePoint,
+  KeyframeSelectedState,
 } from '/@/models/keyframe'
 import { mapReduce } from '/@/utils/commons'
 
@@ -173,4 +174,24 @@ function getScaleX(k: KeyframeBone): KeyframePoint | undefined {
 }
 function getScaleY(k: KeyframeBone): KeyframePoint | undefined {
   return k.scaleY
+}
+
+export function getAllSelectedState(): KeyframeSelectedState {
+  return {
+    translateX: true,
+    translateY: true,
+    rotate: true,
+    scaleX: true,
+    scaleY: true,
+  }
+}
+
+export function isAllSelected(k?: KeyframeSelectedState): boolean {
+  if (!k) return false
+  if (!k.translateX) return false
+  if (!k.translateY) return false
+  if (!k.rotate) return false
+  if (!k.scaleX) return false
+  if (!k.scaleY) return false
+  return true
 }

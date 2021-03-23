@@ -43,7 +43,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             <KeyPointTransform
               :key-frame="k"
               :top="boneTopMap[k.boneId]"
-              :selected="selectedKeyframeMap[k.id]"
+              :selected-state="selectedKeyframeMap[k.id]"
               :expanded="boneExpandedMap[k.boneId]"
               :same-range-width="
                 (getSameRangeFrame(k.boneId, k.frame) * frameWidth) / scale
@@ -64,7 +64,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import KeyPointTransform from '/@/components/elements/molecules/KeyPointTransform.vue'
 import { useSettings } from '/@/composables/settings'
-import { IdMap, Keyframe, frameWidth } from '/@/models'
+import { IdMap, frameWidth } from '/@/models'
+import { KeyframeBone, KeyframeSelectedState } from '/@/models/keyframe'
 import {
   getKeyframeMapByBoneId,
   getSameRangeFrameMapByBoneId,
@@ -79,7 +80,7 @@ export default defineComponent({
       default: 1,
     },
     keyframeMapByFrame: {
-      type: Object as PropType<IdMap<Keyframe[]>>,
+      type: Object as PropType<IdMap<KeyframeBone[]>>,
       default: () => ({}),
     },
     boneIds: {
@@ -87,7 +88,7 @@ export default defineComponent({
       default: () => [],
     },
     selectedKeyframeMap: {
-      type: Object as PropType<IdMap<boolean>>,
+      type: Object as PropType<IdMap<KeyframeSelectedState>>,
       default: () => ({}),
     },
     scrollY: {
@@ -121,15 +122,14 @@ export default defineComponent({
     )
 
     const sortedKeyframeMapByFrame = computed(() => {
-      return Object.keys(props.keyframeMapByFrame).reduce<IdMap<Keyframe[]>>(
-        (p, frame) => {
-          p[frame] = sortAndFilterKeyframesByBoneId(
-            props.keyframeMapByFrame[frame]
-          )
-          return p
-        },
-        {}
-      )
+      return Object.keys(props.keyframeMapByFrame).reduce<
+        IdMap<KeyframeBone[]>
+      >((p, frame) => {
+        p[frame] = sortAndFilterKeyframesByBoneId(
+          props.keyframeMapByFrame[frame]
+        )
+        return p
+      }, {})
     })
 
     const keyframeMapByBoneId = computed(() => {
@@ -163,7 +163,9 @@ export default defineComponent({
       )
     })
 
-    function sortAndFilterKeyframesByBoneId(keyframes: Keyframe[]): Keyframe[] {
+    function sortAndFilterKeyframesByBoneId(
+      keyframes: KeyframeBone[]
+    ): KeyframeBone[] {
       return keyframes
         .filter((k) => boneIndexMap.value[k.boneId] > -1)
         .sort(

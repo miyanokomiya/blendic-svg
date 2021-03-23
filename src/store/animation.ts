@@ -69,15 +69,20 @@ import {
   getKeyframeBone,
   getKeyframePoint,
   KeyframeBone,
+  KeyframeSelectedState,
 } from '/@/models/keyframe'
-import { getInterpolatedTransformMapByBoneId } from '/@/utils/keyframes'
+import {
+  getAllSelectedState,
+  getInterpolatedTransformMapByBoneId,
+  isAllSelected,
+} from '/@/utils/keyframes'
 
 const playing = ref<PlayState>('pause')
 const currentFrame = ref(0)
 const endFrame = ref(60)
 const actions = useListState<Action>('Action')
 const editTransforms = ref<IdMap<Transform>>({})
-const selectedKeyframeMap = ref<IdMap<boolean>>({})
+const selectedKeyframeMap = ref<IdMap<KeyframeSelectedState>>({})
 
 const historyStore = useHistoryStore()
 const store = useStore()
@@ -568,7 +573,7 @@ function getSelectAllKeyframesItem(): HistoryItem {
   const redo = () => {
     selectedKeyframeMap.value = {
       ...selectedKeyframeMap.value,
-      ...mapReduce(visibledKeyframeMap.value, () => true),
+      ...mapReduce(visibledKeyframeMap.value, () => getAllSelectedState()),
     }
   }
   return {
@@ -584,8 +589,10 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
 
   const redo = () => {
     if (shift) {
-      const idMap = ids.reduce<IdMap<boolean>>((p, id) => {
-        p[id] = !selectedKeyframeMap.value[id]
+      const idMap = ids.reduce<IdMap<KeyframeSelectedState>>((p, id) => {
+        p[id] = isAllSelected(selectedKeyframeMap.value[id])
+          ? {}
+          : getAllSelectedState()
         return p
       }, {})
       selectedKeyframeMap.value = {
@@ -593,8 +600,8 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
         ...idMap,
       }
     } else {
-      const idMap = ids.reduce<IdMap<boolean>>((p, id) => {
-        p[id] = true
+      const idMap = ids.reduce<IdMap<KeyframeSelectedState>>((p, id) => {
+        p[id] = getAllSelectedState()
         return p
       }, {})
       selectedKeyframeMap.value =

@@ -162,15 +162,11 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   function completeEdit() {
     if (!isAnySelected.value) return
 
-    const updatedMap = mapReduce(editTargets.value, (keyframe, id) => ({
-      ...keyframe,
-      frame: getEditFrames(id),
-    }))
     const duplicatedList = toList(state.tmpKeyframes)
     if (duplicatedList.length > 0) {
       animationStore.completeDuplicateKeyframes(
         toList(state.tmpKeyframes),
-        toList(updatedMap)
+        toList(editedKeyframeMap.value.selected)
       )
     } else {
       animationStore.completeDuplicateKeyframes(

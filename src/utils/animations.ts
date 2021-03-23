@@ -17,7 +17,6 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { interpolateTransform } from './armatures'
 import {
   dropListByKey,
   dropMap,
@@ -34,11 +33,11 @@ import {
   frameWidth,
   getTransform,
   IdMap,
-  Keyframe,
   scaleRate,
   toMap,
   Transform,
 } from '/@/models'
+import { KeyframeBase, KeyframeBone } from '/@/models/keyframe'
 import { isSameTransform } from '/@/utils/geometry'
 
 export function getScaleLog(scale: number): number {
@@ -63,171 +62,74 @@ export function getFrameX(frame: number): number {
   return frame * frameWidth
 }
 
-export function getKeyframeMapByFrame(
-  keyframes: Keyframe[]
-): IdMap<Keyframe[]> {
+export function getKeyframeMapByFrame<T extends KeyframeBase>(
+  keyframes: T[]
+): IdMap<T[]> {
   return toKeyListMap(keyframes, 'frame')
 }
 
 export function getKeyframeMapByBoneId(
-  keyframes: Keyframe[]
-): IdMap<Keyframe[]> {
+  keyframes: KeyframeBone[]
+): IdMap<KeyframeBone[]> {
   return sortKeyframeMap(toKeyListMap(keyframes, 'boneId'))
 }
 
-export function sortKeyframes(keyframes: Keyframe[]): Keyframe[] {
+export function sortKeyframes<T extends KeyframeBase>(keyframes: T[]): T[] {
   return keyframes.concat().sort((a, b) => a.frame - b.frame)
 }
 
 export function sortKeyframeMap(
-  keyframeMap: IdMap<Keyframe[]>
-): IdMap<Keyframe[]> {
+  keyframeMap: IdMap<KeyframeBone[]>
+): IdMap<KeyframeBone[]> {
   return mapReduce(keyframeMap, sortKeyframes)
 }
 
-export function getInterpolatedTransformMapByBoneId(
-  sortedKeyframes: IdMap<Keyframe[]>,
-  frame: number,
-  curveFn?: InterpolateCurve
-): IdMap<Transform> {
-  return mapReduce(
-    getPropsNeighborKeyframeMapByBoneId(sortedKeyframes, frame),
-    (neighbors) => interpolatePropsKeyframeTransform(neighbors, frame, curveFn)
-  )
-}
-
-function getPropsNeighborKeyframeMapByBoneId(
-  sortedKeyframes: IdMap<Keyframe[]>,
-  frame: number
-): IdMap<PorpsNeighborKeyframes> {
-  return mapReduce(sortedKeyframes, (list) =>
-    getPropsNeighborKeyframes(list, frame)
-  )
-}
-
-type PorpsNeighborKeyframes = {
-  translate: NeighborKeyframes
-  rotate: NeighborKeyframes
-  scale: NeighborKeyframes
-}
-
-type NeighborKeyframes =
-  | []
-  | [same: Keyframe]
-  | [before: Keyframe, after: Keyframe]
-
-export function getNeighborKeyframes(
-  sortedKeyframes: Keyframe[],
-  frame: number
-): NeighborKeyframes {
-  if (sortedKeyframes.length === 0) return []
-  const afterIndex = sortedKeyframes.findIndex((k) => frame <= k.frame)
-  if (afterIndex === -1) return [sortedKeyframes[sortedKeyframes.length - 1]]
-  const after = sortedKeyframes[afterIndex]
-  if (after.frame === frame || afterIndex === 0) return [after]
-  const before = sortedKeyframes[afterIndex - 1]
-  if (before.frame === frame) return [before]
-  return [before, after]
-}
-
-export function getPropsNeighborKeyframes(
-  sortedKeyframes: Keyframe[],
-  frame: number
-): PorpsNeighborKeyframes {
-  const translateList: Keyframe[] = []
-  const rotateList: Keyframe[] = []
-  const scaleList: Keyframe[] = []
-  sortedKeyframes.forEach((k) => {
-    if (k.useTranslate) translateList.push(k)
-    if (k.useRotate) rotateList.push(k)
-    if (k.useScale) scaleList.push(k)
-  })
-
-  return {
-    translate: getNeighborKeyframes(translateList, frame),
-    rotate: getNeighborKeyframes(rotateList, frame),
-    scale: getNeighborKeyframes(scaleList, frame),
-  }
-}
-
 export function getAfterKeyframe(
-  sortedKeyframes: Keyframe[],
+  sortedKeyframes: KeyframeBone[],
   frame: number
-): Keyframe | undefined {
+): KeyframeBone | undefined {
   if (sortedKeyframes.length === 0) return
   const afterIndex = sortedKeyframes.findIndex((k) => frame < k.frame)
   if (afterIndex === -1) return
   return sortedKeyframes[afterIndex]
 }
 
-export function isSameKeyframeStatus(a: Keyframe, b: Keyframe): boolean {
-  return isSameTransform(a.transform, b.transform)
+export function isSameKeyframeStatus(
+  a: KeyframeBone,
+  b: KeyframeBone
+): boolean {
+  return isSameTransform(keyframeBoneToTransform(a), keyframeBoneToTransform(b))
 }
 
-type InterpolateCurve = (val: number) => number
-
-export function interpolateKeyframeTransform(
-  keyframes: NeighborKeyframes,
-  frame: number,
-  curveFn: InterpolateCurve = (x) => x
-): Transform {
-  if (keyframes.length === 0) return getTransform()
-  if (keyframes.length === 1) return keyframes[0]!.transform
-
-  const a = keyframes[0]!
-  const b = keyframes[1]!
-  const rate = curveFn((frame - a.frame) / (b.frame - a.frame))
-  return interpolateTransform(a.transform, b.transform, rate)
-}
-
-export function interpolatePropsKeyframeTransform(
-  propsKeyframes: PorpsNeighborKeyframes,
-  frame: number,
-  curveFn: InterpolateCurve = (x) => x
-): Transform {
-  const translate = interpolateKeyframeTransform(
-    propsKeyframes.translate,
-    frame,
-    curveFn
-  ).translate
-  const rotate = interpolateKeyframeTransform(
-    propsKeyframes.rotate,
-    frame,
-    curveFn
-  ).rotate
-  const scale = interpolateKeyframeTransform(
-    propsKeyframes.scale,
-    frame,
-    curveFn
-  ).scale
+function keyframeBoneToTransform(k: KeyframeBone): Transform {
   return getTransform({
-    translate,
-    rotate,
-    scale,
+    translate: { x: k.translateX?.value ?? 0, y: k.translateY?.value ?? 0 },
+    rotate: k.rotate?.value ?? 0,
+    scale: { x: k.scaleX?.value ?? 1, y: k.scaleY?.value ?? 1 },
   })
 }
 
-export function slideKeyframesTo(
-  keyframes: Keyframe[],
+export function slideKeyframesTo<T extends KeyframeBase>(
+  keyframes: T[],
   at: number
-): Keyframe[] {
+): T[] {
   if (keyframes.length === 0) return keyframes
 
   const min = sortKeyframes(keyframes)[0].frame
   return keyframes.map((k) => ({ ...k, frame: k.frame + (at - min) }))
 }
 
-export function mergeKeyframes(
-  src: Keyframe[],
-  override: Keyframe[]
-): Keyframe[] {
+export function mergeKeyframes<T extends KeyframeBase>(
+  src: T[],
+  override: T[]
+): T[] {
   return mergeKeyframesWithDropped(src, override).merged
 }
 
-export function mergeKeyframesWithDropped(
-  src: Keyframe[],
-  override: Keyframe[]
-): { merged: Keyframe[]; dropped: Keyframe[] } {
+export function mergeKeyframesWithDropped<T extends KeyframeBase>(
+  src: T[],
+  override: T[]
+): { merged: T[]; dropped: T[] } {
   const srcMap = toMap(src)
   const overrideMap = toMap(override)
 
@@ -237,7 +139,7 @@ export function mergeKeyframesWithDropped(
   const overrideMapByFrame = getKeyframeMapByFrame(override)
   const overrideMapByNewFrame = dropMap(overrideMapByFrame, srcMapByFrame)
 
-  const dropped: Keyframe[] = toList(extractMap(srcMap, overrideMap))
+  const dropped: T[] = toList(extractMap(srcMap, overrideMap))
 
   const merged = toList({
     ...mapReduce(srcMapByFrame, (keyframes, frameStr: string) => {
@@ -277,14 +179,17 @@ export function cleanActions(
     }))
 }
 
-function cleanKeyframes(keyframes: Keyframe[], bones: Bone[]): Keyframe[] {
+function cleanKeyframes(
+  keyframes: KeyframeBone[],
+  bones: Bone[]
+): KeyframeBone[] {
   return toList(
     extractMap(getKeyframeMapByBoneId(keyframes), toMap(bones))
   ).flat()
 }
 
-export function findNextFrameWithKeyframe(
-  keyframes: Keyframe[],
+export function findNextFrameWithKeyframe<T extends KeyframeBase>(
+  keyframes: T[],
   currentFrame: number
 ): number {
   const gt = Object.keys(getKeyframeMapByFrame(keyframes))
@@ -294,7 +199,7 @@ export function findNextFrameWithKeyframe(
 }
 
 export function findPrevFrameWithKeyframe(
-  keyframes: Keyframe[],
+  keyframes: KeyframeBone[],
   currentFrame: number
 ): number {
   const gt = Object.keys(getKeyframeMapByFrame(keyframes))
@@ -307,7 +212,7 @@ export function findPrevFrameWithKeyframe(
  * @return { bone_id: { 0: 1, 2: 4 } }
  */
 export function getSameRangeFrameMapByBoneId(
-  keyframeMapByBoneId: IdMap<Keyframe[]>
+  keyframeMapByBoneId: IdMap<KeyframeBone[]>
 ): IdMap<IdMap<number>> {
   return Object.keys(keyframeMapByBoneId).reduce<IdMap<IdMap<number>>>(
     (p, boneId) => {
@@ -332,7 +237,7 @@ export function getSameRangeFrameMapByBoneId(
   )
 }
 
-export function getLastFrame(keyframes: Keyframe[]): number {
+export function getLastFrame<T extends KeyframeBase>(keyframes: T[]): number {
   return keyframes.reduce((p, c) => {
     return Math.max(p, c.frame)
   }, 0)

@@ -40,19 +40,31 @@ Copyright (C) 2021, Tomoya Komiyama.
             :transform="`translate(10, ${height})`"
             :label-width="labelWidth - 10"
             :label-height="height"
-            label="Location"
+            label="Location X"
           />
           <TimelineRow
             :transform="`translate(10, ${2 * height})`"
             :label-width="labelWidth - 10"
             :label-height="height"
-            label="Rotation"
+            label="Location Y"
           />
           <TimelineRow
             :transform="`translate(10, ${3 * height})`"
             :label-width="labelWidth - 10"
             :label-height="height"
-            label="Scale"
+            label="Rotation"
+          />
+          <TimelineRow
+            :transform="`translate(10, ${4 * height})`"
+            :label-width="labelWidth - 10"
+            :label-height="height"
+            label="Scale X"
+          />
+          <TimelineRow
+            :transform="`translate(10, ${5 * height})`"
+            :label-width="labelWidth - 10"
+            :label-height="height"
+            label="Scale Y"
           />
         </g>
       </g>

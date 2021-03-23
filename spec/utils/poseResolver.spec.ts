@@ -25,13 +25,8 @@ import {
   multiAffine,
   multiAffines,
 } from 'okageo'
-import {
-  getBElement,
-  getBone,
-  getElementNode,
-  getKeyframe,
-  getTransform,
-} from '/@/models'
+import { getBElement, getBone, getElementNode, getTransform } from '/@/models'
+import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import { boneToAffine } from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
 import {
@@ -148,16 +143,16 @@ describe('utils/poseResolver.ts', () => {
   describe('bake', () => {
     const keyMap = {
       bone_a: [
-        getKeyframe({
+        getKeyframeBone({
           id: 'a',
           boneId: 'bone_a',
-          transform: getTransform({ rotate: 10 }),
+          rotate: getKeyframePoint({ value: 10 }),
           frame: 1,
         }),
-        getKeyframe({
+        getKeyframeBone({
           id: 'a',
           boneId: 'bone_a',
-          transform: getTransform({ rotate: 30 }),
+          rotate: getKeyframePoint({ value: 30 }),
           frame: 3,
         }),
       ],

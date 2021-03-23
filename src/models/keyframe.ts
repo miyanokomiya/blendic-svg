@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { v4 } from 'uuid'
 import { IVec2 } from 'okageo'
+import { Transform } from '/@/models'
 
 export interface KeyframeBase {
   id: string
@@ -65,5 +66,15 @@ export function getKeyframeBone(
     boneId: '',
     ...arg,
     id,
+  }
+}
+
+export function getKeyframePoint(
+  arg: Partial<KeyframePoint> = {}
+): KeyframePoint {
+  return {
+    value: 0,
+    curve: { name: 'linear' },
+    ...arg,
   }
 }

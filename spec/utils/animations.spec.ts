@@ -17,18 +17,10 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import {
-  getAction,
-  getArmature,
-  getBone,
-  getKeyframe,
-  getTransform,
-  toMap,
-} from '/@/models'
+import { getAction, getArmature, getBone, toMap } from '/@/models'
+import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import {
   cleanActions,
-  getNeighborKeyframes,
-  interpolateKeyframeTransform,
   mergeKeyframesWithDropped,
   slideKeyframesTo,
   sortKeyframeMap,
@@ -38,8 +30,6 @@ import {
   isSameKeyframeStatus,
   getSameRangeFrameMapByBoneId,
   getLastFrame,
-  getPropsNeighborKeyframes,
-  interpolatePropsKeyframeTransform,
 } from '/@/utils/animations'
 
 describe('utils/animations.ts', () => {
@@ -48,169 +38,38 @@ describe('utils/animations.ts', () => {
       expect(
         sortKeyframeMap({
           a: [
-            getKeyframe({ frame: 2 }),
-            getKeyframe({ frame: 3 }),
-            getKeyframe({ frame: 1 }),
+            getKeyframeBone({ frame: 2 }),
+            getKeyframeBone({ frame: 3 }),
+            getKeyframeBone({ frame: 1 }),
           ],
         })
       ).toEqual({
         a: [
-          getKeyframe({ frame: 1 }),
-          getKeyframe({ frame: 2 }),
-          getKeyframe({ frame: 3 }),
+          getKeyframeBone({ frame: 1 }),
+          getKeyframeBone({ frame: 2 }),
+          getKeyframeBone({ frame: 3 }),
         ],
-      })
-    })
-  })
-
-  describe('getNeighborKeyframes', () => {
-    it('get empty if list is empty', () => {
-      expect(getNeighborKeyframes([], 3)).toEqual([])
-    })
-    it('get the keyframe if it has the frame', () => {
-      expect(
-        getNeighborKeyframes(
-          [
-            getKeyframe({ frame: 1 }),
-            getKeyframe({ frame: 3 }),
-            getKeyframe({ frame: 4 }),
-          ],
-          3
-        )
-      ).toEqual([getKeyframe({ frame: 3 })])
-    })
-    it('get the first keyframe if no one is smaller', () => {
-      expect(
-        getNeighborKeyframes(
-          [
-            getKeyframe({ frame: 4 }),
-            getKeyframe({ frame: 5 }),
-            getKeyframe({ frame: 6 }),
-          ],
-          3
-        )
-      ).toEqual([getKeyframe({ frame: 4 })])
-    })
-    it('get the last keyframe if no one is bigger', () => {
-      expect(
-        getNeighborKeyframes(
-          [
-            getKeyframe({ frame: 0 }),
-            getKeyframe({ frame: 1 }),
-            getKeyframe({ frame: 2 }),
-          ],
-          3
-        )
-      ).toEqual([getKeyframe({ frame: 2 })])
-    })
-    it('get the neighbor keyframes if they are exist', () => {
-      expect(
-        getNeighborKeyframes(
-          [
-            getKeyframe({ frame: 0 }),
-            getKeyframe({ frame: 1 }),
-            getKeyframe({ frame: 2 }),
-            getKeyframe({ frame: 4 }),
-          ],
-          3
-        )
-      ).toEqual([getKeyframe({ frame: 2 }), getKeyframe({ frame: 4 })])
-    })
-  })
-
-  describe('getPropsNeighborKeyframes', () => {
-    it('translate: skip keyframes with use = false', () => {
-      expect(
-        getPropsNeighborKeyframes(
-          [
-            getKeyframe({ frame: 0 }),
-            getKeyframe({ frame: 1 }),
-            getKeyframe({ frame: 2, useTranslate: false }),
-            getKeyframe({ frame: 4, useTranslate: false }),
-            getKeyframe({ frame: 5, useTranslate: false }),
-            getKeyframe({ frame: 6 }),
-          ],
-          3
-        )
-      ).toEqual({
-        translate: [getKeyframe({ frame: 1 }), getKeyframe({ frame: 6 })],
-        rotate: [
-          getKeyframe({ frame: 2, useTranslate: false }),
-          getKeyframe({ frame: 4, useTranslate: false }),
-        ],
-        scale: [
-          getKeyframe({ frame: 2, useTranslate: false }),
-          getKeyframe({ frame: 4, useTranslate: false }),
-        ],
-      })
-    })
-    it('rotate: skip keyframes with use = false', () => {
-      expect(
-        getPropsNeighborKeyframes(
-          [
-            getKeyframe({ frame: 0 }),
-            getKeyframe({ frame: 1 }),
-            getKeyframe({ frame: 2, useRotate: false }),
-            getKeyframe({ frame: 4, useRotate: false }),
-            getKeyframe({ frame: 5, useRotate: false }),
-            getKeyframe({ frame: 6 }),
-          ],
-          3
-        )
-      ).toEqual({
-        translate: [
-          getKeyframe({ frame: 2, useRotate: false }),
-          getKeyframe({ frame: 4, useRotate: false }),
-        ],
-        rotate: [getKeyframe({ frame: 1 }), getKeyframe({ frame: 6 })],
-        scale: [
-          getKeyframe({ frame: 2, useRotate: false }),
-          getKeyframe({ frame: 4, useRotate: false }),
-        ],
-      })
-    })
-    it('scale: skip keyframes with use = false', () => {
-      expect(
-        getPropsNeighborKeyframes(
-          [
-            getKeyframe({ frame: 0 }),
-            getKeyframe({ frame: 1 }),
-            getKeyframe({ frame: 2, useScale: false }),
-            getKeyframe({ frame: 4, useScale: false }),
-            getKeyframe({ frame: 5, useScale: false }),
-            getKeyframe({ frame: 6 }),
-          ],
-          3
-        )
-      ).toEqual({
-        translate: [
-          getKeyframe({ frame: 2, useScale: false }),
-          getKeyframe({ frame: 4, useScale: false }),
-        ],
-        rotate: [
-          getKeyframe({ frame: 2, useScale: false }),
-          getKeyframe({ frame: 4, useScale: false }),
-        ],
-        scale: [getKeyframe({ frame: 1 }), getKeyframe({ frame: 6 })],
       })
     })
   })
 
   describe('getAfterKeyframe', () => {
     it('get undefined if no after keyframe', () => {
-      expect(getAfterKeyframe([getKeyframe({ frame: 1 })], 1)).toBe(undefined)
+      expect(getAfterKeyframe([getKeyframeBone({ frame: 1 })], 1)).toBe(
+        undefined
+      )
     })
     it('get the after keyframe', () => {
       expect(
         getAfterKeyframe(
           [
-            getKeyframe({ frame: 1 }),
-            getKeyframe({ frame: 3 }),
-            getKeyframe({ frame: 4 }),
+            getKeyframeBone({ frame: 1 }),
+            getKeyframeBone({ frame: 3 }),
+            getKeyframeBone({ frame: 4 }),
           ],
           1
         )
-      ).toEqual(getKeyframe({ frame: 3 }))
+      ).toEqual(getKeyframeBone({ frame: 3 }))
     })
   })
 
@@ -218,134 +77,18 @@ describe('utils/animations.ts', () => {
     it('return false if different transform', () => {
       expect(
         isSameKeyframeStatus(
-          getKeyframe({ transform: getTransform() }),
-          getKeyframe({ transform: getTransform({ rotate: 10 }) })
+          getKeyframeBone(),
+          getKeyframeBone({ rotate: getKeyframePoint({ value: 10 }) })
         )
       ).toBe(false)
     })
-    it('return false if same transform', () => {
+    it('return true if same transform', () => {
       expect(
         isSameKeyframeStatus(
-          getKeyframe({ boneId: 'a', frame: 1 }),
-          getKeyframe({ boneId: 'b', frame: 2 })
+          getKeyframeBone({ rotate: getKeyframePoint({ value: 10 }) }),
+          getKeyframeBone({ rotate: getKeyframePoint({ value: 10 }) })
         )
       ).toBe(true)
-    })
-  })
-
-  describe('interpolateKeyframeTransform', () => {
-    it('get unit transform if no keyframe exists', () => {
-      const ret = interpolateKeyframeTransform([], 1)
-      expect(ret).toEqual(getTransform())
-    })
-    it('get the same transform if one keyframe exists', () => {
-      const ret = interpolateKeyframeTransform(
-        [
-          getKeyframe({
-            transform: getTransform({ rotate: 20 }),
-          }),
-        ],
-        1
-      )
-      expect(ret).toEqual(getTransform({ rotate: 20 }))
-    })
-    it('get interpolated transform if two keyframe exist', () => {
-      const ret = interpolateKeyframeTransform(
-        [
-          getKeyframe({
-            frame: 10,
-            transform: getTransform({ rotate: 20 }),
-          }),
-          getKeyframe({
-            frame: 20,
-            transform: getTransform({ rotate: 30 }),
-          }),
-        ],
-        12
-      )
-      expect(ret.rotate).toBeCloseTo(22)
-    })
-    it('custom curve func', () => {
-      const ret = interpolateKeyframeTransform(
-        [
-          getKeyframe({
-            frame: 10,
-            transform: getTransform({ rotate: 20 }),
-          }),
-          getKeyframe({
-            frame: 20,
-            transform: getTransform({ rotate: 30 }),
-          }),
-        ],
-        12,
-        (x: number) => Math.pow(x, 2)
-      )
-      expect(ret.rotate).toBeCloseTo(20.4)
-    })
-  })
-
-  describe('interpolatePropsKeyframeTransform', () => {
-    it('translate', () => {
-      const ret = interpolatePropsKeyframeTransform(
-        {
-          translate: [
-            getKeyframe({
-              frame: 10,
-              transform: getTransform({ translate: { x: 20, y: 30 } }),
-            }),
-            getKeyframe({
-              frame: 20,
-              transform: getTransform({ translate: { x: 30, y: 40 } }),
-            }),
-          ],
-          rotate: [],
-          scale: [],
-        },
-        15
-      )
-      expect(ret.translate.x).toBeCloseTo(25)
-      expect(ret.translate.y).toBeCloseTo(35)
-    })
-    it('rotate', () => {
-      const ret = interpolatePropsKeyframeTransform(
-        {
-          translate: [],
-          rotate: [
-            getKeyframe({
-              frame: 10,
-              transform: getTransform({ rotate: 20 }),
-            }),
-            getKeyframe({
-              frame: 20,
-              transform: getTransform({ rotate: 30 }),
-            }),
-          ],
-          scale: [],
-        },
-        15
-      )
-      expect(ret.rotate).toBeCloseTo(25)
-    })
-    it('scale', () => {
-      const ret = interpolatePropsKeyframeTransform(
-        {
-          translate: [],
-          rotate: [],
-          scale: [
-            getKeyframe({
-              frame: 10,
-              transform: getTransform({ scale: { x: 20, y: 30 } }),
-            }),
-            getKeyframe({
-              frame: 20,
-              transform: getTransform({ scale: { x: 30, y: 40 } }),
-            }),
-          ],
-        },
-        15
-      )
-      expect(ret.scale.x).toBeCloseTo(25)
-      expect(ret.scale.y).toBeCloseTo(35)
     })
   })
 
@@ -357,16 +100,16 @@ describe('utils/animations.ts', () => {
       expect(
         slideKeyframesTo(
           [
-            getKeyframe({ id: '1', frame: 1 }),
-            getKeyframe({ id: '2', frame: 2 }),
-            getKeyframe({ id: '4', frame: 4 }),
+            getKeyframeBone({ id: '1', frame: 1 }),
+            getKeyframeBone({ id: '2', frame: 2 }),
+            getKeyframeBone({ id: '4', frame: 4 }),
           ],
           10
         )
       ).toEqual([
-        getKeyframe({ id: '1', frame: 10 }),
-        getKeyframe({ id: '2', frame: 11 }),
-        getKeyframe({ id: '4', frame: 13 }),
+        getKeyframeBone({ id: '1', frame: 10 }),
+        getKeyframeBone({ id: '2', frame: 11 }),
+        getKeyframeBone({ id: '4', frame: 13 }),
       ])
     })
   })
@@ -375,45 +118,45 @@ describe('utils/animations.ts', () => {
     it('merge keyframes by the same frame and boneId', () => {
       const ret = mergeKeyframesWithDropped(
         [
-          getKeyframe({ id: 'src_1_a', frame: 1, boneId: 'a' }),
-          getKeyframe({ id: 'src_1_b', frame: 1, boneId: 'b' }),
-          getKeyframe({ id: 'src_1_d', frame: 1, boneId: 'd' }),
-          getKeyframe({ id: 'src_2_a', frame: 2, boneId: 'a' }),
+          getKeyframeBone({ id: 'src_1_a', frame: 1, boneId: 'a' }),
+          getKeyframeBone({ id: 'src_1_b', frame: 1, boneId: 'b' }),
+          getKeyframeBone({ id: 'src_1_d', frame: 1, boneId: 'd' }),
+          getKeyframeBone({ id: 'src_2_a', frame: 2, boneId: 'a' }),
         ],
         [
-          getKeyframe({ id: 'ove_1_a', frame: 1, boneId: 'a' }),
-          getKeyframe({ id: 'ove_2_b', frame: 2, boneId: 'b' }),
-          getKeyframe({ id: 'ove_1_c', frame: 1, boneId: 'c' }),
-          getKeyframe({ id: 'ove_3_c', frame: 3, boneId: 'c' }),
+          getKeyframeBone({ id: 'ove_1_a', frame: 1, boneId: 'a' }),
+          getKeyframeBone({ id: 'ove_2_b', frame: 2, boneId: 'b' }),
+          getKeyframeBone({ id: 'ove_1_c', frame: 1, boneId: 'c' }),
+          getKeyframeBone({ id: 'ove_3_c', frame: 3, boneId: 'c' }),
         ]
       )
       expect(toMap(ret.merged)).toEqual({
-        src_1_b: getKeyframe({ id: 'src_1_b', frame: 1, boneId: 'b' }),
-        src_1_d: getKeyframe({ id: 'src_1_d', frame: 1, boneId: 'd' }),
-        src_2_a: getKeyframe({ id: 'src_2_a', frame: 2, boneId: 'a' }),
-        ove_1_a: getKeyframe({ id: 'ove_1_a', frame: 1, boneId: 'a' }),
-        ove_2_b: getKeyframe({ id: 'ove_2_b', frame: 2, boneId: 'b' }),
-        ove_1_c: getKeyframe({ id: 'ove_1_c', frame: 1, boneId: 'c' }),
-        ove_3_c: getKeyframe({ id: 'ove_3_c', frame: 3, boneId: 'c' }),
+        src_1_b: getKeyframeBone({ id: 'src_1_b', frame: 1, boneId: 'b' }),
+        src_1_d: getKeyframeBone({ id: 'src_1_d', frame: 1, boneId: 'd' }),
+        src_2_a: getKeyframeBone({ id: 'src_2_a', frame: 2, boneId: 'a' }),
+        ove_1_a: getKeyframeBone({ id: 'ove_1_a', frame: 1, boneId: 'a' }),
+        ove_2_b: getKeyframeBone({ id: 'ove_2_b', frame: 2, boneId: 'b' }),
+        ove_1_c: getKeyframeBone({ id: 'ove_1_c', frame: 1, boneId: 'c' }),
+        ove_3_c: getKeyframeBone({ id: 'ove_3_c', frame: 3, boneId: 'c' }),
       })
       expect(toMap(ret.dropped)).toEqual({
-        src_1_a: getKeyframe({ id: 'src_1_a', frame: 1, boneId: 'a' }),
+        src_1_a: getKeyframeBone({ id: 'src_1_a', frame: 1, boneId: 'a' }),
       })
     })
     it('override keyframes by the same id', () => {
       const ret = mergeKeyframesWithDropped(
         [
-          getKeyframe({ id: 'src_a', frame: 1, boneId: 'a' }),
-          getKeyframe({ id: 'src_b', frame: 1, boneId: 'b' }),
+          getKeyframeBone({ id: 'src_a', frame: 1, boneId: 'a' }),
+          getKeyframeBone({ id: 'src_b', frame: 1, boneId: 'b' }),
         ],
-        [getKeyframe({ id: 'src_b', frame: 10, boneId: 'bb' })]
+        [getKeyframeBone({ id: 'src_b', frame: 10, boneId: 'bb' })]
       )
       expect(toMap(ret.merged)).toEqual({
-        src_a: getKeyframe({ id: 'src_a', frame: 1, boneId: 'a' }),
-        src_b: getKeyframe({ id: 'src_b', frame: 10, boneId: 'bb' }),
+        src_a: getKeyframeBone({ id: 'src_a', frame: 1, boneId: 'a' }),
+        src_b: getKeyframeBone({ id: 'src_b', frame: 10, boneId: 'bb' }),
       })
       expect(toMap(ret.dropped)).toEqual({
-        src_b: getKeyframe({ id: 'src_b', frame: 1, boneId: 'b' }),
+        src_b: getKeyframeBone({ id: 'src_b', frame: 1, boneId: 'b' }),
       })
     })
   })
@@ -438,10 +181,10 @@ describe('utils/animations.ts', () => {
               id: 'act_1',
               armatureId: 'arm_1',
               keyframes: [
-                getKeyframe({ id: 'key_1', boneId: 'bone_1', frame: 1 }),
-                getKeyframe({ id: 'key_2', boneId: 'bone_2', frame: 1 }),
-                getKeyframe({ id: 'key_2', boneId: 'bone_2', frame: 2 }),
-                getKeyframe({ id: 'key_4', boneId: 'bone_4', frame: 1 }),
+                getKeyframeBone({ id: 'key_1', boneId: 'bone_1', frame: 1 }),
+                getKeyframeBone({ id: 'key_2', boneId: 'bone_2', frame: 1 }),
+                getKeyframeBone({ id: 'key_2', boneId: 'bone_2', frame: 2 }),
+                getKeyframeBone({ id: 'key_4', boneId: 'bone_4', frame: 1 }),
               ],
             }),
           ],
@@ -457,8 +200,8 @@ describe('utils/animations.ts', () => {
           id: 'act_1',
           armatureId: 'arm_1',
           keyframes: [
-            getKeyframe({ id: 'key_2', boneId: 'bone_2', frame: 1 }),
-            getKeyframe({ id: 'key_2', boneId: 'bone_2', frame: 2 }),
+            getKeyframeBone({ id: 'key_2', boneId: 'bone_2', frame: 1 }),
+            getKeyframeBone({ id: 'key_2', boneId: 'bone_2', frame: 2 }),
           ],
         }),
       ])
@@ -470,10 +213,10 @@ describe('utils/animations.ts', () => {
       expect(
         findNextFrameWithKeyframe(
           [
-            getKeyframe({ id: '1', frame: 0 }),
-            getKeyframe({ id: '10', frame: 10 }),
-            getKeyframe({ id: '20', frame: 20 }),
-            getKeyframe({ id: '21', frame: 21 }),
+            getKeyframeBone({ id: '1', frame: 0 }),
+            getKeyframeBone({ id: '10', frame: 10 }),
+            getKeyframeBone({ id: '20', frame: 20 }),
+            getKeyframeBone({ id: '21', frame: 21 }),
           ],
           10
         )
@@ -483,9 +226,9 @@ describe('utils/animations.ts', () => {
       expect(
         findNextFrameWithKeyframe(
           [
-            getKeyframe({ id: '1', frame: 0 }),
-            getKeyframe({ id: '10', frame: 10 }),
-            getKeyframe({ id: '20', frame: 20 }),
+            getKeyframeBone({ id: '1', frame: 0 }),
+            getKeyframeBone({ id: '10', frame: 10 }),
+            getKeyframeBone({ id: '20', frame: 20 }),
           ],
           30
         )
@@ -498,9 +241,9 @@ describe('utils/animations.ts', () => {
       expect(
         findPrevFrameWithKeyframe(
           [
-            getKeyframe({ id: '1', frame: 0 }),
-            getKeyframe({ id: '10', frame: 10 }),
-            getKeyframe({ id: '20', frame: 20 }),
+            getKeyframeBone({ id: '1', frame: 0 }),
+            getKeyframeBone({ id: '10', frame: 10 }),
+            getKeyframeBone({ id: '20', frame: 20 }),
           ],
           15
         )
@@ -510,8 +253,8 @@ describe('utils/animations.ts', () => {
       expect(
         findPrevFrameWithKeyframe(
           [
-            getKeyframe({ id: '10', frame: 10 }),
-            getKeyframe({ id: '20', frame: 20 }),
+            getKeyframeBone({ id: '10', frame: 10 }),
+            getKeyframeBone({ id: '20', frame: 20 }),
           ],
           5
         )
@@ -521,17 +264,17 @@ describe('utils/animations.ts', () => {
 
   describe('getSameRangeFrameMapByBoneId', () => {
     it('get same range frame map by bone id', () => {
-      const t1 = getTransform()
-      const t2 = getTransform({ rotate: 45 })
+      const t1 = getKeyframePoint({ value: 0 })
+      const t2 = getKeyframePoint({ value: 45 })
       const res = getSameRangeFrameMapByBoneId({
         a: [
-          getKeyframe({ frame: 0, transform: t1 }),
-          getKeyframe({ frame: 3, transform: t1 }),
-          getKeyframe({ frame: 5, transform: t2 }),
-          getKeyframe({ frame: 6, transform: t1 }),
-          getKeyframe({ frame: 7, transform: t1 }),
+          getKeyframeBone({ frame: 0, rotate: t1 }),
+          getKeyframeBone({ frame: 3, rotate: t1 }),
+          getKeyframeBone({ frame: 5, rotate: t2 }),
+          getKeyframeBone({ frame: 6, rotate: t1 }),
+          getKeyframeBone({ frame: 7, rotate: t1 }),
         ],
-        b: [getKeyframe({ frame: 0, transform: t1 })],
+        b: [getKeyframeBone({ frame: 0, rotate: t1 })],
         c: [],
       })
       expect(res.a).toEqual({
@@ -552,10 +295,10 @@ describe('utils/animations.ts', () => {
     it('get last frame', () => {
       expect(
         getLastFrame([
-          getKeyframe({ frame: 6 }),
-          getKeyframe({ frame: 10 }),
-          getKeyframe({ frame: 3 }),
-          getKeyframe({ frame: 4 }),
+          getKeyframeBone({ frame: 6 }),
+          getKeyframeBone({ frame: 10 }),
+          getKeyframeBone({ frame: 3 }),
+          getKeyframeBone({ frame: 4 }),
         ])
       ).toBe(10)
     })

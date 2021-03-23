@@ -12,6 +12,8 @@ exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot expand
   <!--v-if-->
   
   <!--v-if-->
+  <!--v-if-->
+  <!--v-if-->
   <g>
     <rect
       class="view-only"
@@ -19,31 +21,16 @@ exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot expand
       fill-opacity="0.5"
       height="6"
       width="0"
-      y="45"
+      y="93"
     />
     <circle
-      cy="48"
+      cy="96"
       fill="#fff"
       r="5"
       stroke="#000"
     />
   </g>
-  <g>
-    <rect
-      class="view-only"
-      fill="#aaa"
-      fill-opacity="0.5"
-      height="6"
-      width="0"
-      y="69"
-    />
-    <circle
-      cy="72"
-      fill="#fff"
-      r="5"
-      stroke="#000"
-    />
-  </g>
+  <!--v-if-->
   
 </g>
 `;

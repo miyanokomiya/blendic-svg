@@ -30,22 +30,24 @@ Copyright (C) 2021, Tomoya Komiyama.
     </template>
     <template v-if="expanded">
       <KeyPoint
-        v-if="isVisible(top + height) && keyFrame.useTranslate"
+        v-if="isVisible(top + height) && keyFrame.translateX"
         :top="top + height"
-        :selected="selected"
-        :same-range-width="sameRangeWidth"
       />
       <KeyPoint
-        v-if="isVisible(top + height * 2) && keyFrame.useRotate"
+        v-if="isVisible(top + height * 2) && keyFrame.translateY"
         :top="top + height * 2"
-        :selected="selected"
-        :same-range-width="sameRangeWidth"
       />
       <KeyPoint
-        v-if="isVisible(top + height * 3) && keyFrame.useScale"
+        v-if="isVisible(top + height * 3) && keyFrame.rotate"
         :top="top + height * 3"
-        :selected="selected"
-        :same-range-width="sameRangeWidth"
+      />
+      <KeyPoint
+        v-if="isVisible(top + height * 4) && keyFrame.scaleX"
+        :top="top + height * 4"
+      />
+      <KeyPoint
+        v-if="isVisible(top + height * 5) && keyFrame.scaleY"
+        :top="top + height * 5"
       />
     </template>
   </g>
@@ -53,14 +55,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { Keyframe } from '/@/models'
 import KeyPoint from '/@/components/elements/atoms/KeyPoint.vue'
+import { KeyframeBone } from '/@/models/keyframe'
 
 export default defineComponent({
   components: { KeyPoint },
   props: {
     keyFrame: {
-      type: Object as PropType<Keyframe>,
+      type: Object as PropType<KeyframeBone>,
       required: true,
     },
     top: {

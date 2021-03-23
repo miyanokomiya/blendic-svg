@@ -270,7 +270,7 @@ export default defineComponent({
       let current = 2 * labelHeight
       return selectedAllBoneList.value.reduce<IdMap<number>>((p, b) => {
         const top = current
-        current = current + labelHeight * (boneExpandedMap.value[b.id] ? 4 : 1)
+        current = current + labelHeight * (boneExpandedMap.value[b.id] ? 6 : 1)
         p[b.id] = top
         return p
       }, {})

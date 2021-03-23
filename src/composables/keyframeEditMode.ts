@@ -25,8 +25,6 @@ import {
   IdMap,
   EditMovement,
   CanvasEditModeBase,
-  Keyframe,
-  getKeyframe,
   toMap,
 } from '../models/index'
 import { useAnimationStore } from '../store/animation'
@@ -35,16 +33,17 @@ import { getFrameX, getNearestFrameAtPoint } from '../utils/animations'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { applyTransform } from '/@/utils/geometry'
 import { IRectangle } from 'okageo'
+import { getKeyframeBone, KeyframeBone } from '/@/models/keyframe'
 
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
-  clipboard: Keyframe[]
-  tmpKeyframes: IdMap<Keyframe>
+  clipboard: KeyframeBone[]
+  tmpKeyframes: IdMap<KeyframeBone>
 }
 
 export interface KeyframeEditMode extends CanvasEditModeBase {
-  tmpKeyframes: ComputedRef<IdMap<Keyframe>>
+  tmpKeyframes: ComputedRef<IdMap<KeyframeBone>>
   getEditFrames: (id: string) => number
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
@@ -225,7 +224,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     const duplicated = toMap(
       toList(
         mapReduce(editTargets.value, (src) => {
-          return getKeyframe({ ...src }, true)
+          return getKeyframeBone({ ...src }, true)
         })
       )
     )

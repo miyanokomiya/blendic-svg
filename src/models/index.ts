@@ -22,6 +22,7 @@ import { v4 } from 'uuid'
 import { ComputedRef } from 'vue'
 import { toKeyMap } from '../utils/commons'
 import { BoneConstraint } from '../utils/constraints'
+import { KeyframeBone } from '/@/models/keyframe'
 
 export type IdMap<T> = {
   [id: string]: T
@@ -39,17 +40,7 @@ export interface Action {
   name: string
   totalFrame: number
   armatureId: string
-  keyframes: Keyframe[]
-}
-
-export interface Keyframe {
-  id: string
-  frame: number
-  transform: Transform
-  useTranslate: boolean
-  useRotate: boolean
-  useScale: boolean
-  boneId: string
+  keyframes: KeyframeBone[]
 }
 
 export interface Bone {
@@ -159,23 +150,6 @@ export function getAction(
     totalFrame: 60,
     armatureId: '',
     keyframes: [],
-    ...arg,
-    id,
-  }
-}
-
-export function getKeyframe(
-  arg: Partial<Keyframe> = {},
-  generateId = false
-): Keyframe {
-  const id = generateId ? v4() : arg.id ?? ''
-  return {
-    frame: 0,
-    boneId: '',
-    transform: getTransform(),
-    useTranslate: true,
-    useRotate: true,
-    useScale: true,
     ...arg,
     id,
   }

@@ -26,7 +26,6 @@ import {
   parseTransform,
 } from 'okageo'
 import {
-  Keyframe,
   BElement,
   Bone,
   ElementNode,
@@ -36,13 +35,14 @@ import {
   ElementNodeAttributes,
   toMap,
 } from '../models'
-import { getInterpolatedTransformMapByBoneId } from './animations'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce } from './commons'
 import { getTnansformStr } from './helpers'
+import { KeyframeBone } from '/@/models/keyframe'
 import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
 import { flatElementTree } from '/@/utils/elements'
 import { isIdentityAffine } from '/@/utils/geometry'
+import { getInterpolatedTransformMapByBoneId } from '/@/utils/keyframes'
 
 export type TransformCache = {
   [relativeRootBoneId: string]: { [boneId: string]: Transform }
@@ -205,7 +205,7 @@ function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {
 }
 
 export function bakeKeyframes(
-  keyframeMapByBoneId: IdMap<Keyframe[]>,
+  keyframeMapByBoneId: IdMap<KeyframeBone[]>,
   boneMap: IdMap<Bone>,
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
@@ -217,7 +217,7 @@ export function bakeKeyframes(
 }
 
 export function bakeKeyframe(
-  keyframeMapByBoneId: IdMap<Keyframe[]>,
+  keyframeMapByBoneId: IdMap<KeyframeBone[]>,
   boneMap: IdMap<Bone>,
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,

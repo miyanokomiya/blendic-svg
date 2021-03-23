@@ -272,4 +272,59 @@ describe('utils/keyframes.ts', () => {
       )
     })
   })
+
+  describe('deleteKeyframeBoneByProp', () => {
+    it('not selected', () => {
+      expect(
+        target.deleteKeyframeBoneByProp(
+          getKeyframeBone({
+            translateX: getKeyframePoint({ value: 100 }),
+            translateY: getKeyframePoint({ value: 20 }),
+            rotate: getKeyframePoint({ value: 300 }),
+          })
+        )
+      ).toEqual(
+        getKeyframeBone({
+          translateX: getKeyframePoint({ value: 100 }),
+          translateY: getKeyframePoint({ value: 20 }),
+          rotate: getKeyframePoint({ value: 300 }),
+        })
+      )
+    })
+    it('delete all', () => {
+      expect(
+        target.deleteKeyframeBoneByProp(
+          getKeyframeBone({
+            translateX: getKeyframePoint({ value: 100 }),
+            translateY: getKeyframePoint({ value: 20 }),
+            rotate: getKeyframePoint({ value: 300 }),
+          }),
+          {
+            translateX: true,
+            translateY: true,
+            rotate: true,
+          }
+        )
+      ).toBe(undefined)
+    })
+    it('delete props', () => {
+      expect(
+        target.deleteKeyframeBoneByProp(
+          getKeyframeBone({
+            translateX: getKeyframePoint({ value: 100 }),
+            translateY: getKeyframePoint({ value: 20 }),
+            rotate: getKeyframePoint({ value: 300 }),
+          }),
+          {
+            translateX: true,
+          }
+        )
+      ).toEqual(
+        getKeyframeBone({
+          translateY: getKeyframePoint({ value: 20 }),
+          rotate: getKeyframePoint({ value: 300 }),
+        })
+      )
+    })
+  })
 })

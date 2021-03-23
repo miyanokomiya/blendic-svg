@@ -319,3 +319,19 @@ export function mergeKeyframeBones(
   if (src.scaleY && !override.scaleY) ret.scaleY = src.scaleY
   return ret
 }
+
+export function deleteKeyframeBoneByProp(
+  keyframe: KeyframeBone,
+  selectedState?: KeyframeSelectedState
+): KeyframeBone | undefined {
+  if (!selectedState) return keyframe
+  if (isAllExistSelected(keyframe, selectedState)) return
+
+  const ret = { ...keyframe }
+  if (selectedState.translateX) delete ret.translateX
+  if (selectedState.translateY) delete ret.translateY
+  if (selectedState.rotate) delete ret.rotate
+  if (selectedState.scaleX) delete ret.scaleX
+  if (selectedState.scaleY) delete ret.scaleY
+  return ret
+}

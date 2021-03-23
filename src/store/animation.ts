@@ -72,6 +72,7 @@ import {
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import {
+  deleteKeyframeBoneByProp,
   getAllSelectedState,
   getInterpolatedTransformMapByBoneId,
   isAllSelected,
@@ -706,9 +707,17 @@ function getExecDeleteKeyframesItem() {
   const selectItem = getSelectKeyframesItem([])
 
   const redo = () => {
-    const updated = actions.lastSelectedItem.value!.keyframes.filter((k) => {
-      return !deletedFrames[k.id]
+    const deletedMap = mapReduce(deletedFrames, (keyframe) => {
+      return deleteKeyframeBoneByProp(
+        keyframe,
+        selectedKeyframeMap.value[keyframe.id]
+      )
     })
+    const updated = toList({
+      ...toMap(actions.lastSelectedItem.value!.keyframes),
+      ...deletedMap,
+    }).filter((k): k is KeyframeBone => !!k)
+
     selectItem.redo()
     actions.lastSelectedItem.value!.keyframes = updated
   }

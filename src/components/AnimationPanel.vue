@@ -189,18 +189,12 @@ export default defineComponent({
     )
     const keyframeMapByFrame = computed(() => {
       return getKeyframeMapByFrame(
-        toList(
-          mapReduce(
-            {
-              ...animationStore.visibledKeyframeMap.value,
-              ...keyframeEditMode.tmpKeyframes.value,
-            },
-            (keyframe, id) => ({
-              ...keyframe,
-              frame: keyframeEditMode.getEditFrames(id),
-            })
-          )
-        )
+        toList({
+          ...animationStore.visibledKeyframeMap.value,
+          ...keyframeEditMode.tmpKeyframes.value,
+          ...keyframeEditMode.editedKeyframeMap.value.notSelected,
+          ...keyframeEditMode.editedKeyframeMap.value.selected,
+        })
       )
     })
 

@@ -248,3 +248,74 @@ export function isAnySelected(k?: KeyframeSelectedState): boolean {
   if (k.scaleY) return true
   return false
 }
+
+export function isAllExistSelected(
+  keyframe: KeyframeBone,
+  k?: KeyframeSelectedState
+): boolean {
+  if (!k) return false
+  if (!k.translateX && keyframe.translateX) return false
+  if (!k.translateY && keyframe.translateY) return false
+  if (!k.rotate && keyframe.rotate) return false
+  if (!k.scaleX && keyframe.scaleX) return false
+  if (!k.scaleY && keyframe.scaleY) return false
+  return true
+}
+
+export function splitKeyframeBoneBySelected(
+  keyframe: KeyframeBone,
+  state: KeyframeSelectedState
+): { selected?: KeyframeBone; notSelected?: KeyframeBone } {
+  if (isAllExistSelected(keyframe, state)) {
+    return { selected: keyframe }
+  }
+  if (!isAnySelected(state)) {
+    return { notSelected: keyframe }
+  }
+
+  const selected = { ...keyframe }
+  const notSelected = { ...keyframe }
+
+  if (state.translateX) {
+    delete notSelected.translateX
+  } else {
+    delete selected.translateX
+  }
+  if (state.translateY) {
+    delete notSelected.translateY
+  } else {
+    delete selected.translateY
+  }
+  if (state.rotate) {
+    delete notSelected.rotate
+  } else {
+    delete selected.rotate
+  }
+  if (state.scaleX) {
+    delete notSelected.scaleX
+  } else {
+    delete selected.scaleX
+  }
+  if (state.scaleY) {
+    delete notSelected.scaleY
+  } else {
+    delete selected.scaleY
+  }
+  return {
+    selected,
+    notSelected,
+  }
+}
+
+export function mergeKeyframeBones(
+  src: KeyframeBone,
+  override: KeyframeBone
+): KeyframeBone {
+  const ret = { ...override }
+  if (src.translateX && !override.translateX) ret.translateX = src.translateX
+  if (src.translateY && !override.translateY) ret.translateY = src.translateY
+  if (src.rotate && !override.rotate) ret.rotate = src.rotate
+  if (src.scaleX && !override.scaleX) ret.scaleX = src.scaleX
+  if (src.scaleY && !override.scaleY) ret.scaleY = src.scaleY
+  return ret
+}

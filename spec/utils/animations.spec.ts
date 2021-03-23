@@ -159,6 +159,41 @@ describe('utils/animations.ts', () => {
         src_b: getKeyframeBone({ id: 'src_b', frame: 1, boneId: 'b' }),
       })
     })
+    describe('mergeDeep: true', () => {
+      it('merge props by the same frame and boneId', () => {
+        const ret = mergeKeyframesWithDropped(
+          [
+            getKeyframeBone({
+              id: 'src_1_a',
+              frame: 1,
+              boneId: 'a',
+              translateX: getKeyframePoint({ value: 1 }),
+              translateY: getKeyframePoint({ value: 2 }),
+            }),
+          ],
+          [
+            getKeyframeBone({
+              id: 'ove_1_c',
+              frame: 1,
+              boneId: 'a',
+              translateX: getKeyframePoint({ value: 10 }),
+              rotate: getKeyframePoint({ value: 20 }),
+            }),
+          ],
+          true
+        )
+        expect(toMap(ret.merged)).toEqual({
+          ove_1_c: getKeyframeBone({
+            id: 'ove_1_c',
+            frame: 1,
+            boneId: 'a',
+            translateX: getKeyframePoint({ value: 10 }),
+            translateY: getKeyframePoint({ value: 2 }),
+            rotate: getKeyframePoint({ value: 20 }),
+          }),
+        })
+      })
+    })
   })
 
   describe('cleanActions', () => {

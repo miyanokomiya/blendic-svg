@@ -38,6 +38,7 @@ import {
   KeyframeBone,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
+import { splitKeyframeBoneBySelected } from '/@/utils/keyframes'
 
 interface State {
   command: EditMode
@@ -51,6 +52,10 @@ export interface KeyframeEditMode extends CanvasEditModeBase {
   getEditFrames: (id: string) => number
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
+  editedKeyframeMap: ComputedRef<{
+    selected: IdMap<KeyframeBone>
+    notSelected: IdMap<KeyframeBone>
+  }>
 }
 
 export function useKeyframeEditMode(): KeyframeEditMode {
@@ -125,6 +130,35 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     })
   })
 
+  const editedKeyframeMap = computed<{
+    selected: IdMap<KeyframeBone>
+    notSelected: IdMap<KeyframeBone>
+  }>(() => {
+    const selected: IdMap<KeyframeBone> = {}
+    const notSelected: IdMap<KeyframeBone> = {}
+
+    Object.keys(editTransforms.value).forEach((id) => {
+      const selectedState = animationStore.selectedKeyframeMap.value[id] ?? {}
+      const keyframe = allKeyframes.value[id]
+      const splited = splitKeyframeBoneBySelected(keyframe, selectedState)
+      if (splited.selected) {
+        selected[id] = {
+          ...splited.selected,
+          frame: getEditFrames(id),
+        }
+      }
+      if (splited.notSelected) {
+        const not = getKeyframeBone(splited.notSelected, true)
+        notSelected[not.id] = not
+      }
+    })
+
+    return {
+      selected,
+      notSelected,
+    }
+  })
+
   function completeEdit() {
     if (!isAnySelected.value) return
 
@@ -139,7 +173,10 @@ export function useKeyframeEditMode(): KeyframeEditMode {
         toList(updatedMap)
       )
     } else {
-      animationStore.execUpdateKeyframes(updatedMap)
+      animationStore.completeDuplicateKeyframes(
+        toList(editedKeyframeMap.value.notSelected),
+        toList(editedKeyframeMap.value.selected)
+      )
     }
 
     state.tmpKeyframes = {}
@@ -283,5 +320,6 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     duplicate,
     availableCommandList,
     popupMenuList: computed(() => []),
+    editedKeyframeMap,
   }
 }

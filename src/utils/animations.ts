@@ -24,6 +24,7 @@ import {
   mapReduce,
   mergeListByKey,
   toKeyListMap,
+  toKeyMap,
   toList,
 } from './commons'
 import {
@@ -39,6 +40,7 @@ import {
 } from '/@/models'
 import { KeyframeBase, KeyframeBone } from '/@/models/keyframe'
 import { isSameTransform } from '/@/utils/geometry'
+import { mergeKeyframeBones } from '/@/utils/keyframes'
 
 export function getScaleLog(scale: number): number {
   return Math.round(Math.log(scale) / Math.log(scaleRate))
@@ -119,17 +121,18 @@ export function slideKeyframesTo<T extends KeyframeBase>(
   return keyframes.map((k) => ({ ...k, frame: k.frame + (at - min) }))
 }
 
-export function mergeKeyframes<T extends KeyframeBase>(
-  src: T[],
-  override: T[]
-): T[] {
+export function mergeKeyframes(
+  src: KeyframeBone[],
+  override: KeyframeBone[]
+): KeyframeBone[] {
   return mergeKeyframesWithDropped(src, override).merged
 }
 
-export function mergeKeyframesWithDropped<T extends KeyframeBase>(
-  src: T[],
-  override: T[]
-): { merged: T[]; dropped: T[] } {
+export function mergeKeyframesWithDropped(
+  src: KeyframeBone[],
+  override: KeyframeBone[],
+  mergeDeep = false
+): { merged: KeyframeBone[]; dropped: KeyframeBone[] } {
   const srcMap = toMap(src)
   const overrideMap = toMap(override)
 
@@ -139,7 +142,8 @@ export function mergeKeyframesWithDropped<T extends KeyframeBase>(
   const overrideMapByFrame = getKeyframeMapByFrame(override)
   const overrideMapByNewFrame = dropMap(overrideMapByFrame, srcMapByFrame)
 
-  const dropped: T[] = toList(extractMap(srcMap, overrideMap))
+  const droppedMap: IdMap<KeyframeBone> = extractMap(srcMap, overrideMap)
+  const dropped: KeyframeBone[] = toList(droppedMap)
 
   const merged = toList({
     ...mapReduce(srcMapByFrame, (keyframes, frameStr: string) => {
@@ -151,11 +155,38 @@ export function mergeKeyframesWithDropped<T extends KeyframeBase>(
           true
         )
       )
-      return mergeListByKey(
-        keyframes,
+      const srcMapByBoneId = toKeyMap(keyframes, 'boneId')
+      const oveMapByBoneId = toKeyMap(
         overrideMapByFrame[frameStr] ?? [],
         'boneId'
       )
+
+      if (mergeDeep) {
+        return Object.keys({
+          ...srcMapByBoneId,
+          ...oveMapByBoneId,
+        }).reduce<KeyframeBone[]>((p, boneId) => {
+          if (!oveMapByBoneId[boneId]) {
+            p.push(srcMapByBoneId[boneId])
+          } else if (!srcMapByBoneId[boneId]) {
+            p.push(oveMapByBoneId[boneId])
+          } else {
+            const merged = mergeKeyframeBones(
+              srcMapByBoneId[boneId],
+              oveMapByBoneId[boneId]
+            )
+            p.push(merged)
+          }
+
+          return p
+        }, [])
+      } else {
+        return mergeListByKey(
+          keyframes,
+          overrideMapByFrame[frameStr] ?? [],
+          'boneId'
+        )
+      }
     }),
     ...overrideMapByNewFrame,
   }).flat()

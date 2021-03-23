@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { getKeyframeBone } from '/@/models/keyframe'
+import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import * as target from '/@/utils/keyframes'
 
 describe('utils/keyframes.ts', () => {
@@ -166,6 +166,110 @@ describe('utils/keyframes.ts', () => {
       expect(
         target.inversedSelectedState(target.getAllSelectedState(), {})
       ).toEqual(target.getAllSelectedState())
+    })
+  })
+
+  describe('isAllExistSelected', () => {
+    it('return true if all existed props is selected', () => {
+      ;['translateX', 'translateY', 'rotete', 'scaleX', 'scaleY'].forEach(
+        (prop) => {
+          expect(
+            target.isAllExistSelected(
+              getKeyframeBone({
+                [prop]: getKeyframePoint(),
+              }),
+              { [prop]: true }
+            )
+          ).toBe(true)
+        }
+      )
+    })
+  })
+
+  describe('splitKeyframeBoneBySelected', () => {
+    it('selected', () => {
+      const ret = target.splitKeyframeBoneBySelected(
+        getKeyframeBone({
+          translateX: getKeyframePoint(),
+          translateY: getKeyframePoint(),
+          rotate: getKeyframePoint(),
+          scaleX: getKeyframePoint(),
+          scaleY: getKeyframePoint(),
+        }),
+        {
+          translateX: true,
+          translateY: true,
+          rotate: true,
+          scaleX: true,
+          scaleY: true,
+        }
+      )
+      expect(ret.notSelected).toBe(undefined)
+      expect(ret.selected).toEqual(
+        getKeyframeBone({
+          translateX: getKeyframePoint(),
+          translateY: getKeyframePoint(),
+          rotate: getKeyframePoint(),
+          scaleX: getKeyframePoint(),
+          scaleY: getKeyframePoint(),
+        })
+      )
+    })
+    it('not selected', () => {
+      const ret = target.splitKeyframeBoneBySelected(
+        getKeyframeBone({
+          translateX: getKeyframePoint(),
+          translateY: getKeyframePoint(),
+          rotate: getKeyframePoint(),
+          scaleX: getKeyframePoint(),
+          scaleY: getKeyframePoint(),
+        }),
+        {}
+      )
+      expect(ret.selected).toBe(undefined)
+      expect(ret.notSelected).toEqual(
+        getKeyframeBone({
+          translateX: getKeyframePoint(),
+          translateY: getKeyframePoint(),
+          rotate: getKeyframePoint(),
+          scaleX: getKeyframePoint(),
+          scaleY: getKeyframePoint(),
+        })
+      )
+    })
+    it('all existed selected', () => {
+      const ret = target.splitKeyframeBoneBySelected(
+        getKeyframeBone({
+          rotate: getKeyframePoint(),
+        }),
+        { rotate: true }
+      )
+      expect(ret.selected).toEqual(
+        getKeyframeBone({
+          rotate: getKeyframePoint(),
+        })
+      )
+      expect(ret.notSelected).toBe(undefined)
+    })
+  })
+
+  describe('mergeKeyframeBones', () => {
+    it('merge two keyframes', () => {
+      const src = getKeyframeBone({
+        translateX: getKeyframePoint({ value: 10 }),
+        translateY: getKeyframePoint({ value: 20 }),
+      })
+      const override = getKeyframeBone({
+        translateX: getKeyframePoint({ value: 100 }),
+        rotate: getKeyframePoint({ value: 300 }),
+      })
+      expect(target.mergeKeyframeBones(src, override)).toEqual(
+        getKeyframeBone({
+          translateX: getKeyframePoint({ value: 100 }),
+          translateY: getKeyframePoint({ value: 20 }),
+          rotate: getKeyframePoint({ value: 300 }),
+        })
+      )
     })
   })
 })

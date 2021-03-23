@@ -659,20 +659,22 @@ function getSelectKeyframeItem(
   }
 }
 
-function getExecInsertKeyframeItem(keyframes: KeyframeBone[]) {
+function getExecInsertKeyframeItem(keyframes: KeyframeBone[], replace = false) {
   const preFrame = currentFrame.value
   const insertedKeyframes = keyframes
   const preEditTransforms = { ...editTransforms.value }
 
   const { dropped } = mergeKeyframesWithDropped(
     actions.lastSelectedItem.value!.keyframes,
-    insertedKeyframes
+    insertedKeyframes,
+    !replace
   )
 
   const redo = () => {
     const { merged } = mergeKeyframesWithDropped(
       actions.lastSelectedItem.value!.keyframes,
-      insertedKeyframes
+      insertedKeyframes,
+      !replace
     )
     actions.lastSelectedItem.value!.keyframes = merged
     currentFrame.value = preFrame
@@ -733,13 +735,15 @@ function overridedKeyframeList(keyframes: IdMap<KeyframeBone>): KeyframeBone[] {
 function getExecUpdateKeyframeItem(keyframes: IdMap<KeyframeBone>) {
   const { dropped } = mergeKeyframesWithDropped(
     actions.lastSelectedItem.value!.keyframes,
-    toList(keyframes)
+    toList(keyframes),
+    true
   )
 
   const redo = () => {
     const { merged } = mergeKeyframesWithDropped(
       actions.lastSelectedItem.value!.keyframes,
-      toList(keyframes)
+      toList(keyframes),
+      true
     )
     actions.lastSelectedItem.value!.keyframes = merged
   }
@@ -748,7 +752,8 @@ function getExecUpdateKeyframeItem(keyframes: IdMap<KeyframeBone>) {
     undo: () => {
       const { merged } = mergeKeyframesWithDropped(
         actions.lastSelectedItem.value!.keyframes,
-        dropped
+        dropped,
+        true
       )
       actions.lastSelectedItem.value!.keyframes = merged
     },
@@ -778,8 +783,8 @@ function getCompleteDuplicateKeyframes(
   duplicatedKeyframeList: KeyframeBone[],
   updatedKeyframeList: KeyframeBone[]
 ) {
+  const duplicatItem = getExecInsertKeyframeItem(duplicatedKeyframeList, true)
   const updateItem = getExecUpdateKeyframeItem(toMap(updatedKeyframeList))
-  const duplicatItem = getExecInsertKeyframeItem(duplicatedKeyframeList)
 
   return {
     name: 'Duplicate Keyframe',
@@ -788,8 +793,8 @@ function getCompleteDuplicateKeyframes(
       duplicatItem.undo()
     },
     redo: () => {
-      updateItem.redo()
       duplicatItem.redo()
+      updateItem.redo()
     },
   }
 }

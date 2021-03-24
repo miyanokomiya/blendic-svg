@@ -214,8 +214,8 @@ export interface CanvasEditModeBase {
   end: () => void
   cancel: () => void
   setEditMode: (mode: EditMode) => void
-  select: (id: string, selectedState: { [id: string]: boolean }) => void
-  shiftSelect: (id: string, selectedState: { [id: string]: boolean }) => void
+  select: (id: string, selectedState: { [key: string]: boolean }) => void
+  shiftSelect: (id: string, selectedState: { [key: string]: boolean }) => void
   rectSelect: (rect: IRectangle, shift: boolean) => void
   selectAll: () => void
   mousemove: (arg: EditMovement) => void

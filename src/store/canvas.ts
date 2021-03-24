@@ -160,9 +160,9 @@ export function useCanvasStore() {
     execDelete: () => canvasEditMode.value.execDelete(),
     execAdd: () => canvasEditMode.value.execAdd(),
     insert: () => canvasEditMode.value.insert(),
-    select: (id: string, selectedState: { [id: string]: boolean }) =>
+    select: (id: string, selectedState: { [key: string]: boolean }) =>
       canvasEditMode.value.select(id, selectedState),
-    shiftSelect: (id: string, selectedState: { [id: string]: boolean }) =>
+    shiftSelect: (id: string, selectedState: { [key: string]: boolean }) =>
       canvasEditMode.value.shiftSelect(id, selectedState),
     rectSelect: (rect: IRectangle, shift = false) =>
       canvasEditMode.value.rectSelect(rect, shift),

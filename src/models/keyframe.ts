@@ -25,13 +25,18 @@ export interface KeyframeBase {
   frame: number
 }
 
-export interface KeyframeBone extends KeyframeBase {
+export interface KeyframeBoneProps<T> {
+  translateX?: T
+  translateY?: T
+  rotate?: T
+  scaleX?: T
+  scaleY?: T
+}
+
+export interface KeyframeBone
+  extends KeyframeBase,
+    KeyframeBoneProps<KeyframePoint> {
   boneId: string
-  translateX?: KeyframePoint
-  translateY?: KeyframePoint
-  rotate?: KeyframePoint
-  scaleX?: KeyframePoint
-  scaleY?: KeyframePoint
 }
 
 export type CurveName = 'linear' | 'bezier3'
@@ -55,13 +60,7 @@ export interface CurveBezier3 extends CurveBase {
   c2: IVec2
 }
 
-export interface KeyframeSelectedState {
-  translateX?: boolean
-  translateY?: boolean
-  rotate?: boolean
-  scaleX?: boolean
-  scaleY?: boolean
-}
+export interface KeyframeSelectedState extends KeyframeBoneProps<boolean> {}
 
 export function getKeyframeBone(
   arg: Partial<KeyframeBone> = {},

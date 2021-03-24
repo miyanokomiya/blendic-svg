@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/elements/molecules/KeyPointTransform.vue'
 import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
+import { getKeyframeBoneDefaultPropsMap } from '/@/utils/keyframes'
 
 describe('src/components/elements/molecules/KeyPointTransform.vue', () => {
   describe('snapshot', () => {
@@ -31,7 +32,6 @@ describe('src/components/elements/molecules/KeyPointTransform.vue', () => {
             scaleX: getKeyframePoint(),
           }),
           top: 10,
-          sameRangeWidth: 20,
         },
       })
       expect(wrapper.element).toMatchSnapshot()
@@ -53,6 +53,7 @@ describe('src/components/elements/molecules/KeyPointTransform.vue', () => {
             scaleX: getKeyframePoint(),
           }),
           expanded: true,
+          sameRangeWidth: getKeyframeBoneDefaultPropsMap(() => 1),
         },
       })
       expect(wrapper.element).toMatchSnapshot()

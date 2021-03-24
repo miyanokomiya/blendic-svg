@@ -23,6 +23,7 @@ import {
   CurveBase,
   KeyframeBase,
   KeyframeBone,
+  KeyframeBoneProps,
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
@@ -177,13 +178,7 @@ function getScaleY(k: KeyframeBone): KeyframePoint | undefined {
 }
 
 export function getAllSelectedState(): KeyframeSelectedState {
-  return {
-    translateX: true,
-    translateY: true,
-    rotate: true,
-    scaleX: true,
-    scaleY: true,
-  }
+  return getKeyframeBoneDefaultPropsMap(() => true)
 }
 
 export function getInversedSelectedState(
@@ -334,4 +329,39 @@ export function deleteKeyframeBoneByProp(
   if (selectedState.scaleX) delete ret.scaleX
   if (selectedState.scaleY) delete ret.scaleY
   return ret
+}
+
+export function getKeyframeBonePropsMap(
+  keyframes: KeyframeBone[]
+): Required<KeyframeBoneProps<KeyframeBone[]>> {
+  const ret = getKeyframeBoneDefaultPropsMap<KeyframeBone[]>(() => [])
+
+  keyframes.forEach((k) => {
+    if (k.translateX) ret.translateX.push(k)
+    if (k.translateY) ret.translateY.push(k)
+    if (k.rotate) ret.rotate.push(k)
+    if (k.scaleX) ret.scaleX.push(k)
+    if (k.scaleY) ret.scaleY.push(k)
+  })
+
+  return ret
+}
+
+export function getKeyframeBoneDefaultPropsMap<T>(
+  val: () => T
+): Required<KeyframeBoneProps<T>> {
+  return {
+    translateX: val(),
+    translateY: val(),
+    rotate: val(),
+    scaleX: val(),
+    scaleY: val(),
+  }
+}
+
+export function isSameKeyframePoint(
+  a: KeyframePoint,
+  b: KeyframePoint
+): boolean {
+  return a.value === b.value
 }

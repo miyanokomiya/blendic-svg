@@ -23,7 +23,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <KeyPoint
         :top="top"
         :selected="selectedAny"
-        :same-range-width="sameRangeWidth"
+        :same-range-width="sameRangeWidth.all"
         @select="selectAll"
         @shift-select="shiftSelectAll"
       />
@@ -33,6 +33,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-if="isVisible(top + height) && keyFrame.translateX"
         :top="top + height"
         :selected="selectedState.translateX"
+        :same-range-width="sameRangeWidth.translateX"
         @select="select({ translateX: true })"
         @shift-select="shiftSelect({ translateX: true })"
       />
@@ -40,6 +41,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-if="isVisible(top + height * 2) && keyFrame.translateY"
         :top="top + height * 2"
         :selected="selectedState.translateY"
+        :same-range-width="sameRangeWidth.translateY"
         @select="select({ translateY: true })"
         @shift-select="shiftSelect({ translateY: true })"
       />
@@ -47,6 +49,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-if="isVisible(top + height * 3) && keyFrame.rotate"
         :top="top + height * 3"
         :selected="selectedState.rotate"
+        :same-range-width="sameRangeWidth.rotate"
         @select="select({ rotate: true })"
         @shift-select="shiftSelect({ rotate: true })"
       />
@@ -54,6 +57,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-if="isVisible(top + height * 4) && keyFrame.scaleX"
         :top="top + height * 4"
         :selected="selectedState.scaleX"
+        :same-range-width="sameRangeWidth.scaleX"
         @select="select({ scaleX: true })"
         @shift-select="shiftSelect({ scaleX: true })"
       />
@@ -61,6 +65,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-if="isVisible(top + height * 5) && keyFrame.scaleY"
         :top="top + height * 5"
         :selected="selectedState.scaleY"
+        :same-range-width="sameRangeWidth.scaleY"
         @select="select({ scaleY: true })"
         @shift-select="shiftSelect({ scaleY: true })"
       />
@@ -72,8 +77,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import KeyPoint from '/@/components/elements/atoms/KeyPoint.vue'
 import { KeyframeBone, KeyframeSelectedState } from '/@/models/keyframe'
+import { KeyframeBoneSameRange } from '/@/utils/animations'
 import {
   getAllSelectedState,
+  getKeyframeBoneDefaultPropsMap,
   inversedSelectedState,
   isAnySelected,
 } from '/@/utils/keyframes'
@@ -98,8 +105,8 @@ export default defineComponent({
       default: false,
     },
     sameRangeWidth: {
-      type: Number,
-      default: 0,
+      type: Object as PropType<KeyframeBoneSameRange>,
+      default: () => getKeyframeBoneDefaultPropsMap(() => 0),
     },
     height: {
       type: Number,

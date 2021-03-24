@@ -45,9 +45,7 @@ Copyright (C) 2021, Tomoya Komiyama.
               :top="boneTopMap[k.boneId]"
               :selected-state="selectedKeyframeMap[k.id]"
               :expanded="boneExpandedMap[k.boneId]"
-              :same-range-width="
-                (getSameRangeFrame(k.boneId, k.frame) * frameWidth) / scale
-              "
+              :same-range-width="getSameRangeFrame(k.boneId, k.frame)"
               :height="height"
               :scroll-y="scrollY"
               @select="(state) => select(k.id, state)"
@@ -68,7 +66,8 @@ import { IdMap, frameWidth } from '/@/models'
 import { KeyframeBone, KeyframeSelectedState } from '/@/models/keyframe'
 import {
   getKeyframeMapByBoneId,
-  getSameRangeFrameMapByBoneId,
+  getSamePropRangeFrameMapByBoneId,
+  KeyframeBoneSameRange,
 } from '/@/utils/animations'
 import { mapReduce } from '/@/utils/commons'
 
@@ -141,11 +140,17 @@ export default defineComponent({
     })
 
     const sameRangeFrameMapByBoneId = computed(() => {
-      return getSameRangeFrameMapByBoneId(keyframeMapByBoneId.value)
+      return getSamePropRangeFrameMapByBoneId(keyframeMapByBoneId.value)
     })
 
-    function getSameRangeFrame(boneId: string, frame: number): number {
-      return sameRangeFrameMapByBoneId.value[boneId]?.[frame] ?? 0
+    function getSameRangeFrame(
+      boneId: string,
+      frame: number
+    ): KeyframeBoneSameRange | undefined {
+      const map = sameRangeFrameMapByBoneId.value[boneId]?.[frame]
+      if (!map) return
+      // @ts-ignore
+      return mapReduce(map, (val) => (val * frameWidth) / props.scale)
     }
 
     const selectedFrameMap = computed(() => {

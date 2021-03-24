@@ -327,4 +327,50 @@ describe('utils/keyframes.ts', () => {
       )
     })
   })
+
+  describe('getKeyframeBonePropsMap', () => {
+    it('get map', () => {
+      const key1 = getKeyframeBone({
+        frame: 1,
+        translateX: getKeyframePoint({ value: 1 }),
+      })
+      const key2 = getKeyframeBone({
+        frame: 2,
+        translateX: getKeyframePoint({ value: 2 }),
+        translateY: getKeyframePoint({ value: 20 }),
+      })
+      const key3 = getKeyframeBone({
+        frame: 3,
+        rotate: getKeyframePoint(),
+        scaleX: getKeyframePoint(),
+        scaleY: getKeyframePoint(),
+      })
+
+      const ret = target.getKeyframeBonePropsMap([key1, key2, key3])
+      expect(ret.translateX).toEqual([key1, key2])
+      expect(ret.translateY).toEqual([key2])
+      expect(ret.rotate).toEqual([key3])
+      expect(ret.scaleX).toEqual([key3])
+      expect(ret.scaleY).toEqual([key3])
+    })
+  })
+
+  describe('isSameKeyframePoint', () => {
+    it('return true if two args have same value', () => {
+      expect(
+        target.isSameKeyframePoint(
+          getKeyframePoint({ value: 1 }),
+          getKeyframePoint({ value: 1 })
+        )
+      ).toBe(true)
+    })
+    it('return false if two args have different value', () => {
+      expect(
+        target.isSameKeyframePoint(
+          getKeyframePoint({ value: 1 }),
+          getKeyframePoint({ value: 2 })
+        )
+      ).toBe(false)
+    })
+  })
 })

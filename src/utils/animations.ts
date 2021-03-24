@@ -38,9 +38,19 @@ import {
   toMap,
   Transform,
 } from '/@/models'
-import { KeyframeBase, KeyframeBone } from '/@/models/keyframe'
+import {
+  KeyframeBase,
+  KeyframeBone,
+  KeyframeBoneProps,
+  KeyframePoint,
+} from '/@/models/keyframe'
 import { isSameTransform } from '/@/utils/geometry'
-import { mergeKeyframeBones } from '/@/utils/keyframes'
+import {
+  getKeyframeBoneDefaultPropsMap,
+  getKeyframeBonePropsMap,
+  isSameKeyframePoint,
+  mergeKeyframeBones,
+} from '/@/utils/keyframes'
 
 export function getScaleLog(scale: number): number {
   return Math.round(Math.log(scale) / Math.log(scaleRate))
@@ -240,33 +250,85 @@ export function findPrevFrameWithKeyframe(
   return gt.length > 0 ? gt[gt.length - 1] : currentFrame
 }
 
-/*
- * @return { bone_id: { 0: 1, 2: 4 } }
- */
-export function getSameRangeFrameMapByBoneId(
+export interface KeyframeBoneSameRange
+  extends Required<KeyframeBoneProps<number>> {
+  all: number
+}
+
+export function getSamePropRangeFrameMapByBoneId(
   keyframeMapByBoneId: IdMap<KeyframeBone[]>
-): IdMap<IdMap<number>> {
-  return Object.keys(keyframeMapByBoneId).reduce<IdMap<IdMap<number>>>(
-    (p, boneId) => {
-      p[boneId] = keyframeMapByBoneId[boneId].reduce<IdMap<number>>(
-        (p, k, i) => {
-          const after = getAfterKeyframe(
-            keyframeMapByBoneId[boneId].slice(i),
-            k.frame
-          )
-          if (after && isSameKeyframeStatus(k, after)) {
-            p[k.frame] = after.frame - k.frame
-          } else {
-            p[k.frame] = 0
-          }
-          return p
-        },
-        {}
-      )
+): IdMap<IdMap<KeyframeBoneSameRange>> {
+  return Object.keys(keyframeMapByBoneId).reduce<
+    IdMap<IdMap<KeyframeBoneSameRange>>
+  >((p, boneId) => {
+    p[boneId] = keyframeMapByBoneId[boneId].reduce<
+      IdMap<KeyframeBoneSameRange>
+    >((p, k, i) => {
+      p[k.frame] = getSamePropRangeFrameMap(keyframeMapByBoneId[boneId], i)
       return p
-    },
-    {}
-  )
+    }, {})
+    return p
+  }, {})
+}
+
+export function getSamePropRangeFrameMap(
+  keyframes: KeyframeBone[],
+  currentIndex: number
+): KeyframeBoneSameRange {
+  const keyframesFromCurrent = keyframes.slice(currentIndex)
+  const current = keyframesFromCurrent[0]
+  if (keyframesFromCurrent.length < 2)
+    return { ...getKeyframeBoneDefaultPropsMap(() => 0), all: 0 }
+
+  const propMap = getKeyframeBonePropsMap(keyframesFromCurrent)
+  const translateX = current.translateX
+    ? getSamePropRangeFrame(propMap.translateX, (k) => k.translateX)
+    : 0
+  const translateY = current.translateY
+    ? getSamePropRangeFrame(propMap.translateY, (k) => k.translateY)
+    : 0
+  const rotate = current.rotate
+    ? getSamePropRangeFrame(propMap.rotate, (k) => k.rotate)
+    : 0
+  const scaleX = current.scaleX
+    ? getSamePropRangeFrame(propMap.scaleX, (k) => k.scaleX)
+    : 0
+  const scaleY = current.scaleY
+    ? getSamePropRangeFrame(propMap.scaleY, (k) => k.scaleY)
+    : 0
+
+  return {
+    all: [translateY, rotate, scaleX, scaleY].reduce(
+      (p, c) => Math.min(p, c),
+      translateX
+    ),
+    translateX,
+    translateY,
+    rotate,
+    scaleX,
+    scaleY,
+  }
+}
+
+function getSamePropRangeFrame(
+  keyframes: KeyframeBone[],
+  getValue: (k: KeyframeBone) => KeyframePoint | undefined
+): number {
+  if (keyframes.length < 2) return 0
+
+  const current = keyframes[0]
+  const after = keyframes[1]
+  const currentValue = getValue(current)
+  const afterValue = getValue(after)
+  if (
+    currentValue &&
+    afterValue &&
+    isSameKeyframePoint(currentValue, afterValue)
+  ) {
+    return after.frame - current.frame
+  } else {
+    return 0
+  }
 }
 
 export function getLastFrame<T extends KeyframeBase>(keyframes: T[]): number {

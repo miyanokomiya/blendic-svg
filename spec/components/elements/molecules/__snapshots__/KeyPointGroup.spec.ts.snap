@@ -1,19 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot default 1`] = `
+exports[`src/components/elements/molecules/KeyPointGroup.vue snapshot default 1`] = `
 <g>
   <!--v-if-->
   <!--v-if-->
 </g>
 `;
 
-exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot expanded 1`] = `
+exports[`src/components/elements/molecules/KeyPointGroup.vue snapshot expanded 1`] = `
 <g>
   <!--v-if-->
   
-  <!--v-if-->
-  <!--v-if-->
-  <!--v-if-->
   <g>
     <rect
       class="view-only"
@@ -30,12 +27,11 @@ exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot expand
       stroke="#000"
     />
   </g>
-  <!--v-if-->
   
 </g>
 `;
 
-exports[`src/components/elements/molecules/KeyPointTransform.vue snapshot selected 1`] = `
+exports[`src/components/elements/molecules/KeyPointGroup.vue snapshot selected 1`] = `
 <g
   selected="true"
 >

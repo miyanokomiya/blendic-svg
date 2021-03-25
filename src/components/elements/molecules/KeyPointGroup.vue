@@ -29,46 +29,15 @@ Copyright (C) 2021, Tomoya Komiyama.
       />
     </template>
     <template v-if="expanded">
-      <KeyPoint
-        v-if="isVisible(top + height) && keyFrame.translateX"
-        :top="top + height"
-        :selected="selectedState.translateX"
-        :same-range-width="sameRangeWidth.translateX"
-        @select="select({ translateX: true })"
-        @shift-select="shiftSelect({ translateX: true })"
-      />
-      <KeyPoint
-        v-if="isVisible(top + height * 2) && keyFrame.translateY"
-        :top="top + height * 2"
-        :selected="selectedState.translateY"
-        :same-range-width="sameRangeWidth.translateY"
-        @select="select({ translateY: true })"
-        @shift-select="shiftSelect({ translateY: true })"
-      />
-      <KeyPoint
-        v-if="isVisible(top + height * 3) && keyFrame.rotate"
-        :top="top + height * 3"
-        :selected="selectedState.rotate"
-        :same-range-width="sameRangeWidth.rotate"
-        @select="select({ rotate: true })"
-        @shift-select="shiftSelect({ rotate: true })"
-      />
-      <KeyPoint
-        v-if="isVisible(top + height * 4) && keyFrame.scaleX"
-        :top="top + height * 4"
-        :selected="selectedState.scaleX"
-        :same-range-width="sameRangeWidth.scaleX"
-        @select="select({ scaleX: true })"
-        @shift-select="shiftSelect({ scaleX: true })"
-      />
-      <KeyPoint
-        v-if="isVisible(top + height * 5) && keyFrame.scaleY"
-        :top="top + height * 5"
-        :selected="selectedState.scaleY"
-        :same-range-width="sameRangeWidth.scaleY"
-        @select="select({ scaleY: true })"
-        @shift-select="shiftSelect({ scaleY: true })"
-      />
+      <template v-for="(y, key) in childTopMap" :key="key">
+        <KeyPoint
+          :top="y"
+          :selected="selectedState[key]"
+          :same-range-width="sameRangeWidth[key]"
+          @select="select({ [key]: true })"
+          @shift-select="shiftSelect({ [key]: true })"
+        />
+      </template>
     </template>
   </g>
 </template>
@@ -76,8 +45,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
 import KeyPoint from '/@/components/elements/atoms/KeyPoint.vue'
-import { KeyframeBone, KeyframeSelectedState } from '/@/models/keyframe'
-import { KeyframeBoneSameRange } from '/@/utils/animations'
+import { KeyframeBase } from '/@/models/keyframe'
 import {
   getAllSelectedState,
   getKeyframeDefaultPropsMap,
@@ -89,7 +57,13 @@ export default defineComponent({
   components: { KeyPoint },
   props: {
     keyFrame: {
-      type: Object as PropType<KeyframeBone>,
+      type: Object as PropType<KeyframeBase>,
+      required: true,
+    },
+    childMap: {
+      type: Object as PropType<{
+        [key: string]: number
+      }>,
       required: true,
     },
     top: {
@@ -97,7 +71,7 @@ export default defineComponent({
       default: 0,
     },
     selectedState: {
-      type: Object as PropType<KeyframeSelectedState>,
+      type: Object as PropType<{ [key: string]: boolean }>,
       default: () => ({}),
     },
     expanded: {
@@ -105,7 +79,7 @@ export default defineComponent({
       default: false,
     },
     sameRangeWidth: {
-      type: Object as PropType<KeyframeBoneSameRange>,
+      type: Object as PropType<{ [key: string]: number }>,
       default: () => getKeyframeDefaultPropsMap(() => 0),
     },
     height: {
@@ -122,17 +96,37 @@ export default defineComponent({
     function isVisible(top: number): boolean {
       return top > props.scrollY + props.height * 1.5
     }
+    function getTop(index: number): number {
+      return props.top + props.height * (index + 1)
+    }
 
-    const selectedAny = computed(() => isAnySelected(props.selectedState))
+    const selectedAny = computed(() =>
+      isAnySelected(props.selectedState as any)
+    )
+
+    const childTopMap = computed(() => {
+      return Object.keys(props.childMap).reduce<{ [key: string]: number }>(
+        (p, c, v) => {
+          const top = getTop(v)
+          if (c in props.keyFrame && isVisible(top)) p[c] = top
+          return p
+        },
+        {}
+      )
+    })
 
     return {
       isVisible,
+      childTopMap,
       selectedAny,
-      select(state: KeyframeSelectedState) {
+      select(state: { [key: string]: boolean }) {
         emit('select', state)
       },
-      shiftSelect(state: KeyframeSelectedState) {
-        emit('shift-select', inversedSelectedState(props.selectedState, state))
+      shiftSelect(state: { [key: string]: boolean }) {
+        emit(
+          'shift-select',
+          inversedSelectedState(props.selectedState as any, state as any)
+        )
       },
       selectAll() {
         emit('select', getAllSelectedState())

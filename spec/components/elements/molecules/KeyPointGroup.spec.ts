@@ -18,11 +18,19 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { mount } from '@vue/test-utils'
-import Target from '/@/components/elements/molecules/KeyPointTransform.vue'
+import Target from '/@/components/elements/molecules/KeyPointGroup.vue'
 import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import { getKeyframeDefaultPropsMap } from '/@/utils/keyframes'
 
-describe('src/components/elements/molecules/KeyPointTransform.vue', () => {
+const childMap = {
+  translateX: 0,
+  translateY: 1,
+  rotate: 2,
+  scaleX: 3,
+  scaleY: 4,
+}
+
+describe('src/components/elements/molecules/KeyPointGroup.vue', () => {
   describe('snapshot', () => {
     it('default', () => {
       const wrapper = mount(Target, {
@@ -31,6 +39,7 @@ describe('src/components/elements/molecules/KeyPointTransform.vue', () => {
             translateX: getKeyframePoint(),
             scaleX: getKeyframePoint(),
           }),
+          childMap,
           top: 10,
         },
       })
@@ -40,6 +49,7 @@ describe('src/components/elements/molecules/KeyPointTransform.vue', () => {
       const wrapper = mount(Target, {
         props: {
           keyFrame: getKeyframeBone(),
+          childMap,
           selected: true,
         },
       })
@@ -52,6 +62,7 @@ describe('src/components/elements/molecules/KeyPointTransform.vue', () => {
             translateX: getKeyframePoint(),
             scaleX: getKeyframePoint(),
           }),
+          childMap,
           expanded: true,
           sameRangeWidth: getKeyframeDefaultPropsMap(() => 1),
         },

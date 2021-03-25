@@ -40,8 +40,9 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <g :transform="`translate(0, ${-scrollY})`">
           <g v-for="k in keyframes" :key="k.id">
-            <KeyPointTransform
+            <KeyPointGroup
               :key-frame="k"
+              :child-map="transformMap"
               :top="boneTopMap[k.boneId]"
               :selected-state="selectedKeyframeMap[k.id]"
               :expanded="boneExpandedMap[k.boneId]"
@@ -60,7 +61,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
-import KeyPointTransform from '/@/components/elements/molecules/KeyPointTransform.vue'
+import KeyPointGroup from '/@/components/elements/molecules/KeyPointGroup.vue'
 import { useSettings } from '/@/composables/settings'
 import { IdMap, frameWidth } from '/@/models'
 import {
@@ -73,7 +74,7 @@ import { mapReduce } from '/@/utils/commons'
 import { getSamePropRangeFrameMapByBoneId } from '/@/utils/keyframes/keyframeBone'
 
 export default defineComponent({
-  components: { KeyPointTransform },
+  components: { KeyPointGroup },
   props: {
     scale: {
       type: Number,
@@ -169,6 +170,16 @@ export default defineComponent({
       )
     })
 
+    const transformMap = computed(() => {
+      return {
+        translateX: 0,
+        translateY: 1,
+        rotate: 2,
+        scaleX: 3,
+        scaleY: 4,
+      }
+    })
+
     function sortAndFilterKeyframesByBoneId(
       keyframes: KeyframeBone[]
     ): KeyframeBone[] {
@@ -196,6 +207,7 @@ export default defineComponent({
       frameWidth,
       boneIndexMap,
       sortedKeyframeMapByFrame,
+      transformMap,
       getSameRangeFrame,
       selectedFrameMap,
       select,

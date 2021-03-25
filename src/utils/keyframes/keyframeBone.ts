@@ -17,27 +17,18 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IVec2 } from 'okageo'
 import { IdMap, Transform } from '/@/models'
 import {
-  CurveBase,
-  KeyframeBase,
   KeyframeBone,
   KeyframeBoneProps,
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import { mapReduce } from '/@/utils/commons'
-
-type NeighborKeyframe<T extends KeyframeBase> =
-  | []
-  | [same: T]
-  | [start: T, end: T]
-
-interface KeyframePointWithFrame {
-  keyframePoint: KeyframePoint
-  frame: number
-}
+import {
+  getNeighborKeyframes,
+  interpolateKeyframePoint,
+} from '/@/utils/keyframes/core'
 
 export function getInterpolatedTransformMapByBoneId(
   sortedKeyframesMap: IdMap<KeyframeBone[]>,
@@ -96,69 +87,6 @@ function interpolateKeyframeBoneProp(
       frame
     )
   }
-}
-
-function getNeighborKeyframes<T extends KeyframeBase>(
-  sortedKeyframes: T[],
-  frame: number
-): NeighborKeyframe<T> {
-  if (sortedKeyframes.length === 0) return []
-
-  const afterIndex = sortedKeyframes.findIndex((k) => frame <= k.frame)
-  if (afterIndex === -1) {
-    return [sortedKeyframes[sortedKeyframes.length - 1]]
-  }
-
-  const after = sortedKeyframes[afterIndex]
-  if (after.frame === frame || afterIndex === 0) {
-    return [after]
-  }
-
-  const before = sortedKeyframes[afterIndex - 1]
-  if (before.frame === frame) {
-    return [before]
-  }
-
-  return [before, after]
-}
-
-export function interpolateKeyframePoint(
-  start: KeyframePointWithFrame,
-  end: KeyframePointWithFrame,
-  frame: number
-): number {
-  const s = toPoint(start)
-  const e = toPoint(end)
-  const curveFn = getCurveFn(s, e, start.keyframePoint.curve)
-  return curveFn(frame)
-}
-
-function toPoint(keyframePointWithFrame: KeyframePointWithFrame): IVec2 {
-  return {
-    x: keyframePointWithFrame.frame,
-    y: keyframePointWithFrame.keyframePoint.value,
-  }
-}
-
-type CurveFn = (x: number) => number
-
-export function getCurveFn(
-  start: IVec2,
-  end: IVec2,
-  curve: CurveBase
-): CurveFn {
-  switch (curve.name) {
-    case 'linear':
-      return getLinearCurveFn(start, end)
-    case 'bezier3':
-      return getLinearCurveFn(start, end)
-  }
-}
-
-function getLinearCurveFn(start: IVec2, end: IVec2): CurveFn {
-  const rangeX = end.x - start.x
-  if (rangeX === 0) return (x) => x
-  return (x) => ((x - start.x) / rangeX) * (end.y - start.y) + start.y
 }
 
 function getTransformX(k: KeyframeBone): KeyframePoint | undefined {

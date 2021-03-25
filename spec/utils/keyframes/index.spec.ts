@@ -21,7 +21,7 @@ import { getTransform } from '/@/models'
 import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import * as target from '/@/utils/keyframes'
 
-describe('utils/keyframes.ts', () => {
+describe('utils/keyframes/index.ts', () => {
   describe('interpolateKeyframeBone', () => {
     it('translate', () => {
       expect(
@@ -109,44 +109,6 @@ describe('utils/keyframes.ts', () => {
           3
         )
       ).toEqual(getTransform({ scale: { x: 550, y: 1100 } }))
-    })
-  })
-
-  describe('interpolateKeyframePoint', () => {
-    it('interpolate', () => {
-      const start = {
-        frame: 10,
-        keyframePoint: {
-          value: 20,
-          curve: { name: 'linear' },
-        },
-      } as const
-      const end = {
-        frame: 20,
-        keyframePoint: {
-          value: 40,
-          curve: { name: 'linear' },
-        },
-      } as const
-      expect(target.interpolateKeyframePoint(start, end, 15)).toBeCloseTo(30)
-    })
-  })
-
-  describe('getCurveFn', () => {
-    const start = { x: 10, y: 20 }
-    const end = { x: 20, y: 40 }
-
-    it('linear', () => {
-      const fn = target.getCurveFn(start, end, { name: 'linear' })
-      expect(fn(10)).toBeCloseTo(20)
-      expect(fn(15)).toBeCloseTo(30)
-      expect(fn(20)).toBeCloseTo(40)
-    })
-
-    xit('TODO bezier3', () => {
-      const fn = target.getCurveFn(start, end, { name: 'bezier3' })
-      expect(fn(10)).toBeCloseTo(20)
-      expect(fn(20)).toBeCloseTo(40)
     })
   })
 
@@ -352,25 +314,6 @@ describe('utils/keyframes.ts', () => {
       expect(ret.rotate).toEqual([key3])
       expect(ret.scaleX).toEqual([key3])
       expect(ret.scaleY).toEqual([key3])
-    })
-  })
-
-  describe('isSameKeyframePoint', () => {
-    it('return true if two args have same value', () => {
-      expect(
-        target.isSameKeyframePoint(
-          getKeyframePoint({ value: 1 }),
-          getKeyframePoint({ value: 1 })
-        )
-      ).toBe(true)
-    })
-    it('return false if two args have different value', () => {
-      expect(
-        target.isSameKeyframePoint(
-          getKeyframePoint({ value: 1 }),
-          getKeyframePoint({ value: 2 })
-        )
-      ).toBe(false)
     })
   })
 })

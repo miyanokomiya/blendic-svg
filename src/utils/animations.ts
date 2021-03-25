@@ -48,9 +48,9 @@ import { isSameTransform } from '/@/utils/geometry'
 import {
   getKeyframeBoneDefaultPropsMap,
   getKeyframeBonePropsMap,
-  isSameKeyframePoint,
   mergeKeyframeBones,
 } from '/@/utils/keyframes'
+import { isSameKeyframePoint } from '/@/utils/keyframes/core'
 
 export function getScaleLog(scale: number): number {
   return Math.round(Math.log(scale) / Math.log(scaleRate))

@@ -20,9 +20,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { v4 } from 'uuid'
 import { IVec2 } from 'okageo'
 
+type KeyframeName = 'bone'
+
 export interface KeyframeBase {
   id: string
   frame: number
+  name: KeyframeName
 }
 
 export interface KeyframeBoneProps<T> {
@@ -70,6 +73,7 @@ export function getKeyframeBone(
   return {
     frame: 0,
     boneId: '',
+    name: 'bone',
     ...arg,
     id,
   }

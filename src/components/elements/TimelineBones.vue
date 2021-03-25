@@ -37,34 +37,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <g v-if="boneExpandedMap[bone.id]">
           <TimelineRow
-            :transform="`translate(10, ${height})`"
+            v-for="(y, label) in childTopMap"
+            :key="label"
+            :transform="`translate(10, ${y})`"
             :label-width="labelWidth - 10"
             :label-height="height"
-            label="Location X"
-          />
-          <TimelineRow
-            :transform="`translate(10, ${2 * height})`"
-            :label-width="labelWidth - 10"
-            :label-height="height"
-            label="Location Y"
-          />
-          <TimelineRow
-            :transform="`translate(10, ${3 * height})`"
-            :label-width="labelWidth - 10"
-            :label-height="height"
-            label="Rotation"
-          />
-          <TimelineRow
-            :transform="`translate(10, ${4 * height})`"
-            :label-width="labelWidth - 10"
-            :label-height="height"
-            label="Scale X"
-          />
-          <TimelineRow
-            :transform="`translate(10, ${5 * height})`"
-            :label-width="labelWidth - 10"
-            :label-height="height"
-            label="Scale Y"
+            :label="label"
           />
         </g>
       </g>
@@ -83,9 +61,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 import { Bone, IdMap } from '/@/models'
 import TimelineRow from './atoms/TimelineRow.vue'
+import { getKeyframeTopMap } from '/@/utils/helpers'
 
 export default defineComponent({
   components: {
@@ -123,7 +102,18 @@ export default defineComponent({
       emit('toggle-bone-expanded', boneId)
     }
 
+    const childTopMap = computed(() => {
+      return getKeyframeTopMap(props.height, 0, {
+        'Translate X': 0,
+        'Translate Y': 1,
+        Rotate: 2,
+        'Scale X': 3,
+        'Scale Y': 4,
+      })
+    })
+
     return {
+      childTopMap,
       toggleBoneExpanded,
     }
   },

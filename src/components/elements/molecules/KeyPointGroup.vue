@@ -46,6 +46,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import KeyPoint from '/@/components/elements/atoms/KeyPoint.vue'
 import { KeyframeBase } from '/@/models/keyframe'
+import { dropMapIfFalse } from '/@/utils/commons'
+import { getKeyframeTopMap } from '/@/utils/helpers'
 import {
   getAllSelectedState,
   getKeyframeDefaultPropsMap,
@@ -96,22 +98,15 @@ export default defineComponent({
     function isVisible(top: number): boolean {
       return top > props.scrollY + props.height * 1.5
     }
-    function getTop(index: number): number {
-      return props.top + props.height * (index + 1)
-    }
 
     const selectedAny = computed(() =>
       isAnySelected(props.selectedState as any)
     )
 
     const childTopMap = computed(() => {
-      return Object.keys(props.childMap).reduce<{ [key: string]: number }>(
-        (p, c, v) => {
-          const top = getTop(v)
-          if (c in props.keyFrame && isVisible(top)) p[c] = top
-          return p
-        },
-        {}
+      return dropMapIfFalse(
+        getKeyframeTopMap(props.height, props.top, props.childMap),
+        (top, key) => key in props.keyFrame && isVisible(top)
       )
     })
 

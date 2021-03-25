@@ -145,6 +145,7 @@ import InlineField from '/@/components/atoms/InlineField.vue'
 import {
   getKeyframeMapByFrame,
   getNearestFrameAtPoint,
+  mergeKeyframesWithDropped,
 } from '../utils/animations'
 import { IVec2 } from 'okageo'
 import { mapReduce, toList } from '/@/utils/commons'
@@ -189,12 +190,19 @@ export default defineComponent({
     )
     const keyframeMapByFrame = computed(() => {
       return getKeyframeMapByFrame(
-        toList({
-          ...animationStore.visibledKeyframeMap.value,
-          ...keyframeEditMode.tmpKeyframes.value,
-          ...keyframeEditMode.editedKeyframeMap.value.notSelected,
-          ...keyframeEditMode.editedKeyframeMap.value.selected,
-        })
+        mergeKeyframesWithDropped(
+          // fixed keyframes
+          toList({
+            ...animationStore.visibledKeyframeMap.value,
+            ...keyframeEditMode.editedKeyframeMap.value.notSelected,
+          }) as any,
+          // moved keyframes
+          toList({
+            ...keyframeEditMode.tmpKeyframes.value,
+            ...keyframeEditMode.editedKeyframeMap.value.selected,
+          }) as any,
+          true
+        ).merged
       )
     })
 

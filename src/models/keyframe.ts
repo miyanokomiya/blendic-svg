@@ -28,7 +28,9 @@ export interface KeyframeBase {
   name: KeyframeName
 }
 
-export interface KeyframeBaseProps {}
+export interface KeyframeBaseProps {
+  name: KeyframeName
+}
 
 export interface KeyframeBoneProps<T> extends KeyframeBaseProps {
   translateX?: T

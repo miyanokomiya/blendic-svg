@@ -54,7 +54,7 @@ interface KeyframeModule {
   getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps>
 }
 
-function getKeyframeModule(name: KeyframeName = 'bone'): KeyframeModule {
+export function getKeyframeModule(name: KeyframeName = 'bone'): KeyframeModule {
   switch (name) {
     case 'bone':
       return keyframeBoneModule

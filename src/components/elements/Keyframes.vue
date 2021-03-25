@@ -63,11 +63,12 @@ import { computed, defineComponent, PropType } from 'vue'
 import KeyPointTransform from '/@/components/elements/molecules/KeyPointTransform.vue'
 import { useSettings } from '/@/composables/settings'
 import { IdMap, frameWidth } from '/@/models'
-import { KeyframeBone, KeyframeSelectedState } from '/@/models/keyframe'
 import {
-  getKeyframeMapByBoneId,
+  KeyframeBone,
   KeyframeBoneSameRange,
-} from '/@/utils/animations'
+  KeyframeSelectedState,
+} from '/@/models/keyframe'
+import { getKeyframeMapByBoneId } from '/@/utils/animations'
 import { mapReduce } from '/@/utils/commons'
 import { getSamePropRangeFrameMapByBoneId } from '/@/utils/keyframes/keyframeBone'
 

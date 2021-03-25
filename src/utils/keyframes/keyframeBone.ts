@@ -112,7 +112,7 @@ export function getInversedSelectedState(
 ): KeyframeSelectedState {
   if (!k) return getAllSelectedState()
 
-  const ret: KeyframeSelectedState = {}
+  const ret: KeyframeSelectedState = { name: 'bone' }
   if (!k.translateX) ret.translateX = true
   if (!k.translateY) ret.translateY = true
   if (!k.rotate) ret.rotate = true
@@ -125,7 +125,7 @@ export function inversedSelectedState(
   k: KeyframeSelectedState,
   target: KeyframeSelectedState
 ): KeyframeSelectedState {
-  const ret: KeyframeSelectedState = {}
+  const ret: KeyframeSelectedState = { name: 'bone' }
   if (
     (target.translateX && !k.translateX) ||
     (!target.translateX && k.translateX)
@@ -277,6 +277,7 @@ export function getKeyframeDefaultPropsMap<T>(
   val: () => T
 ): Required<KeyframeBoneProps<T>> {
   return {
+    name: 'bone',
     translateX: val(),
     translateY: val(),
     rotate: val(),
@@ -335,6 +336,7 @@ export function getSamePropRangeFrameMap(
     : 0
 
   return {
+    name: 'bone',
     all: [translateY, rotate, scaleX, scaleY].reduce(
       (p, c) => Math.min(p, c),
       translateX

@@ -67,6 +67,7 @@ import {
 import {
   getKeyframeBone,
   getKeyframePoint,
+  KeyframeBase,
   KeyframeBone,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
@@ -405,16 +406,16 @@ function execDeleteKeyframes() {
   item.redo()
   historyStore.push(item)
 }
-function execUpdateKeyframes(keyframes: IdMap<KeyframeBone>) {
-  const item = getExecUpdateKeyframeItem(keyframes)
+function execUpdateKeyframes(keyframes: IdMap<KeyframeBase>) {
+  const item = getExecUpdateKeyframeItem(keyframes as IdMap<KeyframeBone>)
   item.redo()
   historyStore.push(item)
 }
-function pasteKeyframes(keyframeList: KeyframeBone[]) {
+function pasteKeyframes(keyframeList: KeyframeBase[]) {
   const item = getExecPasteKeyframeItem(
     toMap(
       slideKeyframesTo(
-        keyframeList
+        (keyframeList as KeyframeBone[])
           .filter((k) => store.boneMap.value[k.boneId])
           .map((k) => getKeyframeBone(k, true)),
         currentFrame.value
@@ -425,12 +426,12 @@ function pasteKeyframes(keyframeList: KeyframeBone[]) {
   historyStore.push(item)
 }
 function completeDuplicateKeyframes(
-  duplicatedKeyframeList: KeyframeBone[],
-  updatedKeyframeList: KeyframeBone[]
+  duplicatedKeyframeList: KeyframeBase[],
+  updatedKeyframeList: KeyframeBase[]
 ) {
-  const item = getCompleteDuplicateKeyframes(
-    duplicatedKeyframeList,
-    updatedKeyframeList
+  const item = getCompleteDuplicateKeyframesItem(
+    duplicatedKeyframeList as KeyframeBone[],
+    updatedKeyframeList as KeyframeBone[]
   )
   item.redo()
   historyStore.push(item)
@@ -593,16 +594,22 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
 
   const redo = () => {
     if (shift) {
+      const dropIds: IdMap<boolean> = {}
       const idMap = ids.reduce<IdMap<KeyframeSelectedState>>((p, id) => {
-        p[id] = isAllSelected(selectedKeyframeMap.value[id])
-          ? {}
-          : getAllSelectedState()
+        if (isAllSelected(selectedKeyframeMap.value[id])) {
+          dropIds[id] = true
+        } else {
+          p[id] = getAllSelectedState()
+        }
         return p
       }, {})
-      selectedKeyframeMap.value = {
-        ...selectedKeyframeMap.value,
-        ...idMap,
-      }
+      selectedKeyframeMap.value = dropMap(
+        {
+          ...selectedKeyframeMap.value,
+          ...idMap,
+        },
+        dropIds
+      )
     } else {
       const idMap = ids.reduce<IdMap<KeyframeSelectedState>>((p, id) => {
         p[id] = getAllSelectedState()
@@ -787,7 +794,7 @@ function getExecPasteKeyframeItem(keyframes: IdMap<KeyframeBone>) {
   }
 }
 
-function getCompleteDuplicateKeyframes(
+function getCompleteDuplicateKeyframesItem(
   duplicatedKeyframeList: KeyframeBone[],
   updatedKeyframeList: KeyframeBone[]
 ) {

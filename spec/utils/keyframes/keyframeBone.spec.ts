@@ -121,17 +121,28 @@ describe('utils/keyframes/index.ts', () => {
     it('inverse selected state', () => {
       expect(
         target.inversedSelectedState(
-          { translateX: true, scaleX: true },
-          { translateX: true, rotate: true }
+          {
+            name: 'bone',
+            translateX: true,
+            scaleX: true,
+          },
+          {
+            name: 'bone',
+            translateX: true,
+            rotate: true,
+          }
         )
       ).toEqual({
+        name: 'bone',
         rotate: true,
         scaleX: true,
       })
     })
     it('do nothing if target is empty', () => {
       expect(
-        target.inversedSelectedState(target.getAllSelectedState(), {})
+        target.inversedSelectedState(target.getAllSelectedState(), {
+          name: 'bone',
+        })
       ).toEqual(target.getAllSelectedState())
     })
   })
@@ -145,7 +156,10 @@ describe('utils/keyframes/index.ts', () => {
               getKeyframeBone({
                 [prop]: getKeyframePoint(),
               }),
-              { [prop]: true }
+              {
+                name: 'bone',
+                [prop]: true,
+              }
             )
           ).toBe(true)
         }
@@ -164,6 +178,7 @@ describe('utils/keyframes/index.ts', () => {
           scaleY: getKeyframePoint(),
         }),
         {
+          name: 'bone',
           translateX: true,
           translateY: true,
           rotate: true,
@@ -191,7 +206,7 @@ describe('utils/keyframes/index.ts', () => {
           scaleX: getKeyframePoint(),
           scaleY: getKeyframePoint(),
         }),
-        {}
+        { name: 'bone' }
       )
       expect(ret.selected).toBe(undefined)
       expect(ret.notSelected).toEqual(
@@ -209,7 +224,10 @@ describe('utils/keyframes/index.ts', () => {
         getKeyframeBone({
           rotate: getKeyframePoint(),
         }),
-        { rotate: true }
+        {
+          name: 'bone',
+          rotate: true,
+        }
       )
       expect(ret.selected).toEqual(
         getKeyframeBone({
@@ -267,6 +285,7 @@ describe('utils/keyframes/index.ts', () => {
             rotate: getKeyframePoint({ value: 300 }),
           }),
           {
+            name: 'bone',
             translateX: true,
             translateY: true,
             rotate: true,
@@ -283,6 +302,7 @@ describe('utils/keyframes/index.ts', () => {
             rotate: getKeyframePoint({ value: 300 }),
           }),
           {
+            name: 'bone',
             translateX: true,
           }
         )

@@ -33,28 +33,24 @@ import { getFrameX, getNearestFrameAtPoint } from '../utils/animations'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { applyTransform } from '/@/utils/geometry'
 import { IRectangle } from 'okageo'
-import {
-  getKeyframeBone,
-  KeyframeBone,
-  KeyframeSelectedState,
-} from '/@/models/keyframe'
+import { getKeyframeBone, KeyframeBase } from '/@/models/keyframe'
 import { splitKeyframeBySelected } from '/@/utils/keyframes'
 
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
-  clipboard: KeyframeBone[]
-  tmpKeyframes: IdMap<KeyframeBone>
+  clipboard: KeyframeBase[]
+  tmpKeyframes: IdMap<KeyframeBase>
 }
 
 export interface KeyframeEditMode extends CanvasEditModeBase {
-  tmpKeyframes: ComputedRef<IdMap<KeyframeBone>>
+  tmpKeyframes: ComputedRef<IdMap<KeyframeBase>>
   getEditFrames: (id: string) => number
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
   editedKeyframeMap: ComputedRef<{
-    selected: IdMap<KeyframeBone>
-    notSelected: IdMap<KeyframeBone>
+    selected: IdMap<KeyframeBase>
+    notSelected: IdMap<KeyframeBase>
   }>
 }
 
@@ -131,11 +127,11 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   })
 
   const keyframeSelectedInfoSet = computed<{
-    selected: IdMap<KeyframeBone>
-    notSelected: IdMap<KeyframeBone>
+    selected: IdMap<KeyframeBase>
+    notSelected: IdMap<KeyframeBase>
   }>(() => {
-    const selected: IdMap<KeyframeBone> = {}
-    const notSelected: IdMap<KeyframeBone> = {}
+    const selected: IdMap<KeyframeBase> = {}
+    const notSelected: IdMap<KeyframeBase> = {}
 
     Object.keys(animationStore.selectedKeyframeMap.value).forEach((id) => {
       const selectedState = animationStore.selectedKeyframeMap.value[id]
@@ -157,8 +153,8 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   })
 
   const editedKeyframeMap = computed<{
-    selected: IdMap<KeyframeBone>
-    notSelected: IdMap<KeyframeBone>
+    selected: IdMap<KeyframeBase>
+    notSelected: IdMap<KeyframeBase>
   }>(() => {
     if (!state.command) return { selected: {}, notSelected: {} }
 
@@ -197,7 +193,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     state.command = ''
   }
 
-  function select(id: string, selectedState: KeyframeSelectedState) {
+  function select(id: string, selectedState: any) {
     if (state.command) {
       completeEdit()
       return
@@ -205,7 +201,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     animationStore.selectKeyframe(id, selectedState)
   }
 
-  function shiftSelect(id: string, selectedState: KeyframeSelectedState) {
+  function shiftSelect(id: string, selectedState: any) {
     if (state.command) {
       completeEdit()
       return

@@ -34,6 +34,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <button type="button" @click="bakeAction">Baked Action</button>
       <button type="button" @click="exportSvg">Posed SVG</button>
     </div>
+    <h3>Version {{ appVersion }}</h3>
   </div>
 </template>
 
@@ -49,6 +50,7 @@ export default defineComponent({
     const isInheritWeight = ref(false)
 
     return {
+      appVersion: process.env.APP_VERSION,
       isInheritWeight,
       openFile() {
         const strage = useStrage()

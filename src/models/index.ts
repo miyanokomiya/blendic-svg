@@ -22,6 +22,7 @@ import { v4 } from 'uuid'
 import { ComputedRef } from 'vue'
 import { toKeyMap } from '../utils/commons'
 import { BoneConstraint } from '../utils/constraints'
+import { KeyframeBone } from '/@/models/keyframe'
 
 export type IdMap<T> = {
   [id: string]: T
@@ -39,14 +40,7 @@ export interface Action {
   name: string
   totalFrame: number
   armatureId: string
-  keyframes: Keyframe[]
-}
-
-export interface Keyframe {
-  id: string
-  frame: number
-  transform: Transform
-  boneId: string
+  keyframes: KeyframeBone[]
 }
 
 export interface Bone {
@@ -161,20 +155,6 @@ export function getAction(
   }
 }
 
-export function getKeyframe(
-  arg: Partial<Keyframe> = {},
-  generateId = false
-): Keyframe {
-  const id = generateId ? v4() : arg.id ?? ''
-  return {
-    frame: 0,
-    boneId: '',
-    transform: getTransform(),
-    ...arg,
-    id,
-  }
-}
-
 export function getBone(arg: Partial<Bone> = {}, generateId = false): Bone {
   const id = generateId ? v4() : arg.id ?? ''
   return {
@@ -212,13 +192,18 @@ export interface BoneSelectedState {
 }
 export type CanvasMode = 'object' | 'edit' | 'pose' | 'weight'
 export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
-export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude'
+export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude' | 'insert'
 
 export type EditMovement = {
   current: IVec2
   start: IVec2
   ctrl: boolean
   scale: number
+}
+
+export interface PopupMenuItem {
+  label: string
+  exec: () => void
 }
 
 export type CommandExam = { command: string; title: string }
@@ -229,8 +214,8 @@ export interface CanvasEditModeBase {
   end: () => void
   cancel: () => void
   setEditMode: (mode: EditMode) => void
-  select: (id: string, selectedState: BoneSelectedState) => void
-  shiftSelect: (id: string, selectedState: BoneSelectedState) => void
+  select: (id: string, selectedState: { [key: string]: boolean }) => void
+  shiftSelect: (id: string, selectedState: { [key: string]: boolean }) => void
   rectSelect: (rect: IRectangle, shift: boolean) => void
   selectAll: () => void
   mousemove: (arg: EditMovement) => void
@@ -238,10 +223,12 @@ export interface CanvasEditModeBase {
   clickEmpty: () => void
   execDelete: () => void
   execAdd: () => void
+  insert: () => void
   clip: () => void
   paste: () => void
   duplicate: () => void
   availableCommandList: ComputedRef<CommandExam[]>
+  popupMenuList: ComputedRef<PopupMenuItem[]>
 }
 
 export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {

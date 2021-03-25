@@ -22,23 +22,49 @@ Copyright (C) 2021, Tomoya Komiyama.
     <rect :width="labelWidth" height="10000" stroke="none" fill="#fff" />
     <line :x1="labelWidth" y1="0" :x2="labelWidth" y2="10000" stroke="black" />
     <g :transform="`translate(0, ${-scrollY})`">
-      <TimelineRow
-        v-for="(bone, i) in selectedAllBoneList"
+      <g
+        v-for="bone in selectedAllBoneList"
         :key="bone.id"
-        :index="i + 2"
+        :transform="`translate(0, ${boneTopMap[bone.id]})`"
+      >
+        <TimelineRow
+          :label-width="labelWidth"
+          :label-height="height"
+          :label="bone.name"
+          :expanded="boneExpandedMap[bone.id]"
+          show-expanded
+          @toggle-expanded="toggleBoneExpanded(bone.id)"
+        />
+        <g v-if="boneExpandedMap[bone.id]">
+          <TimelineRow
+            v-for="(y, label) in childTopMap"
+            :key="label"
+            :transform="`translate(10, ${y})`"
+            :label-width="labelWidth - 10"
+            :label-height="height"
+            :label="label"
+          />
+        </g>
+      </g>
+    </g>
+    <g>
+      <TimelineRow :label-width="labelWidth" :label-height="height" label="" />
+    </g>
+    <g :transform="`translate(0, ${height})`">
+      <TimelineRow
         :label-width="labelWidth"
-        :label="bone.name"
+        :label-height="height"
+        label="Summary"
       />
     </g>
-    <TimelineRow :index="0" :label-width="labelWidth" label="" />
-    <TimelineRow :index="1" :label-width="labelWidth" label="Summary" />
   </g>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
-import { Bone } from '/@/models'
+import { computed, defineComponent, PropType } from 'vue'
+import { Bone, IdMap } from '/@/models'
 import TimelineRow from './atoms/TimelineRow.vue'
+import { getKeyframeTopMap } from '/@/utils/helpers'
 
 export default defineComponent({
   components: {
@@ -53,10 +79,43 @@ export default defineComponent({
       type: Number,
       default: 200,
     },
+    height: {
+      type: Number,
+      default: 24,
+    },
     scrollY: {
       type: Number,
       default: 0,
     },
+    boneExpandedMap: {
+      type: Object as PropType<IdMap<boolean>>,
+      default: () => ({}),
+    },
+    boneTopMap: {
+      type: Object as PropType<IdMap<number>>,
+      default: () => [],
+    },
+  },
+  emits: ['toggle-bone-expanded'],
+  setup(props, { emit }) {
+    function toggleBoneExpanded(boneId: string) {
+      emit('toggle-bone-expanded', boneId)
+    }
+
+    const childTopMap = computed(() => {
+      return getKeyframeTopMap(props.height, 0, {
+        'Translate X': 0,
+        'Translate Y': 1,
+        Rotate: 2,
+        'Scale X': 3,
+        'Scale Y': 4,
+      })
+    })
+
+    return {
+      childTopMap,
+      toggleBoneExpanded,
+    }
   },
 })
 </script>

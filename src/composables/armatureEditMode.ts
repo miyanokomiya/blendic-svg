@@ -334,10 +334,12 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     clickEmpty,
     execDelete,
     execAdd,
+    insert: () => {},
     clip: () => {},
     paste: () => {},
     duplicate,
     availableCommandList,
     symmetrize,
+    popupMenuList: computed(() => []),
   }
 }

@@ -25,11 +25,11 @@ import { ObjectMode, useObjectMode } from '../composables/objectMode'
 import { useWeightPaintMode } from '../composables/weightPaintMode'
 import { HistoryItem, useHistoryStore } from './history'
 import {
-  BoneSelectedState,
   CanvasMode,
   EditMode,
   EditMovement,
   getTransform,
+  PopupMenuItem,
   Transform,
 } from '/@/models'
 
@@ -71,6 +71,10 @@ const command = computed((): EditMode => canvasEditMode.value.command.value)
 const availableCommandList = computed(
   () => canvasEditMode.value.availableCommandList.value
 )
+
+const popupMenuList = computed<PopupMenuItem[]>(() => {
+  return canvasEditMode.value.popupMenuList.value
+})
 
 function toggleCanvasMode() {
   if (state.canvasMode === 'edit') {
@@ -155,9 +159,10 @@ export function useCanvasStore() {
     setEditMode: (mode: EditMode) => canvasEditMode.value.setEditMode(mode),
     execDelete: () => canvasEditMode.value.execDelete(),
     execAdd: () => canvasEditMode.value.execAdd(),
-    select: (id: string, selectedState: BoneSelectedState) =>
+    insert: () => canvasEditMode.value.insert(),
+    select: (id: string, selectedState: { [key: string]: boolean }) =>
       canvasEditMode.value.select(id, selectedState),
-    shiftSelect: (id: string, selectedState: BoneSelectedState) =>
+    shiftSelect: (id: string, selectedState: { [key: string]: boolean }) =>
       canvasEditMode.value.shiftSelect(id, selectedState),
     rectSelect: (rect: IRectangle, shift = false) =>
       canvasEditMode.value.rectSelect(rect, shift),
@@ -167,6 +172,7 @@ export function useCanvasStore() {
     duplicate: () => canvasEditMode.value.duplicate(),
     availableCommandList,
     symmetrizeBones,
+    popupMenuList,
   }
 }
 export type CanvasStore = ReturnType<typeof useCanvasStore>

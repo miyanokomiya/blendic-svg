@@ -111,7 +111,6 @@ import SideBar from '/@/components/SideBar.vue'
 import BoneLayer from '/@/components/elements/BoneLayer.vue'
 import {
   Bone,
-  BoneSelectedState,
   CanvasMode,
   EditMode,
   editModeToCanvasCommand,
@@ -289,10 +288,10 @@ export default defineComponent({
       selectedBones,
       canvasMode,
       canvasCommand,
-      selectBone(id: string, state: BoneSelectedState) {
+      selectBone(id: string, state: { [key: string]: boolean }) {
         canvasStore.select(id, state)
       },
-      shiftSelectBone(id: string, state: BoneSelectedState) {
+      shiftSelectBone(id: string, state: { [key: string]: boolean }) {
         canvasStore.shiftSelect(id, state)
       },
       selectArmature(id: string, selected: boolean) {
@@ -338,7 +337,7 @@ export default defineComponent({
         canvasStore.execAdd()
       },
       saveKeyframe() {
-        animationStore.execInsertKeyframe()
+        canvasStore.insert()
       },
       clip: canvasStore.clip,
       paste: canvasStore.paste,

@@ -25,8 +25,6 @@ import {
   IdMap,
   EditMovement,
   CanvasEditModeBase,
-  Keyframe,
-  getKeyframe,
   toMap,
 } from '../models/index'
 import { useAnimationStore } from '../store/animation'
@@ -35,19 +33,25 @@ import { getFrameX, getNearestFrameAtPoint } from '../utils/animations'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { applyTransform } from '/@/utils/geometry'
 import { IRectangle } from 'okageo'
+import { getKeyframeBone, KeyframeBase } from '/@/models/keyframe'
+import { splitKeyframeBySelected } from '/@/utils/keyframes'
 
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
-  clipboard: Keyframe[]
-  tmpKeyframes: IdMap<Keyframe>
+  clipboard: KeyframeBase[]
+  tmpKeyframes: IdMap<KeyframeBase>
 }
 
 export interface KeyframeEditMode extends CanvasEditModeBase {
-  tmpKeyframes: ComputedRef<IdMap<Keyframe>>
+  tmpKeyframes: ComputedRef<IdMap<KeyframeBase>>
   getEditFrames: (id: string) => number
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
+  editedKeyframeMap: ComputedRef<{
+    selected: IdMap<KeyframeBase>
+    notSelected: IdMap<KeyframeBase>
+  }>
 }
 
 export function useKeyframeEditMode(): KeyframeEditMode {
@@ -122,21 +126,66 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     })
   })
 
+  const keyframeSelectedInfoSet = computed<{
+    selected: IdMap<KeyframeBase>
+    notSelected: IdMap<KeyframeBase>
+  }>(() => {
+    const selected: IdMap<KeyframeBase> = {}
+    const notSelected: IdMap<KeyframeBase> = {}
+
+    Object.keys(animationStore.selectedKeyframeMap.value).forEach((id) => {
+      const selectedState = animationStore.selectedKeyframeMap.value[id]
+      const keyframe = allKeyframes.value[id]
+      const splited = splitKeyframeBySelected(keyframe, selectedState)
+      if (splited.selected) {
+        selected[id] = splited.selected
+      }
+      if (splited.notSelected) {
+        const not = getKeyframeBone(splited.notSelected, true)
+        notSelected[not.id] = not
+      }
+    })
+
+    return {
+      selected,
+      notSelected,
+    }
+  })
+
+  const editedKeyframeMap = computed<{
+    selected: IdMap<KeyframeBase>
+    notSelected: IdMap<KeyframeBase>
+  }>(() => {
+    if (!state.command) return { selected: {}, notSelected: {} }
+
+    return {
+      selected: mapReduce(
+        keyframeSelectedInfoSet.value.selected,
+        (keyframe, id) => {
+          return {
+            ...keyframe,
+            frame: getEditFrames(id),
+          }
+        }
+      ),
+      notSelected: keyframeSelectedInfoSet.value.notSelected,
+    }
+  })
+
   function completeEdit() {
     if (!isAnySelected.value) return
 
-    const updatedMap = mapReduce(editTargets.value, (keyframe, id) => ({
-      ...keyframe,
-      frame: getEditFrames(id),
-    }))
     const duplicatedList = toList(state.tmpKeyframes)
     if (duplicatedList.length > 0) {
       animationStore.completeDuplicateKeyframes(
         toList(state.tmpKeyframes),
-        toList(updatedMap)
+        toList(editedKeyframeMap.value.selected)
       )
     } else {
-      animationStore.execUpdateKeyframes(updatedMap)
+      animationStore.completeDuplicateKeyframes(
+        toList(editedKeyframeMap.value.notSelected),
+        toList(editedKeyframeMap.value.selected)
+      )
     }
 
     state.tmpKeyframes = {}
@@ -144,20 +193,20 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     state.command = ''
   }
 
-  function select(id: string) {
+  function select(id: string, selectedState: any) {
     if (state.command) {
       completeEdit()
       return
     }
-    animationStore.selectKeyframe(id)
+    animationStore.selectKeyframe(id, selectedState)
   }
 
-  function shiftSelect(id: string) {
+  function shiftSelect(id: string, selectedState: any) {
     if (state.command) {
       completeEdit()
       return
     }
-    animationStore.selectKeyframe(id, true)
+    animationStore.selectKeyframe(id, selectedState, true)
   }
 
   function selectFrame(frame: number) {
@@ -209,7 +258,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   }
 
   function clip() {
-    state.clipboard = toList(editTargets.value)
+    state.clipboard = toList(keyframeSelectedInfoSet.value.selected)
   }
 
   function paste() {
@@ -225,7 +274,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     const duplicated = toMap(
       toList(
         mapReduce(editTargets.value, (src) => {
-          return getKeyframe({ ...src }, true)
+          return getKeyframeBone({ ...src }, true)
         })
       )
     )
@@ -274,9 +323,12 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     clickEmpty,
     execDelete,
     execAdd: () => {},
+    insert: () => {},
     clip,
     paste,
     duplicate,
     availableCommandList,
+    popupMenuList: computed(() => []),
+    editedKeyframeMap,
   }
 }

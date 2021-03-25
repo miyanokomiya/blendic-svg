@@ -9,4 +9,7 @@ export default defineConfig({
     alias: [{ find: '/@', replacement: path.resolve(__dirname, 'src') }],
   },
   base: process.env.BASE_PATH || '/',
+  define: {
+    'process.env.APP_VERSION': JSON.stringify(process.env.npm_package_version),
+  },
 })

@@ -160,9 +160,11 @@ export function useObjectMode(): ObjectMode {
     clickEmpty,
     execDelete,
     execAdd,
+    insert: () => {},
     clip: () => {},
     paste: () => {},
     duplicate: () => {},
     availableCommandList,
+    popupMenuList: computed(() => []),
   }
 }

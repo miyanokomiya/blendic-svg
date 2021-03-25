@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/atoms/KeyPoint.vue snapshot default 1`] = `
+<g>
+  <rect
+    class="view-only"
+    fill="#aaa"
+    fill-opacity="0.5"
+    height="6"
+    width="48"
+    y="21"
+  />
+  <circle
+    cy="24"
+    fill="#fff"
+    r="5"
+    stroke="#000"
+  />
+</g>
+`;
+
+exports[`src/components/elements/atoms/KeyPoint.vue snapshot selected 1`] = `
+<g>
+  <rect
+    class="view-only"
+    fill="#aaa"
+    fill-opacity="0.5"
+    height="6"
+    width="48"
+    y="21"
+  />
+  <circle
+    cy="24"
+    fill="orange"
+    r="5"
+    stroke="#000"
+  />
+</g>
+`;

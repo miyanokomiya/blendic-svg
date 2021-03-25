@@ -24,8 +24,8 @@ import {
   getBElement,
   getBone,
   getElementNode,
-  getKeyframe,
 } from '/@/models'
+import { getKeyframeBone } from '/@/models/keyframe'
 import { initialize } from '/@/models/strage'
 import { getConstraintByName } from '/@/utils/constraints'
 
@@ -74,7 +74,7 @@ describe('src/models/strage.ts', () => {
         actions: [
           getAction({
             id: 'act',
-            keyframes: [getKeyframe({ id: 'key' })],
+            keyframes: [getKeyframeBone({ id: 'key' })],
           }),
         ],
         actors: [

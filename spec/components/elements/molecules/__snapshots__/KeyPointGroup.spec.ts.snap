@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/molecules/KeyPointGroup.vue snapshot default 1`] = `
+<g>
+  <!--v-if-->
+  <!--v-if-->
+</g>
+`;
+
+exports[`src/components/elements/molecules/KeyPointGroup.vue snapshot expanded 1`] = `
+<g>
+  <!--v-if-->
+  
+  <g>
+    <rect
+      class="view-only"
+      fill="#aaa"
+      fill-opacity="0.5"
+      height="6"
+      width="1"
+      y="93"
+    />
+    <circle
+      cy="96"
+      fill="#fff"
+      r="5"
+      stroke="#000"
+    />
+  </g>
+  
+</g>
+`;
+
+exports[`src/components/elements/molecules/KeyPointGroup.vue snapshot selected 1`] = `
+<g
+  selected="true"
+>
+  <!--v-if-->
+  <!--v-if-->
+</g>
+`;

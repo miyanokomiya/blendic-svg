@@ -21,17 +21,17 @@ import {
   Action,
   Actor,
   Armature,
-  Keyframe,
   Bone,
   getAction,
   getArmature,
   getBone,
-  getKeyframe,
   getActor,
   BElement,
   getBElement,
 } from '../models'
+import { KeyframeBone } from '/@/models/keyframe'
 import { getConstraintByName } from '/@/utils/constraints'
+import { migrateKeyframe } from '/@/utils/migrations'
 
 export interface StrageRoot {
   armatures: Armature[]
@@ -69,8 +69,8 @@ function initializeAction(action: Partial<Action>): Action {
   })
 }
 
-function initializeKeyframe(keyframe: Keyframe): Keyframe {
-  return getKeyframe(keyframe)
+function initializeKeyframe(keyframe: KeyframeBone): KeyframeBone {
+  return migrateKeyframe(keyframe)
 }
 
 function initializeActor(actor: Partial<Actor>): Actor {

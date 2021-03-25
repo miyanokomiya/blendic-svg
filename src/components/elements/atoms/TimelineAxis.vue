@@ -67,7 +67,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <g :transform="`translate(${currentFrameX}, 0) scale(${scale})`">
         <rect
           :x="-currentFrameLabelWidth / 2"
-          :y="2"
+          :y="headerHeight - 22"
           :width="currentFrameLabelWidth"
           :height="20"
           rx="4"
@@ -123,6 +123,10 @@ export default defineComponent({
       type: Number,
       default: 60,
     },
+    headerHeight: {
+      type: Number,
+      default: 24,
+    },
   },
   emits: ['down-current-frame', 'up-current-frame'],
   setup(props, { emit }) {
@@ -163,7 +167,6 @@ export default defineComponent({
     })
 
     return {
-      headerHeight: 24,
       frames,
       frameWidth,
       currentFrameX,

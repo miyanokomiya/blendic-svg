@@ -595,19 +595,16 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
   const redo = () => {
     if (shift) {
       const dropIds: IdMap<boolean> = {}
-      const idMap = ids.reduce<IdMap<KeyframeSelectedState>>((p, id) => {
+      const idMap: IdMap<KeyframeSelectedState> = {}
+      ids.forEach((id) => {
         if (isAllSelected(selectedKeyframeMap.value[id])) {
           dropIds[id] = true
         } else {
-          p[id] = getAllSelectedState()
+          idMap[id] = getAllSelectedState()
         }
-        return p
-      }, {})
+      })
       selectedKeyframeMap.value = dropMap(
-        {
-          ...selectedKeyframeMap.value,
-          ...idMap,
-        },
+        { ...selectedKeyframeMap.value, ...idMap },
         dropIds
       )
     } else {
@@ -641,9 +638,15 @@ function getSelectKeyframeItem(
 
   const redo = () => {
     if (shift) {
-      selectedKeyframeMap.value = {
-        ...selectedKeyframeMap.value,
-        ...(selectedState ? { [id]: selectedState } : {}),
+      if (isAllSelected(selectedKeyframeMap.value[id])) {
+        const next = { ...selectedKeyframeMap.value }
+        delete next[id]
+        selectedKeyframeMap.value = next
+      } else {
+        selectedKeyframeMap.value = {
+          ...selectedKeyframeMap.value,
+          ...(selectedState ? { [id]: selectedState } : {}),
+        }
       }
     } else {
       selectedKeyframeMap.value = {

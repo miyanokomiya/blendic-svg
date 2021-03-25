@@ -29,8 +29,9 @@ import {
   BElement,
   getBElement,
 } from '../models'
-import { getKeyframeBone, KeyframeBone } from '/@/models/keyframe'
+import { KeyframeBone } from '/@/models/keyframe'
 import { getConstraintByName } from '/@/utils/constraints'
+import { migrateKeyframe } from '/@/utils/migrations'
 
 export interface StrageRoot {
   armatures: Armature[]
@@ -69,7 +70,7 @@ function initializeAction(action: Partial<Action>): Action {
 }
 
 function initializeKeyframe(keyframe: KeyframeBone): KeyframeBone {
-  return getKeyframeBone(keyframe)
+  return migrateKeyframe(keyframe)
 }
 
 function initializeActor(actor: Partial<Actor>): Actor {

@@ -66,10 +66,10 @@ import { IdMap, frameWidth } from '/@/models'
 import { KeyframeBone, KeyframeSelectedState } from '/@/models/keyframe'
 import {
   getKeyframeMapByBoneId,
-  getSamePropRangeFrameMapByBoneId,
   KeyframeBoneSameRange,
 } from '/@/utils/animations'
 import { mapReduce } from '/@/utils/commons'
+import { getSamePropRangeFrameMapByBoneId } from '/@/utils/keyframes/keyframeBone'
 
 export default defineComponent({
   components: { KeyPointTransform },

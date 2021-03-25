@@ -38,7 +38,7 @@ import {
   KeyframeBone,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
-import { splitKeyframeBoneBySelected } from '/@/utils/keyframes'
+import { splitKeyframeBySelected } from '/@/utils/keyframes'
 
 interface State {
   command: EditMode
@@ -140,7 +140,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     Object.keys(animationStore.selectedKeyframeMap.value).forEach((id) => {
       const selectedState = animationStore.selectedKeyframeMap.value[id]
       const keyframe = allKeyframes.value[id]
-      const splited = splitKeyframeBoneBySelected(keyframe, selectedState)
+      const splited = splitKeyframeBySelected(keyframe, selectedState)
       if (splited.selected) {
         selected[id] = splited.selected
       }

@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { v4 } from 'uuid'
 import { IVec2 } from 'okageo'
 
-type KeyframeName = 'bone'
+export type KeyframeName = 'bone'
 
 export interface KeyframeBase {
   id: string
@@ -28,7 +28,9 @@ export interface KeyframeBase {
   name: KeyframeName
 }
 
-export interface KeyframeBoneProps<T> {
+export interface KeyframeBaseProps {}
+
+export interface KeyframeBoneProps<T> extends KeyframeBaseProps {
   translateX?: T
   translateY?: T
   rotate?: T
@@ -41,6 +43,14 @@ export interface KeyframeBone
     KeyframeBoneProps<KeyframePoint> {
   boneId: string
 }
+
+export interface KeyframeBaseSameRange {
+  all: number
+}
+
+export interface KeyframeBoneSameRange
+  extends KeyframeBaseSameRange,
+    Required<KeyframeBoneProps<number>> {}
 
 export type CurveName = 'linear' | 'bezier3'
 

@@ -80,7 +80,7 @@ import { KeyframeBone, KeyframeSelectedState } from '/@/models/keyframe'
 import { KeyframeBoneSameRange } from '/@/utils/animations'
 import {
   getAllSelectedState,
-  getKeyframeBoneDefaultPropsMap,
+  getKeyframeDefaultPropsMap,
   inversedSelectedState,
   isAnySelected,
 } from '/@/utils/keyframes'
@@ -106,7 +106,7 @@ export default defineComponent({
     },
     sameRangeWidth: {
       type: Object as PropType<KeyframeBoneSameRange>,
-      default: () => getKeyframeBoneDefaultPropsMap(() => 0),
+      default: () => getKeyframeDefaultPropsMap(() => 0),
     },
     height: {
       type: Number,

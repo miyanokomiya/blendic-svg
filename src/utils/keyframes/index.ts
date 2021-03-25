@@ -19,90 +19,126 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { IdMap, Transform } from '/@/models'
 import {
-  KeyframeBone,
-  KeyframeBoneProps,
+  KeyframeBase,
+  KeyframeBaseProps,
+  KeyframeName,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
-import { mapReduce } from '/@/utils/commons'
 import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 
+interface KeyframeModule {
+  getInterpolatedTransformMapByBoneId(
+    sortedKeyframesMap: IdMap<KeyframeBase[]>,
+    frame: number
+  ): IdMap<Transform>
+  interpolateKeyframe(sortedKeyframes: KeyframeBase[], frame: number): Transform
+  getAllSelectedState(): KeyframeSelectedState
+  getInversedSelectedState(k?: KeyframeSelectedState): KeyframeSelectedState
+  inversedSelectedState(
+    k: KeyframeSelectedState,
+    target: KeyframeSelectedState
+  ): KeyframeSelectedState
+  isAllSelected(k?: KeyframeSelectedState): boolean
+  isAnySelected(k?: KeyframeSelectedState): boolean
+  isAllExistSelected(keyframe: KeyframeBase, k?: KeyframeSelectedState): boolean
+  splitKeyframeBySelected(
+    keyframe: KeyframeBase,
+    state: KeyframeSelectedState
+  ): { selected?: KeyframeBase; notSelected?: KeyframeBase }
+  mergeKeyframes(src: KeyframeBase, override: KeyframeBase): KeyframeBase
+  deleteKeyframeByProp(
+    keyframe: KeyframeBase,
+    selectedState?: KeyframeSelectedState
+  ): KeyframeBase | undefined
+  getKeyframePropsMap(keyframes: KeyframeBase[]): Required<KeyframeBaseProps>
+  getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps>
+}
+
+function getKeyframeModule(name: KeyframeName = 'bone'): KeyframeModule {
+  switch (name) {
+    case 'bone':
+      return keyframeBoneModule
+  }
+}
+
 export function getInterpolatedTransformMapByBoneId(
-  sortedKeyframesMap: IdMap<KeyframeBone[]>,
+  sortedKeyframesMap: IdMap<KeyframeBase[]>,
   frame: number
 ): IdMap<Transform> {
-  return mapReduce(sortedKeyframesMap, (keyframes) =>
-    interpolateKeyframeBone(keyframes, frame)
+  return getKeyframeModule().getInterpolatedTransformMapByBoneId(
+    sortedKeyframesMap,
+    frame
   )
 }
 
-export function interpolateKeyframeBone(
-  sortedKeyframes: KeyframeBone[],
+export function interpolateKeyframe(
+  sortedKeyframes: KeyframeBase[],
   frame: number
 ): Transform {
-  return keyframeBoneModule.interpolateKeyframeBone(sortedKeyframes, frame)
+  return getKeyframeModule().interpolateKeyframe(sortedKeyframes, frame)
 }
 
 export function getAllSelectedState(): KeyframeSelectedState {
-  return keyframeBoneModule.getAllSelectedState()
+  return getKeyframeModule().getAllSelectedState()
 }
 
 export function getInversedSelectedState(
   k?: KeyframeSelectedState
 ): KeyframeSelectedState {
-  return keyframeBoneModule.getInversedSelectedState(k)
+  return getKeyframeModule().getInversedSelectedState(k)
 }
 
 export function inversedSelectedState(
   k: KeyframeSelectedState,
   target: KeyframeSelectedState
 ): KeyframeSelectedState {
-  return keyframeBoneModule.inversedSelectedState(k, target)
+  return getKeyframeModule().inversedSelectedState(k, target)
 }
 
 export function isAllSelected(k?: KeyframeSelectedState): boolean {
-  return keyframeBoneModule.isAllSelected(k)
+  return getKeyframeModule().isAllSelected(k)
 }
 
 export function isAnySelected(k?: KeyframeSelectedState): boolean {
-  return keyframeBoneModule.isAnySelected(k)
+  return getKeyframeModule().isAnySelected(k)
 }
 
 export function isAllExistSelected(
-  keyframe: KeyframeBone,
+  keyframe: KeyframeBase,
   k?: KeyframeSelectedState
 ): boolean {
-  return keyframeBoneModule.isAllExistSelected(keyframe, k)
+  return getKeyframeModule().isAllExistSelected(keyframe, k)
 }
 
-export function splitKeyframeBoneBySelected(
-  keyframe: KeyframeBone,
+export function splitKeyframeBySelected(
+  keyframe: KeyframeBase,
   state: KeyframeSelectedState
-): { selected?: KeyframeBone; notSelected?: KeyframeBone } {
-  return keyframeBoneModule.splitKeyframeBoneBySelected(keyframe, state)
+): { selected?: KeyframeBase; notSelected?: KeyframeBase } {
+  return getKeyframeModule().splitKeyframeBySelected(keyframe, state)
 }
 
-export function mergeKeyframeBones(
-  src: KeyframeBone,
-  override: KeyframeBone
-): KeyframeBone {
-  return keyframeBoneModule.mergeKeyframeBones(src, override)
+export function mergeKeyframes(
+  src: KeyframeBase,
+  override: KeyframeBase
+): KeyframeBase {
+  return getKeyframeModule().mergeKeyframes(src, override)
 }
 
-export function deleteKeyframeBoneByProp(
-  keyframe: KeyframeBone,
+export function deleteKeyframeByProp(
+  keyframe: KeyframeBase,
   selectedState?: KeyframeSelectedState
-): KeyframeBone | undefined {
-  return keyframeBoneModule.deleteKeyframeBoneByProp(keyframe, selectedState)
+): KeyframeBase | undefined {
+  return getKeyframeModule().deleteKeyframeByProp(keyframe, selectedState)
 }
 
-export function getKeyframeBonePropsMap(
-  keyframes: KeyframeBone[]
-): Required<KeyframeBoneProps<KeyframeBone[]>> {
-  return keyframeBoneModule.getKeyframeBonePropsMap(keyframes)
+export function getKeyframePropsMap(
+  keyframes: KeyframeBase[]
+): Required<KeyframeBaseProps> {
+  return getKeyframeModule().getKeyframePropsMap(keyframes)
 }
 
-export function getKeyframeBoneDefaultPropsMap<T>(
+export function getKeyframeDefaultPropsMap<T>(
   val: () => T
-): Required<KeyframeBoneProps<T>> {
-  return keyframeBoneModule.getKeyframeBoneDefaultPropsMap(val)
+): Required<KeyframeBaseProps> {
+  return getKeyframeModule().getKeyframeDefaultPropsMap(val)
 }

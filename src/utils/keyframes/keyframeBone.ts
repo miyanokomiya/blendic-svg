@@ -21,6 +21,7 @@ import { IdMap, Transform } from '/@/models'
 import {
   KeyframeBone,
   KeyframeBoneProps,
+  KeyframeBoneSameRange,
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
@@ -35,24 +36,21 @@ export function getInterpolatedTransformMapByBoneId(
   frame: number
 ): IdMap<Transform> {
   return mapReduce(sortedKeyframesMap, (keyframes) =>
-    interpolateKeyframeBone(keyframes, frame)
+    interpolateKeyframe(keyframes, frame)
   )
 }
 
-export function interpolateKeyframeBone(
+export function interpolateKeyframe(
   sortedKeyframes: KeyframeBone[],
   frame: number
 ): Transform {
   const translateX =
-    interpolateKeyframeBoneProp(sortedKeyframes, frame, getTransformX) ?? 0
+    interpolateKeyframeProp(sortedKeyframes, frame, getTransformX) ?? 0
   const translateY =
-    interpolateKeyframeBoneProp(sortedKeyframes, frame, getTransformY) ?? 0
-  const rotate =
-    interpolateKeyframeBoneProp(sortedKeyframes, frame, getRotate) ?? 0
-  const scaleX =
-    interpolateKeyframeBoneProp(sortedKeyframes, frame, getScaleX) ?? 1
-  const scaleY =
-    interpolateKeyframeBoneProp(sortedKeyframes, frame, getScaleY) ?? 1
+    interpolateKeyframeProp(sortedKeyframes, frame, getTransformY) ?? 0
+  const rotate = interpolateKeyframeProp(sortedKeyframes, frame, getRotate) ?? 0
+  const scaleX = interpolateKeyframeProp(sortedKeyframes, frame, getScaleX) ?? 1
+  const scaleY = interpolateKeyframeProp(sortedKeyframes, frame, getScaleY) ?? 1
 
   return {
     translate: { x: translateX, y: translateY },
@@ -62,7 +60,7 @@ export function interpolateKeyframeBone(
   }
 }
 
-function interpolateKeyframeBoneProp(
+function interpolateKeyframeProp(
   keyframes: KeyframeBone[],
   frame: number,
   getPropFn: (k: KeyframeBone) => KeyframePoint | undefined
@@ -106,7 +104,7 @@ function getScaleY(k: KeyframeBone): KeyframePoint | undefined {
 }
 
 export function getAllSelectedState(): KeyframeSelectedState {
-  return getKeyframeBoneDefaultPropsMap(() => true)
+  return getKeyframeDefaultPropsMap(() => true)
 }
 
 export function getInversedSelectedState(
@@ -185,7 +183,7 @@ export function isAllExistSelected(
   return true
 }
 
-export function splitKeyframeBoneBySelected(
+export function splitKeyframeBySelected(
   keyframe: KeyframeBone,
   state: KeyframeSelectedState
 ): { selected?: KeyframeBone; notSelected?: KeyframeBone } {
@@ -230,7 +228,7 @@ export function splitKeyframeBoneBySelected(
   }
 }
 
-export function mergeKeyframeBones(
+export function mergeKeyframes(
   src: KeyframeBone,
   override: KeyframeBone
 ): KeyframeBone {
@@ -243,7 +241,7 @@ export function mergeKeyframeBones(
   return ret
 }
 
-export function deleteKeyframeBoneByProp(
+export function deleteKeyframeByProp(
   keyframe: KeyframeBone,
   selectedState?: KeyframeSelectedState
 ): KeyframeBone | undefined {
@@ -259,10 +257,10 @@ export function deleteKeyframeBoneByProp(
   return ret
 }
 
-export function getKeyframeBonePropsMap(
+export function getKeyframePropsMap(
   keyframes: KeyframeBone[]
 ): Required<KeyframeBoneProps<KeyframeBone[]>> {
-  const ret = getKeyframeBoneDefaultPropsMap<KeyframeBone[]>(() => [])
+  const ret = getKeyframeDefaultPropsMap<KeyframeBone[]>(() => [])
 
   keyframes.forEach((k) => {
     if (k.translateX) ret.translateX.push(k)
@@ -275,7 +273,7 @@ export function getKeyframeBonePropsMap(
   return ret
 }
 
-export function getKeyframeBoneDefaultPropsMap<T>(
+export function getKeyframeDefaultPropsMap<T>(
   val: () => T
 ): Required<KeyframeBoneProps<T>> {
   return {
@@ -292,4 +290,80 @@ export function isSameKeyframePoint(
   b: KeyframePoint
 ): boolean {
   return a.value === b.value
+}
+
+export function getSamePropRangeFrameMapByBoneId(
+  keyframeMapByBoneId: IdMap<KeyframeBone[]>
+): IdMap<IdMap<KeyframeBoneSameRange>> {
+  return Object.keys(keyframeMapByBoneId).reduce<
+    IdMap<IdMap<KeyframeBoneSameRange>>
+  >((p, boneId) => {
+    p[boneId] = keyframeMapByBoneId[boneId].reduce<
+      IdMap<KeyframeBoneSameRange>
+    >((p, k, i) => {
+      p[k.frame] = getSamePropRangeFrameMap(keyframeMapByBoneId[boneId], i)
+      return p
+    }, {})
+    return p
+  }, {})
+}
+
+export function getSamePropRangeFrameMap(
+  keyframes: KeyframeBone[],
+  currentIndex: number
+): KeyframeBoneSameRange {
+  const keyframesFromCurrent = keyframes.slice(currentIndex)
+  const current = keyframesFromCurrent[0]
+  if (keyframesFromCurrent.length < 2)
+    return { ...getKeyframeDefaultPropsMap(() => 0), all: 0 }
+
+  const propMap = getKeyframePropsMap(keyframesFromCurrent)
+  const translateX = current.translateX
+    ? getSamePropRangeFrame(propMap.translateX, (k) => k.translateX)
+    : 0
+  const translateY = current.translateY
+    ? getSamePropRangeFrame(propMap.translateY, (k) => k.translateY)
+    : 0
+  const rotate = current.rotate
+    ? getSamePropRangeFrame(propMap.rotate, (k) => k.rotate)
+    : 0
+  const scaleX = current.scaleX
+    ? getSamePropRangeFrame(propMap.scaleX, (k) => k.scaleX)
+    : 0
+  const scaleY = current.scaleY
+    ? getSamePropRangeFrame(propMap.scaleY, (k) => k.scaleY)
+    : 0
+
+  return {
+    all: [translateY, rotate, scaleX, scaleY].reduce(
+      (p, c) => Math.min(p, c),
+      translateX
+    ),
+    translateX,
+    translateY,
+    rotate,
+    scaleX,
+    scaleY,
+  }
+}
+
+function getSamePropRangeFrame(
+  keyframes: KeyframeBone[],
+  getValue: (k: KeyframeBone) => KeyframePoint | undefined
+): number {
+  if (keyframes.length < 2) return 0
+
+  const current = keyframes[0]
+  const after = keyframes[1]
+  const currentValue = getValue(current)
+  const afterValue = getValue(after)
+  if (
+    currentValue &&
+    afterValue &&
+    isSameKeyframePoint(currentValue, afterValue)
+  ) {
+    return after.frame - current.frame
+  } else {
+    return 0
+  }
 }

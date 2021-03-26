@@ -122,7 +122,7 @@ export function useStrage() {
 
     const data: BakedData = {
       version: '1.0.0',
-      appVersion: '0.0.0',
+      appVersion: process.env.APP_VERSION ?? 'dev',
       actions: [
         {
           name: action.name,

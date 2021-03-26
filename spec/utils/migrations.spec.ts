@@ -23,7 +23,7 @@ import { migrateKeyframe } from '/@/utils/migrations'
 
 describe('src/utils/migrations.ts', () => {
   describe('migrateKeyframe', () => {
-    it('migrate to KeyframeBone', () => {
+    it('v1: migrate to KeyframeBone', () => {
       const old = {
         id: '1',
         frame: 2,
@@ -40,11 +40,39 @@ describe('src/utils/migrations.ts', () => {
         frame: 2,
         boneId: 'b',
         name: 'bone',
+        points: {
+          translateX: getKeyframePoint({ value: 1 }),
+          translateY: getKeyframePoint({ value: 2 }),
+          rotate: getKeyframePoint({ value: 3 }),
+          scaleX: getKeyframePoint({ value: 4 }),
+          scaleY: getKeyframePoint({ value: 5 }),
+        },
+      })
+    })
+    it('v2: migrate to KeyframeBone', () => {
+      const old = {
+        id: '1',
+        frame: 2,
+        boneId: 'b',
         translateX: getKeyframePoint({ value: 1 }),
         translateY: getKeyframePoint({ value: 2 }),
         rotate: getKeyframePoint({ value: 3 }),
         scaleX: getKeyframePoint({ value: 4 }),
         scaleY: getKeyframePoint({ value: 5 }),
+      }
+      const ret = migrateKeyframe(old)
+      expect(ret).toEqual({
+        id: '1',
+        frame: 2,
+        boneId: 'b',
+        name: 'bone',
+        points: {
+          translateX: getKeyframePoint({ value: 1 }),
+          translateY: getKeyframePoint({ value: 2 }),
+          rotate: getKeyframePoint({ value: 3 }),
+          scaleX: getKeyframePoint({ value: 4 }),
+          scaleY: getKeyframePoint({ value: 5 }),
+        },
       })
     })
   })

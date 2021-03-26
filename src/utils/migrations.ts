@@ -32,8 +32,25 @@ interface OldKeyframe {
   boneId: string
 }
 
-function isOldKeyframe(k: OldKeyframe | KeyframeBone): k is OldKeyframe {
+interface OldKeyframe2 {
+  id: string
+  frame: number
+  boneId: string
+  translateX?: KeyframePoint
+  translateY?: KeyframePoint
+  rotate?: KeyframePoint
+  scaleX?: KeyframePoint
+  scaleY?: KeyframePoint
+}
+
+function isOldKeyframe(
+  k: OldKeyframe | OldKeyframe2 | KeyframeBone
+): k is OldKeyframe {
   return !!(k as any).transform
+}
+
+function isOldKeyframe2(k: OldKeyframe2 | KeyframeBone): k is OldKeyframe2 {
+  return !(k as any).points
 }
 
 function toTransformMap(
@@ -54,14 +71,38 @@ function toTransformMap(
   }
 }
 
-// 0.0.0 -> 0.1.0
-export function migrateKeyframe(k: OldKeyframe | KeyframeBone): KeyframeBone {
-  if (!isOldKeyframe(k)) return getKeyframeBone(k)
+// 0.0.0 -> 0.1.0 -> 0.2.0
+export function migrateKeyframe(
+  k: OldKeyframe | OldKeyframe2 | KeyframeBone
+): KeyframeBone {
+  if (isOldKeyframe(k)) {
+    return migrateKeyframe1(k)
+  }
+  if (isOldKeyframe2(k)) {
+    return migrateKeyframe2(k)
+  }
+  return k
+}
 
+// 0.0.0 -> 0.2.0
+function migrateKeyframe1(k: OldKeyframe): KeyframeBone {
   return getKeyframeBone({
     id: k.id,
     frame: k.frame,
     boneId: k.boneId,
-    ...toTransformMap(k.transform),
+    points: {
+      ...toTransformMap(k.transform),
+    },
   })
+}
+
+// 0.1.0 -> 0.2.0
+function migrateKeyframe2(k: OldKeyframe2): KeyframeBone {
+  const { id, frame, boneId, ...points } = k
+  const ret = getKeyframeBone()
+  ret.id = id ?? ret.id
+  ret.frame = frame ?? ret.frame
+  ret.boneId = boneId ?? ret.boneId
+  ret.points = points ?? ret.points
+  return ret
 }

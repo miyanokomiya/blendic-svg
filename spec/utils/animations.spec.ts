@@ -146,8 +146,10 @@ describe('utils/animations.ts', () => {
               id: 'src_1_a',
               frame: 1,
               boneId: 'a',
-              translateX: getKeyframePoint({ value: 1 }),
-              translateY: getKeyframePoint({ value: 2 }),
+              points: {
+                translateX: getKeyframePoint({ value: 1 }),
+                translateY: getKeyframePoint({ value: 2 }),
+              },
             }),
           ],
           [
@@ -155,8 +157,10 @@ describe('utils/animations.ts', () => {
               id: 'ove_1_c',
               frame: 1,
               boneId: 'a',
-              translateX: getKeyframePoint({ value: 10 }),
-              rotate: getKeyframePoint({ value: 20 }),
+              points: {
+                translateX: getKeyframePoint({ value: 10 }),
+                rotate: getKeyframePoint({ value: 20 }),
+              },
             }),
           ],
           true
@@ -166,9 +170,11 @@ describe('utils/animations.ts', () => {
             id: 'ove_1_c',
             frame: 1,
             boneId: 'a',
-            translateX: getKeyframePoint({ value: 10 }),
-            translateY: getKeyframePoint({ value: 2 }),
-            rotate: getKeyframePoint({ value: 20 }),
+            points: {
+              translateX: getKeyframePoint({ value: 10 }),
+              translateY: getKeyframePoint({ value: 2 }),
+              rotate: getKeyframePoint({ value: 20 }),
+            },
           }),
         })
       })

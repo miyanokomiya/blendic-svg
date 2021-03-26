@@ -75,7 +75,7 @@ import {
   deleteKeyframeByProp,
   getAllSelectedState,
   getInterpolatedTransformMapByBoneId,
-  isAllSelected,
+  isAllExistSelected,
 } from '/@/utils/keyframes'
 
 const playing = ref<PlayState>('pause')
@@ -373,23 +373,25 @@ function execInsertKeyframe(
       {
         frame: currentFrame.value,
         boneId,
-        ...(options.useTranslate
-          ? {
-              translateX: getKeyframePoint({ value: t.translate.x }),
-              translateY: getKeyframePoint({ value: t.translate.y }),
-            }
-          : {}),
-        ...(options.useRotate
-          ? {
-              rotate: getKeyframePoint({ value: t.rotate }),
-            }
-          : {}),
-        ...(options.useScale
-          ? {
-              scaleX: getKeyframePoint({ value: t.scale.x }),
-              scaleY: getKeyframePoint({ value: t.scale.y }),
-            }
-          : {}),
+        points: {
+          ...(options.useTranslate
+            ? {
+                translateX: getKeyframePoint({ value: t.translate.x }),
+                translateY: getKeyframePoint({ value: t.translate.y }),
+              }
+            : {}),
+          ...(options.useRotate
+            ? {
+                rotate: getKeyframePoint({ value: t.rotate }),
+              }
+            : {}),
+          ...(options.useScale
+            ? {
+                scaleX: getKeyframePoint({ value: t.scale.x }),
+                scaleY: getKeyframePoint({ value: t.scale.y }),
+              }
+            : {}),
+        },
       },
       true
     )
@@ -597,7 +599,12 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
       const dropIds: IdMap<boolean> = {}
       const idMap: IdMap<KeyframeSelectedState> = {}
       ids.forEach((id) => {
-        if (isAllSelected(selectedKeyframeMap.value[id])) {
+        if (
+          isAllExistSelected(
+            visibledKeyframeMap.value[id],
+            selectedKeyframeMap.value[id]
+          )
+        ) {
           dropIds[id] = true
         } else {
           idMap[id] = getAllSelectedState()
@@ -638,7 +645,12 @@ function getSelectKeyframeItem(
 
   const redo = () => {
     if (shift) {
-      if (isAllSelected(selectedKeyframeMap.value[id])) {
+      if (
+        isAllExistSelected(
+          visibledKeyframeMap.value[id],
+          selectedKeyframeMap.value[id]
+        )
+      ) {
         const next = { ...selectedKeyframeMap.value }
         delete next[id]
         selectedKeyframeMap.value = next

@@ -33,12 +33,6 @@ interface KeyframeModule {
   ): IdMap<Transform>
   interpolateKeyframe(sortedKeyframes: KeyframeBase[], frame: number): Transform
   getAllSelectedState(): KeyframeSelectedState
-  getInversedSelectedState(k?: KeyframeSelectedState): KeyframeSelectedState
-  inversedSelectedState(
-    k: KeyframeSelectedState,
-    target: KeyframeSelectedState
-  ): KeyframeSelectedState
-  isAllSelected(k?: KeyframeSelectedState): boolean
   isAnySelected(k?: KeyframeSelectedState): boolean
   isAllExistSelected(keyframe: KeyframeBase, k?: KeyframeSelectedState): boolean
   splitKeyframeBySelected(
@@ -50,14 +44,16 @@ interface KeyframeModule {
     keyframe: KeyframeBase,
     selectedState?: KeyframeSelectedState
   ): KeyframeBase | undefined
-  getKeyframePropsMap(keyframes: KeyframeBase[]): Required<KeyframeBaseProps>
-  getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps>
+  getKeyframePropsMap<T>(
+    keyframes: KeyframeBase[]
+  ): Required<KeyframeBaseProps<T>>
+  getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps<T>>
 }
 
 export function getKeyframeModule(name: KeyframeName = 'bone'): KeyframeModule {
   switch (name) {
     case 'bone':
-      return keyframeBoneModule
+      return keyframeBoneModule as any
   }
 }
 
@@ -82,21 +78,22 @@ export function getAllSelectedState(): KeyframeSelectedState {
   return getKeyframeModule().getAllSelectedState()
 }
 
-export function getInversedSelectedState(
-  k?: KeyframeSelectedState
-): KeyframeSelectedState {
-  return getKeyframeModule().getInversedSelectedState(k)
-}
-
 export function inversedSelectedState(
   k: KeyframeSelectedState,
   target: KeyframeSelectedState
 ): KeyframeSelectedState {
-  return getKeyframeModule().inversedSelectedState(k, target)
-}
+  const ret: KeyframeSelectedState = { name: k.name, props: {} }
 
-export function isAllSelected(k?: KeyframeSelectedState): boolean {
-  return getKeyframeModule().isAllSelected(k)
+  Object.keys({ ...k.props, ...target.props }).forEach((key) => {
+    if (
+      (target.props[key] && !k.props[key]) ||
+      (!target.props[key] && k.props[key])
+    ) {
+      ret.props[key] = true
+    }
+  })
+
+  return ret
 }
 
 export function isAnySelected(k?: KeyframeSelectedState): boolean {
@@ -131,14 +128,14 @@ export function deleteKeyframeByProp(
   return getKeyframeModule().deleteKeyframeByProp(keyframe, selectedState)
 }
 
-export function getKeyframePropsMap(
+export function getKeyframePropsMap<T>(
   keyframes: KeyframeBase[]
-): Required<KeyframeBaseProps> {
+): Required<KeyframeBaseProps<T>> {
   return getKeyframeModule().getKeyframePropsMap(keyframes)
 }
 
 export function getKeyframeDefaultPropsMap<T>(
   val: () => T
-): Required<KeyframeBaseProps> {
+): Required<KeyframeBaseProps<T>> {
   return getKeyframeModule().getKeyframeDefaultPropsMap(val)
 }

@@ -27,4 +27,44 @@ describe('utils/keyframes/index.ts', () => {
       expect(ret).toEqual(keyframeBoneModule)
     })
   })
+
+  describe('inversedSelectedState', () => {
+    it('inverse selected state', () => {
+      expect(
+        target.inversedSelectedState(
+          {
+            name: 'bone',
+            props: {
+              translateX: true,
+              scaleX: true,
+            },
+          },
+          {
+            name: 'bone',
+            props: {
+              translateX: true,
+              rotate: true,
+            },
+          }
+        )
+      ).toEqual({
+        name: 'bone',
+        props: {
+          rotate: true,
+          scaleX: true,
+        },
+      })
+    })
+    it('do nothing if target property is empty', () => {
+      expect(
+        target.inversedSelectedState(target.getAllSelectedState(), {
+          name: 'bone',
+          props: { translateX: true, translateY: false },
+        })
+      ).toEqual({
+        name: 'bone',
+        props: { translateY: true, rotate: true, scaleX: true, scaleY: true },
+      })
+    })
+  })
 })

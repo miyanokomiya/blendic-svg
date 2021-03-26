@@ -32,7 +32,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <template v-for="(y, key) in childTopMap" :key="key">
         <KeyPoint
           :top="y"
-          :selected="selectedState[key]"
+          :selected="selectedState.props[key]"
           :same-range-width="sameRangeWidth[key]"
           @select="select({ [key]: true })"
           @shift-select="shiftSelect({ [key]: true })"
@@ -45,7 +45,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
 import KeyPoint from '/@/components/elements/atoms/KeyPoint.vue'
-import { KeyframeBase } from '/@/models/keyframe'
+import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
 import { dropMapIfFalse } from '/@/utils/commons'
 import { getKeyframeTopMap } from '/@/utils/helpers'
 import {
@@ -73,8 +73,8 @@ export default defineComponent({
       default: 0,
     },
     selectedState: {
-      type: Object as PropType<{ [key: string]: boolean }>,
-      default: () => ({}),
+      type: Object as PropType<KeyframeSelectedState>,
+      default: () => ({ name: '', props: {} }),
     },
     expanded: {
       type: Boolean,
@@ -99,14 +99,12 @@ export default defineComponent({
       return top > props.scrollY + props.height * 1.5
     }
 
-    const selectedAny = computed(() =>
-      isAnySelected(props.selectedState as any)
-    )
+    const selectedAny = computed(() => isAnySelected(props.selectedState))
 
     const childTopMap = computed(() => {
       return dropMapIfFalse(
         getKeyframeTopMap(props.height, props.top, props.childMap),
-        (top, key) => key in props.keyFrame && isVisible(top)
+        (top, key) => key in props.keyFrame.points && isVisible(top)
       )
     })
 
@@ -115,12 +113,18 @@ export default defineComponent({
       childTopMap,
       selectedAny,
       select(state: { [key: string]: boolean }) {
-        emit('select', state)
+        emit('select', {
+          ...props.selectedState,
+          props: state,
+        } as KeyframeSelectedState)
       },
       shiftSelect(state: { [key: string]: boolean }) {
         emit(
           'shift-select',
-          inversedSelectedState(props.selectedState as any, state as any)
+          inversedSelectedState(props.selectedState, {
+            ...props.selectedState,
+            props: state,
+          } as KeyframeSelectedState)
         )
       },
       selectAll() {

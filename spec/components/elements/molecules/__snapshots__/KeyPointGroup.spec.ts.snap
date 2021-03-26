@@ -17,7 +17,7 @@ exports[`src/components/elements/molecules/KeyPointGroup.vue snapshot expanded 1
       fill="#aaa"
       fill-opacity="0.5"
       height="6"
-      width="1"
+      width="0"
       y="93"
     />
     <circle

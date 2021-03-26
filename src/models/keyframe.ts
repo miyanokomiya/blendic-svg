@@ -26,33 +26,46 @@ export interface KeyframeBase {
   id: string
   frame: number
   name: KeyframeName
+  points: {
+    [key: string]: KeyframePoint
+  }
 }
 
-export interface KeyframeBaseProps {
+export interface KeyframeBaseProps<T> {
   name: KeyframeName
+  props: {
+    [key: string]: T
+  }
 }
 
-export interface KeyframeBoneProps<T> extends KeyframeBaseProps {
-  translateX?: T
-  translateY?: T
-  rotate?: T
-  scaleX?: T
-  scaleY?: T
-}
+export type KeyframeBonePropKey =
+  | 'translateX'
+  | 'translateY'
+  | 'rotate'
+  | 'scaleX'
+  | 'scaleY'
 
-export interface KeyframeBone
-  extends KeyframeBase,
-    KeyframeBoneProps<KeyframePoint> {
+export interface KeyframeBone extends KeyframeBase {
   boneId: string
+  points: {
+    [key in KeyframeBonePropKey]?: KeyframePoint
+  }
 }
 
-export interface KeyframeBaseSameRange {
-  all: number
+export interface KeyframeBoneProps<T> extends KeyframeBaseProps<T> {
+  name: 'bone'
+  props: {
+    [key in KeyframeBonePropKey]?: T
+  }
 }
 
-export interface KeyframeBoneSameRange
-  extends KeyframeBaseSameRange,
-    Required<KeyframeBoneProps<number>> {}
+export interface KeyframeBaseSameRange extends KeyframeBaseProps<number> {}
+
+export interface KeyframeBoneSameRange extends KeyframeBaseSameRange {
+  props: {
+    [key in KeyframeBonePropKey]?: number
+  }
+}
 
 export type CurveName = 'linear' | 'bezier3'
 
@@ -75,7 +88,7 @@ export interface CurveBezier3 extends CurveBase {
   c2: IVec2
 }
 
-export interface KeyframeSelectedState extends KeyframeBoneProps<boolean> {}
+export interface KeyframeSelectedState extends KeyframeBaseProps<boolean> {}
 
 export function getKeyframeBone(
   arg: Partial<KeyframeBone> = {},
@@ -86,6 +99,7 @@ export function getKeyframeBone(
     frame: 0,
     boneId: '',
     name: 'bone',
+    points: {},
     ...arg,
     id,
   }

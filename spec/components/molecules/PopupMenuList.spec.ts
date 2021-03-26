@@ -21,11 +21,31 @@ import { mount } from '@vue/test-utils'
 import Target from '/@/components/molecules/PopupMenuList.vue'
 
 describe('src/components/molecules/PopupMenuList.vue', () => {
-  it('snapshot', () => {
-    const wrapper = mount(Target, {
-      props: { popupMenuList: [{ label: 'item', exec() {} }] },
+  describe('snapshot', () => {
+    it('default', () => {
+      const wrapper = mount(Target, {
+        props: {
+          popupMenuList: [
+            { label: 'item1', exec() {} },
+            { label: 'item2', exec() {} },
+            { label: 'item3', exec() {} },
+          ],
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
     })
-    expect(wrapper.element).toMatchSnapshot()
+    it('focused item', () => {
+      const wrapper = mount(Target, {
+        props: {
+          popupMenuList: [
+            { label: 'item1', exec() {} },
+            { label: 'item2', exec() {}, focus: true },
+            { label: 'item3', exec() {} },
+          ],
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 
   describe('click a item', () => {

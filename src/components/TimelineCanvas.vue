@@ -52,12 +52,23 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch, computed } from 'vue'
+import { defineComponent, ref, onMounted, watch, computed, PropType } from 'vue'
 import { getPointInTarget } from 'okanvas'
 import { useWindow } from '../composables/window'
 import { useCanvas } from '../composables/canvas'
 
 export default defineComponent({
+  props: {
+    canvas: {
+      type: Object as PropType<ReturnType<typeof useCanvas>>,
+      default: () =>
+        useCanvas({
+          scaleMin: 1,
+          ignoreNegativeY: true,
+          scaleAtFixY: true,
+        }),
+    },
+  },
   emits: [
     'down-left',
     'up-left',
@@ -77,17 +88,13 @@ export default defineComponent({
     const svg = ref<SVGElement>()
     const wrapper = ref<SVGElement>()
 
-    const canvas = useCanvas({
-      scaleMin: 1,
-      ignoreNegativeY: true,
-      scaleAtFixY: true,
-    })
+    const canvas = computed(() => props.canvas)
 
     function adjustSvgSize() {
       if (!wrapper.value) return
       const rect = wrapper.value.getBoundingClientRect()
-      canvas.viewSize.width = rect.width
-      canvas.viewSize.height = rect.height
+      canvas.value.viewSize.width = rect.width
+      canvas.value.viewSize.height = rect.height
     }
 
     const windowState = useWindow()
@@ -95,45 +102,48 @@ export default defineComponent({
     watch(() => windowState.state.size, adjustSvgSize)
 
     return {
-      scale: canvas.scale,
-      viewOrigin: canvas.viewOrigin,
-      viewSize: computed(() => canvas.viewSize),
+      scale: canvas.value.scale,
+      viewOrigin: canvas.value.viewOrigin,
+      viewSize: computed(() => canvas.value.viewSize),
       wrapper,
       svg,
-      viewBox: canvas.viewBox,
+      viewBox: canvas.value.viewBox,
       focus() {
         if (svg.value) svg.value.focus()
       },
-      wheel: (e: WheelEvent) => canvas.wheel(e, true),
+      wheel: (e: WheelEvent) => canvas.value.wheel(e, true),
       downLeft: () => {
-        if (!canvas.mousePoint.value) return
-        canvas.downLeft()
-        emit('down-left', canvas.viewToCanvas(canvas.mousePoint.value))
+        if (!canvas.value.mousePoint.value) return
+        canvas.value.downLeft()
+        emit(
+          'down-left',
+          canvas.value.viewToCanvas(canvas.value.mousePoint.value)
+        )
       },
       upLeft: () => {
-        canvas.upLeft()
+        canvas.value.upLeft()
         emit('up-left')
       },
-      downMiddle: canvas.downMiddle,
-      upMiddle: canvas.upMiddle,
-      leave: canvas.leave,
+      downMiddle: canvas.value.downMiddle,
+      upMiddle: canvas.value.upMiddle,
+      leave: canvas.value.leave,
       mousemove: (e: MouseEvent) => {
-        canvas.mousePoint.value = getPointInTarget(e)
+        canvas.value.mousePoint.value = getPointInTarget(e)
 
-        if (canvas.dragInfo.value) {
-          emit('drag', canvas.viewToCanvas(canvas.mousePoint.value))
-        } else if (canvas.viewMovingInfo.value) {
-          canvas.viewMove()
-        } else if (canvas.editStartPoint.value) {
+        if (canvas.value.dragInfo.value) {
+          emit('drag', canvas.value.viewToCanvas(canvas.value.mousePoint.value))
+        } else if (canvas.value.viewMovingInfo.value) {
+          canvas.value.viewMove()
+        } else if (canvas.value.editStartPoint.value) {
           emit('mousemove', {
-            current: canvas.viewToCanvas(canvas.mousePoint.value),
-            start: canvas.viewToCanvas(canvas.editStartPoint.value),
+            current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
+            start: canvas.value.viewToCanvas(canvas.value.editStartPoint.value),
           })
         }
       },
       clickAny(e: any) {
         if (e.target === svg.value) {
-          canvas.editStartPoint.value = undefined
+          canvas.value.editStartPoint.value = undefined
           emit('click-empty')
         } else {
           emit('click-any')
@@ -143,9 +153,9 @@ export default defineComponent({
         emit('escape')
       },
       editKeyDown(key: 'g' | 'x' | 'a' | 'ctrl-c' | 'ctrl-v' | 'shift-d') {
-        if (!canvas.mousePoint.value) return
+        if (!canvas.value.mousePoint.value) return
 
-        canvas.editStartPoint.value = canvas.mousePoint.value
+        canvas.value.editStartPoint.value = canvas.value.mousePoint.value
         emit(key)
       },
     }

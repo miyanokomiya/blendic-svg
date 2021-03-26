@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive, computed } from 'vue'
+import { reactive, computed, ref } from 'vue'
 import { getDistance, getRadian, IRectangle, IVec2, multi, sub } from 'okageo'
 import {
   Transform,
@@ -296,6 +296,8 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     state.command = 'insert'
   }
 
+  const lastSelectedPopupItem = ref<string>()
+
   function execInsert(
     useTranslate: boolean,
     useRotate: boolean,
@@ -309,38 +311,49 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     state.command = ''
   }
 
+  const popupMenuListSrc = computed<PopupMenuItem[]>(() => {
+    return [
+      {
+        label: 'All Transforms',
+        exec: () => execInsert(true, true, true),
+      },
+      {
+        label: 'Location',
+        exec: () => execInsert(true, false, false),
+      },
+      {
+        label: 'Rotation',
+        exec: () => execInsert(false, true, false),
+      },
+      {
+        label: 'Scale',
+        exec: () => execInsert(false, false, true),
+      },
+      {
+        label: 'Location & Rotation',
+        exec: () => execInsert(true, true, false),
+      },
+      {
+        label: 'Location & Scale',
+        exec: () => execInsert(true, false, true),
+      },
+      {
+        label: 'Rotation & Scale',
+        exec: () => execInsert(false, true, true),
+      },
+    ]
+  })
+
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     if (state.command === 'insert') {
-      return [
-        {
-          label: 'All Transforms',
-          exec: () => execInsert(true, true, true),
+      return popupMenuListSrc.value.map((item) => ({
+        ...item,
+        exec: () => {
+          lastSelectedPopupItem.value = item.label
+          item.exec()
         },
-        {
-          label: 'Location',
-          exec: () => execInsert(true, false, false),
-        },
-        {
-          label: 'Rotation',
-          exec: () => execInsert(false, true, false),
-        },
-        {
-          label: 'Scale',
-          exec: () => execInsert(false, false, true),
-        },
-        {
-          label: 'Location & Rotation',
-          exec: () => execInsert(true, true, false),
-        },
-        {
-          label: 'Location & Scale',
-          exec: () => execInsert(true, false, true),
-        },
-        {
-          label: 'Rotation & Scale',
-          exec: () => execInsert(false, true, true),
-        },
-      ]
+        focus: item.label === lastSelectedPopupItem.value,
+      }))
     } else {
       return []
     }

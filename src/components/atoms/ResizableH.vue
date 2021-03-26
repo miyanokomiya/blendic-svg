@@ -19,25 +19,24 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div ref="root" class="resizable-h-wrapper">
-    <div :style="{ width: leftSize }">
-      <slot name="left" />
+    <div ref="left" :style="{ width: leftSize }">
+      <slot name="left" :size="leftPx" />
     </div>
-    <div class="anchor" @mousedown.prevent="onDown">
+    <div v-if="!dense" class="anchor" @mousedown.prevent="onDown">
       <div />
     </div>
-    <div :style="{ width: rightSize }">
-      <slot name="right" />
+    <div ref="right" class="right" :style="{ width: rightSize }">
+      <slot name="right" :size="rightPx" />
+      <div v-if="dense" class="anchor-dence" @mousedown.prevent="onDown" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { useDrag } from 'okanvas'
-import { computed, defineComponent, nextTick, ref } from 'vue'
+import { computed, defineComponent, nextTick, onMounted, ref } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import { clamp, logRound } from '/@/utils/geometry'
-
-const anchorSize = 9
 
 export default defineComponent({
   props: {
@@ -53,17 +52,31 @@ export default defineComponent({
       type: Number,
       default: 0.9,
     },
+    dense: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props) {
     const root = ref<Element>()
+    const left = ref<Element>()
+    const right = ref<Element>()
     const rate = ref(props.initialRate)
+    const leftPx = ref(100)
+    const rightPx = ref(100)
+    const anchorSize = computed(() => (props.dense ? 0 : 9))
 
     const leftSize = computed(() => {
-      return `calc((100% - ${anchorSize}px) * ${rate.value})`
+      return `calc((100% - ${anchorSize.value}px) * ${rate.value})`
     })
     const rightSize = computed(() => {
-      return `calc((100% - ${anchorSize}px) * ${1 - rate.value})`
+      return `calc((100% - ${anchorSize.value}px) * ${1 - rate.value})`
     })
+
+    function calcSize() {
+      leftPx.value = left.value?.getBoundingClientRect().width ?? 100
+      rightPx.value = right.value?.getBoundingClientRect().width ?? 100
+    }
 
     const drag = useDrag(async (arg) => {
       if (!root.value) return
@@ -78,6 +91,7 @@ export default defineComponent({
         )
       )
       await nextTick()
+      calcSize()
       window.dispatchEvent(new Event('resize'))
     })
     useGlobalMousemove((e) => {
@@ -86,8 +100,14 @@ export default defineComponent({
     })
     useGlobalMouseup(drag.onUp)
 
+    onMounted(calcSize)
+
     return {
       root,
+      left,
+      right,
+      leftPx,
+      rightPx,
       leftSize,
       rightSize,
       onDown: drag.onDown,
@@ -112,5 +132,17 @@ export default defineComponent({
   &:hover > div {
     background-color: #bbb;
   }
+}
+.right {
+  position: relative;
+}
+.anchor-dence {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 12px;
+  cursor: col-resize;
 }
 </style>

@@ -71,7 +71,7 @@ import {
 } from '/@/models/keyframe'
 import { getKeyframeMapByBoneId } from '/@/utils/animations'
 import { mapReduce } from '/@/utils/commons'
-import { getSamePropRangeFrameMapByBoneId } from '/@/utils/keyframes/keyframeBone'
+import { getSamePropRangeFrameMapById } from '/@/utils/keyframes'
 
 export default defineComponent({
   components: { KeyPointGroup },
@@ -142,7 +142,7 @@ export default defineComponent({
     })
 
     const sameRangeFrameMapByBoneId = computed(() => {
-      return getSamePropRangeFrameMapByBoneId(keyframeMapByBoneId.value)
+      return getSamePropRangeFrameMapById(keyframeMapByBoneId.value)
     })
 
     function getSameRangeFrame(

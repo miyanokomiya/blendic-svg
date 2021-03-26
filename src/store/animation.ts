@@ -74,9 +74,9 @@ import {
 import {
   deleteKeyframeByProp,
   getAllSelectedState,
-  getInterpolatedTransformMapByBoneId,
   isAllExistSelected,
 } from '/@/utils/keyframes'
+import { getInterpolatedTransformMapByBoneId } from '/@/utils/keyframes/keyframeBone'
 
 const playing = ref<PlayState>('pause')
 const currentFrame = ref(0)

@@ -42,7 +42,7 @@ import { KeyframeBone } from '/@/models/keyframe'
 import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
 import { flatElementTree } from '/@/utils/elements'
 import { isIdentityAffine } from '/@/utils/geometry'
-import { getInterpolatedTransformMapByBoneId } from '/@/utils/keyframes'
+import { getInterpolatedTransformMapByBoneId } from '/@/utils/keyframes/keyframeBone'
 
 export type TransformCache = {
   [relativeRootBoneId: string]: { [boneId: string]: Transform }

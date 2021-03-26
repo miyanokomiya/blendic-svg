@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, Ref } from 'vue'
 import { IVec2, multi, sub, add, getRectCenter, IRectangle } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import { scaleRate } from '../models'
@@ -36,13 +36,16 @@ export function useCanvas(
     scaleMax?: number
     ignoreNegativeY?: boolean
     scaleAtFixY?: boolean
+    scale?: Ref<number>
+    viewOrigin?: Ref<IVec2>
   } = {}
 ) {
+  const scale = options.scale ?? ref(1)
+  const viewOrigin = options.viewOrigin ?? ref<IVec2>({ x: 0, y: 0 })
+
   const viewSize = reactive({ width: 600, height: 100 })
   const editStartPoint = ref<IVec2>()
   const mousePoint = ref<IVec2>()
-  const scale = ref(1)
-  const viewOrigin = ref<IVec2>({ x: 0, y: 0 })
   const viewMovingInfo = ref<MoveInfo>()
   const dragInfo = ref<{ dragType: Dragtype; downAt: IVec2 }>()
 

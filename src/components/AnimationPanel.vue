@@ -59,71 +59,76 @@ Copyright (C) 2021, Tomoya Komiyama.
         </InlineField>
       </div>
     </div>
-    <div class="middle">
-      <TimelineCanvas
-        @up-left="upLeft"
-        @drag="drag"
-        @down-left="downLeft"
-        @mousemove="mousemove"
-        @click-empty="clickEmpty"
-        @escape="escape"
-        @a="selectAll"
-        @x="deleteKeyframes"
-        @g="grag"
-        @ctrl-c="clipKeyframes"
-        @ctrl-v="pasteKeyframes"
-        @shift-d="duplicateKeyframes"
-      >
-        <template #default="{ scale, viewOrigin, viewSize }">
-          <g
-            :transform="`translate(${labelWidth + axisPadding}, ${
-              viewOrigin.y
-            })`"
-          >
-            <TimelineAxis
-              :scale="scale"
-              :origin-x="viewOrigin.x"
-              :view-width="viewSize.width"
-              :current-frame="currentFrame"
-              :end-frame="endFrame"
-              :header-height="labelHeight"
-              @down-current-frame="downCurrentFrame"
-            />
-            <Keyframes
-              :scale="scale"
-              :keyframe-map-by-frame="keyframeMapByFrame"
-              :bone-ids="selectedAllBoneIdList"
-              :selected-keyframe-map="selectedKeyframeMap"
-              :scroll-y="viewOrigin.y"
-              :bone-expanded-map="boneExpandedMap"
-              :bone-top-map="boneTopMap"
-              :height="labelHeight"
-              @select="selectKeyframe"
-              @shift-select="shiftSelectKeyframe"
-              @select-frame="selectKeyframeByFrame"
-              @shift-select-frame="shiftSelectKeyframeByFrame"
-            />
-          </g>
-          <g
-            :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
-          >
-            <TimelineBones
-              :selected-all-bone-list="selectedAllBoneList"
-              :label-width="labelWidth"
-              :scroll-y="viewOrigin.y"
-              :bone-expanded-map="boneExpandedMap"
-              :bone-top-map="boneTopMap"
-              :height="labelHeight"
-              @toggle-bone-expanded="toggleBoneExpanded"
-            />
-          </g>
-        </template>
-      </TimelineCanvas>
-      <CommandExamPanel
-        class="command-exam-panel"
-        :available-command-list="availableCommandList"
-      />
-    </div>
+    <ResizableH class="middle" :initial-rate="0.2" dense>
+      <template #left="{ size }">
+        <TimelineCanvas class="label-canvas" :canvas="labelCanvas">
+          <template #default="{ scale, viewOrigin }">
+            <g
+              :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
+            >
+              <TimelineBones
+                :selected-all-bone-list="selectedAllBoneList"
+                :label-width="size + 1"
+                :scroll-y="viewOrigin.y"
+                :bone-expanded-map="boneExpandedMap"
+                :bone-top-map="boneTopMap"
+                :height="labelHeight"
+                @toggle-bone-expanded="toggleBoneExpanded"
+              />
+            </g>
+          </template>
+        </TimelineCanvas>
+      </template>
+      <template #right>
+        <TimelineCanvas
+          :canvas="keyframeCanvas"
+          @up-left="upLeft"
+          @drag="drag"
+          @down-left="downLeft"
+          @mousemove="mousemove"
+          @click-empty="clickEmpty"
+          @escape="escape"
+          @a="selectAll"
+          @x="deleteKeyframes"
+          @g="grag"
+          @ctrl-c="clipKeyframes"
+          @ctrl-v="pasteKeyframes"
+          @shift-d="duplicateKeyframes"
+        >
+          <template #default="{ scale, viewOrigin, viewSize }">
+            <g :transform="`translate(${axisPadding}, ${viewOrigin.y})`">
+              <TimelineAxis
+                :scale="scale"
+                :origin-x="viewOrigin.x"
+                :view-width="viewSize.width"
+                :current-frame="currentFrame"
+                :end-frame="endFrame"
+                :header-height="labelHeight"
+                @down-current-frame="downCurrentFrame"
+              />
+              <Keyframes
+                :scale="scale"
+                :keyframe-map-by-frame="keyframeMapByFrame"
+                :bone-ids="selectedAllBoneIdList"
+                :selected-keyframe-map="selectedKeyframeMap"
+                :scroll-y="viewOrigin.y"
+                :bone-expanded-map="boneExpandedMap"
+                :bone-top-map="boneTopMap"
+                :height="labelHeight"
+                @select="selectKeyframe"
+                @shift-select="shiftSelectKeyframe"
+                @select-frame="selectKeyframeByFrame"
+                @shift-select-frame="shiftSelectKeyframeByFrame"
+              />
+            </g>
+          </template>
+        </TimelineCanvas>
+        <CommandExamPanel
+          class="command-exam-panel"
+          :available-command-list="availableCommandList"
+        />
+      </template>
+    </ResizableH>
   </div>
 </template>
 
@@ -152,6 +157,8 @@ import { mapReduce, toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
 import { useKeyframeEditMode } from '../composables/keyframeEditMode'
 import { IdMap } from '/@/models'
+import ResizableH from '/@/components/atoms/ResizableH.vue'
+import { useCanvas } from '/@/composables/canvas'
 
 const labelHeight = 24
 
@@ -168,13 +175,23 @@ export default defineComponent({
     AddIcon,
     DeleteIcon,
     InlineField,
+    ResizableH,
   },
   setup() {
-    const labelWidth = 140
     const axisPadding = 20
 
     const store = useStore()
     const animationStore = useAnimationStore()
+
+    const canvasOptions = {
+      scaleMin: 1,
+      ignoreNegativeY: true,
+      scaleAtFixY: true,
+      scale: ref(1),
+      viewOrigin: ref<IVec2>({ x: 0, y: 0 }),
+    }
+    const labelCanvas = useCanvas(canvasOptions)
+    const keyframeCanvas = useCanvas(canvasOptions)
 
     const keyframeEditMode = useKeyframeEditMode()
 
@@ -227,7 +244,7 @@ export default defineComponent({
     function drag(current: IVec2) {
       if (editMode.value === 'move-current-frame') {
         animationStore.setCurrentFrame(
-          getNearestFrameAtPoint(current.x - labelWidth - axisPadding),
+          getNearestFrameAtPoint(current.x - axisPadding),
           moveCurrentFrameSeriesKey.value
         )
       }
@@ -279,6 +296,8 @@ export default defineComponent({
     })
 
     return {
+      labelCanvas,
+      keyframeCanvas,
       playing: animationStore.playing,
       actions: animationStore.actions.value,
       selectedAllBoneList,
@@ -294,7 +313,6 @@ export default defineComponent({
           animationStore.updateAction({ name: draftName.value })
         }
       },
-      labelWidth,
       axisPadding,
       currentFrame: animationStore.currentFrame,
       setPlaying: animationStore.setPlaying,
@@ -387,5 +405,8 @@ export default defineComponent({
     bottom: 4px;
     right: 8px;
   }
+}
+.label-canvas {
+  overflow: hidden;
 }
 </style>

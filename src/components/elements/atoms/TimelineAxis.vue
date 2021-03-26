@@ -140,7 +140,8 @@ export default defineComponent({
       return Math.ceil((props.viewWidth * props.scale) / frameWidth)
     })
     const count = computed(() => {
-      return Math.floor(visibledFrameRange.value / frameInterval.value)
+      // add a few count to prevent early overflow
+      return Math.ceil(visibledFrameRange.value / frameInterval.value) + 3
     })
     const frames = computed((): {
       f: number

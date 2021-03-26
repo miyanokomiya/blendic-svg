@@ -580,7 +580,9 @@ function getSelectAllKeyframesItem(): HistoryItem {
   const redo = () => {
     selectedKeyframeMap.value = {
       ...selectedKeyframeMap.value,
-      ...mapReduce(visibledKeyframeMap.value, () => getAllSelectedState()),
+      ...mapReduce(visibledKeyframeMap.value, () =>
+        getAllSelectedState('bone')
+      ),
     }
   }
   return {
@@ -607,7 +609,7 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
         ) {
           dropIds[id] = true
         } else {
-          idMap[id] = getAllSelectedState()
+          idMap[id] = getAllSelectedState('bone')
         }
       })
       selectedKeyframeMap.value = dropMap(
@@ -616,7 +618,7 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
       )
     } else {
       const idMap = ids.reduce<IdMap<KeyframeSelectedState>>((p, id) => {
-        p[id] = getAllSelectedState()
+        p[id] = getAllSelectedState('bone')
         return p
       }, {})
       selectedKeyframeMap.value =
@@ -645,20 +647,9 @@ function getSelectKeyframeItem(
 
   const redo = () => {
     if (shift) {
-      if (
-        isAllExistSelected(
-          visibledKeyframeMap.value[id],
-          selectedKeyframeMap.value[id]
-        )
-      ) {
-        const next = { ...selectedKeyframeMap.value }
-        delete next[id]
-        selectedKeyframeMap.value = next
-      } else {
-        selectedKeyframeMap.value = {
-          ...selectedKeyframeMap.value,
-          ...(selectedState ? { [id]: selectedState } : {}),
-        }
+      selectedKeyframeMap.value = {
+        ...selectedKeyframeMap.value,
+        [id]: selectedState ?? getAllSelectedState('bone'),
       }
     } else {
       selectedKeyframeMap.value = {

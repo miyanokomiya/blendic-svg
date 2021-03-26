@@ -39,8 +39,8 @@ export function getKeyframeModule(name: KeyframeName): KeyframeModule {
   }
 }
 
-export function getAllSelectedState(): KeyframeSelectedState {
-  return getKeyframeDefaultPropsMap(() => true)
+export function getAllSelectedState(name: KeyframeName): KeyframeSelectedState {
+  return getKeyframeDefaultPropsMap(() => true, name)
 }
 
 export function inversedSelectedState(

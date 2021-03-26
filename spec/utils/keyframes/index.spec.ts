@@ -58,7 +58,7 @@ describe('utils/keyframes/index.ts', () => {
     })
     it('do nothing if target property is empty', () => {
       expect(
-        target.inversedSelectedState(target.getAllSelectedState(), {
+        target.inversedSelectedState(target.getAllSelectedState('bone'), {
           name: 'bone',
           props: { translateX: true, translateY: false },
         })

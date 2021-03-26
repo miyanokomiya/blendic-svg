@@ -52,6 +52,7 @@ import {
   getAllSelectedState,
   getKeyframeDefaultPropsMap,
   inversedSelectedState,
+  isAllExistSelected,
   isAnySelected,
 } from '/@/utils/keyframes'
 
@@ -116,7 +117,7 @@ export default defineComponent({
         emit('select', {
           ...props.selectedState,
           props: state,
-        } as KeyframeSelectedState)
+        })
       },
       shiftSelect(state: { [key: string]: boolean }) {
         emit(
@@ -124,14 +125,19 @@ export default defineComponent({
           inversedSelectedState(props.selectedState, {
             ...props.selectedState,
             props: state,
-          } as KeyframeSelectedState)
+          })
         )
       },
       selectAll() {
-        emit('select', getAllSelectedState())
+        emit('select', getAllSelectedState(props.keyFrame.name))
       },
       shiftSelectAll() {
-        emit('shift-select', getAllSelectedState())
+        emit(
+          'shift-select',
+          isAllExistSelected(props.keyFrame, props.selectedState)
+            ? { name: props.keyFrame.name, props: {} }
+            : getAllSelectedState(props.keyFrame.name)
+        )
       },
     }
   },

@@ -110,8 +110,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       class="popup-menu-list"
       :popup-menu-list="popupMenuList"
       :style="{
-        left: `${popupMenuListPosition.x}px`,
-        top: `${popupMenuListPosition.y}px`,
+        left: `${popupMenuListPosition.x - 20}px`,
+        top: `${popupMenuListPosition.y - 10}px`,
       }"
     />
   </div>
@@ -395,6 +395,7 @@ svg {
   pointer-events: none;
 }
 .popup-menu-list {
-  position: absolute;
+  position: fixed;
+  z-index: 1;
 }
 </style>

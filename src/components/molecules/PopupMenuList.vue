@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div class="popup-menu-list-wrapper">
+  <div class="popup-menu-list-wrapper" :style="{ transform }">
     <ul>
       <li v-for="item in popupMenuList" :key="item.label">
         <button @click="item.exec">
@@ -30,7 +30,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 import { PopupMenuItem } from '/@/models'
 
 export default defineComponent({
@@ -40,8 +40,13 @@ export default defineComponent({
       required: true,
     },
   },
-  setup() {
-    return {}
+  setup(props) {
+    const transform = computed(() => {
+      const index = props.popupMenuList.findIndex((p) => p.focus)
+      return index !== -1 ? `translateY(-${index * 26}px)` : ''
+    })
+
+    return { transform }
   },
 })
 </script>
@@ -63,7 +68,8 @@ li {
   }
   > button {
     width: 100%;
-    padding: 4px 10px;
+    height: 26px;
+    padding: 0 10px;
     text-align: left;
   }
 }

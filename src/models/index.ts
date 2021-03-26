@@ -204,6 +204,7 @@ export type EditMovement = {
 export interface PopupMenuItem {
   label: string
   exec: () => void
+  focus?: boolean
 }
 
 export type CommandExam = { command: string; title: string }

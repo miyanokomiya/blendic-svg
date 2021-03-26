@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`src/components/molecules/PopupMenuList.vue snapshot 1`] = `
+exports[`src/components/molecules/PopupMenuList.vue snapshot default 1`] = `
 <div
   class="popup-menu-list-wrapper"
 >
@@ -8,7 +8,44 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot 1`] = `
     
     <li>
       <button>
-        item
+        item1
+      </button>
+    </li>
+    <li>
+      <button>
+        item2
+      </button>
+    </li>
+    <li>
+      <button>
+        item3
+      </button>
+    </li>
+    
+  </ul>
+</div>
+`;
+
+exports[`src/components/molecules/PopupMenuList.vue snapshot focused item 1`] = `
+<div
+  class="popup-menu-list-wrapper"
+  style="transform: translateY(-26px);"
+>
+  <ul>
+    
+    <li>
+      <button>
+        item1
+      </button>
+    </li>
+    <li>
+      <button>
+        item2
+      </button>
+    </li>
+    <li>
+      <button>
+        item3
       </button>
     </li>
     

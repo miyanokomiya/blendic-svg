@@ -344,7 +344,13 @@ function selectKeyframeByFrame(frame: number, shift = false) {
 function selectAllKeyframes() {
   if (
     Object.keys(visibledSelectedKeyframeMap.value).length ===
-    Object.keys(visibledKeyframeMap.value).length
+      Object.keys(visibledKeyframeMap.value).length &&
+    Object.keys(visibledSelectedKeyframeMap.value).every((key) =>
+      isAllExistSelected(
+        visibledKeyframeMap.value[key],
+        selectedKeyframeMap.value[key]
+      )
+    )
   ) {
     if (isAnyVisibledSelectedKeyframe.value) {
       selectKeyframe('')

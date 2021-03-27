@@ -246,6 +246,11 @@ export function toMap<T extends { id: string }>(list: T[]): IdMap<T> {
 export function toBoneIdMap<T extends { boneId: string }>(list: T[]): IdMap<T> {
   return toKeyMap(list, 'boneId')
 }
+export function toTargetIdMap<T extends { targetId: string }>(
+  list: T[]
+): IdMap<T> {
+  return toKeyMap(list, 'targetId')
+}
 export function toFrameMap<T extends { frame: number }>(list: T[]): IdMap<T> {
   return toKeyMap(list, 'frame')
 }

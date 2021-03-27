@@ -99,3 +99,30 @@ export function isSameKeyframePoint(
 ): boolean {
   return a.value === b.value
 }
+
+export function interpolateKeyframeProp(
+  keyframes: KeyframeBase[],
+  frame: number,
+  getPropFn: (k: KeyframeBase) => KeyframePoint | undefined
+): number | undefined {
+  const filtered = keyframes.filter((k) => getPropFn(k))
+  const neighbors = getNeighborKeyframes(filtered, frame)
+
+  if (neighbors.length === 0) {
+    return
+  } else if (neighbors.length === 1) {
+    return getPropFn(neighbors[0])!.value
+  } else {
+    return interpolateKeyframePoint(
+      {
+        frame: neighbors[0].frame,
+        keyframePoint: getPropFn(neighbors[0])!,
+      },
+      {
+        frame: neighbors[1].frame,
+        keyframePoint: getPropFn(neighbors[1])!,
+      },
+      frame
+    )
+  }
+}

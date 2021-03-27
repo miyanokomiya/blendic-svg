@@ -145,15 +145,19 @@ describe('utils/poseResolver.ts', () => {
       bone_a: [
         getKeyframeBone({
           id: 'a',
-          boneId: 'bone_a',
-          rotate: getKeyframePoint({ value: 10 }),
+          targetId: 'bone_a',
           frame: 1,
+          points: {
+            rotate: getKeyframePoint({ value: 10 }),
+          },
         }),
         getKeyframeBone({
           id: 'a',
-          boneId: 'bone_a',
-          rotate: getKeyframePoint({ value: 30 }),
+          targetId: 'bone_a',
           frame: 3,
+          points: {
+            rotate: getKeyframePoint({ value: 30 }),
+          },
         }),
       ],
     }

@@ -43,10 +43,10 @@ Copyright (C) 2021, Tomoya Komiyama.
             <KeyPointGroup
               :key-frame="k"
               :child-map="transformMap"
-              :top="boneTopMap[k.boneId]"
+              :top="boneTopMap[k.targetId]"
               :selected-state="selectedKeyframeMap[k.id]"
-              :expanded="boneExpandedMap[k.boneId]"
-              :same-range-width="getSameRangeFrame(k.boneId, k.frame)"
+              :expanded="boneExpandedMap[k.targetId]"
+              :same-range-width="getSameRangeFrame(k.targetId, k.frame)"
               :height="height"
               :scroll-y="scrollY"
               @select="(state) => select(k.id, state)"
@@ -69,9 +69,9 @@ import {
   KeyframeBoneSameRange,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
-import { getKeyframeMapByBoneId } from '/@/utils/animations'
+import { getKeyframeMapByTargetId } from '/@/utils/animations'
 import { mapReduce } from '/@/utils/commons'
-import { getSamePropRangeFrameMapByBoneId } from '/@/utils/keyframes/keyframeBone'
+import { getSamePropRangeFrameMapById } from '/@/utils/keyframes'
 
 export default defineComponent({
   components: { KeyPointGroup },
@@ -126,33 +126,37 @@ export default defineComponent({
       return Object.keys(props.keyframeMapByFrame).reduce<
         IdMap<KeyframeBone[]>
       >((p, frame) => {
-        p[frame] = sortAndFilterKeyframesByBoneId(
+        p[frame] = sortAndFilterKeyframesByTargetId(
           props.keyframeMapByFrame[frame]
         )
         return p
       }, {})
     })
 
-    const keyframeMapByBoneId = computed(() => {
-      return getKeyframeMapByBoneId(
+    const keyframeMapByTargetId = computed(() => {
+      return getKeyframeMapByTargetId(
         Object.keys(props.keyframeMapByFrame).flatMap((frame) => {
           return props.keyframeMapByFrame[frame]
         })
       )
     })
 
-    const sameRangeFrameMapByBoneId = computed(() => {
-      return getSamePropRangeFrameMapByBoneId(keyframeMapByBoneId.value)
+    const sameRangeFrameMapByTargetId = computed(() => {
+      return getSamePropRangeFrameMapById(keyframeMapByTargetId.value)
     })
 
     function getSameRangeFrame(
-      boneId: string,
+      targetId: string,
       frame: number
-    ): KeyframeBoneSameRange | undefined {
-      const map = sameRangeFrameMapByBoneId.value[boneId]?.[frame]
+    ): KeyframeBoneSameRange['props'] | undefined {
+      const map = sameRangeFrameMapByTargetId.value[targetId]?.[frame]
       if (!map) return
-      // @ts-ignore
-      return mapReduce(map, (val) => (val * frameWidth) / props.scale)
+      const ret = mapReduce(
+        map.props,
+        (val) => (val * frameWidth) / props.scale
+      )
+      ret.all = Object.keys(ret).reduce((p, c) => Math.min(p, ret[c]), Infinity)
+      return ret
     }
 
     const selectedFrameMap = computed(() => {
@@ -180,13 +184,14 @@ export default defineComponent({
       }
     })
 
-    function sortAndFilterKeyframesByBoneId(
+    function sortAndFilterKeyframesByTargetId(
       keyframes: KeyframeBone[]
     ): KeyframeBone[] {
       return keyframes
-        .filter((k) => boneIndexMap.value[k.boneId] > -1)
+        .filter((k) => boneIndexMap.value[k.targetId] > -1)
         .sort(
-          (a, b) => boneIndexMap.value[a.boneId] - boneIndexMap.value[b.boneId]
+          (a, b) =>
+            boneIndexMap.value[a.targetId] - boneIndexMap.value[b.targetId]
         )
     }
 

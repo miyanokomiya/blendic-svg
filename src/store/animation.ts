@@ -29,7 +29,7 @@ import {
 import {
   findNextFrameWithKeyframe,
   findPrevFrameWithKeyframe,
-  getKeyframeMapByBoneId,
+  getKeyframeMapByTargetId,
   getKeyframeMapByFrame,
   mergeKeyframesWithDropped,
   slideKeyframesTo,
@@ -60,7 +60,7 @@ import {
   getTransform,
   IdMap,
   PlayState,
-  toBoneIdMap,
+  toTargetIdMap,
   toMap,
   Transform,
 } from '/@/models'
@@ -74,9 +74,9 @@ import {
 import {
   deleteKeyframeByProp,
   getAllSelectedState,
-  getInterpolatedTransformMapByBoneId,
-  isAllSelected,
+  isAllExistSelected,
 } from '/@/utils/keyframes'
+import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
 
 const playing = ref<PlayState>('pause')
 const currentFrame = ref(0)
@@ -102,16 +102,16 @@ const keyframeMapByFrame = computed(() => {
   return getKeyframeMapByFrame(keyframeList.value)
 })
 
-const keyframeMapByBoneId = computed(() => {
-  return getKeyframeMapByBoneId(keyframeList.value)
+const keyframeMapByTargetId = computed(() => {
+  return getKeyframeMapByTargetId(keyframeList.value)
 })
 
-const visibledKeyframeMapByBoneId = computed(() => {
-  return extractMap(keyframeMapByBoneId.value, selectedAllBones.value)
+const visibledKeyframeMapByTargetId = computed(() => {
+  return extractMap(keyframeMapByTargetId.value, selectedAllBones.value)
 })
 
 const visibledKeyframeMap = computed(() => {
-  return toMap(flatKeyListMap(visibledKeyframeMapByBoneId.value))
+  return toMap(flatKeyListMap(visibledKeyframeMapByTargetId.value))
 })
 
 const visibledSelectedKeyframeMap = computed(() => {
@@ -121,20 +121,20 @@ const isAnyVisibledSelectedKeyframe = computed(() => {
   return Object.keys(visibledSelectedKeyframeMap.value).length > 0
 })
 
-const currentInterpolatedTransformMapByBoneId = computed(
+const currentInterpolatedTransformMapByTargetId = computed(
   (): IdMap<Transform> => {
-    return getInterpolatedTransformMapByBoneId(
-      keyframeMapByBoneId.value,
+    return getInterpolatedTransformMapByTargetId(
+      keyframeMapByTargetId.value,
       currentFrame.value
     )
   }
 )
 
-const posedBoneIds = computed(() => {
+const posedTargetIds = computed(() => {
   return Array.from(
     new Set(
       Object.keys(editTransforms.value).concat(
-        Object.keys(keyframeMapByBoneId.value)
+        Object.keys(keyframeMapByTargetId.value)
       )
     )
   )
@@ -142,7 +142,7 @@ const posedBoneIds = computed(() => {
 
 const currentSelfTransforms = computed(
   (): IdMap<Transform> => {
-    return posedBoneIds.value.reduce<IdMap<Transform>>((p, id) => {
+    return posedTargetIds.value.reduce<IdMap<Transform>>((p, id) => {
       p[id] = convolutePoseTransforms([
         currentInterpolatedTransform(id),
         getBoneEditedTransforms(id),
@@ -194,35 +194,35 @@ function setEndFrame(val: number, seriesKey?: string) {
   historyStore.push(item)
 }
 
-function setEditedTransforms(mapByBoneId: IdMap<Transform>) {
-  const item = getUpdateEditedTransformsItem(mapByBoneId)
+function setEditedTransforms(mapByTargetId: IdMap<Transform>) {
+  const item = getUpdateEditedTransformsItem(mapByTargetId)
   item.redo()
   historyStore.push(item)
 }
-function applyEditedTransforms(mapByBoneId: IdMap<Transform>) {
+function applyEditedTransforms(mapByTargetId: IdMap<Transform>) {
   setEditedTransforms(
-    mapReduce({ ...editTransforms.value, ...mapByBoneId }, (_p, id) => {
+    mapReduce({ ...editTransforms.value, ...mapByTargetId }, (_p, id) => {
       return convolutePoseTransforms([
         getBoneEditedTransforms(id),
-        mapByBoneId[id] ?? getTransform(),
+        mapByTargetId[id] ?? getTransform(),
       ])
     })
   )
 }
-function pastePoses(mapByBoneId: IdMap<Transform>, seriesKey?: string) {
+function pastePoses(mapByTargetId: IdMap<Transform>, seriesKey?: string) {
   const item = getUpdateEditedTransformsItem(
     {
       ...editTransforms.value,
       ...mapReduce(
-        dropMapIfFalse(mapByBoneId, (_, boneId) => {
+        dropMapIfFalse(mapByTargetId, (_, targetId) => {
           // drop poses of unexisted bones
-          return !!store.boneMap.value[boneId]
+          return !!store.boneMap.value[targetId]
         }),
-        (t, boneId) => {
+        (t, targetId) => {
           // invert keyframe's pose & paste the pose
           return multiPoseTransform(
             t,
-            invertPoseTransform(currentInterpolatedTransform(boneId))
+            invertPoseTransform(currentInterpolatedTransform(targetId))
           )
         }
       ),
@@ -234,14 +234,16 @@ function pastePoses(mapByBoneId: IdMap<Transform>, seriesKey?: string) {
   historyStore.push(item)
 }
 
-function currentInterpolatedTransform(boneId: string): Transform {
-  return currentInterpolatedTransformMapByBoneId.value[boneId] ?? getTransform()
+function currentInterpolatedTransform(targetId: string): Transform {
+  return (
+    currentInterpolatedTransformMapByTargetId.value[targetId] ?? getTransform()
+  )
 }
-function getBoneEditedTransforms(boneId: string): Transform {
-  return editTransforms.value[boneId] ?? getTransform()
+function getBoneEditedTransforms(targetId: string): Transform {
+  return editTransforms.value[targetId] ?? getTransform()
 }
-function getCurrentSelfTransforms(boneId: string): Transform {
-  return currentSelfTransforms.value[boneId] ?? getTransform()
+function getCurrentSelfTransforms(targetId: string): Transform {
+  return currentSelfTransforms.value[targetId] ?? getTransform()
 }
 
 function setCurrentFrame(val: number, seriesKey?: string) {
@@ -344,7 +346,13 @@ function selectKeyframeByFrame(frame: number, shift = false) {
 function selectAllKeyframes() {
   if (
     Object.keys(visibledSelectedKeyframeMap.value).length ===
-    Object.keys(visibledKeyframeMap.value).length
+      Object.keys(visibledKeyframeMap.value).length &&
+    Object.keys(visibledSelectedKeyframeMap.value).every((key) =>
+      isAllExistSelected(
+        visibledKeyframeMap.value[key],
+        selectedKeyframeMap.value[key]
+      )
+    )
   ) {
     if (isAnyVisibledSelectedKeyframe.value) {
       selectKeyframe('')
@@ -367,29 +375,31 @@ function execInsertKeyframe(
     addAction()
   }
 
-  const keyframes = Object.keys(selectedAllBones.value).map((boneId) => {
-    const t = getCurrentSelfTransforms(boneId)
+  const keyframes = Object.keys(selectedAllBones.value).map((targetId) => {
+    const t = getCurrentSelfTransforms(targetId)
     return getKeyframeBone(
       {
         frame: currentFrame.value,
-        boneId,
-        ...(options.useTranslate
-          ? {
-              translateX: getKeyframePoint({ value: t.translate.x }),
-              translateY: getKeyframePoint({ value: t.translate.y }),
-            }
-          : {}),
-        ...(options.useRotate
-          ? {
-              rotate: getKeyframePoint({ value: t.rotate }),
-            }
-          : {}),
-        ...(options.useScale
-          ? {
-              scaleX: getKeyframePoint({ value: t.scale.x }),
-              scaleY: getKeyframePoint({ value: t.scale.y }),
-            }
-          : {}),
+        targetId,
+        points: {
+          ...(options.useTranslate
+            ? {
+                translateX: getKeyframePoint({ value: t.translate.x }),
+                translateY: getKeyframePoint({ value: t.translate.y }),
+              }
+            : {}),
+          ...(options.useRotate
+            ? {
+                rotate: getKeyframePoint({ value: t.rotate }),
+              }
+            : {}),
+          ...(options.useScale
+            ? {
+                scaleX: getKeyframePoint({ value: t.scale.x }),
+                scaleY: getKeyframePoint({ value: t.scale.y }),
+              }
+            : {}),
+        },
       },
       true
     )
@@ -416,7 +426,7 @@ function pasteKeyframes(keyframeList: KeyframeBase[]) {
     toMap(
       slideKeyframesTo(
         (keyframeList as KeyframeBone[])
-          .filter((k) => store.boneMap.value[k.boneId])
+          .filter((k) => store.boneMap.value[k.targetId])
           .map((k) => getKeyframeBone(k, true)),
         currentFrame.value
       )
@@ -446,10 +456,10 @@ export function useAnimationStore() {
     actions: computed(() => actions.state.list),
     selectedKeyframeMap,
     keyframeMapByFrame,
-    keyframeMapByBoneId,
+    keyframeMapByTargetId,
     visibledKeyframeMap,
     visibledSelectedKeyframeMap,
-    posedBoneIds,
+    posedTargetIds,
     currentPosedBones,
     selectedAllBones,
     selectedBones,
@@ -578,7 +588,9 @@ function getSelectAllKeyframesItem(): HistoryItem {
   const redo = () => {
     selectedKeyframeMap.value = {
       ...selectedKeyframeMap.value,
-      ...mapReduce(visibledKeyframeMap.value, () => getAllSelectedState()),
+      ...mapReduce(visibledKeyframeMap.value, () =>
+        getAllSelectedState('bone')
+      ),
     }
   }
   return {
@@ -597,10 +609,15 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
       const dropIds: IdMap<boolean> = {}
       const idMap: IdMap<KeyframeSelectedState> = {}
       ids.forEach((id) => {
-        if (isAllSelected(selectedKeyframeMap.value[id])) {
+        if (
+          isAllExistSelected(
+            visibledKeyframeMap.value[id],
+            selectedKeyframeMap.value[id]
+          )
+        ) {
           dropIds[id] = true
         } else {
-          idMap[id] = getAllSelectedState()
+          idMap[id] = getAllSelectedState('bone')
         }
       })
       selectedKeyframeMap.value = dropMap(
@@ -609,7 +626,7 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
       )
     } else {
       const idMap = ids.reduce<IdMap<KeyframeSelectedState>>((p, id) => {
-        p[id] = getAllSelectedState()
+        p[id] = getAllSelectedState('bone')
         return p
       }, {})
       selectedKeyframeMap.value =
@@ -638,15 +655,9 @@ function getSelectKeyframeItem(
 
   const redo = () => {
     if (shift) {
-      if (isAllSelected(selectedKeyframeMap.value[id])) {
-        const next = { ...selectedKeyframeMap.value }
-        delete next[id]
-        selectedKeyframeMap.value = next
-      } else {
-        selectedKeyframeMap.value = {
-          ...selectedKeyframeMap.value,
-          ...(selectedState ? { [id]: selectedState } : {}),
-        }
+      selectedKeyframeMap.value = {
+        ...selectedKeyframeMap.value,
+        [id]: selectedState ?? getAllSelectedState('bone'),
       }
     } else {
       selectedKeyframeMap.value = {
@@ -685,7 +696,7 @@ function getExecInsertKeyframeItem(keyframes: KeyframeBone[], replace = false) {
     currentFrame.value = preFrame
     editTransforms.value = dropMap(
       editTransforms.value,
-      toBoneIdMap(insertedKeyframes)
+      toTargetIdMap(insertedKeyframes)
     )
   }
   return {

@@ -17,128 +17,211 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IdMap, Transform } from '/@/models'
+import { IdMap } from '/@/models'
 import {
   KeyframeBase,
   KeyframeBaseProps,
+  KeyframeBaseSameRange,
   KeyframeName,
+  KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 
 interface KeyframeModule {
-  getInterpolatedTransformMapByBoneId(
-    sortedKeyframesMap: IdMap<KeyframeBase[]>,
-    frame: number
-  ): IdMap<Transform>
-  interpolateKeyframe(sortedKeyframes: KeyframeBase[], frame: number): Transform
-  getAllSelectedState(): KeyframeSelectedState
-  getInversedSelectedState(k?: KeyframeSelectedState): KeyframeSelectedState
-  inversedSelectedState(
-    k: KeyframeSelectedState,
-    target: KeyframeSelectedState
-  ): KeyframeSelectedState
-  isAllSelected(k?: KeyframeSelectedState): boolean
-  isAnySelected(k?: KeyframeSelectedState): boolean
-  isAllExistSelected(keyframe: KeyframeBase, k?: KeyframeSelectedState): boolean
-  splitKeyframeBySelected(
-    keyframe: KeyframeBase,
-    state: KeyframeSelectedState
-  ): { selected?: KeyframeBase; notSelected?: KeyframeBase }
-  mergeKeyframes(src: KeyframeBase, override: KeyframeBase): KeyframeBase
-  deleteKeyframeByProp(
-    keyframe: KeyframeBase,
-    selectedState?: KeyframeSelectedState
-  ): KeyframeBase | undefined
-  getKeyframePropsMap(keyframes: KeyframeBase[]): Required<KeyframeBaseProps>
-  getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps>
+  getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps<T>>
 }
 
-export function getKeyframeModule(name: KeyframeName = 'bone'): KeyframeModule {
+export function getKeyframeModule(name: KeyframeName): KeyframeModule {
   switch (name) {
     case 'bone':
       return keyframeBoneModule
   }
 }
 
-export function getInterpolatedTransformMapByBoneId(
-  sortedKeyframesMap: IdMap<KeyframeBase[]>,
-  frame: number
-): IdMap<Transform> {
-  return getKeyframeModule().getInterpolatedTransformMapByBoneId(
-    sortedKeyframesMap,
-    frame
-  )
-}
-
-export function interpolateKeyframe(
-  sortedKeyframes: KeyframeBase[],
-  frame: number
-): Transform {
-  return getKeyframeModule().interpolateKeyframe(sortedKeyframes, frame)
-}
-
-export function getAllSelectedState(): KeyframeSelectedState {
-  return getKeyframeModule().getAllSelectedState()
-}
-
-export function getInversedSelectedState(
-  k?: KeyframeSelectedState
-): KeyframeSelectedState {
-  return getKeyframeModule().getInversedSelectedState(k)
+export function getAllSelectedState(name: KeyframeName): KeyframeSelectedState {
+  return getKeyframeDefaultPropsMap(() => true, name)
 }
 
 export function inversedSelectedState(
   k: KeyframeSelectedState,
   target: KeyframeSelectedState
 ): KeyframeSelectedState {
-  return getKeyframeModule().inversedSelectedState(k, target)
-}
+  const ret: KeyframeSelectedState = { name: k.name, props: {} }
 
-export function isAllSelected(k?: KeyframeSelectedState): boolean {
-  return getKeyframeModule().isAllSelected(k)
+  Object.keys({ ...k.props, ...target.props }).forEach((key) => {
+    if (
+      (target.props[key] && !k.props[key]) ||
+      (!target.props[key] && k.props[key])
+    ) {
+      ret.props[key] = true
+    }
+  })
+
+  return ret
 }
 
 export function isAnySelected(k?: KeyframeSelectedState): boolean {
-  return getKeyframeModule().isAnySelected(k)
+  if (!k) return false
+  return Object.values(k.props).some((v) => v)
 }
 
 export function isAllExistSelected(
   keyframe: KeyframeBase,
   k?: KeyframeSelectedState
 ): boolean {
-  return getKeyframeModule().isAllExistSelected(keyframe, k)
+  if (!k) return false
+  return Object.keys(keyframe.points).every((key) => k.props[key])
 }
 
 export function splitKeyframeBySelected(
   keyframe: KeyframeBase,
   state: KeyframeSelectedState
 ): { selected?: KeyframeBase; notSelected?: KeyframeBase } {
-  return getKeyframeModule().splitKeyframeBySelected(keyframe, state)
+  if (isAllExistSelected(keyframe, state)) {
+    return { selected: keyframe }
+  }
+  if (!isAnySelected(state)) {
+    return { notSelected: keyframe }
+  }
+
+  const selected = { ...keyframe, points: { ...keyframe.points } }
+  const notSelected = { ...keyframe, points: { ...keyframe.points } }
+
+  Object.keys(keyframe.points).forEach((key) => {
+    if (state.props[key]) {
+      delete notSelected.points[key]
+    } else {
+      delete selected.points[key]
+    }
+  })
+
+  return {
+    selected,
+    notSelected,
+  }
 }
 
 export function mergeKeyframes(
   src: KeyframeBase,
   override: KeyframeBase
 ): KeyframeBase {
-  return getKeyframeModule().mergeKeyframes(src, override)
+  const ret = { ...override, points: { ...override.points } }
+
+  Object.keys(src.points).forEach((key) => {
+    if (src.points[key] && !override.points[key]) {
+      ret.points[key] = src.points[key]
+    }
+  })
+
+  return ret
 }
 
 export function deleteKeyframeByProp(
   keyframe: KeyframeBase,
   selectedState?: KeyframeSelectedState
 ): KeyframeBase | undefined {
-  return getKeyframeModule().deleteKeyframeByProp(keyframe, selectedState)
+  if (!selectedState) return keyframe
+  if (isAllExistSelected(keyframe, selectedState)) return
+
+  const ret = { ...keyframe, points: { ...keyframe.points } }
+
+  Object.keys(keyframe.points).forEach((key) => {
+    if (selectedState.props[key]) {
+      delete ret.points[key]
+    }
+  })
+
+  return ret
 }
 
 export function getKeyframePropsMap(
-  keyframes: KeyframeBase[]
-): Required<KeyframeBaseProps> {
-  return getKeyframeModule().getKeyframePropsMap(keyframes)
+  keyframes: KeyframeBase[],
+  name: KeyframeName = 'bone'
+): Required<KeyframeBaseProps<KeyframeBase[]>> {
+  const ret = getKeyframeDefaultPropsMap<KeyframeBase[]>(() => [], name)
+
+  keyframes.forEach((k) => {
+    Object.keys(k.points).forEach((key) => {
+      if (k.points[key]) {
+        ret.props[key]?.push(k)
+      }
+    })
+  })
+
+  return ret
 }
 
 export function getKeyframeDefaultPropsMap<T>(
-  val: () => T
-): Required<KeyframeBaseProps> {
-  return getKeyframeModule().getKeyframeDefaultPropsMap(val)
+  val: () => T,
+  name: KeyframeName = 'bone'
+): Required<KeyframeBaseProps<T>> {
+  return getKeyframeModule(name).getKeyframeDefaultPropsMap(val)
+}
+
+export function getSamePropRangeFrameMapById(
+  keyframeMap: IdMap<KeyframeBase[]>
+): IdMap<IdMap<KeyframeBaseSameRange>> {
+  return Object.keys(keyframeMap).reduce<IdMap<IdMap<KeyframeBaseSameRange>>>(
+    (p, id) => {
+      p[id] = keyframeMap[id].reduce<IdMap<KeyframeBaseSameRange>>(
+        (p, k, i) => {
+          p[k.frame] = {
+            name: k.name,
+            props: getSamePropRangeFrameMap(keyframeMap[id], i),
+          }
+          return p
+        },
+        {}
+      )
+      return p
+    },
+    {}
+  )
+}
+
+export function getSamePropRangeFrameMap(
+  keyframes: KeyframeBase[],
+  currentIndex: number
+): KeyframeBaseSameRange['props'] {
+  const keyframesFromCurrent = keyframes.slice(currentIndex)
+  if (keyframesFromCurrent.length < 1) return {}
+
+  const current = keyframesFromCurrent[0]
+  const propMap = getKeyframePropsMap(keyframesFromCurrent, current.name)
+  const ret: KeyframeBaseSameRange['props'] = {}
+
+  Object.keys(current.points).forEach((key) => {
+    ret[key] = getSamePropRangeFrame(propMap.props[key]!, (k) => k.points[key])
+  })
+
+  return ret
+}
+
+function getSamePropRangeFrame(
+  keyframes: KeyframeBase[],
+  getValue: (k: KeyframeBase) => KeyframePoint | undefined
+): number {
+  if (keyframes.length < 2) return 0
+
+  const current = keyframes[0]
+  const after = keyframes[1]
+  const currentValue = getValue(current)
+  const afterValue = getValue(after)
+  if (
+    currentValue &&
+    afterValue &&
+    isSameKeyframePoint(currentValue, afterValue)
+  ) {
+    return after.frame - current.frame
+  } else {
+    return 0
+  }
+}
+
+export function isSameKeyframePoint(
+  a: KeyframePoint,
+  b: KeyframePoint
+): boolean {
+  return a.value === b.value
 }

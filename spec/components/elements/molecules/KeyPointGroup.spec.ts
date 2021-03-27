@@ -36,8 +36,10 @@ describe('src/components/elements/molecules/KeyPointGroup.vue', () => {
       const wrapper = mount(Target, {
         props: {
           keyFrame: getKeyframeBone({
-            translateX: getKeyframePoint(),
-            scaleX: getKeyframePoint(),
+            points: {
+              translateX: getKeyframePoint(),
+              scaleX: getKeyframePoint(),
+            },
           }),
           childMap,
           top: 10,
@@ -59,8 +61,10 @@ describe('src/components/elements/molecules/KeyPointGroup.vue', () => {
       const wrapper = mount(Target, {
         props: {
           keyFrame: getKeyframeBone({
-            translateX: getKeyframePoint(),
-            scaleX: getKeyframePoint(),
+            points: {
+              translateX: getKeyframePoint(),
+              scaleX: getKeyframePoint(),
+            },
           }),
           childMap,
           expanded: true,

@@ -94,69 +94,73 @@ describe('utils/animations.ts', () => {
   })
 
   describe('mergeKeyframesWithDropped', () => {
-    it('merge keyframes by the same frame and boneId', () => {
+    it('merge keyframes by the same frame and targetId', () => {
       const ret = mergeKeyframesWithDropped(
         [
-          getKeyframeBone({ id: 'src_1_a', frame: 1, boneId: 'a' }),
-          getKeyframeBone({ id: 'src_1_b', frame: 1, boneId: 'b' }),
-          getKeyframeBone({ id: 'src_1_d', frame: 1, boneId: 'd' }),
-          getKeyframeBone({ id: 'src_2_a', frame: 2, boneId: 'a' }),
+          getKeyframeBone({ id: 'src_1_a', frame: 1, targetId: 'a' }),
+          getKeyframeBone({ id: 'src_1_b', frame: 1, targetId: 'b' }),
+          getKeyframeBone({ id: 'src_1_d', frame: 1, targetId: 'd' }),
+          getKeyframeBone({ id: 'src_2_a', frame: 2, targetId: 'a' }),
         ],
         [
-          getKeyframeBone({ id: 'ove_1_a', frame: 1, boneId: 'a' }),
-          getKeyframeBone({ id: 'ove_2_b', frame: 2, boneId: 'b' }),
-          getKeyframeBone({ id: 'ove_1_c', frame: 1, boneId: 'c' }),
-          getKeyframeBone({ id: 'ove_3_c', frame: 3, boneId: 'c' }),
+          getKeyframeBone({ id: 'ove_1_a', frame: 1, targetId: 'a' }),
+          getKeyframeBone({ id: 'ove_2_b', frame: 2, targetId: 'b' }),
+          getKeyframeBone({ id: 'ove_1_c', frame: 1, targetId: 'c' }),
+          getKeyframeBone({ id: 'ove_3_c', frame: 3, targetId: 'c' }),
         ]
       )
       expect(toMap(ret.merged)).toEqual({
-        src_1_b: getKeyframeBone({ id: 'src_1_b', frame: 1, boneId: 'b' }),
-        src_1_d: getKeyframeBone({ id: 'src_1_d', frame: 1, boneId: 'd' }),
-        src_2_a: getKeyframeBone({ id: 'src_2_a', frame: 2, boneId: 'a' }),
-        ove_1_a: getKeyframeBone({ id: 'ove_1_a', frame: 1, boneId: 'a' }),
-        ove_2_b: getKeyframeBone({ id: 'ove_2_b', frame: 2, boneId: 'b' }),
-        ove_1_c: getKeyframeBone({ id: 'ove_1_c', frame: 1, boneId: 'c' }),
-        ove_3_c: getKeyframeBone({ id: 'ove_3_c', frame: 3, boneId: 'c' }),
+        src_1_b: getKeyframeBone({ id: 'src_1_b', frame: 1, targetId: 'b' }),
+        src_1_d: getKeyframeBone({ id: 'src_1_d', frame: 1, targetId: 'd' }),
+        src_2_a: getKeyframeBone({ id: 'src_2_a', frame: 2, targetId: 'a' }),
+        ove_1_a: getKeyframeBone({ id: 'ove_1_a', frame: 1, targetId: 'a' }),
+        ove_2_b: getKeyframeBone({ id: 'ove_2_b', frame: 2, targetId: 'b' }),
+        ove_1_c: getKeyframeBone({ id: 'ove_1_c', frame: 1, targetId: 'c' }),
+        ove_3_c: getKeyframeBone({ id: 'ove_3_c', frame: 3, targetId: 'c' }),
       })
       expect(toMap(ret.dropped)).toEqual({
-        src_1_a: getKeyframeBone({ id: 'src_1_a', frame: 1, boneId: 'a' }),
+        src_1_a: getKeyframeBone({ id: 'src_1_a', frame: 1, targetId: 'a' }),
       })
     })
     it('override keyframes by the same id', () => {
       const ret = mergeKeyframesWithDropped(
         [
-          getKeyframeBone({ id: 'src_a', frame: 1, boneId: 'a' }),
-          getKeyframeBone({ id: 'src_b', frame: 1, boneId: 'b' }),
+          getKeyframeBone({ id: 'src_a', frame: 1, targetId: 'a' }),
+          getKeyframeBone({ id: 'src_b', frame: 1, targetId: 'b' }),
         ],
-        [getKeyframeBone({ id: 'src_b', frame: 10, boneId: 'bb' })]
+        [getKeyframeBone({ id: 'src_b', frame: 10, targetId: 'bb' })]
       )
       expect(toMap(ret.merged)).toEqual({
-        src_a: getKeyframeBone({ id: 'src_a', frame: 1, boneId: 'a' }),
-        src_b: getKeyframeBone({ id: 'src_b', frame: 10, boneId: 'bb' }),
+        src_a: getKeyframeBone({ id: 'src_a', frame: 1, targetId: 'a' }),
+        src_b: getKeyframeBone({ id: 'src_b', frame: 10, targetId: 'bb' }),
       })
       expect(toMap(ret.dropped)).toEqual({
-        src_b: getKeyframeBone({ id: 'src_b', frame: 1, boneId: 'b' }),
+        src_b: getKeyframeBone({ id: 'src_b', frame: 1, targetId: 'b' }),
       })
     })
     describe('mergeDeep: true', () => {
-      it('merge props by the same frame and boneId', () => {
+      it('merge props by the same frame and targetId', () => {
         const ret = mergeKeyframesWithDropped(
           [
             getKeyframeBone({
               id: 'src_1_a',
               frame: 1,
-              boneId: 'a',
-              translateX: getKeyframePoint({ value: 1 }),
-              translateY: getKeyframePoint({ value: 2 }),
+              targetId: 'a',
+              points: {
+                translateX: getKeyframePoint({ value: 1 }),
+                translateY: getKeyframePoint({ value: 2 }),
+              },
             }),
           ],
           [
             getKeyframeBone({
               id: 'ove_1_c',
               frame: 1,
-              boneId: 'a',
-              translateX: getKeyframePoint({ value: 10 }),
-              rotate: getKeyframePoint({ value: 20 }),
+              targetId: 'a',
+              points: {
+                translateX: getKeyframePoint({ value: 10 }),
+                rotate: getKeyframePoint({ value: 20 }),
+              },
             }),
           ],
           true
@@ -165,10 +169,12 @@ describe('utils/animations.ts', () => {
           ove_1_c: getKeyframeBone({
             id: 'ove_1_c',
             frame: 1,
-            boneId: 'a',
-            translateX: getKeyframePoint({ value: 10 }),
-            translateY: getKeyframePoint({ value: 2 }),
-            rotate: getKeyframePoint({ value: 20 }),
+            targetId: 'a',
+            points: {
+              translateX: getKeyframePoint({ value: 10 }),
+              translateY: getKeyframePoint({ value: 2 }),
+              rotate: getKeyframePoint({ value: 20 }),
+            },
           }),
         })
       })
@@ -195,10 +201,10 @@ describe('utils/animations.ts', () => {
               id: 'act_1',
               armatureId: 'arm_1',
               keyframes: [
-                getKeyframeBone({ id: 'key_1', boneId: 'bone_1', frame: 1 }),
-                getKeyframeBone({ id: 'key_2', boneId: 'bone_2', frame: 1 }),
-                getKeyframeBone({ id: 'key_2', boneId: 'bone_2', frame: 2 }),
-                getKeyframeBone({ id: 'key_4', boneId: 'bone_4', frame: 1 }),
+                getKeyframeBone({ id: 'key_1', targetId: 'bone_1', frame: 1 }),
+                getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 1 }),
+                getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 2 }),
+                getKeyframeBone({ id: 'key_4', targetId: 'bone_4', frame: 1 }),
               ],
             }),
           ],
@@ -214,8 +220,8 @@ describe('utils/animations.ts', () => {
           id: 'act_1',
           armatureId: 'arm_1',
           keyframes: [
-            getKeyframeBone({ id: 'key_2', boneId: 'bone_2', frame: 1 }),
-            getKeyframeBone({ id: 'key_2', boneId: 'bone_2', frame: 2 }),
+            getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 1 }),
+            getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 2 }),
           ],
         }),
       ])

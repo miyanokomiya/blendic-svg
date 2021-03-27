@@ -155,7 +155,7 @@ export default defineComponent({
         map.props,
         (val) => (val * frameWidth) / props.scale
       )
-      ret.all = Object.keys(ret).reduce((p, c) => Math.min(p, ret[c]), Infinity)
+      ret.all = Math.min(...Object.keys(ret).map((key) => ret[key]))
       return ret
     }
 

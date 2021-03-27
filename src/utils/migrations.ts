@@ -89,7 +89,7 @@ function migrateKeyframe1(k: OldKeyframe): KeyframeBone {
   return getKeyframeBone({
     id: k.id,
     frame: k.frame,
-    boneId: k.boneId,
+    targetId: k.boneId,
     points: {
       ...toTransformMap(k.transform),
     },
@@ -102,7 +102,7 @@ function migrateKeyframe2(k: OldKeyframe2): KeyframeBone {
   const ret = getKeyframeBone()
   ret.id = id ?? ret.id
   ret.frame = frame ?? ret.frame
-  ret.boneId = boneId ?? ret.boneId
+  ret.targetId = boneId ?? ret.targetId
   ret.points = points ?? ret.points
   return ret
 }

@@ -38,7 +38,7 @@ describe('src/utils/migrations.ts', () => {
       expect(ret).toEqual({
         id: '1',
         frame: 2,
-        boneId: 'b',
+        targetId: 'b',
         name: 'bone',
         points: {
           translateX: getKeyframePoint({ value: 1 }),
@@ -64,7 +64,7 @@ describe('src/utils/migrations.ts', () => {
       expect(ret).toEqual({
         id: '1',
         frame: 2,
-        boneId: 'b',
+        targetId: 'b',
         name: 'bone',
         points: {
           translateX: getKeyframePoint({ value: 1 }),

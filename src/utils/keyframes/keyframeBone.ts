@@ -27,7 +27,7 @@ import {
 import { mapReduce } from '/@/utils/commons'
 import { interpolateKeyframeProp } from '/@/utils/keyframes/core'
 
-export function getInterpolatedTransformMapByBoneId(
+export function getInterpolatedTransformMapByTargetId(
   sortedKeyframesMap: IdMap<KeyframeBone[]>,
   frame: number
 ): IdMap<Transform> {

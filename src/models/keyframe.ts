@@ -26,6 +26,7 @@ export interface KeyframeBase {
   id: string
   frame: number
   name: KeyframeName
+  targetId: string
   points: {
     [key: string]: KeyframePoint
   }
@@ -46,7 +47,6 @@ export type KeyframeBonePropKey =
   | 'scaleY'
 
 export interface KeyframeBone extends KeyframeBase {
-  boneId: string
   points: {
     [key in KeyframeBonePropKey]?: KeyframePoint
   }
@@ -97,7 +97,7 @@ export function getKeyframeBone(
   const id = generateId ? v4() : arg.id ?? ''
   return {
     frame: 0,
-    boneId: '',
+    targetId: '',
     name: 'bone',
     points: {},
     ...arg,

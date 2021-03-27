@@ -113,7 +113,7 @@ export function useStrage() {
     if (!armature || !action || !actor) return
 
     const attributesMapPerFrame = bakeKeyframes(
-      animationStore.keyframeMapByBoneId.value,
+      animationStore.keyframeMapByTargetId.value,
       store.boneMap.value,
       toMap(actor.elements),
       actor.svgTree,

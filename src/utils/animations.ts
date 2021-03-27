@@ -67,10 +67,10 @@ export function getKeyframeMapByFrame<T extends KeyframeBase>(
   return toKeyListMap(keyframes, 'frame')
 }
 
-export function getKeyframeMapByBoneId(
+export function getKeyframeMapByTargetId(
   keyframes: KeyframeBone[]
 ): IdMap<KeyframeBone[]> {
-  return sortKeyframeMap(toKeyListMap(keyframes, 'boneId'))
+  return sortKeyframeMap(toKeyListMap(keyframes, 'targetId'))
 }
 
 export function sortKeyframes<T extends KeyframeBase>(keyframes: T[]): T[] {
@@ -126,29 +126,29 @@ export function mergeKeyframesWithDropped(
         ...dropListByKey(
           keyframes,
           overrideMapByFrame[frameStr] ?? [],
-          'boneId',
+          'targetId',
           true
         )
       )
-      const srcMapByBoneId = toKeyMap(keyframes, 'boneId')
-      const oveMapByBoneId = toKeyMap(
+      const srcMapByTargetId = toKeyMap(keyframes, 'targetId')
+      const oveMapByTargetId = toKeyMap(
         overrideMapByFrame[frameStr] ?? [],
-        'boneId'
+        'targetId'
       )
 
       if (mergeDeep) {
         return Object.keys({
-          ...srcMapByBoneId,
-          ...oveMapByBoneId,
-        }).reduce<KeyframeBone[]>((p, boneId) => {
-          if (!oveMapByBoneId[boneId]) {
-            p.push(srcMapByBoneId[boneId])
-          } else if (!srcMapByBoneId[boneId]) {
-            p.push(oveMapByBoneId[boneId])
+          ...srcMapByTargetId,
+          ...oveMapByTargetId,
+        }).reduce<KeyframeBone[]>((p, targetId) => {
+          if (!oveMapByTargetId[targetId]) {
+            p.push(srcMapByTargetId[targetId])
+          } else if (!srcMapByTargetId[targetId]) {
+            p.push(oveMapByTargetId[targetId])
           } else {
             const merged = mergeKeyframes(
-              srcMapByBoneId[boneId],
-              oveMapByBoneId[boneId]
+              srcMapByTargetId[targetId],
+              oveMapByTargetId[targetId]
             )
             p.push(merged as KeyframeBone)
           }
@@ -159,7 +159,7 @@ export function mergeKeyframesWithDropped(
         return mergeListByKey(
           keyframes,
           overrideMapByFrame[frameStr] ?? [],
-          'boneId'
+          'targetId'
         )
       }
     }),
@@ -190,7 +190,7 @@ function cleanKeyframes(
   bones: Bone[]
 ): KeyframeBone[] {
   return toList(
-    extractMap(getKeyframeMapByBoneId(keyframes), toMap(bones))
+    extractMap(getKeyframeMapByTargetId(keyframes), toMap(bones))
   ).flat()
 }
 

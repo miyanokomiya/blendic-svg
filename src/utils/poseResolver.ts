@@ -42,10 +42,10 @@ import { KeyframeBone } from '/@/models/keyframe'
 import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
 import { flatElementTree } from '/@/utils/elements'
 import { isIdentityAffine } from '/@/utils/geometry'
-import { getInterpolatedTransformMapByBoneId } from '/@/utils/keyframes/keyframeBone'
+import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
 
 export type TransformCache = {
-  [relativeRootBoneId: string]: { [boneId: string]: Transform }
+  [relativeRootTargetId: string]: { [boneId: string]: Transform }
 }
 
 export function toTransformStr(
@@ -110,14 +110,14 @@ export function getPosedElementMatrixMap(
   boneMap: IdMap<Bone>,
   elementMap: IdMap<BElement>,
   node: ElementNode,
-  relativeRootBoneId = '',
+  relativeRootTargetId = '',
   spaceNativeMatrix = IDENTITY_AFFINE
 ): IdMap<AffineMatrix> {
   const bElement = elementMap[node.id]
   const spacePoseMatrix =
-    getSelfPoseMatrix(boneMap, relativeRootBoneId) ?? IDENTITY_AFFINE
-  const boundBoneId = bElement?.boneId || relativeRootBoneId
-  const selfPoseMatrix = getSelfPoseMatrix(boneMap, boundBoneId)
+    getSelfPoseMatrix(boneMap, relativeRootTargetId) ?? IDENTITY_AFFINE
+  const boundTargetId = bElement?.boneId || relativeRootTargetId
+  const selfPoseMatrix = getSelfPoseMatrix(boneMap, boundTargetId)
   const nativeMatrix = getnativeMatrix(node, spaceNativeMatrix)
 
   const transform = multiAffines(
@@ -137,7 +137,7 @@ export function getPosedElementMatrixMap(
           boneMap,
           elementMap,
           c,
-          boundBoneId,
+          boundTargetId,
           nativeMatrix
         ),
       }
@@ -190,8 +190,8 @@ function getPosedElementNode(
   }
 }
 
-function getSelfPoseMatrix(boneMap: IdMap<Bone>, boundBoneId: string) {
-  const b = boneMap[boundBoneId]
+function getSelfPoseMatrix(boneMap: IdMap<Bone>, boundTargetId: string) {
+  const b = boneMap[boundTargetId]
   return b ? boneToAffine(b) : undefined
 }
 
@@ -205,26 +205,26 @@ function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {
 }
 
 export function bakeKeyframes(
-  keyframeMapByBoneId: IdMap<KeyframeBone[]>,
+  keyframeMapByTargetId: IdMap<KeyframeBone[]>,
   boneMap: IdMap<Bone>,
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
   endFrame: number
 ): IdMap<ElementNodeAttributes>[] {
   return [...Array(endFrame + 1)].map((_, i) => {
-    return bakeKeyframe(keyframeMapByBoneId, boneMap, elementMap, svgRoot, i)
+    return bakeKeyframe(keyframeMapByTargetId, boneMap, elementMap, svgRoot, i)
   })
 }
 
 export function bakeKeyframe(
-  keyframeMapByBoneId: IdMap<KeyframeBone[]>,
+  keyframeMapByTargetId: IdMap<KeyframeBone[]>,
   boneMap: IdMap<Bone>,
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
   currentFrame: number
 ): IdMap<ElementNodeAttributes> {
-  const interpolatedTransformMap = getInterpolatedTransformMapByBoneId(
-    keyframeMapByBoneId,
+  const interpolatedTransformMap = getInterpolatedTransformMapByTargetId(
+    keyframeMapByTargetId,
     currentFrame
   )
   const interpolatedBoneMap = mapReduce(boneMap, (bone, id) => ({

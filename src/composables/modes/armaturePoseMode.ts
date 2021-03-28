@@ -205,7 +205,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
 
   function select(id: string, selectedState: BoneSelectedState) {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     store.selectBone(id, selectedState, false, true)
@@ -213,7 +213,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
 
   function shiftSelect(id: string, selectedState: BoneSelectedState) {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     store.selectBone(id, selectedState, true, true)
@@ -238,7 +238,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
 
   function selectAll() {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     store.selectAllBone()

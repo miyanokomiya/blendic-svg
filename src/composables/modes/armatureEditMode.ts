@@ -218,7 +218,7 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
 
   function select(id: string, selectedState: BoneSelectedState) {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     store.selectBone(id, selectedState)
@@ -226,7 +226,7 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
 
   function shiftSelect(id: string, selectedState: BoneSelectedState) {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     store.selectBone(id, selectedState, true)
@@ -239,7 +239,7 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
 
   function selectAll() {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     store.selectAllBone()
@@ -252,29 +252,36 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
   }
 
   function execDelete() {
-    if (state.command === '') {
-      store.deleteBone()
+    if (state.command) {
+      cancel()
+      return
     }
+    store.deleteBone()
   }
 
   function execAdd() {
-    if (state.command === '') {
-      store.addBone()
+    if (state.command) {
+      cancel()
+      return
     }
+    store.addBone()
   }
 
   function duplicate() {
-    if (state.command === '') {
-      const srcBones = store.allSelectedBones.value
-      const names = allNames.value.concat()
-      const duplicated = duplicateBones(srcBones, names)
-      if (duplicated.length > 0) {
-        store.addBones(duplicated, {
-          head: true,
-          tail: true,
-        })
-        setEditMode('grab')
-      }
+    if (state.command) {
+      cancel()
+      return
+    }
+
+    const srcBones = store.allSelectedBones.value
+    const names = allNames.value.concat()
+    const duplicated = duplicateBones(srcBones, names)
+    if (duplicated.length > 0) {
+      store.addBones(duplicated, {
+        head: true,
+        tail: true,
+      })
+      setEditMode('grab')
     }
   }
 
@@ -309,6 +316,11 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
   })
 
   function symmetrize() {
+    if (state.command) {
+      cancel()
+      return
+    }
+
     const newBones = symmetrizeBones(
       store.boneMap.value,
       Object.keys(store.allSelectedBones.value)

@@ -155,12 +155,30 @@ import {
 import { IVec2 } from 'okageo'
 import { mapReduce, toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
-import { useKeyframeEditMode } from '../composables/keyframeEditMode'
+import { useKeyframeEditMode } from '../composables/modes/keyframeEditMode'
 import { IdMap } from '/@/models'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'
+import { KeyframeModeName } from '/@/composables/modes/types'
 
 const labelHeight = 24
+
+function useMode() {
+  const name = ref<KeyframeModeName>('action')
+  const mode = computed(() => {
+    switch (name.value) {
+      case 'action':
+        return useKeyframeEditMode()
+      default:
+        return useKeyframeEditMode()
+    }
+  })
+  function setMode(val: KeyframeModeName) {
+    name.value = val
+  }
+
+  return { name, mode, setMode }
+}
 
 export default defineComponent({
   components: {
@@ -193,8 +211,7 @@ export default defineComponent({
     const labelCanvas = useCanvas(canvasOptions)
     const keyframeCanvas = useCanvas(canvasOptions)
 
-    const keyframeEditMode = useKeyframeEditMode()
-
+    const keyframeEditMode = useMode()
     const editMode = ref<'' | 'move-current-frame'>('')
     const draftName = ref('')
 
@@ -211,12 +228,12 @@ export default defineComponent({
           // fixed keyframes
           toList({
             ...animationStore.visibledKeyframeMap.value,
-            ...keyframeEditMode.editedKeyframeMap.value.notSelected,
+            ...keyframeEditMode.mode.value.editedKeyframeMap.value.notSelected,
           }) as any,
           // moved keyframes
           toList({
-            ...keyframeEditMode.tmpKeyframes.value,
-            ...keyframeEditMode.editedKeyframeMap.value.selected,
+            ...keyframeEditMode.mode.value.tmpKeyframes.value,
+            ...keyframeEditMode.mode.value.editedKeyframeMap.value.selected,
           }) as any,
           true
         ).merged
@@ -333,24 +350,24 @@ export default defineComponent({
         get: () => selectedAction.value?.id ?? '',
         set: (id: string) => animationStore.selectAction(id),
       }),
-      escape: keyframeEditMode.cancel,
-      selectKeyframe: keyframeEditMode.select,
-      shiftSelectKeyframe: keyframeEditMode.shiftSelect,
-      selectKeyframeByFrame: keyframeEditMode.selectFrame,
-      shiftSelectKeyframeByFrame: keyframeEditMode.shiftSelectFrame,
-      selectAll: keyframeEditMode.selectAll,
-      grag: () => keyframeEditMode.setEditMode('grab'),
-      deleteKeyframes: keyframeEditMode.execDelete,
-      clipKeyframes: keyframeEditMode.clip,
-      pasteKeyframes: keyframeEditMode.paste,
-      duplicateKeyframes: keyframeEditMode.duplicate,
-      clickEmpty: keyframeEditMode.clickEmpty,
       downCurrentFrame,
       downLeft,
       drag,
       upLeft,
-      mousemove: keyframeEditMode.mousemove,
-      availableCommandList: keyframeEditMode.availableCommandList,
+      escape: keyframeEditMode.mode.value.cancel,
+      selectKeyframe: keyframeEditMode.mode.value.select,
+      shiftSelectKeyframe: keyframeEditMode.mode.value.shiftSelect,
+      selectKeyframeByFrame: keyframeEditMode.mode.value.selectFrame,
+      shiftSelectKeyframeByFrame: keyframeEditMode.mode.value.shiftSelectFrame,
+      selectAll: keyframeEditMode.mode.value.selectAll,
+      grag: () => keyframeEditMode.mode.value.setEditMode('grab'),
+      deleteKeyframes: keyframeEditMode.mode.value.execDelete,
+      clipKeyframes: keyframeEditMode.mode.value.clip,
+      pasteKeyframes: keyframeEditMode.mode.value.paste,
+      duplicateKeyframes: keyframeEditMode.mode.value.duplicate,
+      clickEmpty: keyframeEditMode.mode.value.clickEmpty,
+      mousemove: keyframeEditMode.mode.value.mousemove,
+      availableCommandList: keyframeEditMode.mode.value.availableCommandList,
       boneExpandedMap,
       toggleBoneExpanded,
       boneTopMap,

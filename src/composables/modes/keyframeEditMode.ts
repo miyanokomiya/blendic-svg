@@ -18,32 +18,28 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { reactive, computed, ComputedRef } from 'vue'
+import { Transform, getTransform, IdMap, toMap } from '/@/models/index'
 import {
-  Transform,
-  getTransform,
-  EditMode,
-  IdMap,
+  KeyframeEditCommand,
+  KeyframeEditModeBase,
   EditMovement,
-  CanvasEditModeBase,
-  toMap,
-} from '../models/index'
-import { useAnimationStore } from '../store/animation'
-import { mapReduce, toList } from '../utils/commons'
-import { getFrameX, getNearestFrameAtPoint } from '../utils/animations'
+} from '/@/composables/modes/types'
+import { useAnimationStore } from '/@/store/animation'
+import { mapReduce, toList } from '/@/utils/commons'
+import { getFrameX, getNearestFrameAtPoint } from '/@/utils/animations'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { applyTransform } from '/@/utils/geometry'
-import { IRectangle } from 'okageo'
 import { getKeyframeBone, KeyframeBase } from '/@/models/keyframe'
 import { splitKeyframeBySelected } from '/@/utils/keyframes'
 
 interface State {
-  command: EditMode
+  command: KeyframeEditCommand
   editMovement: EditMovement | undefined
   clipboard: KeyframeBase[]
   tmpKeyframes: IdMap<KeyframeBase>
 }
 
-export interface KeyframeEditMode extends CanvasEditModeBase {
+export interface KeyframeEditMode extends KeyframeEditModeBase {
   tmpKeyframes: ComputedRef<IdMap<KeyframeBase>>
   getEditFrames: (id: string) => number
   selectFrame: (frame: number) => void
@@ -92,7 +88,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     }
   }
 
-  function setEditMode(mode: EditMode) {
+  function setEditMode(mode: KeyframeEditCommand) {
     if (!isAnySelected.value) return
 
     cancel()
@@ -225,8 +221,6 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     animationStore.selectKeyframeByFrame(frame, true)
   }
 
-  function rectSelect(_rect: IRectangle, _shift = false) {}
-
   function selectAll() {
     if (state.command) {
       completeEdit()
@@ -305,9 +299,6 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   return {
     tmpKeyframes: computed(() => state.tmpKeyframes),
     command: computed(() => state.command),
-    getEditTransforms(id: string) {
-      return editTransforms.value[id] ?? getTransform()
-    },
     getEditFrames,
     end: () => cancel(),
     cancel,
@@ -316,14 +307,11 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     shiftSelect,
     selectFrame,
     shiftSelectFrame,
-    rectSelect,
     selectAll,
     mousemove,
     clickAny,
     clickEmpty,
     execDelete,
-    execAdd: () => {},
-    insert: () => {},
     clip,
     paste,
     duplicate,

@@ -19,19 +19,24 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { getInner, IRectangle, IVec2, sub } from 'okageo'
 import { computed, reactive, watch } from 'vue'
-import { BoneEditMode, useBoneEditMode } from '../composables/armatureEditMode'
-import { BonePoseMode, useBonePoseMode } from '../composables/armaturePoseMode'
-import { ObjectMode, useObjectMode } from '../composables/objectMode'
-import { useWeightPaintMode } from '../composables/weightPaintMode'
+import {
+  BoneEditMode,
+  useBoneEditMode,
+} from '/@/composables/modes/armatureEditMode'
+import {
+  BonePoseMode,
+  useBonePoseMode,
+} from '/@/composables/modes/armaturePoseMode'
+import { ObjectMode, useObjectMode } from '/@/composables/modes/objectMode'
+import { useWeightPaintMode } from '/@/composables/modes/weightPaintMode'
 import { HistoryItem, useHistoryStore } from './history'
+import { getTransform, Transform } from '/@/models'
 import {
   CanvasMode,
   EditMode,
   EditMovement,
-  getTransform,
   PopupMenuItem,
-  Transform,
-} from '/@/models'
+} from '/@/composables/modes/types'
 
 export type AxisGrid = '' | 'x' | 'y'
 

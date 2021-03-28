@@ -21,12 +21,14 @@ import { reactive, computed } from 'vue'
 import {
   Transform,
   BoneSelectedState,
-  EditMode,
   IdMap,
+  getTransform,
+} from '/@/models/index'
+import {
+  EditMode,
   CanvasEditModeBase,
   EditMovement,
-  getTransform,
-} from '../models/index'
+} from '/@/composables/modes/types'
 import { useStore } from '/@/store/index'
 
 interface State {

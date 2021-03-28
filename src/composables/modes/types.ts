@@ -63,7 +63,7 @@ export interface CanvasEditModeBase {
   popupMenuList: ComputedRef<PopupMenuItem[]>
 }
 
-export type KyeframeMode = 'action'
+export type KeyframeModeName = 'action'
 export type KeyframeEditCommand = '' | 'grab'
 
 export interface KeyframeEditModeBase {

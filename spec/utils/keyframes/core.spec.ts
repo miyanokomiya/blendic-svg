@@ -88,6 +88,13 @@ describe('utils/keyframes.ts', () => {
     const start = { x: 10, y: 20 }
     const end = { x: 20, y: 40 }
 
+    it('constant', () => {
+      const fn = target.getCurveFn(start, end, { name: 'constant' })
+      expect(fn(10)).toBeCloseTo(20)
+      expect(fn(15)).toBeCloseTo(20)
+      expect(fn(20)).toBeCloseTo(20)
+    })
+
     it('linear', () => {
       const fn = target.getCurveFn(start, end, { name: 'linear' })
       expect(fn(10)).toBeCloseTo(20)

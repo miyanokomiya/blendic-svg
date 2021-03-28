@@ -80,11 +80,17 @@ export function getCurveFn(
   curve: CurveBase
 ): CurveFn {
   switch (curve.name) {
+    case 'constant':
+      return getConstantCurveFn(start)
     case 'linear':
       return getLinearCurveFn(start, end)
     case 'bezier3':
       return getLinearCurveFn(start, end)
   }
+}
+
+function getConstantCurveFn(start: IVec2): CurveFn {
+  return () => start.y
 }
 
 function getLinearCurveFn(start: IVec2, end: IVec2): CurveFn {

@@ -238,7 +238,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
 
   function selectAll() {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     store.selectAllBone()

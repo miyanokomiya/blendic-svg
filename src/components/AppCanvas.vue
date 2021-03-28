@@ -121,7 +121,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
 import { getPointInTarget } from 'okanvas'
 import { IRectangle, IVec2 } from 'okageo'
-import { CanvasCommand, CanvasMode } from '/@/models'
+import { CanvasCommand, CanvasMode } from '/@/composables/modes/types'
 import * as helpers from '/@/utils/helpers'
 import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'

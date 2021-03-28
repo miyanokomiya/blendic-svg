@@ -40,6 +40,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mouseleave="leave"
       @keydown.escape.exact.prevent="keyDownEscape"
       @keydown.g.exact.prevent="editKeyDown('g')"
+      @keydown.t.exact.prevent="editKeyDown('t')"
       @keydown.x.exact.prevent="editKeyDown('x')"
       @keydown.a.exact.prevent="editKeyDown('a')"
       @keydown.c.ctrl.exact.prevent="editKeyDown('ctrl-c')"
@@ -48,6 +49,15 @@ Copyright (C) 2021, Tomoya Komiyama.
     >
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
     </svg>
+    <PopupMenuList
+      v-if="popupMenuList.length > 0 && popupMenuListPosition"
+      class="popup-menu-list"
+      :popup-menu-list="popupMenuList"
+      :style="{
+        left: `${popupMenuListPosition.x - 20}px`,
+        top: `${popupMenuListPosition.y - 10}px`,
+      }"
+    />
   </div>
 </template>
 
@@ -56,8 +66,12 @@ import { defineComponent, ref, onMounted, watch, computed, PropType } from 'vue'
 import { getPointInTarget } from 'okanvas'
 import { useWindow } from '../composables/window'
 import { useCanvas } from '../composables/canvas'
+import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
+import { add, IVec2 } from 'okageo'
+import { PopupMenuItem } from '/@/composables/modes/types'
 
 export default defineComponent({
+  components: { PopupMenuList },
   props: {
     canvas: {
       type: Object as PropType<ReturnType<typeof useCanvas>>,
@@ -67,6 +81,10 @@ export default defineComponent({
           ignoreNegativeY: true,
           scaleAtFixY: true,
         }),
+    },
+    popupMenuList: {
+      type: Array as PropType<PopupMenuItem[]>,
+      default: () => [],
     },
   },
   emits: [
@@ -78,6 +96,7 @@ export default defineComponent({
     'click-empty',
     'escape',
     'g',
+    't',
     'x',
     'a',
     'ctrl-c',
@@ -101,6 +120,19 @@ export default defineComponent({
     onMounted(adjustSvgSize)
     watch(() => windowState.state.size, adjustSvgSize)
 
+    const popupMenuListPosition = ref<IVec2>()
+    watch(
+      () => props.popupMenuList,
+      () => {
+        if (!wrapper.value || !props.canvas.mousePoint.value) return
+        const rect = wrapper.value.getBoundingClientRect()
+        popupMenuListPosition.value = add(props.canvas.mousePoint.value, {
+          x: rect.left,
+          y: rect.top,
+        })
+      }
+    )
+
     return {
       scale: canvas.value.scale,
       viewOrigin: canvas.value.viewOrigin,
@@ -108,6 +140,7 @@ export default defineComponent({
       wrapper,
       svg,
       viewBox: canvas.value.viewBox,
+      popupMenuListPosition,
       focus() {
         if (svg.value) svg.value.focus()
       },
@@ -152,7 +185,9 @@ export default defineComponent({
       keyDownEscape: () => {
         emit('escape')
       },
-      editKeyDown(key: 'g' | 'x' | 'a' | 'ctrl-c' | 'ctrl-v' | 'shift-d') {
+      editKeyDown(
+        key: 'g' | 't' | 'x' | 'a' | 'ctrl-c' | 'ctrl-v' | 'shift-d'
+      ) {
         if (!canvas.value.mousePoint.value) return
 
         canvas.value.editStartPoint.value = canvas.value.mousePoint.value
@@ -173,5 +208,9 @@ svg {
   user-select: none;
   outline: none;
   overflow-anchor: none;
+}
+.popup-menu-list {
+  position: fixed;
+  z-index: 1;
 }
 </style>

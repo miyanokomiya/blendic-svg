@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g>
+    <title v-if="tooltip">{{ tooltip }}</title>
     <rect
       :y="top - 3"
       :width="sameRangeWidth"
@@ -56,6 +57,10 @@ export default defineComponent({
       type: Number,
       default: 0,
     },
+    tooltip: {
+      type: String,
+      default: '',
+    },
   },
   emits: ['select', 'shift-select'],
   setup(_props, { emit }) {
@@ -74,3 +79,9 @@ export default defineComponent({
   },
 })
 </script>
+
+<style lang="scss">
+.view-only {
+  pointer-events: none;
+}
+</style>

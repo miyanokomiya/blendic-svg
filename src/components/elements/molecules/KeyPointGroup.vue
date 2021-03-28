@@ -34,6 +34,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :top="y"
           :selected="selectedState.props[key]"
           :same-range-width="sameRangeWidth[key]"
+          :tooltip="keyFrame.points[key].curve.name"
           @select="select({ [key]: true })"
           @shift-select="shiftSelect({ [key]: true })"
         />

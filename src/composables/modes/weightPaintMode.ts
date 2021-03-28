@@ -41,20 +41,18 @@ export function useWeightPaintMode(): WeightPaintMode {
 
   function setEditMode(_mode: EditMode) {}
 
-  function completeEdit() {}
-
   function select(_id: string) {
-    completeEdit()
+    cancel()
   }
 
   function shiftSelect(_id: string) {
-    completeEdit()
+    cancel()
   }
 
   function rectSelect() {}
 
   function selectAll() {
-    completeEdit()
+    cancel()
     elementStore.selectAllElement()
   }
 

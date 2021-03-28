@@ -2,6 +2,7 @@
 
 exports[`src/components/elements/atoms/KeyPoint.vue snapshot default 1`] = `
 <g>
+  <!--v-if-->
   <rect
     class="view-only"
     fill="#aaa"
@@ -21,6 +22,7 @@ exports[`src/components/elements/atoms/KeyPoint.vue snapshot default 1`] = `
 
 exports[`src/components/elements/atoms/KeyPoint.vue snapshot selected 1`] = `
 <g>
+  <!--v-if-->
   <rect
     class="view-only"
     fill="#aaa"

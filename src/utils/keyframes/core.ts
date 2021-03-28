@@ -17,8 +17,14 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IVec2 } from 'okageo'
-import { CurveBase, KeyframeBase, KeyframePoint } from '/@/models/keyframe'
+import { add, getPointOnBezier3, IVec2 } from 'okageo'
+import {
+  CurveBase,
+  CurveBezier3,
+  KeyframeBase,
+  KeyframePoint,
+} from '/@/models/keyframe'
+import { applyScale } from '/@/utils/geometry'
 
 type NeighborKeyframe<T extends KeyframeBase> =
   | []
@@ -80,17 +86,59 @@ export function getCurveFn(
   curve: CurveBase
 ): CurveFn {
   switch (curve.name) {
+    case 'constant':
+      return getConstantCurveFn(start)
     case 'linear':
       return getLinearCurveFn(start, end)
     case 'bezier3':
-      return getLinearCurveFn(start, end)
+      return getBezier3CurveFn(
+        start,
+        (curve as CurveBezier3).c1,
+        (curve as CurveBezier3).c2,
+        end
+      )
   }
+}
+
+function getConstantCurveFn(start: IVec2): CurveFn {
+  return () => start.y
 }
 
 function getLinearCurveFn(start: IVec2, end: IVec2): CurveFn {
   const rangeX = end.x - start.x
   if (rangeX === 0) return (x) => x
   return (x) => ((x - start.x) / rangeX) * (end.y - start.y) + start.y
+}
+
+function getBezier3CurveFn(
+  start: IVec2,
+  c1: IVec2,
+  c2: IVec2,
+  end: IVec2
+): CurveFn {
+  const rangeX = end.x - start.x
+  if (rangeX === 0) return (x) => x
+
+  return (x) => {
+    return getPointOnBezier3(
+      getNormalizedBezier3Points(start, c1, c2, end),
+      (x - start.x) / rangeX
+    ).y
+  }
+}
+
+export function getNormalizedBezier3Points(
+  start: IVec2,
+  c1: IVec2,
+  c2: IVec2,
+  end: IVec2
+): [IVec2, IVec2, IVec2, IVec2] {
+  const rangeX = end.x - start.x
+  const rangeY = end.y - start.y
+  const v = { x: rangeX, y: rangeY }
+  const c1t = add(applyScale(v, c1), start)
+  const c2t = add(applyScale(v, c2), start)
+  return [start, c1t, c2t, end]
 }
 
 export function isSameKeyframePoint(

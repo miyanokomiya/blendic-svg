@@ -17,7 +17,11 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
+import {
+  CurveBezier3,
+  getKeyframeBone,
+  getKeyframePoint,
+} from '/@/models/keyframe'
 import * as target from '/@/utils/keyframes/core'
 
 describe('utils/keyframes.ts', () => {
@@ -102,10 +106,31 @@ describe('utils/keyframes.ts', () => {
       expect(fn(20)).toBeCloseTo(40)
     })
 
-    xit('TODO bezier3', () => {
-      const fn = target.getCurveFn(start, end, { name: 'bezier3' })
+    it('bezier3', () => {
+      const fn = target.getCurveFn(start, end, {
+        name: 'bezier3',
+        c1: { x: 0.5, y: 0 },
+        c2: { x: 0.5, y: 1 },
+      } as CurveBezier3)
       expect(fn(10)).toBeCloseTo(20)
+      expect(fn(12.5)).toBeLessThan(25)
+      expect(fn(15)).toBeCloseTo(30)
+      expect(fn(17.5)).toBeGreaterThan(35)
       expect(fn(20)).toBeCloseTo(40)
+    })
+  })
+
+  describe('getNormalizedBezier3Points', () => {
+    it('convert relative controller points to absolute ones', () => {
+      const start = { x: 10, y: 20 }
+      const end = { x: 20, y: 40 }
+      const ret = target.getNormalizedBezier3Points(
+        start,
+        { x: 0.5, y: -0.2 },
+        { x: 0.6, y: 1.2 },
+        end
+      )
+      expect(ret).toEqual([start, { x: 15, y: 16 }, { x: 16, y: 44 }, end])
     })
   })
 

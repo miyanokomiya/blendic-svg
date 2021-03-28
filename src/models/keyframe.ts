@@ -87,6 +87,7 @@ export interface CurveLinear extends CurveBase {
 
 export interface CurveBezier3 extends CurveBase {
   name: 'bezier3'
+  // controller points present relative rate between start and end
   c1: IVec2
   c2: IVec2
 }

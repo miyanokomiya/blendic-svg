@@ -18,13 +18,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { computed } from 'vue'
+import { getTransform } from '/@/models/index'
 import {
-  getTransform,
   EditMode,
   EditMovement,
   CanvasEditModeBase,
-} from '../models/index'
-import { useElementStore } from '../store/element'
+} from '/@/composables/modes/types'
+import { useElementStore } from '/@/store/element'
 
 export interface WeightPaintMode extends CanvasEditModeBase {}
 

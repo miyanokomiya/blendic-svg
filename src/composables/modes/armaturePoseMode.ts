@@ -23,29 +23,31 @@ import {
   Transform,
   getTransform,
   BoneSelectedState,
-  EditMode,
   IdMap,
-  EditMovement,
+} from '/@/models/index'
+import {
+  EditMode,
   CanvasEditModeBase,
+  EditMovement,
   PopupMenuItem,
-} from '../models/index'
+} from '/@/composables/modes/types'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
-import { useAnimationStore } from '../store/animation'
-import { mapReduce } from '../utils/commons'
+import { useAnimationStore } from '/@/store/animation'
+import { mapReduce } from '/@/utils/commons'
 import {
   convolutePoseTransforms,
   getTransformedBoneMap,
   invertPoseTransform,
   selectBoneInRect,
-} from '../utils/armatures'
+} from '/@/utils/armatures'
 import {
   applyTransformToVec,
   getContinuousRadDiff,
   snapGrid,
   snapRotate,
   snapScale,
-} from '../utils/geometry'
+} from '/@/utils/geometry'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 
 interface State {

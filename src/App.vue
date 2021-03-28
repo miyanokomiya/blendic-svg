@@ -109,14 +109,13 @@ import ElementLayer from './components/elements/ElementLayer.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import SideBar from '/@/components/SideBar.vue'
 import BoneLayer from '/@/components/elements/BoneLayer.vue'
+import { Bone, IdMap, toMap } from './models/index'
 import {
-  Bone,
   CanvasMode,
   EditMode,
   editModeToCanvasCommand,
-  IdMap,
-  toMap,
-} from './models/index'
+} from './composables/modes/types'
+
 import {
   convolutePoseTransforms,
   editTransform,

@@ -19,7 +19,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { IRectangle, IVec2 } from 'okageo'
 import { v4 } from 'uuid'
-import { ComputedRef } from 'vue'
 import { toKeyMap } from '../utils/commons'
 import { BoneConstraint } from '../utils/constraints'
 import { KeyframeBone } from '/@/models/keyframe'
@@ -189,55 +188,6 @@ export function getArmature(
 export interface BoneSelectedState {
   head?: boolean
   tail?: boolean
-}
-export type CanvasMode = 'object' | 'edit' | 'pose' | 'weight'
-export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
-export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude' | 'insert'
-
-export type EditMovement = {
-  current: IVec2
-  start: IVec2
-  ctrl: boolean
-  scale: number
-}
-
-export interface PopupMenuItem {
-  label: string
-  exec: () => void
-  focus?: boolean
-}
-
-export type CommandExam = { command: string; title: string }
-
-export interface CanvasEditModeBase {
-  command: ComputedRef<EditMode>
-  getEditTransforms: (id: string) => Transform
-  end: () => void
-  cancel: () => void
-  setEditMode: (mode: EditMode) => void
-  select: (id: string, selectedState: { [key: string]: boolean }) => void
-  shiftSelect: (id: string, selectedState: { [key: string]: boolean }) => void
-  rectSelect: (rect: IRectangle, shift: boolean) => void
-  selectAll: () => void
-  mousemove: (arg: EditMovement) => void
-  clickAny: () => void
-  clickEmpty: () => void
-  execDelete: () => void
-  execAdd: () => void
-  insert: () => void
-  clip: () => void
-  paste: () => void
-  duplicate: () => void
-  availableCommandList: ComputedRef<CommandExam[]>
-  popupMenuList: ComputedRef<PopupMenuItem[]>
-}
-
-export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {
-  if (editMode === 'grab') return 'grab'
-  if (editMode === 'extrude') return 'grab'
-  if (editMode === 'rotate') return 'rotate'
-  if (editMode === 'scale') return 'scale'
-  return ''
 }
 
 export function toMap<T extends { id: string }>(list: T[]): IdMap<T> {

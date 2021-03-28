@@ -24,12 +24,14 @@ import {
   Bone,
   getTransform,
   BoneSelectedState,
-  EditMode,
   IdMap,
+  toMap,
+} from '/@/models/index'
+import {
+  EditMode,
   CanvasEditModeBase,
   EditMovement,
-  toMap,
-} from '../models/index'
+} from '/@/composables/modes/types'
 import {
   duplicateBones,
   editTransform,

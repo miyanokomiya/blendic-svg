@@ -155,7 +155,7 @@ import {
 import { IVec2 } from 'okageo'
 import { mapReduce, toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
-import { useKeyframeEditMode } from '../composables/keyframeEditMode'
+import { useKeyframeEditMode } from '../composables/modes/keyframeEditMode'
 import { IdMap } from '/@/models'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'

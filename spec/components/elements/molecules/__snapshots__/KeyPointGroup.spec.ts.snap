@@ -12,6 +12,9 @@ exports[`src/components/elements/molecules/KeyPointGroup.vue snapshot expanded 1
   <!--v-if-->
   
   <g>
+    <title>
+      linear
+    </title>
     <rect
       class="view-only"
       fill="#aaa"

@@ -26,6 +26,7 @@ import {
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
+import { mapReduce } from '/@/utils/commons'
 import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 
 interface KeyframeModule {
@@ -224,4 +225,29 @@ export function isSameKeyframePoint(
   b: KeyframePoint
 ): boolean {
   return a.value === b.value
+}
+
+export function batchUpdatePoints(
+  keyframeMap: IdMap<KeyframeBase>,
+  selectedStateMap: IdMap<KeyframeSelectedState>,
+  updateFn: (p: KeyframePoint) => KeyframePoint
+): IdMap<KeyframeBase> {
+  return mapReduce(keyframeMap, (keyframe, id) => {
+    const selectedState = selectedStateMap[id]
+    if (!selectedState) return keyframe
+    return updatePoints(keyframe, selectedState, updateFn)
+  })
+}
+
+export function updatePoints(
+  keyframe: KeyframeBase,
+  selectedState: KeyframeSelectedState,
+  updateFn: (p: KeyframePoint) => KeyframePoint
+): KeyframeBase {
+  return {
+    ...keyframe,
+    points: mapReduce(keyframe.points, (p, key) => {
+      return selectedState.props[key] ? updateFn(p) : p
+    }),
+  }
 }

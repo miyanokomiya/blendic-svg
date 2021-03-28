@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g>
+    <title v-if="tooltip">{{ tooltip }}</title>
     <rect
       :y="top - 3"
       :width="sameRangeWidth"
@@ -55,6 +56,10 @@ export default defineComponent({
     sameRangeWidth: {
       type: Number,
       default: 0,
+    },
+    tooltip: {
+      type: String,
+      default: '',
     },
   },
   emits: ['select', 'shift-select'],

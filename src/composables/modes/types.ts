@@ -64,7 +64,7 @@ export interface CanvasEditModeBase {
 }
 
 export type KeyframeModeName = 'action'
-export type KeyframeEditCommand = '' | 'grab'
+export type KeyframeEditCommand = '' | 'grab' | 'interpolation'
 
 export interface KeyframeEditModeBase {
   command: ComputedRef<KeyframeEditCommand>

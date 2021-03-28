@@ -407,4 +407,33 @@ describe('utils/keyframes/index.ts', () => {
       expect(target.getSamePropRangeFrameMap(list, 2).scaleY).toEqual(0)
     })
   })
+
+  describe('batchUpdatePoints', () => {
+    it('batch update', () => {
+      const keyframeMap = {
+        a: getKeyframeBone({
+          points: {
+            translateX: getKeyframePoint({ value: 1 }),
+            translateY: getKeyframePoint({ value: 1 }),
+          },
+        }),
+      }
+      const selectedStateMap = {
+        a: { name: 'bone' as const, props: { translateX: true } },
+      }
+      const ret = target.batchUpdatePoints(
+        keyframeMap,
+        selectedStateMap,
+        (p) => ({ ...p, value: p.value * 2 })
+      )
+      expect(ret).toEqual({
+        a: getKeyframeBone({
+          points: {
+            translateX: getKeyframePoint({ value: 2 }),
+            translateY: getKeyframePoint({ value: 1 }),
+          },
+        }),
+      })
+    })
+  })
 })

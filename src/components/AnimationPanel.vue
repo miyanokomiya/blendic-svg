@@ -82,6 +82,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <template #right>
         <TimelineCanvas
           :canvas="keyframeCanvas"
+          :popup-menu-list="popupMenuList"
           @up-left="upLeft"
           @drag="drag"
           @down-left="downLeft"
@@ -91,6 +92,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           @a="selectAll"
           @x="deleteKeyframes"
           @g="grag"
+          @t="interpolation"
           @ctrl-c="clipKeyframes"
           @ctrl-v="pasteKeyframes"
           @shift-d="duplicateKeyframes"
@@ -322,6 +324,7 @@ export default defineComponent({
       keyframeMapByFrame,
       selectedKeyframeMap: animationStore.selectedKeyframeMap,
       draftName,
+      popupMenuList: keyframeEditMode.mode.value.popupMenuList,
       changeActionName() {
         const allNames = animationStore.actions.value.map((a) => a.name)
         if (allNames.includes(draftName.value)) {
@@ -361,6 +364,8 @@ export default defineComponent({
       shiftSelectKeyframeByFrame: keyframeEditMode.mode.value.shiftSelectFrame,
       selectAll: keyframeEditMode.mode.value.selectAll,
       grag: () => keyframeEditMode.mode.value.setEditMode('grab'),
+      interpolation: () =>
+        keyframeEditMode.mode.value.setEditMode('interpolation'),
       deleteKeyframes: keyframeEditMode.mode.value.execDelete,
       clipKeyframes: keyframeEditMode.mode.value.clip,
       pasteKeyframes: keyframeEditMode.mode.value.paste,

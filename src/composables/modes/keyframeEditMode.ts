@@ -17,20 +17,26 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive, computed, ComputedRef } from 'vue'
+import { reactive, computed, ComputedRef, ref } from 'vue'
 import { Transform, getTransform, IdMap, toMap } from '/@/models/index'
 import {
   KeyframeEditCommand,
   KeyframeEditModeBase,
   EditMovement,
+  PopupMenuItem,
 } from '/@/composables/modes/types'
 import { useAnimationStore } from '/@/store/animation'
-import { mapReduce, toList } from '/@/utils/commons'
+import { extractMap, mapReduce, toList } from '/@/utils/commons'
 import { getFrameX, getNearestFrameAtPoint } from '/@/utils/animations'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { applyTransform } from '/@/utils/geometry'
-import { getKeyframeBone, KeyframeBase } from '/@/models/keyframe'
-import { splitKeyframeBySelected } from '/@/utils/keyframes'
+import {
+  CurveName,
+  getCurve,
+  getKeyframeBone,
+  KeyframeBase,
+} from '/@/models/keyframe'
+import { batchUpdatePoints, splitKeyframeBySelected } from '/@/utils/keyframes'
 
 interface State {
   command: KeyframeEditCommand
@@ -152,7 +158,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     selected: IdMap<KeyframeBase>
     notSelected: IdMap<KeyframeBase>
   }>(() => {
-    if (!state.command) return { selected: {}, notSelected: {} }
+    if (state.command !== 'grab') return { selected: {}, notSelected: {} }
 
     return {
       selected: mapReduce(
@@ -261,7 +267,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   }
 
   function duplicate() {
-    if (state.command !== '') return
+    if (!state.command) return
 
     // duplicate current edit targets as tmp keyframes
     // & continue to edit original edit targets
@@ -280,6 +286,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     if (isAnySelected.value) {
       return [
         { command: 'g', title: 'Grab' },
+        { command: 't', title: 'Interpolation' },
         { command: 'a', title: 'All Select' },
         { command: 'x', title: 'Delete' },
         { command: 'D', title: 'Duplicate' },
@@ -293,6 +300,37 @@ export function useKeyframeEditMode(): KeyframeEditMode {
         { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
         { command: 'Space', title: 'Play/Stop' },
       ]
+    }
+  })
+
+  const lastSelectedCurveName = ref('constant')
+  const curveItems: { label: string; name: CurveName }[] = [
+    { label: 'Constant', name: 'constant' },
+    { label: 'Linear', name: 'linear' },
+    { label: 'Bezier', name: 'bezier3' },
+  ]
+  function setInterpolation(curveName: CurveName) {
+    const selectedState = animationStore.selectedKeyframeMap.value
+    animationStore.execUpdateKeyframes(
+      batchUpdatePoints(
+        extractMap(editTargets.value, selectedState),
+        selectedState,
+        (p) => ({ ...p, curve: getCurve(curveName) })
+      )
+    )
+    lastSelectedCurveName.value = curveName
+    state.command = ''
+  }
+  const popupMenuList = computed<PopupMenuItem[]>(() => {
+    switch (state.command) {
+      case 'interpolation':
+        return curveItems.map((item) => ({
+          label: item.label,
+          exec: () => setInterpolation(item.name),
+          focus: item.name === lastSelectedCurveName.value,
+        }))
+      default:
+        return []
     }
   })
 
@@ -316,7 +354,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     paste,
     duplicate,
     availableCommandList,
-    popupMenuList: computed(() => []),
+    popupMenuList,
     editedKeyframeMap,
   }
 }

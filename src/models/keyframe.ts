@@ -67,17 +67,20 @@ export interface KeyframeBoneSameRange extends KeyframeBaseSameRange {
   }
 }
 
-export type CurveName = 'linear' | 'bezier3'
+export type CurveName = 'constant' | 'linear' | 'bezier3'
 
 export interface KeyframePoint {
   value: number
-  curve: CurveLinear | CurveBezier3
+  curve: CurveBase
 }
 
 export interface CurveBase {
   name: CurveName
 }
 
+export interface CurveConstant extends CurveBase {
+  name: 'constant'
+}
 export interface CurveLinear extends CurveBase {
   name: 'linear'
 }
@@ -110,7 +113,28 @@ export function getKeyframePoint(
 ): KeyframePoint {
   return {
     value: 0,
-    curve: { name: 'linear' },
+    curve: getCurve('linear'),
     ...arg,
   }
+}
+
+export function getCurve(name: CurveName): CurveBase {
+  switch (name) {
+    case 'constant':
+      return getCurveConstant()
+    case 'linear':
+      return getCurveLinear()
+    case 'bezier3':
+      return getCurveBezier3()
+  }
+}
+
+function getCurveConstant(): CurveConstant {
+  return { name: 'constant' }
+}
+function getCurveLinear(): CurveLinear {
+  return { name: 'linear' }
+}
+function getCurveBezier3(): CurveBezier3 {
+  return { name: 'bezier3', c1: { x: 0.5, y: 0 }, c2: { x: 0.5, y: 1 } }
 }

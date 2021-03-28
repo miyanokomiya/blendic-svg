@@ -197,7 +197,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
 
   function select(id: string, selectedState: any) {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     animationStore.selectKeyframe(id, selectedState)
@@ -205,7 +205,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
 
   function shiftSelect(id: string, selectedState: any) {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     animationStore.selectKeyframe(id, selectedState, true)
@@ -213,7 +213,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
 
   function selectFrame(frame: number) {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     animationStore.selectKeyframeByFrame(frame)
@@ -221,7 +221,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
 
   function shiftSelectFrame(frame: number) {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     animationStore.selectKeyframeByFrame(frame, true)
@@ -229,7 +229,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
 
   function selectAll() {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     animationStore.selectAllKeyframes()
@@ -243,7 +243,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
 
   function execDelete() {
     if (state.command) {
-      completeEdit()
+      cancel()
       return
     }
     animationStore.execDeleteKeyframes()
@@ -267,7 +267,10 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   }
 
   function duplicate() {
-    if (!state.command) return
+    if (state.command) {
+      cancel()
+      return
+    }
 
     // duplicate current edit targets as tmp keyframes
     // & continue to edit original edit targets

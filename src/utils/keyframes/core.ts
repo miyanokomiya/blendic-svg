@@ -21,6 +21,7 @@ import { add, getPointOnBezier3, IVec2 } from 'okageo'
 import {
   CurveBase,
   CurveBezier3,
+  CurveName,
   KeyframeBase,
   KeyframePoint,
 } from '/@/models/keyframe'
@@ -35,6 +36,12 @@ interface KeyframePointWithFrame {
   keyframePoint: KeyframePoint
   frame: number
 }
+
+export const curveItems: Readonly<{ label: string; name: CurveName }[]> = [
+  { label: 'Constant', name: 'constant' },
+  { label: 'Linear', name: 'linear' },
+  { label: 'Bezier', name: 'bezier3' },
+]
 
 export function getNeighborKeyframes<T extends KeyframeBase>(
   sortedKeyframes: T[],

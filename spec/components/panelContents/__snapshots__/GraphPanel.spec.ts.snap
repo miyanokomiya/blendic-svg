@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/panelContents/GraphPanel.vue snapshot no keyframe 1`] = `
+<div
+  class="graph-panel-wrapper"
+>
+  <div>
+    <p>
+      No Item
+    </p>
+  </div>
+</div>
+`;
+
+exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyframe 1`] = `
+<div
+  class="graph-panel-wrapper"
+>
+  <div>
+    <span
+      class="select-root"
+    >
+      <select>
+        <!--v-if-->
+        
+        <option
+          value="constant"
+        >
+          Constant
+        </option>
+        <option
+          value="linear"
+        >
+          Linear
+        </option>
+        <option
+          value="bezier3"
+        >
+          Bezier
+        </option>
+        
+      </select>
+    </span>
+  </div>
+</div>
+`;

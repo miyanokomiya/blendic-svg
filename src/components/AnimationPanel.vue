@@ -59,7 +59,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         </InlineField>
       </div>
     </div>
-    <ResizableH class="middle" :initial-rate="0.2" dense>
+    <ResizableH class="middle" :initial-rate="0.15" dense>
       <template #left="{ size }">
         <TimelineCanvas class="label-canvas" :canvas="labelCanvas">
           <template #default="{ scale, viewOrigin }">
@@ -80,55 +80,70 @@ Copyright (C) 2021, Tomoya Komiyama.
         </TimelineCanvas>
       </template>
       <template #right>
-        <TimelineCanvas
-          :canvas="keyframeCanvas"
-          :popup-menu-list="popupMenuList"
-          @up-left="upLeft"
-          @drag="drag"
-          @down-left="downLeft"
-          @mousemove="mousemove"
-          @click-empty="clickEmpty"
-          @escape="escape"
-          @a="selectAll"
-          @x="deleteKeyframes"
-          @g="grag"
-          @t="interpolation"
-          @ctrl-c="clipKeyframes"
-          @ctrl-v="pasteKeyframes"
-          @shift-d="duplicateKeyframes"
-        >
-          <template #default="{ scale, viewOrigin, viewSize }">
-            <g :transform="`translate(${axisPadding}, ${viewOrigin.y})`">
-              <TimelineAxis
-                :scale="scale"
-                :origin-x="viewOrigin.x"
-                :view-width="viewSize.width"
-                :current-frame="currentFrame"
-                :end-frame="endFrame"
-                :header-height="labelHeight"
-                @down-current-frame="downCurrentFrame"
+        <ResizableH class="timeline-canvas-space" :initial-rate="0.8" dense>
+          <template #left>
+            <div class="timeline-canvas-inner">
+              <TimelineCanvas
+                :canvas="keyframeCanvas"
+                :popup-menu-list="popupMenuList"
+                @up-left="upLeft"
+                @drag="drag"
+                @down-left="downLeft"
+                @mousemove="mousemove"
+                @click-empty="clickEmpty"
+                @escape="escape"
+                @a="selectAll"
+                @x="deleteKeyframes"
+                @g="grag"
+                @t="interpolation"
+                @ctrl-c="clipKeyframes"
+                @ctrl-v="pasteKeyframes"
+                @shift-d="duplicateKeyframes"
+              >
+                <template #default="{ scale, viewOrigin, viewSize }">
+                  <g :transform="`translate(${axisPadding}, ${viewOrigin.y})`">
+                    <TimelineAxis
+                      :scale="scale"
+                      :origin-x="viewOrigin.x"
+                      :view-width="viewSize.width"
+                      :current-frame="currentFrame"
+                      :end-frame="endFrame"
+                      :header-height="labelHeight"
+                      @down-current-frame="downCurrentFrame"
+                    />
+                    <Keyframes
+                      :scale="scale"
+                      :keyframe-map-by-frame="keyframeMapByFrame"
+                      :bone-ids="selectedAllBoneIdList"
+                      :selected-keyframe-map="selectedKeyframeMap"
+                      :scroll-y="viewOrigin.y"
+                      :bone-expanded-map="boneExpandedMap"
+                      :bone-top-map="boneTopMap"
+                      :height="labelHeight"
+                      @select="selectKeyframe"
+                      @shift-select="shiftSelectKeyframe"
+                      @select-frame="selectKeyframeByFrame"
+                      @shift-select-frame="shiftSelectKeyframeByFrame"
+                    />
+                  </g>
+                </template>
+              </TimelineCanvas>
+              <CommandExamPanel
+                class="command-exam-panel"
+                :available-command-list="availableCommandList"
               />
-              <Keyframes
-                :scale="scale"
-                :keyframe-map-by-frame="keyframeMapByFrame"
-                :bone-ids="selectedAllBoneIdList"
-                :selected-keyframe-map="selectedKeyframeMap"
-                :scroll-y="viewOrigin.y"
-                :bone-expanded-map="boneExpandedMap"
-                :bone-top-map="boneTopMap"
-                :height="labelHeight"
-                @select="selectKeyframe"
-                @shift-select="shiftSelectKeyframe"
-                @select-frame="selectKeyframeByFrame"
-                @shift-select-frame="shiftSelectKeyframeByFrame"
-              />
-            </g>
+            </div>
           </template>
-        </TimelineCanvas>
-        <CommandExamPanel
-          class="command-exam-panel"
-          :available-command-list="availableCommandList"
-        />
+          <template #right>
+            <div class="graph-panel-space">
+              <GraphPanel
+                :keyframe="lastSelectedKeyframe"
+                :selected-state="selectedKeyframeMap[lastSelectedKeyframe?.id]"
+                @update="updateKeyframe"
+              />
+            </div>
+          </template>
+        </ResizableH>
       </template>
     </ResizableH>
   </div>
@@ -148,6 +163,7 @@ import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
+import GraphPanel from '/@/components/panelContents/GraphPanel.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import {
   getKeyframeMapByFrame,
@@ -162,6 +178,7 @@ import { IdMap } from '/@/models'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'
 import { KeyframeModeName } from '/@/composables/modes/types'
+import { KeyframeBase } from '/@/models/keyframe'
 
 const labelHeight = 24
 
@@ -192,6 +209,7 @@ export default defineComponent({
     AnimationController,
     SliderInput,
     CommandExamPanel,
+    GraphPanel,
     AddIcon,
     DeleteIcon,
     InlineField,
@@ -321,6 +339,7 @@ export default defineComponent({
       actions: animationStore.actions.value,
       selectedAllBoneList,
       selectedAllBoneIdList,
+      lastSelectedKeyframe: animationStore.lastSelectedKeyframe,
       keyframeMapByFrame,
       selectedKeyframeMap: animationStore.selectedKeyframeMap,
       draftName,
@@ -377,6 +396,9 @@ export default defineComponent({
       toggleBoneExpanded,
       boneTopMap,
       labelHeight,
+      updateKeyframe(keyframe: KeyframeBase) {
+        animationStore.execUpdateKeyframes({ [keyframe.id]: keyframe })
+      },
     }
   },
 })
@@ -419,16 +441,26 @@ export default defineComponent({
   }
 }
 .middle {
-  position: relative;
   flex: 1;
   min-height: 0; // for flex grow
-  .command-exam-panel {
-    position: absolute;
-    bottom: 4px;
-    right: 8px;
-  }
 }
 .label-canvas {
   overflow: hidden;
+}
+.timeline-canvas-space {
+  height: 100%;
+  .timeline-canvas-inner {
+    height: 100%;
+    position: relative;
+    .command-exam-panel {
+      position: absolute;
+      bottom: 4px;
+      right: 8px;
+    }
+  }
+}
+.graph-panel-space {
+  height: 100%;
+  border: solid 1px #000;
 }
 </style>

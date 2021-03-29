@@ -37,6 +37,7 @@ import {
   KeyframeBase,
 } from '/@/models/keyframe'
 import { batchUpdatePoints, splitKeyframeBySelected } from '/@/utils/keyframes'
+import { curveItems } from '/@/utils/keyframes/core'
 
 interface State {
   command: KeyframeEditCommand
@@ -307,11 +308,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   })
 
   const lastSelectedCurveName = ref('constant')
-  const curveItems: { label: string; name: CurveName }[] = [
-    { label: 'Constant', name: 'constant' },
-    { label: 'Linear', name: 'linear' },
-    { label: 'Bezier', name: 'bezier3' },
-  ]
+
   function setInterpolation(curveName: CurveName) {
     const selectedState = animationStore.selectedKeyframeMap.value
     animationStore.execUpdateKeyframes(
@@ -324,6 +321,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     lastSelectedCurveName.value = curveName
     state.command = ''
   }
+
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     switch (state.command) {
       case 'interpolation':

@@ -20,6 +20,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="animation-panel-root">
     <div class="top">
+      <div class="select-canvas">
+        <SelectField
+          :model-value="currentCanvas"
+          :options="canvasOptions"
+          no-placeholder
+          @update:modelValue="setCurrentCanvas"
+        />
+      </div>
       <div class="select-action">
         <SelectField v-model="selectedActionId" :options="actionOptions" />
       </div>
@@ -84,6 +92,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           <template #left>
             <div class="timeline-canvas-inner">
               <TimelineCanvas
+                v-if="currentCanvas === 'action'"
                 :canvas="keyframeCanvas"
                 :popup-menu-list="popupMenuList"
                 @up-left="upLeft"
@@ -94,7 +103,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                 @escape="escape"
                 @a="selectAll"
                 @x="deleteKeyframes"
-                @g="grag"
+                @g="grab"
                 @t="interpolation"
                 @ctrl-c="clipKeyframes"
                 @ctrl-v="pasteKeyframes"
@@ -102,15 +111,6 @@ Copyright (C) 2021, Tomoya Komiyama.
               >
                 <template #default="{ scale, viewOrigin, viewSize }">
                   <g :transform="`translate(${axisPadding}, ${viewOrigin.y})`">
-                    <TimelineAxis
-                      :scale="scale"
-                      :origin-x="viewOrigin.x"
-                      :view-width="viewSize.width"
-                      :current-frame="currentFrame"
-                      :end-frame="endFrame"
-                      :header-height="labelHeight"
-                      @down-current-frame="downCurrentFrame"
-                    />
                     <Keyframes
                       :scale="scale"
                       :keyframe-map-by-frame="keyframeMapByFrame"
@@ -124,6 +124,55 @@ Copyright (C) 2021, Tomoya Komiyama.
                       @shift-select="shiftSelectKeyframe"
                       @select-frame="selectKeyframeByFrame"
                       @shift-select-frame="shiftSelectKeyframeByFrame"
+                    />
+                    <TimelineAxis
+                      :scale="scale"
+                      :origin-x="viewOrigin.x"
+                      :view-width="viewSize.width"
+                      :current-frame="currentFrame"
+                      :end-frame="endFrame"
+                      :header-height="labelHeight"
+                      @down-current-frame="downCurrentFrame"
+                    />
+                  </g>
+                </template>
+              </TimelineCanvas>
+              <TimelineCanvas
+                v-if="currentCanvas === 'graph'"
+                :canvas="graphCanvas"
+                :popup-menu-list="popupMenuList"
+                @up-left="upLeft"
+                @drag="drag"
+                @down-left="downLeft"
+                @mousemove="mousemove"
+                @click-empty="clickEmpty"
+                @escape="escape"
+                @a="selectAll"
+                @x="deleteKeyframes"
+                @g="grab"
+                @t="interpolation"
+                @ctrl-c="clipKeyframes"
+                @ctrl-v="pasteKeyframes"
+                @shift-d="duplicateKeyframes"
+              >
+                <template #default="{ scale, viewOrigin, viewSize }">
+                  <g :transform="`translate(${viewOrigin.x}, ${labelHeight})`">
+                    <GraphAxis
+                      :scale="scale"
+                      :origin-y="viewOrigin.y"
+                      :view-width="viewSize.width"
+                      :view-height="viewSize.height"
+                    />
+                  </g>
+                  <g :transform="`translate(${axisPadding}, ${viewOrigin.y})`">
+                    <TimelineAxis
+                      :scale="scale"
+                      :origin-x="viewOrigin.x"
+                      :view-width="viewSize.width"
+                      :current-frame="currentFrame"
+                      :end-frame="endFrame"
+                      :header-height="labelHeight"
+                      @down-current-frame="downCurrentFrame"
                     />
                   </g>
                 </template>
@@ -156,6 +205,7 @@ import { useAnimationStore } from '../store/animation'
 import SelectField from './atoms/SelectField.vue'
 import TimelineCanvas from './TimelineCanvas.vue'
 import TimelineAxis from './elements/atoms/TimelineAxis.vue'
+import GraphAxis from './elements/atoms/GraphAxis.vue'
 import TimelineBones from './elements/TimelineBones.vue'
 import Keyframes from './elements/Keyframes.vue'
 import AnimationController from './molecules/AnimationController.vue'
@@ -199,11 +249,30 @@ function useMode() {
   return { name, mode, setMode }
 }
 
+type CanvasType = 'action' | 'graph'
+const canvasOptions: { label: string; value: CanvasType }[] = [
+  { label: 'Action', value: 'action' },
+  { label: 'Graph', value: 'graph' },
+]
+
+function useCanvasList() {
+  const current = ref<CanvasType>('action')
+  function setCanvas(val: CanvasType) {
+    current.value = val
+  }
+  return {
+    current,
+    setCanvas,
+    canvasOptions: computed(() => canvasOptions),
+  }
+}
+
 export default defineComponent({
   components: {
     SelectField,
     TimelineCanvas,
     TimelineAxis,
+    GraphAxis,
     TimelineBones,
     Keyframes,
     AnimationController,
@@ -230,6 +299,7 @@ export default defineComponent({
     }
     const labelCanvas = useCanvas(canvasOptions)
     const keyframeCanvas = useCanvas(canvasOptions)
+    const graphCanvas = useCanvas({ scaleMin: 1 })
 
     const keyframeEditMode = useMode()
     const editMode = ref<'' | 'move-current-frame'>('')
@@ -332,9 +402,12 @@ export default defineComponent({
       }, {})
     })
 
+    const canvasList = useCanvasList()
+
     return {
       labelCanvas,
       keyframeCanvas,
+      graphCanvas,
       playing: animationStore.playing,
       actions: animationStore.actions.value,
       selectedAllBoneList,
@@ -382,7 +455,7 @@ export default defineComponent({
       selectKeyframeByFrame: keyframeEditMode.mode.value.selectFrame,
       shiftSelectKeyframeByFrame: keyframeEditMode.mode.value.shiftSelectFrame,
       selectAll: keyframeEditMode.mode.value.selectAll,
-      grag: () => keyframeEditMode.mode.value.setEditMode('grab'),
+      grab: () => keyframeEditMode.mode.value.setEditMode('grab'),
       interpolation: () =>
         keyframeEditMode.mode.value.setEditMode('interpolation'),
       deleteKeyframes: keyframeEditMode.mode.value.execDelete,
@@ -399,6 +472,9 @@ export default defineComponent({
       updateKeyframe(keyframe: KeyframeBase) {
         animationStore.execUpdateKeyframes({ [keyframe.id]: keyframe })
       },
+      currentCanvas: canvasList.current,
+      setCurrentCanvas: canvasList.setCanvas,
+      canvasOptions: canvasList.canvasOptions,
     }
   },
 })
@@ -419,6 +495,7 @@ export default defineComponent({
   > * {
     margin-right: 8px;
   }
+  .select-canvas,
   .select-action {
     width: 160px;
   }
@@ -462,5 +539,6 @@ export default defineComponent({
 .graph-panel-space {
   height: 100%;
   border: solid 1px #000;
+  overflow: auto;
 }
 </style>

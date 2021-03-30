@@ -4,11 +4,38 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot no keyframe 1`] = 
 <div
   class="graph-panel-wrapper"
 >
-  <div>
-    <p>
-      No Item
-    </p>
+  <div
+    class="row-block"
+  >
+    
+    <label
+      class="label"
+    >
+      Axis Value
+    </label>
+    <div
+      class="block-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0.4444444444444444);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
   </div>
+  <!--v-if-->
 </div>
 `;
 
@@ -16,31 +43,77 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyf
 <div
   class="graph-panel-wrapper"
 >
-  <div>
-    <span
-      class="select-root"
+  <div
+    class="row-block"
+  >
+    
+    <label
+      class="label"
     >
-      <select>
-        <!--v-if-->
-        
-        <option
-          value="constant"
-        >
-          Constant
-        </option>
-        <option
-          value="linear"
-        >
-          Linear
-        </option>
-        <option
-          value="bezier3"
-        >
-          Bezier
-        </option>
-        
-      </select>
-    </span>
+      Axis Value
+    </label>
+    <div
+      class="block-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0.4444444444444444);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block"
+  >
+    
+    <label
+      class="label"
+    >
+      Interpolation
+    </label>
+    <div
+      class="block-content"
+    >
+      
+      <span
+        class="select-root field"
+      >
+        <select>
+          <!--v-if-->
+          
+          <option
+            value="constant"
+          >
+            Constant
+          </option>
+          <option
+            value="linear"
+          >
+            Linear
+          </option>
+          <option
+            value="bezier3"
+          >
+            Bezier
+          </option>
+          
+        </select>
+      </span>
+      
+    </div>
+    
   </div>
 </div>
 `;

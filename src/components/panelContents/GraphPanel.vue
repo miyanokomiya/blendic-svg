@@ -19,18 +19,18 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div class="graph-panel-wrapper">
-    <div v-if="keyframe && selectedKey">
-      <h4>Interpolation</h4>
+    <BlockField label="Axis Value">
+      <SliderInput v-model="settings.graphValueWidth" :min="1" :max="10" />
+    </BlockField>
+    <BlockField v-if="keyframe && selectedKey" label="Interpolation">
       <SelectField
         :model-value="keyframe.points[selectedKey].curve.name"
         :options="curveOptions"
         no-placeholder
+        class="field"
         @update:modelValue="updateCurve"
       />
-    </div>
-    <div v-else>
-      <p>No Item</p>
-    </div>
+    </BlockField>
   </div>
 </template>
 
@@ -42,9 +42,12 @@ import {
   KeyframeBase,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
+import BlockField from '/@/components/atoms/BlockField.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
 import { curveItems } from '/@/utils/keyframes/core'
 import { updatePoints } from '/@/utils/keyframes'
+import { useSettings } from '/@/composables/settings'
 
 const curveOptions = curveItems.map((item) => ({
   label: item.label,
@@ -52,7 +55,7 @@ const curveOptions = curveItems.map((item) => ({
 }))
 
 export default defineComponent({
-  components: { SelectField },
+  components: { BlockField, SelectField, SliderInput },
   props: {
     keyframe: {
       type: Object as PropType<KeyframeBase | undefined>,
@@ -81,10 +84,13 @@ export default defineComponent({
       )
     }
 
+    const { settings } = useSettings()
+
     return {
       selectedKey,
       curveOptions,
       updateCurve,
+      settings,
     }
   },
 })
@@ -97,5 +103,8 @@ h4 {
 }
 .graph-panel-wrapper {
   padding: 10px;
+}
+.field {
+  margin-bottom: 8px;
 }
 </style>

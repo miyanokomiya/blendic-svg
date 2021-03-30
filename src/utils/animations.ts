@@ -47,10 +47,30 @@ export function getFrameInterval(scale: number): number {
   const level = Math.round(getScaleLog(scale) / 2) + 1
   return Math.round(level / 5) * 5 + 5
 }
+export function getValueInterval(valueWidth: number, scale: number): number {
+  const level = Math.round(getScaleLog(scale) / 2) + 1
+  return (Math.round(level / 3) + 1) * getValueIntervalUnit(valueWidth)
+}
+function getValueIntervalUnit(valueWidth: number): number {
+  if (valueWidth > 7) return 5
+  if (valueWidth > 5) return 10
+  if (valueWidth > 3) return 15
+  if (valueWidth > 2) return 20
+  if (valueWidth > 1.5) return 25
+  return 50
+}
 
 export function visibledFrameStart(frameInterval: number, originX: number) {
   const frame = Math.floor(Math.max(originX, 0) / frameWidth)
   return frame - (frame % (frameInterval * 2))
+}
+export function visibledValueStart(
+  valueWidth: number,
+  valueInterval: number,
+  originY: number
+) {
+  const frame = Math.floor(originY / valueWidth)
+  return frame - (frame % valueInterval) - (frame > 0 ? 0 : valueInterval)
 }
 
 export function getNearestFrameAtPoint(x: number): number {

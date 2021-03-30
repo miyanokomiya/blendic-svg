@@ -106,7 +106,7 @@ export default defineComponent({
     const rate = computed(() => {
       if (!range.value) return 0
       if (props.max === props.min) return 0
-      return props.modelValue / (props.max! - props.min!)
+      return (props.modelValue - props.min!) / (props.max! - props.min!)
     })
 
     function onUpForward() {

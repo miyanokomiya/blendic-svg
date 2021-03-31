@@ -133,6 +133,8 @@ export default defineComponent({
       }
     )
 
+    const isDownEmpty = ref(false)
+
     return {
       scale: canvas.value.scale,
       viewOrigin: canvas.value.viewOrigin,
@@ -145,7 +147,9 @@ export default defineComponent({
         if (svg.value) svg.value.focus()
       },
       wheel: (e: WheelEvent) => canvas.value.wheel(e, true),
-      downLeft: () => {
+      downLeft: (e: MouseEvent) => {
+        isDownEmpty.value = e.target === svg.value
+
         if (!canvas.value.mousePoint.value) return
         canvas.value.downLeft()
         emit(
@@ -175,7 +179,7 @@ export default defineComponent({
         }
       },
       clickAny(e: any) {
-        if (e.target === svg.value) {
+        if (e.target === svg.value && isDownEmpty.value) {
           canvas.value.editStartPoint.value = undefined
           emit('click-empty')
         } else {

@@ -60,6 +60,10 @@ function getValueIntervalUnit(valueWidth: number): number {
   return 50
 }
 
+export function getValueByPixel(value: number, valueWidth: number): number {
+  return value / valueWidth
+}
+
 export function visibledFrameStart(frameInterval: number, originX: number) {
   const frame = Math.floor(Math.max(originX, 0) / frameWidth)
   return frame - (frame % (frameInterval * 2))

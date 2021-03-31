@@ -1,0 +1,52 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/GraphKeyframes.vue snapshot default 1`] = `
+<g>
+  
+  <g>
+    
+    <graph-key-points-stub
+      color="green"
+      key-frames="[object Object],[object Object]"
+      point-key="translateX"
+      scale="2.2"
+      selected-state-map="[object Object]"
+      value-width="5"
+    />
+    <graph-key-points-stub
+      color="green"
+      key-frames="[object Object],[object Object]"
+      point-key="translateX"
+      scale="2.2"
+      selected-state-map="[object Object]"
+      value-width="5"
+    />
+    <graph-key-points-stub
+      color="green"
+      key-frames="[object Object],[object Object]"
+      point-key="translateX"
+      scale="2.2"
+      selected-state-map="[object Object]"
+      value-width="5"
+    />
+    <graph-key-points-stub
+      color="green"
+      key-frames="[object Object],[object Object]"
+      point-key="translateX"
+      scale="2.2"
+      selected-state-map="[object Object]"
+      value-width="5"
+    />
+    <graph-key-points-stub
+      color="green"
+      key-frames="[object Object],[object Object]"
+      point-key="translateX"
+      scale="2.2"
+      selected-state-map="[object Object]"
+      value-width="5"
+    />
+    
+  </g>
+  
+</g>
+`;

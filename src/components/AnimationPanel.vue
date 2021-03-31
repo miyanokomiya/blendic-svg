@@ -156,12 +156,23 @@ Copyright (C) 2021, Tomoya Komiyama.
                 @shift-d="duplicateKeyframes"
               >
                 <template #default="{ scale, viewOrigin, viewSize }">
-                  <g :transform="`translate(${viewOrigin.x}, ${labelHeight})`">
+                  <g :transform="`translate(${viewOrigin.x}, 0)`">
                     <GraphAxis
                       :scale="scale"
                       :origin-y="viewOrigin.y"
                       :view-width="viewSize.width"
                       :view-height="viewSize.height"
+                    />
+                  </g>
+                  <g :transform="`translate(${axisPadding}, 0)`">
+                    <GraphKeyframes
+                      :scale="scale"
+                      :view-origin="viewOrigin"
+                      :keyframe-map-by-frame="keyframeMapByFrame"
+                      :selected-keyframe-map="selectedKeyframeMap"
+                      :color-map="keyframePointColorMap"
+                      @select="selectKeyframe"
+                      @shift-select="shiftSelectKeyframe"
                     />
                   </g>
                   <g :transform="`translate(${axisPadding}, ${viewOrigin.y})`">
@@ -208,6 +219,7 @@ import TimelineAxis from './elements/atoms/TimelineAxis.vue'
 import GraphAxis from './elements/atoms/GraphAxis.vue'
 import TimelineBones from './elements/TimelineBones.vue'
 import Keyframes from './elements/Keyframes.vue'
+import GraphKeyframes from './elements/GraphKeyframes.vue'
 import AnimationController from './molecules/AnimationController.vue'
 import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
@@ -256,7 +268,7 @@ const canvasOptions: { label: string; value: CanvasType }[] = [
 ]
 
 function useCanvasList() {
-  const current = ref<CanvasType>('action')
+  const current = ref<CanvasType>('graph')
   function setCanvas(val: CanvasType) {
     current.value = val
   }
@@ -275,6 +287,7 @@ export default defineComponent({
     GraphAxis,
     TimelineBones,
     Keyframes,
+    GraphKeyframes,
     AnimationController,
     SliderInput,
     CommandExamPanel,
@@ -402,6 +415,16 @@ export default defineComponent({
       }, {})
     })
 
+    const keyframePointColorMap = computed(() => {
+      return {
+        translateX: 'red',
+        translateY: 'green',
+        rotate: 'blue',
+        scaleX: 'red',
+        scaleY: 'green',
+      }
+    })
+
     const canvasList = useCanvasList()
 
     return {
@@ -475,6 +498,7 @@ export default defineComponent({
       currentCanvas: canvasList.current,
       setCurrentCanvas: canvasList.setCanvas,
       canvasOptions: canvasList.canvasOptions,
+      keyframePointColorMap,
     }
   },
 })

@@ -19,8 +19,49 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g>
+    <g v-for="(curve, i) in curves" :key="curve.k.id">
+      <g :stroke="color" :stroke-width="scale" fill="none">
+        <line
+          v-if="i === 0"
+          :x1="curve.from.x - 20000"
+          :y1="curve.from.y"
+          :x2="curve.from.x"
+          :y2="curve.from.y"
+          class="view-only"
+        />
+        <line
+          v-if="i === curves.length - 1"
+          :x1="curve.from.x"
+          :y1="curve.from.y"
+          :x2="curve.from.x + 20000"
+          :y2="curve.from.y"
+          class="view-only"
+        />
+        <template v-else>
+          <CurveBezier3Vue
+            v-if="curve.c1 && curve.c2"
+            :c0="curve.from"
+            :c1="curve.c1"
+            :c2="curve.c2"
+            :c3="curve.to"
+            :color="color"
+            :show-control="curve.selected"
+            :scale="scale"
+          />
+          <line
+            v-else
+            :x1="curve.from.x"
+            :y1="curve.from.y"
+            :x2="curve.to.x"
+            :y2="curve.to.y"
+            :stroke-width="scale"
+            class="view-only"
+          />
+        </template>
+      </g>
+    </g>
     <g>
-      <g v-for="curve in curves" :key="curve.id">
+      <g v-for="curve in curves" :key="curve.k.id">
         <title>{{ pointKey }}</title>
         <circle
           :cx="curve.from.x"
@@ -28,48 +69,10 @@ Copyright (C) 2021, Tomoya Komiyama.
           :r="5 * scale"
           stroke="#000"
           :stroke-width="scale"
-          :fill="color"
+          :fill="curve.selected ? selectedColor : color"
+          @click.exact="select(curve.k)"
+          @click.shift.exact="shiftSelect(curve.k)"
         />
-      </g>
-    </g>
-    <g>
-      <g v-for="(curve, i) in curves" :key="curve.id">
-        <g :stroke="color" :stroke-width="scale" fill="none">
-          <line
-            v-if="i === 0"
-            :x1="curve.from.x - 20000"
-            :y1="curve.from.y"
-            :x2="curve.from.x"
-            :y2="curve.from.y"
-          />
-          <line
-            v-if="i === curves.length - 1"
-            :x1="curve.from.x"
-            :y1="curve.from.y"
-            :x2="curve.from.x + 20000"
-            :y2="curve.from.y"
-          />
-          <template v-else>
-            <CurveBezier3Vue
-              v-if="curve.c1 && curve.c2"
-              :c0="curve.from"
-              :c1="curve.c1"
-              :c2="curve.c2"
-              :c3="curve.to"
-              :color="color"
-              :show-control="curve.selected"
-              :scale="scale"
-            />
-            <line
-              v-if="curve.name === 'linear'"
-              :x1="curve.from.x"
-              :y1="curve.from.y"
-              :x2="curve.to.x"
-              :y2="curve.to.y"
-              :stroke-width="scale"
-            />
-          </template>
-        </g>
       </g>
     </g>
   </g>
@@ -89,9 +92,10 @@ import {
 import { getFrameX } from '/@/utils/animations'
 import { getNormalizedBezier3Points } from '/@/utils/keyframes/core'
 import CurveBezier3Vue from '/@/components/elements/molecules/CurveBezier3.vue'
+import { useSettings } from '/@/composables/settings'
 
 type CurveInfo = {
-  id: string
+  k: KeyframeBase
   name: CurveName
   from: IVec2
   selected: boolean
@@ -128,7 +132,8 @@ export default defineComponent({
       default: 1,
     },
   },
-  setup(props) {
+  emits: ['select', 'shift-select'],
+  setup(props, { emit }) {
     function toPoint(p: KeyframePoint, frame: number): IVec2 {
       return {
         x: getFrameX(frame),
@@ -143,7 +148,7 @@ export default defineComponent({
         const p = k.points[props.pointKey]
         const from = toPoint(p, k.frame)
         const base = {
-          id: k.id,
+          k,
           name: p.curve.name,
           selected: selectedState ? selectedState.props[props.pointKey] : false,
           from,
@@ -171,9 +176,33 @@ export default defineComponent({
       return ret
     })
 
+    function select(keyframe: KeyframeBase) {
+      emit('select', keyframe.id, {
+        name: keyframe.name,
+        props: { [props.pointKey]: true },
+      } as KeyframeSelectedState)
+    }
+    function shiftSelect(keyframe: KeyframeBase) {
+      emit('shift-select', keyframe.id, {
+        name: keyframe.name,
+        props: { [props.pointKey]: true },
+      } as KeyframeSelectedState)
+    }
+
+    const { settings } = useSettings()
+
     return {
+      selectedColor: computed(() => settings.selectedColor),
       curves,
+      select,
+      shiftSelect,
     }
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.view-only {
+  pointer-events: none;
+}
+</style>

@@ -29,6 +29,8 @@ Copyright (C) 2021, Tomoya Komiyama.
         :value-width="valueWidth"
         :color="colorMap[key]"
         :scale="scale"
+        @select="select"
+        @shift-select="shiftSelect"
       />
     </g>
   </g>
@@ -47,7 +49,7 @@ import {
 } from '/@/models/keyframe'
 import { getKeyframeMapByTargetId } from '/@/utils/animations'
 import GraphKeyPoints from '/@/components/elements/molecules/GraphKeyPoints.vue'
-import { getKeyframePropsMap } from '/@/utils/keyframes'
+import { getKeyframePropsMap, inversedSelectedState } from '/@/utils/keyframes'
 
 export default defineComponent({
   components: {
@@ -100,7 +102,17 @@ export default defineComponent({
       emit('select', keyframeId, state)
     }
     function shiftSelect(keyframeId: string, state: KeyframeSelectedState) {
-      emit('shift-select', keyframeId, state)
+      emit(
+        'shift-select',
+        keyframeId,
+        inversedSelectedState(
+          props.selectedKeyframeMap[keyframeId] ?? {
+            name: state.name,
+            props: {},
+          },
+          state
+        )
+      )
     }
 
     return {

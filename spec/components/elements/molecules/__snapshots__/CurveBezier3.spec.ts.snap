@@ -3,10 +3,12 @@
 exports[`src/components/elements/molecules/CurveBezier3.vue snapshot default 1`] = `
 <g>
   <path
+    class="view-only"
     d="M 1,2 C 3,4 5,6 7,8"
     stroke="red"
     stroke-width="1.2"
   />
+  <!--v-if-->
   <!--v-if-->
 </g>
 `;
@@ -14,11 +16,13 @@ exports[`src/components/elements/molecules/CurveBezier3.vue snapshot default 1`]
 exports[`src/components/elements/molecules/CurveBezier3.vue snapshot show control 1`] = `
 <g>
   <path
+    class="view-only"
     d="M 1,2 C 3,4 5,6 7,8"
     stroke="#fff"
     stroke-width="1"
   />
   <g
+    class="view-only"
     fill="#fff"
     stroke="#000"
   >
@@ -34,6 +38,11 @@ exports[`src/components/elements/molecules/CurveBezier3.vue snapshot show contro
       y1="6"
       y2="8"
     />
+  </g>
+  <g
+    fill="#fff"
+    stroke="#000"
+  >
     <rect
       height="8"
       width="8"

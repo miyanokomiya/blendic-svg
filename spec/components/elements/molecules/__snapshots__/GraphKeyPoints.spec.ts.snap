@@ -2,6 +2,49 @@
 
 exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1`] = `
 <g>
+  
+  <g>
+    <g
+      fill="none"
+      stroke="green"
+      stroke-width="2.2"
+    >
+      <line
+        class="view-only"
+        x1="-20000"
+        x2="0"
+        y1="1.2"
+        y2="1.2"
+      />
+      
+      <line
+        class="view-only"
+        stroke-width="2.2"
+        x1="0"
+        x2="0"
+        y1="1.2"
+        y2="12"
+      />
+      
+    </g>
+  </g>
+  <g>
+    <g
+      fill="none"
+      stroke="green"
+      stroke-width="2.2"
+    >
+      <!--v-if-->
+      <line
+        class="view-only"
+        x1="0"
+        x2="20000"
+        y1="12"
+        y2="12"
+      />
+    </g>
+  </g>
+  
   <g>
     
     <g>
@@ -32,54 +75,54 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
     </g>
     
   </g>
-  <g>
-    
-    <g>
-      <g
-        fill="none"
-        stroke="green"
-        stroke-width="2.2"
-      >
-        <line
-          x1="-20000"
-          x2="0"
-          y1="1.2"
-          y2="1.2"
-        />
-        
-        <!--v-if-->
-        <line
-          stroke-width="2.2"
-          x1="0"
-          x2="0"
-          y1="1.2"
-          y2="12"
-        />
-        
-      </g>
-    </g>
-    <g>
-      <g
-        fill="none"
-        stroke="green"
-        stroke-width="2.2"
-      >
-        <!--v-if-->
-        <line
-          x1="0"
-          x2="20000"
-          y1="12"
-          y2="12"
-        />
-      </g>
-    </g>
-    
-  </g>
 </g>
 `;
 
 exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 1`] = `
 <g>
+  
+  <g>
+    <g
+      fill="none"
+      stroke="#fff"
+      stroke-width="1"
+    >
+      <line
+        class="view-only"
+        x1="-20000"
+        x2="0"
+        y1="1"
+        y2="1"
+      />
+      
+      <line
+        class="view-only"
+        stroke-width="1"
+        x1="0"
+        x2="0"
+        y1="1"
+        y2="10"
+      />
+      
+    </g>
+  </g>
+  <g>
+    <g
+      fill="none"
+      stroke="#fff"
+      stroke-width="1"
+    >
+      <!--v-if-->
+      <line
+        class="view-only"
+        x1="0"
+        x2="20000"
+        y1="10"
+        y2="10"
+      />
+    </g>
+  </g>
+  
   <g>
     
     <g>
@@ -89,7 +132,7 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
       <circle
         cx="0"
         cy="1"
-        fill="#fff"
+        fill="orange"
         r="5"
         stroke="#000"
         stroke-width="1"
@@ -107,49 +150,6 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
         stroke="#000"
         stroke-width="1"
       />
-    </g>
-    
-  </g>
-  <g>
-    
-    <g>
-      <g
-        fill="none"
-        stroke="#fff"
-        stroke-width="1"
-      >
-        <line
-          x1="-20000"
-          x2="0"
-          y1="1"
-          y2="1"
-        />
-        
-        <!--v-if-->
-        <line
-          stroke-width="1"
-          x1="0"
-          x2="0"
-          y1="1"
-          y2="10"
-        />
-        
-      </g>
-    </g>
-    <g>
-      <g
-        fill="none"
-        stroke="#fff"
-        stroke-width="1"
-      >
-        <!--v-if-->
-        <line
-          x1="0"
-          x2="20000"
-          y1="10"
-          y2="10"
-        />
-      </g>
     </g>
     
   </g>

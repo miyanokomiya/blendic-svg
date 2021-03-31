@@ -19,10 +19,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g>
-    <path :d="d" :stroke="color" :stroke-width="scale" />
-    <g v-if="showControl" stroke="#000" fill="#fff">
+    <path :d="d" :stroke="color" :stroke-width="scale" class="view-only" />
+    <g v-if="showControl" stroke="#000" fill="#fff" class="view-only">
       <line :x1="c0.x" :y1="c0.y" :x2="c1.x" :y2="c1.y" />
       <line :x1="c2.x" :y1="c2.y" :x2="c3.x" :y2="c3.y" />
+    </g>
+    <g v-if="showControl" stroke="#000" fill="#fff">
       <rect
         :x="c1.x - rectSize / 2"
         :y="c1.y - rectSize / 2"
@@ -74,13 +76,25 @@ export default defineComponent({
       default: 1,
     },
   },
-  setup(props) {
+  emits: ['select', 'shift-select'],
+  setup(props, { emit }) {
     const d = computed(() => {
       return `M ${props.c0.x},${props.c0.y} C ${props.c1.x},${props.c1.y} ${props.c2.x},${props.c2.y} ${props.c3.x},${props.c3.y}`
     })
     const rectSize = computed(() => 8 * props.scale)
 
-    return { d, rectSize }
+    return {
+      d,
+      rectSize,
+      select: () => emit('select'),
+      shiftSelect: () => emit('shift-select'),
+    }
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.view-only {
+  pointer-events: none;
+}
+</style>

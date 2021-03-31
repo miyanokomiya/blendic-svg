@@ -39,7 +39,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <template v-else>
           <CurveBezier3Vue
-            v-if="curve.c1 && curve.c2"
+            v-if="curve.name === 'bezier3'"
             :c0="curve.from"
             :c1="curve.c1"
             :c2="curve.c2"
@@ -48,6 +48,15 @@ Copyright (C) 2021, Tomoya Komiyama.
             :show-control="curve.selected"
             :scale="scale"
           />
+          <g v-else-if="curve.name === 'constant'">
+            <CurveConstant
+              :from="curve.from"
+              :to="curve.to"
+              :color="color"
+              :scale="scale"
+              class="view-only"
+            />
+          </g>
           <line
             v-else
             :x1="curve.from.x"
@@ -92,6 +101,7 @@ import {
 import { getFrameX } from '/@/utils/animations'
 import { getNormalizedBezier3Points } from '/@/utils/keyframes/core'
 import CurveBezier3Vue from '/@/components/elements/molecules/CurveBezier3.vue'
+import CurveConstant from '/@/components/elements/molecules/CurveConstant.vue'
 import { useSettings } from '/@/composables/settings'
 
 type CurveInfo = {
@@ -105,7 +115,7 @@ type CurveInfo = {
 }
 
 export default defineComponent({
-  components: { CurveBezier3Vue },
+  components: { CurveBezier3Vue, CurveConstant },
   props: {
     pointKey: {
       type: String,

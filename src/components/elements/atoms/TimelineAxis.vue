@@ -64,6 +64,20 @@ Copyright (C) 2021, Tomoya Komiyama.
           <rect width="200000" height="200000" />
         </g>
       </g>
+    </g>
+    <g class="view-only">
+      <line
+        :transform="`translate(${currentFrameX}, 0) scale(${scale})`"
+        x1="0"
+        :y1="headerHeight"
+        x2="0"
+        y2="20000"
+        stroke="blue"
+        stroke-width="2"
+      />
+    </g>
+    <slot />
+    <g class="view-only">
       <g :transform="`translate(${currentFrameX}, 0) scale(${scale})`">
         <rect
           :x="-currentFrameLabelWidth / 2"
@@ -83,14 +97,6 @@ Copyright (C) 2021, Tomoya Komiyama.
           fill="#fff"
           >{{ currentFrame }}</text
         >
-        <line
-          x1="0"
-          :y1="headerHeight"
-          x2="0"
-          y2="20000"
-          stroke="blue"
-          stroke-width="2"
-        />
       </g>
     </g>
   </g>

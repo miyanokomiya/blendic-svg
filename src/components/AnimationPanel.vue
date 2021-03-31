@@ -111,20 +111,6 @@ Copyright (C) 2021, Tomoya Komiyama.
               >
                 <template #default="{ scale, viewOrigin, viewSize }">
                   <g :transform="`translate(${axisPadding}, ${viewOrigin.y})`">
-                    <Keyframes
-                      :scale="scale"
-                      :keyframe-map-by-frame="keyframeMapByFrame"
-                      :bone-ids="selectedAllBoneIdList"
-                      :selected-keyframe-map="selectedKeyframeMap"
-                      :scroll-y="viewOrigin.y"
-                      :bone-expanded-map="boneExpandedMap"
-                      :bone-top-map="boneTopMap"
-                      :height="labelHeight"
-                      @select="selectKeyframe"
-                      @shift-select="shiftSelectKeyframe"
-                      @select-frame="selectKeyframeByFrame"
-                      @shift-select-frame="shiftSelectKeyframeByFrame"
-                    />
                     <TimelineAxis
                       :scale="scale"
                       :origin-x="viewOrigin.x"
@@ -133,7 +119,22 @@ Copyright (C) 2021, Tomoya Komiyama.
                       :end-frame="endFrame"
                       :header-height="labelHeight"
                       @down-current-frame="downCurrentFrame"
-                    />
+                    >
+                      <Keyframes
+                        :scale="scale"
+                        :keyframe-map-by-frame="keyframeMapByFrame"
+                        :bone-ids="selectedAllBoneIdList"
+                        :selected-keyframe-map="selectedKeyframeMap"
+                        :scroll-y="viewOrigin.y"
+                        :bone-expanded-map="boneExpandedMap"
+                        :bone-top-map="boneTopMap"
+                        :height="labelHeight"
+                        @select="selectKeyframe"
+                        @shift-select="shiftSelectKeyframe"
+                        @select-frame="selectKeyframeByFrame"
+                        @shift-select-frame="shiftSelectKeyframeByFrame"
+                      />
+                    </TimelineAxis>
                   </g>
                 </template>
               </TimelineCanvas>
@@ -164,17 +165,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                       :view-height="viewSize.height"
                     />
                   </g>
-                  <g :transform="`translate(${axisPadding}, 0)`">
-                    <GraphKeyframes
-                      :scale="scale"
-                      :view-origin="viewOrigin"
-                      :keyframe-map-by-frame="keyframeMapByFrame"
-                      :selected-keyframe-map="selectedKeyframeMap"
-                      :color-map="keyframePointColorMap"
-                      @select="selectKeyframe"
-                      @shift-select="shiftSelectKeyframe"
-                    />
-                  </g>
                   <g :transform="`translate(${axisPadding}, ${viewOrigin.y})`">
                     <TimelineAxis
                       :scale="scale"
@@ -184,7 +174,19 @@ Copyright (C) 2021, Tomoya Komiyama.
                       :end-frame="endFrame"
                       :header-height="labelHeight"
                       @down-current-frame="downCurrentFrame"
-                    />
+                    >
+                      <g :transform="`translate(0, ${-viewOrigin.y})`">
+                        <GraphKeyframes
+                          :scale="scale"
+                          :view-origin="viewOrigin"
+                          :keyframe-map-by-frame="keyframeMapByFrame"
+                          :selected-keyframe-map="selectedKeyframeMap"
+                          :color-map="keyframePointColorMap"
+                          @select="selectKeyframe"
+                          @shift-select="shiftSelectKeyframe"
+                        />
+                      </g>
+                    </TimelineAxis>
                   </g>
                 </template>
               </TimelineCanvas>

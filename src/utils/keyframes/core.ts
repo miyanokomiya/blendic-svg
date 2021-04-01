@@ -18,14 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { add, getPointOnBezier3, IVec2 } from 'okageo'
-import {
-  CurveBase,
-  CurveBezier3,
-  CurveName,
-  KeyframeBase,
-  KeyframePoint,
-} from '/@/models/keyframe'
-import { applyScale } from '/@/utils/geometry'
+import { CurveName, KeyframeBase, KeyframePoint } from '/@/models/keyframe'
 
 type NeighborKeyframe<T extends KeyframeBase> =
   | []
@@ -72,9 +65,7 @@ export function interpolateKeyframePoint(
   end: KeyframePointWithFrame,
   frame: number
 ): number {
-  const s = toPoint(start)
-  const e = toPoint(end)
-  const curveFn = getCurveFn(s, e, start.keyframePoint.curve)
+  const curveFn = getCurveFn(start, end)
   return curveFn(frame)
 }
 
@@ -88,21 +79,22 @@ function toPoint(keyframePointWithFrame: KeyframePointWithFrame): IVec2 {
 type CurveFn = (x: number) => number
 
 export function getCurveFn(
-  start: IVec2,
-  end: IVec2,
-  curve: CurveBase
+  start: KeyframePointWithFrame,
+  end: KeyframePointWithFrame
 ): CurveFn {
-  switch (curve.name) {
+  const s = toPoint(start)
+  const e = toPoint(end)
+  switch (start.keyframePoint.curve.name) {
     case 'constant':
-      return getConstantCurveFn(start)
+      return getConstantCurveFn(s)
     case 'linear':
-      return getLinearCurveFn(start, end)
+      return getLinearCurveFn(s, e)
     case 'bezier3':
       return getBezier3CurveFn(
-        start,
-        (curve as CurveBezier3).c1,
-        (curve as CurveBezier3).c2,
-        end
+        s,
+        start.keyframePoint.curve.controlOut,
+        end.keyframePoint.curve.controlIn,
+        e
       )
   }
 }
@@ -140,11 +132,8 @@ export function getNormalizedBezier3Points(
   c2: IVec2,
   end: IVec2
 ): [IVec2, IVec2, IVec2, IVec2] {
-  const rangeX = end.x - start.x
-  const rangeY = end.y - start.y
-  const v = { x: rangeX, y: rangeY }
-  const c1t = add(applyScale(v, c1), start)
-  const c2t = add(applyScale(v, c2), start)
+  const c1t = add(c1, start)
+  const c2t = add(c2, end)
   return [start, c1t, c2t, end]
 }
 

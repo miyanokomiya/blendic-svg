@@ -422,8 +422,14 @@ function execDeleteKeyframes() {
   item.redo()
   historyStore.push(item)
 }
-function execUpdateKeyframes(keyframes: IdMap<KeyframeBase>) {
-  const item = getExecUpdateKeyframeItem(keyframes as IdMap<KeyframeBone>)
+function execUpdateKeyframes(
+  keyframes: IdMap<KeyframeBase>,
+  seriesKey?: string
+) {
+  const item = getExecUpdateKeyframeItem(
+    keyframes as IdMap<KeyframeBone>,
+    seriesKey
+  )
   item.redo()
   historyStore.push(item)
 }
@@ -770,7 +776,10 @@ function getExecDeleteKeyframesItem() {
   }
 }
 
-function getExecUpdateKeyframeItem(keyframes: IdMap<KeyframeBone>) {
+function getExecUpdateKeyframeItem(
+  keyframes: IdMap<KeyframeBone>,
+  seriesKey?: string
+) {
   const { dropped } = mergeKeyframesWithDropped(
     actions.lastSelectedItem.value!.keyframes,
     toList(keyframes),
@@ -796,6 +805,7 @@ function getExecUpdateKeyframeItem(keyframes: IdMap<KeyframeBone>) {
       actions.lastSelectedItem.value!.keyframes = merged
     },
     redo,
+    seriesKey,
   }
 }
 

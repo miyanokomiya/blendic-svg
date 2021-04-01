@@ -31,6 +31,7 @@ import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 
 interface KeyframeModule {
   getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps<T>>
+  // normalizeCurves(keyframe: KeyframeBase): KeyframeBase
 }
 
 export function getKeyframeModule(name: KeyframeName): KeyframeModule {
@@ -43,6 +44,10 @@ export function getKeyframeModule(name: KeyframeName): KeyframeModule {
 export function getAllSelectedState(name: KeyframeName): KeyframeSelectedState {
   return getKeyframeDefaultPropsMap(() => true, name)
 }
+
+// export function normalizeCurves(keyframe: KeyframeBase): KeyframeBase {
+//   return getKeyframeModule(keyframe.name).normalizeCurves(keyframe)
+// }
 
 export function inversedSelectedState(
   k: KeyframeSelectedState,

@@ -31,6 +31,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :scale="scale"
         @select="select"
         @shift-select="shiftSelect"
+        @down-control="downControl"
       />
     </g>
   </g>
@@ -42,6 +43,7 @@ import { computed, defineComponent, PropType } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { IdMap } from '/@/models'
 import {
+  CurveSelectedState,
   KeyframeBase,
   KeyframeBaseProps,
   KeyframeBone,
@@ -77,7 +79,7 @@ export default defineComponent({
       default: () => ({}),
     },
   },
-  emits: ['select', 'shift-select'],
+  emits: ['select', 'shift-select', 'down-control'],
   setup(props, { emit }) {
     const { settings } = useSettings()
 
@@ -115,12 +117,21 @@ export default defineComponent({
       )
     }
 
+    function downControl(
+      keyframeId: string,
+      pointKey: string,
+      state: CurveSelectedState
+    ) {
+      emit('down-control', keyframeId, pointKey, state)
+    }
+
     return {
       keyframePointsMapByTargetId,
       valueWidth: computed(() => settings.graphValueWidth),
       select,
       shiftSelect,
       selectedColor: settings.selectedColor,
+      downControl,
     }
   },
 })

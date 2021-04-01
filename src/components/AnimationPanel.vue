@@ -110,7 +110,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                 @shift-d="duplicateKeyframes"
               >
                 <template #default="{ scale, viewOrigin, viewSize }">
-                  <g :transform="`translate(${axisPadding}, ${viewOrigin.y})`">
+                  <g :transform="`translate(0, ${viewOrigin.y})`">
                     <TimelineAxis
                       :scale="scale"
                       :origin-x="viewOrigin.x"
@@ -165,7 +165,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                       :view-height="viewSize.height"
                     />
                   </g>
-                  <g :transform="`translate(${axisPadding}, ${viewOrigin.y})`">
+                  <g :transform="`translate(0, ${viewOrigin.y})`">
                     <TimelineAxis
                       :scale="scale"
                       :origin-x="viewOrigin.x"
@@ -184,6 +184,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                           :color-map="keyframePointColorMap"
                           @select="selectKeyframe"
                           @shift-select="shiftSelectKeyframe"
+                          @down-control="grabControl"
                         />
                       </g>
                     </TimelineAxis>
@@ -231,7 +232,6 @@ import GraphPanel from '/@/components/panelContents/GraphPanel.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import {
   getKeyframeMapByFrame,
-  getNearestFrameAtPoint,
   mergeKeyframesWithDropped,
 } from '../utils/animations'
 import { IVec2 } from 'okageo'
@@ -241,7 +241,7 @@ import { useKeyframeEditMode } from '../composables/modes/keyframeEditMode'
 import { IdMap } from '/@/models'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'
-import { KeyframeModeName } from '/@/composables/modes/types'
+import { EditMovement, KeyframeModeName } from '/@/composables/modes/types'
 import { KeyframeBase } from '/@/models/keyframe'
 
 const labelHeight = 24
@@ -300,8 +300,6 @@ export default defineComponent({
     ResizableH,
   },
   setup() {
-    const axisPadding = 20
-
     const store = useStore()
     const animationStore = useAnimationStore()
 
@@ -310,15 +308,16 @@ export default defineComponent({
       ignoreNegativeY: true,
       scaleAtFixY: true,
       scale: ref(1),
-      viewOrigin: ref<IVec2>({ x: 0, y: 0 }),
+      viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
     }
     const labelCanvas = useCanvas(canvasOptions)
     const keyframeCanvas = useCanvas(canvasOptions)
-    const graphCanvas = useCanvas({ scaleMin: 1 })
+    const graphCanvas = useCanvas({
+      scaleMin: 1,
+      viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
+    })
 
     const keyframeEditMode = useMode()
-    const editMode = ref<'' | 'move-current-frame'>('')
-    const draftName = ref('')
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
     const selectedAllBoneList = computed(() =>
@@ -345,6 +344,11 @@ export default defineComponent({
       )
     })
 
+    const draftName = ref('')
+    watchEffect(() => {
+      draftName.value = selectedAction.value?.name ?? ''
+    })
+
     const actionOptions = computed(() =>
       animationStore.actions.value.map((a) => {
         const valid = store.lastSelectedArmature.value?.id !== a.armatureId
@@ -355,30 +359,18 @@ export default defineComponent({
       })
     )
 
-    const moveCurrentFrameSeriesKey = ref<string>()
     function downCurrentFrame() {
-      editMode.value = 'move-current-frame'
-      moveCurrentFrameSeriesKey.value = `move-current-frame_${Date.now()}`
+      keyframeEditMode.mode.value.grabCurrentFrame()
     }
-    function downLeft(current: IVec2) {
-      drag(current)
+    function downLeft(arg: EditMovement) {
+      keyframeEditMode.mode.value.drag(arg)
     }
-    function drag(current: IVec2) {
-      if (editMode.value === 'move-current-frame') {
-        animationStore.setCurrentFrame(
-          getNearestFrameAtPoint(current.x - axisPadding),
-          moveCurrentFrameSeriesKey.value
-        )
-      }
+    function drag(arg: EditMovement) {
+      keyframeEditMode.mode.value.drag(arg)
     }
     function upLeft() {
-      editMode.value = ''
-      moveCurrentFrameSeriesKey.value = undefined
+      keyframeEditMode.mode.value.cancel()
     }
-
-    watchEffect(() => {
-      draftName.value = selectedAction.value?.name ?? ''
-    })
 
     const animationSeriesKey = ref<string>()
     let animationLoop: ReturnType<typeof useAnimationLoop>
@@ -450,7 +442,6 @@ export default defineComponent({
           animationStore.updateAction({ name: draftName.value })
         }
       },
-      axisPadding,
       currentFrame: animationStore.currentFrame,
       setPlaying: animationStore.setPlaying,
       jumpStartFrame: animationStore.jumpStartFrame,
@@ -501,6 +492,7 @@ export default defineComponent({
       setCurrentCanvas: canvasList.setCanvas,
       canvasOptions: canvasList.canvasOptions,
       keyframePointColorMap,
+      grabControl: keyframeEditMode.mode.value.grabControl,
     }
   },
 })

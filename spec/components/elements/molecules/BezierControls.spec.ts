@@ -18,19 +18,31 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { mount } from '@vue/test-utils'
-import Target from '/@/components/elements/molecules/CurveBezier3.vue'
+import Target from '/@/components/elements/molecules/BezierControls.vue'
 
-describe('src/components/elements/molecules/CurveBezier3.vue', () => {
+describe('src/components/elements/molecules/BezierControls.vue', () => {
   describe('snapshot', () => {
     it('default', () => {
       const wrapper = mount(Target, {
         props: {
           c0: { x: 1, y: 2 },
-          c1: { x: 3, y: 4 },
-          c2: { x: 5, y: 6 },
-          c3: { x: 7, y: 8 },
+          controlIn: { x: 3, y: 4 },
+          controlOut: { x: 5, y: 6 },
           color: 'red',
           scale: 1.2,
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('show controls', () => {
+      const wrapper = mount(Target, {
+        props: {
+          c0: { x: 1, y: 2 },
+          controlIn: { x: 3, y: 4 },
+          controlOut: { x: 5, y: 6 },
+          color: 'red',
+          scale: 1.2,
+          showControl: true,
         },
       })
       expect(wrapper.element).toMatchSnapshot()

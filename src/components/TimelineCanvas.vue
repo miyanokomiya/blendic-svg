@@ -134,6 +134,14 @@ export default defineComponent({
     )
 
     const isDownEmpty = ref(false)
+    function clickAny(e: any) {
+      if (e.target === svg.value && isDownEmpty.value) {
+        canvas.value.editStartPoint.value = undefined
+        emit('click-empty')
+      } else {
+        emit('click-any')
+      }
+    }
 
     return {
       scale: canvas.value.scale,
@@ -152,10 +160,8 @@ export default defineComponent({
 
         if (!canvas.value.mousePoint.value) return
         canvas.value.downLeft()
-        emit(
-          'down-left',
-          canvas.value.viewToCanvas(canvas.value.mousePoint.value)
-        )
+        const current = canvas.value.viewToCanvas(canvas.value.mousePoint.value)
+        emit('down-left', { current, start: current })
       },
       upLeft: () => {
         canvas.value.upLeft()
@@ -168,7 +174,12 @@ export default defineComponent({
         canvas.value.mousePoint.value = getPointInTarget(e)
 
         if (canvas.value.dragInfo.value) {
-          emit('drag', canvas.value.viewToCanvas(canvas.value.mousePoint.value))
+          emit('drag', {
+            current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
+            start: canvas.value.viewToCanvas(
+              canvas.value.dragInfo.value.downAt
+            ),
+          })
         } else if (canvas.value.viewMovingInfo.value) {
           canvas.value.viewMove()
         } else if (canvas.value.editStartPoint.value) {
@@ -178,14 +189,7 @@ export default defineComponent({
           })
         }
       },
-      clickAny(e: any) {
-        if (e.target === svg.value && isDownEmpty.value) {
-          canvas.value.editStartPoint.value = undefined
-          emit('click-empty')
-        } else {
-          emit('click-any')
-        }
-      },
+      clickAny,
       keyDownEscape: () => {
         emit('escape')
       },

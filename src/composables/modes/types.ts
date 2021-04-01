@@ -64,7 +64,12 @@ export interface CanvasEditModeBase {
 }
 
 export type KeyframeModeName = 'action'
-export type KeyframeEditCommand = '' | 'grab' | 'interpolation'
+export type KeyframeEditCommand =
+  | ''
+  | 'grab'
+  | 'interpolation'
+  | 'grab-control'
+  | 'grab-current-frame'
 
 export interface KeyframeEditModeBase {
   command: ComputedRef<KeyframeEditCommand>
@@ -75,6 +80,7 @@ export interface KeyframeEditModeBase {
   shiftSelect: (id: string, selectedState: { [key: string]: boolean }) => void
   selectAll: () => void
   mousemove: (arg: EditMovement) => void
+  drag: (arg: EditMovement) => void
   clickAny: () => void
   clickEmpty: () => void
   execDelete: () => void
@@ -83,6 +89,12 @@ export interface KeyframeEditModeBase {
   duplicate: () => void
   availableCommandList: ComputedRef<CommandExam[]>
   popupMenuList: ComputedRef<PopupMenuItem[]>
+  grabCurrentFrame: () => void
+  grabControl: (
+    keyframeId: string,
+    pointKey: string,
+    controls: { [key: string]: boolean }
+  ) => void
 }
 
 export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {

@@ -5,20 +5,21 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
   
   <g>
     <g
+      class="view-only"
       fill="none"
       stroke="green"
       stroke-width="2.2"
     >
+      <!-- horizon before from -->
       <line
-        class="view-only"
         x1="-20000"
         x2="0"
         y1="1.2"
         y2="1.2"
       />
+      <!-- horizon after to -->
       
       <line
-        class="view-only"
         stroke-width="2.2"
         x1="0"
         x2="0"
@@ -30,13 +31,15 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
   </g>
   <g>
     <g
+      class="view-only"
       fill="none"
       stroke="green"
       stroke-width="2.2"
     >
+      <!-- horizon before from -->
       <!--v-if-->
+      <!-- horizon after to -->
       <line
-        class="view-only"
         x1="0"
         x2="20000"
         y1="12"
@@ -51,27 +54,43 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
       <title>
         translateX
       </title>
-      <circle
-        cx="0"
-        cy="1.2"
-        fill="green"
-        r="11"
-        stroke="#000"
-        stroke-width="2.2"
-      />
+      <g
+        if="curve.selected"
+      >
+        <!--v-if-->
+        
+        <circle
+          cx="0"
+          cy="1.2"
+          fill="green"
+          r="11"
+          stroke="#000"
+          stroke-width="2.2"
+        />
+        
+        <!--v-if-->
+      </g>
     </g>
     <g>
       <title>
         translateX
       </title>
-      <circle
-        cx="0"
-        cy="12"
-        fill="green"
-        r="11"
-        stroke="#000"
-        stroke-width="2.2"
-      />
+      <g
+        if="curve.selected"
+      >
+        <!--v-if-->
+        
+        <circle
+          cx="0"
+          cy="12"
+          fill="green"
+          r="11"
+          stroke="#000"
+          stroke-width="2.2"
+        />
+        
+        <!--v-if-->
+      </g>
     </g>
     
   </g>
@@ -83,20 +102,21 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
   
   <g>
     <g
+      class="view-only"
       fill="none"
       stroke="#fff"
       stroke-width="1"
     >
+      <!-- horizon before from -->
       <line
-        class="view-only"
         x1="-20000"
         x2="0"
         y1="1"
         y2="1"
       />
+      <!-- horizon after to -->
       
       <line
-        class="view-only"
         stroke-width="1"
         x1="0"
         x2="0"
@@ -108,13 +128,15 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
   </g>
   <g>
     <g
+      class="view-only"
       fill="none"
       stroke="#fff"
       stroke-width="1"
     >
+      <!-- horizon before from -->
       <!--v-if-->
+      <!-- horizon after to -->
       <line
-        class="view-only"
         x1="0"
         x2="20000"
         y1="10"
@@ -129,27 +151,56 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
       <title>
         translateX
       </title>
-      <circle
-        cx="0"
-        cy="1"
-        fill="orange"
-        r="5"
-        stroke="#000"
-        stroke-width="1"
-      />
+      <g
+        if="curve.selected"
+      >
+        <g
+          class="view-only"
+          fill="#fff"
+          stroke="#000"
+        >
+          <!--v-if-->
+          <!--v-if-->
+        </g>
+        
+        <circle
+          cx="0"
+          cy="1"
+          fill="orange"
+          r="5"
+          stroke="#000"
+          stroke-width="1"
+        />
+        
+        <g
+          fill="#fff"
+          stroke="#000"
+        >
+          <!--v-if-->
+          <!--v-if-->
+        </g>
+      </g>
     </g>
     <g>
       <title>
         translateX
       </title>
-      <circle
-        cx="0"
-        cy="10"
-        fill="#fff"
-        r="5"
-        stroke="#000"
-        stroke-width="1"
-      />
+      <g
+        if="curve.selected"
+      >
+        <!--v-if-->
+        
+        <circle
+          cx="0"
+          cy="10"
+          fill="#fff"
+          r="5"
+          stroke="#000"
+          stroke-width="1"
+        />
+        
+        <!--v-if-->
+      </g>
     </g>
     
   </g>

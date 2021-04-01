@@ -83,6 +83,7 @@ export interface KeyframeEditModeBase {
   drag: (arg: EditMovement) => void
   clickAny: () => void
   clickEmpty: () => void
+  upLeft: () => void
   execDelete: () => void
   clip: () => void
   paste: () => void

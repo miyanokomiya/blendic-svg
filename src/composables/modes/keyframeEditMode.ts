@@ -107,6 +107,15 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     }
   }
 
+  function upLeft() {
+    if (
+      state.command === 'grab-control' ||
+      state.command === 'grab-current-frame'
+    ) {
+      cancel()
+    }
+  }
+
   function setEditMode(mode: KeyframeEditCommand) {
     if (!isAnySelected.value) return
 
@@ -353,7 +362,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     controls: CurveSelectedState
   ) {
     if (state.command) {
-      cancel()
+      completeEdit()
       return
     }
 
@@ -370,7 +379,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
 
   function grabCurrentFrame() {
     if (state.command) {
-      cancel()
+      completeEdit()
       return
     }
 
@@ -430,6 +439,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
         getNearestFrameAtPoint(arg.current.x),
         seriesKey.value
       )
+      state.editMovement = arg
     } else if (state.command === 'grab-control') {
       const diff = state.editMovement
         ? sub(arg.current, state.editMovement.current)
@@ -448,9 +458,6 @@ export function useKeyframeEditMode(): KeyframeEditMode {
         }, {})
         animationStore.execUpdateKeyframes(updatedMap, seriesKey.value)
       }
-    }
-
-    if (state.command) {
       state.editMovement = arg
     }
   }
@@ -471,6 +478,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     drag,
     clickAny,
     clickEmpty,
+    upLeft,
     execDelete,
     clip,
     paste,

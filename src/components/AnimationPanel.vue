@@ -369,7 +369,7 @@ export default defineComponent({
       keyframeEditMode.mode.value.drag(arg)
     }
     function upLeft() {
-      keyframeEditMode.mode.value.cancel()
+      keyframeEditMode.mode.value.upLeft()
     }
 
     const animationSeriesKey = ref<string>()

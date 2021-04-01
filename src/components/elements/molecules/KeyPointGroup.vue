@@ -130,14 +130,14 @@ export default defineComponent({
         )
       },
       selectAll() {
-        emit('select', getAllSelectedState(props.keyFrame.name))
+        emit('select', getAllSelectedState(props.keyFrame))
       },
       shiftSelectAll() {
         emit(
           'shift-select',
           isAllExistSelected(props.keyFrame, props.selectedState)
             ? { name: props.keyFrame.name, props: {} }
-            : getAllSelectedState(props.keyFrame.name)
+            : getAllSelectedState(props.keyFrame)
         )
       },
     }

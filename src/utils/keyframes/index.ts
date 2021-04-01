@@ -26,7 +26,7 @@ import {
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
-import { mapReduce } from '/@/utils/commons'
+import { extractMap, mapReduce } from '/@/utils/commons'
 import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 
 interface KeyframeModule {
@@ -41,8 +41,14 @@ export function getKeyframeModule(name: KeyframeName): KeyframeModule {
   }
 }
 
-export function getAllSelectedState(name: KeyframeName): KeyframeSelectedState {
-  return getKeyframeDefaultPropsMap(() => true, name)
+export function getAllSelectedState(
+  keyframe: KeyframeBase
+): KeyframeSelectedState {
+  const map = getKeyframeDefaultPropsMap(() => true, keyframe.name)
+  return {
+    ...map,
+    props: extractMap(map.props, keyframe.points),
+  }
 }
 
 // export function normalizeCurves(keyframe: KeyframeBase): KeyframeBase {

@@ -35,7 +35,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, ref } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 import {
   CurveName,
   getCurve,
@@ -48,7 +48,6 @@ import SliderInput from '/@/components/atoms/SliderInput.vue'
 import { curveItems } from '/@/utils/keyframes/core'
 import { updatePoints } from '/@/utils/keyframes'
 import { useSettings } from '/@/composables/settings'
-import { IVec2 } from 'okageo'
 
 const curveOptions = curveItems.map((item) => ({
   label: item.label,

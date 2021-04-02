@@ -67,29 +67,32 @@ Copyright (C) 2021, Tomoya Komiyama.
       </g>
     </g>
     <g>
-      <g v-for="(curve, i) in curves" :key="curve.k.id">
+      <g v-for="curve in curves" :key="curve.k.id">
         <title>{{ pointKey }}</title>
+        <circle
+          :cx="curve.from.x"
+          :cy="curve.from.y"
+          :r="5 * scale"
+          stroke="#000"
+          :stroke-width="scale"
+          :fill="curve.selected ? selectedColor : color"
+          @click.exact="select(curve.k)"
+          @click.shift.exact="shiftSelect(curve.k)"
+        />
+      </g>
+    </g>
+    <g>
+      <g v-for="(curve, i) in curves" :key="curve.k.id">
         <BezierControls
-          if="curve.selected"
+          v-if="curve.selected"
           :c0="curve.from"
           :control-in="0 < i ? curves[i - 1].c2 : undefined"
           :control-out="i < curves.length - 1 ? curve.c1 : undefined"
           :color="color"
-          :show-control="curve.selected"
           :scale="scale"
           @down-control-in="downControl(curve.k.id, { controlIn: true })"
           @down-control-out="downControl(curve.k.id, { controlOut: true })"
         >
-          <circle
-            :cx="curve.from.x"
-            :cy="curve.from.y"
-            :r="5 * scale"
-            stroke="#000"
-            :stroke-width="scale"
-            :fill="curve.selected ? selectedColor : color"
-            @click.exact="select(curve.k)"
-            @click.shift.exact="shiftSelect(curve.k)"
-          />
         </BezierControls>
       </g>
     </g>

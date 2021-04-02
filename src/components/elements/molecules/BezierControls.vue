@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g>
-    <g v-if="showControl" stroke="#000" fill="#fff" class="view-only">
+    <g stroke="#000" fill="#fff" class="view-only">
       <line
         v-if="controlIn"
         :x1="controlIn.x"
@@ -35,8 +35,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :y2="controlOut.y"
       />
     </g>
-    <slot />
-    <g v-if="showControl" stroke="#000" fill="#fff">
+    <g stroke="#000" fill="#fff">
       <rect
         v-if="controlIn"
         :x="controlIn.x - rectSize / 2"
@@ -82,10 +81,6 @@ export default defineComponent({
     scale: {
       type: Number,
       default: 1,
-    },
-    showControl: {
-      type: Boolean,
-      default: false,
     },
   },
   emits: ['down-control-in', 'down-control-out'],

@@ -54,43 +54,37 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
       <title>
         translateX
       </title>
-      <g
-        if="curve.selected"
-      >
-        <!--v-if-->
-        
-        <circle
-          cx="0"
-          cy="1.2"
-          fill="green"
-          r="11"
-          stroke="#000"
-          stroke-width="2.2"
-        />
-        
-        <!--v-if-->
-      </g>
+      <circle
+        cx="0"
+        cy="1.2"
+        fill="green"
+        r="11"
+        stroke="#000"
+        stroke-width="2.2"
+      />
     </g>
     <g>
       <title>
         translateX
       </title>
-      <g
-        if="curve.selected"
-      >
-        <!--v-if-->
-        
-        <circle
-          cx="0"
-          cy="12"
-          fill="green"
-          r="11"
-          stroke="#000"
-          stroke-width="2.2"
-        />
-        
-        <!--v-if-->
-      </g>
+      <circle
+        cx="0"
+        cy="12"
+        fill="green"
+        r="11"
+        stroke="#000"
+        stroke-width="2.2"
+      />
+    </g>
+    
+  </g>
+  <g>
+    
+    <g>
+      <!--v-if-->
+    </g>
+    <g>
+      <!--v-if-->
     </g>
     
   </g>
@@ -151,9 +145,34 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
       <title>
         translateX
       </title>
-      <g
-        if="curve.selected"
-      >
+      <circle
+        cx="0"
+        cy="1"
+        fill="orange"
+        r="5"
+        stroke="#000"
+        stroke-width="1"
+      />
+    </g>
+    <g>
+      <title>
+        translateX
+      </title>
+      <circle
+        cx="0"
+        cy="10"
+        fill="#fff"
+        r="5"
+        stroke="#000"
+        stroke-width="1"
+      />
+    </g>
+    
+  </g>
+  <g>
+    
+    <g>
+      <g>
         <g
           class="view-only"
           fill="#fff"
@@ -162,16 +181,6 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
           <!--v-if-->
           <!--v-if-->
         </g>
-        
-        <circle
-          cx="0"
-          cy="1"
-          fill="orange"
-          r="5"
-          stroke="#000"
-          stroke-width="1"
-        />
-        
         <g
           fill="#fff"
           stroke="#000"
@@ -182,25 +191,7 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
       </g>
     </g>
     <g>
-      <title>
-        translateX
-      </title>
-      <g
-        if="curve.selected"
-      >
-        <!--v-if-->
-        
-        <circle
-          cx="0"
-          cy="10"
-          fill="#fff"
-          r="5"
-          stroke="#000"
-          stroke-width="1"
-        />
-        
-        <!--v-if-->
-      </g>
+      <!--v-if-->
     </g>
     
   </g>

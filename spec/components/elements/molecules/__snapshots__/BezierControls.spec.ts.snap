@@ -2,15 +2,6 @@
 
 exports[`src/components/elements/molecules/BezierControls.vue snapshot default 1`] = `
 <g>
-  <!--v-if-->
-  
-  
-  <!--v-if-->
-</g>
-`;
-
-exports[`src/components/elements/molecules/BezierControls.vue snapshot show controls 1`] = `
-<g>
   <g
     class="view-only"
     fill="#fff"
@@ -29,8 +20,6 @@ exports[`src/components/elements/molecules/BezierControls.vue snapshot show cont
       y2="6"
     />
   </g>
-  
-  
   <g
     fill="#fff"
     stroke="#000"

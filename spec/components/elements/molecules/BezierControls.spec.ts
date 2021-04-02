@@ -34,18 +34,5 @@ describe('src/components/elements/molecules/BezierControls.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('show controls', () => {
-      const wrapper = mount(Target, {
-        props: {
-          c0: { x: 1, y: 2 },
-          controlIn: { x: 3, y: 4 },
-          controlOut: { x: 5, y: 6 },
-          color: 'red',
-          scale: 1.2,
-          showControl: true,
-        },
-      })
-      expect(wrapper.element).toMatchSnapshot()
-    })
   })
 })

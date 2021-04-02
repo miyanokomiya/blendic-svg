@@ -17,10 +17,15 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { IVec2 } from 'okageo'
 import { Transform } from '/@/models'
 import {
+  CurveBase,
+  CurveName,
+  getCurve,
   getKeyframeBone,
   getKeyframePoint,
+  KeyframeBase,
   KeyframeBone,
   KeyframePoint,
 } from '/@/models/keyframe'
@@ -41,6 +46,12 @@ interface OldKeyframe2 {
   rotate?: KeyframePoint
   scaleX?: KeyframePoint
   scaleY?: KeyframePoint
+}
+
+interface OldCurve3 {
+  name: CurveName
+  c1?: IVec2
+  c2?: IVec2
 }
 
 function isOldKeyframe(
@@ -71,8 +82,16 @@ function toTransformMap(
   }
 }
 
-// 0.0.0 -> 0.1.0 -> 0.2.0
+// 0.0.0 -> 0.1.0 -> 0.2.0 -> 0.3.0
 export function migrateKeyframe(
+  k: OldKeyframe | OldKeyframe2 | KeyframeBone
+): KeyframeBone {
+  const current = _migrateKeyframe(k)
+  return migrateKeyframe3(current)
+}
+
+// 0.0.0 -> 0.1.0 -> 0.2.0
+function _migrateKeyframe(
   k: OldKeyframe | OldKeyframe2 | KeyframeBone
 ): KeyframeBone {
   if (isOldKeyframe(k)) {
@@ -105,4 +124,42 @@ function migrateKeyframe2(k: OldKeyframe2): KeyframeBone {
   ret.targetId = boneId ?? ret.targetId
   ret.points = points ?? ret.points
   return ret
+}
+
+// 0.2.0 -> 0.3.0
+function migrateCurve3(c: OldCurve3 | CurveBase): CurveBase {
+  const ret = { ...getCurve(c.name), ...c }
+
+  if (isCurve3(ret)) {
+    delete ret.c1
+    delete ret.c2
+  }
+
+  return ret
+}
+
+// 0.2.0 -> 0.3.0
+function migrateKeyframe3(k: KeyframeBase): KeyframeBase {
+  return {
+    id: k.id,
+    frame: k.frame,
+    name: k.name,
+    targetId: k.targetId,
+    points: {
+      ...Object.keys(k.points).reduce<KeyframeBase['points']>((p, key) => {
+        const point = k.points[key]
+        if (point) {
+          p[key] = {
+            ...point,
+            curve: migrateCurve3(point.curve),
+          }
+        }
+        return p
+      }, {}),
+    },
+  }
+}
+
+function isCurve3(c: OldCurve3 | CurveBase): c is OldCurve3 {
+  return 'c1' in c
 }

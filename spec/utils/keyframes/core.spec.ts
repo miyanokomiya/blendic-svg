@@ -154,7 +154,7 @@ describe('utils/keyframes.ts', () => {
             curve: {
               name: 'bezier3',
               controlIn: { x: 0, y: 0 },
-              controlOut: { x: 15, y: 0 },
+              controlOut: { x: 5, y: 0 },
             },
           }),
         },
@@ -194,6 +194,20 @@ describe('utils/keyframes.ts', () => {
         { x: 20.6, y: 41.2 },
         end,
       ])
+    })
+  })
+
+  describe('getMonotonicBezier3Points', () => {
+    it('make returns of getNormalizedBezier3Points be c0.x <= c2.x and c1.x <= c3.x ', () => {
+      const start = { x: 10, y: 20 }
+      const end = { x: 20, y: 40 }
+      const ret = target.getMonotonicBezier3Points(
+        start,
+        { x: 16, y: 26 },
+        { x: -16, y: -46 },
+        end
+      )
+      expect(ret).toEqual([start, { x: 20, y: 46 }, { x: 10, y: -6 }, end])
     })
   })
 

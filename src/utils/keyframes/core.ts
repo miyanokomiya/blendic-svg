@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, getPointOnBezier3, IVec2 } from 'okageo'
+import { add, IVec2, getYOnBezier3AtX } from 'okageo'
 import { CurveName, KeyframeBase, KeyframePoint } from '/@/models/keyframe'
 
 type NeighborKeyframe<T extends KeyframeBase> =
@@ -118,11 +118,9 @@ function getBezier3CurveFn(
   const rangeX = end.x - start.x
   if (rangeX === 0) return (x) => x
 
+  const controls = getMonotonicBezier3Points(start, c1, c2, end)
   return (x) => {
-    return getPointOnBezier3(
-      getNormalizedBezier3Points(start, c1, c2, end),
-      (x - start.x) / rangeX
-    ).y
+    return getYOnBezier3AtX(controls, x)
   }
 }
 
@@ -135,6 +133,27 @@ export function getNormalizedBezier3Points(
   const c1t = add(c1, start)
   const c2t = add(c2, end)
   return [start, c1t, c2t, end]
+}
+
+export function getMonotonicBezier3Points(
+  start: IVec2,
+  c1: IVec2,
+  c2: IVec2,
+  end: IVec2
+): [IVec2, IVec2, IVec2, IVec2] {
+  const controls = getNormalizedBezier3Points(start, c1, c2, end)
+  return [
+    controls[0],
+    {
+      x: Math.min(controls[1].x, controls[3].x),
+      y: controls[1].y,
+    },
+    {
+      x: Math.max(controls[2].x, controls[0].x),
+      y: controls[2].y,
+    },
+    controls[3],
+  ]
 }
 
 export function isSameKeyframePoint(

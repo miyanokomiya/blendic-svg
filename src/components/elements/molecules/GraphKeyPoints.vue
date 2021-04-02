@@ -41,8 +41,8 @@ Copyright (C) 2021, Tomoya Komiyama.
           <CurveBezier3Vue
             v-if="curve.name === 'bezier3'"
             :c0="curve.from"
-            :c1="curve.c1"
-            :c2="curve.c2"
+            :c1="curve.fixedC1"
+            :c2="curve.fixedC2"
             :c3="curve.to"
             :color="color"
             :scale="scale"
@@ -108,7 +108,10 @@ import {
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import { getFrameX } from '/@/utils/animations'
-import { getNormalizedBezier3Points } from '/@/utils/keyframes/core'
+import {
+  getNormalizedBezier3Points,
+  getMonotonicBezier3Points,
+} from '/@/utils/keyframes/core'
 import CurveBezier3Vue from '/@/components/elements/molecules/CurveBezier3.vue'
 import BezierControls from '/@/components/elements/molecules/BezierControls.vue'
 import CurveConstant from '/@/components/elements/molecules/CurveConstant.vue'
@@ -122,6 +125,8 @@ type CurveInfo = {
   to: IVec2
   c1?: IVec2
   c2?: IVec2
+  fixedC1?: IVec2
+  fixedC2?: IVec2
 }
 
 export default defineComponent({
@@ -192,7 +197,20 @@ export default defineComponent({
               controlToPoint(next.points[props.pointKey].curve.controlIn),
               to
             )
-            ret.push({ ...base, to, c1: list[1], c2: list[2] })
+            const fixedList = getMonotonicBezier3Points(
+              from,
+              controlToPoint(p.curve.controlOut),
+              controlToPoint(next.points[props.pointKey].curve.controlIn),
+              to
+            )
+            ret.push({
+              ...base,
+              to,
+              c1: list[1],
+              c2: list[2],
+              fixedC1: fixedList[1],
+              fixedC2: fixedList[2],
+            })
           } else {
             ret.push({ ...base, to })
           }

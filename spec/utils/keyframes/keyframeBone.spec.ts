@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { getKeyframeBone } from '/@/models/keyframe'
+import { getCurve, getKeyframeBone } from '/@/models/keyframe'
 import * as target from '/@/utils/keyframes/keyframeBone'
 
 describe('utils/keyframes/index.ts', () => {
@@ -30,15 +30,15 @@ describe('utils/keyframes/index.ts', () => {
             getKeyframeBone({
               frame: 0,
               points: {
-                translateX: { value: 10, curve: { name: 'linear' } },
-                translateY: { value: 20, curve: { name: 'linear' } },
+                translateX: { value: 10, curve: getCurve('linear') },
+                translateY: { value: 20, curve: getCurve('linear') },
               },
             }),
             getKeyframeBone({
               frame: 1,
               points: {
-                translateX: { value: 100, curve: { name: 'linear' } },
-                translateY: { value: 200, curve: { name: 'linear' } },
+                translateX: { value: 100, curve: getCurve('linear') },
+                translateY: { value: 200, curve: getCurve('linear') },
               },
             }),
             getKeyframeBone({
@@ -50,8 +50,8 @@ describe('utils/keyframes/index.ts', () => {
             getKeyframeBone({
               frame: 5,
               points: {
-                translateX: { value: 1000, curve: { name: 'linear' } },
-                translateY: { value: 2000, curve: { name: 'linear' } },
+                translateX: { value: 1000, curve: getCurve('linear') },
+                translateY: { value: 2000, curve: getCurve('linear') },
               },
             }),
           ],
@@ -66,13 +66,13 @@ describe('utils/keyframes/index.ts', () => {
             getKeyframeBone({
               frame: 0,
               points: {
-                rotate: { value: 10, curve: { name: 'linear' } },
+                rotate: { value: 10, curve: getCurve('linear') },
               },
             }),
             getKeyframeBone({
               frame: 1,
               points: {
-                rotate: { value: 100, curve: { name: 'linear' } },
+                rotate: { value: 100, curve: getCurve('linear') },
               },
             }),
             getKeyframeBone({
@@ -84,7 +84,7 @@ describe('utils/keyframes/index.ts', () => {
             getKeyframeBone({
               frame: 5,
               points: {
-                rotate: { value: 1000, curve: { name: 'linear' } },
+                rotate: { value: 1000, curve: getCurve('linear') },
               },
             }),
           ],
@@ -99,15 +99,15 @@ describe('utils/keyframes/index.ts', () => {
             getKeyframeBone({
               frame: 0,
               points: {
-                scaleX: { value: 10, curve: { name: 'linear' } },
-                scaleY: { value: 20, curve: { name: 'linear' } },
+                scaleX: { value: 10, curve: getCurve('linear') },
+                scaleY: { value: 20, curve: getCurve('linear') },
               },
             }),
             getKeyframeBone({
               frame: 1,
               points: {
-                scaleX: { value: 100, curve: { name: 'linear' } },
-                scaleY: { value: 200, curve: { name: 'linear' } },
+                scaleX: { value: 100, curve: getCurve('linear') },
+                scaleY: { value: 200, curve: getCurve('linear') },
               },
             }),
             getKeyframeBone({
@@ -119,8 +119,8 @@ describe('utils/keyframes/index.ts', () => {
             getKeyframeBone({
               frame: 5,
               points: {
-                scaleX: { value: 1000, curve: { name: 'linear' } },
-                scaleY: { value: 2000, curve: { name: 'linear' } },
+                scaleX: { value: 1000, curve: getCurve('linear') },
+                scaleY: { value: 2000, curve: getCurve('linear') },
               },
             }),
           ],

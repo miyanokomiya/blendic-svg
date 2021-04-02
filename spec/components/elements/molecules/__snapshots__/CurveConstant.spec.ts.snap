@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/molecules/CurveConstant.vue snapshot default 1`] = `
+<g
+  stroke-width="1.2"
+>
+  <line
+    x1="1"
+    x2="3"
+    y1="2"
+    y2="2"
+  />
+  <line
+    x1="3"
+    x2="3"
+    y1="2"
+    y2="4"
+  />
+</g>
+`;

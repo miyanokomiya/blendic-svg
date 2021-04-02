@@ -17,11 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import {
-  CurveBezier3,
-  getKeyframeBone,
-  getKeyframePoint,
-} from '/@/models/keyframe'
+import { getCurve, getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import * as target from '/@/utils/keyframes/core'
 
 describe('utils/keyframes.ts', () => {
@@ -74,44 +70,106 @@ describe('utils/keyframes.ts', () => {
         frame: 10,
         keyframePoint: {
           value: 20,
-          curve: { name: 'linear' },
+          curve: getCurve('linear'),
         },
-      } as const
+      }
       const end = {
         frame: 20,
         keyframePoint: {
           value: 40,
-          curve: { name: 'linear' },
+          curve: getCurve('linear'),
         },
-      } as const
+      }
       expect(target.interpolateKeyframePoint(start, end, 15)).toBeCloseTo(30)
     })
   })
 
   describe('getCurveFn', () => {
-    const start = { x: 10, y: 20 }
-    const end = { x: 20, y: 40 }
-
     it('constant', () => {
-      const fn = target.getCurveFn(start, end, { name: 'constant' })
+      const fn = target.getCurveFn(
+        {
+          frame: 10,
+          keyframePoint: getKeyframePoint({
+            value: 20,
+            curve: {
+              name: 'constant',
+              controlIn: { x: 0, y: 0 },
+              controlOut: { x: 0.5, y: 1 },
+            },
+          }),
+        },
+        {
+          frame: 20,
+          keyframePoint: getKeyframePoint({
+            value: 40,
+            curve: {
+              name: 'constant',
+              controlIn: { x: 1.5, y: 0 },
+              controlOut: { x: 0, y: 0 },
+            },
+          }),
+        }
+      )
       expect(fn(10)).toBeCloseTo(20)
       expect(fn(15)).toBeCloseTo(20)
       expect(fn(20)).toBeCloseTo(20)
     })
 
     it('linear', () => {
-      const fn = target.getCurveFn(start, end, { name: 'linear' })
+      const fn = target.getCurveFn(
+        {
+          frame: 10,
+          keyframePoint: getKeyframePoint({
+            value: 20,
+            curve: {
+              name: 'linear',
+              controlIn: { x: 0, y: 0 },
+              controlOut: { x: 0.5, y: 1 },
+            },
+          }),
+        },
+        {
+          frame: 20,
+          keyframePoint: getKeyframePoint({
+            value: 40,
+            curve: {
+              name: 'linear',
+              controlIn: { x: 1.5, y: 0 },
+              controlOut: { x: 0, y: 0 },
+            },
+          }),
+        }
+      )
       expect(fn(10)).toBeCloseTo(20)
       expect(fn(15)).toBeCloseTo(30)
       expect(fn(20)).toBeCloseTo(40)
     })
 
     it('bezier3', () => {
-      const fn = target.getCurveFn(start, end, {
-        name: 'bezier3',
-        c1: { x: 0.5, y: 0 },
-        c2: { x: 0.5, y: 1 },
-      } as CurveBezier3)
+      const fn = target.getCurveFn(
+        {
+          frame: 10,
+          keyframePoint: getKeyframePoint({
+            value: 20,
+            curve: {
+              name: 'bezier3',
+              controlIn: { x: 0, y: 0 },
+              controlOut: { x: 5, y: 0 },
+            },
+          }),
+        },
+        {
+          frame: 20,
+          keyframePoint: getKeyframePoint({
+            value: 40,
+            curve: {
+              name: 'bezier3',
+              controlIn: { x: -5, y: 0 },
+              controlOut: { x: 0, y: 0 },
+            },
+          }),
+        }
+      )
       expect(fn(10)).toBeCloseTo(20)
       expect(fn(12.5)).toBeLessThan(25)
       expect(fn(15)).toBeCloseTo(30)
@@ -126,11 +184,30 @@ describe('utils/keyframes.ts', () => {
       const end = { x: 20, y: 40 }
       const ret = target.getNormalizedBezier3Points(
         start,
-        { x: 0.5, y: -0.2 },
+        { x: -0.5, y: -0.2 },
         { x: 0.6, y: 1.2 },
         end
       )
-      expect(ret).toEqual([start, { x: 15, y: 16 }, { x: 16, y: 44 }, end])
+      expect(ret).toEqual([
+        start,
+        { x: 9.5, y: 19.8 },
+        { x: 20.6, y: 41.2 },
+        end,
+      ])
+    })
+  })
+
+  describe('getMonotonicBezier3Points', () => {
+    it('make returns of getNormalizedBezier3Points be c0.x <= c2.x and c1.x <= c3.x ', () => {
+      const start = { x: 10, y: 20 }
+      const end = { x: 20, y: 40 }
+      const ret = target.getMonotonicBezier3Points(
+        start,
+        { x: 16, y: 26 },
+        { x: -16, y: -46 },
+        end
+      )
+      expect(ret).toEqual([start, { x: 20, y: 46 }, { x: 10, y: -6 }, end])
     })
   })
 

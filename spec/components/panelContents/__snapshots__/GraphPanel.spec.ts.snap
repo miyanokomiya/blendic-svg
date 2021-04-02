@@ -1,0 +1,119 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/panelContents/GraphPanel.vue snapshot no keyframe 1`] = `
+<div
+  class="graph-panel-wrapper"
+>
+  <div
+    class="row-block"
+  >
+    
+    <label
+      class="label"
+    >
+      Axis Value
+    </label>
+    <div
+      class="block-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0.4444444444444444);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  <!--v-if-->
+</div>
+`;
+
+exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyframe 1`] = `
+<div
+  class="graph-panel-wrapper"
+>
+  <div
+    class="row-block"
+  >
+    
+    <label
+      class="label"
+    >
+      Axis Value
+    </label>
+    <div
+      class="block-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0.4444444444444444);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block"
+  >
+    
+    <label
+      class="label"
+    >
+      Interpolation
+    </label>
+    <div
+      class="block-content"
+    >
+      
+      <span
+        class="select-root field"
+      >
+        <select>
+          <!--v-if-->
+          
+          <option
+            value="constant"
+          >
+            Constant
+          </option>
+          <option
+            value="linear"
+          >
+            Linear
+          </option>
+          <option
+            value="bezier3"
+          >
+            Bezier
+          </option>
+          
+        </select>
+      </span>
+      
+    </div>
+    
+  </div>
+</div>
+`;

@@ -19,6 +19,50 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g>
+    <g class="view-only">
+      <g
+        v-for="f in frames"
+        :key="f"
+        :transform="`translate(${f.f * frameWidth}, 0) scale(${scale})`"
+      >
+        <line
+          v-if="f.strokeWidth > 0"
+          x1="0"
+          :y1="headerHeight"
+          x2="0"
+          y2="20000"
+          stroke="#aaa"
+          :stroke-width="f.strokeWidth"
+        />
+      </g>
+    </g>
+    <g class="view-only">
+      <g
+        :transform="`translate(0, ${headerHeight})`"
+        fill="#aaa"
+        stroke="none"
+        fill-opacity="0.5"
+      >
+        <g transform="scale(-1, 1)">
+          <rect width="200000" height="200000" />
+        </g>
+        <g :transform="`translate(${endFrameX}, 0)`">
+          <rect width="200000" height="200000" />
+        </g>
+      </g>
+    </g>
+    <g class="view-only">
+      <line
+        :transform="`translate(${currentFrameX}, 0) scale(${scale})`"
+        x1="0"
+        :y1="headerHeight"
+        x2="0"
+        y2="20000"
+        stroke="blue"
+        stroke-width="2"
+      />
+    </g>
+    <slot />
     <g :transform="`scale(${scale})`" @mousedown.left="downCurrentFrame">
       <rect
         x="-100000"
@@ -29,41 +73,22 @@ Copyright (C) 2021, Tomoya Komiyama.
       />
     </g>
     <g class="view-only">
-      <g>
-        <g
-          v-for="f in frames"
-          :key="f"
-          :transform="`translate(${f.f * frameWidth}, 0)`"
+      <g
+        v-for="f in frames"
+        :key="f"
+        :transform="`translate(${f.f * frameWidth}, 0) scale(${scale})`"
+      >
+        <text
+          v-if="f.labelSize > 0"
+          :y="headerHeight - 4"
+          :font-size="f.labelSize"
+          dominant-baseline="text-after-edge"
+          text-anchor="middle"
+          >{{ f.f }}</text
         >
-          <g :transform="`scale(${scale})`">
-            <text
-              v-if="f.labelSize > 0"
-              :y="headerHeight - 4"
-              :font-size="f.labelSize"
-              dominant-baseline="text-after-edge"
-              text-anchor="middle"
-              >{{ f.f }}</text
-            >
-            <line
-              v-if="f.strokeWidth > 0"
-              x1="0"
-              :y1="headerHeight"
-              x2="0"
-              y2="20000"
-              stroke="#aaa"
-              :stroke-width="f.strokeWidth"
-            />
-          </g>
-        </g>
       </g>
-      <g fill="#aaa" stroke="none" fill-opacity="0.5">
-        <g transform="scale(-1, 1)">
-          <rect width="200000" height="200000" />
-        </g>
-        <g :transform="`translate(${endFrameX}, 0)`">
-          <rect width="200000" height="200000" />
-        </g>
-      </g>
+    </g>
+    <g class="view-only">
       <g :transform="`translate(${currentFrameX}, 0) scale(${scale})`">
         <rect
           :x="-currentFrameLabelWidth / 2"
@@ -83,14 +108,6 @@ Copyright (C) 2021, Tomoya Komiyama.
           fill="#fff"
           >{{ currentFrame }}</text
         >
-        <line
-          x1="0"
-          :y1="headerHeight"
-          x2="0"
-          y2="20000"
-          stroke="blue"
-          stroke-width="2"
-        />
       </g>
     </g>
   </g>

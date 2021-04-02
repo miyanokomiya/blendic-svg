@@ -17,14 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, getPointOnBezier3, IVec2 } from 'okageo'
-import {
-  CurveBase,
-  CurveBezier3,
-  KeyframeBase,
-  KeyframePoint,
-} from '/@/models/keyframe'
-import { applyScale } from '/@/utils/geometry'
+import { add, IVec2, getYOnBezier3AtX } from 'okageo'
+import { CurveName, KeyframeBase, KeyframePoint } from '/@/models/keyframe'
 
 type NeighborKeyframe<T extends KeyframeBase> =
   | []
@@ -35,6 +29,12 @@ interface KeyframePointWithFrame {
   keyframePoint: KeyframePoint
   frame: number
 }
+
+export const curveItems: Readonly<{ label: string; name: CurveName }[]> = [
+  { label: 'Constant', name: 'constant' },
+  { label: 'Linear', name: 'linear' },
+  { label: 'Bezier', name: 'bezier3' },
+]
 
 export function getNeighborKeyframes<T extends KeyframeBase>(
   sortedKeyframes: T[],
@@ -65,9 +65,7 @@ export function interpolateKeyframePoint(
   end: KeyframePointWithFrame,
   frame: number
 ): number {
-  const s = toPoint(start)
-  const e = toPoint(end)
-  const curveFn = getCurveFn(s, e, start.keyframePoint.curve)
+  const curveFn = getCurveFn(start, end)
   return curveFn(frame)
 }
 
@@ -81,21 +79,22 @@ function toPoint(keyframePointWithFrame: KeyframePointWithFrame): IVec2 {
 type CurveFn = (x: number) => number
 
 export function getCurveFn(
-  start: IVec2,
-  end: IVec2,
-  curve: CurveBase
+  start: KeyframePointWithFrame,
+  end: KeyframePointWithFrame
 ): CurveFn {
-  switch (curve.name) {
+  const s = toPoint(start)
+  const e = toPoint(end)
+  switch (start.keyframePoint.curve.name) {
     case 'constant':
-      return getConstantCurveFn(start)
+      return getConstantCurveFn(s)
     case 'linear':
-      return getLinearCurveFn(start, end)
+      return getLinearCurveFn(s, e)
     case 'bezier3':
       return getBezier3CurveFn(
-        start,
-        (curve as CurveBezier3).c1,
-        (curve as CurveBezier3).c2,
-        end
+        s,
+        start.keyframePoint.curve.controlOut,
+        end.keyframePoint.curve.controlIn,
+        e
       )
   }
 }
@@ -119,11 +118,9 @@ function getBezier3CurveFn(
   const rangeX = end.x - start.x
   if (rangeX === 0) return (x) => x
 
+  const controls = getMonotonicBezier3Points(start, c1, c2, end)
   return (x) => {
-    return getPointOnBezier3(
-      getNormalizedBezier3Points(start, c1, c2, end),
-      (x - start.x) / rangeX
-    ).y
+    return getYOnBezier3AtX(controls, x)
   }
 }
 
@@ -133,12 +130,30 @@ export function getNormalizedBezier3Points(
   c2: IVec2,
   end: IVec2
 ): [IVec2, IVec2, IVec2, IVec2] {
-  const rangeX = end.x - start.x
-  const rangeY = end.y - start.y
-  const v = { x: rangeX, y: rangeY }
-  const c1t = add(applyScale(v, c1), start)
-  const c2t = add(applyScale(v, c2), start)
+  const c1t = add(c1, start)
+  const c2t = add(c2, end)
   return [start, c1t, c2t, end]
+}
+
+export function getMonotonicBezier3Points(
+  start: IVec2,
+  c1: IVec2,
+  c2: IVec2,
+  end: IVec2
+): [IVec2, IVec2, IVec2, IVec2] {
+  const controls = getNormalizedBezier3Points(start, c1, c2, end)
+  return [
+    controls[0],
+    {
+      x: Math.min(controls[1].x, controls[3].x),
+      y: controls[1].y,
+    },
+    {
+      x: Math.max(controls[2].x, controls[0].x),
+      y: controls[2].y,
+    },
+    controls[3],
+  ]
 }
 
 export function isSameKeyframePoint(

@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/molecules/CurveBezier3.vue snapshot default 1`] = `
+<path
+  d="M 1,2 C 3,4 5,6 7,8"
+  stroke="red"
+  stroke-width="1.2"
+/>
+`;

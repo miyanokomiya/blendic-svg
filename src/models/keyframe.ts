@@ -76,20 +76,14 @@ export interface KeyframePoint {
 
 export interface CurveBase {
   name: CurveName
+  // relative from parent point
+  controlIn: IVec2
+  controlOut: IVec2
 }
 
-export interface CurveConstant extends CurveBase {
-  name: 'constant'
-}
-export interface CurveLinear extends CurveBase {
-  name: 'linear'
-}
-
-export interface CurveBezier3 extends CurveBase {
-  name: 'bezier3'
-  // controller points present relative rate between start and end
-  c1: IVec2
-  c2: IVec2
+export interface CurveSelectedState {
+  controlIn?: boolean
+  controlOut?: boolean
 }
 
 export interface KeyframeSelectedState extends KeyframeBaseProps<boolean> {}
@@ -120,22 +114,14 @@ export function getKeyframePoint(
 }
 
 export function getCurve(name: CurveName): CurveBase {
-  switch (name) {
-    case 'constant':
-      return getCurveConstant()
-    case 'linear':
-      return getCurveLinear()
-    case 'bezier3':
-      return getCurveBezier3()
-  }
+  return getCurveBase(name)
 }
 
-function getCurveConstant(): CurveConstant {
-  return { name: 'constant' }
-}
-function getCurveLinear(): CurveLinear {
-  return { name: 'linear' }
-}
-function getCurveBezier3(): CurveBezier3 {
-  return { name: 'bezier3', c1: { x: 0.5, y: 0 }, c2: { x: 0.5, y: 1 } }
+function getCurveBase(name: CurveName): CurveBase {
+  return {
+    name: name,
+    // x: frame, y: value
+    controlIn: { x: -10, y: 0 },
+    controlOut: { x: 10, y: 0 },
+  }
 }

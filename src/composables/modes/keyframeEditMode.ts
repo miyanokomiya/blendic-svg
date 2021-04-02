@@ -18,7 +18,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { reactive, computed, ComputedRef, ref } from 'vue'
-import { Transform, getTransform, IdMap, toMap } from '/@/models/index'
+import {
+  Transform,
+  getTransform,
+  IdMap,
+  toMap,
+  frameWidth,
+} from '/@/models/index'
 import {
   KeyframeEditCommand,
   KeyframeEditModeBase,
@@ -32,36 +38,44 @@ import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { applyTransform } from '/@/utils/geometry'
 import {
   CurveName,
+  CurveSelectedState,
   getCurve,
   getKeyframeBone,
   KeyframeBase,
 } from '/@/models/keyframe'
 import { batchUpdatePoints, splitKeyframeBySelected } from '/@/utils/keyframes'
+import { curveItems } from '/@/utils/keyframes/core'
+import { IVec2, sub } from 'okageo'
+import { useSettings } from '/@/composables/settings'
 
 interface State {
   command: KeyframeEditCommand
   editMovement: EditMovement | undefined
-  clipboard: KeyframeBase[]
-  tmpKeyframes: IdMap<KeyframeBase>
+  clipboard: KeyframeBase[] | undefined
+  tmpKeyframes: IdMap<KeyframeBase> | undefined
+  selectedControlMap: IdMap<IdMap<CurveSelectedState>> | undefined
 }
 
 export interface KeyframeEditMode extends KeyframeEditModeBase {
-  tmpKeyframes: ComputedRef<IdMap<KeyframeBase>>
-  getEditFrames: (id: string) => number
+  tmpKeyframes: ComputedRef<IdMap<KeyframeBase> | undefined>
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
-  editedKeyframeMap: ComputedRef<{
-    selected: IdMap<KeyframeBase>
-    notSelected: IdMap<KeyframeBase>
-  }>
+  editedKeyframeMap: ComputedRef<
+    | {
+        selected: IdMap<KeyframeBase>
+        notSelected: IdMap<KeyframeBase>
+      }
+    | undefined
+  >
 }
 
 export function useKeyframeEditMode(): KeyframeEditMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
-    clipboard: [],
-    tmpKeyframes: {},
+    clipboard: undefined,
+    tmpKeyframes: undefined,
+    selectedControlMap: undefined,
   })
 
   const animationStore = useAnimationStore()
@@ -77,7 +91,8 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   function cancel() {
     state.command = ''
     state.editMovement = undefined
-    state.tmpKeyframes = {}
+    state.tmpKeyframes = undefined
+    state.selectedControlMap = undefined
   }
 
   function clickAny() {
@@ -94,6 +109,15 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     }
   }
 
+  function upLeft() {
+    if (
+      state.command === 'grab-control' ||
+      state.command === 'grab-current-frame'
+    ) {
+      cancel()
+    }
+  }
+
   function setEditMode(mode: KeyframeEditCommand) {
     if (!isAnySelected.value) return
 
@@ -102,7 +126,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   }
 
   const editTransforms = computed(() => {
-    if (!state.editMovement) return {}
+    if (!state.editMovement) return undefined
 
     const translate = {
       x: state.editMovement.current.x - state.editMovement.start.x,
@@ -118,6 +142,8 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   })
 
   const editFrames = computed(() => {
+    if (!editTransforms.value) return
+
     return mapReduce(editTransforms.value, (transform, id) => {
       const keyframe = allKeyframes.value[id]
       const nextX = applyTransform(
@@ -154,11 +180,14 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     }
   })
 
-  const editedKeyframeMap = computed<{
-    selected: IdMap<KeyframeBase>
-    notSelected: IdMap<KeyframeBase>
-  }>(() => {
-    if (state.command !== 'grab') return { selected: {}, notSelected: {} }
+  const editedKeyframeMap = computed<
+    | {
+        selected: IdMap<KeyframeBase>
+        notSelected: IdMap<KeyframeBase>
+      }
+    | undefined
+  >(() => {
+    if (state.command !== 'grab') return
 
     return {
       selected: mapReduce(
@@ -166,7 +195,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
         (keyframe, id) => {
           return {
             ...keyframe,
-            frame: getEditFrames(id),
+            frame: getEditFrames(id)!,
           }
         }
       ),
@@ -177,20 +206,21 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   function completeEdit() {
     if (!isAnySelected.value) return
 
-    const duplicatedList = toList(state.tmpKeyframes)
-    if (duplicatedList.length > 0) {
-      animationStore.completeDuplicateKeyframes(
-        toList(state.tmpKeyframes),
-        toList(editedKeyframeMap.value.selected)
-      )
-    } else {
-      animationStore.completeDuplicateKeyframes(
-        toList(editedKeyframeMap.value.notSelected),
-        toList(editedKeyframeMap.value.selected)
-      )
+    if (editedKeyframeMap.value) {
+      if (state.tmpKeyframes) {
+        animationStore.completeDuplicateKeyframes(
+          toList(state.tmpKeyframes),
+          toList(editedKeyframeMap.value.selected)
+        )
+      } else {
+        animationStore.completeDuplicateKeyframes(
+          toList(editedKeyframeMap.value.notSelected),
+          toList(editedKeyframeMap.value.selected)
+        )
+      }
     }
 
-    state.tmpKeyframes = {}
+    state.tmpKeyframes = undefined
     state.editMovement = undefined
     state.command = ''
   }
@@ -249,11 +279,11 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     animationStore.execDeleteKeyframes()
   }
 
-  function getEditFrames(id: string): number {
+  function getEditFrames(id: string): number | undefined {
     return (
-      editFrames.value[id] ??
+      (editFrames.value ? editFrames.value[id] : undefined) ??
       allKeyframes.value[id]?.frame ??
-      state.tmpKeyframes[id].frame
+      (state.tmpKeyframes ? state.tmpKeyframes[id].frame : undefined)
     )
   }
 
@@ -262,7 +292,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   }
 
   function paste() {
-    if (state.clipboard.length === 0) return
+    if (!state.clipboard) return
     animationStore.pasteKeyframes(state.clipboard)
   }
 
@@ -307,11 +337,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   })
 
   const lastSelectedCurveName = ref('constant')
-  const curveItems: { label: string; name: CurveName }[] = [
-    { label: 'Constant', name: 'constant' },
-    { label: 'Linear', name: 'linear' },
-    { label: 'Bezier', name: 'bezier3' },
-  ]
+
   function setInterpolation(curveName: CurveName) {
     const selectedState = animationStore.selectedKeyframeMap.value
     animationStore.execUpdateKeyframes(
@@ -324,6 +350,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     lastSelectedCurveName.value = curveName
     state.command = ''
   }
+
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     switch (state.command) {
       case 'interpolation':
@@ -337,10 +364,118 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     }
   })
 
+  function grabControl(
+    keyframeId: string,
+    pointKey: string,
+    controls: CurveSelectedState
+  ) {
+    if (state.command) {
+      completeEdit()
+      return
+    }
+
+    state.selectedControlMap = {
+      [keyframeId]: {
+        [pointKey]: controls,
+      },
+    }
+    state.command = 'grab-control'
+    seriesKey.value = `grab-control_${Date.now()}`
+  }
+
+  const seriesKey = ref<string>()
+
+  function grabCurrentFrame() {
+    if (state.command) {
+      completeEdit()
+      return
+    }
+
+    state.command = 'grab-current-frame'
+    seriesKey.value = `grab-current-frame_${Date.now()}`
+  }
+
+  const { settings } = useSettings()
+
+  function viewToControl(v: IVec2): IVec2 {
+    return {
+      x: v.x / frameWidth,
+      y: v.y / settings.graphValueWidth,
+    }
+  }
+
+  function moveCurves(
+    keyframe: KeyframeBase,
+    targets: IdMap<CurveSelectedState>,
+    v: IVec2
+  ): KeyframeBase {
+    const diff = viewToControl(v)
+    return {
+      ...keyframe,
+      points: mapReduce(keyframe.points, (p, key) => {
+        const selectedState = targets[key]
+        if (!selectedState) return p
+
+        const nextIn = selectedState.controlIn
+          ? {
+              x: Math.min(p.curve.controlIn.x + diff.x, 0),
+              y: p.curve.controlIn.y + diff.y,
+            }
+          : p.curve.controlIn
+        const nextOut = selectedState.controlOut
+          ? {
+              x: Math.max(p.curve.controlOut.x + diff.x, 0),
+              y: p.curve.controlOut.y + diff.y,
+            }
+          : p.curve.controlOut
+
+        return {
+          value: p.value,
+          curve: {
+            name: p.curve.name,
+            controlIn: nextIn,
+            controlOut: nextOut,
+          },
+        }
+      }),
+    }
+  }
+
+  function drag(arg: EditMovement) {
+    if (state.command === 'grab-current-frame') {
+      animationStore.setCurrentFrame(
+        getNearestFrameAtPoint(arg.current.x),
+        seriesKey.value
+      )
+      state.editMovement = arg
+    } else if (state.command === 'grab-control') {
+      const diff = state.editMovement
+        ? sub(arg.current, state.editMovement.current)
+        : undefined
+
+      if (diff) {
+        const controlMap = state.selectedControlMap
+        if (controlMap) {
+          const updatedMap = Object.keys(controlMap).reduce<
+            IdMap<KeyframeBase>
+          >((p, keyframeId) => {
+            p[keyframeId] = moveCurves(
+              animationStore.visibledKeyframeMap.value[keyframeId],
+              controlMap[keyframeId],
+              diff
+            )
+            return p
+          }, {})
+          animationStore.execUpdateKeyframes(updatedMap, seriesKey.value)
+        }
+      }
+      state.editMovement = arg
+    }
+  }
+
   return {
     tmpKeyframes: computed(() => state.tmpKeyframes),
     command: computed(() => state.command),
-    getEditFrames,
     end: () => cancel(),
     cancel,
     setEditMode,
@@ -350,8 +485,10 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     shiftSelectFrame,
     selectAll,
     mousemove,
+    drag,
     clickAny,
     clickEmpty,
+    upLeft,
     execDelete,
     clip,
     paste,
@@ -359,5 +496,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     availableCommandList,
     popupMenuList,
     editedKeyframeMap,
+    grabCurrentFrame,
+    grabControl,
   }
 }

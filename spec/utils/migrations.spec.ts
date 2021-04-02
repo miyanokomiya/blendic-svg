@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { getKeyframePoint } from '/@/models/keyframe'
+import { getCurve, getKeyframePoint } from '/@/models/keyframe'
 import { migrateKeyframe } from '/@/utils/migrations'
 
 describe('src/utils/migrations.ts', () => {
@@ -72,6 +72,30 @@ describe('src/utils/migrations.ts', () => {
           rotate: getKeyframePoint({ value: 3 }),
           scaleX: getKeyframePoint({ value: 4 }),
           scaleY: getKeyframePoint({ value: 5 }),
+        },
+      })
+    })
+    it('v3: migrate curves', () => {
+      const old = {
+        id: '1',
+        frame: 2,
+        boneId: 'b',
+        translateX: getKeyframePoint({
+          value: 1,
+          curve: { name: 'bezier3', c1: { x: 0, y: 1 } } as any,
+        }),
+      }
+      const ret = migrateKeyframe(old)
+      expect(ret).toEqual({
+        id: '1',
+        frame: 2,
+        targetId: 'b',
+        name: 'bone',
+        points: {
+          translateX: getKeyframePoint({
+            value: 1,
+            curve: getCurve('bezier3'),
+          }),
         },
       })
     })

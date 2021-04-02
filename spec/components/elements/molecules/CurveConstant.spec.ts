@@ -17,18 +17,21 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive } from 'vue'
+import { mount } from '@vue/test-utils'
+import Target from '/@/components/elements/molecules/CurveConstant.vue'
 
-const settings = reactive({
-  selectedColor: 'orange',
-  historyMax: 64,
-  showBoneName: true,
-  boneOpacity: 1,
-  showViewbox: true,
-  showAxis: true,
-  graphValueWidth: 5,
+describe('src/components/elements/molecules/CurveConstant.vue', () => {
+  describe('snapshot', () => {
+    it('default', () => {
+      const wrapper = mount(Target, {
+        props: {
+          from: { x: 1, y: 2 },
+          to: { x: 3, y: 4 },
+          color: 'red',
+          scale: 1.2,
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+  })
 })
-
-export function useSettings() {
-  return { settings }
-}

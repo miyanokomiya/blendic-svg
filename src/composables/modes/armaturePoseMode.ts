@@ -251,8 +251,9 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
   }
 
   function clip() {
-    state.clipboard = mapReduce(animationStore.selectedAllBones.value, (b) =>
-      animationStore.getCurrentSelfTransforms(b.id)
+    state.clipboard = mapReduce(
+      animationStore.selectedBoneIdMap.value,
+      (_, id) => animationStore.getCurrentSelfTransforms(id)
     )
   }
 

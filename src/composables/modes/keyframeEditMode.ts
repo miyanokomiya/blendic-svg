@@ -51,29 +51,31 @@ import { useSettings } from '/@/composables/settings'
 interface State {
   command: KeyframeEditCommand
   editMovement: EditMovement | undefined
-  clipboard: KeyframeBase[]
-  tmpKeyframes: IdMap<KeyframeBase>
-  selectedControlMap: IdMap<IdMap<CurveSelectedState>>
+  clipboard: KeyframeBase[] | undefined
+  tmpKeyframes: IdMap<KeyframeBase> | undefined
+  selectedControlMap: IdMap<IdMap<CurveSelectedState>> | undefined
 }
 
 export interface KeyframeEditMode extends KeyframeEditModeBase {
-  tmpKeyframes: ComputedRef<IdMap<KeyframeBase>>
-  getEditFrames: (id: string) => number
+  tmpKeyframes: ComputedRef<IdMap<KeyframeBase> | undefined>
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
-  editedKeyframeMap: ComputedRef<{
-    selected: IdMap<KeyframeBase>
-    notSelected: IdMap<KeyframeBase>
-  }>
+  editedKeyframeMap: ComputedRef<
+    | {
+        selected: IdMap<KeyframeBase>
+        notSelected: IdMap<KeyframeBase>
+      }
+    | undefined
+  >
 }
 
 export function useKeyframeEditMode(): KeyframeEditMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
-    clipboard: [],
-    tmpKeyframes: {},
-    selectedControlMap: {},
+    clipboard: undefined,
+    tmpKeyframes: undefined,
+    selectedControlMap: undefined,
   })
 
   const animationStore = useAnimationStore()
@@ -89,8 +91,8 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   function cancel() {
     state.command = ''
     state.editMovement = undefined
-    state.tmpKeyframes = {}
-    state.selectedControlMap = {}
+    state.tmpKeyframes = undefined
+    state.selectedControlMap = undefined
   }
 
   function clickAny() {
@@ -124,7 +126,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   }
 
   const editTransforms = computed(() => {
-    if (!state.editMovement) return {}
+    if (!state.editMovement) return undefined
 
     const translate = {
       x: state.editMovement.current.x - state.editMovement.start.x,
@@ -140,6 +142,8 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   })
 
   const editFrames = computed(() => {
+    if (!editTransforms.value) return
+
     return mapReduce(editTransforms.value, (transform, id) => {
       const keyframe = allKeyframes.value[id]
       const nextX = applyTransform(
@@ -176,11 +180,14 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     }
   })
 
-  const editedKeyframeMap = computed<{
-    selected: IdMap<KeyframeBase>
-    notSelected: IdMap<KeyframeBase>
-  }>(() => {
-    if (state.command !== 'grab') return { selected: {}, notSelected: {} }
+  const editedKeyframeMap = computed<
+    | {
+        selected: IdMap<KeyframeBase>
+        notSelected: IdMap<KeyframeBase>
+      }
+    | undefined
+  >(() => {
+    if (state.command !== 'grab') return
 
     return {
       selected: mapReduce(
@@ -188,7 +195,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
         (keyframe, id) => {
           return {
             ...keyframe,
-            frame: getEditFrames(id),
+            frame: getEditFrames(id)!,
           }
         }
       ),
@@ -199,20 +206,21 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   function completeEdit() {
     if (!isAnySelected.value) return
 
-    const duplicatedList = toList(state.tmpKeyframes)
-    if (duplicatedList.length > 0) {
-      animationStore.completeDuplicateKeyframes(
-        toList(state.tmpKeyframes),
-        toList(editedKeyframeMap.value.selected)
-      )
-    } else {
-      animationStore.completeDuplicateKeyframes(
-        toList(editedKeyframeMap.value.notSelected),
-        toList(editedKeyframeMap.value.selected)
-      )
+    if (editedKeyframeMap.value) {
+      if (state.tmpKeyframes) {
+        animationStore.completeDuplicateKeyframes(
+          toList(state.tmpKeyframes),
+          toList(editedKeyframeMap.value.selected)
+        )
+      } else {
+        animationStore.completeDuplicateKeyframes(
+          toList(editedKeyframeMap.value.notSelected),
+          toList(editedKeyframeMap.value.selected)
+        )
+      }
     }
 
-    state.tmpKeyframes = {}
+    state.tmpKeyframes = undefined
     state.editMovement = undefined
     state.command = ''
   }
@@ -271,11 +279,11 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     animationStore.execDeleteKeyframes()
   }
 
-  function getEditFrames(id: string): number {
+  function getEditFrames(id: string): number | undefined {
     return (
-      editFrames.value[id] ??
+      (editFrames.value ? editFrames.value[id] : undefined) ??
       allKeyframes.value[id]?.frame ??
-      state.tmpKeyframes[id].frame
+      (state.tmpKeyframes ? state.tmpKeyframes[id].frame : undefined)
     )
   }
 
@@ -284,7 +292,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   }
 
   function paste() {
-    if (state.clipboard.length === 0) return
+    if (!state.clipboard) return
     animationStore.pasteKeyframes(state.clipboard)
   }
 
@@ -446,17 +454,20 @@ export function useKeyframeEditMode(): KeyframeEditMode {
         : undefined
 
       if (diff) {
-        const updatedMap = Object.keys(state.selectedControlMap).reduce<
-          IdMap<KeyframeBase>
-        >((p, keyframeId) => {
-          p[keyframeId] = moveCurves(
-            animationStore.visibledKeyframeMap.value[keyframeId],
-            state.selectedControlMap[keyframeId],
-            diff
-          )
-          return p
-        }, {})
-        animationStore.execUpdateKeyframes(updatedMap, seriesKey.value)
+        const controlMap = state.selectedControlMap
+        if (controlMap) {
+          const updatedMap = Object.keys(controlMap).reduce<
+            IdMap<KeyframeBase>
+          >((p, keyframeId) => {
+            p[keyframeId] = moveCurves(
+              animationStore.visibledKeyframeMap.value[keyframeId],
+              controlMap[keyframeId],
+              diff
+            )
+            return p
+          }, {})
+          animationStore.execUpdateKeyframes(updatedMap, seriesKey.value)
+        }
       }
       state.editMovement = arg
     }
@@ -465,7 +476,6 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   return {
     tmpKeyframes: computed(() => state.tmpKeyframes),
     command: computed(() => state.command),
-    getEditFrames,
     end: () => cancel(),
     cancel,
     setEditMode,

@@ -48,7 +48,6 @@ describe('src/components/elements/GraphKeyframes.vue', () => {
       const wrapper = shallowMount(Target, {
         props: {
           keyframeMapByFrame,
-          viewOrigin: { x: 1, y: 2 },
           colorMap: { translateX: 'green' },
           scale: 2.2,
         },

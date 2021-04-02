@@ -36,7 +36,6 @@ import {
 } from '../utils/animations'
 import {
   convolutePoseTransforms,
-  getAnySelectedBones,
   getPosedBoneHeadsOrigin,
   getPoseSelectedBones,
   getTransformedBoneMap,
@@ -63,6 +62,7 @@ import {
   toTargetIdMap,
   toMap,
   Transform,
+  isBoneSelected,
 } from '/@/models'
 import {
   getKeyframeBone,
@@ -109,7 +109,7 @@ const keyframeMapByTargetId = computed(() => {
 })
 
 const visibledKeyframeMapByTargetId = computed(() => {
-  return extractMap(keyframeMapByTargetId.value, selectedAllBones.value)
+  return extractMap(keyframeMapByTargetId.value, selectedBoneIdMap.value)
 })
 
 const visibledKeyframeMap = computed(() => {
@@ -174,8 +174,14 @@ const currentPosedBones = computed(
   }
 )
 
-const selectedAllBones = computed(() => {
-  return getAnySelectedBones(currentPosedBones.value, store.state.selectedBones)
+const selectedBoneIdMap = computed(() => {
+  return mapReduce(
+    dropMapIfFalse(store.state.selectedBones, (s) => isBoneSelected(s)),
+    () => true
+  )
+})
+const selectedBoneMap = computed(() => {
+  return mapReduce(selectedBoneIdMap.value, (_, id) => store.boneMap.value[id])
 })
 
 const selectedBones = computed(() => {
@@ -376,12 +382,12 @@ function execInsertKeyframe(
     useScale?: boolean
   } = {}
 ) {
-  if (Object.keys(selectedAllBones.value).length === 0) return
+  if (Object.keys(selectedBoneIdMap.value).length === 0) return
   if (!actions.lastSelectedItem.value) {
     addAction()
   }
 
-  const keyframes = Object.keys(selectedAllBones.value).map((targetId) => {
+  const keyframes = Object.keys(selectedBoneIdMap.value).map((targetId) => {
     const t = getCurrentSelfTransforms(targetId)
     return getKeyframeBone(
       {
@@ -474,7 +480,8 @@ export function useAnimationStore() {
     visibledSelectedKeyframeMap,
     posedTargetIds,
     currentPosedBones,
-    selectedAllBones,
+    selectedBoneIdMap,
+    selectedBoneMap,
     selectedBones,
     selectedPosedBoneOrigin,
     getCurrentSelfTransforms,

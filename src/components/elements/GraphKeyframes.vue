@@ -38,7 +38,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { IVec2 } from 'okageo'
 import { computed, defineComponent, PropType } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { IdMap } from '/@/models'
@@ -61,10 +60,6 @@ export default defineComponent({
     scale: {
       type: Number,
       default: 1,
-    },
-    viewOrigin: {
-      type: Object as PropType<IVec2>,
-      default: () => ({ x: 0, y: 0 }),
     },
     keyframeMapByFrame: {
       type: Object as PropType<IdMap<KeyframeBone[]>>,
@@ -96,6 +91,12 @@ export default defineComponent({
         IdMap<KeyframeBaseProps<KeyframeBase[]>>
       >((p, c) => {
         p[c] = getKeyframePropsMap(keyframeMapByTargetId.value[c], 'bone')
+        p[c].props = Object.keys(p[c].props).reduce<{
+          [key: string]: KeyframeBase[]
+        }>((props, key) => {
+          if (p[c].props[key].length > 0) props[key] = p[c].props[key]
+          return props
+        }, {})
         return p
       }, {})
     })

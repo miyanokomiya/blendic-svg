@@ -178,7 +178,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                       <g :transform="`translate(0, ${-viewOrigin.y})`">
                         <GraphKeyframes
                           :scale="scale"
-                          :view-origin="viewOrigin"
                           :keyframe-map-by-frame="keyframeMapByFrame"
                           :selected-keyframe-map="selectedKeyframeMap"
                           :color-map="keyframePointColorMap"
@@ -320,11 +319,11 @@ export default defineComponent({
     const keyframeEditMode = useMode()
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
-    const selectedAllBoneList = computed(() =>
-      toList(animationStore.selectedAllBones.value)
-    )
     const selectedAllBoneIdList = computed(() =>
-      selectedAllBoneList.value.map((b) => b.id)
+      Object.keys(animationStore.selectedBoneIdMap.value)
+    )
+    const selectedAllBoneList = computed(() =>
+      toList(animationStore.selectedBoneMap.value)
     )
     const keyframeMapByFrame = computed(() => {
       return getKeyframeMapByFrame(
@@ -332,12 +331,14 @@ export default defineComponent({
           // fixed keyframes
           toList({
             ...animationStore.visibledKeyframeMap.value,
-            ...keyframeEditMode.mode.value.editedKeyframeMap.value.notSelected,
+            ...(keyframeEditMode.mode.value.editedKeyframeMap.value
+              ?.notSelected ?? {}),
           }) as any,
           // moved keyframes
           toList({
-            ...keyframeEditMode.mode.value.tmpKeyframes.value,
-            ...keyframeEditMode.mode.value.editedKeyframeMap.value.selected,
+            ...(keyframeEditMode.mode.value.tmpKeyframes.value ?? {}),
+            ...(keyframeEditMode.mode.value.editedKeyframeMap.value?.selected ??
+              {}),
           }) as any,
           true
         ).merged
@@ -401,10 +402,10 @@ export default defineComponent({
 
     const boneTopMap = computed(() => {
       let current = 2 * labelHeight
-      return selectedAllBoneList.value.reduce<IdMap<number>>((p, b) => {
+      return selectedAllBoneIdList.value.reduce<IdMap<number>>((p, id) => {
         const top = current
-        current = current + labelHeight * (boneExpandedMap.value[b.id] ? 6 : 1)
-        p[b.id] = top
+        current = current + labelHeight * (boneExpandedMap.value[id] ? 6 : 1)
+        p[id] = top
         return p
       }, {})
     })
@@ -427,8 +428,8 @@ export default defineComponent({
       graphCanvas,
       playing: animationStore.playing,
       actions: animationStore.actions.value,
-      selectedAllBoneList,
       selectedAllBoneIdList,
+      selectedAllBoneList,
       lastSelectedKeyframe: animationStore.lastSelectedKeyframe,
       keyframeMapByFrame,
       selectedKeyframeMap: animationStore.selectedKeyframeMap,

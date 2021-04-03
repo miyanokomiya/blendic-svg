@@ -325,6 +325,7 @@ export default defineComponent({
     const selectedAllBoneList = computed(() =>
       toList(animationStore.selectedBoneMap.value)
     )
+
     const keyframeMapByFrame = computed(() => {
       return getKeyframeMapByFrame(
         mergeKeyframesWithDropped(

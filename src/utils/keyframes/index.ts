@@ -155,8 +155,8 @@ export function getKeyframePropsMap(
 
   keyframes.forEach((k) => {
     Object.keys(k.points).forEach((key) => {
-      if (k.points[key]) {
-        ret.props[key]?.push(k)
+      if (k.points[key] && ret.props[key]) {
+        ret.props[key].push(k)
       }
     })
   })

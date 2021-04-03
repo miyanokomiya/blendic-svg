@@ -180,11 +180,15 @@ export function mergeKeyframesWithDropped(
           return p
         }, [])
       } else {
-        return mergeListByKey(
-          keyframes,
-          overrideMapByFrame[frameStr] ?? [],
-          'targetId'
-        )
+        if (overrideMapByFrame[frameStr]) {
+          return mergeListByKey(
+            keyframes,
+            overrideMapByFrame[frameStr] ?? [],
+            'targetId'
+          )
+        } else {
+          return keyframes
+        }
       }
     }),
     ...overrideMapByNewFrame,

@@ -24,7 +24,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-for="(keyFrames, key) in map.props"
         :key="key"
         :point-key="key"
-        :key-frames="keyFrames"
+        :keyframes="getKeyframes(targetId, key)"
         :selected-state-map="selectedKeyframeMap"
         :value-width="valueWidth"
         :color="colorMap[key]"
@@ -38,7 +38,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+import {
+  computed,
+  defineComponent,
+  onBeforeUpdate,
+  PropType,
+  ref,
+  toRaw,
+  watch,
+} from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { IdMap } from '/@/models'
 import {
@@ -51,6 +59,7 @@ import {
 import { getKeyframeMapByTargetId } from '/@/utils/animations'
 import GraphKeyPoints from '/@/components/elements/molecules/GraphKeyPoints.vue'
 import { getKeyframePropsMap, inversedSelectedState } from '/@/utils/keyframes'
+import { flatKeyListMap } from '/@/utils/commons'
 
 export default defineComponent({
   components: {
@@ -126,20 +135,54 @@ export default defineComponent({
       emit('down-control', keyframeId, pointKey, state)
     }
 
+    // Cache unselected keyframes
+    // => These keyframes are needless to update and improve performance to rendering.
+    const cachedKeyframePointsMapByTargetId = ref<
+      IdMap<KeyframeBaseProps<KeyframeBase[]>>
+    >()
+    watch(() => props.selectedKeyframeMap, updateCache, { immediate: true })
+
+    let ids = ''
+    onBeforeUpdate(() => {
+      // watch only ids of keyframes
+      const nextIds = flatKeyListMap(props.keyframeMapByFrame)
+        .map((k) => k.id)
+        .sort()
+        .join(',')
+      if (ids !== nextIds) {
+        updateCache()
+        ids = nextIds
+      }
+    })
+
+    function updateCache() {
+      cachedKeyframePointsMapByTargetId.value = toRaw(
+        keyframePointsMapByTargetId.value
+      )
+    }
+
+    function isSelected(targetId: string, key: string): boolean {
+      return keyframePointsMapByTargetId.value[targetId].props[key].some(
+        (k) => props.selectedKeyframeMap[k.id]?.props[key]
+      )
+    }
+    function getKeyframes(targetId: string, key: string): KeyframeBase[] {
+      return !isSelected(targetId, key) &&
+        cachedKeyframePointsMapByTargetId.value
+        ? cachedKeyframePointsMapByTargetId.value![targetId].props[key]
+        : keyframePointsMapByTargetId.value[targetId].props[key]
+    }
+
     return {
       keyframePointsMapByTargetId,
+      cachedKeyframePointsMapByTargetId,
       valueWidth: computed(() => settings.graphValueWidth),
       select,
       shiftSelect,
       selectedColor: settings.selectedColor,
       downControl,
+      getKeyframes,
     }
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.view-only {
-  pointer-events: none;
-}
-</style>

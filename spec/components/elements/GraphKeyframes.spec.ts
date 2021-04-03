@@ -49,7 +49,6 @@ describe('src/components/elements/GraphKeyframes.vue', () => {
         props: {
           keyframeMapByFrame,
           colorMap: { translateX: 'green' },
-          scale: 2.2,
         },
       })
       expect(wrapper.element).toMatchSnapshot()

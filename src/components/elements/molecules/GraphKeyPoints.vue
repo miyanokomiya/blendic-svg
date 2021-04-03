@@ -19,55 +19,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g>
-    <g v-for="(curve, i) in curves" :key="curve.k.id">
-      <g :stroke="color" :stroke-width="scale" fill="none" class="view-only">
-        <!-- horizon before from -->
-        <line
-          v-if="i === 0"
-          :x1="curve.from.x - 20000"
-          :y1="curve.from.y"
-          :x2="curve.from.x"
-          :y2="curve.from.y"
-        />
-        <!-- horizon after to -->
-        <line
-          v-if="i === curves.length - 1"
-          :x1="curve.from.x"
-          :y1="curve.from.y"
-          :x2="curve.from.x + 20000"
-          :y2="curve.from.y"
-        />
-        <template v-else>
-          <CurveBezier3Vue
-            v-if="curve.name === 'bezier3'"
-            :c0="curve.from"
-            :c1="curve.fixedC1"
-            :c2="curve.fixedC2"
-            :c3="curve.to"
-            :color="color"
-            :scale="scale"
-          />
-          <g v-else-if="curve.name === 'constant'">
-            <CurveConstant
-              :from="curve.from"
-              :to="curve.to"
-              :color="color"
-              :scale="scale"
-            />
-          </g>
-          <line
-            v-else
-            :x1="curve.from.x"
-            :y1="curve.from.y"
-            :x2="curve.to.x"
-            :y2="curve.to.y"
-            :stroke-width="scale"
-          />
-        </template>
-      </g>
+    <g class="view-only">
+      <GraphCurveLines :curves="curves" :color="color" :scale="scale" />
     </g>
     <g>
-      <g v-for="curve in curves" :key="curve.k.id">
+      <g v-for="curve in curves" :key="curve.id">
         <title>{{ pointKey }}</title>
         <circle
           :cx="curve.from.x"
@@ -76,22 +32,22 @@ Copyright (C) 2021, Tomoya Komiyama.
           stroke="#000"
           :stroke-width="scale"
           :fill="curve.selected ? selectedColor : color"
-          @click.exact="select(curve.k)"
-          @click.shift.exact="shiftSelect(curve.k)"
+          @click.exact="select(curve.id, curve.keyframeName)"
+          @click.shift.exact="shiftSelect(curve.id, curve.keyframeName)"
         />
       </g>
     </g>
     <g>
-      <g v-for="(curve, i) in curves" :key="curve.k.id">
+      <g v-for="curve in curves" :key="curve.id">
         <BezierControls
           v-if="curve.selected"
           :c0="curve.from"
-          :control-in="0 < i ? curves[i - 1].c2 : undefined"
-          :control-out="i < curves.length - 1 ? curve.c1 : undefined"
+          :control-in="curve.controlIn"
+          :control-out="curve.controlOut"
           :color="color"
           :scale="scale"
-          @down-control-in="downControl(curve.k.id, { controlIn: true })"
-          @down-control-out="downControl(curve.k.id, { controlOut: true })"
+          @down-control-in="downControl(curve.id, { controlIn: true })"
+          @down-control-out="downControl(curve.id, { controlOut: true })"
         >
         </BezierControls>
       </g>
@@ -100,13 +56,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { IVec2 } from 'okageo'
-import { computed, defineComponent, PropType } from 'vue'
+import { add, IVec2 } from 'okageo'
+import { computed, defineComponent, inject, PropType } from 'vue'
 import { IdMap } from '/@/models'
 import {
   CurveName,
   CurveSelectedState,
   KeyframeBase,
+  KeyframeName,
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
@@ -115,31 +72,140 @@ import {
   getNormalizedBezier3Points,
   getMonotonicBezier3Points,
 } from '/@/utils/keyframes/core'
-import CurveBezier3Vue from '/@/components/elements/molecules/CurveBezier3.vue'
 import BezierControls from '/@/components/elements/molecules/BezierControls.vue'
-import CurveConstant from '/@/components/elements/molecules/CurveConstant.vue'
+import GraphCurveLines from '/@/components/elements/molecules/GraphCurveLines.vue'
 import { useSettings } from '/@/composables/settings'
 
 type CurveInfo = {
-  k: KeyframeBase
+  id: string
+  keyframeName: KeyframeName
   name: CurveName
-  from: IVec2
   selected: boolean
+  order: 'first' | 'inner' | 'last'
+  from: IVec2
   to: IVec2
   c1?: IVec2
   c2?: IVec2
   fixedC1?: IVec2
   fixedC2?: IVec2
+  controlIn?: IVec2
+  controlOut?: IVec2
+}
+
+function toPoint(p: KeyframePoint, frame: number, valueWidth: number): IVec2 {
+  return {
+    x: getFrameX(frame),
+    y: p.value * valueWidth,
+  }
+}
+function controlToPoint(c: IVec2, valueWidth: number): IVec2 {
+  return {
+    x: getFrameX(c.x),
+    y: c.y * valueWidth,
+  }
+}
+
+function createCurveInfo(
+  index: number,
+  point: KeyframePoint,
+  base: CurveInfo,
+  keyframes: KeyframeBase[],
+  pointKey: string,
+  valueWidth: number
+): CurveInfo {
+  if (index === keyframes.length - 1) {
+    return { ...base, to: base.from }
+  }
+
+  const next = keyframes[index + 1]
+  const to = toPoint(next.points[pointKey], next.frame, valueWidth)
+
+  if (point.curve.name !== 'bezier3') {
+    return { ...base, to }
+  }
+
+  const c1Base = controlToPoint(point.curve.controlOut, valueWidth)
+  const c2Base = controlToPoint(
+    next.points[pointKey].curve.controlIn,
+    valueWidth
+  )
+  const [, c1, c2] = getNormalizedBezier3Points(base.from, c1Base, c2Base, to)
+  const [, fixedC1, fixedC2] = getMonotonicBezier3Points(
+    base.from,
+    c1Base,
+    c2Base,
+    to
+  )
+
+  return {
+    ...base,
+    to,
+    c1,
+    c2,
+    fixedC1,
+    fixedC2,
+    controlOut: c1,
+  }
+}
+
+function getCurves(args: {
+  keyframes: KeyframeBase[]
+  selectedStateMap: IdMap<KeyframeSelectedState>
+  pointKey: string
+  valueWidth: number
+}): IdMap<CurveInfo> {
+  const length = args.keyframes.length
+  const idMap: { [id: string]: boolean } = {}
+  let before: CurveInfo | undefined = undefined
+
+  return args.keyframes.reduce<IdMap<CurveInfo>>((ret, k, i) => {
+    const selectedState = args.selectedStateMap[k.id]
+    const p = k.points[args.pointKey]
+    const from = toPoint(p, k.frame, args.valueWidth)
+
+    const controlIn =
+      before?.name === 'bezier3'
+        ? add(controlToPoint(p.curve.controlIn, args.valueWidth), from)
+        : undefined
+
+    idMap[k.id] = true
+
+    const curve = createCurveInfo(
+      i,
+      p,
+      {
+        id: k.id,
+        keyframeName: k.name,
+        name: p.curve.name,
+        selected: selectedState ? selectedState.props[args.pointKey] : false,
+        order: i === 0 ? 'first' : i === length - 1 ? 'last' : 'inner',
+        from,
+        to: from,
+        controlIn,
+      },
+      args.keyframes,
+      args.pointKey,
+      args.valueWidth
+    )
+
+    before = curve
+    ret[curve.id] = curve
+
+    return ret
+  }, {})
 }
 
 export default defineComponent({
-  components: { BezierControls, CurveBezier3Vue, CurveConstant },
+  components: {
+    BezierControls,
+    GraphCurveLines,
+  },
   props: {
     pointKey: {
       type: String,
       required: true,
     },
-    keyFrames: {
+    keyframes: {
       type: Array as PropType<KeyframeBase[]>,
       required: true,
     },
@@ -147,90 +213,33 @@ export default defineComponent({
       type: Object as PropType<IdMap<KeyframeSelectedState>>,
       default: () => ({}),
     },
-    valueWidth: {
-      type: Number,
-      default: 1,
-    },
     color: {
       type: String,
       default: '#fff',
     },
-    scale: {
-      type: Number,
-      default: 1,
-    },
   },
   emits: ['select', 'shift-select', 'down-control'],
   setup(props, { emit }) {
-    function toPoint(p: KeyframePoint, frame: number): IVec2 {
-      return {
-        x: getFrameX(frame),
-        y: p.value * props.valueWidth,
-      }
-    }
-    function controlToPoint(c: IVec2): IVec2 {
-      return {
-        x: getFrameX(c.x),
-        y: c.y * props.valueWidth,
-      }
-    }
+    const { settings } = useSettings()
 
-    const curves = computed(() => {
-      const ret: CurveInfo[] = []
-      props.keyFrames.forEach((k, i) => {
-        const selectedState = props.selectedStateMap[k.id]
-        const p = k.points[props.pointKey]
-        const from = toPoint(p, k.frame)
-        const base = {
-          k,
-          name: p.curve.name,
-          selected: selectedState ? selectedState.props[props.pointKey] : false,
-          from,
-        }
-
-        if (i === props.keyFrames.length - 1) {
-          ret.push({ ...base, to: from })
-        } else {
-          const next = props.keyFrames[i + 1]
-          const to = toPoint(next.points[props.pointKey], next.frame)
-          if (p.curve.name === 'bezier3') {
-            const list = getNormalizedBezier3Points(
-              from,
-              controlToPoint(p.curve.controlOut),
-              controlToPoint(next.points[props.pointKey].curve.controlIn),
-              to
-            )
-            const fixedList = getMonotonicBezier3Points(
-              from,
-              controlToPoint(p.curve.controlOut),
-              controlToPoint(next.points[props.pointKey].curve.controlIn),
-              to
-            )
-            ret.push({
-              ...base,
-              to,
-              c1: list[1],
-              c2: list[2],
-              fixedC1: fixedList[1],
-              fixedC2: fixedList[2],
-            })
-          } else {
-            ret.push({ ...base, to })
-          }
-        }
+    const curves = computed(() =>
+      getCurves({
+        keyframes: props.keyframes,
+        selectedStateMap: props.selectedStateMap,
+        pointKey: props.pointKey,
+        valueWidth: settings.graphValueWidth,
       })
-      return ret
-    })
+    )
 
-    function select(keyframe: KeyframeBase) {
-      emit('select', keyframe.id, {
-        name: keyframe.name,
+    function select(id: string, keyframeName: KeyframeName) {
+      emit('select', id, {
+        name: keyframeName,
         props: { [props.pointKey]: true },
       } as KeyframeSelectedState)
     }
-    function shiftSelect(keyframe: KeyframeBase) {
-      emit('shift-select', keyframe.id, {
-        name: keyframe.name,
+    function shiftSelect(id: string, keyframeName: KeyframeName) {
+      emit('shift-select', id, {
+        name: keyframeName,
         props: { [props.pointKey]: true },
       } as KeyframeSelectedState)
     }
@@ -239,9 +248,8 @@ export default defineComponent({
       emit('down-control', keyframeId, props.pointKey, state)
     }
 
-    const { settings } = useSettings()
-
     return {
+      scale: inject<number>('scale', 1),
       selectedColor: computed(() => settings.selectedColor),
       curves,
       select,

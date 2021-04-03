@@ -177,7 +177,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                     >
                       <g :transform="`translate(0, ${-viewOrigin.y})`">
                         <GraphKeyframes
-                          :scale="scale"
                           :keyframe-map-by-frame="keyframeMapByFrame"
                           :selected-keyframe-map="selectedKeyframeMap"
                           :color-map="keyframePointColorMap"
@@ -325,6 +324,7 @@ export default defineComponent({
     const selectedAllBoneList = computed(() =>
       toList(animationStore.selectedBoneMap.value)
     )
+
     const keyframeMapByFrame = computed(() => {
       return getKeyframeMapByFrame(
         mergeKeyframesWithDropped(

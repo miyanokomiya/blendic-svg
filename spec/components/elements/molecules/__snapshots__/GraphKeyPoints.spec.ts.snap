@@ -2,52 +2,56 @@
 
 exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1`] = `
 <g>
-  
-  <g>
-    <g
-      class="view-only"
-      fill="none"
-      stroke="green"
-      stroke-width="2.2"
-    >
-      <!-- horizon before from -->
-      <line
-        x1="-20000"
-        x2="0"
-        y1="1.2"
-        y2="1.2"
-      />
-      <!-- horizon after to -->
+  <g
+    class="view-only"
+  >
+    <g>
       
-      <line
-        stroke-width="2.2"
-        x1="0"
-        x2="0"
-        y1="1.2"
-        y2="12"
-      />
+      <g>
+        <g
+          fill="none"
+          stroke="green"
+          stroke-width="2.2"
+        >
+          <!-- horizon before from -->
+          <line
+            x1="-20000"
+            x2="0"
+            y1="5"
+            y2="5"
+          />
+          <!-- horizon after to -->
+          
+          <line
+            stroke-width="2.2"
+            x1="0"
+            x2="0"
+            y1="5"
+            y2="50"
+          />
+          
+        </g>
+      </g>
+      <g>
+        <g
+          fill="none"
+          stroke="green"
+          stroke-width="2.2"
+        >
+          <!-- horizon before from -->
+          <!--v-if-->
+          <!-- horizon after to -->
+          <line
+            x1="0"
+            x2="20000"
+            y1="50"
+            y2="50"
+          />
+        </g>
+      </g>
       
     </g>
   </g>
-  <g>
-    <g
-      class="view-only"
-      fill="none"
-      stroke="green"
-      stroke-width="2.2"
-    >
-      <!-- horizon before from -->
-      <!--v-if-->
-      <!-- horizon after to -->
-      <line
-        x1="0"
-        x2="20000"
-        y1="12"
-        y2="12"
-      />
-    </g>
-  </g>
-  
   <g>
     
     <g>
@@ -56,7 +60,7 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
       </title>
       <circle
         cx="0"
-        cy="1.2"
+        cy="5"
         fill="green"
         r="11"
         stroke="#000"
@@ -69,7 +73,7 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
       </title>
       <circle
         cx="0"
-        cy="12"
+        cy="50"
         fill="green"
         r="11"
         stroke="#000"
@@ -93,52 +97,56 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
 
 exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 1`] = `
 <g>
-  
-  <g>
-    <g
-      class="view-only"
-      fill="none"
-      stroke="#fff"
-      stroke-width="1"
-    >
-      <!-- horizon before from -->
-      <line
-        x1="-20000"
-        x2="0"
-        y1="1"
-        y2="1"
-      />
-      <!-- horizon after to -->
+  <g
+    class="view-only"
+  >
+    <g>
       
-      <line
-        stroke-width="1"
-        x1="0"
-        x2="0"
-        y1="1"
-        y2="10"
-      />
+      <g>
+        <g
+          fill="none"
+          stroke="#fff"
+          stroke-width="1"
+        >
+          <!-- horizon before from -->
+          <line
+            x1="-20000"
+            x2="0"
+            y1="5"
+            y2="5"
+          />
+          <!-- horizon after to -->
+          
+          <line
+            stroke-width="1"
+            x1="0"
+            x2="0"
+            y1="5"
+            y2="50"
+          />
+          
+        </g>
+      </g>
+      <g>
+        <g
+          fill="none"
+          stroke="#fff"
+          stroke-width="1"
+        >
+          <!-- horizon before from -->
+          <!--v-if-->
+          <!-- horizon after to -->
+          <line
+            x1="0"
+            x2="20000"
+            y1="50"
+            y2="50"
+          />
+        </g>
+      </g>
       
     </g>
   </g>
-  <g>
-    <g
-      class="view-only"
-      fill="none"
-      stroke="#fff"
-      stroke-width="1"
-    >
-      <!-- horizon before from -->
-      <!--v-if-->
-      <!-- horizon after to -->
-      <line
-        x1="0"
-        x2="20000"
-        y1="10"
-        y2="10"
-      />
-    </g>
-  </g>
-  
   <g>
     
     <g>
@@ -147,7 +155,7 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
       </title>
       <circle
         cx="0"
-        cy="1"
+        cy="5"
         fill="orange"
         r="5"
         stroke="#000"
@@ -160,7 +168,7 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
       </title>
       <circle
         cx="0"
-        cy="10"
+        cy="50"
         fill="#fff"
         r="5"
         stroke="#000"

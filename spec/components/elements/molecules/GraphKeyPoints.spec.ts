@@ -22,7 +22,7 @@ import Target from '/@/components/elements/molecules/GraphKeyPoints.vue'
 import { getCurve, getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import { getKeyframeDefaultPropsMap } from '/@/utils/keyframes'
 
-const keyFrames = [
+const keyframes = [
   getKeyframeBone({
     id: 'a',
     points: {
@@ -49,10 +49,13 @@ describe('src/components/elements/molecules/GraphKeyPoints.vue', () => {
       const wrapper = mount(Target, {
         props: {
           pointKey: 'translateX',
-          keyFrames,
-          valueWidth: 1.2,
+          keyframes,
           color: 'green',
-          scale: 2.2,
+        },
+        global: {
+          provide: {
+            scale: 2.2,
+          },
         },
       })
       expect(wrapper.element).toMatchSnapshot()
@@ -61,7 +64,7 @@ describe('src/components/elements/molecules/GraphKeyPoints.vue', () => {
       const wrapper = mount(Target, {
         props: {
           pointKey: 'translateX',
-          keyFrames,
+          keyframes,
           selectedStateMap: { a: getKeyframeDefaultPropsMap(() => true) },
         },
       })

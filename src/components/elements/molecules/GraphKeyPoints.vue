@@ -213,10 +213,6 @@ export default defineComponent({
       type: Object as PropType<IdMap<KeyframeSelectedState>>,
       default: () => ({}),
     },
-    valueWidth: {
-      type: Number,
-      default: 1,
-    },
     color: {
       type: String,
       default: '#fff',
@@ -224,12 +220,14 @@ export default defineComponent({
   },
   emits: ['select', 'shift-select', 'down-control'],
   setup(props, { emit }) {
+    const { settings } = useSettings()
+
     const curves = computed(() =>
       getCurves({
         keyframes: props.keyframes,
         selectedStateMap: props.selectedStateMap,
         pointKey: props.pointKey,
-        valueWidth: props.valueWidth,
+        valueWidth: settings.graphValueWidth,
       })
     )
 
@@ -249,8 +247,6 @@ export default defineComponent({
     function downControl(keyframeId: string, state: CurveSelectedState) {
       emit('down-control', keyframeId, props.pointKey, state)
     }
-
-    const { settings } = useSettings()
 
     return {
       scale: inject<number>('scale', 1),

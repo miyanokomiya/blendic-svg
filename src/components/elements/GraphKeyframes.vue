@@ -26,7 +26,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         :point-key="key"
         :keyframes="getKeyframes(targetId, key)"
         :selected-state-map="selectedKeyframeMap"
-        :value-width="valueWidth"
         :color="colorMap[key]"
         @select="select"
         @shift-select="shiftSelect"
@@ -46,7 +45,6 @@ import {
   toRaw,
   watch,
 } from 'vue'
-import { useSettings } from '/@/composables/settings'
 import { IdMap } from '/@/models'
 import {
   CurveSelectedState,
@@ -80,8 +78,6 @@ export default defineComponent({
   },
   emits: ['select', 'shift-select', 'down-control'],
   setup(props, { emit }) {
-    const { settings } = useSettings()
-
     const keyframeMapByTargetId = computed(() => {
       return getKeyframeMapByTargetId(
         Object.keys(props.keyframeMapByFrame).flatMap((frame) => {
@@ -171,10 +167,8 @@ export default defineComponent({
     return {
       keyframePointsMapByTargetId,
       cachedKeyframePointsMapByTargetId,
-      valueWidth: computed(() => settings.graphValueWidth),
       select,
       shiftSelect,
-      selectedColor: settings.selectedColor,
       downControl,
       getKeyframes,
     }

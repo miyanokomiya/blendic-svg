@@ -50,7 +50,6 @@ describe('src/components/elements/molecules/GraphKeyPoints.vue', () => {
         props: {
           pointKey: 'translateX',
           keyframes,
-          valueWidth: 1.2,
           color: 'green',
         },
         global: {

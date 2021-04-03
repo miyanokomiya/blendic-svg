@@ -28,7 +28,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         :selected-state-map="selectedKeyframeMap"
         :value-width="valueWidth"
         :color="colorMap[key]"
-        :scale="scale"
         @select="select"
         @shift-select="shiftSelect"
         @down-control="downControl"
@@ -66,10 +65,6 @@ export default defineComponent({
     GraphKeyPoints,
   },
   props: {
-    scale: {
-      type: Number,
-      default: 1,
-    },
     keyframeMapByFrame: {
       type: Object as PropType<IdMap<KeyframeBone[]>>,
       default: () => ({}),

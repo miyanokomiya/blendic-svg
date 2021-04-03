@@ -62,7 +62,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch, computed, PropType } from 'vue'
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  watch,
+  computed,
+  PropType,
+  provide,
+} from 'vue'
 import { getPointInTarget } from 'okanvas'
 import { useWindow } from '../composables/window'
 import { useCanvas } from '../composables/canvas'
@@ -142,6 +150,8 @@ export default defineComponent({
         emit('click-any')
       }
     }
+
+    provide('scale', canvas.value.scale)
 
     return {
       scale: canvas.value.scale,

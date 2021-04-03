@@ -57,7 +57,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { add, IVec2 } from 'okageo'
-import { computed, defineComponent, PropType } from 'vue'
+import { computed, defineComponent, inject, PropType } from 'vue'
 import { IdMap } from '/@/models'
 import {
   CurveName,
@@ -221,10 +221,6 @@ export default defineComponent({
       type: String,
       default: '#fff',
     },
-    scale: {
-      type: Number,
-      default: 1,
-    },
   },
   emits: ['select', 'shift-select', 'down-control'],
   setup(props, { emit }) {
@@ -257,6 +253,7 @@ export default defineComponent({
     const { settings } = useSettings()
 
     return {
+      scale: inject<number>('scale', 1),
       selectedColor: computed(() => settings.selectedColor),
       curves,
       select,

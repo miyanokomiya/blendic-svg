@@ -52,7 +52,11 @@ describe('src/components/elements/molecules/GraphKeyPoints.vue', () => {
           keyframes,
           valueWidth: 1.2,
           color: 'green',
-          scale: 2.2,
+        },
+        global: {
+          provide: {
+            scale: 2.2,
+          },
         },
       })
       expect(wrapper.element).toMatchSnapshot()

@@ -12,7 +12,7 @@
     "lint-json": "yarn prettier -c ./*.json"
   },
   "dependencies": {
-    "okageo": "^2.0.6",
+    "okageo": "^2.0.9",
     "okanvas": "^0.0.4",
     "ress": "^3.0.0",
     "uuid": "^8.3.2",

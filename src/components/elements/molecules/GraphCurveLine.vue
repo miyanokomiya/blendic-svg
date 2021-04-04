@@ -35,7 +35,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :x2="curve.from.x + 20000"
       :y2="curve.from.y"
     />
-    <template v-else>
+    <template v-else-if="curve.to">
       <CurveBezier3Vue
         v-if="curve.name === 'bezier3'"
         :c0="curve.from"
@@ -66,20 +66,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { IVec2 } from 'okageo'
 import { defineComponent, PropType } from 'vue'
-import { CurveName } from '/@/models/keyframe'
 import CurveBezier3Vue from '/@/components/elements/molecules/CurveBezier3.vue'
 import CurveConstant from '/@/components/elements/molecules/CurveConstant.vue'
-
-type CurveInfo = {
-  id: string
-  name: CurveName
-  from: IVec2
-  to: IVec2
-  fixedC1?: IVec2
-  fixedC2?: IVec2
-}
+import { CurveInfo } from '/@/utils/graphCurves'
 
 export default defineComponent({
   components: { CurveBezier3Vue, CurveConstant },

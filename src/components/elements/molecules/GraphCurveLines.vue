@@ -24,29 +24,18 @@ Copyright (C) 2021, Tomoya Komiyama.
         :curve="curve"
         :color="color"
         :scale="scale"
-        :first="curve.order === 'first'"
-        :last="curve.order === 'last'"
+        :first="curve.first"
+        :last="curve.last"
       />
     </g>
   </g>
 </template>
 
 <script lang="ts">
-import { IVec2 } from 'okageo'
 import { defineComponent, PropType } from 'vue'
-import { CurveName } from '/@/models/keyframe'
 import GraphCurveLine from '/@/components/elements/molecules/GraphCurveLine.vue'
 import { IdMap } from '/@/models'
-
-type CurveInfo = {
-  id: string
-  name: CurveName
-  from: IVec2
-  to: IVec2
-  order: 'first' | 'inner' | 'last'
-  fixedC1?: IVec2
-  fixedC2?: IVec2
-}
+import { CurveInfo } from '/@/utils/graphCurves'
 
 export default defineComponent({
   components: { GraphCurveLine },

@@ -11,7 +11,7 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot no keyframe 1`] = 
     <label
       class="label"
     >
-      Axis Value
+      Value Scale
     </label>
     <div
       class="block-content"
@@ -50,7 +50,7 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyf
     <label
       class="label"
     >
-      Axis Value
+      Value Scale
     </label>
     <div
       class="block-content"
@@ -74,6 +74,7 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyf
     </div>
     
   </div>
+  
   <div
     class="row-block"
   >
@@ -88,7 +89,7 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyf
     >
       
       <span
-        class="select-root field"
+        class="select-root"
       >
         <select>
           <!--v-if-->
@@ -115,5 +116,37 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyf
     </div>
     
   </div>
+  <div
+    class="row-block"
+  >
+    
+    <label
+      class="label"
+    >
+      Value
+    </label>
+    <div
+      class="block-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  
 </div>
 `;

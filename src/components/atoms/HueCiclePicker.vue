@@ -39,11 +39,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { getRadian, IVec2, sub } from 'okageo'
-import { getPagePosition, useDrag } from 'okanvas'
+import { DragArgs, getPagePosition, useDrag } from 'okanvas'
 import { computed, defineComponent, ref } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import { getContinuousRadDiff } from '/@/utils/geometry'
 import HueCicle from '/@/components/atoms/HueCicle.vue'
+import { useThrottle } from '/@/composables/throttle'
 
 export default defineComponent({
   components: { HueCicle },
@@ -92,11 +93,14 @@ export default defineComponent({
       return Math.round((rad * 180) / Math.PI)
     }
 
-    const drag = useDrag((arg) => {
+    function onDrag(arg: DragArgs) {
       const h = getHueByPoint(arg.p)
       if (h === undefined) return
       update(h)
-    })
+    }
+    const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
+
+    const drag = useDrag(throttleDrag)
     useGlobalMousemove(drag.onMove)
     useGlobalMouseup(() => {
       drag.onUp()

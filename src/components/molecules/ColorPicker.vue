@@ -60,7 +60,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { IVec2, sub } from 'okageo'
-import { getPagePosition, useDrag } from 'okanvas'
+import { DragArgs, getPagePosition, useDrag } from 'okanvas'
 import { computed, defineComponent, PropType, ref } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import {
@@ -74,6 +74,7 @@ import { clamp } from '/@/utils/geometry'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import HueCiclePicker from '/@/components/atoms/HueCiclePicker.vue'
+import { useThrottle } from '/@/composables/throttle'
 
 const RECT_SIZE = 110
 
@@ -144,9 +145,12 @@ export default defineComponent({
       update({ ...localHsva.value, s: sv.s, v: sv.v }, seriesKey.value)
     }
 
-    const drag = useDrag((arg) => {
+    function onDrag(arg: DragArgs) {
       updateByRect(arg.p)
-    })
+    }
+    const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
+
+    const drag = useDrag(throttleDrag)
     useGlobalMousemove(drag.onMove)
     useGlobalMouseup(() => {
       drag.onUp()

@@ -21,12 +21,14 @@ import { add, IVec2 } from 'okageo'
 import { IdMap } from '/@/models'
 import {
   CurveName,
+  CurveSelectedState,
   KeyframeBase,
   KeyframeName,
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
-import { getFrameX } from '/@/utils/animations'
+import { getFrameX, getInvertFrameX } from '/@/utils/animations'
+import { mapReduce } from '/@/utils/commons'
 import {
   getMonotonicBezier3Points,
   getNormalizedBezier3Points,
@@ -64,6 +66,13 @@ export function controlToPoint(c: IVec2, valueWidth: number): IVec2 {
   return {
     x: getFrameX(c.x),
     y: c.y * valueWidth,
+  }
+}
+
+export function pointToControl(c: IVec2, valueWidth: number): IVec2 {
+  return {
+    x: getInvertFrameX(c.x),
+    y: c.y / valueWidth,
   }
 }
 
@@ -155,4 +164,57 @@ export function getCurves(args: {
 
     return ret
   }, {})
+}
+
+export function moveCurveControlsMap(
+  keyframeMap: IdMap<KeyframeBase>,
+  targetMap: IdMap<IdMap<CurveSelectedState>>,
+  diff: IVec2
+): IdMap<KeyframeBase> {
+  return Object.keys(targetMap).reduce<IdMap<KeyframeBase>>((p, keyframeId) => {
+    if (keyframeMap[keyframeId]) {
+      p[keyframeId] = moveCurveControls(
+        keyframeMap[keyframeId],
+        targetMap[keyframeId],
+        diff
+      )
+    }
+    return p
+  }, {})
+}
+
+export function moveCurveControls(
+  keyframe: KeyframeBase,
+  targets: IdMap<CurveSelectedState>,
+  diff: IVec2
+): KeyframeBase {
+  return {
+    ...keyframe,
+    points: mapReduce(keyframe.points, (p, key) => {
+      const selectedState = targets[key]
+      if (!selectedState) return p
+
+      const nextIn = selectedState.controlIn
+        ? {
+            x: Math.min(p.curve.controlIn.x + diff.x, 0),
+            y: p.curve.controlIn.y + diff.y,
+          }
+        : p.curve.controlIn
+      const nextOut = selectedState.controlOut
+        ? {
+            x: Math.max(p.curve.controlOut.x + diff.x, 0),
+            y: p.curve.controlOut.y + diff.y,
+          }
+        : p.curve.controlOut
+
+      return {
+        value: p.value,
+        curve: {
+          name: p.curve.name,
+          controlIn: nextIn,
+          controlOut: nextOut,
+        },
+      }
+    }),
+  }
 }

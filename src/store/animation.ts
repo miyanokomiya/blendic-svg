@@ -676,6 +676,27 @@ function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
     redo,
   }
 }
+
+function getSelectKeyframesPropsItem(
+  selectedState: IdMap<KeyframeSelectedState>
+): HistoryItem {
+  const current = { ...selectedKeyframeMap.value }
+  const currentLast = lastSelectedKeyframeId.value
+
+  const redo = () => {
+    selectedKeyframeMap.value = selectedState
+    resetLastSelectedKeyframeId()
+  }
+  return {
+    name: 'Select Keyframe',
+    undo: () => {
+      selectedKeyframeMap.value = { ...current }
+      lastSelectedKeyframeId.value = currentLast
+    },
+    redo,
+  }
+}
+
 function getSelectKeyframeItem(
   id: string,
   selectedState?: KeyframeSelectedState,
@@ -710,10 +731,25 @@ function getSelectKeyframeItem(
   }
 }
 
-function getExecInsertKeyframeItem(keyframes: KeyframeBone[], replace = false) {
+function getExecInsertKeyframeItem(
+  keyframes: KeyframeBone[],
+  replace = false,
+  notSelect = false
+) {
   const preFrame = currentFrame.value
   const insertedKeyframes = keyframes
   const preEditTransforms = { ...editTransforms.value }
+
+  const selectItem = !notSelect
+    ? getSelectKeyframesPropsItem(
+        mapReduce(toMap(keyframes), (k) => {
+          return {
+            name: k.name,
+            props: mapReduce(k.points, () => true),
+          }
+        })
+      )
+    : undefined
 
   const { dropped } = mergeKeyframesWithDropped(
     actions.lastSelectedItem.value!.keyframes,
@@ -733,6 +769,7 @@ function getExecInsertKeyframeItem(keyframes: KeyframeBone[], replace = false) {
       editTransforms.value,
       toTargetIdMap(insertedKeyframes)
     )
+    selectItem?.redo()
   }
   return {
     name: 'Insert Keyframe',
@@ -747,6 +784,7 @@ function getExecInsertKeyframeItem(keyframes: KeyframeBone[], replace = false) {
       actions.lastSelectedItem.value!.keyframes = reverted
       currentFrame.value = preFrame
       editTransforms.value = preEditTransforms
+      selectItem?.undo()
     },
     redo,
   }
@@ -851,7 +889,11 @@ function getCompleteDuplicateKeyframesItem(
   duplicatedKeyframeList: KeyframeBone[],
   updatedKeyframeList: KeyframeBone[]
 ) {
-  const duplicatItem = getExecInsertKeyframeItem(duplicatedKeyframeList, true)
+  const duplicatItem = getExecInsertKeyframeItem(
+    duplicatedKeyframeList,
+    true,
+    true
+  )
   const updateItem = getExecUpdateKeyframeItem(toMap(updatedKeyframeList))
 
   return {

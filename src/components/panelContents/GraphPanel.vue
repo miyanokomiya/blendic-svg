@@ -19,18 +19,25 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div class="graph-panel-wrapper">
-    <BlockField label="Axis Value">
+    <BlockField label="Value Scale">
       <SliderInput v-model="settings.graphValueWidth" :min="1" :max="10" />
     </BlockField>
-    <BlockField v-if="keyframe && selectedKey" label="Interpolation">
-      <SelectField
-        :model-value="keyframe.points[selectedKey].curve.name"
-        :options="curveOptions"
-        no-placeholder
-        class="field"
-        @update:modelValue="updateCurve"
-      />
-    </BlockField>
+    <template v-if="targetPoint">
+      <BlockField label="Interpolation">
+        <SelectField
+          :model-value="targetPoint.curve.name"
+          :options="curveOptions"
+          no-placeholder
+          @update:modelValue="updateCurveName"
+        />
+      </BlockField>
+      <BlockField label="Value">
+        <SliderInput
+          :model-value="targetPoint.value"
+          @update:modelValue="updateCurveValue"
+        />
+      </BlockField>
+    </template>
   </div>
 </template>
 
@@ -40,6 +47,7 @@ import {
   CurveName,
   getCurve,
   KeyframeBase,
+  KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import BlockField from '/@/components/atoms/BlockField.vue'
@@ -73,23 +81,47 @@ export default defineComponent({
       return Object.keys(props.selectedState.props)[0]
     })
 
-    function updateCurve(curveName: CurveName) {
+    const targetPoint = computed(() => {
+      if (!selectedKey.value) return
+      return props.keyframe?.points[selectedKey.value]
+    })
+
+    function updateCurve(
+      updateFn: (p: KeyframePoint) => KeyframePoint,
+      seriesKey?: string
+    ) {
       if (!props.keyframe || !props.selectedState) return
       emit(
         'update',
-        updatePoints(props.keyframe, props.selectedState, (p) => ({
+        updatePoints(props.keyframe, props.selectedState, updateFn),
+        seriesKey
+      )
+    }
+
+    function updateCurveName(curveName: CurveName) {
+      updateCurve((p) => ({
+        ...p,
+        curve: getCurve(curveName),
+      }))
+    }
+
+    function updateCurveValue(value: number, seriesKey?: string) {
+      updateCurve(
+        (p) => ({
           ...p,
-          curve: getCurve(curveName),
-        }))
+          value,
+        }),
+        seriesKey
       )
     }
 
     const { settings } = useSettings()
 
     return {
-      selectedKey,
+      targetPoint,
       curveOptions,
-      updateCurve,
+      updateCurveName,
+      updateCurveValue,
       settings,
     }
   },
@@ -103,8 +135,5 @@ h4 {
 }
 .graph-panel-wrapper {
   padding: 10px;
-}
-.field {
-  margin-bottom: 8px;
 }
 </style>

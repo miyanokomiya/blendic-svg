@@ -486,8 +486,11 @@ export default defineComponent({
       toggleBoneExpanded,
       boneTopMap,
       labelHeight,
-      updateKeyframe(keyframe: KeyframeBase) {
-        animationStore.execUpdateKeyframes({ [keyframe.id]: keyframe })
+      updateKeyframe(keyframe: KeyframeBase, seriesKey?: string) {
+        animationStore.execUpdateKeyframes(
+          { [keyframe.id]: keyframe },
+          seriesKey
+        )
       },
       currentCanvas: canvasList.current,
       setCurrentCanvas: canvasList.setCanvas,

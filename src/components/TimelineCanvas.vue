@@ -77,6 +77,7 @@ import { useCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import { add, IVec2 } from 'okageo'
 import { PopupMenuItem } from '/@/composables/modes/types'
+import { useThrottle } from '/@/composables/throttle'
 
 export default defineComponent({
   components: { PopupMenuList },
@@ -151,6 +152,25 @@ export default defineComponent({
       }
     }
 
+    function mousemove(e: MouseEvent) {
+      canvas.value.mousePoint.value = getPointInTarget(e)
+
+      if (canvas.value.dragInfo.value) {
+        emit('drag', {
+          current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
+          start: canvas.value.viewToCanvas(canvas.value.dragInfo.value.downAt),
+        })
+      } else if (canvas.value.viewMovingInfo.value) {
+        canvas.value.viewMove()
+      } else if (canvas.value.editStartPoint.value) {
+        emit('mousemove', {
+          current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
+          start: canvas.value.viewToCanvas(canvas.value.editStartPoint.value),
+        })
+      }
+    }
+    const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
+
     provide('scale', canvas.value.scale)
 
     return {
@@ -180,25 +200,7 @@ export default defineComponent({
       downMiddle: canvas.value.downMiddle,
       upMiddle: canvas.value.upMiddle,
       leave: canvas.value.leave,
-      mousemove: (e: MouseEvent) => {
-        canvas.value.mousePoint.value = getPointInTarget(e)
-
-        if (canvas.value.dragInfo.value) {
-          emit('drag', {
-            current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
-            start: canvas.value.viewToCanvas(
-              canvas.value.dragInfo.value.downAt
-            ),
-          })
-        } else if (canvas.value.viewMovingInfo.value) {
-          canvas.value.viewMove()
-        } else if (canvas.value.editStartPoint.value) {
-          emit('mousemove', {
-            current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
-            start: canvas.value.viewToCanvas(canvas.value.editStartPoint.value),
-          })
-        }
-      },
+      mousemove: throttleMousemove,
       clickAny,
       keyDownEscape: () => {
         emit('escape')

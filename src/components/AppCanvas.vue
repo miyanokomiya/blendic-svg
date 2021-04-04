@@ -135,6 +135,7 @@ import { useAnimationStore } from '../store/animation'
 import { useSettings } from '/@/composables/settings'
 import { centerizeView, useCanvas } from '../composables/canvas'
 import { isCtrlOrMeta } from '/@/utils/devices'
+import { useThrottle } from '/@/composables/throttle'
 
 type KeyType =
   | 'g'
@@ -266,6 +267,25 @@ export default defineComponent({
       popupMenuListPosition.value = canvas.mousePoint.value
     })
 
+    function mousemove(e: MouseEvent) {
+      canvas.mousePoint.value = getPointInTarget(e)
+
+      if (canvas.dragInfo.value) {
+        // rect select
+      } else if (canvas.viewMovingInfo.value) {
+        canvas.viewMove()
+      } else {
+        if (!canvas.editStartPoint.value) return
+        canvasStore.mousemove({
+          current: canvas.viewToCanvas(canvas.mousePoint.value),
+          start: canvas.viewToCanvas(canvas.editStartPoint.value),
+          ctrl: isCtrlOrMeta(e),
+          scale: canvas.scale.value,
+        })
+      }
+    }
+    const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
+
     return {
       showAxis: computed(() => settings.showAxis),
       scale: canvas.scale,
@@ -314,23 +334,7 @@ export default defineComponent({
         canvas.upLeft()
       },
       leave: canvas.leave,
-      mousemove: (e: MouseEvent) => {
-        canvas.mousePoint.value = getPointInTarget(e)
-
-        if (canvas.dragInfo.value) {
-          // rect select
-        } else if (canvas.viewMovingInfo.value) {
-          canvas.viewMove()
-        } else {
-          if (!canvas.editStartPoint.value) return
-          canvasStore.mousemove({
-            current: canvas.viewToCanvas(canvas.mousePoint.value),
-            start: canvas.viewToCanvas(canvas.editStartPoint.value),
-            ctrl: isCtrlOrMeta(e),
-            scale: canvas.scale.value,
-          })
-        }
-      },
+      mousemove: throttleMousemove,
       keyDownTab: () => {
         emit('tab')
       },

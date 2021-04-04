@@ -18,7 +18,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getCurve, getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
-import { controlToPoint, getCurves, toPoint } from '/@/utils/graphCurves'
+import {
+  controlToPoint,
+  getCurves,
+  moveCurveControls,
+  moveCurveControlsMap,
+  pointToControl,
+  toPoint,
+} from '/@/utils/graphCurves'
 import { frameWidth } from '/@/models'
 
 describe('src/utils/graphCurves.ts', () => {
@@ -36,6 +43,15 @@ describe('src/utils/graphCurves.ts', () => {
       expect(controlToPoint({ x: 3, y: 2 }, 10)).toEqual({
         x: 3 * frameWidth,
         y: 20,
+      })
+    })
+  })
+
+  describe('pointToControl', () => {
+    it('should convert axes graph canvas => curve control', () => {
+      expect(pointToControl({ x: 3 * frameWidth, y: 20 }, 10)).toEqual({
+        x: 3,
+        y: 2,
       })
     })
   })
@@ -194,6 +210,91 @@ describe('src/utils/graphCurves.ts', () => {
       expect(ret.c.controlOut).toBe(undefined)
       expect(ret.c.c1).toBe(undefined)
       expect(ret.c.c2).toBe(undefined)
+    })
+  })
+
+  describe('moveCurveControlsMap', () => {
+    it('should move selected controls of curves in map', () => {
+      const ret = moveCurveControlsMap(
+        {
+          a: getKeyframeBone({
+            id: 'a',
+            points: {
+              translateX: getKeyframePoint({
+                curve: {
+                  ...getCurve('bezier3'),
+                  controlIn: { x: -100, y: 200 },
+                  controlOut: { x: 100, y: 200 },
+                },
+              }),
+            },
+          }),
+          b: getKeyframeBone({
+            id: 'b',
+            points: {
+              translateX: getKeyframePoint(),
+            },
+          }),
+        },
+        {
+          a: { translateX: { controlIn: true } },
+          c: { translateX: { controlIn: true } },
+        },
+        { x: 10, y: 20 }
+      )
+      expect(ret.a.points.translateX.curve.controlIn).toEqual({
+        x: -90,
+        y: 220,
+      })
+      expect(ret.b).toBe(undefined)
+      expect(ret.c).toBe(undefined)
+    })
+  })
+
+  describe('moveCurveControls', () => {
+    it('should move selected controls of curves', () => {
+      const ret = moveCurveControls(
+        getKeyframeBone({
+          frame: 1,
+          points: {
+            translateX: getKeyframePoint({
+              value: 2,
+              curve: {
+                ...getCurve('bezier3'),
+                controlIn: { x: -100, y: 200 },
+                controlOut: { x: 100, y: 200 },
+              },
+            }),
+            translateY: getKeyframePoint({
+              value: 2,
+              curve: getCurve('bezier3'),
+            }),
+          },
+        }),
+        {
+          translateX: { controlIn: true },
+        },
+        { x: 10, y: 20 }
+      )
+      expect(ret).toEqual(
+        getKeyframeBone({
+          frame: 1,
+          points: {
+            translateX: getKeyframePoint({
+              value: 2,
+              curve: {
+                ...getCurve('bezier3'),
+                controlIn: { x: -90, y: 220 },
+                controlOut: { x: 100, y: 200 },
+              },
+            }),
+            translateY: getKeyframePoint({
+              value: 2,
+              curve: getCurve('bezier3'),
+            }),
+          },
+        })
+      )
     })
   })
 })

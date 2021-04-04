@@ -18,13 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { reactive, computed, ComputedRef, ref } from 'vue'
-import {
-  Transform,
-  getTransform,
-  IdMap,
-  toMap,
-  frameWidth,
-} from '/@/models/index'
+import { Transform, getTransform, IdMap, toMap } from '/@/models/index'
 import {
   KeyframeEditCommand,
   KeyframeEditModeBase,
@@ -47,6 +41,7 @@ import { batchUpdatePoints, splitKeyframeBySelected } from '/@/utils/keyframes'
 import { curveItems } from '/@/utils/keyframes/core'
 import { IVec2, sub } from 'okageo'
 import { useSettings } from '/@/composables/settings'
+import { pointToControl, moveCurveControlsMap } from '/@/utils/graphCurves'
 
 interface State {
   command: KeyframeEditCommand
@@ -398,47 +393,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   const { settings } = useSettings()
 
   function viewToControl(v: IVec2): IVec2 {
-    return {
-      x: v.x / frameWidth,
-      y: v.y / settings.graphValueWidth,
-    }
-  }
-
-  function moveCurves(
-    keyframe: KeyframeBase,
-    targets: IdMap<CurveSelectedState>,
-    v: IVec2
-  ): KeyframeBase {
-    const diff = viewToControl(v)
-    return {
-      ...keyframe,
-      points: mapReduce(keyframe.points, (p, key) => {
-        const selectedState = targets[key]
-        if (!selectedState) return p
-
-        const nextIn = selectedState.controlIn
-          ? {
-              x: Math.min(p.curve.controlIn.x + diff.x, 0),
-              y: p.curve.controlIn.y + diff.y,
-            }
-          : p.curve.controlIn
-        const nextOut = selectedState.controlOut
-          ? {
-              x: Math.max(p.curve.controlOut.x + diff.x, 0),
-              y: p.curve.controlOut.y + diff.y,
-            }
-          : p.curve.controlOut
-
-        return {
-          value: p.value,
-          curve: {
-            name: p.curve.name,
-            controlIn: nextIn,
-            controlOut: nextOut,
-          },
-        }
-      }),
-    }
+    return pointToControl(v, settings.graphValueWidth)
   }
 
   function drag(arg: EditMovement) {
@@ -449,23 +404,15 @@ export function useKeyframeEditMode(): KeyframeEditMode {
       )
       state.editMovement = arg
     } else if (state.command === 'grab-control') {
-      const diff = state.editMovement
-        ? sub(arg.current, state.editMovement.current)
-        : undefined
+      if (state.editMovement) {
+        const diff = viewToControl(sub(arg.current, state.editMovement.current))
 
-      if (diff) {
-        const controlMap = state.selectedControlMap
-        if (controlMap) {
-          const updatedMap = Object.keys(controlMap).reduce<
-            IdMap<KeyframeBase>
-          >((p, keyframeId) => {
-            p[keyframeId] = moveCurves(
-              animationStore.visibledKeyframeMap.value[keyframeId],
-              controlMap[keyframeId],
-              diff
-            )
-            return p
-          }, {})
+        if (state.selectedControlMap) {
+          const updatedMap = moveCurveControlsMap(
+            animationStore.visibledKeyframeMap.value,
+            state.selectedControlMap,
+            diff
+          )
           animationStore.execUpdateKeyframes(updatedMap, seriesKey.value)
         }
       }

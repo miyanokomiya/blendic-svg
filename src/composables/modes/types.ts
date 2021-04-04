@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { ComputedRef } from '@vue/reactivity'
 import { IRectangle, IVec2 } from 'okageo'
 import { Transform } from '/@/models'
+import { CurveSelectedState } from '/@/models/keyframe'
 
 export type CanvasMode = 'object' | 'edit' | 'pose' | 'weight'
 export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
@@ -94,7 +95,7 @@ export interface KeyframeEditModeBase {
   grabControl: (
     keyframeId: string,
     pointKey: string,
-    controls: { [key: string]: boolean }
+    controls: CurveSelectedState
   ) => void
 }
 

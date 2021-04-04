@@ -85,6 +85,10 @@ export function getFrameX(frame: number): number {
   return frame * frameWidth
 }
 
+export function getInvertFrameX(x: number): number {
+  return x / frameWidth
+}
+
 export function getKeyframeMapByFrame<T extends KeyframeBase>(
   keyframes: T[]
 ): IdMap<T[]> {

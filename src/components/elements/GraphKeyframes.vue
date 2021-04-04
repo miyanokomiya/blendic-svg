@@ -136,9 +136,18 @@ export default defineComponent({
       )
     }
     function getKeyframes(targetId: string, key: string): KeyframeBase[] {
-      return !isSelected(targetId, key)
+      const list = !isSelected(targetId, key)
         ? keyframePointsMapByTargetIdCache.cache.value![targetId].props[key]
         : keyframePointsMapByTargetId.value[targetId].props[key]
+
+      if (!list) {
+        console.warn(
+          `Invalid cache for id: ${targetId} key: ${key}: Fallback to original data.`
+        )
+        return keyframePointsMapByTargetId.value![targetId].props[key]
+      } else {
+        return list
+      }
     }
 
     return {

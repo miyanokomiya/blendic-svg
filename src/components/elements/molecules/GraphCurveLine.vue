@@ -35,7 +35,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :x2="curve.from.x + 20000"
       :y2="curve.from.y"
     />
-    <template v-else>
+    <template v-else-if="curve.to">
       <CurveBezier3Vue
         v-if="curve.name === 'bezier3'"
         :c0="curve.from"
@@ -76,7 +76,7 @@ type CurveInfo = {
   id: string
   name: CurveName
   from: IVec2
-  to: IVec2
+  to?: IVec2
   fixedC1?: IVec2
   fixedC2?: IVec2
 }

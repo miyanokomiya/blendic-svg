@@ -81,9 +81,10 @@ type CurveInfo = {
   keyframeName: KeyframeName
   name: CurveName
   selected: boolean
-  order: 'first' | 'inner' | 'last'
+  first: boolean
+  last: boolean
   from: IVec2
-  to: IVec2
+  to?: IVec2
   c1?: IVec2
   c2?: IVec2
   fixedC1?: IVec2
@@ -114,7 +115,7 @@ function createCurveInfo(
   valueWidth: number
 ): CurveInfo {
   if (index === keyframes.length - 1) {
-    return { ...base, to: base.from }
+    return { ...base }
   }
 
   const next = keyframes[index + 1]
@@ -178,7 +179,8 @@ function getCurves(args: {
         keyframeName: k.name,
         name: p.curve.name,
         selected: selectedState ? selectedState.props[args.pointKey] : false,
-        order: i === 0 ? 'first' : i === length - 1 ? 'last' : 'inner',
+        first: i === 0,
+        last: i === length - 1,
         from,
         to: from,
         controlIn,

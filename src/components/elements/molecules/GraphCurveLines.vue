@@ -24,8 +24,8 @@ Copyright (C) 2021, Tomoya Komiyama.
         :curve="curve"
         :color="color"
         :scale="scale"
-        :first="curve.order === 'first'"
-        :last="curve.order === 'last'"
+        :first="curve.first"
+        :last="curve.last"
       />
     </g>
   </g>
@@ -42,8 +42,9 @@ type CurveInfo = {
   id: string
   name: CurveName
   from: IVec2
-  to: IVec2
-  order: 'first' | 'inner' | 'last'
+  to?: IVec2
+  first: boolean
+  last: boolean
   fixedC1?: IVec2
   fixedC2?: IVec2
 }

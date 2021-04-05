@@ -78,7 +78,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                 :selected-all-bone-list="selectedAllBoneList"
                 :label-width="size + 1"
                 :scroll-y="viewOrigin.y"
-                :bone-expanded-map="boneExpandedMap"
+                :bone-expanded-map="expandedMap"
                 :bone-top-map="boneTopMap"
                 :height="labelHeight"
                 @toggle-bone-expanded="toggleBoneExpanded"
@@ -126,7 +126,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                         :bone-ids="selectedAllBoneIdList"
                         :selected-keyframe-map="selectedKeyframeMap"
                         :scroll-y="viewOrigin.y"
-                        :bone-expanded-map="boneExpandedMap"
+                        :bone-expanded-map="expandedMap"
                         :bone-top-map="boneTopMap"
                         :height="labelHeight"
                         @select="selectKeyframe"
@@ -211,7 +211,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watchEffect } from 'vue'
+import { computed, defineComponent, Ref, ref, watch, watchEffect } from 'vue'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import SelectField from './atoms/SelectField.vue'
@@ -233,33 +233,16 @@ import {
   mergeKeyframesWithDropped,
 } from '../utils/animations'
 import { IVec2 } from 'okageo'
-import { mapReduce, toList } from '/@/utils/commons'
+import { dropMapIfFalse, toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
 import { useKeyframeEditMode } from '../composables/modes/keyframeEditMode'
 import { IdMap } from '/@/models'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'
-import { EditMovement, KeyframeModeName } from '/@/composables/modes/types'
-import { KeyframeBase } from '/@/models/keyframe'
+import { EditMovement } from '/@/composables/modes/types'
+import { CurveSelectedState, KeyframeBase } from '/@/models/keyframe'
 
 const labelHeight = 24
-
-function useMode() {
-  const name = ref<KeyframeModeName>('action')
-  const mode = computed(() => {
-    switch (name.value) {
-      case 'action':
-        return useKeyframeEditMode()
-      default:
-        return useKeyframeEditMode()
-    }
-  })
-  function setMode(val: KeyframeModeName) {
-    name.value = val
-  }
-
-  return { name, mode, setMode }
-}
 
 type CanvasType = 'action' | 'graph'
 const canvasOptions: { label: string; value: CanvasType }[] = [
@@ -276,6 +259,121 @@ function useCanvasList() {
     current,
     setCanvas,
     canvasOptions: computed(() => canvasOptions),
+  }
+}
+
+function useCanvasMode(canvasType: Ref<CanvasType>) {
+  const mode = computed(() => {
+    console.log(canvasType.value)
+    switch (canvasType.value) {
+      case 'action':
+        return useKeyframeEditMode('action')
+      default:
+        return useKeyframeEditMode('graph')
+    }
+  })
+
+  return {
+    mode,
+    handlers: {
+      downCurrentFrame() {
+        mode.value.grabCurrentFrame()
+      },
+      downLeft(arg: EditMovement) {
+        mode.value.drag(arg)
+      },
+      drag(arg: EditMovement) {
+        mode.value.drag(arg)
+      },
+      upLeft() {
+        mode.value.upLeft()
+      },
+      escape() {
+        mode.value.cancel()
+      },
+      selectKeyframe(id: string, selectedState: { [key: string]: boolean }) {
+        mode.value.select(id, selectedState)
+      },
+      shiftSelectKeyframe(
+        id: string,
+        selectedState: { [key: string]: boolean }
+      ) {
+        mode.value.shiftSelect(id, selectedState)
+      },
+      selectKeyframeByFrame(frame: number) {
+        mode.value.selectFrame(frame)
+      },
+      shiftSelectKeyframeByFrame(frame: number) {
+        mode.value.shiftSelectFrame(frame)
+      },
+      selectAll() {
+        mode.value.selectAll()
+      },
+      grab() {
+        mode.value.setEditMode('grab')
+      },
+      interpolation() {
+        mode.value.setEditMode('interpolation')
+      },
+      deleteKeyframes() {
+        mode.value.execDelete()
+      },
+      clipKeyframes() {
+        mode.value.clip()
+      },
+      pasteKeyframes() {
+        mode.value.paste()
+      },
+      duplicateKeyframes() {
+        mode.value.duplicate()
+      },
+      clickEmpty() {
+        mode.value.clickEmpty()
+      },
+      mousemove(arg: EditMovement) {
+        mode.value.mousemove(arg)
+      },
+      grabControl(
+        keyframeId: string,
+        pointKey: string,
+        controls: CurveSelectedState
+      ) {
+        mode.value.grabControl(keyframeId, pointKey, controls)
+      },
+    },
+  }
+}
+
+const keyframePointColorMap = {
+  translateX: 'red',
+  translateY: 'green',
+  rotate: 'blue',
+  scaleX: 'red',
+  scaleY: 'green',
+}
+
+function useKeyframeExpanded(getIds: () => string[]) {
+  const expandedMap = ref<IdMap<boolean>>({})
+
+  function toggleExpanded(boneId: string) {
+    expandedMap.value[boneId] = !expandedMap.value[boneId]
+  }
+
+  watch(getIds, (ids) => {
+    const idMap = ids.reduce<{ [id: string]: any }>(
+      (p, c) => ({ ...p, [c]: true }),
+      {}
+    )
+    // drop expanded state if the target is removed
+    expandedMap.value = dropMapIfFalse(
+      expandedMap.value,
+      (_, id) => id in idMap
+    )
+  })
+
+  return {
+    expandedMap,
+    toggleExpanded,
   }
 }
 
@@ -315,7 +413,8 @@ export default defineComponent({
       viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
     })
 
-    const keyframeEditMode = useMode()
+    const canvasList = useCanvasList()
+    const canvasMode = useCanvasMode(canvasList.current)
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
     const selectedAllBoneIdList = computed(() =>
@@ -326,21 +425,25 @@ export default defineComponent({
     )
 
     const keyframeMapByFrame = computed(() => {
-      return getKeyframeMapByFrame(
-        mergeKeyframesWithDropped(
-          // fixed keyframes
-          toList({
-            ...animationStore.visibledKeyframeMap.value,
-            ...(keyframeEditMode.mode.value.editedKeyframeMap.value
-              ?.notSelected ?? {}),
-          }),
-          // moved keyframes
-          toList(
-            keyframeEditMode.mode.value.editedKeyframeMap.value?.selected ?? {}
-          ),
-          true
-        ).merged
-      )
+      const splited = canvasMode.mode.value.editedKeyframeMap.value
+      if (!splited) {
+        return getKeyframeMapByFrame(
+          toList(animationStore.visibledKeyframeMap.value)
+        )
+      } else {
+        return getKeyframeMapByFrame(
+          mergeKeyframesWithDropped(
+            // fixed keyframes
+            toList({
+              ...animationStore.visibledKeyframeMap.value,
+              ...splited.notSelected,
+            }),
+            // moved keyframes
+            toList(splited.selected),
+            true
+          ).merged
+        )
+      }
     })
 
     const draftName = ref('')
@@ -357,19 +460,6 @@ export default defineComponent({
         }
       })
     )
-
-    function downCurrentFrame() {
-      keyframeEditMode.mode.value.grabCurrentFrame()
-    }
-    function downLeft(arg: EditMovement) {
-      keyframeEditMode.mode.value.drag(arg)
-    }
-    function drag(arg: EditMovement) {
-      keyframeEditMode.mode.value.drag(arg)
-    }
-    function upLeft() {
-      keyframeEditMode.mode.value.upLeft()
-    }
 
     const animationSeriesKey = ref<string>()
     let animationLoop: ReturnType<typeof useAnimationLoop>
@@ -390,35 +480,20 @@ export default defineComponent({
       )
     }
 
-    const boneExpandedMap = ref<IdMap<boolean>>({})
-    watchEffect(() => {
-      boneExpandedMap.value = mapReduce(store.boneMap.value, () => false)
-    })
-    function toggleBoneExpanded(boneId: string) {
-      boneExpandedMap.value[boneId] = !boneExpandedMap.value[boneId]
-    }
-
+    const keyframeExpanded = useKeyframeExpanded(() =>
+      Object.keys(store.boneMap.value)
+    )
     const boneTopMap = computed(() => {
       let current = 2 * labelHeight
       return selectedAllBoneIdList.value.reduce<IdMap<number>>((p, id) => {
         const top = current
-        current = current + labelHeight * (boneExpandedMap.value[id] ? 6 : 1)
+        current =
+          current +
+          labelHeight * (keyframeExpanded.expandedMap.value[id] ? 6 : 1)
         p[id] = top
         return p
       }, {})
     })
-
-    const keyframePointColorMap = computed(() => {
-      return {
-        translateX: 'red',
-        translateY: 'green',
-        rotate: 'blue',
-        scaleX: 'red',
-        scaleY: 'green',
-      }
-    })
-
-    const canvasList = useCanvasList()
 
     return {
       labelCanvas,
@@ -432,7 +507,6 @@ export default defineComponent({
       keyframeMapByFrame,
       selectedKeyframeMap: animationStore.selectedKeyframeMap,
       draftName,
-      popupMenuList: keyframeEditMode.mode.value.popupMenuList,
       changeActionName() {
         const allNames = animationStore.actions.value.map((a) => a.name)
         if (allNames.includes(draftName.value)) {
@@ -460,28 +534,8 @@ export default defineComponent({
         get: () => selectedAction.value?.id ?? '',
         set: (id: string) => animationStore.selectAction(id),
       }),
-      downCurrentFrame,
-      downLeft,
-      drag,
-      upLeft,
-      escape: keyframeEditMode.mode.value.cancel,
-      selectKeyframe: keyframeEditMode.mode.value.select,
-      shiftSelectKeyframe: keyframeEditMode.mode.value.shiftSelect,
-      selectKeyframeByFrame: keyframeEditMode.mode.value.selectFrame,
-      shiftSelectKeyframeByFrame: keyframeEditMode.mode.value.shiftSelectFrame,
-      selectAll: keyframeEditMode.mode.value.selectAll,
-      grab: () => keyframeEditMode.mode.value.setEditMode('grab'),
-      interpolation: () =>
-        keyframeEditMode.mode.value.setEditMode('interpolation'),
-      deleteKeyframes: keyframeEditMode.mode.value.execDelete,
-      clipKeyframes: keyframeEditMode.mode.value.clip,
-      pasteKeyframes: keyframeEditMode.mode.value.paste,
-      duplicateKeyframes: keyframeEditMode.mode.value.duplicate,
-      clickEmpty: keyframeEditMode.mode.value.clickEmpty,
-      mousemove: keyframeEditMode.mode.value.mousemove,
-      availableCommandList: keyframeEditMode.mode.value.availableCommandList,
-      boneExpandedMap,
-      toggleBoneExpanded,
+      expandedMap: keyframeExpanded.expandedMap,
+      toggleBoneExpanded: keyframeExpanded.toggleExpanded,
       boneTopMap,
       labelHeight,
       updateKeyframe(keyframe: KeyframeBase, seriesKey?: string) {
@@ -494,7 +548,12 @@ export default defineComponent({
       setCurrentCanvas: canvasList.setCanvas,
       canvasOptions: canvasList.canvasOptions,
       keyframePointColorMap,
-      grabControl: keyframeEditMode.mode.value.grabControl,
+
+      popupMenuList: computed(() => canvasMode.mode.value.popupMenuList.value),
+      availableCommandList: computed(
+        () => canvasMode.mode.value.availableCommandList.value
+      ),
+      ...canvasMode.handlers,
     }
   },
 })

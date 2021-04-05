@@ -66,7 +66,9 @@ export interface KeyframeEditMode extends KeyframeEditModeBase {
   editedKeyframeMap: ComputedRef<SplitedKeyframeMapBySelected | undefined>
 }
 
-export function useKeyframeEditMode(): KeyframeEditMode {
+export function useKeyframeEditMode(
+  modeType: 'action' | 'graph'
+): KeyframeEditMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
@@ -127,8 +129,10 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   const editVector = computed((): IVec2 | undefined => {
     if (!state.editMovement) return undefined
 
+    // value can be edited in graph mode
+    const v = sub(state.editMovement.current, state.editMovement.start)
     return canvasToFrameValue(
-      sub(state.editMovement.current, state.editMovement.start),
+      { x: v.x, y: modeType === 'graph' ? v.y : 0 },
       settings.graphValueWidth
     )
   })

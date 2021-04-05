@@ -26,7 +26,12 @@ import {
   PopupMenuItem,
 } from '/@/composables/modes/types'
 import { useAnimationStore } from '/@/store/animation'
-import { extractMap, mapReduce, toList } from '/@/utils/commons'
+import {
+  extractMap,
+  mapReduce,
+  regenerateIdMap,
+  toList,
+} from '/@/utils/commons'
 import { getFrameX, getNearestFrameAtPoint } from '/@/utils/animations'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { applyTransform } from '/@/utils/geometry'
@@ -37,7 +42,11 @@ import {
   getKeyframeBone,
   KeyframeBase,
 } from '/@/models/keyframe'
-import { batchUpdatePoints, splitKeyframeBySelected } from '/@/utils/keyframes'
+import {
+  batchUpdatePoints,
+  SplitedKeyframeMapBySelected,
+  splitKeyframeMapBySelected,
+} from '/@/utils/keyframes'
 import { curveItems } from '/@/utils/keyframes/core'
 import { IVec2, sub } from 'okageo'
 import { useSettings } from '/@/composables/settings'
@@ -55,13 +64,7 @@ export interface KeyframeEditMode extends KeyframeEditModeBase {
   tmpKeyframes: ComputedRef<IdMap<KeyframeBase> | undefined>
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
-  editedKeyframeMap: ComputedRef<
-    | {
-        selected: IdMap<KeyframeBase>
-        notSelected: IdMap<KeyframeBase>
-      }
-    | undefined
-  >
+  editedKeyframeMap: ComputedRef<SplitedKeyframeMapBySelected>
 }
 
 export function useKeyframeEditMode(): KeyframeEditMode {
@@ -149,54 +152,35 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     })
   })
 
-  const keyframeSelectedInfoSet = computed<{
-    selected: IdMap<KeyframeBase>
-    notSelected: IdMap<KeyframeBase>
-  }>(() => {
-    const selected: IdMap<KeyframeBase> = {}
-    const notSelected: IdMap<KeyframeBase> = {}
-
-    Object.keys(animationStore.selectedKeyframeMap.value).forEach((id) => {
-      const selectedState = animationStore.selectedKeyframeMap.value[id]
-      const keyframe = allKeyframes.value[id]
-      const splited = splitKeyframeBySelected(keyframe, selectedState)
-      if (splited.selected) {
-        selected[id] = splited.selected
-      }
-      if (splited.notSelected) {
-        const not = getKeyframeBone(splited.notSelected, true)
-        notSelected[not.id] = not
-      }
-    })
-
+  const keyframeSelectedInfoSet = computed<SplitedKeyframeMapBySelected>(() => {
+    const splited = splitKeyframeMapBySelected(
+      allKeyframes.value,
+      animationStore.selectedKeyframeMap.value
+    )
     return {
-      selected,
-      notSelected,
+      selected: splited.selected,
+      notSelected: regenerateIdMap(splited.notSelected),
     }
   })
 
-  const editedKeyframeMap = computed<
-    | {
-        selected: IdMap<KeyframeBase>
-        notSelected: IdMap<KeyframeBase>
-      }
-    | undefined
-  >(() => {
-    if (state.command !== 'grab') return
+  const editedKeyframeMap = computed<SplitedKeyframeMapBySelected | undefined>(
+    () => {
+      if (state.command !== 'grab') return
 
-    return {
-      selected: mapReduce(
-        keyframeSelectedInfoSet.value.selected,
-        (keyframe, id) => {
-          return {
-            ...keyframe,
-            frame: getEditFrames(id)!,
+      return {
+        selected: mapReduce(
+          keyframeSelectedInfoSet.value.selected,
+          (keyframe, id) => {
+            return {
+              ...keyframe,
+              frame: getEditFrames(id)!,
+            }
           }
-        }
-      ),
-      notSelected: keyframeSelectedInfoSet.value.notSelected,
+        ),
+        notSelected: keyframeSelectedInfoSet.value.notSelected,
+      }
     }
-  })
+  )
 
   function completeEdit() {
     if (!isAnySelected.value) return

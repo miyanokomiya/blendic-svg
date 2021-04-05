@@ -448,4 +448,49 @@ describe('utils/keyframes/index.ts', () => {
       })
     })
   })
+
+  describe('getKeyframe', () => {
+    it('get KeyframeBone if arg.name is "bone"', () => {
+      const ret = target.getKeyframe({ name: 'bone', id: 'a' })
+      expect(ret.name).toBe('bone')
+      expect(ret.id).toBe('a')
+    })
+  })
+
+  describe('splitKeyframeMapBySelected', () => {
+    fit('split points of the keyframe whether selected or unselected', () => {
+      const keyframeMap = {
+        a: getKeyframeBone({
+          id: 'a',
+          points: {
+            translateX: getKeyframePoint(),
+            translateY: getKeyframePoint(),
+          },
+        }),
+      }
+      const selectedKeyframeMap = {
+        a: { name: 'bone', props: { translateX: true } },
+      } as const
+      const ret = target.splitKeyframeMapBySelected(
+        keyframeMap,
+        selectedKeyframeMap
+      )
+      expect(ret.selected).toEqual({
+        a: getKeyframeBone({
+          id: 'a',
+          points: {
+            translateX: getKeyframePoint(),
+          },
+        }),
+      })
+      expect(ret.notSelected).toEqual({
+        a: getKeyframeBone({
+          id: 'a',
+          points: {
+            translateY: getKeyframePoint(),
+          },
+        }),
+      })
+    })
+  })
 })

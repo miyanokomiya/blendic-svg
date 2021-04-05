@@ -27,7 +27,7 @@ import {
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
-import { getFrameX, getInvertFrameX } from '/@/utils/animations'
+import { frameToCanvas, canvasToFrame } from '/@/utils/animations'
 import { mapReduce } from '/@/utils/commons'
 import {
   getMonotonicBezier3Points,
@@ -57,21 +57,21 @@ export function toPoint(
   valueWidth: number
 ): IVec2 {
   return {
-    x: getFrameX(frame),
+    x: frameToCanvas(frame),
     y: p.value * valueWidth,
   }
 }
 
 export function controlToPoint(c: IVec2, valueWidth: number): IVec2 {
   return {
-    x: getFrameX(c.x),
+    x: frameToCanvas(c.x),
     y: c.y * valueWidth,
   }
 }
 
 export function pointToControl(c: IVec2, valueWidth: number): IVec2 {
   return {
-    x: getInvertFrameX(c.x),
+    x: canvasToFrame(c.x),
     y: c.y / valueWidth,
   }
 }

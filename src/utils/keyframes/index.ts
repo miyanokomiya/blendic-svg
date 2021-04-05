@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { IVec2 } from 'okageo'
 import { IdMap } from '/@/models'
 import {
   getKeyframeBone,
@@ -301,5 +302,18 @@ export function splitKeyframeMapBySelected(
   return {
     selected,
     notSelected,
+  }
+}
+
+export function moveKeyframe(keyframe: KeyframeBase, v: IVec2): KeyframeBase {
+  return {
+    ...keyframe,
+    frame: keyframe.frame + v.x,
+    points: {
+      ...mapReduce(keyframe.points, (c) => ({
+        ...c,
+        value: c.value + v.y,
+      })),
+    },
   }
 }

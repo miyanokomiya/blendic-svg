@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { IVec2 } from 'okageo'
 import {
   dropListByKey,
   dropMap,
@@ -60,8 +61,31 @@ function getValueIntervalUnit(valueWidth: number): number {
   return 50
 }
 
-export function getValueByPixel(value: number, valueWidth: number): number {
+export function canvasToNearestFrame(x: number): number {
+  return Math.round(canvasToFrame(x))
+}
+
+export function canvasToFrame(x: number): number {
+  return x / frameWidth
+}
+
+export function frameToCanvas(frame: number): number {
+  return frame * frameWidth
+}
+
+export function canvasToValue(value: number, valueWidth: number): number {
   return value / valueWidth
+}
+
+/**
+ * @param p point in canvas space
+ * @return x: frame, y: value
+ */
+export function canvasToFrameValue(p: IVec2, valueWidth: number): IVec2 {
+  return {
+    x: canvasToNearestFrame(p.x),
+    y: canvasToValue(p.y, valueWidth),
+  }
 }
 
 export function visibledFrameStart(frameInterval: number, originX: number) {
@@ -75,18 +99,6 @@ export function visibledValueStart(
 ) {
   const frame = Math.floor(originY / valueWidth)
   return frame - (frame % valueInterval) - (frame > 0 ? 0 : valueInterval)
-}
-
-export function getNearestFrameAtPoint(x: number): number {
-  return Math.round(Math.max(x, 0) / frameWidth)
-}
-
-export function getFrameX(frame: number): number {
-  return frame * frameWidth
-}
-
-export function getInvertFrameX(x: number): number {
-  return x / frameWidth
 }
 
 export function getKeyframeMapByFrame<T extends KeyframeBase>(

@@ -493,4 +493,27 @@ describe('utils/keyframes/index.ts', () => {
       })
     })
   })
+
+  describe('moveKeyframe', () => {
+    it('move keyframe x => frame, y => value', () => {
+      expect(
+        target.moveKeyframe(
+          getKeyframeBone({
+            frame: 1,
+            points: {
+              translateX: getKeyframePoint({ value: 2 }),
+            },
+          }),
+          { x: 10, y: 20 }
+        )
+      ).toEqual(
+        getKeyframeBone({
+          frame: 11,
+          points: {
+            translateX: getKeyframePoint({ value: 22 }),
+          },
+        })
+      )
+    })
+  })
 })

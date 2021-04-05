@@ -17,8 +17,10 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { IVec2 } from 'okageo'
 import { IdMap } from '/@/models'
 import {
+  getKeyframeBone,
   KeyframeBase,
   KeyframeBaseProps,
   KeyframeBaseSameRange,
@@ -260,5 +262,58 @@ export function updatePoints(
     points: mapReduce(keyframe.points, (p, key) => {
       return selectedState.props[key] ? updateFn(p) : p
     }),
+  }
+}
+
+export function getKeyframe(
+  arg: Partial<KeyframeBase> & { name: KeyframeName } = { name: 'bone' },
+  generateId = false
+) {
+  switch (arg.name) {
+    case 'bone':
+      return getKeyframeBone(arg, generateId)
+  }
+}
+
+export type SplitedKeyframeMapBySelected = {
+  selected: IdMap<KeyframeBase>
+  notSelected: IdMap<KeyframeBase>
+}
+
+export function splitKeyframeMapBySelected(
+  keyframeMap: IdMap<KeyframeBase>,
+  selectedKeyframeMap: IdMap<KeyframeSelectedState>
+): SplitedKeyframeMapBySelected {
+  const selected: IdMap<KeyframeBase> = {}
+  const notSelected: IdMap<KeyframeBase> = {}
+
+  Object.keys(selectedKeyframeMap).forEach((id) => {
+    const selectedState = selectedKeyframeMap[id]
+    const keyframe = keyframeMap[id]
+    const splited = splitKeyframeBySelected(keyframe, selectedState)
+    if (splited.selected) {
+      selected[id] = splited.selected
+    }
+    if (splited.notSelected) {
+      notSelected[id] = splited.notSelected
+    }
+  })
+
+  return {
+    selected,
+    notSelected,
+  }
+}
+
+export function moveKeyframe(keyframe: KeyframeBase, v: IVec2): KeyframeBase {
+  return {
+    ...keyframe,
+    frame: keyframe.frame + v.x,
+    points: {
+      ...mapReduce(keyframe.points, (c) => ({
+        ...c,
+        value: c.value + v.y,
+      })),
+    },
   }
 }

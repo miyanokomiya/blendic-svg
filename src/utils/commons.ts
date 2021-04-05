@@ -17,6 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { v4 } from 'uuid'
+import { IdMap, toMap } from '/@/models'
 import { getNextName } from '/@/utils/relations'
 
 export function toKeyMap<T extends object>(
@@ -215,4 +217,10 @@ export function sumMap(
     },
     { ...a }
   )
+}
+
+export function regenerateIdMap<T extends { id: string }>(
+  src: IdMap<T>
+): IdMap<T> {
+  return toMap(toList(src).map((item) => ({ ...item, id: v4() })))
 }

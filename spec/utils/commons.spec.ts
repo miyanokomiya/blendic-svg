@@ -28,6 +28,7 @@ import {
   hasLeftRightName,
   mapReduce,
   mergeListByKey,
+  regenerateIdMap,
   sortByValue,
   sumMap,
   sumReduce,
@@ -389,6 +390,17 @@ describe('utils/commons.ts', () => {
         c: 21,
         d: 3,
       })
+    })
+  })
+
+  describe('regenerateIdMap', () => {
+    it('renerate all ids and make new map', () => {
+      const ret = regenerateIdMap({
+        a: { id: 'a', value: 1 },
+      })
+      const keys = Object.keys(ret)
+      expect(keys).toHaveLength(1)
+      expect(ret[keys[0]]).toEqual({ id: keys[0], value: 1 })
     })
   })
 })

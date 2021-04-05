@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getAction, getArmature, getBone, toMap } from '/@/models'
+import { frameWidth, getAction, getArmature, getBone, toMap } from '/@/models'
 import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import {
   cleanActions,
@@ -28,9 +28,49 @@ import {
   findPrevFrameWithKeyframe,
   getAfterKeyframe,
   getLastFrame,
+  canvasToFrameValue,
+  canvasToValue,
+  canvasToNearestFrame,
+  canvasToFrame,
+  frameToCanvas,
 } from '/@/utils/animations'
 
 describe('utils/animations.ts', () => {
+  describe('canvasToNearestFrame', () => {
+    it('get nearest frame(integer) from value in canvas space', () => {
+      expect(canvasToNearestFrame(100 * frameWidth + 1)).toBe(100)
+    })
+  })
+
+  describe('canvasToFrame', () => {
+    it('convert a value from canvas space to frame space ', () => {
+      expect(canvasToFrame(100 * frameWidth + 1)).toBe(100 + 1 / frameWidth)
+    })
+  })
+
+  describe('frameToCanvas', () => {
+    it('convert a value from frame space to canvas space ', () => {
+      expect(frameToCanvas(100 + 1 / frameWidth)).toBe(100 * frameWidth + 1)
+    })
+  })
+
+  describe('canvasToValue', () => {
+    it('get value from value in canvas space', () => {
+      expect(canvasToValue(100, 10)).toBe(10)
+    })
+  })
+
+  describe('canvasToFrameValue', () => {
+    it('get frame and value from point in canvas space', () => {
+      expect(
+        canvasToFrameValue({ x: 100 * frameWidth + 1, y: 200 }, 10)
+      ).toEqual({
+        x: 100,
+        y: 20,
+      })
+    })
+  })
+
   describe('sortKeyframeMap', () => {
     it('get sorted keyframes map', () => {
       expect(

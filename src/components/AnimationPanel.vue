@@ -333,13 +333,11 @@ export default defineComponent({
             ...animationStore.visibledKeyframeMap.value,
             ...(keyframeEditMode.mode.value.editedKeyframeMap.value
               ?.notSelected ?? {}),
-          }) as any,
+          }),
           // moved keyframes
-          toList({
-            ...(keyframeEditMode.mode.value.tmpKeyframes.value ?? {}),
-            ...(keyframeEditMode.mode.value.editedKeyframeMap.value?.selected ??
-              {}),
-          }) as any,
+          toList(
+            keyframeEditMode.mode.value.editedKeyframeMap.value?.selected ?? {}
+          ),
           true
         ).merged
       )

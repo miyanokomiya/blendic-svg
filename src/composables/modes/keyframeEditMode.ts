@@ -61,7 +61,6 @@ interface State {
 }
 
 export interface KeyframeEditMode extends KeyframeEditModeBase {
-  tmpKeyframes: ComputedRef<IdMap<KeyframeBase> | undefined>
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
   editedKeyframeMap: ComputedRef<SplitedKeyframeMapBySelected | undefined>
@@ -85,6 +84,8 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   const isAnySelected = computed(
     () => Object.keys(editTargets.value).length > 0
   )
+
+  const { settings } = useSettings()
 
   function cancel() {
     state.command = ''
@@ -155,7 +156,10 @@ export function useKeyframeEditMode(): KeyframeEditMode {
           keyframeSelectedInfoSet.value.selected,
           (keyframe) => moveKeyframe(keyframe, diff)
         ),
-        notSelected: keyframeSelectedInfoSet.value.notSelected,
+        notSelected: {
+          ...keyframeSelectedInfoSet.value.notSelected,
+          ...state.tmpKeyframes,
+        },
       }
     }
   )
@@ -165,7 +169,7 @@ export function useKeyframeEditMode(): KeyframeEditMode {
 
     if (editedKeyframeMap.value) {
       animationStore.completeDuplicateKeyframes(
-        toList(state.tmpKeyframes ?? editedKeyframeMap.value.notSelected),
+        toList(editedKeyframeMap.value.notSelected),
         toList(editedKeyframeMap.value.selected)
       )
     }
@@ -337,8 +341,6 @@ export function useKeyframeEditMode(): KeyframeEditMode {
     seriesKey.value = `grab-current-frame_${Date.now()}`
   }
 
-  const { settings } = useSettings()
-
   function viewToControl(v: IVec2): IVec2 {
     return pointToControl(v, settings.graphValueWidth)
   }
@@ -368,7 +370,6 @@ export function useKeyframeEditMode(): KeyframeEditMode {
   }
 
   return {
-    tmpKeyframes: computed(() => state.tmpKeyframes),
     command: computed(() => state.command),
     end: () => cancel(),
     cancel,

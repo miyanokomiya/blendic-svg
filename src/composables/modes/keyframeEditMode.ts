@@ -64,7 +64,7 @@ export interface KeyframeEditMode extends KeyframeEditModeBase {
   tmpKeyframes: ComputedRef<IdMap<KeyframeBase> | undefined>
   selectFrame: (frame: number) => void
   shiftSelectFrame: (frame: number) => void
-  editedKeyframeMap: ComputedRef<SplitedKeyframeMapBySelected>
+  editedKeyframeMap: ComputedRef<SplitedKeyframeMapBySelected | undefined>
 }
 
 export function useKeyframeEditMode(): KeyframeEditMode {

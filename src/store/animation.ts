@@ -440,14 +440,12 @@ function execUpdateKeyframes(
   historyStore.push(item)
 }
 function pasteKeyframes(keyframeList: KeyframeBase[]) {
-  const item = getExecPasteKeyframeItem(
-    toMap(
-      slideKeyframesTo(
-        (keyframeList as KeyframeBone[])
-          .filter((k) => store.boneMap.value[k.targetId])
-          .map((k) => getKeyframeBone(k, true)),
-        currentFrame.value
-      )
+  const item = getExecInsertKeyframeItem(
+    slideKeyframesTo(
+      (keyframeList as KeyframeBone[])
+        .filter((k) => store.boneMap.value[k.targetId])
+        .map((k) => getKeyframeBone(k, true)),
+      currentFrame.value
     )
   )
   item.redo()
@@ -852,36 +850,6 @@ function getExecUpdateKeyframeItem(
     },
     redo,
     seriesKey,
-  }
-}
-
-function getExecPasteKeyframeItem(keyframes: IdMap<KeyframeBone>) {
-  const { merged, dropped } = mergeKeyframesWithDropped(
-    actions.lastSelectedItem.value!.keyframes,
-    toList(keyframes),
-    true
-  )
-
-  const redo = () => {
-    const updated = merged
-    actions.lastSelectedItem.value!.keyframes = updated
-  }
-  return {
-    name: 'Paste Keyframe',
-    undo: () => {
-      const dropPastedMap = dropMap(
-        toMap(actions.lastSelectedItem.value!.keyframes),
-        keyframes
-      )
-      const reverted = toList({
-        ...dropPastedMap,
-        ...toMap(
-          mergeKeyframesWithDropped(toList(dropPastedMap), dropped).merged
-        ),
-      })
-      actions.lastSelectedItem.value!.keyframes = reverted
-    },
-    redo,
   }
 }
 

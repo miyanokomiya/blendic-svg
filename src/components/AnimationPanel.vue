@@ -211,7 +211,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, Ref, ref, watch, watchEffect } from 'vue'
+import { computed, defineComponent, Ref, ref, watchEffect } from 'vue'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import SelectField from './atoms/SelectField.vue'
@@ -233,7 +233,7 @@ import {
   mergeKeyframesWithDropped,
 } from '../utils/animations'
 import { IVec2 } from 'okageo'
-import { dropMapIfFalse, toList } from '/@/utils/commons'
+import { toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
 import { useKeyframeEditMode } from '../composables/modes/keyframeEditMode'
 import { IdMap } from '/@/models'
@@ -241,6 +241,7 @@ import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'
 import { EditMovement } from '/@/composables/modes/types'
 import { CurveSelectedState, KeyframeBase } from '/@/models/keyframe'
+import { useBooleanMap } from '/@/composables/idMap'
 
 const labelHeight = 24
 
@@ -352,31 +353,6 @@ const keyframePointColorMap = {
   scaleY: 'green',
 }
 
-function useKeyframeExpanded(getIds: () => string[]) {
-  const expandedMap = ref<IdMap<boolean>>({})
-
-  function toggleExpanded(boneId: string) {
-    expandedMap.value[boneId] = !expandedMap.value[boneId]
-  }
-
-  watch(getIds, (ids) => {
-    const idMap = ids.reduce<{ [id: string]: any }>(
-      (p, c) => ({ ...p, [c]: true }),
-      {}
-    )
-    // drop expanded state if the target is removed
-    expandedMap.value = dropMapIfFalse(
-      expandedMap.value,
-      (_, id) => id in idMap
-    )
-  })
-
-  return {
-    expandedMap,
-    toggleExpanded,
-  }
-}
-
 export default defineComponent({
   components: {
     SelectField,
@@ -480,7 +456,7 @@ export default defineComponent({
       )
     }
 
-    const keyframeExpanded = useKeyframeExpanded(() =>
+    const keyframeExpandedMap = useBooleanMap(() =>
       Object.keys(store.boneMap.value)
     )
     const boneTopMap = computed(() => {
@@ -489,7 +465,7 @@ export default defineComponent({
         const top = current
         current =
           current +
-          labelHeight * (keyframeExpanded.expandedMap.value[id] ? 6 : 1)
+          labelHeight * (keyframeExpandedMap.booleanMap.value[id] ? 6 : 1)
         p[id] = top
         return p
       }, {})
@@ -534,8 +510,8 @@ export default defineComponent({
         get: () => selectedAction.value?.id ?? '',
         set: (id: string) => animationStore.selectAction(id),
       }),
-      expandedMap: keyframeExpanded.expandedMap,
-      toggleBoneExpanded: keyframeExpanded.toggleExpanded,
+      expandedMap: keyframeExpandedMap.booleanMap,
+      toggleBoneExpanded: keyframeExpandedMap.toggle,
       boneTopMap,
       labelHeight,
       updateKeyframe(keyframe: KeyframeBase, seriesKey?: string) {

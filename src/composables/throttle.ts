@@ -25,19 +25,21 @@ export function useThrottle<T extends (...args: any[]) => void>(
   leading = false
 ) {
   let wait = false
+  let currentArgs: Parameters<T>
 
   function throttle(...args: Parameters<T>) {
+    currentArgs = args
     if (wait) return
 
     wait = true
 
     if (leading) {
-      fn(...args)
+      fn(...currentArgs)
     }
 
     setTimeout(() => {
       if (!leading) {
-        fn(...args)
+        fn(...currentArgs)
       }
       wait = false
     }, interval)

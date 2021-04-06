@@ -25,7 +25,7 @@ import * as copyRotation from './copyRotation'
 import * as copyLocation from './copyLocation'
 import * as copyScale from './copyScale'
 import { Bone, IdMap, toMap } from '/@/models'
-import { dropMap, dropMapIfFalse, mapReduce, sumReduce } from '/@/utils/commons'
+import { dropMap, mapFilter, mapReduce, sumReduce } from '/@/utils/commons'
 
 export type BoneConstraintName =
   | 'IK'
@@ -202,7 +202,7 @@ function sortByDependencyStep(
   unresolved: IdMap<IdMap<number>>
 ): string[] {
   return Object.keys(
-    dropMapIfFalse(unresolved, (map) => {
+    mapFilter(unresolved, (map) => {
       return Object.keys(map).every((key) => resolved[key])
     })
   )

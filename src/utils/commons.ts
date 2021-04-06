@@ -81,10 +81,10 @@ export function dropMap<T>(
   origin: { [key: string]: T },
   keyMap: { [key: string]: any }
 ): { [key: string]: T } {
-  return dropMapIfFalse(origin, (_t, key) => keyMap[key] === undefined)
+  return mapFilter(origin, (_t, key) => keyMap[key] === undefined)
 }
 
-export function dropMapIfFalse<T>(
+export function mapFilter<T>(
   origin: { [key: string]: T },
   checkFn: (t: T, key: string) => boolean
 ): { [key: string]: T } {
@@ -116,7 +116,7 @@ export function dropListByKey<T extends object>(
   const srcMap = toKeyMap<T>(src, key)
   const dropMap = toKeyMap<T>(drop, key)
   return toList(
-    dropMapIfFalse<T>(
+    mapFilter<T>(
       srcMap,
       (s, id) => ((s as any)[key] === (dropMap[id] as any)?.[key]) === inverse
     )

@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { ref } from '@vue/reactivity'
 import { watch } from '@vue/runtime-core'
 import { IdMap } from '/@/models'
-import { dropMapIfFalse } from '/@/utils/commons'
+import { mapFilter } from '/@/utils/commons'
 
 export function useBooleanMap(getIds: () => string[]) {
   const booleanMap = ref<IdMap<boolean>>({})
@@ -39,7 +39,7 @@ export function useBooleanMap(getIds: () => string[]) {
       {}
     )
     // drop if the target is removed
-    booleanMap.value = dropMapIfFalse(booleanMap.value, (_, id) => id in idMap)
+    booleanMap.value = mapFilter(booleanMap.value, (_, id) => id in idMap)
   })
 
   return {

@@ -45,7 +45,7 @@ import {
   sub,
 } from 'okageo'
 import {
-  dropMapIfFalse,
+  mapFilter,
   getParentIdPath,
   getUnduplicatedNameMap,
   hasLeftRightName,
@@ -418,16 +418,14 @@ export function getAnySelectedBones(
   boneMap: IdMap<Bone>,
   selectedState: IdMap<BoneSelectedState>
 ): IdMap<Bone> {
-  return dropMapIfFalse(boneMap, (b) => isBoneSelected(selectedState[b.id]))
+  return mapFilter(boneMap, (b) => isBoneSelected(selectedState[b.id]))
 }
 
 export function getAllSelectedBones(
   boneMap: IdMap<Bone>,
   selectedState: IdMap<BoneSelectedState>
 ): IdMap<Bone> {
-  return dropMapIfFalse(boneMap, (b) =>
-    isBoneSelected(selectedState[b.id], true)
-  )
+  return mapFilter(boneMap, (b) => isBoneSelected(selectedState[b.id], true))
 }
 
 export function getPoseSelectedBones(

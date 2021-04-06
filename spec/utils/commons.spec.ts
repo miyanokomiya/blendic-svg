@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import {
   dropListByKey,
   dropMap,
-  dropMapIfFalse,
+  mapFilter,
   extractMap,
   flatKeyListMap,
   getParentIdPath,
@@ -180,10 +180,10 @@ describe('utils/commons.ts', () => {
     })
   })
 
-  describe('dropMapIfFalse', () => {
+  describe('mapFilter', () => {
     it('drop origin if returns false', () => {
       expect(
-        dropMapIfFalse(
+        mapFilter(
           {
             1: { a: 1 },
             2: { a: 2 },

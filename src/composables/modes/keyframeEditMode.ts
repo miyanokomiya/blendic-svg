@@ -79,9 +79,14 @@ export function useKeyframeEditMode(
 
   const animationStore = useAnimationStore()
 
-  const allKeyframes = computed(() => animationStore.visibledKeyframeMap.value)
+  const targetKeyframes = computed(
+    () => animationStore.visibledKeyframeMap.value
+  )
   const editTargets = computed(
     () => animationStore.visibledSelectedKeyframeMap.value
+  )
+  const targetSelectedStates = computed(() =>
+    extractMap(animationStore.selectedKeyframeMap.value, targetKeyframes.value)
   )
   const isAnySelected = computed(
     () => Object.keys(editTargets.value).length > 0
@@ -139,8 +144,8 @@ export function useKeyframeEditMode(
 
   const keyframeSelectedInfoSet = computed<SplitedKeyframeMapBySelected>(() => {
     const splited = splitKeyframeMapBySelected(
-      allKeyframes.value,
-      animationStore.selectedKeyframeMap.value
+      targetKeyframes.value,
+      targetSelectedStates.value
     )
     return {
       selected: splited.selected,
@@ -289,7 +294,7 @@ export function useKeyframeEditMode(
   const lastSelectedCurveName = ref('constant')
 
   function setInterpolation(curveName: CurveName) {
-    const selectedState = animationStore.selectedKeyframeMap.value
+    const selectedState = targetSelectedStates.value
     animationStore.execUpdateKeyframes(
       batchUpdatePoints(
         extractMap(editTargets.value, selectedState),
@@ -362,7 +367,7 @@ export function useKeyframeEditMode(
 
         if (state.selectedControlMap) {
           const updatedMap = moveCurveControlsMap(
-            animationStore.visibledKeyframeMap.value,
+            targetKeyframes.value,
             state.selectedControlMap,
             diff
           )

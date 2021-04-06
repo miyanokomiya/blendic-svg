@@ -17,33 +17,33 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-// if you want to avoid calling async, set leading true
-// e.g. e.currentTarget is lost in async calling
-export function useThrottle<T extends (...args: any[]) => void>(
-  fn: T,
-  interval: number,
-  leading = false
-) {
-  let wait = false
-  let currentArgs: Parameters<T>
+import { ref } from '@vue/reactivity'
+import { watch } from '@vue/runtime-core'
+import { IdMap } from '/@/models'
+import { mapFilter } from '/@/utils/commons'
 
-  function throttle(...args: Parameters<T>) {
-    currentArgs = args
-    if (wait) return
+export function useBooleanMap(getIds: () => string[]) {
+  const booleanMap = ref<IdMap<boolean>>({})
 
-    wait = true
-
-    if (leading) {
-      fn(...currentArgs)
+  function toggle(id: string) {
+    if (booleanMap.value[id]) {
+      delete booleanMap.value[id]
+    } else {
+      booleanMap.value[id] = true
     }
-
-    setTimeout(() => {
-      if (!leading) {
-        fn(...currentArgs)
-      }
-      wait = false
-    }, interval)
   }
 
-  return throttle
+  watch(getIds, (ids) => {
+    const idMap = ids.reduce<{ [id: string]: any }>(
+      (p, c) => ({ ...p, [c]: true }),
+      {}
+    )
+    // drop if the target is removed
+    booleanMap.value = mapFilter(booleanMap.value, (_, id) => id in idMap)
+  })
+
+  return {
+    booleanMap,
+    toggle,
+  }
 }

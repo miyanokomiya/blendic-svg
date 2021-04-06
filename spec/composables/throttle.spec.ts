@@ -59,7 +59,7 @@ describe('src/composables/throttle.ts', () => {
       expect(mock).toHaveBeenCalledWith(20, 200)
     })
     describe('if option.leading is true', () => {
-      fit('call leading', async () => {
+      it('call leading', async () => {
         const mock = jest.fn()
         const fn = (val1: number, val2: number) => mock(val1, val2)
         const t = useThrottle(fn, 10, true)

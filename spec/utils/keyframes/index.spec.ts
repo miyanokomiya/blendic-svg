@@ -458,7 +458,7 @@ describe('utils/keyframes/index.ts', () => {
   })
 
   describe('splitKeyframeMapBySelected', () => {
-    fit('split points of the keyframe whether selected or unselected', () => {
+    it('split points of the keyframe whether selected or unselected', () => {
       const keyframeMap = {
         a: getKeyframeBone({
           id: 'a',
@@ -491,6 +491,19 @@ describe('utils/keyframes/index.ts', () => {
           },
         }),
       })
+    })
+    it('avoid reference error causes by missing selected keyframes', () => {
+      const keyframeMap = {}
+      const selectedKeyframeMap = {
+        a: { name: 'bone', props: { translateX: true } },
+        b: { name: 'bone', props: { translateX: true } },
+      } as const
+      const ret = target.splitKeyframeMapBySelected(
+        keyframeMap,
+        selectedKeyframeMap
+      )
+      expect(ret.selected).toEqual({})
+      expect(ret.notSelected).toEqual({})
     })
   })
 

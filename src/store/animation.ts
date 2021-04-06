@@ -44,7 +44,7 @@ import {
 } from '../utils/armatures'
 import {
   dropMap,
-  dropMapIfFalse,
+  mapFilter,
   extractMap,
   flatKeyListMap,
   mapReduce,
@@ -176,7 +176,7 @@ const currentPosedBones = computed(
 
 const selectedBoneIdMap = computed(() => {
   return mapReduce(
-    dropMapIfFalse(store.state.selectedBones, (s) => isBoneSelected(s)),
+    mapFilter(store.state.selectedBones, (s) => isBoneSelected(s)),
     () => true
   )
 })
@@ -226,7 +226,7 @@ function pastePoses(mapByTargetId: IdMap<Transform>, seriesKey?: string) {
     {
       ...editTransforms.value,
       ...mapReduce(
-        dropMapIfFalse(mapByTargetId, (_, targetId) => {
+        mapFilter(mapByTargetId, (_, targetId) => {
           // drop poses of unexisted bones
           return !!store.boneMap.value[targetId]
         }),

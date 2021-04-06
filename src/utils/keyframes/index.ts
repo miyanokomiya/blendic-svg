@@ -53,10 +53,6 @@ export function getAllSelectedState(
   }
 }
 
-// export function normalizeCurves(keyframe: KeyframeBase): KeyframeBase {
-//   return getKeyframeModule(keyframe.name).normalizeCurves(keyframe)
-// }
-
 export function inversedSelectedState(
   k: KeyframeSelectedState,
   target: KeyframeSelectedState
@@ -290,6 +286,8 @@ export function splitKeyframeMapBySelected(
   Object.keys(selectedKeyframeMap).forEach((id) => {
     const selectedState = selectedKeyframeMap[id]
     const keyframe = keyframeMap[id]
+    if (!keyframe) return
+
     const splited = splitKeyframeBySelected(keyframe, selectedState)
     if (splited.selected) {
       selected[id] = splited.selected

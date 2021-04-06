@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div class="top">
       <div class="select-canvas">
         <SelectField
-          :model-value="currentCanvas"
+          :model-value="canvasType"
           :options="canvasOptions"
           no-placeholder
           @update:modelValue="setCurrentCanvas"
@@ -92,8 +92,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           <template #left>
             <div class="timeline-canvas-inner">
               <TimelineCanvas
-                v-if="currentCanvas === 'action'"
-                :canvas="keyframeCanvas"
+                :canvas="currentCanvas"
                 :popup-menu-list="popupMenuList"
                 @up-left="upLeft"
                 @drag="drag"
@@ -110,54 +109,10 @@ Copyright (C) 2021, Tomoya Komiyama.
                 @shift-d="duplicateKeyframes"
               >
                 <template #default="{ scale, viewOrigin, viewSize }">
-                  <g :transform="`translate(0, ${viewOrigin.y})`">
-                    <TimelineAxis
-                      :scale="scale"
-                      :origin-x="viewOrigin.x"
-                      :view-width="viewSize.width"
-                      :current-frame="currentFrame"
-                      :end-frame="endFrame"
-                      :header-height="labelHeight"
-                      @down-current-frame="downCurrentFrame"
-                    >
-                      <Keyframes
-                        :scale="scale"
-                        :keyframe-map-by-frame="keyframeMapByFrame"
-                        :bone-ids="selectedAllBoneIdList"
-                        :selected-keyframe-map="selectedKeyframeMap"
-                        :scroll-y="viewOrigin.y"
-                        :bone-expanded-map="expandedMap"
-                        :bone-top-map="boneTopMap"
-                        :height="labelHeight"
-                        @select="selectKeyframe"
-                        @shift-select="shiftSelectKeyframe"
-                        @select-frame="selectKeyframeByFrame"
-                        @shift-select-frame="shiftSelectKeyframeByFrame"
-                      />
-                    </TimelineAxis>
-                  </g>
-                </template>
-              </TimelineCanvas>
-              <TimelineCanvas
-                v-if="currentCanvas === 'graph'"
-                :canvas="graphCanvas"
-                :popup-menu-list="popupMenuList"
-                @up-left="upLeft"
-                @drag="drag"
-                @down-left="downLeft"
-                @mousemove="mousemove"
-                @click-empty="clickEmpty"
-                @escape="escape"
-                @a="selectAll"
-                @x="deleteKeyframes"
-                @g="grab"
-                @t="interpolation"
-                @ctrl-c="clipKeyframes"
-                @ctrl-v="pasteKeyframes"
-                @shift-d="duplicateKeyframes"
-              >
-                <template #default="{ scale, viewOrigin, viewSize }">
-                  <g :transform="`translate(${viewOrigin.x}, 0)`">
+                  <g
+                    v-if="canvasType === 'graph'"
+                    :transform="`translate(${viewOrigin.x}, 0)`"
+                  >
                     <GraphAxis
                       :scale="scale"
                       :origin-y="viewOrigin.y"
@@ -175,7 +130,22 @@ Copyright (C) 2021, Tomoya Komiyama.
                       :header-height="labelHeight"
                       @down-current-frame="downCurrentFrame"
                     >
-                      <g :transform="`translate(0, ${-viewOrigin.y})`">
+                      <Keyframes
+                        v-if="canvasType === 'action'"
+                        :scale="scale"
+                        :keyframe-map-by-frame="keyframeMapByFrame"
+                        :bone-ids="selectedAllBoneIdList"
+                        :selected-keyframe-map="selectedKeyframeMap"
+                        :scroll-y="viewOrigin.y"
+                        :bone-expanded-map="expandedMap"
+                        :bone-top-map="boneTopMap"
+                        :height="labelHeight"
+                        @select="selectKeyframe"
+                        @shift-select="shiftSelectKeyframe"
+                        @select-frame="selectKeyframeByFrame"
+                        @shift-select-frame="shiftSelectKeyframeByFrame"
+                      />
+                      <g v-else :transform="`translate(0, ${-viewOrigin.y})`">
                         <GraphKeyframes
                           :keyframe-map-by-frame="keyframeMapByFrame"
                           :selected-keyframe-map="selectedKeyframeMap"
@@ -242,6 +212,7 @@ import { useCanvas } from '/@/composables/canvas'
 import { EditMovement } from '/@/composables/modes/types'
 import { CurveSelectedState, KeyframeBase } from '/@/models/keyframe'
 import { useBooleanMap } from '/@/composables/idMap'
+import { Size } from 'okanvas'
 
 const labelHeight = 24
 
@@ -252,12 +223,12 @@ const canvasOptions: { label: string; value: CanvasType }[] = [
 ]
 
 function useCanvasList() {
-  const current = ref<CanvasType>('graph')
+  const canvasType = ref<CanvasType>('graph')
   function setCanvas(val: CanvasType) {
-    current.value = val
+    canvasType.value = val
   }
   return {
-    current,
+    canvasType,
     setCanvas,
     canvasOptions: computed(() => canvasOptions),
   }
@@ -265,7 +236,6 @@ function useCanvasList() {
 
 function useCanvasMode(canvasType: Ref<CanvasType>) {
   const mode = computed(() => {
-    console.log(canvasType.value)
     switch (canvasType.value) {
       case 'action':
         return useKeyframeEditMode('action')
@@ -375,22 +345,33 @@ export default defineComponent({
     const store = useStore()
     const animationStore = useAnimationStore()
 
+    const viewSize = ref<Size>({ width: 0, height: 0 })
     const canvasOptions = {
       scaleMin: 1,
       ignoreNegativeY: true,
       scaleAtFixY: true,
-      scale: ref(1),
       viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
+      viewSize,
     }
     const labelCanvas = useCanvas(canvasOptions)
     const keyframeCanvas = useCanvas(canvasOptions)
     const graphCanvas = useCanvas({
       scaleMin: 1,
       viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
+      viewSize,
     })
 
     const canvasList = useCanvasList()
-    const canvasMode = useCanvasMode(canvasList.current)
+    const canvasMode = useCanvasMode(canvasList.canvasType)
+
+    const currentCanvas = computed(() => {
+      switch (canvasList.canvasType.value) {
+        case 'action':
+          return keyframeCanvas
+        default:
+          return graphCanvas
+      }
+    })
 
     const selectedAction = computed(() => animationStore.selectedAction.value)
     const selectedAllBoneIdList = computed(() =>
@@ -473,8 +454,7 @@ export default defineComponent({
 
     return {
       labelCanvas,
-      keyframeCanvas,
-      graphCanvas,
+      currentCanvas,
       playing: animationStore.playing,
       actions: animationStore.actions.value,
       selectedAllBoneIdList,
@@ -520,7 +500,7 @@ export default defineComponent({
           seriesKey
         )
       },
-      currentCanvas: canvasList.current,
+      canvasType: canvasList.canvasType,
       setCurrentCanvas: canvasList.setCanvas,
       canvasOptions: canvasList.canvasOptions,
       keyframePointColorMap,

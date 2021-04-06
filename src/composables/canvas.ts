@@ -17,11 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ref, reactive, computed, Ref } from 'vue'
+import { ref, computed, Ref } from 'vue'
 import { IVec2, multi, sub, add, getRectCenter, IRectangle } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import { scaleRate } from '../models'
 import { getNormalRectangle } from '/@/utils/geometry'
+import { Size } from 'okanvas'
 
 export interface MoveInfo {
   origin: IVec2
@@ -38,12 +39,17 @@ export function useCanvas(
     scaleAtFixY?: boolean
     scale?: Ref<number>
     viewOrigin?: Ref<IVec2>
+    viewSize?: Ref<Size>
   } = {}
 ) {
   const scale = options.scale ?? ref(1)
   const viewOrigin = options.viewOrigin ?? ref<IVec2>({ x: 0, y: 0 })
 
-  const viewSize = reactive({ width: 600, height: 100 })
+  const viewSize = options.viewSize ?? ref<Size>({ width: 600, height: 100 })
+  function setViewSize(val: Size) {
+    viewSize.value = val
+  }
+
   const editStartPoint = ref<IVec2>()
   const mousePoint = ref<IVec2>()
   const viewMovingInfo = ref<MoveInfo>()
@@ -75,11 +81,13 @@ export function useCanvas(
   const viewCanvasRect = computed(() => ({
     x: viewOrigin.value.x,
     y: viewOrigin.value.y,
-    width: viewSize.width * scale.value,
-    height: viewSize.height * scale.value,
+    width: viewSize.value.width * scale.value,
+    height: viewSize.value.height * scale.value,
   }))
 
-  const viewCenter = computed(() => getRectCenter({ x: 0, y: 0, ...viewSize }))
+  const viewCenter = computed(() =>
+    getRectCenter({ x: 0, y: 0, ...viewSize.value })
+  )
   const viewBox = computed(() => helpers.viewbox(viewCanvasRect.value))
 
   function viewToCanvas(v: IVec2): IVec2 {
@@ -100,6 +108,7 @@ export function useCanvas(
 
   return {
     viewSize,
+    setViewSize,
     editStartPoint,
     mousePoint,
     scale,
@@ -109,6 +118,7 @@ export function useCanvas(
     viewMovingInfo,
     viewCenter,
     viewBox,
+    viewCanvasRect,
     viewToCanvas,
     wheel(e: WheelEvent, center = false) {
       const origin =

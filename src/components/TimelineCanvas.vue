@@ -116,13 +116,14 @@ export default defineComponent({
     const svg = ref<SVGElement>()
     const wrapper = ref<SVGElement>()
 
-    const canvas = computed(() => props.canvas)
+    const canvas = computed(() => {
+      return props.canvas
+    })
 
     function adjustSvgSize() {
       if (!wrapper.value) return
       const rect = wrapper.value.getBoundingClientRect()
-      canvas.value.viewSize.width = rect.width
-      canvas.value.viewSize.height = rect.height
+      canvas.value.setViewSize({ width: rect.width, height: rect.height })
     }
 
     const windowState = useWindow()
@@ -174,16 +175,12 @@ export default defineComponent({
     provide('scale', canvas.value.scale)
 
     return {
-      scale: canvas.value.scale,
-      viewOrigin: canvas.value.viewOrigin,
-      viewSize: computed(() => canvas.value.viewSize),
-      wrapper,
-      svg,
-      viewBox: canvas.value.viewBox,
-      popupMenuListPosition,
-      focus() {
-        if (svg.value) svg.value.focus()
-      },
+      scale: computed(() => canvas.value.scale.value),
+      viewOrigin: computed(() => canvas.value.viewOrigin.value),
+      viewSize: computed(() => canvas.value.viewSize.value),
+      viewBox: computed(() => canvas.value.viewBox.value),
+
+      mousemove: throttleMousemove,
       wheel: (e: WheelEvent) => canvas.value.wheel(e, true),
       downLeft: (e: MouseEvent) => {
         isDownEmpty.value = e.target === svg.value
@@ -197,21 +194,27 @@ export default defineComponent({
         canvas.value.upLeft()
         emit('up-left')
       },
-      downMiddle: canvas.value.downMiddle,
-      upMiddle: canvas.value.upMiddle,
-      leave: canvas.value.leave,
-      mousemove: throttleMousemove,
-      clickAny,
-      keyDownEscape: () => {
-        emit('escape')
-      },
-      editKeyDown(
+      downMiddle: () => canvas.value.downMiddle(),
+      upMiddle: () => canvas.value.upMiddle(),
+      leave: () => canvas.value.leave(),
+      editKeyDown: (
         key: 'g' | 't' | 'x' | 'a' | 'ctrl-c' | 'ctrl-v' | 'shift-d'
-      ) {
+      ) => {
         if (!canvas.value.mousePoint.value) return
 
         canvas.value.editStartPoint.value = canvas.value.mousePoint.value
         emit(key)
+      },
+
+      wrapper,
+      svg,
+      popupMenuListPosition,
+      focus() {
+        if (svg.value) svg.value.focus()
+      },
+      clickAny,
+      keyDownEscape: () => {
+        emit('escape')
       },
     }
   },

@@ -205,15 +205,12 @@ export default defineComponent({
       }
     })
 
-    const viewCanvasRect = computed(() => ({
-      x: canvas.viewOrigin.value.x,
-      y: canvas.viewOrigin.value.y,
-      width: canvas.viewSize.width * canvas.scale.value,
-      height: canvas.viewSize.height * canvas.scale.value,
-    }))
-
     function initView() {
-      const ret = centerizeView(props.originalViewBox, canvas.viewSize, 50)
+      const ret = centerizeView(
+        props.originalViewBox,
+        canvas.viewSize.value,
+        50
+      )
       canvas.viewOrigin.value = ret.viewOrigin
       canvas.scale.value = ret.scale
     }
@@ -225,7 +222,7 @@ export default defineComponent({
       return helpers.gridLineElm(
         canvas.scale.value,
         canvasStore.state.axisGrid,
-        viewCanvasRect.value,
+        canvas.viewCanvasRect.value,
         selectedBonesOrigin.value
       )
     })
@@ -253,8 +250,7 @@ export default defineComponent({
     function adjustSvgSize() {
       if (!wrapper.value) return
       const rect = wrapper.value.getBoundingClientRect()
-      canvas.viewSize.width = rect.width
-      canvas.viewSize.height = rect.height
+      canvas.setViewSize({ width: rect.width, height: rect.height })
     }
 
     const windowState = useWindow()
@@ -289,7 +285,7 @@ export default defineComponent({
     return {
       showAxis: computed(() => settings.showAxis),
       scale: canvas.scale,
-      viewSize: computed(() => canvas.viewSize),
+      viewSize: canvas.viewSize,
       svg,
       wrapper,
       viewBox: canvas.viewBox,

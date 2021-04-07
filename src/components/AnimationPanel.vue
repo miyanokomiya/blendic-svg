@@ -100,6 +100,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                 @down-left="downLeft"
                 @mousemove="mousemove"
                 @click-empty="clickEmpty"
+                @click-any="clickAny"
                 @escape="escape"
                 @snap="snap"
                 @a="selectAll"
@@ -305,6 +306,9 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       },
       clickEmpty() {
         mode.value.clickEmpty()
+      },
+      clickAny() {
+        mode.value.clickAny()
       },
       mousemove(arg: EditMovement) {
         mode.value.mousemove(arg)

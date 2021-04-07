@@ -66,6 +66,12 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
         stroke="#000"
         stroke-width="2.2"
       />
+      <circle
+        cx="0"
+        cy="5"
+        fill="transparent"
+        r="22"
+      />
     </g>
     <g>
       <title>
@@ -78,6 +84,12 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
         r="11"
         stroke="#000"
         stroke-width="2.2"
+      />
+      <circle
+        cx="0"
+        cy="50"
+        fill="transparent"
+        r="22"
       />
     </g>
     
@@ -161,6 +173,12 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
         stroke="#000"
         stroke-width="1"
       />
+      <circle
+        cx="0"
+        cy="5"
+        fill="transparent"
+        r="10"
+      />
     </g>
     <g>
       <title>
@@ -173,6 +191,12 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
         r="5"
         stroke="#000"
         stroke-width="1"
+      />
+      <circle
+        cx="0"
+        cy="50"
+        fill="transparent"
+        r="10"
       />
     </g>
     
@@ -192,6 +216,12 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
         <g
           fill="#fff"
           stroke="#000"
+        >
+          <!--v-if-->
+          <!--v-if-->
+        </g>
+        <g
+          fill="transparent"
         >
           <!--v-if-->
           <!--v-if-->

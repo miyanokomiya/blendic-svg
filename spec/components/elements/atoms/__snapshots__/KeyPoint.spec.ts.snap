@@ -17,6 +17,11 @@ exports[`src/components/elements/atoms/KeyPoint.vue snapshot default 1`] = `
     r="5"
     stroke="#000"
   />
+  <circle
+    cy="24"
+    fill="transparent"
+    r="10"
+  />
 </g>
 `;
 
@@ -36,6 +41,11 @@ exports[`src/components/elements/atoms/KeyPoint.vue snapshot selected 1`] = `
     fill="orange"
     r="5"
     stroke="#000"
+  />
+  <circle
+    cy="24"
+    fill="transparent"
+    r="10"
   />
 </g>
 `;

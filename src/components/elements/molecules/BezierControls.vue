@@ -42,7 +42,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         :y="controlIn.y - rectSize / 2"
         :width="rectSize"
         :height="rectSize"
-        @mousedown.left="downControlIn"
       />
       <rect
         v-if="controlOut"
@@ -50,6 +49,23 @@ Copyright (C) 2021, Tomoya Komiyama.
         :y="controlOut.y - rectSize / 2"
         :width="rectSize"
         :height="rectSize"
+      />
+    </g>
+    <g fill="transparent">
+      <rect
+        v-if="controlIn"
+        :x="controlIn.x - rectSize"
+        :y="controlIn.y - rectSize"
+        :width="rectSize * 2"
+        :height="rectSize * 2"
+        @mousedown.left="downControlIn"
+      />
+      <rect
+        v-if="controlOut"
+        :x="controlOut.x - rectSize"
+        :y="controlOut.y - rectSize"
+        :width="rectSize * 2"
+        :height="rectSize * 2"
         @mousedown.left="downControlOut"
       />
     </g>

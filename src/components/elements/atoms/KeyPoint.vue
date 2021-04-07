@@ -33,6 +33,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       r="5"
       stroke="#000"
       :fill="selected ? selectedColor : '#fff'"
+    />
+    <circle
+      :cy="top"
+      r="10"
+      fill="transparent"
       @click.left.exact="select"
       @click.left.shift.exact="shiftSelect"
     />

@@ -32,6 +32,12 @@ Copyright (C) 2021, Tomoya Komiyama.
           stroke="#000"
           :stroke-width="scale"
           :fill="curve.selected ? selectedColor : color"
+        />
+        <circle
+          :cx="curve.from.x"
+          :cy="curve.from.y"
+          :r="10 * scale"
+          fill="transparent"
           @click.exact="select(curve.id, curve.keyframeName)"
           @click.shift.exact="shiftSelect(curve.id, curve.keyframeName)"
         />

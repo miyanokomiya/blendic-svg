@@ -94,12 +94,14 @@ Copyright (C) 2021, Tomoya Komiyama.
               <TimelineCanvas
                 :canvas="currentCanvas"
                 :popup-menu-list="popupMenuList"
+                :current-command="currentCommand"
                 @up-left="upLeft"
                 @drag="drag"
                 @down-left="downLeft"
                 @mousemove="mousemove"
                 @click-empty="clickEmpty"
                 @escape="escape"
+                @snap="snap"
                 @a="selectAll"
                 @x="deleteKeyframes"
                 @g="grab"
@@ -261,6 +263,9 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       },
       escape() {
         mode.value.cancel()
+      },
+      snap(axis: 'x' | 'y') {
+        mode.value.snap(axis)
       },
       selectKeyframe(id: string, selectedState: { [key: string]: boolean }) {
         mode.value.select(id, selectedState)
@@ -505,6 +510,7 @@ export default defineComponent({
       canvasOptions: canvasList.canvasOptions,
       keyframePointColorMap,
 
+      currentCommand: computed(() => canvasMode.mode.value.command.value),
       popupMenuList: computed(() => canvasMode.mode.value.popupMenuList.value),
       availableCommandList: computed(
         () => canvasMode.mode.value.availableCommandList.value

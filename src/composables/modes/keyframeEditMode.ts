@@ -58,6 +58,7 @@ interface State {
   clipboard: KeyframeBase[] | undefined
   tmpKeyframes: IdMap<KeyframeBase> | undefined
   selectedControlMap: IdMap<IdMap<CurveSelectedState>> | undefined
+  snapAxis: '' | 'x' | 'y'
 }
 
 export interface KeyframeEditMode extends KeyframeEditModeBase {
@@ -75,6 +76,7 @@ export function useKeyframeEditMode(
     clipboard: undefined,
     tmpKeyframes: undefined,
     selectedControlMap: undefined,
+    snapAxis: '',
   })
 
   const animationStore = useAnimationStore()
@@ -99,6 +101,17 @@ export function useKeyframeEditMode(
     state.editMovement = undefined
     state.tmpKeyframes = undefined
     state.selectedControlMap = undefined
+    state.snapAxis = ''
+  }
+
+  function snap(axis: 'x' | 'y') {
+    if (modeType !== 'graph' || state.command !== 'grab') return
+
+    if (state.snapAxis === axis) {
+      state.snapAxis = ''
+    } else {
+      state.snapAxis = axis
+    }
   }
 
   function clickAny() {
@@ -137,7 +150,10 @@ export function useKeyframeEditMode(
     // value can be edited in graph mode
     const v = sub(state.editMovement.current, state.editMovement.start)
     return canvasToFrameValue(
-      { x: v.x, y: modeType === 'graph' ? v.y : 0 },
+      {
+        x: state.snapAxis !== 'y' ? v.x : 0,
+        y: state.snapAxis !== 'x' && modeType === 'graph' ? v.y : 0,
+      },
       settings.graphValueWidth
     )
   })
@@ -186,6 +202,7 @@ export function useKeyframeEditMode(
     state.tmpKeyframes = undefined
     state.editMovement = undefined
     state.command = ''
+    state.snapAxis = ''
   }
 
   function select(id: string, selectedState: any) {
@@ -382,6 +399,7 @@ export function useKeyframeEditMode(
     command: computed(() => state.command),
     end: () => cancel(),
     cancel,
+    snap,
     setEditMode,
     select,
     shiftSelect,

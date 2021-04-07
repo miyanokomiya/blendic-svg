@@ -66,7 +66,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :y2="gridLineElm.to.y"
         :stroke="gridLineElm.stroke"
         :stroke-width="gridLineElm.strokeWidth"
-      ></line>
+      />
       <slot :scale="scale" />
       <ScaleMarker
         v-if="scaleNaviElm"

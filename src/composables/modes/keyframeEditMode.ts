@@ -37,7 +37,6 @@ import { getCtrlOrMetaStr } from '/@/utils/devices'
 import {
   CurveName,
   CurveSelectedState,
-  getCurve,
   getKeyframeBone,
   KeyframeBase,
 } from '/@/models/keyframe'
@@ -327,7 +326,7 @@ export function useKeyframeEditMode(
       batchUpdatePoints(
         extractMap(editTargets.value, selectedState),
         selectedState,
-        (p) => ({ ...p, curve: getCurve(curveName) })
+        (p) => ({ ...p, curve: { ...p.curve, name: curveName } })
       )
     )
     lastSelectedCurveName.value = curveName

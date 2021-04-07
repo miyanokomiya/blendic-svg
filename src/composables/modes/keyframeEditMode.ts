@@ -293,7 +293,13 @@ export function useKeyframeEditMode(
   }
 
   const availableCommandList = computed(() => {
-    if (isAnySelected.value) {
+    if (state.command === 'grab') {
+      return [
+        { command: 'x', title: 'On Axis Frame' },
+        { command: 'y', title: 'On Axis Value' },
+        { command: getCtrlOrMetaStr(), title: 'Snap' },
+      ]
+    } else if (isAnySelected.value) {
       return [
         { command: 'g', title: 'Grab' },
         { command: 't', title: 'Interpolation' },

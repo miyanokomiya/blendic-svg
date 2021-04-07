@@ -76,6 +76,7 @@ export interface KeyframeEditModeBase {
   command: ComputedRef<KeyframeEditCommand>
   end: () => void
   cancel: () => void
+  snap: (axis: 'x' | 'y') => void
   setEditMode: (mode: KeyframeEditCommand) => void
   select: (id: string, selectedState: { [key: string]: boolean }) => void
   shiftSelect: (id: string, selectedState: { [key: string]: boolean }) => void

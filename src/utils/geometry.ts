@@ -89,6 +89,17 @@ export function getContinuousRadDiff(
   )
 }
 
+export function mapVec(
+  v: IVec2,
+  fn: (val: number) => number,
+  fnY?: (val: number) => number
+): IVec2 {
+  return {
+    x: fn(v.x),
+    y: (fnY ?? fn)(v.y),
+  }
+}
+
 export function isSameTransform(a: Transform, b: Transform): boolean {
   if (!isSame(a.translate, b.translate)) return false
   if (!isSame(a.scale, b.scale)) return false

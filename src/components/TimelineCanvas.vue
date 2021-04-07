@@ -29,7 +29,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :width="viewSize.width"
       :height="viewSize.height"
       @wheel.prevent="wheel"
-      @click.left.exact="clickAny"
+      @click.left.prevent="clickAny"
       @click.right.prevent="keyDownEscape"
       @mouseenter="focus"
       @mousedown.left.prevent="downLeft"
@@ -42,6 +42,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       @keydown.g.exact.prevent="editKeyDown('g')"
       @keydown.t.exact.prevent="editKeyDown('t')"
       @keydown.x.exact.prevent="editKeyDown('x')"
+      @keydown.y.exact.prevent="editKeyDown('y')"
       @keydown.a.exact.prevent="editKeyDown('a')"
       @keydown.c.ctrl.exact.prevent="editKeyDown('ctrl-c')"
       @keydown.v.ctrl.exact.prevent="editKeyDown('ctrl-v')"
@@ -76,8 +77,9 @@ import { useWindow } from '../composables/window'
 import { useCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import { add, IVec2 } from 'okageo'
-import { PopupMenuItem } from '/@/composables/modes/types'
+import { KeyframeEditCommand, PopupMenuItem } from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
+import { isCtrlOrMeta } from '/@/utils/devices'
 
 export default defineComponent({
   components: { PopupMenuList },
@@ -95,6 +97,10 @@ export default defineComponent({
       type: Array as PropType<PopupMenuItem[]>,
       default: () => [],
     },
+    currentCommand: {
+      type: String as PropType<KeyframeEditCommand>,
+      default: '',
+    },
   },
   emits: [
     'down-left',
@@ -104,6 +110,7 @@ export default defineComponent({
     'click-any',
     'click-empty',
     'escape',
+    'snap',
     'g',
     't',
     'x',
@@ -167,6 +174,7 @@ export default defineComponent({
         emit('mousemove', {
           current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
           start: canvas.value.viewToCanvas(canvas.value.editStartPoint.value),
+          ctrl: isCtrlOrMeta(e),
         })
       }
     }
@@ -198,9 +206,18 @@ export default defineComponent({
       upMiddle: () => canvas.value.upMiddle(),
       leave: () => canvas.value.leave(),
       editKeyDown: (
-        key: 'g' | 't' | 'x' | 'a' | 'ctrl-c' | 'ctrl-v' | 'shift-d'
+        key: 'g' | 't' | 'x' | 'y' | 'a' | 'ctrl-c' | 'ctrl-v' | 'shift-d'
       ) => {
         if (!canvas.value.mousePoint.value) return
+
+        if (props.currentCommand === 'grab') {
+          if (key === 'x' || key === 'y') {
+            emit('snap', key)
+            return
+          }
+        }
+
+        if (key === 'y') return
 
         canvas.value.editStartPoint.value = canvas.value.mousePoint.value
         emit(key)

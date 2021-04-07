@@ -37,7 +37,6 @@ import { getCtrlOrMetaStr } from '/@/utils/devices'
 import {
   CurveName,
   CurveSelectedState,
-  getCurve,
   getKeyframeBone,
   KeyframeBase,
 } from '/@/models/keyframe'
@@ -51,6 +50,7 @@ import { curveItems } from '/@/utils/keyframes/core'
 import { IVec2, sub } from 'okageo'
 import { useSettings } from '/@/composables/settings'
 import { pointToControl, moveCurveControlsMap } from '/@/utils/graphCurves'
+import { logRound, mapVec } from '/@/utils/geometry'
 
 interface State {
   command: KeyframeEditCommand
@@ -58,6 +58,7 @@ interface State {
   clipboard: KeyframeBase[] | undefined
   tmpKeyframes: IdMap<KeyframeBase> | undefined
   selectedControlMap: IdMap<IdMap<CurveSelectedState>> | undefined
+  snapAxis: '' | 'x' | 'y'
 }
 
 export interface KeyframeEditMode extends KeyframeEditModeBase {
@@ -75,6 +76,7 @@ export function useKeyframeEditMode(
     clipboard: undefined,
     tmpKeyframes: undefined,
     selectedControlMap: undefined,
+    snapAxis: '',
   })
 
   const animationStore = useAnimationStore()
@@ -99,6 +101,17 @@ export function useKeyframeEditMode(
     state.editMovement = undefined
     state.tmpKeyframes = undefined
     state.selectedControlMap = undefined
+    state.snapAxis = ''
+  }
+
+  function snap(axis: 'x' | 'y') {
+    if (modeType !== 'graph' || state.command !== 'grab') return
+
+    if (state.snapAxis === axis) {
+      state.snapAxis = ''
+    } else {
+      state.snapAxis = axis
+    }
   }
 
   function clickAny() {
@@ -132,13 +145,20 @@ export function useKeyframeEditMode(
   }
 
   const editVector = computed((): IVec2 | undefined => {
-    if (!state.editMovement) return undefined
+    const movement = state.editMovement
+    if (!movement) return undefined
 
     // value can be edited in graph mode
-    const v = sub(state.editMovement.current, state.editMovement.start)
-    return canvasToFrameValue(
-      { x: v.x, y: modeType === 'graph' ? v.y : 0 },
-      settings.graphValueWidth
+    const v = sub(movement.current, movement.start)
+    return mapVec(
+      canvasToFrameValue(
+        {
+          x: state.snapAxis !== 'y' ? v.x : 0,
+          y: state.snapAxis !== 'x' && modeType === 'graph' ? v.y : 0,
+        },
+        settings.graphValueWidth
+      ),
+      (val) => (movement.ctrl ? logRound(1, val) : val)
     )
   })
 
@@ -186,6 +206,7 @@ export function useKeyframeEditMode(
     state.tmpKeyframes = undefined
     state.editMovement = undefined
     state.command = ''
+    state.snapAxis = ''
   }
 
   function select(id: string, selectedState: any) {
@@ -271,7 +292,13 @@ export function useKeyframeEditMode(
   }
 
   const availableCommandList = computed(() => {
-    if (isAnySelected.value) {
+    if (state.command === 'grab') {
+      return [
+        { command: 'x', title: 'On Axis Frame' },
+        { command: 'y', title: 'On Axis Value' },
+        { command: getCtrlOrMetaStr(), title: 'Snap' },
+      ]
+    } else if (isAnySelected.value) {
       return [
         { command: 'g', title: 'Grab' },
         { command: 't', title: 'Interpolation' },
@@ -299,7 +326,7 @@ export function useKeyframeEditMode(
       batchUpdatePoints(
         extractMap(editTargets.value, selectedState),
         selectedState,
-        (p) => ({ ...p, curve: getCurve(curveName) })
+        (p) => ({ ...p, curve: { ...p.curve, name: curveName } })
       )
     )
     lastSelectedCurveName.value = curveName
@@ -382,6 +409,7 @@ export function useKeyframeEditMode(
     command: computed(() => state.command),
     end: () => cancel(),
     cancel,
+    snap,
     setEditMode,
     select,
     shiftSelect,

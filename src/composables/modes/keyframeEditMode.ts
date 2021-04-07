@@ -51,6 +51,7 @@ import { curveItems } from '/@/utils/keyframes/core'
 import { IVec2, sub } from 'okageo'
 import { useSettings } from '/@/composables/settings'
 import { pointToControl, moveCurveControlsMap } from '/@/utils/graphCurves'
+import { logRound, mapVec } from '/@/utils/geometry'
 
 interface State {
   command: KeyframeEditCommand
@@ -145,16 +146,20 @@ export function useKeyframeEditMode(
   }
 
   const editVector = computed((): IVec2 | undefined => {
-    if (!state.editMovement) return undefined
+    const movement = state.editMovement
+    if (!movement) return undefined
 
     // value can be edited in graph mode
-    const v = sub(state.editMovement.current, state.editMovement.start)
-    return canvasToFrameValue(
-      {
-        x: state.snapAxis !== 'y' ? v.x : 0,
-        y: state.snapAxis !== 'x' && modeType === 'graph' ? v.y : 0,
-      },
-      settings.graphValueWidth
+    const v = sub(movement.current, movement.start)
+    return mapVec(
+      canvasToFrameValue(
+        {
+          x: state.snapAxis !== 'y' ? v.x : 0,
+          y: state.snapAxis !== 'x' && modeType === 'graph' ? v.y : 0,
+        },
+        settings.graphValueWidth
+      ),
+      (val) => (movement.ctrl ? logRound(1, val) : val)
     )
   })
 

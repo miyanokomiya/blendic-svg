@@ -29,7 +29,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :width="viewSize.width"
       :height="viewSize.height"
       @wheel.prevent="wheel"
-      @click.left.exact="clickAny"
+      @click.left.prevent="clickAny"
       @click.right.prevent="keyDownEscape"
       @mouseenter="focus"
       @mousedown.left.prevent="downLeft"
@@ -79,6 +79,7 @@ import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import { add, IVec2 } from 'okageo'
 import { KeyframeEditCommand, PopupMenuItem } from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
+import { isCtrlOrMeta } from '/@/utils/devices'
 
 export default defineComponent({
   components: { PopupMenuList },
@@ -173,6 +174,7 @@ export default defineComponent({
         emit('mousemove', {
           current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
           start: canvas.value.viewToCanvas(canvas.value.editStartPoint.value),
+          ctrl: isCtrlOrMeta(e),
         })
       }
     }

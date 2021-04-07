@@ -41,6 +41,7 @@ import {
   snapScale,
   transformRect,
   isIdentityAffine,
+  mapVec,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -140,6 +141,21 @@ describe('src/utils/geometry.ts', () => {
       expect(
         getContinuousRadDiff((a / 180) * Math.PI, (b / 180) * Math.PI)
       ).toBeCloseTo((expected / 180) * Math.PI)
+    })
+  })
+
+  describe('mapVec', () => {
+    it('convert axes value of vector by each functions', () => {
+      expect(
+        mapVec(
+          { x: 2, y: 3 },
+          (val) => val * val,
+          (val) => val * 10
+        )
+      ).toEqual({ x: 4, y: 30 })
+    })
+    it('convert axes value of vector by a function', () => {
+      expect(mapVec({ x: 2, y: 3 }, (val) => val * val)).toEqual({ x: 4, y: 9 })
     })
   })
 

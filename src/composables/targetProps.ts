@@ -6,7 +6,7 @@ import { dropMap, extractMap, mapReduce } from '/@/utils/commons'
 
 type PropStatus = 'selected' | 'hidden'
 
-interface TargetProps {
+export interface TargetProps {
   id: string
   props: { [key: string]: any }
 }

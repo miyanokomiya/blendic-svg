@@ -43,6 +43,11 @@ Copyright (C) 2021, Tomoya Komiyama.
             :label-width="labelWidth - 10"
             :label-height="height"
             :label="label"
+            :color="
+              isSelectedProp(bone.id, toKey(label))
+                ? settings.selectedColor
+                : undefined
+            "
           />
         </g>
       </g>
@@ -65,6 +70,8 @@ import { computed, defineComponent, PropType } from 'vue'
 import { Bone, IdMap } from '/@/models'
 import TimelineRow from './atoms/TimelineRow.vue'
 import { getKeyframeTopMap } from '/@/utils/helpers'
+import { TargetPropsState } from '/@/composables/targetProps'
+import { useSettings } from '/@/composables/settings'
 
 export default defineComponent({
   components: {
@@ -95,9 +102,15 @@ export default defineComponent({
       type: Object as PropType<IdMap<number>>,
       default: () => [],
     },
+    propsStateMap: {
+      type: Object as PropType<IdMap<TargetPropsState>>,
+      default: () => ({}),
+    },
   },
   emits: ['toggle-bone-expanded'],
   setup(props, { emit }) {
+    const { settings } = useSettings()
+
     function toggleBoneExpanded(boneId: string) {
       emit('toggle-bone-expanded', boneId)
     }
@@ -112,9 +125,28 @@ export default defineComponent({
       })
     })
 
+    function toKey(label: string): string {
+      return (
+        {
+          'Translate X': 'translateX',
+          'Translate Y': 'translateY',
+          Rotate: 'rotate',
+          'Scale X': 'scaleX',
+          'Scale Y': 'scaleY',
+        }[label] ?? ''
+      )
+    }
+
+    function isSelectedProp(targetId: string, propName: string): boolean {
+      return props.propsStateMap[targetId]?.props[propName] === 'selected'
+    }
+
     return {
+      settings,
       childTopMap,
+      toKey,
       toggleBoneExpanded,
+      isSelectedProp,
     }
   },
 })

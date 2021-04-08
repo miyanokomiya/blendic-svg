@@ -80,6 +80,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                 :scroll-y="viewOrigin.y"
                 :bone-expanded-map="expandedMap"
                 :bone-top-map="boneTopMap"
+                :props-state-map="propsStateMap"
                 :height="labelHeight"
                 @toggle-bone-expanded="toggleBoneExpanded"
               />
@@ -468,6 +469,7 @@ export default defineComponent({
       actions: animationStore.actions.value,
       selectedAllBoneIdList,
       selectedAllBoneList,
+      propsStateMap: animationStore.visibledTargetPropsStateMap,
       lastSelectedKeyframe: animationStore.lastSelectedKeyframe,
       keyframeMapByFrame,
       selectedKeyframeMap: animationStore.selectedKeyframeMap,

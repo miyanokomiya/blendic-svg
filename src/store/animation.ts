@@ -139,7 +139,7 @@ const lastSelectedKeyframe = computed(() => {
 const visibledTargetPropsStateMap = computed(() => {
   return extractMap(
     targetPropsState.selectedStateMap.value,
-    visibledKeyframeMapByTargetId.value
+    store.state.selectedBones
   )
 })
 

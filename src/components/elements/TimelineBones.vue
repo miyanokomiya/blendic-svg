@@ -48,6 +48,8 @@ Copyright (C) 2021, Tomoya Komiyama.
                 ? settings.selectedColor
                 : undefined
             "
+            @click.left.exact="clickRow(bone.id, toKey(label))"
+            @click.left.shift.exact="clickRow(bone.id, toKey(label), true)"
           />
         </g>
       </g>
@@ -107,7 +109,7 @@ export default defineComponent({
       default: () => ({}),
     },
   },
-  emits: ['toggle-bone-expanded'],
+  emits: ['toggle-bone-expanded', 'select'],
   setup(props, { emit }) {
     const { settings } = useSettings()
 
@@ -141,12 +143,25 @@ export default defineComponent({
       return props.propsStateMap[targetId]?.props[propName] === 'selected'
     }
 
+    function clickRow(id: string, propKey: string, shift = false) {
+      emit(
+        'select',
+        id,
+        {
+          id,
+          props: { [propKey]: 'selected' },
+        } as TargetPropsState,
+        shift
+      )
+    }
+
     return {
       settings,
       childTopMap,
       toKey,
       toggleBoneExpanded,
       isSelectedProp,
+      clickRow,
     }
   },
 })

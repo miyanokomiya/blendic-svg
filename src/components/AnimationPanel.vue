@@ -83,6 +83,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                 :props-state-map="propsStateMap"
                 :height="labelHeight"
                 @toggle-bone-expanded="toggleBoneExpanded"
+                @select="selectTargetProp"
               />
             </g>
           </template>
@@ -512,6 +513,8 @@ export default defineComponent({
           seriesKey
         )
       },
+      selectTargetProp: animationStore.selectTargetProp,
+
       canvasType: canvasList.canvasType,
       setCurrentCanvas: canvasList.setCanvas,
       canvasOptions: canvasList.canvasOptions,

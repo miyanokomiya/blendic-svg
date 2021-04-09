@@ -52,7 +52,11 @@ import {
 } from '../utils/commons'
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
-import { TargetProps, useTargetProps } from '/@/composables/targetProps'
+import {
+  TargetProps,
+  TargetPropsState,
+  useTargetProps,
+} from '/@/composables/targetProps'
 import {
   Action,
   Bone,
@@ -475,6 +479,16 @@ function completeDuplicateKeyframes(
   historyStore.push(item)
 }
 
+function selectTargetProp(
+  targetId: string,
+  propsState: TargetPropsState,
+  shift = false
+) {
+  const item = targetPropsState.select(targetId, propsState, shift)
+  item.redo()
+  historyStore.push(item)
+}
+
 export function useAnimationStore() {
   return {
     initState,
@@ -525,6 +539,8 @@ export function useAnimationStore() {
     execUpdateKeyframes,
     pasteKeyframes,
     completeDuplicateKeyframes,
+
+    selectTargetProp,
   }
 }
 

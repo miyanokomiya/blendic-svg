@@ -123,7 +123,7 @@ export function getKeyframeTopMap(
   height: number,
   top: number,
   childMap: { [key: string]: number }
-) {
+): { [key: string]: number } {
   return Object.keys(childMap).reduce<{ [key: string]: number }>((p, c) => {
     p[c] = top + height * (childMap[c] + 1)
     return p

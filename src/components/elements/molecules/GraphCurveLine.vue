@@ -44,6 +44,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :c3="curve.to"
         :color="color"
         :scale="scale"
+        :line-width="lineWidth"
       />
       <g v-else-if="curve.name === 'constant'">
         <CurveConstant
@@ -51,6 +52,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :to="curve.to"
           :color="color"
           :scale="scale"
+          :line-width="lineWidth"
         />
       </g>
       <line

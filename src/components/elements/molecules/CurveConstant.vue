@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g :stroke-width="scale">
+  <g :stroke-width="lineWidth * scale">
     <line :x1="from.x" :y1="from.y" :x2="to.x" :y2="from.y" />
     <line :x1="to.x" :y1="from.y" :x2="to.x" :y2="to.y" />
   </g>
@@ -43,6 +43,10 @@ export default defineComponent({
       default: '#fff',
     },
     scale: {
+      type: Number,
+      default: 1,
+    },
+    lineWidth: {
       type: Number,
       default: 1,
     },

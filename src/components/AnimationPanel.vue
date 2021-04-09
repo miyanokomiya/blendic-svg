@@ -331,8 +331,8 @@ const keyframePointColorMap = {
   translateX: 'red',
   translateY: 'green',
   rotate: 'blue',
-  scaleX: 'red',
-  scaleY: 'green',
+  scaleX: 'hotpink',
+  scaleY: 'mediumaquamarine',
 }
 
 export default defineComponent({

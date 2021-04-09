@@ -27,13 +27,15 @@ export function useTargetProps() {
   function select(
     id: string,
     propsState: TargetPropsState,
-    shift = false
+    shift = false,
+    notToggle = false
   ): HistoryItem {
     return getSelectItem(
       selectedStateMap.value,
       id,
       propsState,
       shift,
+      notToggle,
       setSelectedStateMap
     )
   }
@@ -98,24 +100,48 @@ function mergePropsState(
   }
 }
 
+function shiftMergeProps(
+  a: { [key: string]: PropStatus },
+  b?: { [key: string]: PropStatus }
+): { [key: string]: PropStatus } {
+  if (!b) return a
+
+  return Object.keys({
+    ...a,
+    ...b,
+  }).reduce<{ [key: string]: PropStatus }>((p, c) => {
+    if (a[c] === 'selected' && b[c] === 'selected') return p
+
+    p[c] = a[c] ?? b[c]
+    return p
+  }, {})
+}
+
 function getSelectItem(
   state: IdMap<TargetPropsState>,
   id: string,
   propsState: TargetPropsState,
   shift = false,
+  notToggle = false,
   setFn: (val: IdMap<TargetPropsState>) => void
 ): HistoryItem {
   const current = { ...state }
 
   const redo = () => {
     if (shift) {
-      setFn({
+      const props = notToggle
+        ? { ...(current[id]?.props ?? {}), ...propsState.props }
+        : shiftMergeProps(current[id]?.props ?? {}, propsState.props)
+      const next = {
         ...current,
         [id]: {
           id,
-          props: { ...(current[id]?.props ?? {}), ...propsState.props },
+          props,
         },
-      })
+      }
+
+      if (Object.keys(props).length === 0) delete next[id]
+      setFn(next)
     } else {
       setFn(id ? { [id]: propsState } : {})
     }

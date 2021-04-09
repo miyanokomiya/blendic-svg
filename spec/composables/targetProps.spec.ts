@@ -43,6 +43,45 @@ describe('src/composables/targetProps.ts', () => {
           b: { id: 'b', props: { x: 'selected', y: 'selected' } },
         })
       })
+      it('toggle selected', () => {
+        const targetProps = useTargetProps()
+        targetProps.select('a', { id: 'a', props: { x: 'selected' } }).redo()
+        const item = targetProps.select(
+          'a',
+          { id: 'a', props: { x: 'selected' } },
+          true
+        )
+        expect(targetProps.selectedStateMap.value).toEqual({
+          a: { id: 'a', props: { x: 'selected' } },
+        })
+        item.redo()
+        expect(targetProps.selectedStateMap.value).toEqual({})
+        item.undo()
+        expect(targetProps.selectedStateMap.value).toEqual({
+          a: { id: 'a', props: { x: 'selected' } },
+        })
+      })
+      it('not toggle selected if notToggle = true', () => {
+        const targetProps = useTargetProps()
+        targetProps.select('a', { id: 'a', props: { x: 'selected' } }).redo()
+        const item = targetProps.select(
+          'a',
+          { id: 'a', props: { x: 'selected' } },
+          true,
+          true
+        )
+        expect(targetProps.selectedStateMap.value).toEqual({
+          a: { id: 'a', props: { x: 'selected' } },
+        })
+        item.redo()
+        expect(targetProps.selectedStateMap.value).toEqual({
+          a: { id: 'a', props: { x: 'selected' } },
+        })
+        item.undo()
+        expect(targetProps.selectedStateMap.value).toEqual({
+          a: { id: 'a', props: { x: 'selected' } },
+        })
+      })
     })
   })
 

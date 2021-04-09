@@ -794,7 +794,8 @@ function getSelectKeyframeItem(
             () => 'selected'
           ),
         },
-        shift
+        shift,
+        true
       )
 
   const redo = () => {

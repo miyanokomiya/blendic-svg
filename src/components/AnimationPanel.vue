@@ -154,6 +154,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                           :keyframe-map-by-frame="keyframeMapByFrame"
                           :selected-keyframe-map="selectedKeyframeMap"
                           :color-map="keyframePointColorMap"
+                          :props-state-map="propsStateMap"
                           @select="selectKeyframe"
                           @shift-select="shiftSelectKeyframe"
                           @down-control="grabControl"

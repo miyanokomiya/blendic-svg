@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g :stroke="color" :stroke-width="scale" fill="none">
+  <g :stroke="color" :stroke-width="lineWidth * scale" fill="none">
     <!-- horizon before from -->
     <line
       v-if="first"
@@ -59,7 +59,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :y1="curve.from.y"
         :x2="curve.to.x"
         :y2="curve.to.y"
-        :stroke-width="scale"
+        :stroke-width="lineWidth * scale"
       />
     </template>
   </g>
@@ -91,6 +91,10 @@ export default defineComponent({
       default: '#fff',
     },
     scale: {
+      type: Number,
+      default: 1,
+    },
+    lineWidth: {
       type: Number,
       default: 1,
     },

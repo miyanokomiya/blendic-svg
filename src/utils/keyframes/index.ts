@@ -315,3 +315,33 @@ export function moveKeyframe(keyframe: KeyframeBase, v: IVec2): KeyframeBase {
     },
   }
 }
+
+export function splitKeyframeProps<T>(
+  srcMap: IdMap<KeyframeBaseProps<T>>,
+  checkFn: (targetId: string, key: string) => boolean
+): {
+  trueMap: IdMap<KeyframeBaseProps<T>>
+  falseMap: IdMap<KeyframeBaseProps<T>>
+} {
+  const trueMap: IdMap<KeyframeBaseProps<T>> = {}
+  const falseMap: IdMap<KeyframeBaseProps<T>> = {}
+
+  Object.keys(srcMap).forEach((targetId) => {
+    const map = srcMap[targetId]
+    const trueProps: KeyframeBaseProps<T>['props'] = {}
+    const falseProps: KeyframeBaseProps<T>['props'] = {}
+
+    Object.keys(map.props).forEach((key) => {
+      ;(checkFn(targetId, key) ? trueProps : falseProps)[key] = map.props[key]
+    })
+
+    if (Object.keys(trueProps).length > 0) {
+      trueMap[targetId] = { ...map, props: trueProps }
+    }
+    if (Object.keys(falseProps).length > 0) {
+      falseMap[targetId] = { ...map, props: falseProps }
+    }
+  })
+
+  return { trueMap, falseMap }
+}

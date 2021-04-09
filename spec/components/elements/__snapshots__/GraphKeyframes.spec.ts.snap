@@ -2,17 +2,23 @@
 
 exports[`src/components/elements/GraphKeyframes.vue snapshot default 1`] = `
 <g>
-  
   <g>
     
-    <graph-key-points-stub
-      color="green"
-      keyframes="[object Object],[object Object]"
-      point-key="translateX"
-      selected-state-map="[object Object]"
-    />
+    <g>
+      
+      <graph-key-points-stub
+        color="green"
+        keyframes="[object Object],[object Object]"
+        point-key="translateX"
+        selected-state-map="[object Object]"
+      />
+      
+    </g>
     
   </g>
-  
+  <g>
+    
+    
+  </g>
 </g>
 `;

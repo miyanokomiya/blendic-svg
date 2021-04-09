@@ -180,7 +180,7 @@ export default defineComponent({
     }
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
 
-    provide('scale', canvas.value.scale)
+    provide('getScale', () => canvas.value.scale.value)
 
     return {
       scale: computed(() => canvas.value.scale.value),

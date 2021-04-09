@@ -11,7 +11,7 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
         <g
           fill="none"
           stroke="green"
-          stroke-width="2.2"
+          stroke-width="1"
         >
           <!-- horizon before from -->
           <line
@@ -23,7 +23,7 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
           <!-- horizon after to -->
           
           <line
-            stroke-width="2.2"
+            stroke-width="1"
             x1="0"
             x2="0"
             y1="5"
@@ -36,7 +36,7 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
         <g
           fill="none"
           stroke="green"
-          stroke-width="2.2"
+          stroke-width="1"
         >
           <!-- horizon before from -->
           <!--v-if-->
@@ -62,15 +62,9 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
         cx="0"
         cy="5"
         fill="green"
-        r="11"
+        r="5"
         stroke="#000"
-        stroke-width="2.2"
-      />
-      <circle
-        cx="0"
-        cy="5"
-        fill="transparent"
-        r="22"
+        stroke-width="1"
       />
     </g>
     <g>
@@ -81,15 +75,9 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
         cx="0"
         cy="50"
         fill="green"
-        r="11"
+        r="5"
         stroke="#000"
-        stroke-width="2.2"
-      />
-      <circle
-        cx="0"
-        cy="50"
-        fill="transparent"
-        r="22"
+        stroke-width="1"
       />
     </g>
     
@@ -173,12 +161,6 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
         stroke="#000"
         stroke-width="1"
       />
-      <circle
-        cx="0"
-        cy="5"
-        fill="transparent"
-        r="10"
-      />
     </g>
     <g>
       <title>
@@ -191,12 +173,6 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
         r="5"
         stroke="#000"
         stroke-width="1"
-      />
-      <circle
-        cx="0"
-        cy="50"
-        fill="transparent"
-        r="10"
       />
     </g>
     

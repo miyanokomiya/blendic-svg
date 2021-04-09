@@ -529,4 +529,26 @@ describe('utils/keyframes/index.ts', () => {
       )
     })
   })
+
+  describe('splitKeyframeProps', () => {
+    it('should split map by checkFn', () => {
+      const srcMap = {
+        a: { name: 'bone', props: { x: true, y: true } },
+        b: { name: 'bone', props: { x: true, y: true } },
+        c: { name: 'bone', props: { x: true, y: true } },
+      } as const
+      const ret = target.splitKeyframeProps(srcMap, (targetId, key) => {
+        if (targetId === 'c') return true
+        return targetId === 'a' && key === 'y'
+      })
+      expect(ret.trueMap).toEqual({
+        a: { name: 'bone', props: { y: true } },
+        c: { name: 'bone', props: { x: true, y: true } },
+      })
+      expect(ret.falseMap).toEqual({
+        a: { name: 'bone', props: { x: true } },
+        b: { name: 'bone', props: { x: true, y: true } },
+      })
+    })
+  })
 })

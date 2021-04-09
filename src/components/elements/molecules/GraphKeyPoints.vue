@@ -20,7 +20,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <g>
     <g class="view-only">
-      <GraphCurveLines :curves="curves" :color="color" :scale="scale" />
+      <GraphCurveLines
+        :curves="curves"
+        :color="color"
+        :scale="scale"
+        :line-width="lineWidth"
+      />
     </g>
     <g>
       <g v-for="curve in curves" :key="curve.id">
@@ -28,16 +33,10 @@ Copyright (C) 2021, Tomoya Komiyama.
         <circle
           :cx="curve.from.x"
           :cy="curve.from.y"
-          :r="5 * scale"
+          :r="radius * scale"
           stroke="#000"
           :stroke-width="scale"
           :fill="curve.selected ? selectedColor : color"
-        />
-        <circle
-          :cx="curve.from.x"
-          :cy="curve.from.y"
-          :r="10 * scale"
-          fill="transparent"
           @click.exact="select(curve.id, curve.keyframeName)"
           @click.shift.exact="shiftSelect(curve.id, curve.keyframeName)"
         />
@@ -97,6 +96,10 @@ export default defineComponent({
       type: String,
       default: '#fff',
     },
+    focused: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['select', 'shift-select', 'down-control'],
   setup(props, { emit }) {
@@ -128,8 +131,15 @@ export default defineComponent({
       emit('down-control', keyframeId, props.pointKey, state)
     }
 
+    const getScale = inject<() => number>('getScale', () => 1)
+
+    const radius = computed(() => (props.focused ? 6.5 : 5))
+    const lineWidth = computed(() => (props.focused ? 2.5 : 1))
+
     return {
-      scale: inject<number>('scale', 1),
+      scale: computed(getScale),
+      radius,
+      lineWidth,
       selectedColor: computed(() => settings.selectedColor),
       curves,
       select,

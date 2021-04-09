@@ -80,8 +80,10 @@ Copyright (C) 2021, Tomoya Komiyama.
                 :scroll-y="viewOrigin.y"
                 :bone-expanded-map="expandedMap"
                 :bone-top-map="boneTopMap"
+                :props-state-map="propsStateMap"
                 :height="labelHeight"
                 @toggle-bone-expanded="toggleBoneExpanded"
+                @select="selectTargetProp"
               />
             </g>
           </template>
@@ -153,6 +155,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                           :keyframe-map-by-frame="keyframeMapByFrame"
                           :selected-keyframe-map="selectedKeyframeMap"
                           :color-map="keyframePointColorMap"
+                          :props-state-map="propsStateMap"
                           @select="selectKeyframe"
                           @shift-select="shiftSelectKeyframe"
                           @down-control="grabControl"
@@ -328,8 +331,8 @@ const keyframePointColorMap = {
   translateX: 'red',
   translateY: 'green',
   rotate: 'blue',
-  scaleX: 'red',
-  scaleY: 'green',
+  scaleX: 'hotpink',
+  scaleY: 'mediumaquamarine',
 }
 
 export default defineComponent({
@@ -468,6 +471,7 @@ export default defineComponent({
       actions: animationStore.actions.value,
       selectedAllBoneIdList,
       selectedAllBoneList,
+      propsStateMap: animationStore.visibledTargetPropsStateMap,
       lastSelectedKeyframe: animationStore.lastSelectedKeyframe,
       keyframeMapByFrame,
       selectedKeyframeMap: animationStore.selectedKeyframeMap,
@@ -509,6 +513,8 @@ export default defineComponent({
           seriesKey
         )
       },
+      selectTargetProp: animationStore.selectTargetProp,
+
       canvasType: canvasList.canvasType,
       setCurrentCanvas: canvasList.setCanvas,
       canvasOptions: canvasList.canvasOptions,

@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <path :d="d" :stroke="color" :stroke-width="scale" />
+  <path :d="d" :stroke="color" :stroke-width="lineWidth * scale" />
 </template>
 
 <script lang="ts">
@@ -48,6 +48,10 @@ export default defineComponent({
       default: '#fff',
     },
     scale: {
+      type: Number,
+      default: 1,
+    },
+    lineWidth: {
       type: Number,
       default: 1,
     },

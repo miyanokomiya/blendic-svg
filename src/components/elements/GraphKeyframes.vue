@@ -19,18 +19,46 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g>
-    <g v-for="(map, targetId) in keyframePointsMapByTargetId" :key="targetId">
-      <GraphKeyPoints
-        v-for="(keyFrames, key) in map.props"
-        :key="key"
-        :point-key="key"
-        :keyframes="getKeyframes(targetId, key)"
-        :selected-state-map="selectedKeyframeMap"
-        :color="colorMap[key]"
-        @select="select"
-        @shift-select="shiftSelect"
-        @down-control="downControl"
-      />
+    <g>
+      <g
+        v-for="(
+          map, targetId
+        ) in keyframePointsMapByTargetIdFilteredFocused.falseMap"
+        :key="targetId"
+      >
+        <GraphKeyPoints
+          v-for="(keyFrames, key) in map.props"
+          :key="key"
+          :point-key="key"
+          :keyframes="getKeyframes(targetId, key)"
+          :selected-state-map="selectedKeyframeMap"
+          :color="colorMap[key]"
+          @select="select"
+          @shift-select="shiftSelect"
+          @down-control="downControl"
+        />
+      </g>
+    </g>
+    <g>
+      <g
+        v-for="(
+          map, targetId
+        ) in keyframePointsMapByTargetIdFilteredFocused.trueMap"
+        :key="targetId"
+      >
+        <GraphKeyPoints
+          v-for="(keyFrames, key) in map.props"
+          :key="key"
+          :point-key="key"
+          :keyframes="getKeyframes(targetId, key)"
+          :selected-state-map="selectedKeyframeMap"
+          :color="colorMap[key]"
+          focused
+          @select="select"
+          @shift-select="shiftSelect"
+          @down-control="downControl"
+        />
+      </g>
     </g>
   </g>
 </template>
@@ -47,9 +75,14 @@ import {
 } from '/@/models/keyframe'
 import { getKeyframeMapByTargetId } from '/@/utils/animations'
 import GraphKeyPoints from '/@/components/elements/molecules/GraphKeyPoints.vue'
-import { getKeyframePropsMap, inversedSelectedState } from '/@/utils/keyframes'
+import {
+  getKeyframePropsMap,
+  inversedSelectedState,
+  splitKeyframeProps,
+} from '/@/utils/keyframes'
 import { flatKeyListMap } from '/@/utils/commons'
 import { useKeysCache } from '/@/composables/cache'
+import { TargetPropsState } from '/@/composables/targetProps'
 
 export default defineComponent({
   components: {
@@ -66,6 +99,10 @@ export default defineComponent({
     },
     colorMap: {
       type: Object as PropType<{ [key: string]: string }>,
+      default: () => ({}),
+    },
+    propsStateMap: {
+      type: Object as PropType<IdMap<TargetPropsState>>,
       default: () => ({}),
     },
   },
@@ -93,6 +130,17 @@ export default defineComponent({
         return p
       }, {})
     })
+
+    const keyframePointsMapByTargetIdFilteredFocused = computed(() => {
+      return splitKeyframeProps(
+        keyframePointsMapByTargetId.value,
+        isFocusedProp
+      )
+    })
+
+    function isFocusedProp(targetId: string, key: string): boolean {
+      return props.propsStateMap[targetId]?.props[key] === 'selected'
+    }
 
     function select(keyframeId: string, state: KeyframeSelectedState) {
       emit('select', keyframeId, state)
@@ -152,10 +200,12 @@ export default defineComponent({
 
     return {
       keyframePointsMapByTargetId,
+      keyframePointsMapByTargetIdFilteredFocused,
       select,
       shiftSelect,
       downControl,
       getKeyframes,
+      isFocusedProp,
     }
   },
 })

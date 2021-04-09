@@ -26,6 +26,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :scale="scale"
         :first="curve.first"
         :last="curve.last"
+        :line-width="lineWidth"
       />
     </g>
   </g>
@@ -49,6 +50,10 @@ export default defineComponent({
       default: '#fff',
     },
     scale: {
+      type: Number,
+      default: 1,
+    },
+    lineWidth: {
       type: Number,
       default: 1,
     },

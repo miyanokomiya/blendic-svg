@@ -101,7 +101,7 @@ export default defineComponent({
   },
   emits: ['down-control-in', 'down-control-out'],
   setup(props, { emit }) {
-    const rectSize = computed(() => 8 * props.scale)
+    const rectSize = computed(() => 10 * props.scale)
 
     return {
       rectSize,

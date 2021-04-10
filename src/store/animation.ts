@@ -214,8 +214,7 @@ const selectedPosedBoneOrigin = computed(
 )
 
 function setEditedTransforms(mapByTargetId: IdMap<Transform>) {
-  const item = getUpdateEditedTransformsItem(mapByTargetId)
-  historyStore.push(item, true)
+  historyStore.push(getUpdateEditedTransformsItem(mapByTargetId), true)
 }
 function applyEditedTransforms(mapByTargetId: IdMap<Transform>) {
   setEditedTransforms(
@@ -265,8 +264,10 @@ function getCurrentSelfTransforms(targetId: string): Transform {
 
 function updateCurrentFrame(frameItem?: HistoryItem) {
   if (frameItem) {
-    const item = convolute(frameItem, [getUpdateEditedTransformsItem({})])
-    historyStore.push(item, true)
+    historyStore.push(
+      convolute(frameItem, [getUpdateEditedTransformsItem({})]),
+      true
+    )
   }
 }
 function setCurrentFrame(val: number, seriesKey?: string) {
@@ -301,17 +302,16 @@ function jumpPrevKey() {
 }
 
 function setEndFrame(next: number, seriesKey?: string) {
-  const item = animationFrameStore.setEndFrame(next, seriesKey)
-  historyStore.push(item, true)
+  historyStore.push(animationFrameStore.setEndFrame(next, seriesKey), true)
 }
 
 function selectAction(id: string) {
   if (actions.state.lastSelectedId === id) return
 
-  const item = convolute(getSelectItem(actions.state, id), [
-    getSelectKeyframesItem([]),
-  ])
-  historyStore.push(item, true)
+  historyStore.push(
+    convolute(getSelectItem(actions.state, id), [getSelectKeyframesItem([])]),
+    true
+  )
 }
 function addAction() {
   if (!store.lastSelectedArmature.value) return
@@ -337,11 +337,12 @@ function addAction() {
 function deleteAction() {
   if (!actions.lastSelectedItem.value) return
 
-  const item = convolute(
-    getDeleteItem(actions.state, actions.lastSelectedIndex.value),
-    [getSelectKeyframesItem([])]
+  historyStore.push(
+    convolute(getDeleteItem(actions.state, actions.lastSelectedIndex.value), [
+      getSelectKeyframesItem([]),
+    ]),
+    true
   )
-  historyStore.push(item, true)
 }
 
 function selectKeyframe(
@@ -351,18 +352,22 @@ function selectKeyframe(
 ) {
   if (!keyframeId && !isAnyVisibledSelectedKeyframe.value) return
 
-  const item = getSelectKeyframeItem(keyframeId, selectedState, shift)
-  historyStore.push(item, true)
+  historyStore.push(
+    getSelectKeyframeItem(keyframeId, selectedState, shift),
+    true
+  )
 }
 function selectKeyframeByFrame(frame: number, shift = false) {
   const frames = keyframeMapByFrame.value[frame]
   if (frames.length === 0) return
 
-  const item = getSelectKeyframesItem(
-    frames.map((f) => f.id),
-    shift
+  historyStore.push(
+    getSelectKeyframesItem(
+      frames.map((f) => f.id),
+      shift
+    ),
+    true
   )
-  historyStore.push(item, true)
 }
 function selectAllKeyframes() {
   if (
@@ -379,8 +384,7 @@ function selectAllKeyframes() {
       selectKeyframe('')
     }
   } else {
-    const item = getSelectAllKeyframesItem()
-    historyStore.push(item, true)
+    historyStore.push(getSelectAllKeyframesItem(), true)
   }
 }
 function execInsertKeyframe(
@@ -425,24 +429,20 @@ function execInsertKeyframe(
     )
   })
 
-  const item = getExecInsertKeyframeItem(keyframes)
-  historyStore.push(item, true)
+  historyStore.push(getExecInsertKeyframeItem(keyframes), true)
 }
 function execDeleteKeyframes() {
   if (!isAnyVisibledSelectedKeyframe.value) return
-
-  const item = getExecDeleteKeyframesItem()
-  historyStore.push(item, true)
+  historyStore.push(getExecDeleteKeyframesItem(), true)
 }
 function execUpdateKeyframes(
   keyframes: IdMap<KeyframeBase>,
   seriesKey?: string
 ) {
-  const item = getExecUpdateKeyframeItem(
-    keyframes as IdMap<KeyframeBone>,
-    seriesKey
+  historyStore.push(
+    getExecUpdateKeyframeItem(keyframes as IdMap<KeyframeBone>, seriesKey),
+    true
   )
-  historyStore.push(item, true)
 }
 function pasteKeyframes(keyframeList: KeyframeBase[]) {
   const item = getExecInsertKeyframeItem(
@@ -459,11 +459,13 @@ function completeDuplicateKeyframes(
   duplicatedKeyframeList: KeyframeBase[],
   updatedKeyframeList: KeyframeBase[]
 ) {
-  const item = getCompleteDuplicateKeyframesItem(
-    duplicatedKeyframeList as KeyframeBone[],
-    updatedKeyframeList as KeyframeBone[]
+  historyStore.push(
+    getCompleteDuplicateKeyframesItem(
+      duplicatedKeyframeList as KeyframeBone[],
+      updatedKeyframeList as KeyframeBone[]
+    ),
+    true
   )
-  historyStore.push(item, true)
 }
 
 function selectTargetProp(
@@ -471,8 +473,7 @@ function selectTargetProp(
   propsState: TargetPropsState,
   shift = false
 ) {
-  const item = targetPropsState.select(targetId, propsState, shift)
-  historyStore.push(item, true)
+  historyStore.push(targetPropsState.select(targetId, propsState, shift), true)
 }
 
 export function useAnimationStore() {

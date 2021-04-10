@@ -52,6 +52,7 @@ import {
 } from '../utils/commons'
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
+import { useAnimationFrameStore } from '/@/composables/stores/animationFrame'
 import {
   TargetProps,
   TargetPropsState,
@@ -63,7 +64,6 @@ import {
   getAction,
   getTransform,
   IdMap,
-  PlayState,
   toTargetIdMap,
   toMap,
   Transform,
@@ -76,6 +76,7 @@ import {
   KeyframeBone,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
+import { convolute } from '/@/utils/histories'
 import {
   deleteKeyframeByProp,
   getAllSelectedState,
@@ -84,9 +85,6 @@ import {
 } from '/@/utils/keyframes'
 import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
 
-const playing = ref<PlayState>('pause')
-const currentFrame = ref(0)
-const endFrame = ref(60)
 const actions = useListState<Action>('Action')
 const editTransforms = ref<IdMap<Transform>>({})
 const selectedKeyframeMap = ref<IdMap<KeyframeSelectedState>>({})
@@ -96,6 +94,7 @@ const historyStore = useHistoryStore()
 const store = useStore()
 
 const targetPropsState = useTargetProps()
+const animationFrameStore = useAnimationFrameStore()
 
 function initState(initActions: Action[] = []) {
   actions.state.list = initActions
@@ -147,7 +146,7 @@ const currentInterpolatedTransformMapByTargetId = computed(
   (): IdMap<Transform> => {
     return getInterpolatedTransformMapByTargetId(
       keyframeMapByTargetId.value,
-      currentFrame.value
+      animationFrameStore.currentFrame.value
     )
   }
 )
@@ -214,14 +213,6 @@ const selectedPosedBoneOrigin = computed(
   }
 )
 
-function setEndFrame(val: number, seriesKey?: string) {
-  if (endFrame.value === val) return
-
-  const item = getUpdateEndFrameItem(val, seriesKey)
-  item.redo()
-  historyStore.push(item)
-}
-
 function setEditedTransforms(mapByTargetId: IdMap<Transform>) {
   const item = getUpdateEditedTransformsItem(mapByTargetId)
   item.redo()
@@ -274,47 +265,50 @@ function getCurrentSelfTransforms(targetId: string): Transform {
   return currentSelfTransforms.value[targetId] ?? getTransform()
 }
 
+function updateCurrentFrame(frameItem?: HistoryItem) {
+  if (frameItem) {
+    const item = convolute(frameItem, [getUpdateEditedTransformsItem({})])
+    item.redo()
+    historyStore.push(item)
+  }
+}
 function setCurrentFrame(val: number, seriesKey?: string) {
-  if (currentFrame.value === val) return
-
-  const item = getUpdateCurrentFrameItem(val, seriesKey)
-  item.redo()
-  historyStore.push(item)
-}
-
-function setPlaying(val: PlayState) {
-  playing.value = val
-}
-function togglePlaying() {
-  playing.value = playing.value === 'pause' ? 'play' : 'pause'
+  updateCurrentFrame(animationFrameStore.setCurrentFrame(val, seriesKey))
 }
 function jumpStartFrame() {
-  setCurrentFrame(0)
+  updateCurrentFrame(animationFrameStore.jumpStartFrame())
 }
 function jumpEndFrame() {
-  setCurrentFrame(endFrame.value)
+  updateCurrentFrame(animationFrameStore.jumpEndFrame())
+}
+function stepFrame(tickFrame: number, reverse = false, seriesKey?: string) {
+  updateCurrentFrame(
+    animationFrameStore.stepFrame(tickFrame, reverse, seriesKey)
+  )
 }
 function jumpNextKey() {
   setCurrentFrame(
-    findNextFrameWithKeyframe(keyframeList.value, currentFrame.value)
+    findNextFrameWithKeyframe(
+      keyframeList.value,
+      animationFrameStore.currentFrame.value
+    )
   )
 }
 function jumpPrevKey() {
   setCurrentFrame(
-    findPrevFrameWithKeyframe(keyframeList.value, currentFrame.value)
+    findPrevFrameWithKeyframe(
+      keyframeList.value,
+      animationFrameStore.currentFrame.value
+    )
   )
 }
-function stepFrame(tickFrame: number, reverse = false, seriesKey?: string) {
-  if (endFrame.value === 0) return
 
-  if (reverse) {
-    const val = currentFrame.value - tickFrame
-    setCurrentFrame(val <= 0 ? endFrame.value : val, seriesKey)
-  } else {
-    const val = currentFrame.value + tickFrame
-    setCurrentFrame(endFrame.value <= val ? 0 : val, seriesKey)
+function setEndFrame(next: number, seriesKey?: string) {
+  const item = animationFrameStore.setEndFrame(next, seriesKey)
+  if (item) {
+    item.redo()
+    historyStore.push(item)
   }
-  editTransforms.value = {}
 }
 
 function selectAction(id: string) {
@@ -407,7 +401,7 @@ function execInsertKeyframe(
     const t = getCurrentSelfTransforms(targetId)
     return getKeyframeBone(
       {
-        frame: currentFrame.value,
+        frame: animationFrameStore.currentFrame.value,
         targetId,
         points: {
           ...(options.useTranslate
@@ -461,7 +455,7 @@ function pasteKeyframes(keyframeList: KeyframeBase[]) {
       (keyframeList as KeyframeBone[])
         .filter((k) => store.boneMap.value[k.targetId])
         .map((k) => getKeyframeBone(k, true)),
-      currentFrame.value
+      animationFrameStore.currentFrame.value
     )
   )
   item.redo()
@@ -492,9 +486,6 @@ function selectTargetProp(
 export function useAnimationStore() {
   return {
     initState,
-    playing,
-    currentFrame,
-    endFrame,
     actions: computed(() => actions.state.list),
     selectedKeyframeMap,
     lastSelectedKeyframe,
@@ -512,18 +503,24 @@ export function useAnimationStore() {
     selectedBones,
     selectedPosedBoneOrigin,
     getCurrentSelfTransforms,
-    setEndFrame,
 
     applyEditedTransforms,
     pastePoses,
+
+    playing: animationFrameStore.playing,
+    setPlaying: animationFrameStore.setPlaying,
+    togglePlaying: animationFrameStore.togglePlaying,
+
+    currentFrame: animationFrameStore.currentFrame,
     setCurrentFrame,
-    setPlaying,
-    togglePlaying,
     jumpStartFrame,
     jumpEndFrame,
     jumpNextKey,
     jumpPrevKey,
     stepFrame,
+
+    endFrame: animationFrameStore.endFrame,
+    setEndFrame,
 
     selectedAction: actions.lastSelectedItem,
     selectAction,
@@ -541,22 +538,6 @@ export function useAnimationStore() {
     completeDuplicateKeyframes,
 
     selectTargetProp,
-  }
-}
-
-function getUpdateEndFrameItem(val: number, seriesKey?: string): HistoryItem {
-  const current = endFrame.value
-
-  const redo = () => {
-    endFrame.value = val
-  }
-  return {
-    name: 'Update End Frame',
-    undo: () => {
-      endFrame.value = current
-    },
-    redo,
-    seriesKey,
   }
 }
 
@@ -833,7 +814,7 @@ function getExecInsertKeyframeItem(
   replace = false,
   notSelect = false
 ) {
-  const preFrame = currentFrame.value
+  const preFrame = animationFrameStore.currentFrame.value
   const insertedKeyframes = keyframes
   const preEditTransforms = { ...editTransforms.value }
 
@@ -854,7 +835,6 @@ function getExecInsertKeyframeItem(
       !replace
     )
     actions.lastSelectedItem.value!.keyframes = merged
-    currentFrame.value = preFrame
     editTransforms.value = dropMap(
       editTransforms.value,
       toTargetIdMap(insertedKeyframes)
@@ -872,7 +852,7 @@ function getExecInsertKeyframeItem(
         ...toMap(dropped),
       })
       actions.lastSelectedItem.value!.keyframes = reverted
-      currentFrame.value = preFrame
+      animationFrameStore.setCurrentFrame(preFrame)?.redo()
       editTransforms.value = preEditTransforms
       selectItem?.undo()
     },
@@ -966,26 +946,5 @@ function getCompleteDuplicateKeyframesItem(
       duplicatItem.redo()
       updateItem.redo()
     },
-  }
-}
-
-function getUpdateCurrentFrameItem(
-  frame: number,
-  seriesKey?: string
-): HistoryItem {
-  const preFrame = currentFrame.value
-  const preEditTransforms = { ...editTransforms.value }
-
-  return {
-    name: 'Update Frame',
-    undo: () => {
-      currentFrame.value = preFrame
-      editTransforms.value = preEditTransforms
-    },
-    redo: () => {
-      currentFrame.value = frame
-      editTransforms.value = {}
-    },
-    seriesKey,
   }
 }

@@ -19,16 +19,19 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { HistoryItem } from '/@/store/history'
 
-export function convolute(head: HistoryItem, body: HistoryItem[]): HistoryItem {
+export function convolute(
+  head: HistoryItem,
+  body: (HistoryItem | undefined)[]
+): HistoryItem {
   return {
     name: head.name,
     undo() {
       head.undo()
-      body.forEach((item) => item.undo())
+      body.forEach((item) => item?.undo())
     },
     redo() {
       head.redo()
-      body.forEach((item) => item.redo())
+      body.forEach((item) => item?.redo())
     },
     seriesKey: head.seriesKey,
   }

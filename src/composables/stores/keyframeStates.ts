@@ -125,6 +125,13 @@ export function useKeyframeStates(getVisibledMap: () => IdMap<TargetProps>) {
     )
   }
 
+  function clear(): HistoryItem {
+    return convolute(
+      getReplaceItem(selectedStateMap.value, {}, setSelectedStateMap),
+      [lastSelectedId.setState('')]
+    )
+  }
+
   return {
     selectedStateMap: computed(() => selectedStateMap.value),
     lastSelectedId: lastSelectedId.state,
@@ -133,7 +140,7 @@ export function useKeyframeStates(getVisibledMap: () => IdMap<TargetProps>) {
     selectAll,
     filter,
     drop,
-    clear: () => filter(),
+    clear,
   }
 }
 

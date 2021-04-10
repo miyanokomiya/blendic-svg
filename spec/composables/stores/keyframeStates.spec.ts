@@ -301,18 +301,28 @@ describe('src/composables/stores/keyframeStates.ts', () => {
   })
 
   describe('clear', () => {
-    it('should return history item to do', () => {
+    it('should return history item to clear all states', () => {
       const store = getStore()
-      store.selectAll({ a: { id: 'a', points: { x: true, y: true } } }).redo()
+      store
+        .selectAll({
+          a: { id: 'a', points: { x: true, y: true } },
+          c: { id: 'c', points: { x: true, y: true } },
+        })
+        .redo()
       const item = store.clear()
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true, y: true } },
+        c: { props: { x: true, y: true } },
       })
+
       item.redo()
+      // should clear all items including invisible ones
       expect(store.selectedStateMap.value).toEqual({})
+
       item.undo()
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true, y: true } },
+        c: { props: { x: true, y: true } },
       })
     })
   })

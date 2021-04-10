@@ -33,6 +33,7 @@ import {
   canvasToNearestFrame,
   canvasToFrame,
   frameToCanvas,
+  getSteppedFrame,
 } from '/@/utils/animations'
 
 describe('utils/animations.ts', () => {
@@ -332,6 +333,19 @@ describe('utils/animations.ts', () => {
           getKeyframeBone({ frame: 4 }),
         ])
       ).toBe(10)
+    })
+  })
+
+  describe('getSteppedFrame', () => {
+    it('step forward if reverse is false', () => {
+      expect(getSteppedFrame(5, 10, 2)).toBe(7)
+      expect(getSteppedFrame(8, 10, 2)).toBe(10)
+      expect(getSteppedFrame(9, 10, 2)).toBe(1)
+    })
+    it('step backward if reverse is true', () => {
+      expect(getSteppedFrame(5, 10, 2, true)).toBe(3)
+      expect(getSteppedFrame(2, 10, 2, true)).toBe(0)
+      expect(getSteppedFrame(1, 10, 2, true)).toBe(9)
     })
   })
 })

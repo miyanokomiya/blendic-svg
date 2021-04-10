@@ -47,7 +47,9 @@ function clearHistory() {
   state.undoStack = []
   state.redoStack = []
 }
-function push(item: HistoryItem) {
+function push(item?: HistoryItem, execRedo = false) {
+  if (!item) return
+
   const last = state.undoStack[state.undoStack.length - 1]
   if (
     last &&
@@ -62,6 +64,10 @@ function push(item: HistoryItem) {
     })
   } else {
     state.undoStack.push(item)
+  }
+
+  if (execRedo) {
+    item.redo()
   }
 
   if (state.undoStack.length > settings.historyMax) {

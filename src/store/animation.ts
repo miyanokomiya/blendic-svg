@@ -215,8 +215,7 @@ const selectedPosedBoneOrigin = computed(
 
 function setEditedTransforms(mapByTargetId: IdMap<Transform>) {
   const item = getUpdateEditedTransformsItem(mapByTargetId)
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 function applyEditedTransforms(mapByTargetId: IdMap<Transform>) {
   setEditedTransforms(
@@ -249,8 +248,7 @@ function pastePoses(mapByTargetId: IdMap<Transform>, seriesKey?: string) {
     'Paste Pose',
     seriesKey
   )
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 
 function currentInterpolatedTransform(targetId: string): Transform {
@@ -268,8 +266,7 @@ function getCurrentSelfTransforms(targetId: string): Transform {
 function updateCurrentFrame(frameItem?: HistoryItem) {
   if (frameItem) {
     const item = convolute(frameItem, [getUpdateEditedTransformsItem({})])
-    item.redo()
-    historyStore.push(item)
+    historyStore.push(item, true)
   }
 }
 function setCurrentFrame(val: number, seriesKey?: string) {
@@ -305,42 +302,46 @@ function jumpPrevKey() {
 
 function setEndFrame(next: number, seriesKey?: string) {
   const item = animationFrameStore.setEndFrame(next, seriesKey)
-  if (item) {
-    item.redo()
-    historyStore.push(item)
-  }
+  historyStore.push(item, true)
 }
 
 function selectAction(id: string) {
   if (actions.state.lastSelectedId === id) return
 
-  const item = getSelectActionItem(id)
-  item.redo()
-  historyStore.push(item)
+  const item = convolute(getSelectItem(actions.state, id), [
+    getSelectKeyframesItem([]),
+  ])
+  historyStore.push(item, true)
 }
 function addAction() {
   if (!store.lastSelectedArmature.value) return
 
-  const action = getAction(
-    {
-      name: getNextName(
-        'action',
-        actions.state.list.map((a) => a.name)
-      ),
-      armatureId: store.lastSelectedArmature.value.id,
-    },
-    true
+  const item = convolute(
+    getAddItem(
+      actions.state,
+      getAction(
+        {
+          name: getNextName(
+            'action',
+            actions.state.list.map((a) => a.name)
+          ),
+          armatureId: store.lastSelectedArmature.value.id,
+        },
+        true
+      )
+    ),
+    [getSelectKeyframesItem([])]
   )
-  const item = getAddActionItem(action)
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 function deleteAction() {
   if (!actions.lastSelectedItem.value) return
 
-  const item = getDeleteActionItem()
-  item.redo()
-  historyStore.push(item)
+  const item = convolute(
+    getDeleteItem(actions.state, actions.lastSelectedIndex.value),
+    [getSelectKeyframesItem([])]
+  )
+  historyStore.push(item, true)
 }
 
 function selectKeyframe(
@@ -351,8 +352,7 @@ function selectKeyframe(
   if (!keyframeId && !isAnyVisibledSelectedKeyframe.value) return
 
   const item = getSelectKeyframeItem(keyframeId, selectedState, shift)
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 function selectKeyframeByFrame(frame: number, shift = false) {
   const frames = keyframeMapByFrame.value[frame]
@@ -362,8 +362,7 @@ function selectKeyframeByFrame(frame: number, shift = false) {
     frames.map((f) => f.id),
     shift
   )
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 function selectAllKeyframes() {
   if (
@@ -381,8 +380,7 @@ function selectAllKeyframes() {
     }
   } else {
     const item = getSelectAllKeyframesItem()
-    item.redo()
-    historyStore.push(item)
+    historyStore.push(item, true)
   }
 }
 function execInsertKeyframe(
@@ -428,15 +426,13 @@ function execInsertKeyframe(
   })
 
   const item = getExecInsertKeyframeItem(keyframes)
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 function execDeleteKeyframes() {
   if (!isAnyVisibledSelectedKeyframe.value) return
 
   const item = getExecDeleteKeyframesItem()
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 function execUpdateKeyframes(
   keyframes: IdMap<KeyframeBase>,
@@ -446,8 +442,7 @@ function execUpdateKeyframes(
     keyframes as IdMap<KeyframeBone>,
     seriesKey
   )
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 function pasteKeyframes(keyframeList: KeyframeBase[]) {
   const item = getExecInsertKeyframeItem(
@@ -458,8 +453,7 @@ function pasteKeyframes(keyframeList: KeyframeBase[]) {
       animationFrameStore.currentFrame.value
     )
   )
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 function completeDuplicateKeyframes(
   duplicatedKeyframeList: KeyframeBase[],
@@ -469,8 +463,7 @@ function completeDuplicateKeyframes(
     duplicatedKeyframeList as KeyframeBone[],
     updatedKeyframeList as KeyframeBone[]
   )
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 
 function selectTargetProp(
@@ -479,8 +472,7 @@ function selectTargetProp(
   shift = false
 ) {
   const item = targetPropsState.select(targetId, propsState, shift)
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 
 export function useAnimationStore() {
@@ -558,58 +550,6 @@ function getUpdateEditedTransformsItem(
     },
     redo,
     seriesKey,
-  }
-}
-
-function getSelectActionItem(id: string): HistoryItem {
-  const actionItem = getSelectItem(actions.state, id)
-  const selectItem = getSelectKeyframesItem([])
-
-  return {
-    name: 'Select Action',
-    undo: () => {
-      actionItem.undo()
-      selectItem.undo()
-    },
-    redo: () => {
-      selectItem.redo()
-      actionItem.redo()
-    },
-  }
-}
-export function getAddActionItem(item: Action): HistoryItem {
-  const actionItem = getAddItem(actions.state, item)
-  const selectItem = getSelectKeyframesItem([])
-
-  return {
-    name: 'Add Action',
-    undo: () => {
-      actionItem.undo()
-      selectItem.undo()
-    },
-    redo: () => {
-      selectItem.redo()
-      actionItem.redo()
-    },
-  }
-}
-export function getDeleteActionItem(): HistoryItem {
-  const actionItem = getDeleteItem(
-    actions.state,
-    actions.lastSelectedIndex.value
-  )
-  const selectItem = getSelectKeyframesItem([])
-
-  return {
-    name: 'Delete Action',
-    undo: () => {
-      actionItem.undo()
-      selectItem.undo()
-    },
-    redo: () => {
-      selectItem.redo()
-      actionItem.redo()
-    },
   }
 }
 

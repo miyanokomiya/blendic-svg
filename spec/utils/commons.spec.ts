@@ -36,6 +36,8 @@ import {
   toKeyListMap,
   toKeyMap,
   toList,
+  pickAnyItem,
+  mapFilterExec,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -401,6 +403,30 @@ describe('utils/commons.ts', () => {
       const keys = Object.keys(ret)
       expect(keys).toHaveLength(1)
       expect(ret[keys[0]]).toEqual({ id: keys[0], value: 1 })
+    })
+  })
+
+  describe('pickAnyItem', () => {
+    it('should return undefined if map has no item', () => {
+      expect(pickAnyItem({})).toBe(undefined)
+    })
+    it('should pick any item in map', () => {
+      const map = { a: 1, b: 1 }
+      expect(pickAnyItem(map)).toBe(1)
+    })
+  })
+
+  describe('mapFilterExec', () => {
+    it('should exec a operation only to targets', () => {
+      const srcMap = { a: 1, b: 2, c: 3, d: 4 }
+      const targetMap = { a: 1, b: 2, c: 3 }
+      const ret = mapFilterExec(srcMap, targetMap, (map) => {
+        return {
+          a: map.a * 2,
+          b: map.b * 3,
+        }
+      })
+      expect(ret).toEqual({ a: 2, b: 6, d: 4 })
     })
   })
 })

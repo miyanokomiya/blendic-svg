@@ -224,3 +224,19 @@ export function regenerateIdMap<T extends { id: string }>(
 ): IdMap<T> {
   return toMap(toList(src).map((item) => ({ ...item, id: v4() })))
 }
+
+export function pickAnyItem<T>(map: { [key: string]: T }): T | undefined {
+  const ids = Object.keys(map)
+  return ids.length > 0 ? map[ids[0]] : undefined
+}
+
+export function mapFilterExec<T>(
+  srcMap: { [key: string]: T },
+  targetMap: { [key: string]: any },
+  fn: (map: { [key: string]: T }) => { [key: string]: T }
+): { [key: string]: T } {
+  return {
+    ...dropMap(srcMap, targetMap),
+    ...fn(extractMap(srcMap, targetMap)),
+  }
+}

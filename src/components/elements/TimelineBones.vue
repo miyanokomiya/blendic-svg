@@ -37,19 +37,17 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <g v-if="boneExpandedMap[bone.id]">
           <TimelineRow
-            v-for="(y, label) in childTopMap"
-            :key="label"
+            v-for="(y, key) in childTopMap"
+            :key="key"
             :transform="`translate(10, ${y})`"
             :label-width="labelWidth - 10"
             :label-height="height"
-            :label="label"
+            :label="getLabel(key)"
             :color="
-              isSelectedProp(bone.id, toKey(label))
-                ? settings.selectedColor
-                : undefined
+              isSelectedProp(bone.id, key) ? settings.selectedColor : undefined
             "
-            @click.left.exact="clickRow(bone.id, toKey(label))"
-            @click.left.shift.exact="clickRow(bone.id, toKey(label), true)"
+            @click.left.exact="clickRow(bone.id, key)"
+            @click.left.shift.exact="clickRow(bone.id, key, true)"
           />
         </g>
       </g>
@@ -119,22 +117,22 @@ export default defineComponent({
 
     const childTopMap = computed(() => {
       return getKeyframeTopMap(props.height, 0, {
-        'Translate X': 0,
-        'Translate Y': 1,
-        Rotate: 2,
-        'Scale X': 3,
-        'Scale Y': 4,
+        translateX: 0,
+        translateY: 1,
+        rotate: 2,
+        scaleX: 3,
+        scaleY: 4,
       })
     })
 
-    function toKey(label: string): string {
+    function getLabel(label: string): string {
       return (
         {
-          'Translate X': 'translateX',
-          'Translate Y': 'translateY',
-          Rotate: 'rotate',
-          'Scale X': 'scaleX',
-          'Scale Y': 'scaleY',
+          translateX: 'Translate X',
+          translateY: 'Translate Y',
+          rotate: 'Rotate',
+          scaleX: 'Scale X',
+          scaleY: 'Scale Y',
         }[label] ?? ''
       )
     }
@@ -158,7 +156,7 @@ export default defineComponent({
     return {
       settings,
       childTopMap,
-      toKey,
+      getLabel,
       toggleBoneExpanded,
       isSelectedProp,
       clickRow,

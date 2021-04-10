@@ -38,6 +38,7 @@ import {
   toMap,
 } from '/@/models'
 import { KeyframeBase, KeyframeBone } from '/@/models/keyframe'
+import { circleClamp } from '/@/utils/geometry'
 import { mergeKeyframes } from '/@/utils/keyframes'
 
 export function getScaleLog(scale: number): number {
@@ -262,4 +263,14 @@ export function getLastFrame<T extends KeyframeBase>(keyframes: T[]): number {
   return keyframes.reduce((p, c) => {
     return Math.max(p, c.frame)
   }, 0)
+}
+
+export function getSteppedFrame(
+  currentFrame: number,
+  endFrame: number,
+  tickFrame: number,
+  reverse = false
+): number {
+  if (endFrame === 0) return 0
+  return circleClamp(0, endFrame, currentFrame + (reverse ? -1 : 1) * tickFrame)
 }

@@ -65,6 +65,30 @@ describe('store/history.ts', () => {
       expect(historyStore.state.undoStack[0].undo).toBe(undoFirst)
       expect(historyStore.state.undoStack[0].redo).toBe(redoSecond)
     })
+
+    it('should exec redo if execRedo is true', () => {
+      const redo = jest.fn()
+      historyStore.push({
+        name: '1',
+        undo: () => {},
+        redo,
+      })
+      expect(redo).toHaveBeenCalledTimes(0)
+      historyStore.push(
+        {
+          name: '2',
+          undo: () => {},
+          redo,
+        },
+        true
+      )
+      expect(redo).toHaveBeenCalledTimes(1)
+    })
+
+    it('should ignore undefined item', () => {
+      historyStore.push(undefined)
+      expect(historyStore.state.undoStack).toHaveLength(0)
+    })
   })
 
   describe('undo', () => {

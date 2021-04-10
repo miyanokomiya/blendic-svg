@@ -28,7 +28,7 @@ import {
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
-import { extractMap, mapReduce } from '/@/utils/commons'
+import { mapReduce } from '/@/utils/commons'
 import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 
 interface KeyframeModule {
@@ -46,10 +46,8 @@ export function getKeyframeModule(name: KeyframeName): KeyframeModule {
 export function getAllSelectedState(
   keyframe: KeyframeBase
 ): KeyframeSelectedState {
-  const map = getKeyframeDefaultPropsMap(() => true, keyframe.name)
   return {
-    ...map,
-    props: extractMap(map.props, keyframe.points),
+    props: mapReduce(keyframe.points, () => true),
   }
 }
 
@@ -57,7 +55,7 @@ export function inversedSelectedState(
   k: KeyframeSelectedState,
   target: KeyframeSelectedState
 ): KeyframeSelectedState {
-  const ret: KeyframeSelectedState = { name: k.name, props: {} }
+  const ret: KeyframeSelectedState = { props: {} }
 
   Object.keys({ ...k.props, ...target.props }).forEach((key) => {
     if (
@@ -177,7 +175,6 @@ export function getSamePropRangeFrameMapById(
       p[id] = keyframeMap[id].reduce<IdMap<KeyframeBaseSameRange>>(
         (p, k, i) => {
           p[k.frame] = {
-            name: k.name,
             props: getSamePropRangeFrameMap(keyframeMap[id], i),
           }
           return p

@@ -33,7 +33,6 @@ export interface KeyframeBase {
 }
 
 export interface KeyframeBaseProps<T> {
-  name: KeyframeName
   props: {
     [key: string]: T
   }
@@ -53,7 +52,6 @@ export interface KeyframeBone extends KeyframeBase {
 }
 
 export interface KeyframeBoneProps<T> extends KeyframeBaseProps<T> {
-  name: 'bone'
   props: {
     [key in KeyframeBonePropKey]?: T
   }

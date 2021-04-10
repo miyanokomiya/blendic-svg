@@ -34,14 +34,12 @@ describe('utils/keyframes/index.ts', () => {
       expect(
         target.inversedSelectedState(
           {
-            name: 'bone',
             props: {
               translateX: true,
               scaleX: true,
             },
           },
           {
-            name: 'bone',
             props: {
               translateX: true,
               rotate: true,
@@ -49,7 +47,6 @@ describe('utils/keyframes/index.ts', () => {
           }
         )
       ).toEqual({
-        name: 'bone',
         props: {
           rotate: true,
           scaleX: true,
@@ -70,12 +67,10 @@ describe('utils/keyframes/index.ts', () => {
             })
           ),
           {
-            name: 'bone',
             props: { translateX: true, translateY: false },
           }
         )
       ).toEqual({
-        name: 'bone',
         props: { translateY: true, rotate: true, scaleX: true, scaleY: true },
       })
     })
@@ -91,7 +86,6 @@ describe('utils/keyframes/index.ts', () => {
                 [prop]: getKeyframePoint(),
               }),
               {
-                name: 'bone',
                 props: {
                   [prop]: true,
                 },
@@ -116,7 +110,6 @@ describe('utils/keyframes/index.ts', () => {
           },
         }),
         {
-          name: 'bone',
           props: {
             translateX: true,
             translateY: true,
@@ -150,7 +143,7 @@ describe('utils/keyframes/index.ts', () => {
             scaleY: getKeyframePoint(),
           },
         }),
-        { name: 'bone', props: {} }
+        { props: {} }
       )
       expect(ret.selected).toBe(undefined)
       expect(ret.notSelected).toEqual(
@@ -173,7 +166,6 @@ describe('utils/keyframes/index.ts', () => {
           },
         }),
         {
-          name: 'bone',
           props: {
             rotate: true,
           },
@@ -249,7 +241,6 @@ describe('utils/keyframes/index.ts', () => {
             },
           }),
           {
-            name: 'bone',
             props: {
               translateX: true,
               translateY: true,
@@ -270,7 +261,6 @@ describe('utils/keyframes/index.ts', () => {
             },
           }),
           {
-            name: 'bone',
             props: {
               translateX: true,
             },
@@ -335,23 +325,19 @@ describe('utils/keyframes/index.ts', () => {
       })
       expect(res.a).toEqual({
         0: {
-          name: 'bone',
           props: {
             rotate: 3,
           },
         },
         3: {
-          name: 'bone',
           props: { rotate: 0 },
         },
         5: {
-          name: 'bone',
           props: { rotate: 0 },
         },
       })
       expect(res.b).toEqual({
         0: {
-          name: 'bone',
           props: { rotate: 0 },
         },
       })
@@ -431,7 +417,7 @@ describe('utils/keyframes/index.ts', () => {
         }),
       }
       const selectedStateMap = {
-        a: { name: 'bone' as const, props: { translateX: true } },
+        a: { props: { translateX: true } },
       }
       const ret = target.batchUpdatePoints(
         keyframeMap,
@@ -469,7 +455,7 @@ describe('utils/keyframes/index.ts', () => {
         }),
       }
       const selectedKeyframeMap = {
-        a: { name: 'bone', props: { translateX: true } },
+        a: { props: { translateX: true } },
       } as const
       const ret = target.splitKeyframeMapBySelected(
         keyframeMap,
@@ -495,8 +481,8 @@ describe('utils/keyframes/index.ts', () => {
     it('avoid reference error causes by missing selected keyframes', () => {
       const keyframeMap = {}
       const selectedKeyframeMap = {
-        a: { name: 'bone', props: { translateX: true } },
-        b: { name: 'bone', props: { translateX: true } },
+        a: { props: { translateX: true } },
+        b: { props: { translateX: true } },
       } as const
       const ret = target.splitKeyframeMapBySelected(
         keyframeMap,
@@ -533,21 +519,21 @@ describe('utils/keyframes/index.ts', () => {
   describe('splitKeyframeProps', () => {
     it('should split map by checkFn', () => {
       const srcMap = {
-        a: { name: 'bone', props: { x: true, y: true } },
-        b: { name: 'bone', props: { x: true, y: true } },
-        c: { name: 'bone', props: { x: true, y: true } },
+        a: { props: { x: true, y: true } },
+        b: { props: { x: true, y: true } },
+        c: { props: { x: true, y: true } },
       } as const
       const ret = target.splitKeyframeProps(srcMap, (targetId, key) => {
         if (targetId === 'c') return true
         return targetId === 'a' && key === 'y'
       })
       expect(ret.trueMap).toEqual({
-        a: { name: 'bone', props: { y: true } },
-        c: { name: 'bone', props: { x: true, y: true } },
+        a: { props: { y: true } },
+        c: { props: { x: true, y: true } },
       })
       expect(ret.falseMap).toEqual({
-        a: { name: 'bone', props: { x: true } },
-        b: { name: 'bone', props: { x: true, y: true } },
+        a: { props: { x: true } },
+        b: { props: { x: true, y: true } },
       })
     })
   })

@@ -21,7 +21,14 @@ import { ref } from '@vue/reactivity'
 import { computed } from '@vue/runtime-core'
 import { IdMap } from '/@/models'
 import { HistoryItem } from '/@/store/history'
-import { dropMap, extractMap, mapFilterExec, mapReduce } from '/@/utils/commons'
+import {
+  dropMap,
+  extractMap,
+  mapFilterExec,
+  mapReduce,
+  mergeOrDropMap,
+  shiftMergeProps,
+} from '/@/utils/commons'
 import { getReplaceItem } from '/@/utils/histories'
 
 type PropStatus = 'selected' | 'hidden'
@@ -79,9 +86,9 @@ export function useTargetProps(getVisibledMap: () => { [id: string]: any }) {
   function filter(keepIdMap: { [id: string]: any } = {}): HistoryItem {
     return getReplaceItem(
       selectedStateMap.value,
-      mapFilterExec(selectedStateMap.value, getVisibledMap(), (map) => {
-        return extractMap(map, keepIdMap)
-      }),
+      mapFilterExec(selectedStateMap.value, getVisibledMap(), (map) =>
+        extractMap(map, keepIdMap)
+      ),
       setSelectedStateMap
     )
   }
@@ -120,31 +127,10 @@ function mergePropsState(
   b?: TargetPropsState
 ): TargetPropsState {
   if (!b) return a
-
   return {
     id: a.id,
-    props: {
-      ...a.props,
-      ...b.props,
-    },
+    props: { ...a.props, ...b.props },
   }
-}
-
-function shiftMergeProps(
-  a: { [key: string]: PropStatus },
-  b?: { [key: string]: PropStatus }
-): { [key: string]: PropStatus } {
-  if (!b) return a
-
-  return Object.keys({
-    ...a,
-    ...b,
-  }).reduce<{ [key: string]: PropStatus }>((p, c) => {
-    if (a[c] === 'selected' && b[c] === 'selected') return p
-
-    p[c] = a[c] ?? b[c]
-    return p
-  }, {})
 }
 
 function getSelectItem(
@@ -156,36 +142,22 @@ function getSelectItem(
   notToggle = false,
   setFn: (val: IdMap<TargetPropsState>) => void
 ): HistoryItem {
-  const current = { ...state }
-
-  const redo = () => {
-    if (shift) {
-      const props = notToggle
-        ? { ...(current[id]?.props ?? {}), ...propsState.props }
-        : shiftMergeProps(current[id]?.props ?? {}, propsState.props)
-      const next = {
-        ...current,
-        [id]: {
-          id,
-          props,
-        },
-      }
-
-      if (Object.keys(props).length === 0) delete next[id]
-      setFn(next)
-    } else {
-      setFn(
-        mapFilterExec(state, visibledMap, () =>
-          id ? { [id]: propsState } : {}
-        )
-      )
-    }
-  }
   return {
     name: 'Select',
-    undo: () => {
-      setFn({ ...current })
+    undo: () => setFn({ ...state }),
+    redo: () => {
+      if (shift) {
+        const props = notToggle
+          ? { ...(state[id]?.props ?? {}), ...propsState.props }
+          : shiftMergeProps(state[id]?.props, propsState.props)
+        setFn(mergeOrDropMap(state, id, props ? { id, props } : undefined))
+      } else {
+        setFn(
+          mapFilterExec(state, visibledMap, () =>
+            id ? { [id]: propsState } : {}
+          )
+        )
+      }
     },
-    redo,
   }
 }

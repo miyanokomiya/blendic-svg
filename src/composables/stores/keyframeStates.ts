@@ -29,7 +29,9 @@ import {
   hasSameProps,
   mapFilterExec,
   mapReduce,
+  mergeOrDropMap,
   pickAnyItem,
+  shiftMergeProps,
 } from '/@/utils/commons'
 import { convolute, getReplaceItem } from '/@/utils/histories'
 
@@ -103,9 +105,9 @@ export function useKeyframeStates(getVisibledMap: () => IdMap<TargetProps>) {
     return convolute(
       getReplaceItem(
         selectedStateMap.value,
-        mapFilterExec(selectedStateMap.value, getVisibledMap(), (map) => {
-          return extractMap(map, keepIdMap)
-        }),
+        mapFilterExec(selectedStateMap.value, getVisibledMap(), (map) =>
+          extractMap(map, keepIdMap)
+        ),
         setSelectedStateMap
       ),
       [lastSelectedId.setState(Object.keys(keepIdMap)[0] ?? '')]
@@ -154,41 +156,6 @@ function mergePropsState(
   return { props: { ...a.props, ...b.props } }
 }
 
-function shiftMergeProps(
-  a?: { [key: string]: boolean },
-  b?: { [key: string]: boolean }
-): { [key: string]: boolean } | undefined {
-  if (!a) return b
-  if (!b) return a
-
-  // toggle boolean if updated map has only one key
-  // e.g.  a = { x: true, y: false }, b = { x: true, y: true }
-  // => expected to be     { x: true, y: true }
-  // =>          not to be { x: false, y: true }
-  const ignoretoggle = Object.keys(b).length > 1
-
-  // set all false if current and next map have all same props with true value
-  let shouldtoggleAllFalse = true
-
-  const ret = Object.keys({
-    ...a,
-    ...b,
-  }).reduce<{ [key: string]: boolean }>((p, c) => {
-    if (a[c] && b[c] && !ignoretoggle) return p
-
-    shouldtoggleAllFalse = shouldtoggleAllFalse && a[c] && b[c]
-
-    p[c] = a[c] ?? b[c]
-    return p
-  }, {})
-
-  if (shouldtoggleAllFalse) {
-    return
-  } else {
-    return ret
-  }
-}
-
 function getSelectItem(
   state: IdMap<KeyframeSelectedState>,
   id: string,
@@ -203,9 +170,7 @@ function getSelectItem(
     redo: () => {
       if (shift) {
         const props = shiftMergeProps(state[id]?.props, propsState.props)
-        setFn(
-          props ? { ...state, [id]: { props } } : dropMap(state, { [id]: true })
-        )
+        setFn(mergeOrDropMap(state, id, props ? { props } : undefined))
       } else {
         setFn(
           mapFilterExec(state, visibledMap, () =>
@@ -222,7 +187,6 @@ function isAllExistSelected(
   state?: KeyframeSelectedState
 ): boolean {
   if (!state) return false
-
   return hasSameProps(
     mapReduce(target.points, () => true),
     state.props

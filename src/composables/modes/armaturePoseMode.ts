@@ -317,10 +317,6 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
   const popupMenuListSrc = computed<PopupMenuItem[]>(() => {
     return [
       {
-        label: 'All Transforms',
-        exec: () => execInsert(true, true, true),
-      },
-      {
         label: 'Location',
         exec: () => execInsert(true, false, false),
       },
@@ -343,6 +339,10 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
       {
         label: 'Rotation & Scale',
         exec: () => execInsert(false, true, true),
+      },
+      {
+        label: 'All Transforms',
+        exec: () => execInsert(true, true, true),
       },
     ]
   })

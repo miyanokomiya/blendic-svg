@@ -21,7 +21,7 @@ import { ref } from '@vue/reactivity'
 import { computed } from '@vue/runtime-core'
 import { IdMap } from '/@/models'
 import { HistoryItem } from '/@/store/history'
-import { dropMap, extractMap, mapReduce } from '/@/utils/commons'
+import { dropMap, extractMap, mapFilterExec, mapReduce } from '/@/utils/commons'
 
 type PropStatus = 'selected' | 'hidden'
 
@@ -35,7 +35,7 @@ export interface TargetPropsState {
   props: { [key: string]: PropStatus }
 }
 
-export function useTargetProps() {
+export function useTargetProps(getVisibledMap: () => { [id: string]: any }) {
   const empty = {}
   const selectedStateMap = ref<IdMap<TargetPropsState>>(empty)
 
@@ -53,6 +53,7 @@ export function useTargetProps() {
       selectedStateMap.value,
       id,
       propsState,
+      getVisibledMap(),
       shift,
       notToggle,
       setSelectedStateMap
@@ -63,24 +64,28 @@ export function useTargetProps() {
     return getReplaceItem(
       selectedStateMap.value,
       mapReduce({ ...selectedStateMap.value, ...targetMap }, (_, id) =>
-        mergePropsState(
-          getAllSelectedProps(targetMap[id]),
-          selectedStateMap.value[id]
-        )
+        targetMap[id]
+          ? mergePropsState(
+              getAllSelectedProps(targetMap[id]),
+              selectedStateMap.value[id]
+            )
+          : selectedStateMap.value[id]
       ),
       setSelectedStateMap
     )
   }
 
-  function filter(targetMap: { [id: string]: any } = {}): HistoryItem {
+  function filter(keepIdMap: { [id: string]: any } = {}): HistoryItem {
     return getReplaceItem(
       selectedStateMap.value,
-      extractMap(selectedStateMap.value, targetMap),
+      mapFilterExec(selectedStateMap.value, getVisibledMap(), (map) => {
+        return extractMap(map, keepIdMap)
+      }),
       setSelectedStateMap
     )
   }
 
-  function clear(targetMap: { [id: string]: any } = {}): HistoryItem {
+  function drop(targetMap: { [id: string]: any } = {}): HistoryItem {
     return getReplaceItem(
       selectedStateMap.value,
       dropMap(selectedStateMap.value, targetMap),
@@ -88,11 +93,16 @@ export function useTargetProps() {
     )
   }
 
+  function clear(): HistoryItem {
+    return getReplaceItem(selectedStateMap.value, {}, setSelectedStateMap)
+  }
+
   return {
     selectedStateMap: computed(() => selectedStateMap.value),
     select,
     selectAll,
     filter,
+    drop,
     clear,
   }
 }
@@ -140,6 +150,7 @@ function getSelectItem(
   state: IdMap<TargetPropsState>,
   id: string,
   propsState: TargetPropsState,
+  visibledMap: IdMap<TargetPropsState>,
   shift = false,
   notToggle = false,
   setFn: (val: IdMap<TargetPropsState>) => void
@@ -162,7 +173,11 @@ function getSelectItem(
       if (Object.keys(props).length === 0) delete next[id]
       setFn(next)
     } else {
-      setFn(id ? { [id]: propsState } : {})
+      setFn(
+        mapFilterExec(state, visibledMap, () =>
+          id ? { [id]: propsState } : {}
+        )
+      )
     }
   }
   return {

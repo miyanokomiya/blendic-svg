@@ -111,13 +111,13 @@ const visibledKeyframeMap = computed(() => {
 })
 
 const animationFrameStore = useAnimationFrameStore()
-const targetPropsState = useTargetProps()
+const targetPropsState = useTargetProps(() => store.state.selectedBones)
 const keyframeState = useKeyframeStates(() => visibledKeyframeMap.value)
 
 function initState(initActions: Action[] = []) {
   actions.state.list = initActions
   editTransforms.value = {}
-  targetPropsState.filter().redo()
+  targetPropsState.clear().redo()
   keyframeState.clear().redo()
 }
 
@@ -559,7 +559,7 @@ function getSelectKeyframesItem(
   const selectKeyframeItem = keyframeState.selectList(keyframeMap, shift)
 
   // TODO: select correct props
-  const targetPropsItem = targetPropsState.clear(
+  const targetPropsItem = targetPropsState.drop(
     Object.keys(keyframeMap).length === 0
       ? toTargetIdMap(toList(visibledKeyframeMap.value))
       : {}
@@ -572,7 +572,7 @@ function getSelectKeyframesPropsItem(
   keyframeMap: IdMap<KeyframeBase>
 ): HistoryItem {
   const selectKeyframeItem = keyframeState.selectAll(keyframeMap)
-  const targetPropsClearItem = targetPropsState.clear(
+  const targetPropsClearItem = targetPropsState.drop(
     toTargetIdMap(toList(visibledKeyframeMap.value))
   )
   return convolute(selectKeyframeItem, [targetPropsClearItem])
@@ -592,7 +592,7 @@ function getSelectKeyframeItem(
 
   const keyframe = visibledKeyframeMap.value[id]
   const propsItem = !id
-    ? targetPropsState.clear(toTargetIdMap(toList(visibledKeyframeMap.value)))
+    ? targetPropsState.drop(toTargetIdMap(toList(visibledKeyframeMap.value)))
     : targetPropsState.select(
         keyframe.targetId,
         {

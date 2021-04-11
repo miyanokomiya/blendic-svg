@@ -240,3 +240,14 @@ export function mapFilterExec<T>(
     ...fn(extractMap(srcMap, targetMap)),
   }
 }
+
+export function hasSameProps<T extends { [key: string]: any }>(
+  a: T,
+  b: T
+): boolean {
+  const aKeys = Object.keys(a)
+  const bKeys = Object.keys(b)
+
+  if (aKeys.length !== bKeys.length) return false
+  return aKeys.every((key) => a[key] === b[key])
+}

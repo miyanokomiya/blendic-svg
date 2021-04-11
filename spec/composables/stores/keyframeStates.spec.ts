@@ -191,11 +191,47 @@ describe('src/composables/stores/keyframeStates.ts', () => {
           a: { props: { x: true } },
         })
 
+        item.redo()
         store
-          .selectList({ a: { id: 'a', points: { x: 1, y: 1 } } }, true)
+          .selectList(
+            {
+              a: { id: 'a', points: { x: 1, y: 1 } },
+            },
+            true
+          )
           .redo()
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true, y: true } },
+        })
+      })
+      it('should avoid toggling separately', () => {
+        const store = getStore()
+        store.selectList({ a: { id: 'a', points: { x: 1 } } }, true).redo()
+
+        store
+          .selectList(
+            {
+              a: { id: 'a', points: { x: 1, y: 1 } },
+            },
+            true
+          )
+          .redo()
+        expect(store.selectedStateMap.value).toEqual({
+          a: { props: { x: true, y: true } },
+        })
+
+        store
+          .selectList(
+            {
+              a: { id: 'a', points: { x: 1, y: 1 } },
+              b: { id: 'b', points: { x: 1, y: 1 } },
+            },
+            true
+          )
+          .redo()
+        expect(store.selectedStateMap.value).toEqual({
+          a: { props: { x: true, y: true } },
+          b: { props: { x: true, y: true } },
         })
       })
     })

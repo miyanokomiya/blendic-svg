@@ -26,12 +26,12 @@ import { HistoryItem } from '/@/store/history'
 import {
   dropMap,
   extractMap,
+  hasSameProps,
   mapFilterExec,
   mapReduce,
   pickAnyItem,
 } from '/@/utils/commons'
 import { convolute, getReplaceItem } from '/@/utils/histories'
-import { getAllSelectedState, isAllExistSelected } from '/@/utils/keyframes'
 
 export interface TargetProps {
   id: string
@@ -66,18 +66,18 @@ export function useKeyframeStates(getVisibledMap: () => IdMap<TargetProps>) {
   }
 
   function selectList(
-    selectedMap: IdMap<TargetProps>,
+    selectedTargetMap: IdMap<TargetProps>,
     shift = false
   ): HistoryItem {
     return convolute(
       getSelectListItem(
         selectedStateMap.value,
-        selectedMap,
+        selectedTargetMap,
         getVisibledMap(),
         shift,
         setSelectedStateMap
       ),
-      [lastSelectedId.setState(pickAnyItem(selectedMap)?.id ?? '')]
+      [lastSelectedId.setState(pickAnyItem(selectedTargetMap)?.id ?? '')]
     )
   }
 
@@ -143,9 +143,7 @@ export function useKeyframeStates(getVisibledMap: () => IdMap<TargetProps>) {
 }
 
 function getAllSelectedProps(target: TargetProps): KeyframeSelectedState {
-  return {
-    props: mapReduce(target.points, () => true),
-  }
+  return { props: mapReduce(target.points, () => true) }
 }
 
 function mergePropsState(
@@ -153,19 +151,14 @@ function mergePropsState(
   b?: KeyframeSelectedState
 ): KeyframeSelectedState {
   if (!b) return a
-
-  return {
-    props: {
-      ...a.props,
-      ...b.props,
-    },
-  }
+  return { props: { ...a.props, ...b.props } }
 }
 
 function shiftMergeProps(
-  a: { [key: string]: boolean },
+  a?: { [key: string]: boolean },
   b?: { [key: string]: boolean }
-): { [key: string]: boolean } {
+): { [key: string]: boolean } | undefined {
+  if (!a) return b
   if (!b) return a
 
   // toggle boolean if updated map has only one key
@@ -190,7 +183,7 @@ function shiftMergeProps(
   }, {})
 
   if (shouldtoggleAllFalse) {
-    return {}
+    return
   } else {
     return ret
   }
@@ -204,76 +197,75 @@ function getSelectItem(
   shift = false,
   setFn: (val: IdMap<KeyframeSelectedState>) => void
 ): HistoryItem {
-  const current = { ...state }
-
-  const redo = () => {
-    if (shift) {
-      const props = shiftMergeProps(current[id]?.props ?? {}, propsState.props)
-      const next = {
-        ...current,
-        [id]: {
-          props,
-        },
-      }
-
-      if (Object.keys(props).length === 0) delete next[id]
-      setFn(next)
-    } else {
-      setFn(
-        mapFilterExec(state, visibledMap, () =>
-          id ? { [id]: propsState } : {}
-        )
-      )
-    }
-  }
   return {
     name: 'Select Keyframe',
-    undo: () => {
-      setFn({ ...current })
+    undo: () => setFn({ ...state }),
+    redo: () => {
+      if (shift) {
+        const props = shiftMergeProps(state[id]?.props, propsState.props)
+        setFn(
+          props ? { ...state, [id]: { props } } : dropMap(state, { [id]: true })
+        )
+      } else {
+        setFn(
+          mapFilterExec(state, visibledMap, () =>
+            id ? { [id]: propsState } : {}
+          )
+        )
+      }
     },
-    redo,
   }
+}
+
+function isAllExistSelected(
+  target: TargetProps,
+  state?: KeyframeSelectedState
+): boolean {
+  if (!state) return false
+
+  return hasSameProps(
+    mapReduce(target.points, () => true),
+    state.props
+  )
+}
+
+function isAllExistStatesSelected(
+  state: IdMap<KeyframeSelectedState>,
+  selectedTargetMap: { [id: string]: TargetProps } = {}
+): boolean {
+  if (Object.keys(state).length === 0) return false
+  return Object.keys(selectedTargetMap).every((id) =>
+    isAllExistSelected(selectedTargetMap[id], state[id])
+  )
 }
 
 function getSelectListItem(
   state: IdMap<KeyframeSelectedState>,
-  selectedMap: { [id: string]: any } = {},
+  selectedTargetMap: { [id: string]: TargetProps } = {},
   visibledMap: { [id: string]: any } = {},
   shift = false,
   setFn: (val: IdMap<KeyframeSelectedState>) => void
 ): HistoryItem {
-  const current = { ...state }
-
-  const redo = () => {
-    const ids = Object.keys(selectedMap)
-
-    if (shift) {
-      const dropIds: IdMap<boolean> = {}
-      const idMap: IdMap<KeyframeSelectedState> = {}
-      ids.forEach((id) => {
-        if (isAllExistSelected(selectedMap[id], state[id])) {
-          dropIds[id] = true
-        } else {
-          idMap[id] = getAllSelectedProps(selectedMap[id])
-        }
-      })
-      setFn(dropMap({ ...state, ...idMap }, dropIds))
-    } else {
-      const idMap = ids.reduce<IdMap<KeyframeSelectedState>>((p, id) => {
-        p[id] = getAllSelectedState(selectedMap[id])
-        return p
-      }, {})
-      setFn({
-        ...dropMap(state, visibledMap),
-        ...idMap,
-      })
-    }
-  }
   return {
     name: 'Select Keyframe',
-    undo: () => {
-      setFn({ ...current })
+    undo: () => setFn({ ...state }),
+    redo: () => {
+      if (shift) {
+        if (isAllExistStatesSelected(state, selectedTargetMap)) {
+          // clear all if all targets have been selected already
+          setFn(dropMap(state, selectedTargetMap))
+        } else {
+          setFn({
+            ...state,
+            ...mapReduce(selectedTargetMap, getAllSelectedProps),
+          })
+        }
+      } else {
+        setFn({
+          ...dropMap(state, visibledMap),
+          ...mapReduce(selectedTargetMap, getAllSelectedProps),
+        })
+      }
     },
-    redo,
   }
 }

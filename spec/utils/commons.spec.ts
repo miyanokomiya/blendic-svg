@@ -38,6 +38,7 @@ import {
   toList,
   pickAnyItem,
   mapFilterExec,
+  hasSameProps,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -427,6 +428,20 @@ describe('utils/commons.ts', () => {
         }
       })
       expect(ret).toEqual({ a: 2, b: 6, d: 4 })
+    })
+  })
+
+  describe('hasSameProps', () => {
+    it('should return true if all props are same', () => {
+      expect(hasSameProps({}, {})).toBe(true)
+      expect(hasSameProps({ a: 1 }, { a: 1 })).toBe(true)
+      expect(hasSameProps({ a: 1, b: 2 }, { a: 1, b: 2 })).toBe(true)
+    })
+    it('should return false if some props are not same', () => {
+      expect(hasSameProps({ a: 1 }, {})).toBe(false)
+      expect(hasSameProps({}, { a: 1 })).toBe(false)
+      expect(hasSameProps({ a: 1 }, { a: 2 })).toBe(false)
+      expect(hasSameProps({ a: 1, b: 2 }, { a: 1, b: 8 })).toBe(false)
     })
   })
 })

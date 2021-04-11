@@ -30,7 +30,7 @@ import {
   mapReduce,
   pickAnyItem,
 } from '/@/utils/commons'
-import { convolute } from '/@/utils/histories'
+import { convolute, getReplaceItem } from '/@/utils/histories'
 import { getAllSelectedState, isAllExistSelected } from '/@/utils/keyframes'
 
 export interface TargetProps {
@@ -219,10 +219,11 @@ function getSelectItem(
       if (Object.keys(props).length === 0) delete next[id]
       setFn(next)
     } else {
-      setFn({
-        ...(id ? { [id]: propsState } : {}),
-        ...dropMap(state, visibledMap),
-      })
+      setFn(
+        mapFilterExec(state, visibledMap, () =>
+          id ? { [id]: propsState } : {}
+        )
+      )
     }
   }
   return {
@@ -267,25 +268,6 @@ function getSelectListItem(
         ...idMap,
       })
     }
-  }
-  return {
-    name: 'Select Keyframe',
-    undo: () => {
-      setFn({ ...current })
-    },
-    redo,
-  }
-}
-
-function getReplaceItem(
-  state: IdMap<KeyframeSelectedState>,
-  next: IdMap<KeyframeSelectedState>,
-  setFn: (val: IdMap<KeyframeSelectedState>) => void
-): HistoryItem {
-  const current = { ...state }
-
-  const redo = () => {
-    setFn(next)
   }
   return {
     name: 'Select Keyframe',

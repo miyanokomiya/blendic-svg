@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { IdMap } from '/@/models'
 import { HistoryItem } from '/@/store/history'
 
 export function convolute(
@@ -34,5 +35,25 @@ export function convolute(
       body.forEach((item) => item?.redo())
     },
     seriesKey: head.seriesKey,
+  }
+}
+
+export function getReplaceItem<T>(
+  state: IdMap<T>,
+  next: IdMap<T>,
+  setFn: (val: IdMap<T>) => void,
+  name = 'Replace'
+): HistoryItem {
+  const current = { ...state }
+
+  const redo = () => {
+    setFn(next)
+  }
+  return {
+    name,
+    undo: () => {
+      setFn({ ...current })
+    },
+    redo,
   }
 }

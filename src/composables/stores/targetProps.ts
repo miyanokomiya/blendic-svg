@@ -22,6 +22,7 @@ import { computed } from '@vue/runtime-core'
 import { IdMap } from '/@/models'
 import { HistoryItem } from '/@/store/history'
 import { dropMap, extractMap, mapFilterExec, mapReduce } from '/@/utils/commons'
+import { getReplaceItem } from '/@/utils/histories'
 
 type PropStatus = 'selected' | 'hidden'
 
@@ -182,25 +183,6 @@ function getSelectItem(
   }
   return {
     name: 'Select',
-    undo: () => {
-      setFn({ ...current })
-    },
-    redo,
-  }
-}
-
-function getReplaceItem(
-  state: IdMap<TargetPropsState>,
-  next: IdMap<TargetPropsState>,
-  setFn: (val: IdMap<TargetPropsState>) => void
-): HistoryItem {
-  const current = { ...state }
-
-  const redo = () => {
-    setFn(next)
-  }
-  return {
-    name: 'Replace',
     undo: () => {
       setFn({ ...current })
     },

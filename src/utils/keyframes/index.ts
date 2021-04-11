@@ -33,7 +33,6 @@ import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 
 interface KeyframeModule {
   getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps<T>>
-  // normalizeCurves(keyframe: KeyframeBase): KeyframeBase
 }
 
 export function getKeyframeModule(name: KeyframeName): KeyframeModule {

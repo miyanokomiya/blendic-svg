@@ -76,7 +76,6 @@ export function getKeyframeDefaultPropsMap<T>(
   val: () => T
 ): Required<KeyframeBoneProps<T>> {
   return {
-    name: 'bone',
     props: {
       translateX: val(),
       translateY: val(),

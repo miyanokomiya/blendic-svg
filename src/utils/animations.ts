@@ -59,7 +59,8 @@ function getValueIntervalUnit(valueWidth: number): number {
   if (valueWidth > 3) return 15
   if (valueWidth > 2) return 20
   if (valueWidth > 1.5) return 25
-  return 50
+  if (valueWidth > 1.0) return 50
+  return 100
 }
 
 export function canvasToNearestFrame(x: number): number {

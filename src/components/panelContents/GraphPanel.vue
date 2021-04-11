@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="graph-panel-wrapper">
     <BlockField label="Value Scale">
-      <SliderInput v-model="settings.graphValueWidth" :min="1" :max="10" />
+      <SliderInput v-model="valueWidth" :min="0" :max="10" />
     </BlockField>
     <template v-if="targetPoint">
       <BlockField label="Interpolation">
@@ -117,12 +117,21 @@ export default defineComponent({
 
     const { settings } = useSettings()
 
+    const valueWidth = computed({
+      get(): number {
+        return 10.5 - settings.graphValueWidth
+      },
+      set(val: number) {
+        settings.graphValueWidth = 10.5 - val
+      },
+    })
+
     return {
       targetPoint,
       curveOptions,
       updateCurveName,
       updateCurveValue,
-      settings,
+      valueWidth,
     }
   },
 })

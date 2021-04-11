@@ -78,7 +78,7 @@ import GraphKeyPoints from '/@/components/elements/molecules/GraphKeyPoints.vue'
 import { getKeyframePropsMap, splitKeyframeProps } from '/@/utils/keyframes'
 import { flatKeyListMap } from '/@/utils/commons'
 import { useKeysCache } from '/@/composables/cache'
-import { TargetPropsState } from '/@/composables/targetProps'
+import { TargetPropsState } from '/@/composables/stores/targetProps'
 
 export default defineComponent({
   components: {

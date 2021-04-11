@@ -70,7 +70,7 @@ import { computed, defineComponent, PropType } from 'vue'
 import { Bone, IdMap } from '/@/models'
 import TimelineRow from './atoms/TimelineRow.vue'
 import { getKeyframeTopMap } from '/@/utils/helpers'
-import { TargetPropsState } from '/@/composables/targetProps'
+import { TargetPropsState } from '/@/composables/stores/targetProps'
 import { useSettings } from '/@/composables/settings'
 
 export default defineComponent({
@@ -145,10 +145,7 @@ export default defineComponent({
       emit(
         'select',
         id,
-        {
-          id,
-          props: { [propKey]: 'selected' },
-        } as TargetPropsState,
+        { props: { [propKey]: 'selected' } } as TargetPropsState,
         shift
       )
     }

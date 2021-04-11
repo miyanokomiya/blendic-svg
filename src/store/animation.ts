@@ -596,7 +596,6 @@ function getSelectKeyframeItem(
     : targetPropsState.select(
         keyframe.targetId,
         {
-          id: keyframe.targetId,
           props: mapReduce(
             (selectedState ?? getAllSelectedState(keyframe)).props,
             () => 'selected'

@@ -39,7 +39,6 @@ export interface TargetProps {
 }
 
 export interface TargetPropsState {
-  id: string
   props: { [key: string]: PropStatus }
 }
 
@@ -117,7 +116,6 @@ export function useTargetProps(getVisibledMap: () => { [id: string]: any }) {
 
 function getAllSelectedProps(target: TargetProps): TargetPropsState {
   return {
-    id: target.id,
     props: mapReduce(target.props, () => 'selected'),
   }
 }
@@ -128,7 +126,6 @@ function mergePropsState(
 ): TargetPropsState {
   if (!b) return a
   return {
-    id: a.id,
     props: { ...a.props, ...b.props },
   }
 }
@@ -150,7 +147,7 @@ function getSelectItem(
         const props = notToggle
           ? { ...(state[id]?.props ?? {}), ...propsState.props }
           : shiftMergeProps(state[id]?.props, propsState.props)
-        setFn(mergeOrDropMap(state, id, props ? { id, props } : undefined))
+        setFn(mergeOrDropMap(state, id, props ? { props } : undefined))
       } else {
         setFn(
           mapFilterExec(state, visibledMap, () =>

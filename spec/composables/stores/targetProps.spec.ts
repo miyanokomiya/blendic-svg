@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { useTargetProps } from '/@/composables/stores/targetProps'
 
-describe('src/composables/targetProps.ts', () => {
+describe('src/composables/stores/targetProps.ts', () => {
   const visibledMap = {
     a: { id: 'a', props: {} },
     b: { id: 'b', props: {} },
@@ -32,11 +32,11 @@ describe('src/composables/targetProps.ts', () => {
   describe('select', () => {
     it('should return history item to do', () => {
       const targetProps = getStore()
-      const ret = targetProps.select('a', { id: 'a', props: { x: 'selected' } })
+      const ret = targetProps.select('a', { props: { x: 'selected' } })
       expect(targetProps.selectedStateMap.value).toEqual({})
       ret.redo()
       expect(targetProps.selectedStateMap.value).toEqual({
-        a: { id: 'a', props: { x: 'selected' } },
+        a: { props: { x: 'selected' } },
       })
       ret.undo()
       expect(targetProps.selectedStateMap.value).toEqual({})
@@ -44,70 +44,60 @@ describe('src/composables/targetProps.ts', () => {
     describe('shift select', () => {
       it('add selected state', () => {
         const targetProps = getStore()
-        targetProps.select('a', { id: 'a', props: { x: 'selected' } }).redo()
-        const item = targetProps.select(
-          'b',
-          { id: 'b', props: { x: 'selected' } },
-          true
-        )
+        targetProps.select('a', { props: { x: 'selected' } }).redo()
+        const item = targetProps.select('b', { props: { x: 'selected' } }, true)
         expect(targetProps.selectedStateMap.value).toEqual({
-          a: { id: 'a', props: { x: 'selected' } },
+          a: { props: { x: 'selected' } },
         })
         item.redo()
         expect(targetProps.selectedStateMap.value).toEqual({
-          a: { id: 'a', props: { x: 'selected' } },
-          b: { id: 'b', props: { x: 'selected' } },
+          a: { props: { x: 'selected' } },
+          b: { props: { x: 'selected' } },
         })
         item.undo()
         expect(targetProps.selectedStateMap.value).toEqual({
-          a: { id: 'a', props: { x: 'selected' } },
+          a: { props: { x: 'selected' } },
         })
         item.redo()
-        targetProps
-          .select('b', { id: 'b', props: { y: 'selected' } }, true)
-          .redo()
+        targetProps.select('b', { props: { y: 'selected' } }, true).redo()
         expect(targetProps.selectedStateMap.value).toEqual({
-          a: { id: 'a', props: { x: 'selected' } },
-          b: { id: 'b', props: { x: 'selected', y: 'selected' } },
+          a: { props: { x: 'selected' } },
+          b: { props: { x: 'selected', y: 'selected' } },
         })
       })
       it('toggle selected', () => {
         const targetProps = getStore()
-        targetProps.select('a', { id: 'a', props: { x: 'selected' } }).redo()
-        const item = targetProps.select(
-          'a',
-          { id: 'a', props: { x: 'selected' } },
-          true
-        )
+        targetProps.select('a', { props: { x: 'selected' } }).redo()
+        const item = targetProps.select('a', { props: { x: 'selected' } }, true)
         expect(targetProps.selectedStateMap.value).toEqual({
-          a: { id: 'a', props: { x: 'selected' } },
+          a: { props: { x: 'selected' } },
         })
         item.redo()
         expect(targetProps.selectedStateMap.value).toEqual({})
         item.undo()
         expect(targetProps.selectedStateMap.value).toEqual({
-          a: { id: 'a', props: { x: 'selected' } },
+          a: { props: { x: 'selected' } },
         })
       })
       it('not toggle selected if notToggle = true', () => {
         const targetProps = getStore()
-        targetProps.select('a', { id: 'a', props: { x: 'selected' } }).redo()
+        targetProps.select('a', { props: { x: 'selected' } }).redo()
         const item = targetProps.select(
           'a',
-          { id: 'a', props: { x: 'selected' } },
+          { props: { x: 'selected' } },
           true,
           true
         )
         expect(targetProps.selectedStateMap.value).toEqual({
-          a: { id: 'a', props: { x: 'selected' } },
+          a: { props: { x: 'selected' } },
         })
         item.redo()
         expect(targetProps.selectedStateMap.value).toEqual({
-          a: { id: 'a', props: { x: 'selected' } },
+          a: { props: { x: 'selected' } },
         })
         item.undo()
         expect(targetProps.selectedStateMap.value).toEqual({
-          a: { id: 'a', props: { x: 'selected' } },
+          a: { props: { x: 'selected' } },
         })
       })
 
@@ -120,10 +110,10 @@ describe('src/composables/targetProps.ts', () => {
           })
           .redo()
 
-        store.select('a', { id: 'a', props: { x: 'selected' } }).redo()
+        store.select('a', { props: { x: 'selected' } }).redo()
         expect(store.selectedStateMap.value).toEqual({
-          a: { id: 'a', props: { x: 'selected' } },
-          c: { id: 'c', props: { x: 'selected' } },
+          a: { props: { x: 'selected' } },
+          c: { props: { x: 'selected' } },
         })
       })
     })
@@ -139,8 +129,8 @@ describe('src/composables/targetProps.ts', () => {
       expect(targetProps.selectedStateMap.value).toEqual({})
       item.redo()
       expect(targetProps.selectedStateMap.value).toEqual({
-        a: { id: 'a', props: { x: 'selected', y: 'selected' } },
-        b: { id: 'b', props: { p: 'selected', q: 'selected' } },
+        a: { props: { x: 'selected', y: 'selected' } },
+        b: { props: { p: 'selected', q: 'selected' } },
       })
       item.undo()
       expect(targetProps.selectedStateMap.value).toEqual({})
@@ -148,13 +138,13 @@ describe('src/composables/targetProps.ts', () => {
 
     it('should keep invisible items', () => {
       const store = getStore()
-      store.select('b', { id: 'b', props: { x: 'selected' } }).redo()
-      store.select('c', { id: 'c', props: { x: 'selected' } }).redo()
+      store.select('b', { props: { x: 'selected' } }).redo()
+      store.select('c', { props: { x: 'selected' } }).redo()
 
-      store.selectAll({ a: { id: 'a', props: { y: 'selected' } } }).redo()
+      store.selectAll({ a: { id: 'a', props: { y: true } } }).redo()
       expect(store.selectedStateMap.value).toEqual({
-        a: { id: 'a', props: { y: 'selected' } },
-        c: { id: 'c', props: { x: 'selected' } },
+        a: { props: { y: 'selected' } },
+        c: { props: { x: 'selected' } },
       })
     })
   })
@@ -170,17 +160,17 @@ describe('src/composables/targetProps.ts', () => {
         .redo()
       const item = targetProps.filter({ b: true })
       expect(targetProps.selectedStateMap.value).toEqual({
-        a: { id: 'a', props: { x: 'selected', y: 'selected' } },
-        b: { id: 'b', props: { p: 'selected', q: 'selected' } },
+        a: { props: { x: 'selected', y: 'selected' } },
+        b: { props: { p: 'selected', q: 'selected' } },
       })
       item.redo()
       expect(targetProps.selectedStateMap.value).toEqual({
-        b: { id: 'b', props: { p: 'selected', q: 'selected' } },
+        b: { props: { p: 'selected', q: 'selected' } },
       })
       item.undo()
       expect(targetProps.selectedStateMap.value).toEqual({
-        a: { id: 'a', props: { x: 'selected', y: 'selected' } },
-        b: { id: 'b', props: { p: 'selected', q: 'selected' } },
+        a: { props: { x: 'selected', y: 'selected' } },
+        b: { props: { p: 'selected', q: 'selected' } },
       })
     })
 
@@ -196,8 +186,8 @@ describe('src/composables/targetProps.ts', () => {
 
       store.filter({ b: true }).redo()
       expect(store.selectedStateMap.value).toEqual({
-        b: { id: 'b', props: { x: 'selected' } },
-        c: { id: 'c', props: { x: 'selected' } },
+        b: { props: { x: 'selected' } },
+        c: { props: { x: 'selected' } },
       })
     })
   })
@@ -213,17 +203,17 @@ describe('src/composables/targetProps.ts', () => {
         .redo()
       const item = targetProps.drop({ b: true })
       expect(targetProps.selectedStateMap.value).toEqual({
-        a: { id: 'a', props: { x: 'selected', y: 'selected' } },
-        b: { id: 'b', props: { p: 'selected', q: 'selected' } },
+        a: { props: { x: 'selected', y: 'selected' } },
+        b: { props: { p: 'selected', q: 'selected' } },
       })
       item.redo()
       expect(targetProps.selectedStateMap.value).toEqual({
-        a: { id: 'a', props: { x: 'selected', y: 'selected' } },
+        a: { props: { x: 'selected', y: 'selected' } },
       })
       item.undo()
       expect(targetProps.selectedStateMap.value).toEqual({
-        a: { id: 'a', props: { x: 'selected', y: 'selected' } },
-        b: { id: 'b', props: { p: 'selected', q: 'selected' } },
+        a: { props: { x: 'selected', y: 'selected' } },
+        b: { props: { p: 'selected', q: 'selected' } },
       })
     })
   })
@@ -239,15 +229,15 @@ describe('src/composables/targetProps.ts', () => {
         .redo()
       const item = targetProps.clear()
       expect(targetProps.selectedStateMap.value).toEqual({
-        a: { id: 'a', props: { x: 'selected', y: 'selected' } },
-        b: { id: 'b', props: { p: 'selected', q: 'selected' } },
+        a: { props: { x: 'selected', y: 'selected' } },
+        b: { props: { p: 'selected', q: 'selected' } },
       })
       item.redo()
       expect(targetProps.selectedStateMap.value).toEqual({})
       item.undo()
       expect(targetProps.selectedStateMap.value).toEqual({
-        a: { id: 'a', props: { x: 'selected', y: 'selected' } },
-        b: { id: 'b', props: { p: 'selected', q: 'selected' } },
+        a: { props: { x: 'selected', y: 'selected' } },
+        b: { props: { p: 'selected', q: 'selected' } },
       })
     })
   })

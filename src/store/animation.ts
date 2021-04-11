@@ -53,11 +53,11 @@ import {
 import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
 import { useAnimationFrameStore } from '/@/composables/stores/animationFrame'
+import { useKeyframeStates } from '/@/composables/stores/keyframeStates'
 import {
-  TargetProps,
   TargetPropsState,
   useTargetProps,
-} from '/@/composables/targetProps'
+} from '/@/composables/stores/targetProps'
 import {
   Action,
   Bone,
@@ -80,29 +80,15 @@ import { convolute } from '/@/utils/histories'
 import {
   deleteKeyframeByProp,
   getAllSelectedState,
-  getKeyframeDefaultPropsMap,
   isAllExistSelected,
 } from '/@/utils/keyframes'
 import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
 
 const actions = useListState<Action>('Action')
 const editTransforms = ref<IdMap<Transform>>({})
-const selectedKeyframeMap = ref<IdMap<KeyframeSelectedState>>({})
-const lastSelectedKeyframeId = ref('')
 
 const historyStore = useHistoryStore()
 const store = useStore()
-
-const targetPropsState = useTargetProps()
-const animationFrameStore = useAnimationFrameStore()
-
-function initState(initActions: Action[] = []) {
-  actions.state.list = initActions
-  editTransforms.value = {}
-  selectedKeyframeMap.value = {}
-  lastSelectedKeyframeId.value = ''
-  targetPropsState.filter().redo()
-}
 
 const keyframeList = computed(() => {
   return actions.lastSelectedItem.value?.keyframes ?? []
@@ -124,15 +110,29 @@ const visibledKeyframeMap = computed(() => {
   return toMap(flatKeyListMap(visibledKeyframeMapByTargetId.value))
 })
 
+const animationFrameStore = useAnimationFrameStore()
+const targetPropsState = useTargetProps(() => store.state.selectedBones)
+const keyframeState = useKeyframeStates(() => visibledKeyframeMap.value)
+
+function initState(initActions: Action[] = []) {
+  actions.state.list = initActions
+  editTransforms.value = {}
+  targetPropsState.clear().redo()
+  keyframeState.clear().redo()
+}
+
 const visibledSelectedKeyframeMap = computed(() => {
-  return extractMap(visibledKeyframeMap.value, selectedKeyframeMap.value)
+  return extractMap(
+    visibledKeyframeMap.value,
+    keyframeState.selectedStateMap.value
+  )
 })
 const isAnyVisibledSelectedKeyframe = computed(() => {
   return Object.keys(visibledSelectedKeyframeMap.value).length > 0
 })
 
 const lastSelectedKeyframe = computed(() => {
-  return visibledSelectedKeyframeMap.value[lastSelectedKeyframeId.value]
+  return visibledSelectedKeyframeMap.value[keyframeState.lastSelectedId.value]
 })
 
 const visibledTargetPropsStateMap = computed(() => {
@@ -309,7 +309,7 @@ function selectAction(id: string) {
   if (actions.state.lastSelectedId === id) return
 
   historyStore.push(
-    convolute(getSelectItem(actions.state, id), [getSelectKeyframesItem([])]),
+    convolute(getSelectItem(actions.state, id), [getSelectKeyframesItem({})]),
     true
   )
 }
@@ -330,7 +330,7 @@ function addAction() {
         true
       )
     ),
-    [getSelectKeyframesItem([])]
+    [getSelectKeyframesItem({})]
   )
   historyStore.push(item, true)
 }
@@ -339,7 +339,7 @@ function deleteAction() {
 
   historyStore.push(
     convolute(getDeleteItem(actions.state, actions.lastSelectedIndex.value), [
-      getSelectKeyframesItem([]),
+      getSelectKeyframesItem({}),
     ]),
     true
   )
@@ -361,13 +361,7 @@ function selectKeyframeByFrame(frame: number, shift = false) {
   const frames = keyframeMapByFrame.value[frame]
   if (frames.length === 0) return
 
-  historyStore.push(
-    getSelectKeyframesItem(
-      frames.map((f) => f.id),
-      shift
-    ),
-    true
-  )
+  historyStore.push(getSelectKeyframesItem(toMap(frames), shift), true)
 }
 function selectAllKeyframes() {
   if (
@@ -376,7 +370,7 @@ function selectAllKeyframes() {
     Object.keys(visibledSelectedKeyframeMap.value).every((key) =>
       isAllExistSelected(
         visibledKeyframeMap.value[key],
-        selectedKeyframeMap.value[key]
+        keyframeState.selectedStateMap.value[key]
       )
     )
   ) {
@@ -480,7 +474,7 @@ export function useAnimationStore() {
   return {
     initState,
     actions: computed(() => actions.state.list),
-    selectedKeyframeMap,
+    selectedKeyframeMap: keyframeState.selectedStateMap,
     lastSelectedKeyframe,
     keyframeMapByFrame,
     keyframeMapByTargetId,
@@ -554,146 +548,34 @@ function getUpdateEditedTransformsItem(
   }
 }
 
-function resetLastSelectedKeyframeId() {
-  lastSelectedKeyframeId.value = Object.keys(selectedKeyframeMap.value)[0] ?? ''
-}
-
 function getSelectAllKeyframesItem(): HistoryItem {
-  const current = { ...selectedKeyframeMap.value }
-  const currentLast = lastSelectedKeyframeId.value
-
-  const targetPropsItem = getSelectAllTargetPropsItem(
-    toTargetIdMap(toList(visibledKeyframeMap.value)),
-    (id) =>
-      getKeyframeDefaultPropsMap(() => true, visibledKeyframeMap.value[id].name)
-        .props
-  )
-
-  const redo = () => {
-    selectedKeyframeMap.value = {
-      ...selectedKeyframeMap.value,
-      ...mapReduce(visibledKeyframeMap.value, (keyframe) =>
-        getAllSelectedState(keyframe)
-      ),
-    }
-    resetLastSelectedKeyframeId()
-    targetPropsItem.redo()
-  }
-  return {
-    name: 'Select All Keyframe',
-    undo: () => {
-      selectedKeyframeMap.value = { ...current }
-      lastSelectedKeyframeId.value = currentLast
-      targetPropsItem.undo()
-    },
-    redo,
-  }
+  return keyframeState.selectAll(visibledKeyframeMap.value)
 }
-function getSelectKeyframesItem(ids: string[], shift = false): HistoryItem {
-  const current = { ...selectedKeyframeMap.value }
-  const currentLast = lastSelectedKeyframeId.value
+
+function getSelectKeyframesItem(
+  keyframeMap: IdMap<KeyframeBase>,
+  shift = false
+): HistoryItem {
+  const selectKeyframeItem = keyframeState.selectList(keyframeMap, shift)
 
   // TODO: select correct props
-  const targetPropsItem = targetPropsState.clear(
-    ids.length === 0 ? toTargetIdMap(toList(visibledKeyframeMap.value)) : {}
+  const targetPropsItem = targetPropsState.drop(
+    Object.keys(keyframeMap).length === 0
+      ? toTargetIdMap(toList(visibledKeyframeMap.value))
+      : {}
   )
 
-  const redo = () => {
-    if (shift) {
-      const dropIds: IdMap<boolean> = {}
-      const idMap: IdMap<KeyframeSelectedState> = {}
-      ids.forEach((id) => {
-        if (
-          isAllExistSelected(
-            visibledKeyframeMap.value[id],
-            selectedKeyframeMap.value[id]
-          )
-        ) {
-          dropIds[id] = true
-        } else {
-          idMap[id] = getAllSelectedState(visibledKeyframeMap.value[id])
-        }
-      })
-      selectedKeyframeMap.value = dropMap(
-        { ...selectedKeyframeMap.value, ...idMap },
-        dropIds
-      )
-    } else {
-      const idMap = ids.reduce<IdMap<KeyframeSelectedState>>((p, id) => {
-        p[id] = getAllSelectedState(visibledKeyframeMap.value[id])
-        return p
-      }, {})
-      selectedKeyframeMap.value =
-        ids.length > 0
-          ? {
-              ...dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value),
-              ...idMap,
-            }
-          : dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value)
-    }
-    resetLastSelectedKeyframeId()
-    targetPropsItem.redo()
-  }
-  return {
-    name: 'Select Keyframe',
-    undo: () => {
-      selectedKeyframeMap.value = { ...current }
-      lastSelectedKeyframeId.value = currentLast
-      targetPropsItem.undo()
-    },
-    redo,
-  }
-}
-
-function getSelectAllTargetPropsItem(
-  keyframeMapByTargetId: IdMap<KeyframeBase>,
-  getProps: (id: string) => TargetProps['props']
-) {
-  return targetPropsState.selectAll(
-    Object.keys(keyframeMapByTargetId).reduce<
-      Parameters<typeof targetPropsState.selectAll>[0]
-    >((p, targetId) => {
-      const k = keyframeMapByTargetId[targetId]
-      p[targetId] = { id: targetId, props: getProps(k.id) }
-      return p
-    }, {})
-  )
+  return convolute(selectKeyframeItem, [targetPropsItem])
 }
 
 function getSelectKeyframesPropsItem(
   keyframeMap: IdMap<KeyframeBase>
 ): HistoryItem {
-  const current = { ...selectedKeyframeMap.value }
-  const currentLast = lastSelectedKeyframeId.value
-
-  const selectedStateMap = mapReduce(keyframeMap, (k) => {
-    return {
-      name: k.name,
-      props: mapReduce(k.points, () => true),
-    }
-  })
-  const targetPropsClearItem = targetPropsState.clear(
+  const selectKeyframeItem = keyframeState.selectAll(keyframeMap)
+  const targetPropsClearItem = targetPropsState.drop(
     toTargetIdMap(toList(visibledKeyframeMap.value))
   )
-
-  const redo = () => {
-    selectedKeyframeMap.value = selectedStateMap
-    resetLastSelectedKeyframeId()
-    targetPropsClearItem.redo()
-    getSelectAllTargetPropsItem(
-      toTargetIdMap(toList(keyframeMap)),
-      (id) => selectedStateMap[id]?.props ?? {}
-    ).redo()
-  }
-  return {
-    name: 'Select Keyframe',
-    undo: () => {
-      selectedKeyframeMap.value = { ...current }
-      lastSelectedKeyframeId.value = currentLast
-      targetPropsClearItem.undo()
-    },
-    redo,
-  }
+  return convolute(selectKeyframeItem, [targetPropsClearItem])
 }
 
 function getSelectKeyframeItem(
@@ -701,16 +583,19 @@ function getSelectKeyframeItem(
   selectedState?: KeyframeSelectedState,
   shift = false
 ): HistoryItem {
-  const current = { ...selectedKeyframeMap.value }
-  const currentLast = lastSelectedKeyframeId.value
-  const keyframe = visibledKeyframeMap.value[id]
+  const selectKeyframeItem = keyframeState.select(
+    id,
+    selectedState ??
+      (id ? getAllSelectedState(visibledKeyframeMap.value[id]) : { props: {} }),
+    shift
+  )
 
+  const keyframe = visibledKeyframeMap.value[id]
   const propsItem = !id
-    ? targetPropsState.clear(toTargetIdMap(toList(visibledKeyframeMap.value)))
+    ? targetPropsState.drop(toTargetIdMap(toList(visibledKeyframeMap.value)))
     : targetPropsState.select(
         keyframe.targetId,
         {
-          id: keyframe.targetId,
           props: mapReduce(
             (selectedState ?? getAllSelectedState(keyframe)).props,
             () => 'selected'
@@ -720,34 +605,7 @@ function getSelectKeyframeItem(
         true
       )
 
-  const redo = () => {
-    if (shift) {
-      if (id) {
-        selectedKeyframeMap.value = {
-          ...selectedKeyframeMap.value,
-          [id]:
-            selectedState ?? getAllSelectedState(visibledKeyframeMap.value[id]),
-        }
-      }
-      lastSelectedKeyframeId.value = id
-    } else {
-      selectedKeyframeMap.value = {
-        ...dropMap(selectedKeyframeMap.value, visibledKeyframeMap.value),
-        ...(selectedState ? { [id]: selectedState } : {}),
-      }
-      lastSelectedKeyframeId.value = selectedState ? id : ''
-    }
-    propsItem.redo()
-  }
-  return {
-    name: 'Select Keyframe',
-    undo: () => {
-      selectedKeyframeMap.value = { ...current }
-      lastSelectedKeyframeId.value = currentLast
-      propsItem.undo()
-    },
-    redo,
-  }
+  return convolute(selectKeyframeItem, [propsItem])
 }
 
 function getExecInsertKeyframeItem(
@@ -803,13 +661,13 @@ function getExecInsertKeyframeItem(
 
 function getExecDeleteKeyframesItem() {
   const deletedFrames = { ...visibledSelectedKeyframeMap.value }
-  const selectItem = getSelectKeyframesItem([])
+  const selectItem = getSelectKeyframesItem({})
 
   const redo = () => {
     const deletedMap = mapReduce(deletedFrames, (keyframe) => {
       return deleteKeyframeByProp(
         keyframe,
-        selectedKeyframeMap.value[keyframe.id]
+        keyframeState.selectedStateMap.value[keyframe.id]
       )
     })
     const updated = toList({

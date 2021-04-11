@@ -36,6 +36,11 @@ import {
   toKeyListMap,
   toKeyMap,
   toList,
+  pickAnyItem,
+  mapFilterExec,
+  hasSameProps,
+  shiftMergeProps,
+  mergeOrDropMap,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -401,6 +406,97 @@ describe('utils/commons.ts', () => {
       const keys = Object.keys(ret)
       expect(keys).toHaveLength(1)
       expect(ret[keys[0]]).toEqual({ id: keys[0], value: 1 })
+    })
+  })
+
+  describe('pickAnyItem', () => {
+    it('should return undefined if map has no item', () => {
+      expect(pickAnyItem({})).toBe(undefined)
+    })
+    it('should pick any item in map', () => {
+      const map = { a: 1, b: 1 }
+      expect(pickAnyItem(map)).toBe(1)
+    })
+  })
+
+  describe('mapFilterExec', () => {
+    it('should exec a operation only to targets', () => {
+      const srcMap = { a: 1, b: 2, c: 3, d: 4 }
+      const targetMap = { a: 1, b: 2, c: 3 }
+      const ret = mapFilterExec(srcMap, targetMap, (map) => {
+        return {
+          a: map.a * 2,
+          b: map.b * 3,
+        }
+      })
+      expect(ret).toEqual({ a: 2, b: 6, d: 4 })
+    })
+  })
+
+  describe('hasSameProps', () => {
+    it('should return true if all props are same', () => {
+      expect(hasSameProps({}, {})).toBe(true)
+      expect(hasSameProps({ a: 1 }, { a: 1 })).toBe(true)
+      expect(hasSameProps({ a: 1, b: 2 }, { a: 1, b: 2 })).toBe(true)
+    })
+    it('should return false if some props are not same', () => {
+      expect(hasSameProps({ a: 1 }, {})).toBe(false)
+      expect(hasSameProps({}, { a: 1 })).toBe(false)
+      expect(hasSameProps({ a: 1 }, { a: 2 })).toBe(false)
+      expect(hasSameProps({ a: 1, b: 2 }, { a: 1, b: 8 })).toBe(false)
+    })
+  })
+
+  describe('shiftMergeProps', () => {
+    it('should return another if one of args is undefined', () => {
+      const map = { a: 1 }
+      expect(shiftMergeProps(map, undefined)).toEqual(map)
+      expect(shiftMergeProps(undefined, map)).toEqual(map)
+    })
+    it('should drop a prop if map b has only the one prop and the prop is same between both maps', () => {
+      const a = { a: 1, b: 1 }
+      expect(shiftMergeProps(a, { b: 1 })).toEqual({ a: 1 })
+      expect(shiftMergeProps(a, { b: 2 })).toEqual({ a: 1, b: 2 })
+      expect(shiftMergeProps(a, { c: 1 })).toEqual({ a: 1, b: 1, c: 1 })
+    })
+    it('should merge individual props if map b has two more prop', () => {
+      const a = { a: 1, b: 1 }
+      const b = { b: 1, c: 1 }
+      expect(shiftMergeProps(a, b)).toEqual({ ...a, ...b })
+    })
+    it('should return undefined if each props of two maps has same value', () => {
+      const a = { a: 1 }
+      expect(shiftMergeProps(a, a)).toBe(undefined)
+      expect(shiftMergeProps(a, { a: 2 })).toEqual({ a: 2 })
+    })
+    it('should be enable custmize compare function', () => {
+      const a = { a: 1 }
+      expect(shiftMergeProps(a, { a: 10 }, (v1, v2) => v1 === v2 * 5)).toEqual({
+        a: 10,
+      })
+      expect(shiftMergeProps(a, { a: 10 }, (v1, v2) => v1 === v2 / 10)).toBe(
+        undefined
+      )
+    })
+    it('should merge if each props of two maps does not have same value', () => {
+      const a = { a: 1, c: 1 }
+      const b = { a: 1, b: 1 }
+      expect(shiftMergeProps(a, b)).toEqual({ ...a, ...b })
+    })
+    it('should merge if one of two maps has no props', () => {
+      const a = { a: 1, c: 1 }
+      const b = {}
+      expect(shiftMergeProps(a, b)).toEqual(a)
+      expect(shiftMergeProps(b, a)).toEqual(a)
+    })
+  })
+
+  describe('mergeOrDropMap', () => {
+    it('should merge new item if the value is not undefined', () => {
+      expect(mergeOrDropMap({ a: 1 }, 'b', 2)).toEqual({ a: 1, b: 2 })
+    })
+    it('should drop a item if the value is undefined', () => {
+      expect(mergeOrDropMap({ a: 1, b: 1 }, 'b', undefined)).toEqual({ a: 1 })
     })
   })
 })

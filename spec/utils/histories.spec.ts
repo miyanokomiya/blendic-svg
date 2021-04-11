@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { convolute } from '/@/utils/histories'
+import { convolute, getReplaceItem } from '/@/utils/histories'
 
 describe('src/utils/histories.ts', () => {
   describe('convolute', () => {
@@ -58,6 +58,50 @@ describe('src/utils/histories.ts', () => {
       expect(undo).toHaveBeenNthCalledWith(1, 'head')
       expect(undo).toHaveBeenNthCalledWith(2, 'body_1')
       expect(undo).toHaveBeenNthCalledWith(3, 'body_2')
+    })
+    it('should ignore undefined items', () => {
+      const undo = jest.fn()
+      const redo = jest.fn()
+      const head = {
+        name: 'head',
+        seriesKey: 'key',
+        undo: () => undo('head'),
+        redo: () => redo('head'),
+      }
+      const body = [
+        undefined,
+        {
+          name: 'body_2',
+          undo: () => undo('body_2'),
+          redo: () => redo('body_2'),
+        },
+      ]
+
+      const ret = convolute(head, body)
+      expect(ret.name).toBe(head.name)
+      expect(ret.seriesKey).toBe(head.seriesKey)
+
+      ret.redo()
+      expect(redo).toHaveReturnedTimes(2)
+      expect(redo).toHaveBeenNthCalledWith(1, 'head')
+      expect(redo).toHaveBeenNthCalledWith(2, 'body_2')
+
+      ret.undo()
+      expect(undo).toHaveReturnedTimes(2)
+      expect(undo).toHaveBeenNthCalledWith(1, 'head')
+      expect(undo).toHaveBeenNthCalledWith(2, 'body_2')
+    })
+  })
+
+  describe('getReplaceItem', () => {
+    it('should return history item to do', () => {
+      const setFn = jest.fn()
+      const item = getReplaceItem({ a: 1 }, { b: 2 }, setFn)
+      expect(setFn).toHaveBeenCalledTimes(0)
+      item.redo()
+      expect(setFn).toHaveBeenLastCalledWith({ b: 2 })
+      item.undo()
+      expect(setFn).toHaveBeenLastCalledWith({ a: 1 })
     })
   })
 })

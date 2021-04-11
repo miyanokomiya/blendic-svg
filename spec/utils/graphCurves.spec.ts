@@ -65,7 +65,7 @@ describe('src/utils/graphCurves.ts', () => {
             points: { translateX: getKeyframePoint() },
           }),
         ],
-        selectedStateMap: { a: { name: 'bone', props: {} } },
+        selectedStateMap: { a: { props: {} } },
         pointKey: 'translateX',
         valueWidth: 10,
       })
@@ -153,8 +153,8 @@ describe('src/utils/graphCurves.ts', () => {
           }),
         ],
         selectedStateMap: {
-          a: { name: 'bone', props: { translateX: true } },
-          b: { name: 'bone', props: {} },
+          a: { props: { translateX: true } },
+          b: { props: {} },
         },
         pointKey: 'translateX',
         valueWidth: 10,

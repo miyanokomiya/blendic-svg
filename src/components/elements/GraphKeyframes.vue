@@ -75,14 +75,10 @@ import {
 } from '/@/models/keyframe'
 import { getKeyframeMapByTargetId } from '/@/utils/animations'
 import GraphKeyPoints from '/@/components/elements/molecules/GraphKeyPoints.vue'
-import {
-  getKeyframePropsMap,
-  inversedSelectedState,
-  splitKeyframeProps,
-} from '/@/utils/keyframes'
+import { getKeyframePropsMap, splitKeyframeProps } from '/@/utils/keyframes'
 import { flatKeyListMap } from '/@/utils/commons'
 import { useKeysCache } from '/@/composables/cache'
-import { TargetPropsState } from '/@/composables/targetProps'
+import { TargetPropsState } from '/@/composables/stores/targetProps'
 
 export default defineComponent({
   components: {
@@ -146,17 +142,7 @@ export default defineComponent({
       emit('select', keyframeId, state)
     }
     function shiftSelect(keyframeId: string, state: KeyframeSelectedState) {
-      emit(
-        'shift-select',
-        keyframeId,
-        inversedSelectedState(
-          props.selectedKeyframeMap[keyframeId] ?? {
-            name: state.name,
-            props: {},
-          },
-          state
-        )
-      )
+      emit('shift-select', keyframeId, state)
     }
 
     function downControl(

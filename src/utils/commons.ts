@@ -224,3 +224,75 @@ export function regenerateIdMap<T extends { id: string }>(
 ): IdMap<T> {
   return toMap(toList(src).map((item) => ({ ...item, id: v4() })))
 }
+
+export function pickAnyItem<T>(map: { [key: string]: T }): T | undefined {
+  const ids = Object.keys(map)
+  return ids.length > 0 ? map[ids[0]] : undefined
+}
+
+export function mapFilterExec<T>(
+  srcMap: { [key: string]: T },
+  targetMap: { [key: string]: any },
+  fn: (map: { [key: string]: T }) => { [key: string]: T }
+): { [key: string]: T } {
+  return {
+    ...dropMap(srcMap, targetMap),
+    ...fn(extractMap(srcMap, targetMap)),
+  }
+}
+
+export function hasSameProps<T extends { [key: string]: any }>(
+  a: T,
+  b: T
+): boolean {
+  const aKeys = Object.keys(a)
+  const bKeys = Object.keys(b)
+
+  if (aKeys.length !== bKeys.length) return false
+  return aKeys.every((key) => a[key] === b[key])
+}
+
+export function shiftMergeProps<T>(
+  a?: { [key: string]: T },
+  b?: { [key: string]: T },
+  compareFn: (v1: T, v2: T) => boolean = (v1, v2) => v1 === v2
+): { [key: string]: T } | undefined {
+  if (!a) return b
+  if (!b) return a
+
+  // toggle boolean if updated map has only one key
+  // e.g.  a = { x: true, y: false }, b = { x: true, y: true }
+  // => expected to be     { x: true, y: true }
+  // =>          not to be { x: false, y: true }
+  const ignoretoggle = Object.keys(b).length > 1
+
+  // set all false if current and next map have all same props with true value
+  let shouldtoggleAllFalse = true
+
+  const ret = Object.keys({ ...a, ...b }).reduce<{ [key: string]: T }>(
+    (p, c) => {
+      if (compareFn(a[c], b[c]) && !ignoretoggle) return p
+
+      shouldtoggleAllFalse =
+        shouldtoggleAllFalse && !!a[c] && !!b[c] && compareFn(a[c], b[c])
+
+      p[c] = b[c] ?? a[c]
+      return p
+    },
+    {}
+  )
+
+  if (shouldtoggleAllFalse) {
+    return
+  } else {
+    return ret
+  }
+}
+
+export function mergeOrDropMap<T>(
+  src: IdMap<T>,
+  key: string,
+  value?: T
+): IdMap<T> {
+  return value ? { ...src, [key]: value } : dropMap(src, { [key]: true })
+}

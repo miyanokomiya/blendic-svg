@@ -33,8 +33,6 @@ import {
 import { convolute } from '/@/utils/histories'
 import { getAllSelectedState, isAllExistSelected } from '/@/utils/keyframes'
 
-type PropStatus = boolean
-
 export interface TargetProps {
   id: string
   points: { [key: string]: any }
@@ -165,9 +163,9 @@ function mergePropsState(
 }
 
 function shiftMergeProps(
-  a: { [key: string]: PropStatus },
-  b?: { [key: string]: PropStatus }
-): { [key: string]: PropStatus } {
+  a: { [key: string]: boolean },
+  b?: { [key: string]: boolean }
+): { [key: string]: boolean } {
   if (!b) return a
 
   // toggle boolean if updated map has only one key
@@ -182,7 +180,7 @@ function shiftMergeProps(
   const ret = Object.keys({
     ...a,
     ...b,
-  }).reduce<{ [key: string]: PropStatus }>((p, c) => {
+  }).reduce<{ [key: string]: boolean }>((p, c) => {
     if (a[c] && b[c] && !ignoretoggle) return p
 
     shouldtoggleAllFalse = shouldtoggleAllFalse && a[c] && b[c]

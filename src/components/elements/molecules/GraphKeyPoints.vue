@@ -34,7 +34,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :cx="curve.from.x"
           :cy="curve.from.y"
           :r="radius * scale"
-          stroke="#000"
+          :stroke="curve.selected ? '#000' : '#777'"
           :stroke-width="scale"
           :fill="curve.selected ? selectedColor : color"
           @click.exact="select(curve.id, curve.keyframeName)"

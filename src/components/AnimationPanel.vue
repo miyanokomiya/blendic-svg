@@ -369,7 +369,7 @@ export default defineComponent({
     const keyframeCanvas = useCanvas(canvasOptions)
     const graphCanvas = useCanvas({
       scaleMin: 1,
-      viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
+      viewOrigin: ref<IVec2>({ x: -20, y: -50 }),
       viewSize,
     })
 

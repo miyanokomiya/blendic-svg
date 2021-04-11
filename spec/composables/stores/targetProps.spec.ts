@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { useTargetProps } from '/@/composables/targetProps'
+import { useTargetProps } from '/@/composables/stores/targetProps'
 
 describe('src/composables/targetProps.ts', () => {
   describe('select', () => {

@@ -54,7 +54,10 @@ import { getNextName } from '../utils/relations'
 import { HistoryItem, useHistoryStore } from './history'
 import { useAnimationFrameStore } from '/@/composables/stores/animationFrame'
 import { useKeyframeStates } from '/@/composables/stores/keyframeStates'
-import { TargetPropsState, useTargetProps } from '/@/composables/targetProps'
+import {
+  TargetPropsState,
+  useTargetProps,
+} from '/@/composables/stores/targetProps'
 import {
   Action,
   Bone,

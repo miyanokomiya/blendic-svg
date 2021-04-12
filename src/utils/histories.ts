@@ -17,8 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { HistoryItem } from '/@/composables/stores/history'
 import { IdMap } from '/@/models'
-import { HistoryItem } from '/@/store/history'
 
 export function convolute(
   head: HistoryItem,

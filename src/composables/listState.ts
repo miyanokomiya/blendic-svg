@@ -18,7 +18,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { reactive, computed, watch } from 'vue'
-import { HistoryItem, useHistoryStore } from '../store/history'
+import { useHistoryStore } from '../store/history'
+import { HistoryItem } from '/@/composables/stores/history'
 import { getOriginPartial, IdMap, toMap } from '/@/models'
 
 interface State<T extends { id: string }> {

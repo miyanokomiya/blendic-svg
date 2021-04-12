@@ -51,8 +51,9 @@ import {
   toList,
 } from '../utils/commons'
 import { getNextName } from '../utils/relations'
-import { HistoryItem, useHistoryStore } from './history'
+import { useHistoryStore } from './history'
 import { useAnimationFrameStore } from '/@/composables/stores/animationFrame'
+import { HistoryItem } from '/@/composables/stores/history'
 import { useKeyframeStates } from '/@/composables/stores/keyframeStates'
 import {
   TargetPropsState,

@@ -34,7 +34,8 @@ import {
 } from '/@/models/index'
 import * as armatureUtils from '/@/utils/armatures'
 import { IVec2 } from 'okageo'
-import { HistoryItem, useHistoryStore } from './history'
+import { useHistoryStore } from './history'
+import { HistoryItem } from '/@/composables/stores/history'
 
 const historyStore = useHistoryStore()
 

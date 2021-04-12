@@ -21,7 +21,8 @@ import { computed, ref } from 'vue'
 import { useListState } from '../composables/listState'
 import { Actor, BElement, IdMap, toMap } from '../models'
 import { extractMap, mapReduce, toList } from '../utils/commons'
-import { HistoryItem, useHistoryStore } from './history'
+import { useHistoryStore } from './history'
+import { HistoryItem } from '/@/composables/stores/history'
 import { flatElementTree } from '/@/utils/elements'
 
 const historyStore = useHistoryStore()

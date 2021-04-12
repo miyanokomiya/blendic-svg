@@ -33,7 +33,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent } from 'vue'
 import { useHistoryStore } from '/@/store/history'
 
 export default defineComponent({
@@ -41,8 +41,8 @@ export default defineComponent({
     const historyStore = useHistoryStore()
 
     return {
-      allStack: computed(() => historyStore.allStack.value),
-      currentItemIndex: computed(() => historyStore.currentItemIndex.value),
+      allStack: historyStore.allStack,
+      currentItemIndex: historyStore.currentItemIndex,
     }
   },
 })

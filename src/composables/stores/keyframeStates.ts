@@ -19,10 +19,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { ref } from '@vue/reactivity'
 import { computed } from '@vue/runtime-core'
+import { HistoryItem } from '/@/composables/stores/history'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import { IdMap } from '/@/models'
 import { KeyframeSelectedState } from '/@/models/keyframe'
-import { HistoryItem } from '/@/store/history'
 import {
   dropMap,
   extractMap,

@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { computed, Ref, ref } from '@vue/runtime-core'
-import { HistoryItem } from '/@/store/history'
+import { HistoryItem } from '/@/composables/stores/history'
 
 export function useValueStore<T>(
   name: string,

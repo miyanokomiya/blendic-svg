@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/panelContents/HistoryStack.vue snapshot empty history 1`] = `
+<div>
+  <h3>
+    history
+  </h3>
+  <ul>
+    
+    
+  </ul>
+</div>
+`;
+
+exports[`src/components/panelContents/HistoryStack.vue snapshot some histories 1`] = `
+<div>
+  <h3>
+    history
+  </h3>
+  <ul>
+    
+    <li
+      class=""
+    >
+      item 1
+    </li>
+    <li
+      class="current"
+    >
+      item 2
+    </li>
+    <li
+      class=""
+    >
+      item 3
+    </li>
+    
+  </ul>
+</div>
+`;

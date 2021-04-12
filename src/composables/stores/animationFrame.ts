@@ -19,9 +19,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { ref } from '@vue/reactivity'
 import { computed } from '@vue/runtime-core'
+import { HistoryItem } from '/@/composables/stores/history'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import { PlayState } from '/@/models'
-import { HistoryItem } from '/@/store/history'
 import { getSteppedFrame } from '/@/utils/animations'
 
 export function useAnimationFrameStore() {

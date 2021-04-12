@@ -29,7 +29,7 @@ import {
 } from '/@/composables/modes/armaturePoseMode'
 import { ObjectMode, useObjectMode } from '/@/composables/modes/objectMode'
 import { useWeightPaintMode } from '/@/composables/modes/weightPaintMode'
-import { HistoryItem, useHistoryStore } from './history'
+import { useHistoryStore } from './history'
 import { getTransform, Transform } from '/@/models'
 import {
   CanvasMode,
@@ -37,6 +37,7 @@ import {
   EditMovement,
   PopupMenuItem,
 } from '/@/composables/modes/types'
+import { HistoryItem } from '/@/composables/stores/history'
 
 export type AxisGrid = '' | 'x' | 'y'
 

@@ -57,3 +57,10 @@ export function getReplaceItem<T>(
     redo,
   }
 }
+
+export function hasSameSeriesKey<T extends { seriesKey?: string }>(
+  a: T,
+  b: T
+): boolean {
+  return a.seriesKey !== undefined && a.seriesKey === b.seriesKey
+}

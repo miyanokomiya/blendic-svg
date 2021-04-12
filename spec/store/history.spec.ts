@@ -44,26 +44,57 @@ describe('store/history.ts', () => {
       expect(historyStore.state.redoStack.length).toBe(0)
     })
 
-    it('replace history and inherit undo if two items are same series', () => {
-      const undoFirst = jest.fn()
-      const redoSecond = jest.fn()
-      historyStore.state.undoStack = [
-        {
-          name: '1st',
-          undo: undoFirst,
-          redo: () => {},
+    describe('seriesKey', () => {
+      it('replace history and inherit undo if two items have same series key', () => {
+        const undoFirst = jest.fn()
+        const redoSecond = jest.fn()
+        historyStore.state.undoStack = [
+          {
+            name: '1st',
+            undo: undoFirst,
+            redo: () => {},
+            seriesKey: 'series',
+          },
+        ]
+        historyStore.push({
+          name: '2nd',
+          undo: () => {},
+          redo: redoSecond,
           seriesKey: 'series',
-        },
-      ]
-      historyStore.push({
-        name: '2nd',
-        undo: () => {},
-        redo: redoSecond,
-        seriesKey: 'series',
+        })
+        expect(historyStore.state.undoStack.length).toBe(1)
+        expect(historyStore.state.undoStack[0].undo).toBe(undoFirst)
+        expect(historyStore.state.undoStack[0].redo).toBe(redoSecond)
       })
-      expect(historyStore.state.undoStack.length).toBe(1)
-      expect(historyStore.state.undoStack[0].undo).toBe(undoFirst)
-      expect(historyStore.state.undoStack[0].redo).toBe(redoSecond)
+
+      it('remove history and inherit undo if new item and before last one have same series key', () => {
+        const undoFirst = jest.fn()
+        const redoThird = jest.fn()
+        historyStore.state.undoStack = [
+          {
+            name: '1st',
+            undo: undoFirst,
+            redo: () => {},
+            seriesKey: 'series',
+          },
+          {
+            name: '2nd',
+            undo: () => {},
+            redo: () => {},
+            seriesKey: 'series_2nd',
+          },
+        ]
+        historyStore.push({
+          name: '3rd',
+          undo: () => {},
+          redo: redoThird,
+          seriesKey: 'series',
+        })
+        expect(historyStore.state.undoStack.length).toBe(2)
+        expect(historyStore.state.undoStack[1].undo).toBe(undoFirst)
+        expect(historyStore.state.undoStack[1].redo).toBe(redoThird)
+        expect(historyStore.state.undoStack[0].name).toBe('2nd')
+      })
     })
 
     it('should exec redo if execRedo is true', () => {

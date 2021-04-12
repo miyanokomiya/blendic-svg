@@ -229,7 +229,7 @@ const canvasOptions: { label: string; value: CanvasType }[] = [
 ]
 
 function useCanvasList() {
-  const canvasType = ref<CanvasType>('graph')
+  const canvasType = ref<CanvasType>('action')
   function setCanvas(val: CanvasType) {
     canvasType.value = val
   }
@@ -369,7 +369,7 @@ export default defineComponent({
     const keyframeCanvas = useCanvas(canvasOptions)
     const graphCanvas = useCanvas({
       scaleMin: 1,
-      viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
+      viewOrigin: ref<IVec2>({ x: -20, y: -50 }),
       viewSize,
     })
 
@@ -546,7 +546,9 @@ export default defineComponent({
   > * {
     margin-right: 8px;
   }
-  .select-canvas,
+  .select-canvas {
+    width: 80px;
+  }
   .select-action {
     width: 160px;
   }

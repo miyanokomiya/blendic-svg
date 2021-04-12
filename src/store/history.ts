@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { reactive, computed } from 'vue'
 import { useSettings } from '../composables/settings'
+import { hasSameSeriesKey } from '/@/utils/histories'
 
 export interface HistoryItem {
   name: string
@@ -51,19 +52,21 @@ function push(item?: HistoryItem, execRedo = false) {
   if (!item) return
 
   const last = state.undoStack[state.undoStack.length - 1]
-  if (
-    last &&
-    last.seriesKey !== undefined &&
-    last.seriesKey === item.seriesKey
-  ) {
+  if (last && hasSameSeriesKey(last, item)) {
     // replace history and inherit undo if two items are same series
+    // e.g. push 'a' to ['a'] => ['a']
     state.undoStack.pop()
-    state.undoStack.push({
-      ...item,
-      undo: last.undo,
-    })
+    state.undoStack.push({ ...item, undo: last.undo })
   } else {
-    state.undoStack.push(item)
+    // furthermore check last before item to avoid intercepting other operation
+    // e.g. push 'a' to ['a', 'b'] => ['b', 'a']
+    const lastBefore = state.undoStack[state.undoStack.length - 2]
+    if (lastBefore && hasSameSeriesKey(lastBefore, item)) {
+      state.undoStack.splice(state.undoStack.length - 2, 1)
+      state.undoStack.push({ ...item, undo: lastBefore.undo })
+    } else {
+      state.undoStack.push(item)
+    }
   }
 
   if (execRedo) {

@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { convolute, getReplaceItem } from '/@/utils/histories'
+import { convolute, getReplaceItem, hasSameSeriesKey } from '/@/utils/histories'
 
 describe('src/utils/histories.ts', () => {
   describe('convolute', () => {
@@ -102,6 +102,27 @@ describe('src/utils/histories.ts', () => {
       expect(setFn).toHaveBeenLastCalledWith({ b: 2 })
       item.undo()
       expect(setFn).toHaveBeenLastCalledWith({ a: 1 })
+    })
+  })
+
+  describe('hasSameSeriesKey', () => {
+    it('should return false if some keys are undefined', () => {
+      expect(
+        hasSameSeriesKey({ seriesKey: undefined }, { seriesKey: 'b' })
+      ).toBe(false)
+      expect(
+        hasSameSeriesKey({ seriesKey: 'a' }, { seriesKey: undefined })
+      ).toBe(false)
+    })
+    it('should return false if both keys are not same', () => {
+      expect(hasSameSeriesKey({ seriesKey: 'a' }, { seriesKey: 'b' })).toBe(
+        false
+      )
+    })
+    it('should return true if both keys are same', () => {
+      expect(hasSameSeriesKey({ seriesKey: 'a' }, { seriesKey: 'a' })).toBe(
+        true
+      )
     })
   })
 })

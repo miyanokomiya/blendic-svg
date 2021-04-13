@@ -36,10 +36,12 @@ import {
   IdMap,
   scaleRate,
   toMap,
+  Transform,
 } from '/@/models'
 import { KeyframeBase, KeyframeBone } from '/@/models/keyframe'
+import { invertPoseTransform, multiPoseTransform } from '/@/utils/armatures'
 import { circleClamp } from '/@/utils/geometry'
-import { mergeKeyframes } from '/@/utils/keyframes'
+import { mergeKeyframe } from '/@/utils/keyframes'
 
 export function getScaleLog(scale: number): number {
   return Math.round(Math.log(scale) / Math.log(scaleRate))
@@ -188,7 +190,7 @@ export function mergeKeyframesWithDropped(
           } else if (!srcMapByTargetId[targetId]) {
             p.push(oveMapByTargetId[targetId])
           } else {
-            const merged = mergeKeyframes(
+            const merged = mergeKeyframe(
               srcMapByTargetId[targetId],
               oveMapByTargetId[targetId]
             )
@@ -274,4 +276,20 @@ export function getSteppedFrame(
 ): number {
   if (endFrame === 0) return 0
   return circleClamp(0, endFrame, currentFrame + (reverse ? -1 : 1) * tickFrame)
+}
+
+export function pastePoseMap(
+  nextPoseMapByBoneId: IdMap<Transform>,
+  getCurrentPose: (boneId: string) => Transform | undefined
+): IdMap<Transform> {
+  return Object.keys(nextPoseMapByBoneId).reduce<IdMap<Transform>>((p, c) => {
+    const currentPose = getCurrentPose(c)
+    if (currentPose) {
+      p[c] = multiPoseTransform(
+        nextPoseMapByBoneId[c],
+        invertPoseTransform(currentPose)
+      )
+    }
+    return p
+  }, {})
 }

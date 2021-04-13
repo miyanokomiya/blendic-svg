@@ -109,7 +109,7 @@ export function splitKeyframeBySelected(
   }
 }
 
-export function mergeKeyframes(
+export function mergeKeyframe(
   src: KeyframeBase,
   override: KeyframeBase
 ): KeyframeBase {

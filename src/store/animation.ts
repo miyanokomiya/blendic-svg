@@ -33,17 +33,15 @@ import {
   getKeyframeMapByFrame,
   mergeKeyframesWithDropped,
   slideKeyframesTo,
+  pastePoseMap,
 } from '../utils/animations'
 import {
   convolutePoseTransforms,
   getPosedBoneHeadsOrigin,
   getPoseSelectedBones,
   getTransformedBoneMap,
-  invertPoseTransform,
-  multiPoseTransform,
 } from '../utils/armatures'
 import {
-  dropMap,
   mapFilter,
   extractMap,
   flatKeyListMap,
@@ -52,6 +50,11 @@ import {
 } from '../utils/commons'
 import { getNextName } from '../utils/relations'
 import { useHistoryStore } from './history'
+import { makeRefAccessors } from '/@/composables/commons'
+import {
+  getDeleteKeyframesItem,
+  getInsertKeyframeItem,
+} from '/@/composables/stores/animation'
 import { useAnimationFrameStore } from '/@/composables/stores/animationFrame'
 import { HistoryItem } from '/@/composables/stores/history'
 import { useKeyframeStates } from '/@/composables/stores/keyframeStates'
@@ -72,18 +75,16 @@ import {
 } from '/@/models'
 import {
   getKeyframeBone,
-  getKeyframePoint,
   KeyframeBase,
   KeyframeBone,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import { convolute } from '/@/utils/histories'
+import { getAllSelectedState, isAllExistSelected } from '/@/utils/keyframes'
 import {
-  deleteKeyframeByProp,
-  getAllSelectedState,
-  isAllExistSelected,
-} from '/@/utils/keyframes'
-import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
+  getInterpolatedTransformMapByTargetId,
+  makeKeyframe,
+} from '/@/utils/keyframes/keyframeBone'
 
 const actions = useListState<Action>('Action')
 const editTransforms = ref<IdMap<Transform>>({})
@@ -231,18 +232,9 @@ function pastePoses(mapByTargetId: IdMap<Transform>, seriesKey?: string) {
   const item = getUpdateEditedTransformsItem(
     {
       ...editTransforms.value,
-      ...mapReduce(
-        mapFilter(mapByTargetId, (_, targetId) => {
-          // drop poses of unexisted bones
-          return !!store.boneMap.value[targetId]
-        }),
-        (t, targetId) => {
-          // invert keyframe's pose & paste the pose
-          return multiPoseTransform(
-            t,
-            invertPoseTransform(currentInterpolatedTransform(targetId))
-          )
-        }
+      ...pastePoseMap(
+        mapByTargetId,
+        (id) => currentInterpolatedTransformMapByTargetId.value[id]
       ),
     },
     'Paste Pose',
@@ -395,31 +387,11 @@ function execInsertKeyframe(
   }
 
   const keyframes = Object.keys(selectedBoneIdMap.value).map((targetId) => {
-    const t = getCurrentSelfTransforms(targetId)
-    return getKeyframeBone(
-      {
-        frame: animationFrameStore.currentFrame.value,
-        targetId,
-        points: {
-          ...(options.useTranslate
-            ? {
-                translateX: getKeyframePoint({ value: t.translate.x }),
-                translateY: getKeyframePoint({ value: t.translate.y }),
-              }
-            : {}),
-          ...(options.useRotate
-            ? {
-                rotate: getKeyframePoint({ value: t.rotate }),
-              }
-            : {}),
-          ...(options.useScale
-            ? {
-                scaleX: getKeyframePoint({ value: t.scale.x }),
-                scaleY: getKeyframePoint({ value: t.scale.y }),
-              }
-            : {}),
-        },
-      },
+    return makeKeyframe(
+      animationFrameStore.currentFrame.value,
+      targetId,
+      getCurrentSelfTransforms(targetId),
+      options,
       true
     )
   })
@@ -609,87 +581,38 @@ function getSelectKeyframeItem(
   return convolute(selectKeyframeItem, [propsItem])
 }
 
+function getKeyframeAccessor() {
+  return {
+    get: () => actions.lastSelectedItem.value!.keyframes,
+    set: (val: KeyframeBone[]) =>
+      (actions.lastSelectedItem.value!.keyframes = val),
+  }
+}
+
 function getExecInsertKeyframeItem(
   keyframes: KeyframeBone[],
   replace = false,
   notSelect = false
 ) {
-  const preFrame = animationFrameStore.currentFrame.value
-  const insertedKeyframes = keyframes
-  const preEditTransforms = { ...editTransforms.value }
-
-  const selectItem = !notSelect
-    ? getSelectKeyframesPropsItem(toMap(keyframes))
-    : undefined
-
-  const { dropped } = mergeKeyframesWithDropped(
-    actions.lastSelectedItem.value!.keyframes,
-    insertedKeyframes,
-    !replace
+  return convolute(
+    getInsertKeyframeItem(
+      getKeyframeAccessor(),
+      makeRefAccessors(editTransforms),
+      keyframes,
+      replace
+    ),
+    [!notSelect ? getSelectKeyframesPropsItem(toMap(keyframes)) : undefined]
   )
-
-  const redo = () => {
-    const { merged } = mergeKeyframesWithDropped(
-      actions.lastSelectedItem.value!.keyframes,
-      insertedKeyframes,
-      !replace
-    )
-    actions.lastSelectedItem.value!.keyframes = merged
-    editTransforms.value = dropMap(
-      editTransforms.value,
-      toTargetIdMap(insertedKeyframes)
-    )
-    selectItem?.redo()
-  }
-  return {
-    name: 'Insert Keyframe',
-    undo: () => {
-      const reverted = toList({
-        ...dropMap(
-          toMap(actions.lastSelectedItem.value!.keyframes),
-          toMap(insertedKeyframes)
-        ),
-        ...toMap(dropped),
-      })
-      actions.lastSelectedItem.value!.keyframes = reverted
-      animationFrameStore.setCurrentFrame(preFrame)?.redo()
-      editTransforms.value = preEditTransforms
-      selectItem?.undo()
-    },
-    redo,
-  }
 }
 
 function getExecDeleteKeyframesItem() {
-  const deletedFrames = { ...visibledSelectedKeyframeMap.value }
-  const selectItem = getSelectKeyframesItem({})
-
-  const redo = () => {
-    const deletedMap = mapReduce(deletedFrames, (keyframe) => {
-      return deleteKeyframeByProp(
-        keyframe,
-        keyframeState.selectedStateMap.value[keyframe.id]
-      )
-    })
-    const updated = toList({
-      ...toMap(actions.lastSelectedItem.value!.keyframes),
-      ...deletedMap,
-    }).filter((k): k is KeyframeBone => !!k)
-
-    selectItem.redo()
-    actions.lastSelectedItem.value!.keyframes = updated
-  }
-  return {
-    name: 'Delete Keyframes',
-    undo: () => {
-      const reverted = actions.lastSelectedItem.value!.keyframes.concat(
-        toList(deletedFrames)
-      )
-      actions.lastSelectedItem.value!.keyframes = reverted
-      selectItem.undo()
-    },
-    redo,
-  }
+  return convolute(
+    getDeleteKeyframesItem(
+      getKeyframeAccessor(),
+      keyframeState.selectedStateMap.value
+    ),
+    [getSelectKeyframesItem({})]
+  )
 }
 
 function getExecUpdateKeyframeItem(

@@ -23,6 +23,8 @@ import {
   KeyframeBone,
   KeyframePoint,
   KeyframeBoneProps,
+  getKeyframeBone,
+  getKeyframePoint,
 } from '/@/models/keyframe'
 import { mapReduce } from '/@/utils/commons'
 import { interpolateKeyframeProp } from '/@/utils/keyframes/core'
@@ -84,4 +86,47 @@ export function getKeyframeDefaultPropsMap<T>(
       scaleY: val(),
     },
   }
+}
+
+export function makeKeyframe(
+  frame: number,
+  targetId: string,
+  targetTransform: Transform,
+  options: {
+    useTranslate?: boolean
+    useRotate?: boolean
+    useScale?: boolean
+  } = {},
+  generateId = false
+): KeyframeBone {
+  return getKeyframeBone(
+    {
+      frame,
+      targetId,
+      points: {
+        ...(options.useTranslate
+          ? {
+              translateX: getKeyframePoint({
+                value: targetTransform.translate.x,
+              }),
+              translateY: getKeyframePoint({
+                value: targetTransform.translate.y,
+              }),
+            }
+          : {}),
+        ...(options.useRotate
+          ? {
+              rotate: getKeyframePoint({ value: targetTransform.rotate }),
+            }
+          : {}),
+        ...(options.useScale
+          ? {
+              scaleX: getKeyframePoint({ value: targetTransform.scale.x }),
+              scaleY: getKeyframePoint({ value: targetTransform.scale.y }),
+            }
+          : {}),
+      },
+    },
+    generateId
+  )
 }

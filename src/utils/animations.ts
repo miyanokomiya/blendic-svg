@@ -41,7 +41,7 @@ import {
 import { KeyframeBase, KeyframeBone } from '/@/models/keyframe'
 import { invertPoseTransform, multiPoseTransform } from '/@/utils/armatures'
 import { circleClamp } from '/@/utils/geometry'
-import { mergeKeyframes } from '/@/utils/keyframes'
+import { mergeKeyframe } from '/@/utils/keyframes'
 
 export function getScaleLog(scale: number): number {
   return Math.round(Math.log(scale) / Math.log(scaleRate))
@@ -190,7 +190,7 @@ export function mergeKeyframesWithDropped(
           } else if (!srcMapByTargetId[targetId]) {
             p.push(oveMapByTargetId[targetId])
           } else {
-            const merged = mergeKeyframes(
+            const merged = mergeKeyframe(
               srcMapByTargetId[targetId],
               oveMapByTargetId[targetId]
             )

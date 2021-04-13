@@ -182,7 +182,7 @@ describe('utils/keyframes/index.ts', () => {
     })
   })
 
-  describe('mergeKeyframes', () => {
+  describe('mergeKeyframe', () => {
     it('merge two keyframes', () => {
       const src = getKeyframeBone({
         points: {
@@ -196,7 +196,7 @@ describe('utils/keyframes/index.ts', () => {
           rotate: getKeyframePoint({ value: 300 }),
         },
       })
-      expect(target.mergeKeyframes(src, override)).toEqual(
+      expect(target.mergeKeyframe(src, override)).toEqual(
         getKeyframeBone({
           points: {
             translateX: getKeyframePoint({ value: 100 }),

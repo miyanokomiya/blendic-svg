@@ -148,10 +148,10 @@ export function slideKeyframesTo<T extends KeyframeBase>(
 }
 
 export function mergeKeyframesWithDropped(
-  src: KeyframeBone[],
-  override: KeyframeBone[],
+  src: KeyframeBase[],
+  override: KeyframeBase[],
   mergeDeep = false
-): { merged: KeyframeBone[]; dropped: KeyframeBone[] } {
+): { merged: KeyframeBase[]; dropped: KeyframeBase[] } {
   const srcMap = toMap(src)
   const overrideMap = toMap(override)
 
@@ -161,8 +161,8 @@ export function mergeKeyframesWithDropped(
   const overrideMapByFrame = getKeyframeMapByFrame(override)
   const overrideMapByNewFrame = dropMap(overrideMapByFrame, srcMapByFrame)
 
-  const droppedMap: IdMap<KeyframeBone> = extractMap(srcMap, overrideMap)
-  const dropped: KeyframeBone[] = toList(droppedMap)
+  const droppedMap: IdMap<KeyframeBase> = extractMap(srcMap, overrideMap)
+  const dropped: KeyframeBase[] = toList(droppedMap)
 
   const merged = toList({
     ...mapReduce(srcMapByFrame, (keyframes, frameStr: string) => {
@@ -184,7 +184,7 @@ export function mergeKeyframesWithDropped(
         return Object.keys({
           ...srcMapByTargetId,
           ...oveMapByTargetId,
-        }).reduce<KeyframeBone[]>((p, targetId) => {
+        }).reduce<KeyframeBase[]>((p, targetId) => {
           if (!oveMapByTargetId[targetId]) {
             p.push(srcMapByTargetId[targetId])
           } else if (!srcMapByTargetId[targetId]) {
@@ -194,7 +194,7 @@ export function mergeKeyframesWithDropped(
               srcMapByTargetId[targetId],
               oveMapByTargetId[targetId]
             )
-            p.push(merged as KeyframeBone)
+            p.push(merged)
           }
 
           return p

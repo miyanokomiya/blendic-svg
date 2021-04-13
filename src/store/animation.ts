@@ -31,7 +31,6 @@ import {
   findPrevFrameWithKeyframe,
   getKeyframeMapByTargetId,
   getKeyframeMapByFrame,
-  mergeKeyframesWithDropped,
   slideKeyframesTo,
   pastePoseMap,
 } from '../utils/animations'
@@ -54,6 +53,7 @@ import { makeRefAccessors } from '/@/composables/commons'
 import {
   getDeleteKeyframesItem,
   getInsertKeyframeItem,
+  getUpdateKeyframeItem,
 } from '/@/composables/stores/animation'
 import { useAnimationFrameStore } from '/@/composables/stores/animationFrame'
 import { HistoryItem } from '/@/composables/stores/history'
@@ -76,7 +76,6 @@ import {
 import {
   getKeyframeBone,
   KeyframeBase,
-  KeyframeBone,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import { convolute } from '/@/utils/histories'
@@ -406,15 +405,12 @@ function execUpdateKeyframes(
   keyframes: IdMap<KeyframeBase>,
   seriesKey?: string
 ) {
-  historyStore.push(
-    getExecUpdateKeyframeItem(keyframes as IdMap<KeyframeBone>, seriesKey),
-    true
-  )
+  historyStore.push(getExecUpdateKeyframeItem(keyframes, seriesKey), true)
 }
 function pasteKeyframes(keyframeList: KeyframeBase[]) {
   const item = getExecInsertKeyframeItem(
     slideKeyframesTo(
-      (keyframeList as KeyframeBone[])
+      keyframeList
         .filter((k) => store.boneMap.value[k.targetId])
         .map((k) => getKeyframeBone(k, true)),
       animationFrameStore.currentFrame.value
@@ -428,8 +424,8 @@ function completeDuplicateKeyframes(
 ) {
   historyStore.push(
     getCompleteDuplicateKeyframesItem(
-      duplicatedKeyframeList as KeyframeBone[],
-      updatedKeyframeList as KeyframeBone[]
+      duplicatedKeyframeList,
+      updatedKeyframeList
     ),
     true
   )
@@ -584,13 +580,13 @@ function getSelectKeyframeItem(
 function getKeyframeAccessor() {
   return {
     get: () => actions.lastSelectedItem.value!.keyframes,
-    set: (val: KeyframeBone[]) =>
+    set: (val: KeyframeBase[]) =>
       (actions.lastSelectedItem.value!.keyframes = val),
   }
 }
 
 function getExecInsertKeyframeItem(
-  keyframes: KeyframeBone[],
+  keyframes: KeyframeBase[],
   replace = false,
   notSelect = false
 ) {
@@ -616,41 +612,15 @@ function getExecDeleteKeyframesItem() {
 }
 
 function getExecUpdateKeyframeItem(
-  keyframes: IdMap<KeyframeBone>,
+  keyframes: IdMap<KeyframeBase>,
   seriesKey?: string
 ) {
-  const { dropped } = mergeKeyframesWithDropped(
-    actions.lastSelectedItem.value!.keyframes,
-    toList(keyframes),
-    true
-  )
-
-  const redo = () => {
-    const { merged } = mergeKeyframesWithDropped(
-      actions.lastSelectedItem.value!.keyframes,
-      toList(keyframes),
-      true
-    )
-    actions.lastSelectedItem.value!.keyframes = merged
-  }
-  return {
-    name: 'Update Keyframe',
-    undo: () => {
-      const { merged } = mergeKeyframesWithDropped(
-        actions.lastSelectedItem.value!.keyframes,
-        dropped,
-        true
-      )
-      actions.lastSelectedItem.value!.keyframes = merged
-    },
-    redo,
-    seriesKey,
-  }
+  return getUpdateKeyframeItem(getKeyframeAccessor(), keyframes, seriesKey)
 }
 
 function getCompleteDuplicateKeyframesItem(
-  duplicatedKeyframeList: KeyframeBone[],
-  updatedKeyframeList: KeyframeBone[]
+  duplicatedKeyframeList: KeyframeBase[],
+  updatedKeyframeList: KeyframeBase[]
 ) {
   return convolute(
     getExecUpdateKeyframeItem(toMap(updatedKeyframeList)),

@@ -22,6 +22,7 @@ import { makeRefAccessors } from '/@/composables/commons'
 import {
   getDeleteKeyframesItem,
   getInsertKeyframeItem,
+  getUpdateKeyframeItem,
 } from '/@/composables/stores/animation'
 import { getTransform, IdMap, Transform } from '/@/models'
 import {
@@ -113,6 +114,35 @@ describe('src/utils/animation.ts', () => {
             rotate: getKeyframePoint(),
           },
         }),
+      ])
+    })
+  })
+
+  describe('getUpdateKeyframeItem', () => {
+    it('should return history item to update keyframes', () => {
+      const currentKeyframes = ref<KeyframeBone[]>([
+        getKeyframeBone({ id: 'a', frame: 1 }),
+        getKeyframeBone({ id: 'b', frame: 5 }),
+      ])
+      const item = getUpdateKeyframeItem(makeRefAccessors(currentKeyframes), {
+        a: getKeyframeBone({ id: 'a', frame: 10 }),
+      })
+
+      expect(currentKeyframes.value).toEqual([
+        getKeyframeBone({ id: 'a', frame: 1 }),
+        getKeyframeBone({ id: 'b', frame: 5 }),
+      ])
+
+      item.redo()
+      expect(currentKeyframes.value).toEqual([
+        getKeyframeBone({ id: 'b', frame: 5 }),
+        getKeyframeBone({ id: 'a', frame: 10 }),
+      ])
+
+      item.undo()
+      expect(currentKeyframes.value).toEqual([
+        getKeyframeBone({ id: 'a', frame: 1 }),
+        getKeyframeBone({ id: 'b', frame: 5 }),
       ])
     })
   })

@@ -173,7 +173,8 @@ describe('utils/keyframes/index.ts', () => {
     })
     it('should generate id if the flag is true', () => {
       expect(
-        target.makeKeyframe(1, 'a', getTransform(), { useScale: true }, false).id
+        target.makeKeyframe(1, 'a', getTransform(), { useScale: true }, false)
+          .id
       ).toBe('')
       expect(
         target.makeKeyframe(1, 'a', getTransform(), { useScale: true }, true).id

@@ -33,14 +33,13 @@ import {
   getKeyframeMapByFrame,
   mergeKeyframesWithDropped,
   slideKeyframesTo,
+  pastePoseMap,
 } from '../utils/animations'
 import {
   convolutePoseTransforms,
   getPosedBoneHeadsOrigin,
   getPoseSelectedBones,
   getTransformedBoneMap,
-  invertPoseTransform,
-  multiPoseTransform,
 } from '../utils/armatures'
 import {
   dropMap,
@@ -233,18 +232,9 @@ function pastePoses(mapByTargetId: IdMap<Transform>, seriesKey?: string) {
   const item = getUpdateEditedTransformsItem(
     {
       ...editTransforms.value,
-      ...mapReduce(
-        mapFilter(mapByTargetId, (_, targetId) => {
-          // drop poses of unexisted bones
-          return !!store.boneMap.value[targetId]
-        }),
-        (t, targetId) => {
-          // invert keyframe's pose & paste the pose
-          return multiPoseTransform(
-            t,
-            invertPoseTransform(currentInterpolatedTransform(targetId))
-          )
-        }
+      ...pastePoseMap(
+        mapByTargetId,
+        (id) => currentInterpolatedTransformMapByTargetId.value[id]
       ),
     },
     'Paste Pose',

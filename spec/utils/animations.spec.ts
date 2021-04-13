@@ -17,7 +17,14 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { frameWidth, getAction, getArmature, getBone, toMap } from '/@/models'
+import {
+  frameWidth,
+  getAction,
+  getArmature,
+  getBone,
+  getTransform,
+  toMap,
+} from '/@/models'
 import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import {
   cleanActions,
@@ -34,6 +41,7 @@ import {
   canvasToFrame,
   frameToCanvas,
   getSteppedFrame,
+  pastePoseMap,
 } from '/@/utils/animations'
 
 describe('utils/animations.ts', () => {
@@ -346,6 +354,27 @@ describe('utils/animations.ts', () => {
       expect(getSteppedFrame(5, 10, 2, true)).toBe(3)
       expect(getSteppedFrame(2, 10, 2, true)).toBe(0)
       expect(getSteppedFrame(1, 10, 2, true)).toBe(9)
+    })
+  })
+
+  describe('pastePoseMap', () => {
+    it('should override current pose', () => {
+      const ret = pastePoseMap(
+        {
+          a: getTransform({ rotate: 10 }),
+        },
+        () => getTransform({ rotate: 100 })
+      )
+      expect(ret.a).toEqual(getTransform({ rotate: -90 }))
+    })
+    it('should drop items if those transform are not exist', () => {
+      const ret = pastePoseMap(
+        {
+          a: getTransform({ rotate: 10 }),
+        },
+        () => undefined
+      )
+      expect(ret.a).toEqual(undefined)
     })
   })
 })

@@ -19,9 +19,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { HistoryItem } from '/@/composables/stores/history'
 import { IdMap, toMap, toTargetIdMap, Transform } from '/@/models'
-import { KeyframeBone } from '/@/models/keyframe'
+import { KeyframeBone, KeyframeSelectedState } from '/@/models/keyframe'
 import { mergeKeyframesWithDropped } from '/@/utils/animations'
-import { dropMap, toList } from '/@/utils/commons'
+import { dropMap, extractMap, mapReduce, toList } from '/@/utils/commons'
+import { deleteKeyframeByProp } from '/@/utils/keyframes'
 
 export function getInsertKeyframeItem(
   currentKeyframes: { get(): KeyframeBone[]; set(val: KeyframeBone[]): void },
@@ -59,5 +60,33 @@ export function getInsertKeyframeItem(
       editTransforms.set(preEditTransforms)
     },
     redo,
+  }
+}
+
+export function getDeleteKeyframesItem(
+  currentKeyframes: { get(): KeyframeBone[]; set(val: KeyframeBone[]): void },
+  seletedStateMap: IdMap<KeyframeSelectedState>
+): HistoryItem {
+  const targetMap = extractMap(toMap(currentKeyframes.get()), seletedStateMap)
+
+  return {
+    name: 'Delete Keyframes',
+    undo: () => {
+      currentKeyframes.set(
+        mergeKeyframesWithDropped(currentKeyframes.get(), toList(targetMap))
+          .merged
+      )
+    },
+    redo: () => {
+      const deletedMap = mapReduce(targetMap, (keyframe) => {
+        return deleteKeyframeByProp(keyframe, seletedStateMap[keyframe.id])
+      })
+      const updated = toList({
+        ...toMap(currentKeyframes.get()),
+        ...deletedMap,
+      }).filter((k): k is KeyframeBone => !!k)
+
+      currentKeyframes.set(updated)
+    },
   }
 }

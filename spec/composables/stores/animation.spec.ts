@@ -19,9 +19,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { ref } from '@vue/reactivity'
 import { makeRefAccessors } from '/@/composables/commons'
-import { getInsertKeyframeItem } from '/@/composables/stores/animation'
+import {
+  getDeleteKeyframesItem,
+  getInsertKeyframeItem,
+} from '/@/composables/stores/animation'
 import { getTransform, IdMap, Transform } from '/@/models'
-import { getKeyframeBone, KeyframeBone } from '/@/models/keyframe'
+import {
+  getKeyframeBone,
+  getKeyframePoint,
+  KeyframeBone,
+} from '/@/models/keyframe'
 
 describe('src/utils/animation.ts', () => {
   describe('getInsertKeyframeItem', () => {
@@ -61,6 +68,52 @@ describe('src/utils/animation.ts', () => {
       ).redo()
 
       expect(editTransforms.value).toEqual({ b: getTransform() })
+    })
+  })
+
+  describe('getDeleteKeyframesItem', () => {
+    it('should return history item to delete keyframe props', () => {
+      const currentKeyframes = ref<KeyframeBone[]>([
+        getKeyframeBone({
+          id: 'a',
+          points: {
+            translateX: getKeyframePoint(),
+            rotate: getKeyframePoint(),
+          },
+        }),
+      ])
+      const item = getDeleteKeyframesItem(makeRefAccessors(currentKeyframes), {
+        a: { props: { rotate: true } },
+      })
+
+      expect(currentKeyframes.value).toEqual([
+        getKeyframeBone({
+          id: 'a',
+          points: {
+            translateX: getKeyframePoint(),
+            rotate: getKeyframePoint(),
+          },
+        }),
+      ])
+
+      item.redo()
+      expect(currentKeyframes.value).toEqual([
+        getKeyframeBone({
+          id: 'a',
+          points: { translateX: getKeyframePoint() },
+        }),
+      ])
+
+      item.undo()
+      expect(currentKeyframes.value).toEqual([
+        getKeyframeBone({
+          id: 'a',
+          points: {
+            translateX: getKeyframePoint(),
+            rotate: getKeyframePoint(),
+          },
+        }),
+      ])
     })
   })
 })

@@ -652,22 +652,9 @@ function getCompleteDuplicateKeyframesItem(
   duplicatedKeyframeList: KeyframeBone[],
   updatedKeyframeList: KeyframeBone[]
 ) {
-  const duplicatItem = getExecInsertKeyframeItem(
-    duplicatedKeyframeList,
-    true,
-    true
+  return convolute(
+    getExecUpdateKeyframeItem(toMap(updatedKeyframeList)),
+    [getExecInsertKeyframeItem(duplicatedKeyframeList, true, true)],
+    'Duplicate Keyframe'
   )
-  const updateItem = getExecUpdateKeyframeItem(toMap(updatedKeyframeList))
-
-  return {
-    name: 'Duplicate Keyframe',
-    undo: () => {
-      updateItem.undo()
-      duplicatItem.undo()
-    },
-    redo: () => {
-      duplicatItem.redo()
-      updateItem.redo()
-    },
-  }
 }

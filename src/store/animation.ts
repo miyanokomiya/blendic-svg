@@ -72,7 +72,6 @@ import {
 } from '/@/models'
 import {
   getKeyframeBone,
-  getKeyframePoint,
   KeyframeBase,
   KeyframeBone,
   KeyframeSelectedState,
@@ -83,7 +82,10 @@ import {
   getAllSelectedState,
   isAllExistSelected,
 } from '/@/utils/keyframes'
-import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
+import {
+  getInterpolatedTransformMapByTargetId,
+  makeKeyframe,
+} from '/@/utils/keyframes/keyframeBone'
 
 const actions = useListState<Action>('Action')
 const editTransforms = ref<IdMap<Transform>>({})
@@ -395,31 +397,11 @@ function execInsertKeyframe(
   }
 
   const keyframes = Object.keys(selectedBoneIdMap.value).map((targetId) => {
-    const t = getCurrentSelfTransforms(targetId)
-    return getKeyframeBone(
-      {
-        frame: animationFrameStore.currentFrame.value,
-        targetId,
-        points: {
-          ...(options.useTranslate
-            ? {
-                translateX: getKeyframePoint({ value: t.translate.x }),
-                translateY: getKeyframePoint({ value: t.translate.y }),
-              }
-            : {}),
-          ...(options.useRotate
-            ? {
-                rotate: getKeyframePoint({ value: t.rotate }),
-              }
-            : {}),
-          ...(options.useScale
-            ? {
-                scaleX: getKeyframePoint({ value: t.scale.x }),
-                scaleY: getKeyframePoint({ value: t.scale.y }),
-              }
-            : {}),
-        },
-      },
+    return makeKeyframe(
+      animationFrameStore.currentFrame.value,
+      targetId,
+      getCurrentSelfTransforms(targetId),
+      options,
       true
     )
   })

@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { getCurve, getKeyframeBone } from '/@/models/keyframe'
+import { getCurve, getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import * as target from '/@/utils/keyframes/keyframeBone'
 
 describe('utils/keyframes/index.ts', () => {
@@ -127,6 +127,57 @@ describe('utils/keyframes/index.ts', () => {
           3
         )
       ).toEqual(getTransform({ scale: { x: 550, y: 1100 } }))
+    })
+  })
+
+  describe('makeKeyframe', () => {
+    it('should return a keyframe', () => {
+      expect(
+        target.makeKeyframe(1, 'a', getTransform({ rotate: 10 }), {
+          useRotate: true,
+        })
+      ).toEqual(
+        getKeyframeBone({
+          frame: 1,
+          targetId: 'a',
+          points: { rotate: getKeyframePoint({ value: 10 }) },
+        })
+      )
+    })
+    it('should let a keyframe have the point for translate', () => {
+      const ret = target.makeKeyframe(
+        1,
+        'a',
+        getTransform({ translate: { x: 1, y: 2 } }),
+        { useTranslate: true }
+      )
+      expect(ret.points.translateX?.value).toBe(1)
+      expect(ret.points.translateY?.value).toBe(2)
+    })
+    it('should let a keyframe have the point for rotate', () => {
+      expect(
+        target.makeKeyframe(1, 'a', getTransform({ rotate: 10 }), {
+          useRotate: true,
+        }).points.rotate?.value
+      ).toBe(10)
+    })
+    it('should let a keyframe have the point for scale', () => {
+      const ret = target.makeKeyframe(
+        1,
+        'a',
+        getTransform({ scale: { x: 1, y: 2 } }),
+        { useScale: true }
+      )
+      expect(ret.points.scaleX?.value).toBe(1)
+      expect(ret.points.scaleY?.value).toBe(2)
+    })
+    it('should generate id if the flag is true', () => {
+      expect(
+        target.makeKeyframe(1, 'a', getTransform(), { useScale: true }, false).id
+      ).toBe('')
+      expect(
+        target.makeKeyframe(1, 'a', getTransform(), { useScale: true }, true).id
+      ).not.toBe('')
     })
   })
 })

@@ -22,7 +22,10 @@ Copyright (C) 2021, Tomoya Komiyama.
     <h3>Project</h3>
     <div class="menu-list">
       <button type="button" @click="openFile">Open</button>
-      <button type="button" @click="saveProjectFile">Save</button>
+      <button type="button" @click="overrideProjectFile">Save</button>
+      <button v-if="fileSystemEnable" type="button" @click="saveProjectFile">
+        Save as..
+      </button>
     </div>
     <h3>Import</h3>
     <div class="menu-list">
@@ -47,31 +50,21 @@ export default defineComponent({
   components: { CheckboxInput },
   emits: [],
   setup() {
-    const isInheritWeight = ref(false)
+    const isInheritWeight = ref(true)
+    const strage = useStrage()
 
     return {
       appVersion: process.env.APP_VERSION,
       isInheritWeight,
-      openFile() {
-        const strage = useStrage()
-        strage.loadProjectFile()
-      },
-      saveProjectFile() {
-        const strage = useStrage()
-        strage.saveProjectFile()
-      },
+      fileSystemEnable: strage.fileSystemEnable,
+      openFile: strage.loadProjectFile,
+      saveProjectFile: strage.saveProjectFile,
+      overrideProjectFile: strage.overrideProjectFile,
       importSvg() {
-        const strage = useStrage()
         strage.loadSvgFile(isInheritWeight.value)
       },
-      bakeAction() {
-        const strage = useStrage()
-        strage.bakeAction()
-      },
-      exportSvg() {
-        const strage = useStrage()
-        strage.bakeSvg()
-      },
+      bakeAction: strage.bakeAction,
+      exportSvg: strage.bakeSvg,
     }
   },
 })

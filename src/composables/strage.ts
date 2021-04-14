@@ -17,7 +17,6 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive } from 'vue'
 import { ElementNode, ElementNodeAttributes, IdMap, toMap } from '../models'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
@@ -41,16 +40,16 @@ interface BakedData {
   svgTree: ElementNode
 }
 
+const fileSystemEnable = 'showOpenFilePicker' in window
+const defaultProjectFileName = 'blendic.json'
+let fileHandle: FileHandle | undefined = undefined
+
 export function useStrage() {
   const store = useStore()
   const animationStore = useAnimationStore()
   const historyStore = useHistoryStore()
   const canvasStore = useCanvasStore()
   const elementStore = useElementStore()
-
-  const state = reactive({
-    currentFileName: 'blendic.json',
-  })
 
   function serialize(): string {
     const armatures = store.state.armatures
@@ -73,19 +72,44 @@ export function useStrage() {
   }
 
   async function loadProjectFile() {
+    let json: string | undefined = undefined
     try {
-      const file = await showOpenFileDialog()
-      const json = await readAsText(file)
-      deserialize(json)
-      state.currentFileName = file.name
+      if (fileSystemEnable) {
+        const result = await readFile(jsonOptions)
+        // the user cancelled
+        if (!result) return
+
+        fileHandle = result.handle
+        json = result.content
+      } else {
+        const file = await showOpenFileDialog()
+        json = await readAsText(file)
+      }
     } catch (e) {
+      alert('Failed to open a file.')
+    }
+
+    if (!json) return
+    try {
+      deserialize(json)
+    } catch (e) {
+      fileHandle = undefined
       alert('Failed to load: Invalid file.')
     }
   }
 
   async function saveProjectFile() {
     const json = serialize()
-    saveJson(json, state.currentFileName)
+    saveJson(json, fileHandle?.name ?? defaultProjectFileName)
+  }
+
+  async function overrideProjectFile() {
+    const json = serialize()
+    if (fileHandle) {
+      await overrideFile(fileHandle, json)
+    } else {
+      saveJson(json, defaultProjectFileName)
+    }
   }
 
   async function loadSvgFile(isInheritWeight = false) {
@@ -151,8 +175,10 @@ export function useStrage() {
   }
 
   return {
+    fileSystemEnable,
     loadProjectFile,
     saveProjectFile,
+    overrideProjectFile,
     loadSvgFile,
     bakeAction,
     bakeSvg,
@@ -209,4 +235,73 @@ function readAsText(file: File): Promise<string> {
     reader.onerror = reject
     reader.readAsText(file)
   })
+}
+
+interface FileHandle {
+  name: string
+  size: number
+  lastModified: number
+  getFile(): Promise<{ text(): Promise<string> }>
+  createWritable(): Promise<{
+    write(content: string): Promise<void>
+    close(): Promise<void>
+  }>
+}
+
+interface FileHandleOptions {
+  types: [
+    {
+      description: string
+      accept: {
+        [mime: string]: string[]
+      }
+    }
+  ]
+}
+
+const jsonOptions: FileHandleOptions = {
+  types: [
+    {
+      description: 'Text Files',
+      accept: {
+        'text/plain': ['.json'],
+      },
+    },
+  ],
+}
+
+async function getFileHandle(
+  options: FileHandleOptions
+): Promise<FileHandle | undefined> {
+  try {
+    const [handle] = await (window as any).showOpenFilePicker(options)
+    return handle
+  } catch (e) {
+    // ignore the error caused by aborting a request
+    if (e.message?.includes('aborted')) return
+    throw e
+  }
+}
+
+async function readFile(
+  options: FileHandleOptions
+): Promise<{ handle: FileHandle; content: string } | undefined> {
+  const handle = await getFileHandle(options)
+  if (!handle) return
+
+  const file = await handle.getFile()
+  const content = await file.text()
+  return { handle, content }
+}
+
+async function overrideFile(handle: FileHandle, content: string) {
+  try {
+    const writable = await handle.createWritable()
+    await writable.write(content)
+    await writable.close()
+  } catch (e) {
+    // ignore the error caused by not allowing
+    if (e.message?.includes('not allowed')) return
+    throw e
+  }
 }

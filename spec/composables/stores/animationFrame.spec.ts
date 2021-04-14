@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { useAnimationFrameStore } from '/@/composables/stores/animationFrame'
+import { getKeyframeBone } from '/@/models/keyframe'
 
 describe('src/composables/stores/animationFrame.ts', () => {
   describe('setPlaying', () => {
@@ -67,6 +68,62 @@ describe('src/composables/stores/animationFrame.ts', () => {
       store.stepFrame(1)!.redo()
       store.stepFrame(1)!.redo()
       expect(store.currentFrame.value).toBe(3)
+    })
+  })
+
+  describe('jumpNextKey', () => {
+    it('should jump next keyframe', () => {
+      const store = useAnimationFrameStore()
+      store.setCurrentFrame(5)?.redo()
+      const item = store.jumpNextKey(
+        [1, 2, 5, 9, 10].map((frame) => getKeyframeBone({ frame }))
+      )!
+
+      expect(store.currentFrame.value).toBe(5)
+      item.redo()
+      expect(store.currentFrame.value).toBe(9)
+      item.undo()
+      expect(store.currentFrame.value).toBe(5)
+    })
+
+    it('should return undefined if next keyframe does not exist', () => {
+      const store = useAnimationFrameStore()
+      store.setCurrentFrame(10)?.redo()
+      expect(store.jumpNextKey([getKeyframeBone({ frame: 10 })])).toBe(
+        undefined
+      )
+      store.setCurrentFrame(11)?.redo()
+      expect(store.jumpNextKey([getKeyframeBone({ frame: 10 })])).toBe(
+        undefined
+      )
+    })
+  })
+
+  describe('jumpPrevKey', () => {
+    it('should jump prev keyframe', () => {
+      const store = useAnimationFrameStore()
+      store.setCurrentFrame(5)?.redo()
+      const item = store.jumpPrevKey(
+        [1, 2, 5, 9, 10].map((frame) => getKeyframeBone({ frame }))
+      )!
+
+      expect(store.currentFrame.value).toBe(5)
+      item.redo()
+      expect(store.currentFrame.value).toBe(2)
+      item.undo()
+      expect(store.currentFrame.value).toBe(5)
+    })
+
+    it('should return undefined if prev keyframe does not exist', () => {
+      const store = useAnimationFrameStore()
+      store.setCurrentFrame(10)?.redo()
+      expect(store.jumpPrevKey([getKeyframeBone({ frame: 10 })])).toBe(
+        undefined
+      )
+      store.setCurrentFrame(9)?.redo()
+      expect(store.jumpPrevKey([getKeyframeBone({ frame: 10 })])).toBe(
+        undefined
+      )
     })
   })
 })

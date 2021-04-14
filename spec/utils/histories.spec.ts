@@ -91,6 +91,17 @@ describe('src/utils/histories.ts', () => {
       expect(undo).toHaveBeenNthCalledWith(1, 'head')
       expect(undo).toHaveBeenNthCalledWith(2, 'body_2')
     })
+    it('should set name if it is passed', () => {
+      const head = {
+        name: 'original',
+        seriesKey: 'key',
+        undo: () => {},
+        redo: () => {},
+      }
+
+      const ret = convolute(head, [], 'changed')
+      expect(ret.name).toBe('changed')
+    })
   })
 
   describe('getReplaceItem', () => {
@@ -102,6 +113,12 @@ describe('src/utils/histories.ts', () => {
       expect(setFn).toHaveBeenLastCalledWith({ b: 2 })
       item.undo()
       expect(setFn).toHaveBeenLastCalledWith({ a: 1 })
+    })
+
+    it('should set name and seriesKey if its are passed', () => {
+      const ret = getReplaceItem({}, {}, () => {}, 'name', 'seriesKey')
+      expect(ret.name).toBe('name')
+      expect(ret.seriesKey).toBe('seriesKey')
     })
   })
 

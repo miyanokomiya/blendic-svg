@@ -22,10 +22,11 @@ import { IdMap } from '/@/models'
 
 export function convolute(
   head: HistoryItem,
-  body: (HistoryItem | undefined)[]
+  body: (HistoryItem | undefined)[],
+  name?: string
 ): HistoryItem {
   return {
-    name: head.name,
+    name: name ?? head.name,
     undo() {
       head.undo()
       body.forEach((item) => item?.undo())
@@ -42,7 +43,8 @@ export function getReplaceItem<T>(
   state: IdMap<T>,
   next: IdMap<T>,
   setFn: (val: IdMap<T>) => void,
-  name = 'Replace'
+  name = 'Replace',
+  seriesKey?: string
 ): HistoryItem {
   const current = { ...state }
 
@@ -55,6 +57,7 @@ export function getReplaceItem<T>(
       setFn({ ...current })
     },
     redo,
+    seriesKey,
   }
 }
 

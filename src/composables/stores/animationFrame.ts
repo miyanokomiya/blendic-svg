@@ -22,7 +22,12 @@ import { computed } from '@vue/runtime-core'
 import { HistoryItem } from '/@/composables/stores/history'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import { PlayState } from '/@/models'
-import { getSteppedFrame } from '/@/utils/animations'
+import { KeyframeBase } from '/@/models/keyframe'
+import {
+  findNextFrameWithKeyframe,
+  findPrevFrameWithKeyframe,
+  getSteppedFrame,
+} from '/@/utils/animations'
 
 export function useAnimationFrameStore() {
   const currentFrame = useValueStore('Frame', () => 0)
@@ -62,6 +67,18 @@ export function useAnimationFrameStore() {
     )
   }
 
+  function jumpNextKey(keyframes: KeyframeBase[]): HistoryItem | undefined {
+    return currentFrame.setState(
+      findNextFrameWithKeyframe(keyframes, currentFrame.state.value)
+    )
+  }
+
+  function jumpPrevKey(keyframes: KeyframeBase[]): HistoryItem | undefined {
+    return currentFrame.setState(
+      findPrevFrameWithKeyframe(keyframes, currentFrame.state.value)
+    )
+  }
+
   return {
     currentFrame: currentFrame.state,
     setCurrentFrame: currentFrame.setState,
@@ -75,5 +92,7 @@ export function useAnimationFrameStore() {
     jumpStartFrame,
     jumpEndFrame,
     stepFrame,
+    jumpNextKey,
+    jumpPrevKey,
   }
 }

@@ -1,0 +1,68 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/panelContents/FilePanel.vue snapshot default 1`] = `
+<div
+  class="file-panel"
+>
+  <h3>
+    Project
+  </h3>
+  <div
+    class="menu-list"
+  >
+    <button
+      type="button"
+    >
+      Open
+    </button>
+    <button
+      type="button"
+    >
+      Save
+    </button>
+    <!--v-if-->
+  </div>
+  <h3>
+    Import
+  </h3>
+  <div
+    class="menu-list"
+  >
+    <button
+      type="button"
+    >
+      SVG
+    </button>
+    <label
+      class=""
+    >
+      <input
+        type="checkbox"
+      />
+      <span>
+        Inherit weight
+      </span>
+    </label>
+  </div>
+  <h3>
+    Export
+  </h3>
+  <div
+    class="menu-list"
+  >
+    <button
+      type="button"
+    >
+      Baked Action
+    </button>
+    <button
+      type="button"
+    >
+      Posed SVG
+    </button>
+  </div>
+  <h3>
+    Version 
+  </h3>
+</div>
+`;

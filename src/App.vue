@@ -220,6 +220,8 @@ export default defineComponent({
       return editModeToCanvasCommand(canvasStore.command.value)
     })
 
+    const strage = useStrage()
+
     function onGlobalKeyDown(e: KeyboardEvent) {
       if (
         ['input', 'textarea'].includes(
@@ -240,15 +242,12 @@ export default defineComponent({
         animationStore.togglePlaying()
       } else if (isCtrlOrMeta(e) && e.key.toLowerCase() === 's') {
         e.preventDefault()
-        const strage = useStrage()
-        strage.saveProjectFile()
+        strage.overrideProjectFile()
       } else if (isCtrlOrMeta(e) && e.key.toLowerCase() === 'o') {
         e.preventDefault()
         if (e.shiftKey) {
-          const strage = useStrage()
           strage.loadSvgFile()
         } else {
-          const strage = useStrage()
           strage.loadProjectFile()
         }
       }

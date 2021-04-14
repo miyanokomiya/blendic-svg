@@ -44,6 +44,7 @@ import {
   flatKeyListMap,
   mapReduce,
   toList,
+  uniq,
 } from '../utils/commons'
 import { getNextName } from '../utils/relations'
 import { useHistoryStore } from './history'
@@ -151,11 +152,9 @@ const currentInterpolatedTransformMapByTargetId = computed(
 )
 
 const posedTargetIds = computed(() => {
-  return Array.from(
-    new Set(
-      Object.keys(editTransforms.value).concat(
-        Object.keys(keyframeMapByTargetId.value)
-      )
+  return uniq(
+    Object.keys(editTransforms.value).concat(
+      Object.keys(keyframeMapByTargetId.value)
     )
   )
 })
@@ -177,12 +176,10 @@ const currentPosedBones = computed(
     if (!store.lastSelectedArmature.value) return {}
     return getTransformedBoneMap(
       toMap(
-        store.lastSelectedArmature.value.bones.map((b) => {
-          return {
-            ...b,
-            transform: getCurrentSelfTransforms(b.id),
-          }
-        })
+        store.lastSelectedArmature.value.bones.map((b) => ({
+          ...b,
+          transform: getCurrentSelfTransforms(b.id),
+        }))
       )
     )
   }

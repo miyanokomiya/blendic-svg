@@ -296,3 +296,7 @@ export function mergeOrDropMap<T>(
 ): IdMap<T> {
   return value ? { ...src, [key]: value } : dropMap(src, { [key]: true })
 }
+
+export function uniq<T>(src: T[]): T[] {
+  return Array.from(new Set(src))
+}

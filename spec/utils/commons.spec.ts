@@ -41,6 +41,7 @@ import {
   hasSameProps,
   shiftMergeProps,
   mergeOrDropMap,
+  uniq,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -497,6 +498,16 @@ describe('utils/commons.ts', () => {
     })
     it('should drop a item if the value is undefined', () => {
       expect(mergeOrDropMap({ a: 1, b: 1 }, 'b', undefined)).toEqual({ a: 1 })
+    })
+  })
+
+  describe('uniq', () => {
+    it('should make an array with unique values', () => {
+      expect(uniq([1, 1, 2, 2, 3])).toEqual([1, 2, 3])
+      expect(uniq(['1', '1', '2', '2', '3'])).toEqual(['1', '2', '3'])
+    })
+    it('should inherit src order', () => {
+      expect(uniq([1, 2, 3, 2])).toEqual([1, 2, 3])
     })
   })
 })

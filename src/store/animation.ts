@@ -27,8 +27,6 @@ import {
   useListState,
 } from '../composables/listState'
 import {
-  findNextFrameWithKeyframe,
-  findPrevFrameWithKeyframe,
   getKeyframeMapByTargetId,
   getKeyframeMapByFrame,
   slideKeyframesTo,
@@ -277,20 +275,10 @@ function stepFrame(tickFrame: number, reverse = false, seriesKey?: string) {
   )
 }
 function jumpNextKey() {
-  setCurrentFrame(
-    findNextFrameWithKeyframe(
-      keyframeList.value,
-      animationFrameStore.currentFrame.value
-    )
-  )
+  updateCurrentFrame(animationFrameStore.jumpNextKey(keyframeList.value))
 }
 function jumpPrevKey() {
-  setCurrentFrame(
-    findPrevFrameWithKeyframe(
-      keyframeList.value,
-      animationFrameStore.currentFrame.value
-    )
-  )
+  updateCurrentFrame(animationFrameStore.jumpPrevKey(keyframeList.value))
 }
 
 function setEndFrame(next: number, seriesKey?: string) {

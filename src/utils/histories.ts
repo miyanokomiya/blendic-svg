@@ -43,7 +43,8 @@ export function getReplaceItem<T>(
   state: IdMap<T>,
   next: IdMap<T>,
   setFn: (val: IdMap<T>) => void,
-  name = 'Replace'
+  name = 'Replace',
+  seriesKey?: string
 ): HistoryItem {
   const current = { ...state }
 
@@ -56,6 +57,7 @@ export function getReplaceItem<T>(
       setFn({ ...current })
     },
     redo,
+    seriesKey,
   }
 }
 

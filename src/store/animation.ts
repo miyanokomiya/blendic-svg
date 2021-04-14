@@ -78,7 +78,7 @@ import {
   KeyframeBase,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
-import { convolute } from '/@/utils/histories'
+import { convolute, getReplaceItem } from '/@/utils/histories'
 import { getAllSelectedState, isAllExistSelected } from '/@/utils/keyframes'
 import {
   getInterpolatedTransformMapByTargetId,
@@ -345,7 +345,9 @@ function selectKeyframe(
   if (!keyframeId && !isAnyVisibledSelectedKeyframe.value) return
 
   historyStore.push(
-    getSelectKeyframeItem(keyframeId, selectedState, shift),
+    keyframeId
+      ? getSelectKeyframeItem(keyframeId, selectedState, shift)
+      : getClearSelectKeyframeItem(),
     true
   )
 }
@@ -502,19 +504,13 @@ function getUpdateEditedTransformsItem(
   name = 'Update Pose',
   seriesKey?: string
 ): HistoryItem {
-  const current = { ...editTransforms.value }
-
-  const redo = () => {
-    editTransforms.value = val
-  }
-  return {
+  return getReplaceItem(
+    editTransforms.value,
+    val,
+    (val) => (editTransforms.value = val),
     name,
-    undo: () => {
-      editTransforms.value = current
-    },
-    redo,
-    seriesKey,
-  }
+    seriesKey
+  )
 }
 
 function getSelectAllKeyframesItem(): HistoryItem {
@@ -547,34 +543,28 @@ function getSelectKeyframesPropsItem(
   return convolute(selectKeyframeItem, [targetPropsClearItem])
 }
 
+function getClearSelectKeyframeItem(): HistoryItem {
+  return convolute(keyframeState.filter(), [
+    targetPropsState.drop(toTargetIdMap(toList(visibledKeyframeMap.value))),
+  ])
+}
+
 function getSelectKeyframeItem(
   id: string,
   selectedState?: KeyframeSelectedState,
   shift = false
 ): HistoryItem {
-  const selectKeyframeItem = keyframeState.select(
-    id,
-    selectedState ??
-      (id ? getAllSelectedState(visibledKeyframeMap.value[id]) : { props: {} }),
-    shift
-  )
-
   const keyframe = visibledKeyframeMap.value[id]
-  const propsItem = !id
-    ? targetPropsState.drop(toTargetIdMap(toList(visibledKeyframeMap.value)))
-    : targetPropsState.select(
-        keyframe.targetId,
-        {
-          props: mapReduce(
-            (selectedState ?? getAllSelectedState(keyframe)).props,
-            () => 'selected'
-          ),
-        },
-        shift,
-        true
-      )
+  const nextSelectedState = selectedState ?? getAllSelectedState(keyframe)
 
-  return convolute(selectKeyframeItem, [propsItem])
+  return convolute(keyframeState.select(id, nextSelectedState, shift), [
+    targetPropsState.select(
+      keyframe.targetId,
+      { props: mapReduce(nextSelectedState.props, () => 'selected') },
+      shift,
+      true
+    ),
+  ])
 }
 
 function getKeyframeAccessor() {

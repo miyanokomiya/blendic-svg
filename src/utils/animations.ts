@@ -38,7 +38,7 @@ import {
   toMap,
   Transform,
 } from '/@/models'
-import { KeyframeBase, KeyframeBone } from '/@/models/keyframe'
+import { KeyframeBase } from '/@/models/keyframe'
 import { invertPoseTransform, multiPoseTransform } from '/@/utils/armatures'
 import { circleClamp } from '/@/utils/geometry'
 import { mergeKeyframe } from '/@/utils/keyframes'
@@ -112,8 +112,8 @@ export function getKeyframeMapByFrame<T extends KeyframeBase>(
 }
 
 export function getKeyframeMapByTargetId(
-  keyframes: KeyframeBone[]
-): IdMap<KeyframeBone[]> {
+  keyframes: KeyframeBase[]
+): IdMap<KeyframeBase[]> {
   return sortKeyframeMap(toKeyListMap(keyframes, 'targetId'))
 }
 
@@ -122,15 +122,15 @@ export function sortKeyframes<T extends KeyframeBase>(keyframes: T[]): T[] {
 }
 
 export function sortKeyframeMap(
-  keyframeMap: IdMap<KeyframeBone[]>
-): IdMap<KeyframeBone[]> {
+  keyframeMap: IdMap<KeyframeBase[]>
+): IdMap<KeyframeBase[]> {
   return mapReduce(keyframeMap, sortKeyframes)
 }
 
 export function getAfterKeyframe(
-  sortedKeyframes: KeyframeBone[],
+  sortedKeyframes: KeyframeBase[],
   frame: number
-): KeyframeBone | undefined {
+): KeyframeBase | undefined {
   if (sortedKeyframes.length === 0) return
   const afterIndex = sortedKeyframes.findIndex((k) => frame < k.frame)
   if (afterIndex === -1) return
@@ -234,9 +234,9 @@ export function cleanActions(
 }
 
 function cleanKeyframes(
-  keyframes: KeyframeBone[],
+  keyframes: KeyframeBase[],
   bones: Bone[]
-): KeyframeBone[] {
+): KeyframeBase[] {
   return toList(
     extractMap(getKeyframeMapByTargetId(keyframes), toMap(bones))
   ).flat()
@@ -253,7 +253,7 @@ export function findNextFrameWithKeyframe<T extends KeyframeBase>(
 }
 
 export function findPrevFrameWithKeyframe(
-  keyframes: KeyframeBone[],
+  keyframes: KeyframeBase[],
   currentFrame: number
 ): number {
   const gt = Object.keys(getKeyframeMapByFrame(keyframes))

@@ -114,6 +114,12 @@ describe('src/utils/histories.ts', () => {
       item.undo()
       expect(setFn).toHaveBeenLastCalledWith({ a: 1 })
     })
+
+    it('should set name and seriesKey if its are passed', () => {
+      const ret = getReplaceItem({}, {}, () => {}, 'name', 'seriesKey')
+      expect(ret.name).toBe('name')
+      expect(ret.seriesKey).toBe('seriesKey')
+    })
   })
 
   describe('hasSameSeriesKey', () => {

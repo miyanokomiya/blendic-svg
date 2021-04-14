@@ -17,28 +17,23 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ref } from '@vue/reactivity'
-import { makeRefAccessors } from '/@/composables/commons'
+import { makeAccessors } from '/@/composables/commons'
 import {
   getDeleteKeyframesItem,
   getInsertKeyframeItem,
   getUpdateKeyframeItem,
 } from '/@/composables/stores/animation'
-import { getTransform, IdMap, Transform } from '/@/models'
-import {
-  getKeyframeBone,
-  getKeyframePoint,
-  KeyframeBone,
-} from '/@/models/keyframe'
+import { getTransform } from '/@/models'
+import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 
 describe('src/utils/animation.ts', () => {
   describe('getInsertKeyframeItem', () => {
     it('should return history item to do', () => {
-      const currentKeyframes = ref<KeyframeBone[]>([])
-      const editTransforms = ref<IdMap<Transform>>({ a: getTransform() })
+      const currentKeyframes = { value: [] }
+      const editTransforms = { value: { a: getTransform() } }
       const item = getInsertKeyframeItem(
-        makeRefAccessors(currentKeyframes),
-        makeRefAccessors(editTransforms),
+        makeAccessors(currentKeyframes),
+        makeAccessors(editTransforms),
         [getKeyframeBone({ id: 'key_a', targetId: 'a' })]
       )
 
@@ -57,14 +52,11 @@ describe('src/utils/animation.ts', () => {
     })
 
     it('should drop edit target transforms', () => {
-      const currentKeyframes = ref<KeyframeBone[]>([])
-      const editTransforms = ref<IdMap<Transform>>({
-        a: getTransform(),
-        b: getTransform(),
-      })
+      const currentKeyframes = { value: [] }
+      const editTransforms = { value: { a: getTransform(), b: getTransform() } }
       getInsertKeyframeItem(
-        makeRefAccessors(currentKeyframes),
-        makeRefAccessors(editTransforms),
+        makeAccessors(currentKeyframes),
+        makeAccessors(editTransforms),
         [getKeyframeBone({ id: 'key_a', targetId: 'a' })]
       ).redo()
 
@@ -74,16 +66,18 @@ describe('src/utils/animation.ts', () => {
 
   describe('getDeleteKeyframesItem', () => {
     it('should return history item to delete keyframe props', () => {
-      const currentKeyframes = ref<KeyframeBone[]>([
-        getKeyframeBone({
-          id: 'a',
-          points: {
-            translateX: getKeyframePoint(),
-            rotate: getKeyframePoint(),
-          },
-        }),
-      ])
-      const item = getDeleteKeyframesItem(makeRefAccessors(currentKeyframes), {
+      const currentKeyframes = {
+        value: [
+          getKeyframeBone({
+            id: 'a',
+            points: {
+              translateX: getKeyframePoint(),
+              rotate: getKeyframePoint(),
+            },
+          }),
+        ],
+      }
+      const item = getDeleteKeyframesItem(makeAccessors(currentKeyframes), {
         a: { props: { rotate: true } },
       })
 
@@ -120,11 +114,13 @@ describe('src/utils/animation.ts', () => {
 
   describe('getUpdateKeyframeItem', () => {
     it('should return history item to update keyframes', () => {
-      const currentKeyframes = ref<KeyframeBone[]>([
-        getKeyframeBone({ id: 'a', frame: 1 }),
-        getKeyframeBone({ id: 'b', frame: 5 }),
-      ])
-      const item = getUpdateKeyframeItem(makeRefAccessors(currentKeyframes), {
+      const currentKeyframes = {
+        value: [
+          getKeyframeBone({ id: 'a', frame: 1 }),
+          getKeyframeBone({ id: 'b', frame: 5 }),
+        ],
+      }
+      const item = getUpdateKeyframeItem(makeAccessors(currentKeyframes), {
         a: getKeyframeBone({ id: 'a', frame: 10 }),
       })
 

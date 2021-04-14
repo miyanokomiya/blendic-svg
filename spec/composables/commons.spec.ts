@@ -18,9 +18,19 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ref } from '@vue/reactivity'
-import { makeRefAccessors } from '/@/composables/commons'
+import { makeAccessors, makeRefAccessors } from '/@/composables/commons'
 
 describe('src/composables/commons.ts', () => {
+  describe('makeAccessors', () => {
+    it('should return a object having getter and setter', () => {
+      const target = { value: 0 }
+      const ret = makeAccessors(target)
+      expect(ret.get()).toBe(0)
+      ret.set(10)
+      expect(ret.get()).toBe(10)
+    })
+  })
+
   describe('makeRefAccessors', () => {
     it('should return a object having getter and setter for Ref', () => {
       const target = ref(0)

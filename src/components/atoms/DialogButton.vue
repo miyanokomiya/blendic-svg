@@ -18,7 +18,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <button type="button" :class="{ [type]: true }"><slot /></button>
+  <button type="button" :class="{ [type]: true }" :disabled="disabled">
+    <slot />
+  </button>
 </template>
 
 <script lang="ts">
@@ -29,6 +31,10 @@ export default defineComponent({
     type: {
       type: String as PropType<'default' | 'primary'>,
       default: 'default',
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
   },
 })
@@ -42,6 +48,10 @@ button {
   font-size: 14px;
   &:hover {
     opacity: 0.7;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
   }
 }
 .primary {

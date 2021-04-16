@@ -57,7 +57,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         </template>
         <template #buttons>
           <DialogButton @click="closeSelectActionDialog">Cancel</DialogButton>
-          <DialogButton type="primary" @click="bakeAction">Export</DialogButton>
+          <DialogButton
+            type="primary"
+            :disabled="exportingActionIds.length === 0"
+            @click="bakeAction"
+            >Export</DialogButton
+          >
         </template>
       </DialogBase>
     </teleport>
@@ -114,6 +119,7 @@ export default defineComponent({
       bakeAction: () => strage.bakeAction(exportingActionIds.value),
       selectedActionIds,
       exportableActions,
+      exportingActionIds,
       showSelectActionDialogFlag,
       showSelectActionDialog: () => (showSelectActionDialogFlag.value = true),
       closeSelectActionDialog: () => (showSelectActionDialogFlag.value = false),

@@ -26,11 +26,15 @@ describe('src/components/atoms/DialogButton.vue', () => {
       const wrapper = mount(Target)
       expect(wrapper.element).toMatchSnapshot()
     })
+    it('disabled', () => {
+      const wrapper = mount(Target, {
+        props: { disabled: true },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
     it('primary', () => {
       const wrapper = mount(Target, {
-        props: {
-          type: 'primary',
-        },
+        props: { type: 'primary' },
       })
       expect(wrapper.element).toMatchSnapshot()
     })

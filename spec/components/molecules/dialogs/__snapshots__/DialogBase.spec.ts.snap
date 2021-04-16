@@ -1,0 +1,95 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/molecules/dialogs/DialogBase.vue snapshot close 1`] = `<!--v-if-->`;
+
+exports[`src/components/molecules/dialogs/DialogBase.vue snapshot open 1`] = `
+<div
+  class="dialog-wrapper"
+>
+  <div
+    class="overlay"
+  />
+  <div
+    class="body-outer"
+  >
+    <div
+      class="body-innter"
+    >
+      <button
+        class="close-button"
+      >
+        <svg
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="none"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
+            fill="none"
+            stroke="#888"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      
+      slot_default
+      
+      <!--v-if-->
+    </div>
+  </div>
+</div>
+`;
+
+exports[`src/components/molecules/dialogs/DialogBase.vue snapshot with buttons 1`] = `
+<div
+  class="dialog-wrapper"
+>
+  <div
+    class="overlay"
+  />
+  <div
+    class="body-outer"
+  >
+    <div
+      class="body-innter"
+    >
+      <button
+        class="close-button"
+      >
+        <svg
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="none"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
+            fill="none"
+            stroke="#888"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      
+      slot_default
+      
+      <div
+        class="buttons"
+      >
+        
+        slot_buttons
+        
+      </div>
+    </div>
+  </div>
+</div>
+`;

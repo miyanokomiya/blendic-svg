@@ -1,4 +1,4 @@
-<!--
+/*
 This file is part of Blendic SVG.
 
 Blendic SVG is free software: you can redistribute it and/or modify
@@ -15,33 +15,24 @@ You should have received a copy of the GNU General Public License
 along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 
 Copyright (C) 2021, Tomoya Komiyama.
--->
+*/
 
-<template>
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
-    <rect width="10" height="10" stroke="none" :fill="fill" />
-    <path
-      d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
-      stroke-linejoin="round"
-      :stroke="stroke"
-      fill="none"
-    />
-  </svg>
-</template>
+import { mount } from '@vue/test-utils'
+import Target from '/@/components/atoms/DialogButton.vue'
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  props: {
-    fill: {
-      type: String,
-      default: '#888',
-    },
-    stroke: {
-      type: String,
-      default: '#fff',
-    },
-  },
+describe('src/components/atoms/DialogButton.vue', () => {
+  describe('snapshot', () => {
+    it('default', () => {
+      const wrapper = mount(Target)
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('primary', () => {
+      const wrapper = mount(Target, {
+        props: {
+          type: 'primary',
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+  })
 })
-</script>

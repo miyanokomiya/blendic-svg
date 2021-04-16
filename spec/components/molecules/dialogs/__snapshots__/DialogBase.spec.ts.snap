@@ -36,10 +36,14 @@ exports[`src/components/molecules/dialogs/DialogBase.vue snapshot open 1`] = `
           />
         </svg>
       </button>
-      
-      slot_default
-      
-      <!--v-if-->
+      <div
+        class="body-content"
+      >
+        
+        slot_default
+        
+        <!--v-if-->
+      </div>
     </div>
   </div>
 </div>
@@ -79,15 +83,19 @@ exports[`src/components/molecules/dialogs/DialogBase.vue snapshot with buttons 1
           />
         </svg>
       </button>
-      
-      slot_default
-      
       <div
-        class="buttons"
+        class="body-content"
       >
         
-        slot_buttons
+        slot_default
         
+        <div
+          class="buttons"
+        >
+          
+          slot_buttons
+          
+        </div>
       </div>
     </div>
   </div>

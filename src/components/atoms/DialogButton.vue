@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <button :class="{ [type]: true }"><slot /></button>
+  <button type="button" :class="{ [type]: true }"><slot /></button>
 </template>
 
 <script lang="ts">

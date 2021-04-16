@@ -19,15 +19,17 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div v-if="open" class="dialog-wrapper">
-    <div class="overlay" @click="close" />
-    <div class="body-outer">
+    <div class="overlay" />
+    <div class="body-outer" @click.self="close">
       <div class="body-innter">
         <button class="close-button" @click="close">
           <DeleteIcon fill="none" stroke="#888" />
         </button>
-        <slot />
-        <div v-if="$slots.buttons" class="buttons">
-          <slot name="buttons" />
+        <div class="body-content">
+          <slot />
+          <div v-if="$slots.buttons" class="buttons">
+            <slot name="buttons" />
+          </div>
         </div>
       </div>
     </div>
@@ -82,12 +84,16 @@ export default defineComponent({
 .body-innter {
   position: relative;
   background-color: #fff;
-  min-width: 200px;
-  max-width: 50%;
-  min-height: 100px;
   box-shadow: 0 3px 3px #aaa;
   border-radius: 4px;
   padding: 12px;
+}
+.body-content {
+  min-width: 220px;
+  max-width: 50%;
+  min-height: 100px;
+  max-height: 80%;
+  overflow: auto;
 }
 .close-button {
   position: absolute;
@@ -96,9 +102,10 @@ export default defineComponent({
   transform: translateY(-100%);
   width: 24px;
   height: 24px;
+  outline: none;
 }
 .buttons {
-  margin-top: 20px;
+  margin-top: 14px;
   display: flex;
   align-items: center;
   justify-content: flex-end;

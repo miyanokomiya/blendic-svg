@@ -23,7 +23,11 @@ import { useAnimationStore } from '../store/animation'
 import { useCanvasStore } from '../store/canvas'
 import { useElementStore } from '../store/element'
 import { useHistoryStore } from '../store/history'
-import { cleanActions, getLastFrame } from '../utils/animations'
+import {
+  cleanActions,
+  getKeyframeMapByTargetId,
+  getLastFrame,
+} from '../utils/animations'
 import { cleanActors, inheritWeight, parseFromSvg } from '../utils/elements'
 import { bakeKeyframes, getPosedElementTree } from '../utils/poseResolver'
 import { initialize, StrageRoot } from '/@/models/strage'
@@ -141,7 +145,7 @@ export function useStrage() {
       .map((id) => {
         const action = actionMap[id]
         const attributesMapPerFrame = bakeKeyframes(
-          animationStore.keyframeMapByTargetId.value,
+          getKeyframeMapByTargetId(action.keyframes),
           store.boneMap.value,
           toMap(actor.elements),
           actor.svgTree,

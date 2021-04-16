@@ -109,7 +109,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  > ::v-deep * {
+  > :deep(*) {
     margin-left: 8px;
   }
 }

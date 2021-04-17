@@ -51,9 +51,10 @@ exports[`src/components/panelContents/FilePanel.vue snapshot default 1`] = `
     class="menu-list"
   >
     <button
+      disabled=""
       type="button"
     >
-      Baked Action
+       Baked Action 
     </button>
     <button
       type="button"
@@ -64,5 +65,7 @@ exports[`src/components/panelContents/FilePanel.vue snapshot default 1`] = `
   <h3>
     Version 
   </h3>
+  <!--teleport start-->
+  <!--teleport end-->
 </div>
 `;

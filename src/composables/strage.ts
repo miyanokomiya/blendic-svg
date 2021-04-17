@@ -23,7 +23,11 @@ import { useAnimationStore } from '../store/animation'
 import { useCanvasStore } from '../store/canvas'
 import { useElementStore } from '../store/element'
 import { useHistoryStore } from '../store/history'
-import { cleanActions, getLastFrame } from '../utils/animations'
+import {
+  cleanActions,
+  getKeyframeMapByTargetId,
+  getLastFrame,
+} from '../utils/animations'
 import { cleanActors, inheritWeight, parseFromSvg } from '../utils/elements'
 import { bakeKeyframes, getPosedElementTree } from '../utils/poseResolver'
 import { initialize, StrageRoot } from '/@/models/strage'
@@ -130,33 +134,40 @@ export function useStrage() {
     }
   }
 
-  function bakeAction() {
+  function bakeAction(actionIds: string[]) {
     const armature = store.lastSelectedArmature.value
-    const action = animationStore.selectedAction.value
     const actor = elementStore.lastSelectedActor.value
-    if (!armature || !action || !actor) return
+    if (!armature || !actor) return
 
-    const attributesMapPerFrame = bakeKeyframes(
-      animationStore.keyframeMapByTargetId.value,
-      store.boneMap.value,
-      toMap(actor.elements),
-      actor.svgTree,
-      getLastFrame(action.keyframes)
-    )
+    const actionMap = animationStore.actionMap.value
+    const actions = actionIds
+      .filter((id) => actionMap[id])
+      .map((id) => {
+        const action = actionMap[id]
+        const attributesMapPerFrame = bakeKeyframes(
+          getKeyframeMapByTargetId(action.keyframes),
+          store.boneMap.value,
+          toMap(actor.elements),
+          actor.svgTree,
+          getLastFrame(action.keyframes)
+        )
+        return {
+          name: action.name,
+          attributesMapPerFrame,
+        }
+      })
 
     const data: BakedData = {
       version: '1.0.0',
       appVersion: process.env.APP_VERSION ?? 'dev',
-      actions: [
-        {
-          name: action.name,
-          attributesMapPerFrame,
-        },
-      ],
+      actions,
       svgTree: actor.svgTree,
     }
 
-    saveJson(JSON.stringify(data), action.name + '.json')
+    saveJson(
+      JSON.stringify(data),
+      actions.map((a) => a.name).join('_') + '.json'
+    )
   }
 
   function bakeSvg() {

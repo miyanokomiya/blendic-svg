@@ -18,30 +18,44 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
-    <rect width="10" height="10" stroke="none" :fill="fill" />
-    <path
-      d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
-      stroke-linejoin="round"
-      :stroke="stroke"
-      fill="none"
-    />
-  </svg>
+  <button type="button" :class="{ [type]: true }" :disabled="disabled">
+    <slot />
+  </button>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   props: {
-    fill: {
-      type: String,
-      default: '#888',
+    type: {
+      type: String as PropType<'default' | 'primary'>,
+      default: 'default',
     },
-    stroke: {
-      type: String,
-      default: '#fff',
+    disabled: {
+      type: Boolean,
+      default: false,
     },
   },
 })
 </script>
+
+<style lang="scss" scoped>
+button {
+  padding: 4px 10px;
+  border: solid 1px #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  &:hover {
+    opacity: 0.7;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+.primary {
+  background-color: #4169e1;
+  color: #fff;
+}
+</style>

@@ -34,37 +34,95 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <h3>Export</h3>
     <div class="menu-list">
-      <button type="button" @click="bakeAction">Baked Action</button>
+      <button
+        type="button"
+        :disabled="exportableActions.length === 0"
+        @click="showSelectActionDialog"
+      >
+        Baked Action
+      </button>
       <button type="button" @click="exportSvg">Posed SVG</button>
     </div>
     <h3>Version {{ appVersion }}</h3>
+    <teleport to="body">
+      <DialogBase v-model:open="showSelectActionDialogFlag">
+        <template #default>
+          <h3>Select Actions</h3>
+          <CheckboxInput
+            v-for="action in exportableActions"
+            :key="action.id"
+            v-model="selectedActionIds[action.id]"
+            :label="action.name"
+          />
+        </template>
+        <template #buttons>
+          <DialogButton @click="closeSelectActionDialog">Cancel</DialogButton>
+          <DialogButton
+            type="primary"
+            :disabled="exportingActionIds.length === 0"
+            @click="bakeAction"
+            >Export</DialogButton
+          >
+        </template>
+      </DialogBase>
+    </teleport>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 import { useStrage } from '/@/composables/strage'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
+import DialogBase from '/@/components/molecules/dialogs/DialogBase.vue'
+import DialogButton from '/@/components/atoms/DialogButton.vue'
+import { useAnimationStore } from '/@/store/animation'
+import { useStore } from '/@/store'
 
 export default defineComponent({
-  components: { CheckboxInput },
+  components: { CheckboxInput, DialogBase, DialogButton },
   emits: [],
   setup() {
-    const isInheritWeight = ref(true)
     const strage = useStrage()
+    const isInheritWeight = ref(true)
+
+    const store = useStore()
+    const animationStore = useAnimationStore()
+    const showSelectActionDialogFlag = ref(false)
+    const selectedActionIds = ref<{ [id: string]: boolean }>({})
+
+    const exportableActions = computed(() => {
+      return animationStore.actions.value.filter((a) => {
+        return store.lastSelectedArmature.value?.id === a.armatureId
+      })
+    })
+
+    const exportingActionIds = computed(() => {
+      return exportableActions.value
+        .filter((a) => selectedActionIds.value[a.id])
+        .map((a) => a.id)
+    })
 
     return {
       appVersion: process.env.APP_VERSION,
-      isInheritWeight,
+
       fileSystemEnable: strage.fileSystemEnable,
       openFile: strage.loadProjectFile,
       saveProjectFile: strage.saveProjectFile,
       overrideProjectFile: strage.overrideProjectFile,
+
+      isInheritWeight,
       importSvg() {
         strage.loadSvgFile(isInheritWeight.value)
       },
-      bakeAction: strage.bakeAction,
       exportSvg: strage.bakeSvg,
+
+      bakeAction: () => strage.bakeAction(exportingActionIds.value),
+      selectedActionIds,
+      exportableActions,
+      exportingActionIds,
+      showSelectActionDialogFlag,
+      showSelectActionDialog: () => (showSelectActionDialogFlag.value = true),
+      closeSelectActionDialog: () => (showSelectActionDialogFlag.value = false),
     }
   },
 })
@@ -91,13 +149,6 @@ h3 {
     &:hover {
       background-color: #eee;
     }
-  }
-}
-.checkbox-field {
-  display: flex;
-  align-items: center;
-  > input {
-    margin-left: 8px;
   }
 }
 </style>

@@ -430,6 +430,7 @@ export function useAnimationStore() {
   return {
     initState,
     actions: computed(() => actions.state.list),
+    actionMap: actions.itemMap,
     selectedKeyframeMap: keyframeState.selectedStateMap,
     lastSelectedKeyframe,
     keyframeMapByFrame,

@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/DialogButton.vue snapshot default 1`] = `
+<button
+  class="default"
+  type="button"
+>
+  
+  
+</button>
+`;
+
+exports[`src/components/atoms/DialogButton.vue snapshot disabled 1`] = `
+<button
+  class="default"
+  disabled=""
+  type="button"
+>
+  
+  
+</button>
+`;
+
+exports[`src/components/atoms/DialogButton.vue snapshot primary 1`] = `
+<button
+  class="primary"
+  type="button"
+>
+  
+  
+</button>
+`;

@@ -19,13 +19,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/molecules/constraints/LimitRotationOptionField.vue'
-import { getOptionByName } from '/@/utils/constraints'
+import { getOptionByType } from '/@/utils/constraints'
 
 describe('/@/src/components/molecules/constraints/LimitRotationOptionField.vue', () => {
   it('snapshot', () => {
     const wrapper = mount(Target, {
       props: {
-        modelValue: getOptionByName('LIMIT_ROTATION'),
+        modelValue: getOptionByType('LIMIT_ROTATION'),
       },
     })
     expect(wrapper.element).toMatchSnapshot()

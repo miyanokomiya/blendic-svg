@@ -29,6 +29,7 @@ import {
   KeyframeBone,
   KeyframePoint,
 } from '/@/models/keyframe'
+import { BoneConstraint, BoneConstraintType } from '/@/utils/constraints'
 
 interface OldKeyframe {
   id: string
@@ -162,4 +163,19 @@ function migrateKeyframe3(k: KeyframeBase): KeyframeBase {
 
 function isCurve3(c: OldCurve3 | CurveBase): c is OldCurve3 {
   return 'c1' in c
+}
+
+export function migrateConstraint(src: BoneConstraint): BoneConstraint {
+  return migrateConstraint4(src)
+}
+
+export function migrateConstraint4(
+  src: Omit<BoneConstraint, 'type'> & { type?: BoneConstraintType }
+): BoneConstraint {
+  if (src.type) return src as BoneConstraint
+  return {
+    type: src.name as BoneConstraintType,
+    name: src.name,
+    option: src.option,
+  }
 }

@@ -19,13 +19,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/molecules/constraints/LimitScaleOptionField.vue'
-import { getOptionByName } from '/@/utils/constraints'
+import { getOptionByType } from '/@/utils/constraints'
 
 describe('/@/src/components/molecules/constraints/LimitScaleOptionField.vue', () => {
   it('snapshot', () => {
     const wrapper = mount(Target, {
       props: {
-        modelValue: getOptionByName('LIMIT_SCALE'),
+        modelValue: getOptionByType('LIMIT_SCALE'),
       },
     })
     expect(wrapper.element).toMatchSnapshot()

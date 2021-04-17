@@ -19,13 +19,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/molecules/constraints/CopyScaleOptionField.vue'
-import { getOptionByName } from '/@/utils/constraints'
+import { getOptionByType } from '/@/utils/constraints'
 
 describe('/@/src/components/molecules/constraints/CopyScaleOptionField.vue', () => {
   it('snapshot', () => {
     const wrapper = mount(Target, {
       props: {
-        modelValue: getOptionByName('COPY_SCALE'),
+        modelValue: getOptionByType('COPY_SCALE'),
         boneOptions: [
           { value: 'a', label: 'bone_a' },
           { value: 'b', label: 'bone_b' },

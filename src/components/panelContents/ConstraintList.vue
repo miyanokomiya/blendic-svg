@@ -21,12 +21,12 @@ Copyright (C) 2021, Tomoya Komiyama.
   <InlineField label="Constraints">
     <SelectButton
       :options="constraintOptions"
-      @select="setBoneConstraintName"
+      @select="setBoneConstraintType"
     />
   </InlineField>
   <div v-for="(c, i) in constraints" :key="i" class="constraints-item">
     <div class="constraint-header">
-      <p class="name">{{ constraintNameMap[c.name] }}</p>
+      <p class="name">{{ constraintNameMap[c.type] }}</p>
       <button :disabled="i === 0" type="button" @click="upConstraint(i)">
         <UpIcon class="icon" />
       </button>
@@ -41,7 +41,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <DeleteIcon class="icon" />
       </button>
     </div>
-    <template v-if="c.name === 'IK'">
+    <template v-if="c.type === 'IK'">
       <IKOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
@@ -50,7 +50,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'LIMIT_LOCATION'">
+    <template v-else-if="c.type === 'LIMIT_LOCATION'">
       <LimitLocationOptionField
         :model-value="c.option"
         @update:modelValue="
@@ -58,7 +58,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'LIMIT_ROTATION'">
+    <template v-else-if="c.type === 'LIMIT_ROTATION'">
       <LimitRotationOptionField
         :model-value="c.option"
         @update:modelValue="
@@ -66,7 +66,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'LIMIT_SCALE'">
+    <template v-else-if="c.type === 'LIMIT_SCALE'">
       <LimitScaleOptionField
         :model-value="c.option"
         @update:modelValue="
@@ -74,7 +74,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'COPY_LOCATION'">
+    <template v-else-if="c.type === 'COPY_LOCATION'">
       <CopyLocationOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
@@ -83,7 +83,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'COPY_ROTATION'">
+    <template v-else-if="c.type === 'COPY_ROTATION'">
       <CopyRotationOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
@@ -92,7 +92,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'COPY_SCALE'">
+    <template v-else-if="c.type === 'COPY_SCALE'">
       <CopyScaleOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
@@ -108,9 +108,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import {
   BoneConstraint,
-  BoneConstraintName,
+  BoneConstraintType,
   BoneConstraintOption,
-  getConstraintByName,
+  getConstraintByType,
 } from '/@/utils/constraints'
 import SelectButton from '/@/components/atoms/SelectButton.vue'
 import UpIcon from '/@/components/atoms/UpIcon.vue'
@@ -150,7 +150,7 @@ export default defineComponent({
   },
   emits: ['update'],
   setup(props, { emit }) {
-    const constraintNameMap = computed<{ [key in BoneConstraintName]: string }>(
+    const constraintNameMap = computed<{ [key in BoneConstraintType]: string }>(
       () => {
         return {
           IK: 'IK',
@@ -165,15 +165,15 @@ export default defineComponent({
     )
 
     const constraintOptions = computed<
-      { value: BoneConstraintName; label: string }[]
+      { value: BoneConstraintType; label: string }[]
     >(() => {
       return Object.keys(constraintNameMap.value).map((key) => ({
-        value: key as BoneConstraintName,
-        label: constraintNameMap.value[key as BoneConstraintName],
+        value: key as BoneConstraintType,
+        label: constraintNameMap.value[key as BoneConstraintType],
       }))
     })
 
-    function setBoneConstraintName(val: BoneConstraintName) {
+    function setBoneConstraintType(val: BoneConstraintType) {
       if (!val) return
       addConstraint(val)
     }
@@ -182,8 +182,8 @@ export default defineComponent({
       emit('update', constraints, seriesKey)
     }
 
-    function addConstraint(name: BoneConstraintName) {
-      update([...props.constraints, getConstraintByName(name)])
+    function addConstraint(type: BoneConstraintType) {
+      update([...props.constraints, getConstraintByType(type)])
     }
 
     function updateConstraint(
@@ -225,7 +225,7 @@ export default defineComponent({
     return {
       constraintNameMap,
       constraintOptions,
-      setBoneConstraintName,
+      setBoneConstraintType,
       deleteConstraint,
       updateConstraint,
       upConstraint,

@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/TextInput.vue snapshot default 1`] = `
+<div
+  class="input-wrapper"
+>
+  <input
+    type="text"
+  />
+  <div
+    class="input-forward"
+  />
+</div>
+`;
+
+exports[`src/components/atoms/TextInput.vue snapshot disabled 1`] = `
+<div
+  class="input-wrapper"
+>
+  <input
+    disabled=""
+    type="text"
+  />
+  <!--v-if-->
+</div>
+`;

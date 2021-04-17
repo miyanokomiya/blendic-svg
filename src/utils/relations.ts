@@ -37,3 +37,23 @@ export function getNotDuplicatedName(src: string, names: string[]): string {
   }
   return result
 }
+
+export function updateNameInList<T extends { name: string }>(
+  src: T[],
+  index: number,
+  name: string
+): T[] {
+  const ret = src.concat()
+  const target = ret[index]
+  if (!target || target.name === name) return src
+
+  ret[index] = {
+    ...target,
+    name: getNotDuplicatedName(
+      name,
+      ret.map((c) => c.name)
+    ),
+  }
+
+  return ret
+}

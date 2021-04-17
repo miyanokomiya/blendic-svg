@@ -26,7 +26,10 @@ Copyright (C) 2021, Tomoya Komiyama.
   </InlineField>
   <div v-for="(c, i) in constraints" :key="i" class="constraints-item">
     <div class="constraint-header">
-      <p class="name">{{ c.name }}</p>
+      <TextInput
+        :model-value="c.name"
+        @update:modelValue="(val) => updateName(i, val)"
+      />
       <button :disabled="i === 0" type="button" @click="upConstraint(i)">
         <UpIcon class="icon" />
       </button>
@@ -113,6 +116,7 @@ import {
   getConstraintByType,
 } from '/@/utils/constraints'
 import SelectButton from '/@/components/atoms/SelectButton.vue'
+import TextInput from '/@/components/atoms/TextInput.vue'
 import UpIcon from '/@/components/atoms/UpIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
@@ -123,7 +127,7 @@ import LimitScaleOptionField from '/@/components/molecules/constraints/LimitScal
 import CopyLocationOptionField from '/@/components/molecules/constraints/CopyLocationOptionField.vue'
 import CopyRotationOptionField from '/@/components/molecules/constraints/CopyRotationOptionField.vue'
 import CopyScaleOptionField from '/@/components/molecules/constraints/CopyScaleOptionField.vue'
-import { getNotDuplicatedName } from '/@/utils/relations'
+import { getNotDuplicatedName, updateNameInList } from '/@/utils/relations'
 
 const constraintNameMap: { [key in BoneConstraintType]: string } = {
   IK: 'IK',
@@ -138,6 +142,7 @@ const constraintNameMap: { [key in BoneConstraintType]: string } = {
 export default defineComponent({
   components: {
     SelectButton,
+    TextInput,
     UpIcon,
     DeleteIcon,
     InlineField,
@@ -204,6 +209,10 @@ export default defineComponent({
       update(constraints)
     }
 
+    function updateName(index: number, name: string) {
+      update(updateNameInList(props.constraints, index, name))
+    }
+
     function upConstraint(index: number) {
       if (index === 0) return
 
@@ -228,6 +237,7 @@ export default defineComponent({
       constraintOptions,
       setBoneConstraintType,
       deleteConstraint,
+      updateName,
       updateConstraint,
       upConstraint,
       downConstraint,
@@ -248,7 +258,7 @@ export default defineComponent({
     align-items: center;
     justify-content: flex-end;
     > button {
-      margin-left: 6px;
+      margin-left: 4px;
       border-radius: 8px;
       width: 18px;
       height: 18px;

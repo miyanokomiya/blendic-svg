@@ -137,12 +137,13 @@ function immigrateOption(
 
 export function getConstraintByType(
   type: BoneConstraintType,
-  src: Partial<BoneConstraintOption> = {}
+  name: string = '',
+  opsion: Partial<BoneConstraintOption> = {}
 ): BoneConstraint {
   return {
     type,
-    name: type,
-    option: getOptionByType(type, src),
+    name: name || type,
+    option: getOptionByType(type, opsion),
   }
 }
 

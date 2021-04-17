@@ -32,7 +32,11 @@ describe('src/utils/constraints/index.ts', () => {
         getBone({
           id: 'a',
           constraints: [
-            getConstraintByType('IK', ik.getOption({ targetId: 'c' })),
+            getConstraintByType(
+              'IK',
+              'IK.001',
+              ik.getOption({ targetId: 'c' })
+            ),
           ],
         }),
         getBone({

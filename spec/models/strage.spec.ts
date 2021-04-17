@@ -40,7 +40,9 @@ describe('src/models/strage.ts', () => {
               { id: 'bone' },
               {
                 id: 'bone_2',
-                constraints: [{ type: 'IK', option: { targetId: 'a' } }],
+                constraints: [
+                  { type: 'IK', name: 'IK.001', option: { targetId: 'a' } },
+                ],
               },
             ],
           },
@@ -66,7 +68,9 @@ describe('src/models/strage.ts', () => {
               getBone({ id: 'bone' }),
               getBone({
                 id: 'bone_2',
-                constraints: [getConstraintByType('IK', { targetId: 'a' })],
+                constraints: [
+                  getConstraintByType('IK', 'IK.001', { targetId: 'a' }),
+                ],
               }),
             ],
           }),

@@ -60,7 +60,7 @@ function initializeBone(bone: Bone): Bone {
     constraints: bone.constraints
       ? bone.constraints
           .map((c) => migrateConstraint(c))
-          .map((c) => getConstraintByType(c.type, c.option))
+          .map((c) => getConstraintByType(c.type, c.name, c.option))
       : [],
   })
 }

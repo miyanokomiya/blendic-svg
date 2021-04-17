@@ -100,7 +100,7 @@ export default defineComponent({
     },
     boneTopMap: {
       type: Object as PropType<IdMap<number>>,
-      default: () => [],
+      default: () => ({}),
     },
     propsStateMap: {
       type: Object as PropType<IdMap<TargetPropsState>>,

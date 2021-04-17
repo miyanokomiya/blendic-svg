@@ -127,7 +127,12 @@ import LimitScaleOptionField from '/@/components/molecules/constraints/LimitScal
 import CopyLocationOptionField from '/@/components/molecules/constraints/CopyLocationOptionField.vue'
 import CopyRotationOptionField from '/@/components/molecules/constraints/CopyRotationOptionField.vue'
 import CopyScaleOptionField from '/@/components/molecules/constraints/CopyScaleOptionField.vue'
-import { getNotDuplicatedName, updateNameInList } from '/@/utils/relations'
+import {
+  getNotDuplicatedName,
+  shiftInList,
+  unshiftInList,
+  updateNameInList,
+} from '/@/utils/relations'
 
 const constraintNameMap: { [key in BoneConstraintType]: string } = {
   IK: 'IK',
@@ -214,23 +219,11 @@ export default defineComponent({
     }
 
     function upConstraint(index: number) {
-      if (index === 0) return
-
-      const constraints = props.constraints.concat()
-      const tmp = constraints[index - 1]
-      constraints[index - 1] = constraints[index]
-      constraints[index] = tmp
-      update(constraints)
+      update(unshiftInList(props.constraints, index))
     }
 
     function downConstraint(index: number) {
-      if (index === props.constraints.length - 1) return
-
-      const constraints = props.constraints.concat()
-      const tmp = constraints[index + 1]
-      constraints[index + 1] = constraints[index]
-      constraints[index] = tmp
-      update(constraints)
+      update(shiftInList(props.constraints, index))
     }
 
     return {

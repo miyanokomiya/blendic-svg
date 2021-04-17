@@ -57,3 +57,23 @@ export function updateNameInList<T extends { name: string }>(
 
   return ret
 }
+
+export function unshiftInList<T>(src: T[], index: number): T[] {
+  if (index <= 0 || src.length - 1 < index) return src
+
+  const ret = src.concat()
+  const tmp = ret[index - 1]
+  ret[index - 1] = ret[index]
+  ret[index] = tmp
+  return ret
+}
+
+export function shiftInList<T>(src: T[], index: number): T[] {
+  if (index < 0 || src.length - 1 <= index) return src
+
+  const ret = src.concat()
+  const tmp = ret[index + 1]
+  ret[index + 1] = ret[index]
+  ret[index] = tmp
+  return ret
+}

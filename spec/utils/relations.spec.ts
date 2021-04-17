@@ -61,4 +61,30 @@ describe('utils/relations', () => {
       expect(target.updateNameInList(src, 2, 'c')).toEqual(src)
     })
   })
+
+  describe('unshiftInList', () => {
+    it('should return new list with the target unshifted', () => {
+      const src = [1, 2, 3, 4]
+      expect(target.unshiftInList(src, -1)).toEqual([1, 2, 3, 4])
+      expect(target.unshiftInList(src, 0)).toEqual([1, 2, 3, 4])
+      expect(target.unshiftInList(src, 1)).toEqual([2, 1, 3, 4])
+      expect(target.unshiftInList(src, 2)).toEqual([1, 3, 2, 4])
+      expect(target.unshiftInList(src, 3)).toEqual([1, 2, 4, 3])
+      expect(target.unshiftInList(src, 4)).toEqual([1, 2, 3, 4])
+      expect(src).toEqual([1, 2, 3, 4])
+    })
+  })
+
+  describe('shiftInList', () => {
+    it('should return new list with the target shifted', () => {
+      const src = [1, 2, 3, 4]
+      expect(target.shiftInList(src, -1)).toEqual([1, 2, 3, 4])
+      expect(target.shiftInList(src, 0)).toEqual([2, 1, 3, 4])
+      expect(target.shiftInList(src, 1)).toEqual([1, 3, 2, 4])
+      expect(target.shiftInList(src, 2)).toEqual([1, 2, 4, 3])
+      expect(target.shiftInList(src, 3)).toEqual([1, 2, 3, 4])
+      expect(target.shiftInList(src, 4)).toEqual([1, 2, 3, 4])
+      expect(src).toEqual([1, 2, 3, 4])
+    })
+  })
 })

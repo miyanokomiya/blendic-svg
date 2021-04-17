@@ -27,7 +27,7 @@ import {
 } from '/@/models'
 import { getKeyframeBone } from '/@/models/keyframe'
 import { initialize } from '/@/models/strage'
-import { getConstraintByType } from '/@/utils/constraints'
+import { getConstraint } from '/@/utils/constraints'
 
 describe('src/models/strage.ts', () => {
   describe('initialize', () => {
@@ -69,7 +69,12 @@ describe('src/models/strage.ts', () => {
               getBone({
                 id: 'bone_2',
                 constraints: [
-                  getConstraintByType('IK', 'IK.001', { targetId: 'a' }),
+                  getConstraint({
+                    id: expect.anything(),
+                    type: 'IK',
+                    name: 'IK.001',
+                    option: { targetId: 'a' },
+                  }),
                 ],
               }),
             ],

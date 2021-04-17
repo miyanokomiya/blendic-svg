@@ -19,15 +19,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/panelContents/ConstraintList.vue'
-import { getConstraintByType } from '/@/utils/constraints'
+import { getConstraint } from '/@/utils/constraints'
 
 describe('/@/src/components/molecules/constraints/ConstraintList.vue', () => {
   it('snapshot', () => {
     const wrapper = mount(Target, {
       props: {
         constraints: [
-          getConstraintByType('IK'),
-          getConstraintByType('LIMIT_ROTATION'),
+          getConstraint({ type: 'IK' }),
+          getConstraint({ type: 'LIMIT_ROTATION' }),
         ],
         boneOptions: [
           { value: 'a', label: 'bone_a' },

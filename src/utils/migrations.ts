@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { IVec2 } from 'okageo'
+import { v4 } from 'uuid'
 import { Transform } from '/@/models'
 import {
   CurveBase,
@@ -166,16 +167,28 @@ function isCurve3(c: OldCurve3 | CurveBase): c is OldCurve3 {
 }
 
 export function migrateConstraint(src: BoneConstraint): BoneConstraint {
-  return migrateConstraint4(src)
+  return migrateConstraint5(migrateConstraint4(src))
 }
 
 export function migrateConstraint4(
-  src: Omit<BoneConstraint, 'type'> & { type?: BoneConstraintType }
-): BoneConstraint {
+  src: Omit<BoneConstraint, 'type' | 'id'> & {
+    type?: BoneConstraintType
+  }
+): Omit<BoneConstraint, 'id'> {
   if (src.type) return src as BoneConstraint
   return {
     type: src.name as BoneConstraintType,
     name: src.name,
     option: src.option,
+  }
+}
+
+export function migrateConstraint5(
+  src: Omit<BoneConstraint, 'id'> & { id?: string }
+): BoneConstraint {
+  if (src.id) return src as BoneConstraint
+  return {
+    ...src,
+    id: v4(),
   }
 }

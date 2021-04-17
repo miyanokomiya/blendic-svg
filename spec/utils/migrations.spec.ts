@@ -19,10 +19,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { getTransform } from '/@/models'
 import { getCurve, getKeyframePoint } from '/@/models/keyframe'
-import { getConstraintByType } from '/@/utils/constraints'
+import { getConstraint } from '/@/utils/constraints'
 import {
   migrateConstraint,
   migrateConstraint4,
+  migrateConstraint5,
   migrateKeyframe,
 } from '/@/utils/migrations'
 
@@ -108,14 +109,14 @@ describe('src/utils/migrations.ts', () => {
 
   describe('migrateConstraint', () => {
     it('should return identity model if src is the latest model', () => {
-      const src = getConstraintByType('IK')
+      const src = getConstraint({ type: 'IK' }, true)
       expect(migrateConstraint(src)).toEqual(src)
     })
   })
 
   describe('migrateConstraint4', () => {
     it('should set type if it is undefined', () => {
-      const src = getConstraintByType('IK')
+      const src = getConstraint({ type: 'IK' })
       expect(
         migrateConstraint4({
           name: src.type,
@@ -128,18 +129,30 @@ describe('src/utils/migrations.ts', () => {
       })
     })
     it('should not replace type if it is defined', () => {
-      const src = getConstraintByType('IK')
-      expect(
-        migrateConstraint4({
-          type: src.type,
-          name: 'name',
-          option: src.option,
-        })
-      ).toEqual({
+      const src = getConstraint({ type: 'IK' })
+      expect(migrateConstraint4(src)).toEqual(src)
+    })
+  })
+
+  describe('migrateConstraint5', () => {
+    it('should set id if it is undefined', () => {
+      const src = getConstraint({ type: 'IK' })
+      const { id, ...others } = migrateConstraint5({
         type: src.type,
-        name: 'name',
+        name: src.type,
         option: src.option,
       })
+
+      expect(id).toBeTruthy()
+      expect(others).toEqual({
+        type: src.type,
+        name: src.type,
+        option: src.option,
+      })
+    })
+    it('should not replace id if it is defined', () => {
+      const src = getConstraint({ id: 'a', type: 'IK' })
+      expect(migrateConstraint5(src)).toEqual(src)
     })
   })
 })

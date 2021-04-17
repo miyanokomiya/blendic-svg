@@ -30,7 +30,7 @@ import {
   getBElement,
 } from '../models'
 import { KeyframeBone } from '/@/models/keyframe'
-import { getConstraintByType } from '/@/utils/constraints'
+import { getConstraint } from '/@/utils/constraints'
 import { migrateConstraint, migrateKeyframe } from '/@/utils/migrations'
 
 export interface StrageRoot {
@@ -60,7 +60,7 @@ function initializeBone(bone: Bone): Bone {
     constraints: bone.constraints
       ? bone.constraints
           .map((c) => migrateConstraint(c))
-          .map((c) => getConstraintByType(c.type, c.name, c.option))
+          .map((c) => getConstraint(c))
       : [],
   })
 }

@@ -113,7 +113,7 @@ import {
   BoneConstraint,
   BoneConstraintType,
   BoneConstraintOption,
-  getConstraintByType,
+  getConstraint,
 } from '/@/utils/constraints'
 import SelectButton from '/@/components/atoms/SelectButton.vue'
 import TextInput from '/@/components/atoms/TextInput.vue'
@@ -190,7 +190,7 @@ export default defineComponent({
     }
 
     function addConstraint(type: BoneConstraintType) {
-      const created = getConstraintByType(type)
+      const created = getConstraint({ type }, true)
       created.name = getNotDuplicatedName(
         constraintNameMap[created.type],
         props.constraints.map((c) => c.name)

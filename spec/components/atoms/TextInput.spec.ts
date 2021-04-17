@@ -18,20 +18,21 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { mount } from '@vue/test-utils'
-import Target from '/@/components/molecules/constraints/CopyScaleOptionField.vue'
-import { getOptionByType } from '/@/utils/constraints'
+import Target from '/@/components/atoms/TextInput.vue'
 
-describe('/@/src/components/molecules/constraints/CopyScaleOptionField.vue', () => {
-  it('snapshot', () => {
-    const wrapper = mount(Target, {
-      props: {
-        modelValue: getOptionByType('COPY_SCALE'),
-        boneOptions: [
-          { value: 'a', label: 'bone_a' },
-          { value: 'b', label: 'bone_b' },
-        ],
-      },
+describe('src/components/atoms/TextInput.vue', () => {
+  describe('snapshot', () => {
+    it('default', () => {
+      const wrapper = mount(Target, {
+        props: { modelValue: 'text' },
+      })
+      expect(wrapper.element).toMatchSnapshot()
     })
-    expect(wrapper.element).toMatchSnapshot()
+    it('disabled', () => {
+      const wrapper = mount(Target, {
+        props: { modelValue: 'text', disabled: true },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 })

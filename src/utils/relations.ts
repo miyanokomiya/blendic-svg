@@ -27,11 +27,53 @@ function increaseSuffix(src: string): string {
   })
 }
 
-export function getNextName(src: string, names: string[]): string {
+export function getNotDuplicatedName(src: string, names: string[]): string {
   const nameMap = new Map(names.map((n) => [n, true]))
+  if (!nameMap.has(src)) return src
+
   let result = increaseSuffix(src)
   while (nameMap.has(result)) {
     result = increaseSuffix(result)
   }
   return result
+}
+
+export function updateNameInList<T extends { name: string }>(
+  src: T[],
+  index: number,
+  name: string
+): T[] {
+  const ret = src.concat()
+  const target = ret[index]
+  if (!target || target.name === name) return src
+
+  ret[index] = {
+    ...target,
+    name: getNotDuplicatedName(
+      name,
+      ret.map((c) => c.name)
+    ),
+  }
+
+  return ret
+}
+
+export function unshiftInList<T>(src: T[], index: number): T[] {
+  if (index <= 0 || src.length - 1 < index) return src
+
+  const ret = src.concat()
+  const tmp = ret[index - 1]
+  ret[index - 1] = ret[index]
+  ret[index] = tmp
+  return ret
+}
+
+export function shiftInList<T>(src: T[], index: number): T[] {
+  if (index < 0 || src.length - 1 <= index) return src
+
+  const ret = src.concat()
+  const tmp = ret[index + 1]
+  ret[index + 1] = ret[index]
+  ret[index] = tmp
+  return ret
 }

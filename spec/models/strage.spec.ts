@@ -27,7 +27,7 @@ import {
 } from '/@/models'
 import { getKeyframeBone } from '/@/models/keyframe'
 import { initialize } from '/@/models/strage'
-import { getConstraintByName } from '/@/utils/constraints'
+import { getConstraintByType } from '/@/utils/constraints'
 
 describe('src/models/strage.ts', () => {
   describe('initialize', () => {
@@ -40,7 +40,9 @@ describe('src/models/strage.ts', () => {
               { id: 'bone' },
               {
                 id: 'bone_2',
-                constraints: [{ name: 'IK', option: { targetId: 'a' } }],
+                constraints: [
+                  { type: 'IK', name: 'IK.001', option: { targetId: 'a' } },
+                ],
               },
             ],
           },
@@ -66,7 +68,9 @@ describe('src/models/strage.ts', () => {
               getBone({ id: 'bone' }),
               getBone({
                 id: 'bone_2',
-                constraints: [getConstraintByName('IK', { targetId: 'a' })],
+                constraints: [
+                  getConstraintByType('IK', 'IK.001', { targetId: 'a' }),
+                ],
               }),
             ],
           }),

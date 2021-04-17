@@ -19,13 +19,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/molecules/constraints/IKOptionField.vue'
-import { getOptionByName } from '/@/utils/constraints'
+import { getOptionByType } from '/@/utils/constraints'
 
 describe('/@/src/components/molecules/constraints/IKOptionField.vue', () => {
   it('snapshot', () => {
     const wrapper = mount(Target, {
       props: {
-        modelValue: getOptionByName('IK'),
+        modelValue: getOptionByType('IK'),
         boneOptions: [
           { value: 'a', label: 'bone_a' },
           { value: 'b', label: 'bone_b' },

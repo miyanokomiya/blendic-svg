@@ -19,13 +19,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/molecules/constraints/LimitLocationOptionField.vue'
-import { getOptionByName } from '/@/utils/constraints'
+import { getOptionByType } from '/@/utils/constraints'
 
 describe('/@/src/components/molecules/constraints/LimitLocationOptionField.vue', () => {
   it('snapshot', () => {
     const wrapper = mount(Target, {
       props: {
-        modelValue: getOptionByName('LIMIT_LOCATION'),
+        modelValue: getOptionByType('LIMIT_LOCATION'),
       },
     })
     expect(wrapper.element).toMatchSnapshot()

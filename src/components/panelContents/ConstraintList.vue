@@ -21,12 +21,15 @@ Copyright (C) 2021, Tomoya Komiyama.
   <InlineField label="Constraints">
     <SelectButton
       :options="constraintOptions"
-      @select="setBoneConstraintName"
+      @select="setBoneConstraintType"
     />
   </InlineField>
   <div v-for="(c, i) in constraints" :key="i" class="constraints-item">
     <div class="constraint-header">
-      <p class="name">{{ constraintNameMap[c.name] }}</p>
+      <TextInput
+        :model-value="c.name"
+        @update:modelValue="(val) => updateName(i, val)"
+      />
       <button :disabled="i === 0" type="button" @click="upConstraint(i)">
         <UpIcon class="icon" />
       </button>
@@ -41,7 +44,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <DeleteIcon class="icon" />
       </button>
     </div>
-    <template v-if="c.name === 'IK'">
+    <template v-if="c.type === 'IK'">
       <IKOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
@@ -50,7 +53,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'LIMIT_LOCATION'">
+    <template v-else-if="c.type === 'LIMIT_LOCATION'">
       <LimitLocationOptionField
         :model-value="c.option"
         @update:modelValue="
@@ -58,7 +61,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'LIMIT_ROTATION'">
+    <template v-else-if="c.type === 'LIMIT_ROTATION'">
       <LimitRotationOptionField
         :model-value="c.option"
         @update:modelValue="
@@ -66,7 +69,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'LIMIT_SCALE'">
+    <template v-else-if="c.type === 'LIMIT_SCALE'">
       <LimitScaleOptionField
         :model-value="c.option"
         @update:modelValue="
@@ -74,7 +77,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'COPY_LOCATION'">
+    <template v-else-if="c.type === 'COPY_LOCATION'">
       <CopyLocationOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
@@ -83,7 +86,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'COPY_ROTATION'">
+    <template v-else-if="c.type === 'COPY_ROTATION'">
       <CopyRotationOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
@@ -92,7 +95,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         "
       />
     </template>
-    <template v-else-if="c.name === 'COPY_SCALE'">
+    <template v-else-if="c.type === 'COPY_SCALE'">
       <CopyScaleOptionField
         :model-value="c.option"
         :bone-options="boneOptions"
@@ -108,11 +111,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import {
   BoneConstraint,
-  BoneConstraintName,
+  BoneConstraintType,
   BoneConstraintOption,
-  getConstraintByName,
+  getConstraintByType,
 } from '/@/utils/constraints'
 import SelectButton from '/@/components/atoms/SelectButton.vue'
+import TextInput from '/@/components/atoms/TextInput.vue'
 import UpIcon from '/@/components/atoms/UpIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
@@ -123,10 +127,27 @@ import LimitScaleOptionField from '/@/components/molecules/constraints/LimitScal
 import CopyLocationOptionField from '/@/components/molecules/constraints/CopyLocationOptionField.vue'
 import CopyRotationOptionField from '/@/components/molecules/constraints/CopyRotationOptionField.vue'
 import CopyScaleOptionField from '/@/components/molecules/constraints/CopyScaleOptionField.vue'
+import {
+  getNotDuplicatedName,
+  shiftInList,
+  unshiftInList,
+  updateNameInList,
+} from '/@/utils/relations'
+
+const constraintNameMap: { [key in BoneConstraintType]: string } = {
+  IK: 'IK',
+  LIMIT_LOCATION: 'Limit Location',
+  LIMIT_ROTATION: 'Limit Rotation',
+  LIMIT_SCALE: 'Limit Scale',
+  COPY_LOCATION: 'Copy Location',
+  COPY_ROTATION: 'Copy Rotation',
+  COPY_SCALE: 'Copy Scale',
+} as const
 
 export default defineComponent({
   components: {
     SelectButton,
+    TextInput,
     UpIcon,
     DeleteIcon,
     InlineField,
@@ -150,30 +171,16 @@ export default defineComponent({
   },
   emits: ['update'],
   setup(props, { emit }) {
-    const constraintNameMap = computed<{ [key in BoneConstraintName]: string }>(
-      () => {
-        return {
-          IK: 'IK',
-          LIMIT_LOCATION: 'Limit Location',
-          LIMIT_ROTATION: 'Limit Rotation',
-          LIMIT_SCALE: 'Limit Scale',
-          COPY_LOCATION: 'Copy Location',
-          COPY_ROTATION: 'Copy Rotation',
-          COPY_SCALE: 'Copy Scale',
-        }
-      }
-    )
-
     const constraintOptions = computed<
-      { value: BoneConstraintName; label: string }[]
+      { value: BoneConstraintType; label: string }[]
     >(() => {
-      return Object.keys(constraintNameMap.value).map((key) => ({
-        value: key as BoneConstraintName,
-        label: constraintNameMap.value[key as BoneConstraintName],
+      return Object.keys(constraintNameMap).map((key) => ({
+        value: key as BoneConstraintType,
+        label: constraintNameMap[key as BoneConstraintType],
       }))
     })
 
-    function setBoneConstraintName(val: BoneConstraintName) {
+    function setBoneConstraintType(val: BoneConstraintType) {
       if (!val) return
       addConstraint(val)
     }
@@ -182,8 +189,13 @@ export default defineComponent({
       emit('update', constraints, seriesKey)
     }
 
-    function addConstraint(name: BoneConstraintName) {
-      update([...props.constraints, getConstraintByName(name)])
+    function addConstraint(type: BoneConstraintType) {
+      const created = getConstraintByType(type)
+      created.name = getNotDuplicatedName(
+        constraintNameMap[created.type],
+        props.constraints.map((c) => c.name)
+      )
+      update([...props.constraints, created])
     }
 
     function updateConstraint(
@@ -202,31 +214,23 @@ export default defineComponent({
       update(constraints)
     }
 
-    function upConstraint(index: number) {
-      if (index === 0) return
+    function updateName(index: number, name: string) {
+      update(updateNameInList(props.constraints, index, name))
+    }
 
-      const constraints = props.constraints.concat()
-      const tmp = constraints[index - 1]
-      constraints[index - 1] = constraints[index]
-      constraints[index] = tmp
-      update(constraints)
+    function upConstraint(index: number) {
+      update(unshiftInList(props.constraints, index))
     }
 
     function downConstraint(index: number) {
-      if (index === props.constraints.length - 1) return
-
-      const constraints = props.constraints.concat()
-      const tmp = constraints[index + 1]
-      constraints[index + 1] = constraints[index]
-      constraints[index] = tmp
-      update(constraints)
+      update(shiftInList(props.constraints, index))
     }
 
     return {
-      constraintNameMap,
       constraintOptions,
-      setBoneConstraintName,
+      setBoneConstraintType,
       deleteConstraint,
+      updateName,
       updateConstraint,
       upConstraint,
       downConstraint,
@@ -247,7 +251,7 @@ export default defineComponent({
     align-items: center;
     justify-content: flex-end;
     > button {
-      margin-left: 6px;
+      margin-left: 4px;
       border-radius: 8px;
       width: 18px;
       height: 18px;
@@ -262,6 +266,7 @@ export default defineComponent({
       margin-right: auto;
       font-size: 14px;
       font-weight: 600;
+      text-align: left;
     }
   }
 }

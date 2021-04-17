@@ -27,7 +27,7 @@ import * as copyScale from './copyScale'
 import { Bone, IdMap, toMap } from '/@/models'
 import { dropMap, mapFilter, mapReduce, sumReduce } from '/@/utils/commons'
 
-export type BoneConstraintName =
+export type BoneConstraintType =
   | 'IK'
   | 'LIMIT_LOCATION'
   | 'LIMIT_ROTATION'
@@ -46,12 +46,13 @@ export interface BoneConstraintOptions {
   COPY_SCALE: copyScale.Option
 }
 
-interface _BoneConstraint<N extends BoneConstraintName> {
-  name: N
+interface _BoneConstraint<N extends BoneConstraintType> {
+  type: N
+  name: string
   option: BoneConstraintOptions[N]
 }
-export type BoneConstraint = _BoneConstraint<BoneConstraintName>
-export type BoneConstraintOption = BoneConstraintOptions[BoneConstraintName]
+export type BoneConstraint = _BoneConstraint<BoneConstraintType>
+export type BoneConstraintOption = BoneConstraintOptions[BoneConstraintType]
 
 interface BoneConstraintModule {
   apply(
@@ -65,8 +66,8 @@ interface BoneConstraintModule {
   getDependentCountMap(option: BoneConstraintOption): IdMap<number>
 }
 
-function getConstraintModule(name: BoneConstraintName): BoneConstraintModule {
-  switch (name) {
+function getConstraintModule(type: BoneConstraintType): BoneConstraintModule {
+  switch (type) {
     case 'IK':
       return ik
     case 'LIMIT_LOCATION':
@@ -90,7 +91,7 @@ function applyConstraint(
   constraint: BoneConstraint,
   boneId: string
 ): IdMap<Bone> {
-  return getConstraintModule(constraint.name).apply(
+  return getConstraintModule(constraint.type).apply(
     boneId,
     constraint.option,
     localMap,
@@ -121,34 +122,36 @@ export function immigrateConstraints(
   return constraints.map((src) => {
     return {
       ...src,
-      option: immigrateOption(duplicatedIdMap, src.name, src.option),
+      option: immigrateOption(duplicatedIdMap, src.type, src.option),
     }
   })
 }
 
 function immigrateOption(
   duplicatedIdMap: IdMap<string>,
-  name: BoneConstraintName,
+  type: BoneConstraintType,
   option: BoneConstraintOption
 ): BoneConstraintOption {
-  return getConstraintModule(name).immigrate(duplicatedIdMap, option)
+  return getConstraintModule(type).immigrate(duplicatedIdMap, option)
 }
 
-export function getConstraintByName(
-  name: BoneConstraintName,
-  src: Partial<BoneConstraintOption> = {}
+export function getConstraintByType(
+  type: BoneConstraintType,
+  name: string = '',
+  opsion: Partial<BoneConstraintOption> = {}
 ): BoneConstraint {
   return {
-    name,
-    option: getOptionByName(name, src),
+    type,
+    name: name || type,
+    option: getOptionByType(type, opsion),
   }
 }
 
-export function getOptionByName(
-  name: BoneConstraintName,
+export function getOptionByType(
+  type: BoneConstraintType,
   src: Partial<BoneConstraintOption> = {}
 ): BoneConstraintOption {
-  return getConstraintModule(name).getOption(src)
+  return getConstraintModule(type).getOption(src)
 }
 
 export function sortBoneByHighDependency(bones: Bone[]): Bone[] {
@@ -175,7 +178,7 @@ function getDependentCountMap(boneMap: IdMap<Bone>): IdMap<IdMap<number>> {
 function getDependentCountMapOfConstrain(
   constraint: BoneConstraint
 ): IdMap<number> {
-  return getConstraintModule(constraint.name).getDependentCountMap(
+  return getConstraintModule(constraint.type).getDependentCountMap(
     constraint.option
   )
 }

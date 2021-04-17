@@ -73,11 +73,16 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
     <div
       class="constraint-header"
     >
-      <p
-        class="name"
+      <div
+        class="input-wrapper"
       >
-        IK
-      </p>
+        <input
+          type="text"
+        />
+        <div
+          class="input-forward"
+        />
+      </div>
       <button
         disabled=""
         type="button"
@@ -299,11 +304,16 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
     <div
       class="constraint-header"
     >
-      <p
-        class="name"
+      <div
+        class="input-wrapper"
       >
-        Limit Rotation
-      </p>
+        <input
+          type="text"
+        />
+        <div
+          class="input-forward"
+        />
+      </div>
       <button
         type="button"
       >

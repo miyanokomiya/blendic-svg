@@ -54,7 +54,7 @@ import {
   symmetrizeName,
   toList,
 } from './commons'
-import { getNextName } from './relations'
+import { getNotDuplicatedName } from './relations'
 import {
   applyBoneConstraints,
   immigrateConstraints,
@@ -495,7 +495,7 @@ export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
         const b = {
           ...src,
           id: duplicatedIdMap[src.id],
-          name: getNextName(src.name, names),
+          name: getNotDuplicatedName(src.name, names),
         }
         names.push(b.name)
         return b

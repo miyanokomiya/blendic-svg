@@ -19,7 +19,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { getTransform } from '/@/models'
 import { getCurve, getKeyframePoint } from '/@/models/keyframe'
-import { migrateKeyframe } from '/@/utils/migrations'
+import { getConstraintByType } from '/@/utils/constraints'
+import {
+  migrateConstraint,
+  migrateConstraint4,
+  migrateKeyframe,
+} from '/@/utils/migrations'
 
 describe('src/utils/migrations.ts', () => {
   describe('migrateKeyframe', () => {
@@ -97,6 +102,43 @@ describe('src/utils/migrations.ts', () => {
             curve: getCurve('bezier3'),
           }),
         },
+      })
+    })
+  })
+
+  describe('migrateConstraint', () => {
+    it('should return identity model if src is the latest model', () => {
+      const src = getConstraintByType('IK')
+      expect(migrateConstraint(src)).toEqual(src)
+    })
+  })
+
+  describe('migrateConstraint4', () => {
+    it('should set type if it is undefined', () => {
+      const src = getConstraintByType('IK')
+      expect(
+        migrateConstraint4({
+          name: src.type,
+          option: src.option,
+        })
+      ).toEqual({
+        type: src.type,
+        name: src.type,
+        option: src.option,
+      })
+    })
+    it('should not replace type if it is defined', () => {
+      const src = getConstraintByType('IK')
+      expect(
+        migrateConstraint4({
+          type: src.type,
+          name: 'name',
+          option: src.option,
+        })
+      ).toEqual({
+        type: src.type,
+        name: 'name',
+        option: src.option,
       })
     })
   })

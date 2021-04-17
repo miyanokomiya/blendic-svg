@@ -20,22 +20,71 @@ Copyright (C) 2021, Tomoya Komiyama.
 import * as target from '../../src/utils/relations'
 
 describe('utils/relations', () => {
-  describe('getNextName', () => {
+  describe('getNotDuplicatedName', () => {
     it.each([
-      ['name', [], 'name.001'],
-      ['name.001', [], 'name.002'],
-      ['name.009', [], 'name.010'],
-      ['name.010', [], 'name.011'],
-      ['name.999', [], 'name.1000'],
-      ['name.1000', [], 'name.1001'],
+      ['name', [], 'name'],
+      ['name', ['name'], 'name.001'],
+      ['name', ['name', 'name.001'], 'name.002'],
+      ['name.009', ['name.009'], 'name.010'],
+      ['name.010', ['name.010'], 'name.011'],
     ])('src: %s, names: %s) => %s', (a, b, expected) => {
-      expect(target.getNextName(a, b)).toBe(expected)
+      expect(target.getNotDuplicatedName(a, b)).toBe(expected)
     })
-    it.each([
-      ['name', ['name.001'], 'name.002'],
-      ['name.001', ['name.002', 'name.003'], 'name.004'],
-    ])('src: %s, names: %s) => %s', (a, b, expected) => {
-      expect(target.getNextName(a, b)).toBe(expected)
+  })
+
+  describe('updateNameInList', () => {
+    it('should not edit src list', () => {
+      const src = [{ name: 'a' }, { name: 'b' }]
+      target.updateNameInList(src, 1, 'c')
+      expect(src).toEqual([{ name: 'a' }, { name: 'b' }])
+    })
+    it('should return new list with updated', () => {
+      const src = [{ name: 'a' }, { name: 'b' }]
+      expect(target.updateNameInList(src, 1, 'c')).toEqual([
+        { name: 'a' },
+        { name: 'c' },
+      ])
+    })
+    it('should avoid duplicated name', () => {
+      const src = [{ name: 'a' }, { name: 'b' }]
+      expect(target.updateNameInList(src, 1, 'b')).toEqual([
+        { name: 'a' },
+        { name: 'b' },
+      ])
+      expect(target.updateNameInList(src, 1, 'a')).toEqual([
+        { name: 'a' },
+        { name: 'a.001' },
+      ])
+    })
+    it('should return same list if target is not found', () => {
+      const src = [{ name: 'a' }, { name: 'b' }]
+      expect(target.updateNameInList(src, 2, 'c')).toEqual(src)
+    })
+  })
+
+  describe('unshiftInList', () => {
+    it('should return new list with the target unshifted', () => {
+      const src = [1, 2, 3, 4]
+      expect(target.unshiftInList(src, -1)).toEqual([1, 2, 3, 4])
+      expect(target.unshiftInList(src, 0)).toEqual([1, 2, 3, 4])
+      expect(target.unshiftInList(src, 1)).toEqual([2, 1, 3, 4])
+      expect(target.unshiftInList(src, 2)).toEqual([1, 3, 2, 4])
+      expect(target.unshiftInList(src, 3)).toEqual([1, 2, 4, 3])
+      expect(target.unshiftInList(src, 4)).toEqual([1, 2, 3, 4])
+      expect(src).toEqual([1, 2, 3, 4])
+    })
+  })
+
+  describe('shiftInList', () => {
+    it('should return new list with the target shifted', () => {
+      const src = [1, 2, 3, 4]
+      expect(target.shiftInList(src, -1)).toEqual([1, 2, 3, 4])
+      expect(target.shiftInList(src, 0)).toEqual([2, 1, 3, 4])
+      expect(target.shiftInList(src, 1)).toEqual([1, 3, 2, 4])
+      expect(target.shiftInList(src, 2)).toEqual([1, 2, 4, 3])
+      expect(target.shiftInList(src, 3)).toEqual([1, 2, 3, 4])
+      expect(target.shiftInList(src, 4)).toEqual([1, 2, 3, 4])
+      expect(src).toEqual([1, 2, 3, 4])
     })
   })
 })

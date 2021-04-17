@@ -761,7 +761,7 @@ describe('utils/armatures', () => {
           b: getBone({ id: 'b', name: 'b' }),
           a: getBone({ id: 'a', name: 'aa' }),
         },
-        ['b', 'aa.001']
+        ['b', 'aa', 'aa.001']
       )
       expect(ret.length).toBe(2)
       expect(ret[0].id).not.toBe('a')

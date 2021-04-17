@@ -26,7 +26,7 @@ Copyright (C) 2021, Tomoya Komiyama.
   </InlineField>
   <div v-for="(c, i) in constraints" :key="i" class="constraints-item">
     <div class="constraint-header">
-      <p class="name">{{ constraintNameMap[c.type] }}</p>
+      <p class="name">{{ c.name }}</p>
       <button :disabled="i === 0" type="button" @click="upConstraint(i)">
         <UpIcon class="icon" />
       </button>
@@ -123,6 +123,17 @@ import LimitScaleOptionField from '/@/components/molecules/constraints/LimitScal
 import CopyLocationOptionField from '/@/components/molecules/constraints/CopyLocationOptionField.vue'
 import CopyRotationOptionField from '/@/components/molecules/constraints/CopyRotationOptionField.vue'
 import CopyScaleOptionField from '/@/components/molecules/constraints/CopyScaleOptionField.vue'
+import { getNotDuplicatedName } from '/@/utils/relations'
+
+const constraintNameMap: { [key in BoneConstraintType]: string } = {
+  IK: 'IK',
+  LIMIT_LOCATION: 'Limit Location',
+  LIMIT_ROTATION: 'Limit Rotation',
+  LIMIT_SCALE: 'Limit Scale',
+  COPY_LOCATION: 'Copy Location',
+  COPY_ROTATION: 'Copy Rotation',
+  COPY_SCALE: 'Copy Scale',
+} as const
 
 export default defineComponent({
   components: {
@@ -150,26 +161,12 @@ export default defineComponent({
   },
   emits: ['update'],
   setup(props, { emit }) {
-    const constraintNameMap = computed<{ [key in BoneConstraintType]: string }>(
-      () => {
-        return {
-          IK: 'IK',
-          LIMIT_LOCATION: 'Limit Location',
-          LIMIT_ROTATION: 'Limit Rotation',
-          LIMIT_SCALE: 'Limit Scale',
-          COPY_LOCATION: 'Copy Location',
-          COPY_ROTATION: 'Copy Rotation',
-          COPY_SCALE: 'Copy Scale',
-        }
-      }
-    )
-
     const constraintOptions = computed<
       { value: BoneConstraintType; label: string }[]
     >(() => {
-      return Object.keys(constraintNameMap.value).map((key) => ({
+      return Object.keys(constraintNameMap).map((key) => ({
         value: key as BoneConstraintType,
-        label: constraintNameMap.value[key as BoneConstraintType],
+        label: constraintNameMap[key as BoneConstraintType],
       }))
     })
 
@@ -183,7 +180,12 @@ export default defineComponent({
     }
 
     function addConstraint(type: BoneConstraintType) {
-      update([...props.constraints, getConstraintByType(type)])
+      const created = getConstraintByType(type)
+      created.name = getNotDuplicatedName(
+        constraintNameMap[created.type],
+        props.constraints.map((c) => c.name)
+      )
+      update([...props.constraints, created])
     }
 
     function updateConstraint(
@@ -223,7 +225,6 @@ export default defineComponent({
     }
 
     return {
-      constraintNameMap,
       constraintOptions,
       setBoneConstraintType,
       deleteConstraint,
@@ -262,6 +263,7 @@ export default defineComponent({
       margin-right: auto;
       font-size: 14px;
       font-weight: 600;
+      text-align: left;
     }
   }
 }

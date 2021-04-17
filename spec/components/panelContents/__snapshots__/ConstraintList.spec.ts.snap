@@ -302,7 +302,7 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
       <p
         class="name"
       >
-        Limit Rotation
+        LIMIT_ROTATION
       </p>
       <button
         type="button"

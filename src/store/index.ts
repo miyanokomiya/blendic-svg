@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { reactive, computed, watch } from 'vue'
-import { getNextName } from '/@/utils/relations'
+import { getNotDuplicatedName } from '/@/utils/relations'
 import {
   Armature,
   BoneSelectedState,
@@ -199,7 +199,7 @@ function addArmature() {
   const item = getAddArmatureItem(
     getArmature(
       {
-        name: getNextName(
+        name: getNotDuplicatedName(
           'armature',
           state.armatures.map((a) => a.name)
         ),
@@ -271,7 +271,7 @@ function addBone() {
   addBones([
     getBone(
       {
-        name: getNextName(
+        name: getNotDuplicatedName(
           'bone',
           lastSelectedArmature.value.bones.map((a) => a.name)
         ),

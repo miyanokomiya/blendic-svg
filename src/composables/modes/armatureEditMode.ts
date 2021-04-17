@@ -39,7 +39,7 @@ import {
   selectBoneInRect,
   symmetrizeBones,
 } from '/@/utils/armatures'
-import { getNextName } from '/@/utils/relations'
+import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { mapReduce } from '/@/utils/commons'
@@ -119,7 +119,7 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
           bones.forEach((b) => {
             // prevent to extruding from same parent
             if (!shouldSkipBones[b.parentId]) {
-              b.name = getNextName(parent.name, names)
+              b.name = getNotDuplicatedName(parent.name, names)
               extrudedBones.push(b)
               names.push(b.name)
               shouldSkipBones[b.parentId] = true

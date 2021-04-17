@@ -27,8 +27,10 @@ function increaseSuffix(src: string): string {
   })
 }
 
-export function getNextName(src: string, names: string[]): string {
+export function getNotDuplicatedName(src: string, names: string[]): string {
   const nameMap = new Map(names.map((n) => [n, true]))
+  if (!nameMap.has(src)) return src
+
   let result = increaseSuffix(src)
   while (nameMap.has(result)) {
     result = increaseSuffix(result)

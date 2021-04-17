@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { v4 } from 'uuid'
 import { IdMap, toMap } from '/@/models'
-import { getNextName } from '/@/utils/relations'
+import { getNotDuplicatedName } from '/@/utils/relations'
 
 export function toKeyMap<T extends object>(
   list: T[],
@@ -171,7 +171,7 @@ export function getUnduplicatedNameMap(
   const allNames = originalNames.concat()
   return newNames.reduce<{ [name: string]: string }>((p, n) => {
     if (allNames.includes(n)) {
-      p[n] = getNextName(n, allNames)
+      p[n] = getNotDuplicatedName(n, allNames)
     } else {
       p[n] = n
     }

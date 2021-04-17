@@ -46,7 +46,7 @@ import {
   toList,
   uniq,
 } from '../utils/commons'
-import { getNextName } from '../utils/relations'
+import { getNotDuplicatedName } from '../utils/relations'
 import { useHistoryStore } from './history'
 import { makeRefAccessors } from '/@/composables/commons'
 import {
@@ -298,7 +298,7 @@ function addAction() {
       actions.state,
       getAction(
         {
-          name: getNextName(
+          name: getNotDuplicatedName(
             'action',
             actions.state.list.map((a) => a.name)
           ),

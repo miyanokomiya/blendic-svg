@@ -106,7 +106,7 @@ export default defineComponent({
     },
     boneTopMap: {
       type: Object as PropType<IdMap<number>>,
-      default: () => [],
+      default: () => ({}),
     },
   },
   emits: ['select', 'shift-select', 'select-frame', 'shift-select-frame'],

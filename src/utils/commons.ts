@@ -300,3 +300,10 @@ export function mergeOrDropMap<T>(
 export function uniq<T>(src: T[]): T[] {
   return Array.from(new Set(src))
 }
+
+export function resetId<T extends { id: string }>(src: T): T {
+  return {
+    ...src,
+    id: v4(),
+  }
+}

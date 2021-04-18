@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { v4 } from 'uuid'
 import { IVec2 } from 'okageo'
 
-export type KeyframeName = 'bone'
+export type KeyframeName = 'bone' | 'constraint'
 
 export interface KeyframeBase {
   id: string
@@ -46,14 +46,18 @@ export type KeyframeBonePropKey =
   | 'scaleY'
 
 export interface KeyframeBone extends KeyframeBase {
+  name: 'bone'
   points: {
     [key in KeyframeBonePropKey]?: KeyframePoint
   }
 }
 
-export interface KeyframeBoneProps<T> extends KeyframeBaseProps<T> {
-  props: {
-    [key in KeyframeBonePropKey]?: T
+export type KeyframeConstraintPropKey = 'influence'
+
+export interface KeyframeConstraint extends KeyframeBase {
+  name: 'constraint'
+  points: {
+    [key in KeyframeConstraintPropKey]?: KeyframePoint
   }
 }
 
@@ -64,6 +68,11 @@ export interface KeyframeBoneSameRange extends KeyframeBaseSameRange {
     [key in KeyframeBonePropKey]?: number
   }
 }
+
+export type KeyframeStatus = '' | 'enabled' | 'checked'
+
+export interface KeyframePropsStatus
+  extends KeyframeBaseProps<KeyframeStatus> {}
 
 export type CurveName = 'constant' | 'linear' | 'bezier3'
 
@@ -95,6 +104,21 @@ export function getKeyframeBone(
     frame: 0,
     targetId: '',
     name: 'bone',
+    points: {},
+    ...arg,
+    id,
+  }
+}
+
+export function getKeyframeConstraint(
+  arg: Partial<KeyframeConstraint> = {},
+  generateId = false
+): KeyframeConstraint {
+  const id = generateId ? v4() : arg.id ?? ''
+  return {
+    frame: 0,
+    targetId: '',
+    name: 'constraint',
     points: {},
     ...arg,
     id,

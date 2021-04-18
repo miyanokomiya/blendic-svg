@@ -30,6 +30,7 @@ import {
 } from '/@/models/keyframe'
 import { mapReduce } from '/@/utils/commons'
 import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
+import * as keyframeConstraintModule from '/@/utils/keyframes/keyframeConstraint'
 
 interface KeyframeModule {
   getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps<T>>
@@ -39,6 +40,8 @@ export function getKeyframeModule(name: KeyframeName): KeyframeModule {
   switch (name) {
     case 'bone':
       return keyframeBoneModule
+    case 'constraint':
+      return keyframeConstraintModule
   }
 }
 

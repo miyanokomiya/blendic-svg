@@ -43,6 +43,7 @@ import {
   mergeOrDropMap,
   uniq,
   resetId,
+  getFirstProp,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -517,6 +518,15 @@ describe('utils/commons.ts', () => {
       const src = { id: 'a', value: 1 }
       const ret = resetId(src)
       expect(ret.id).not.toBe(src.id)
+    })
+  })
+
+  describe('getFirstProp', () => {
+    it("should get first item's prop", () => {
+      expect(getFirstProp([{ val: 2 }, { val: 1 }], 'val', 0 as number)).toBe(2)
+    })
+    it('should get default value if src is empty', () => {
+      expect(getFirstProp([], 'val', 0 as number)).toBe(0)
     })
   })
 })

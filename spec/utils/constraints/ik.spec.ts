@@ -56,6 +56,7 @@ describe('utils/constraints/ik.ts', () => {
           poleTargetId: '',
           iterations: 20,
           chainLength: 1,
+          influence: 1,
         }
         const res = apply('a', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(45)
@@ -66,6 +67,7 @@ describe('utils/constraints/ik.ts', () => {
           poleTargetId: '',
           iterations: 20,
           chainLength: 2,
+          influence: 1,
         }
         const res = apply('b', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(45)
@@ -77,6 +79,7 @@ describe('utils/constraints/ik.ts', () => {
           poleTargetId: '',
           iterations: 20,
           chainLength: 3,
+          influence: 1,
         }
         const res = apply('c', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(45)
@@ -84,6 +87,18 @@ describe('utils/constraints/ik.ts', () => {
         expect(res.c.transform.rotate).toBeCloseTo(45)
         expect(res.a.transform.translate.x).toBeCloseTo(0)
         expect(res.a.transform.translate.y).toBeCloseTo(0)
+      })
+      it('should effect by influence rate', () => {
+        const option = {
+          targetId: 'target',
+          poleTargetId: '',
+          iterations: 20,
+          chainLength: 2,
+          influence: 0.5,
+        }
+        const res = apply('b', option, {}, boneMap)
+        expect(res.a.transform.rotate).toBeCloseTo(45 / 2)
+        expect(res.b.transform.rotate).toBeCloseTo(45 / 2)
       })
     })
     describe('in range', () => {
@@ -118,6 +133,7 @@ describe('utils/constraints/ik.ts', () => {
           poleTargetId: '',
           iterations: 20,
           chainLength: 1,
+          influence: 1,
         }
         const res = apply('a', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(45)
@@ -130,6 +146,7 @@ describe('utils/constraints/ik.ts', () => {
           poleTargetId: '',
           iterations: 20,
           chainLength: 2,
+          influence: 1,
         }
         const res = apply('b', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(-24.29491472973583)
@@ -143,6 +160,7 @@ describe('utils/constraints/ik.ts', () => {
           poleTargetId: 'pole',
           iterations: 20,
           chainLength: 2,
+          influence: 1,
         }
         const res = apply('b', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(114.2955545667173)
@@ -179,6 +197,7 @@ describe('utils/constraints/ik.ts', () => {
           poleTargetId: '',
           iterations: 20,
           chainLength: 2,
+          influence: 1,
         }
         const res = apply('b', option, {}, boneMap)
         expect(res.a.transform.rotate).toBeCloseTo(-90)
@@ -226,6 +245,7 @@ describe('utils/constraints/ik.ts', () => {
             poleTargetId: 'b',
             iterations: 1,
             chainLength: 10,
+            influence: 1,
           }
         )
       ).toEqual({
@@ -233,6 +253,7 @@ describe('utils/constraints/ik.ts', () => {
         poleTargetId: 'bb',
         iterations: 1,
         chainLength: 10,
+        influence: 1,
       })
     })
   })

@@ -24,6 +24,7 @@ import {
   migrateConstraint,
   migrateConstraint4,
   migrateConstraint5,
+  migrateConstraint6,
   migrateKeyframe,
 } from '/@/utils/migrations'
 
@@ -153,6 +154,29 @@ describe('src/utils/migrations.ts', () => {
     it('should not replace id if it is defined', () => {
       const src = getConstraint({ id: 'a', type: 'IK' })
       expect(migrateConstraint5(src)).toEqual(src)
+    })
+  })
+
+  describe('migrateConstraint6', () => {
+    it('should set influence if it is undefined', () => {
+      const src = getConstraint({ type: 'IK' })
+      const ret = migrateConstraint6({
+        id: src.id,
+        type: src.type,
+        name: src.type,
+        option: src.option,
+      })
+
+      expect(ret).toEqual({
+        id: src.id,
+        type: src.type,
+        name: src.type,
+        option: { ...src.option, influence: 1 },
+      })
+    })
+    it('should not replace id if it is defined', () => {
+      const src = getConstraint({ id: 'a', type: 'IK' })
+      expect(migrateConstraint6(src)).toEqual(src)
     })
   })
 })

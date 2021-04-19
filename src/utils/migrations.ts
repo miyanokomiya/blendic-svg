@@ -27,7 +27,6 @@ import {
   getKeyframeBone,
   getKeyframePoint,
   KeyframeBase,
-  KeyframeBone,
   KeyframePoint,
 } from '/@/models/keyframe'
 import { BoneConstraint, BoneConstraintType } from '/@/utils/constraints'
@@ -57,12 +56,12 @@ interface OldCurve3 {
 }
 
 function isOldKeyframe(
-  k: OldKeyframe | OldKeyframe2 | KeyframeBone
+  k: OldKeyframe | OldKeyframe2 | KeyframeBase
 ): k is OldKeyframe {
   return !!(k as any).transform
 }
 
-function isOldKeyframe2(k: OldKeyframe2 | KeyframeBone): k is OldKeyframe2 {
+function isOldKeyframe2(k: OldKeyframe2 | KeyframeBase): k is OldKeyframe2 {
   return !(k as any).points
 }
 
@@ -86,16 +85,16 @@ function toTransformMap(
 
 // 0.0.0 -> 0.1.0 -> 0.2.0 -> 0.3.0
 export function migrateKeyframe(
-  k: OldKeyframe | OldKeyframe2 | KeyframeBone
-): KeyframeBone {
+  k: OldKeyframe | OldKeyframe2 | KeyframeBase
+): KeyframeBase {
   const current = _migrateKeyframe(k)
   return migrateKeyframe3(current)
 }
 
 // 0.0.0 -> 0.1.0 -> 0.2.0
 function _migrateKeyframe(
-  k: OldKeyframe | OldKeyframe2 | KeyframeBone
-): KeyframeBone {
+  k: OldKeyframe | OldKeyframe2 | KeyframeBase
+): KeyframeBase {
   if (isOldKeyframe(k)) {
     return migrateKeyframe1(k)
   }
@@ -106,7 +105,7 @@ function _migrateKeyframe(
 }
 
 // 0.0.0 -> 0.2.0
-function migrateKeyframe1(k: OldKeyframe): KeyframeBone {
+function migrateKeyframe1(k: OldKeyframe): KeyframeBase {
   return getKeyframeBone({
     id: k.id,
     frame: k.frame,
@@ -118,7 +117,7 @@ function migrateKeyframe1(k: OldKeyframe): KeyframeBone {
 }
 
 // 0.1.0 -> 0.2.0
-function migrateKeyframe2(k: OldKeyframe2): KeyframeBone {
+function migrateKeyframe2(k: OldKeyframe2): KeyframeBase {
   const { id, frame, boneId, ...points } = k
   const ret = getKeyframeBone()
   ret.id = id ?? ret.id
@@ -167,7 +166,7 @@ function isCurve3(c: OldCurve3 | CurveBase): c is OldCurve3 {
 }
 
 export function migrateConstraint(src: BoneConstraint): BoneConstraint {
-  return migrateConstraint5(migrateConstraint4(src))
+  return migrateConstraint6(migrateConstraint5(migrateConstraint4(src)))
 }
 
 export function migrateConstraint4(
@@ -190,5 +189,18 @@ export function migrateConstraint5(
   return {
     ...src,
     id: v4(),
+  }
+}
+
+export function migrateConstraint6(
+  src: Omit<BoneConstraint, 'influence'>
+): BoneConstraint {
+  if (!isNaN(src.option.influence)) return src
+  return {
+    ...src,
+    option: {
+      ...src.option,
+      influence: 1,
+    },
   }
 }

@@ -50,6 +50,14 @@ Copyright (C) 2021, Tomoya Komiyama.
         @update:modelValue="updateIterations"
       />
     </InlineField>
+    <InlineField label="Influence" :label-width="labelWidth">
+      <SliderInput
+        :model-value="modelValue.influence"
+        :min="0"
+        :max="1"
+        @update:modelValue="updateInfluence"
+      />
+    </InlineField>
   </div>
 </template>
 
@@ -94,6 +102,9 @@ export default defineComponent({
       },
       updateIterations(val: number, seriesKey?: string) {
         emitUpdated({ iterations: val }, seriesKey)
+      },
+      updateInfluence(val: number, seriesKey?: string) {
+        emitUpdated({ influence: val }, seriesKey)
       },
     }
   },

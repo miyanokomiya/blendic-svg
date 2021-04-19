@@ -21,9 +21,12 @@ import { IVec2 } from 'okageo'
 import { IdMap } from '/@/models'
 import {
   getKeyframeBone,
+  getKeyframeConstraint,
   KeyframeBase,
   KeyframeBaseProps,
   KeyframeBaseSameRange,
+  KeyframeBone,
+  KeyframeConstraint,
   KeyframeName,
   KeyframePoint,
   KeyframeSelectedState,
@@ -266,7 +269,9 @@ export function getKeyframe(
 ) {
   switch (arg.name) {
     case 'bone':
-      return getKeyframeBone(arg, generateId)
+      return getKeyframeBone({ ...arg, name: 'bone' }, generateId)
+    case 'constraint':
+      return getKeyframeConstraint({ ...arg, name: 'constraint' }, generateId)
   }
 }
 
@@ -343,4 +348,32 @@ export function splitKeyframeProps<T>(
   })
 
   return { trueMap, falseMap }
+}
+
+export function splitKeyframeMapByName(
+  src: IdMap<KeyframeBase[]>
+): {
+  bone: IdMap<KeyframeBone[]>
+  constraint: IdMap<KeyframeConstraint[]>
+} {
+  const bone: IdMap<KeyframeBone[]> = {}
+  const constraint: IdMap<KeyframeConstraint[]> = {}
+
+  Object.keys(src).forEach((targetId) => {
+    const first = src[targetId][0]
+    if (!first) return
+    switch (first.name) {
+      case 'bone':
+        bone[targetId] = src[targetId] as KeyframeBone[]
+        return
+      case 'constraint':
+        constraint[targetId] = src[targetId] as KeyframeConstraint[]
+        return
+    }
+  })
+
+  return {
+    bone,
+    constraint,
+  }
 }

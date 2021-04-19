@@ -29,7 +29,7 @@ import {
   BElement,
   getBElement,
 } from '../models'
-import { KeyframeBone } from '/@/models/keyframe'
+import { KeyframeBase } from '/@/models/keyframe'
 import { getConstraint } from '/@/utils/constraints'
 import { migrateConstraint, migrateKeyframe } from '/@/utils/migrations'
 
@@ -72,7 +72,7 @@ function initializeAction(action: Partial<Action>): Action {
   })
 }
 
-function initializeKeyframe(keyframe: KeyframeBone): KeyframeBone {
+function initializeKeyframe(keyframe: KeyframeBase): KeyframeBase {
   return migrateKeyframe(keyframe)
 }
 

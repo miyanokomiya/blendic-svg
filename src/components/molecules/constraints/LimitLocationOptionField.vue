@@ -82,6 +82,10 @@ Copyright (C) 2021, Tomoya Komiyama.
         :max="1"
         @update:modelValue="updateInfluence"
       />
+      <KeyDot
+        :status="keyframeStatusMap['influence']"
+        @update:status="(val) => updateKeyframeStatus('influence', val)"
+      />
     </InlineField>
   </div>
 </template>
@@ -93,17 +97,33 @@ import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
+import KeyDot from '/@/components/atoms/KeyDot.vue'
 import { SpaceType } from '/@/models'
+import {
+  KeyframeConstraintPropKey,
+  KeyframePropsStatus,
+  KeyframeStatus,
+} from '/@/models/keyframe'
 
 export default defineComponent({
-  components: { SliderInput, SelectField, InlineField, CheckboxInput },
+  components: {
+    SliderInput,
+    SelectField,
+    InlineField,
+    CheckboxInput,
+    KeyDot,
+  },
   props: {
     modelValue: {
       type: Object as PropType<BoneConstraintOptions['LIMIT_LOCATION']>,
       required: true,
     },
+    keyframeStatusMap: {
+      type: Object as PropType<KeyframePropsStatus['props']>,
+      default: () => ({}),
+    },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'add-keyframe', 'remove-keyframe'],
   setup(props, { emit }) {
     function emitUpdated(
       val: Partial<BoneConstraintOptions['LIMIT_LOCATION']>,
@@ -120,6 +140,17 @@ export default defineComponent({
         ]
       }
     )
+
+    function updateKeyframeStatus(
+      key: KeyframeConstraintPropKey,
+      status: KeyframeStatus
+    ) {
+      if (status === 'checked') {
+        emit('add-keyframe', key)
+      } else if (status === '') {
+        emit('remove-keyframe', key)
+      }
+    }
 
     return {
       labelWidth: '90px',
@@ -154,6 +185,7 @@ export default defineComponent({
       updateInfluence(val: number, seriesKey?: string) {
         emitUpdated({ influence: val }, seriesKey)
       },
+      updateKeyframeStatus,
     }
   },
 })

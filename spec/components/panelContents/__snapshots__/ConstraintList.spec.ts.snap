@@ -296,6 +296,37 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
         </div>
         
       </div>
+      <div
+        class="row-block inline-field"
+      >
+        
+        <label
+          style="width: 100px;"
+        >
+          Influence
+        </label>
+        <div
+          class="inline-content"
+        >
+          
+          <div
+            class="slider-wrapper"
+          >
+            <div
+              class="slider-background"
+              style="transform: scaleX(1);"
+            />
+            <input
+              type="text"
+            />
+            <div
+              class="slider-forward"
+            />
+          </div>
+          
+        </div>
+        
+      </div>
     </div>
   </div>
   <div

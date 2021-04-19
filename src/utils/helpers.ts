@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { IVec2, IRectangle, isZero } from 'okageo'
 import { ElementNodeAttributes, Transform } from '../models/index'
+import { KeyframeName } from '/@/models/keyframe'
 import { dropMap } from '/@/utils/commons'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
@@ -128,4 +129,13 @@ export function getKeyframeTopMap(
     p[c] = top + height * (childMap[c] + 1)
     return p
   }, {})
+}
+
+export interface KeyframeTargetSummary {
+  id: string
+  name: string
+  type: KeyframeName
+  children: {
+    [name: string]: number
+  }
 }

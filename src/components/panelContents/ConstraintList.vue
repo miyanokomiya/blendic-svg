@@ -59,6 +59,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         @update:modelValue="
           (option, seriesKey) => updateConstraint(i, option, seriesKey)
         "
+        @add-keyframe="(key) => addKeyframe(i, key)"
       />
     </template>
     <template v-else-if="c.type === 'LIMIT_ROTATION'">
@@ -133,6 +134,7 @@ import {
   unshiftInList,
   updateNameInList,
 } from '/@/utils/relations'
+import { KeyframeConstraintPropKey } from '/@/models/keyframe'
 
 const constraintNameMap: { [key in BoneConstraintType]: string } = {
   IK: 'IK',
@@ -169,7 +171,7 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ['update'],
+  emits: ['update', 'add-keyframe'],
   setup(props, { emit }) {
     const constraintOptions = computed<
       { value: BoneConstraintType; label: string }[]
@@ -226,6 +228,12 @@ export default defineComponent({
       update(shiftInList(props.constraints, index))
     }
 
+    function addKeyframe(index: number, key: KeyframeConstraintPropKey) {
+      const target = props.constraints[index]
+      if (!target) return
+      emit('add-keyframe', target.id, key)
+    }
+
     return {
       constraintOptions,
       setBoneConstraintType,
@@ -234,6 +242,7 @@ export default defineComponent({
       updateConstraint,
       upConstraint,
       downConstraint,
+      addKeyframe,
     }
   },
 })

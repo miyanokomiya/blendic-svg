@@ -18,59 +18,55 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <RowBlock class="inline-field" :class="{ between }">
-    <label v-if="label" :style="{ width: labelWidth }">{{ label }}</label>
-    <div class="inline-content"><slot /></div>
-  </RowBlock>
+  <button type="button" @click="toggle">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="-8 -8 16 16">
+      <circle v-if="status === ''" r="2.5" fill="#aaa" />
+      <path
+        v-else-if="status === 'enabled'"
+        d="M0,-5 L5,0 L0,5 L-5,0z"
+        stroke="none"
+        fill="#aaa"
+      />
+      <path
+        v-else
+        d="M0,-5 L5,0 L0,5 L-5,0z"
+        stroke-linejoin="round"
+        stroke-width="1.5"
+        stroke="#aaa"
+        fill="none"
+      />
+    </svg>
+  </button>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
-import RowBlock from '/@/components/atoms/RowBlock.vue'
+import { defineComponent, PropType } from 'vue'
 
 export default defineComponent({
-  components: { RowBlock },
   props: {
-    label: {
-      type: String,
+    status: {
+      type: String as PropType<'' | 'enabled' | 'checked'>,
       default: '',
     },
-    labelWidth: {
-      type: String,
-      default: undefined,
-    },
-    between: {
-      type: Boolean,
-      default: false,
-    },
+  },
+  emits: ['update:status'],
+  setup(props, { emit }) {
+    return {
+      toggle() {
+        emit('update:status', props.status === 'checked' ? '' : 'checked')
+      },
+    }
   },
 })
 </script>
 
 <style lang="scss" scoped>
-.inline-field {
-  width: 100%;
+button {
   display: flex;
   align-items: center;
-  & + .inline-field {
-    margin-top: 10px;
-  }
-  > label {
-    margin-right: 10px;
-    text-align: left;
-  }
-  .inline-content {
-    flex: 1;
-    min-width: 50px; // a magic to fix flex width
-    display: flex;
-    align-items: center;
-  }
-  &.between {
-    justify-content: space-between;
-    .inline-content {
-      flex: 0;
-      min-width: auto;
-    }
-  }
+  justify-content: center;
+}
+svg {
+  width: 20px;
 }
 </style>

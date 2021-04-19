@@ -70,13 +70,13 @@ import {
   CurveSelectedState,
   KeyframeBase,
   KeyframeBaseProps,
-  KeyframeBone,
+  KeyframeName,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import { getKeyframeMapByTargetId } from '/@/utils/animations'
 import GraphKeyPoints from '/@/components/elements/molecules/GraphKeyPoints.vue'
 import { getKeyframePropsMap, splitKeyframeProps } from '/@/utils/keyframes'
-import { flatKeyListMap } from '/@/utils/commons'
+import { flatKeyListMap, getFirstProp } from '/@/utils/commons'
 import { useKeysCache } from '/@/composables/cache'
 import { TargetPropsState } from '/@/composables/stores/targetProps'
 
@@ -86,7 +86,7 @@ export default defineComponent({
   },
   props: {
     keyframeMapByFrame: {
-      type: Object as PropType<IdMap<KeyframeBone[]>>,
+      type: Object as PropType<IdMap<KeyframeBase[]>>,
       default: () => ({}),
     },
     selectedKeyframeMap: {
@@ -116,7 +116,11 @@ export default defineComponent({
       return Object.keys(keyframeMapByTargetId.value).reduce<
         IdMap<KeyframeBaseProps<KeyframeBase[]>>
       >((p, c) => {
-        p[c] = getKeyframePropsMap(keyframeMapByTargetId.value[c], 'bone')
+        const list = keyframeMapByTargetId.value[c]
+        p[c] = getKeyframePropsMap(
+          list,
+          getFirstProp(list, 'name', 'bone' as KeyframeName)
+        )
         p[c].props = Object.keys(p[c].props).reduce<{
           [key: string]: KeyframeBase[]
         }>((props, key) => {

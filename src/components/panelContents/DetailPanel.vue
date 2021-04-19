@@ -53,6 +53,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :constraints="lastSelectedBone.constraints"
         :bone-options="otherBoneOptions"
         @update="updateConstraints"
+        @add-keyframe="addKeyframeConstraint"
       />
     </form>
   </div>
@@ -67,6 +68,8 @@ import { BoneConstraint } from '/@/utils/constraints'
 import ConstraintList from '/@/components/panelContents/ConstraintList.vue'
 import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import { KeyframeConstraintPropKey } from '/@/models/keyframe'
+import { useAnimationStore } from '/@/store/animation'
 
 export default defineComponent({
   components: {
@@ -77,6 +80,7 @@ export default defineComponent({
   },
   setup() {
     const store = useStore()
+    const animationStore = useAnimationStore()
     const draftName = ref('')
 
     const lastSelectedBone = computed(() => {
@@ -124,6 +128,13 @@ export default defineComponent({
     ) {
       if (!lastSelectedBone.value) return
       store.updateBone({ constraints }, seriesKey)
+    }
+
+    function addKeyframeConstraint(
+      constraintId: string,
+      key: KeyframeConstraintPropKey
+    ) {
+      animationStore.execInsertKeyframeConstraint(constraintId, { [key]: true })
     }
 
     watch(store.lastSelectedArmature, initDraftName)
@@ -186,6 +197,7 @@ export default defineComponent({
         store.updateBone({ name: draftName.value })
       },
       updateConstraints,
+      addKeyframeConstraint,
     }
   },
 })

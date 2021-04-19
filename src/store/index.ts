@@ -104,6 +104,9 @@ const lastSelectedBone = computed(() => {
 
 const armatureMap = computed(() => toMap(state.armatures))
 const boneMap = computed(() => toMap(lastSelectedArmature.value?.bones ?? []))
+const constraintMap = computed(() =>
+  toMap((lastSelectedArmature.value?.bones ?? []).flatMap((b) => b.constraints))
+)
 
 const selectedBonesOrigin = computed(
   (): IVec2 =>
@@ -323,6 +326,7 @@ export function useStore() {
     lastSelectedArmature,
     lastSelectedBone,
     boneMap,
+    constraintMap,
     allSelectedBones,
     selectedBonesOrigin,
     selectAllArmature,

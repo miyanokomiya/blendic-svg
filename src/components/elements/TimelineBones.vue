@@ -23,31 +23,33 @@ Copyright (C) 2021, Tomoya Komiyama.
     <line :x1="labelWidth" y1="0" :x2="labelWidth" y2="10000" stroke="black" />
     <g :transform="`translate(0, ${-scrollY})`">
       <g
-        v-for="bone in selectedAllBoneList"
-        :key="bone.id"
-        :transform="`translate(0, ${boneTopMap[bone.id]})`"
+        v-for="(target, i) in targetList"
+        :key="target.id"
+        :transform="`translate(0, ${targetTopMap[target.id]})`"
       >
         <TimelineRow
           :label-width="labelWidth"
           :label-height="height"
-          :label="bone.name"
-          :expanded="boneExpandedMap[bone.id]"
+          :label="target.name"
+          :expanded="targetExpandedMap[target.id]"
           show-expanded
-          @toggle-expanded="toggleBoneExpanded(bone.id)"
+          @toggle-expanded="toggleBoneExpanded(target.id)"
         />
-        <g v-if="boneExpandedMap[bone.id]">
+        <g v-if="targetExpandedMap[target.id]">
           <TimelineRow
-            v-for="(y, key) in childTopMap"
+            v-for="(y, key) in childTopMapList[i]"
             :key="key"
             :transform="`translate(10, ${y})`"
             :label-width="labelWidth - 10"
             :label-height="height"
             :label="getLabel(key)"
             :color="
-              isSelectedProp(bone.id, key) ? settings.selectedColor : undefined
+              isSelectedProp(target.id, key)
+                ? settings.selectedColor
+                : undefined
             "
-            @click.left.exact="clickRow(bone.id, key)"
-            @click.left.shift.exact="clickRow(bone.id, key, true)"
+            @click.left.exact="clickRow(target.id, key)"
+            @click.left.shift.exact="clickRow(target.id, key, true)"
           />
         </g>
       </g>
@@ -67,9 +69,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
-import { Bone, IdMap } from '/@/models'
+import { IdMap } from '/@/models'
 import TimelineRow from './atoms/TimelineRow.vue'
-import { getKeyframeTopMap } from '/@/utils/helpers'
+import { getKeyframeTopMap, KeyframeTargetSummary } from '/@/utils/helpers'
 import { TargetPropsState } from '/@/composables/stores/targetProps'
 import { useSettings } from '/@/composables/settings'
 
@@ -78,8 +80,8 @@ export default defineComponent({
     TimelineRow,
   },
   props: {
-    selectedAllBoneList: {
-      type: Array as PropType<Bone[]>,
+    targetList: {
+      type: Array as PropType<KeyframeTargetSummary[]>,
       default: () => [],
     },
     labelWidth: {
@@ -94,11 +96,11 @@ export default defineComponent({
       type: Number,
       default: 0,
     },
-    boneExpandedMap: {
+    targetExpandedMap: {
       type: Object as PropType<IdMap<boolean>>,
       default: () => ({}),
     },
-    boneTopMap: {
+    targetTopMap: {
       type: Object as PropType<IdMap<number>>,
       default: () => ({}),
     },
@@ -107,21 +109,17 @@ export default defineComponent({
       default: () => ({}),
     },
   },
-  emits: ['toggle-bone-expanded', 'select'],
+  emits: ['toggle-target-expanded', 'select'],
   setup(props, { emit }) {
     const { settings } = useSettings()
 
-    function toggleBoneExpanded(boneId: string) {
-      emit('toggle-bone-expanded', boneId)
+    function toggleBoneExpanded(targetId: string) {
+      emit('toggle-target-expanded', targetId)
     }
 
-    const childTopMap = computed(() => {
-      return getKeyframeTopMap(props.height, 0, {
-        translateX: 0,
-        translateY: 1,
-        rotate: 2,
-        scaleX: 3,
-        scaleY: 4,
+    const childTopMapList = computed(() => {
+      return props.targetList.map((item) => {
+        return getKeyframeTopMap(props.height, 0, item.children)
       })
     })
 
@@ -133,6 +131,7 @@ export default defineComponent({
           rotate: 'Rotate',
           scaleX: 'Scale X',
           scaleY: 'Scale Y',
+          influence: 'Influence',
         }[label] ?? ''
       )
     }
@@ -152,7 +151,7 @@ export default defineComponent({
 
     return {
       settings,
-      childTopMap,
+      childTopMapList,
       getLabel,
       toggleBoneExpanded,
       isSelectedProp,

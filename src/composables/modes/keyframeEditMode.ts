@@ -34,14 +34,10 @@ import {
 } from '/@/utils/commons'
 import { canvasToFrameValue, canvasToNearestFrame } from '/@/utils/animations'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
-import {
-  CurveName,
-  CurveSelectedState,
-  getKeyframeBone,
-  KeyframeBase,
-} from '/@/models/keyframe'
+import { CurveName, CurveSelectedState, KeyframeBase } from '/@/models/keyframe'
 import {
   batchUpdatePoints,
+  getKeyframe,
   moveKeyframe,
   SplitedKeyframeMapBySelected,
   splitKeyframeMapBySelected,
@@ -283,7 +279,7 @@ export function useKeyframeEditMode(
     const duplicated = toMap(
       toList(
         mapReduce(editTargets.value, (src) => {
-          return getKeyframeBone({ ...src }, true)
+          return getKeyframe({ ...src }, true)
         })
       )
     )

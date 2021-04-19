@@ -75,14 +75,14 @@ Copyright (C) 2021, Tomoya Komiyama.
               :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
             >
               <TimelineBones
-                :selected-all-bone-list="selectedAllBoneList"
+                :target-list="selectedTargetList"
                 :label-width="size + 1"
                 :scroll-y="viewOrigin.y"
-                :bone-expanded-map="expandedMap"
-                :bone-top-map="boneTopMap"
+                :target-expanded-map="expandedMap"
+                :target-top-map="targetTopMap"
                 :props-state-map="propsStateMap"
                 :height="labelHeight"
-                @toggle-bone-expanded="toggleBoneExpanded"
+                @toggle-target-expanded="toggleTargetExpanded"
                 @select="selectTargetProp"
               />
             </g>
@@ -139,11 +139,13 @@ Copyright (C) 2021, Tomoya Komiyama.
                         v-if="canvasType === 'action'"
                         :scale="scale"
                         :keyframe-map-by-frame="keyframeMapByFrame"
-                        :bone-ids="selectedAllBoneIdList"
+                        :target-list="selectedTargetList"
+                        :target-ids="selectedTargetIdList"
+                        :constraint-ids="selectedAllConstraintIdList"
                         :selected-keyframe-map="selectedKeyframeMap"
                         :scroll-y="viewOrigin.y"
-                        :bone-expanded-map="expandedMap"
-                        :bone-top-map="boneTopMap"
+                        :target-expanded-map="expandedMap"
+                        :target-top-map="targetTopMap"
                         :height="labelHeight"
                         @select="selectKeyframe"
                         @shift-select="shiftSelectKeyframe"
@@ -216,9 +218,14 @@ import { IdMap } from '/@/models'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'
 import { EditMovement } from '/@/composables/modes/types'
-import { CurveSelectedState, KeyframeBase } from '/@/models/keyframe'
+import {
+  CurveSelectedState,
+  KeyframeBase,
+  KeyframeName,
+} from '/@/models/keyframe'
 import { useBooleanMap } from '/@/composables/idMap'
 import { Size } from 'okanvas'
+import { KeyframeTargetSummary } from '/@/utils/helpers'
 
 const labelHeight = 24
 
@@ -392,6 +399,42 @@ export default defineComponent({
     const selectedAllBoneList = computed(() =>
       toList(animationStore.selectedBoneMap.value)
     )
+    const selectedAllConstraintIdList = computed(() =>
+      Object.keys(animationStore.selectedConstraintMap.value)
+    )
+    const selectedTargetIdList = computed(() =>
+      selectedAllBoneIdList.value.concat(selectedAllConstraintIdList.value)
+    )
+    const selectedTargetList = computed<KeyframeTargetSummary[]>(() => {
+      const boneMap = animationStore.selectedBoneMap.value
+      const constraintMap = animationStore.selectedConstraintMap.value
+      return [
+        ...selectedAllBoneList.value.map((b) => ({
+          id: b.id,
+          name: b.name,
+          type: 'bone' as KeyframeName,
+          children: {
+            translateX: 0,
+            translateY: 1,
+            rotate: 2,
+            scaleX: 3,
+            scaleY: 4,
+          },
+        })),
+        ...selectedAllConstraintIdList.value.map((id) => {
+          const c = constraintMap[id]
+          const b = boneMap[c.boneId]
+          return {
+            id,
+            name: `${b.name}_${c.name}`,
+            type: 'constraint' as KeyframeName,
+            children: {
+              influence: 0,
+            },
+          }
+        }),
+      ]
+    })
 
     const keyframeMapByFrame = computed(() => {
       const splited = canvasMode.mode.value.editedKeyframeMap.value
@@ -450,15 +493,20 @@ export default defineComponent({
     }
 
     const keyframeExpandedMap = useBooleanMap(() =>
-      Object.keys(store.boneMap.value)
+      Object.keys(store.boneMap.value).concat(
+        Object.keys(store.constraintMap.value)
+      )
     )
-    const boneTopMap = computed(() => {
+    const targetTopMap = computed(() => {
       let current = 2 * labelHeight
-      return selectedAllBoneIdList.value.reduce<IdMap<number>>((p, id) => {
+      return selectedTargetIdList.value.reduce<IdMap<number>>((p, id) => {
+        const expandedHeight =
+          animationStore.selectedTargetIdMap.value[id].type === 'bone' ? 6 : 1
         const top = current
         current =
           current +
-          labelHeight * (keyframeExpandedMap.booleanMap.value[id] ? 6 : 1)
+          labelHeight *
+            (keyframeExpandedMap.booleanMap.value[id] ? expandedHeight : 1)
         p[id] = top
         return p
       }, {})
@@ -469,8 +517,9 @@ export default defineComponent({
       currentCanvas,
       playing: animationStore.playing,
       actions: animationStore.actions.value,
-      selectedAllBoneIdList,
-      selectedAllBoneList,
+      selectedTargetIdList,
+      selectedAllConstraintIdList,
+      selectedTargetList,
       propsStateMap: animationStore.visibledTargetPropsStateMap,
       lastSelectedKeyframe: animationStore.lastSelectedKeyframe,
       keyframeMapByFrame,
@@ -504,8 +553,8 @@ export default defineComponent({
         set: (id: string) => animationStore.selectAction(id),
       }),
       expandedMap: keyframeExpandedMap.booleanMap,
-      toggleBoneExpanded: keyframeExpandedMap.toggle,
-      boneTopMap,
+      toggleTargetExpanded: keyframeExpandedMap.toggle,
+      targetTopMap,
       labelHeight,
       updateKeyframe(keyframe: KeyframeBase, seriesKey?: string) {
         animationStore.execUpdateKeyframes(

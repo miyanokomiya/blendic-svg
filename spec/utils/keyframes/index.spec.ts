@@ -314,6 +314,38 @@ describe('utils/keyframes/index.ts', () => {
     })
   })
 
+  describe('getKeyframeExistedPropsMap', () => {
+    it('should return existed props map', () => {
+      const key1 = getKeyframeBone({
+        frame: 1,
+        points: {
+          translateX: getKeyframePoint({ value: 1 }),
+        },
+      })
+      const key2 = getKeyframeBone({
+        frame: 2,
+        points: {
+          translateX: getKeyframePoint({ value: 2 }),
+          translateY: getKeyframePoint({ value: 20 }),
+        },
+      })
+      const key3 = getKeyframeBone({
+        frame: 3,
+        points: {
+          translateY: getKeyframePoint(),
+        },
+      })
+
+      const ret = target.getKeyframeExistedPropsMap([key1, key2, key3])
+      expect(ret).toEqual({
+        props: {
+          translateX: [key1, key2],
+          translateY: [key2, key3],
+        },
+      })
+    })
+  })
+
   describe('getSamePropRangeFrameMapByBoneId', () => {
     it('get same range frame map by bone id', () => {
       const t1 = getKeyframePoint({ value: 0 })

@@ -56,6 +56,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <template v-else-if="c.type === 'LIMIT_LOCATION'">
       <LimitLocationOptionField
         :model-value="c.option"
+        :keyframe-status-map="getKeyframeStatus(c.id)"
         @update:modelValue="
           (option, seriesKey) => updateConstraint(i, option, seriesKey)
         "
@@ -134,7 +135,13 @@ import {
   unshiftInList,
   updateNameInList,
 } from '/@/utils/relations'
-import { KeyframeConstraintPropKey } from '/@/models/keyframe'
+import {
+  KeyframeConstraint,
+  KeyframeConstraintPropKey,
+} from '/@/models/keyframe'
+import { IdMap } from '/@/models'
+import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
+import { mapReduce } from '/@/utils/commons'
 
 const constraintNameMap: { [key in BoneConstraintType]: string } = {
   IK: 'IK',
@@ -170,6 +177,14 @@ export default defineComponent({
       type: Array as PropType<{ value: string; label: string }[]>,
       required: true,
     },
+    constraintKeyframeMap: {
+      type: Object as PropType<IdMap<KeyframeConstraint[]>>,
+      default: () => ({}),
+    },
+    currentFrame: {
+      type: Number,
+      default: 0,
+    },
   },
   emits: ['update', 'add-keyframe'],
   setup(props, { emit }) {
@@ -181,6 +196,17 @@ export default defineComponent({
         label: constraintNameMap[key as BoneConstraintType],
       }))
     })
+
+    function getKeyframeStatus(id: string) {
+      const keyframes = props.constraintKeyframeMap[id]
+      if (!keyframes) return
+
+      return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
+        return list.some((k) => k.frame === props.currentFrame)
+          ? 'checked'
+          : 'enabled'
+      })
+    }
 
     function setBoneConstraintType(val: BoneConstraintType) {
       if (!val) return
@@ -236,6 +262,7 @@ export default defineComponent({
 
     return {
       constraintOptions,
+      getKeyframeStatus,
       setBoneConstraintType,
       deleteConstraint,
       updateName,

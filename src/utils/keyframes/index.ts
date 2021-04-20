@@ -31,7 +31,7 @@ import {
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
-import { mapReduce } from '/@/utils/commons'
+import { mapFilter, mapReduce } from '/@/utils/commons'
 import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 import * as keyframeConstraintModule from '/@/utils/keyframes/keyframeConstraint'
 
@@ -158,6 +158,22 @@ export function getKeyframePropsMap(
     Object.keys(k.points).forEach((key) => {
       if (k.points[key] && ret.props[key]) {
         ret.props[key].push(k)
+      }
+    })
+  })
+
+  return ret
+}
+
+export function getKeyframeExistedPropsMap(
+  keyframes: KeyframeBase[]
+): KeyframeBaseProps<KeyframeBase[]> {
+  const ret: KeyframeBaseProps<KeyframeBase[]> = { props: {} }
+
+  keyframes.forEach((k) => {
+    Object.keys(k.points).forEach((key) => {
+      if (k.points[key]) {
+        ;(ret.props[key] ??= []).push(k)
       }
     })
   })
@@ -376,4 +392,21 @@ export function splitKeyframeMapByName(
     bone,
     constraint,
   }
+}
+
+export function getKeyframeStatus(
+  constraintKeyframeMap: IdMap<KeyframeConstraint[]>,
+  currentFrame: number,
+  id: string
+) {
+  const keyframes = constraintKeyframeMap[id]
+  if (!keyframes) return
+
+  const existedProps = mapFilter(
+    getKeyframePropsMap(keyframes, 'constraint').props,
+    (list) => list.length > 0
+  )
+  return mapReduce(existedProps, (list) => {
+    return list.some((k) => k.frame === currentFrame) ? 'checked' : 'enabled'
+  })
 }

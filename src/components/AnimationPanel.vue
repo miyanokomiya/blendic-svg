@@ -340,6 +340,7 @@ const keyframePointColorMap = {
   rotate: 'blue',
   scaleX: 'hotpink',
   scaleY: 'mediumaquamarine',
+  influence: 'darkviolet',
 }
 
 export default defineComponent({

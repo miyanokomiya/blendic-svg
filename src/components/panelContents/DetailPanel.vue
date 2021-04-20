@@ -52,6 +52,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       <ConstraintList
         :constraints="lastSelectedBone.constraints"
         :bone-options="otherBoneOptions"
+        :constraint-keyframe-map="constraintKeyframeMap"
+        :current-frame="currentFrame"
         @update="updateConstraints"
         @add-keyframe="addKeyframeConstraint"
       />
@@ -86,6 +88,9 @@ export default defineComponent({
     const lastSelectedBone = computed(() => {
       return store.lastSelectedBone.value
     })
+
+    const constraintKeyframeMap = animationStore.keyframeMapByTargetId
+    const currentFrame = animationStore.currentFrame
 
     const otherBoneOptions = computed(() => {
       if (!lastSelectedBone.value) return []
@@ -144,6 +149,8 @@ export default defineComponent({
       draftName,
       lastSelectedArmature: store.lastSelectedArmature,
       lastSelectedBone,
+      constraintKeyframeMap,
+      currentFrame,
       otherBoneOptions,
       selectedObjectType,
       connected: computed({

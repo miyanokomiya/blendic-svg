@@ -25,7 +25,11 @@ import {
   getTransform,
   toMap,
 } from '/@/models'
-import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
+import {
+  getKeyframeBone,
+  getKeyframeConstraint,
+  getKeyframePoint,
+} from '/@/models/keyframe'
 import {
   cleanActions,
   mergeKeyframesWithDropped,
@@ -42,7 +46,10 @@ import {
   frameToCanvas,
   getSteppedFrame,
   pastePoseMap,
+  getEditedConstraint,
+  getEditedKeyframeConstraint,
 } from '/@/utils/animations'
+import { getConstraint } from '/@/utils/constraints'
 
 describe('utils/animations.ts', () => {
   describe('canvasToNearestFrame', () => {
@@ -375,6 +382,43 @@ describe('utils/animations.ts', () => {
         () => undefined
       )
       expect(ret.a).toEqual(undefined)
+    })
+  })
+
+  describe('getEditedConstraint', () => {
+    it('should return identity if not edited', () => {
+      expect(getEditedConstraint(getConstraint({ type: 'IK' }))).toEqual(
+        getConstraint({ type: 'IK' })
+      )
+    })
+    it('should return edited constraint', () => {
+      const ret = getEditedConstraint(getConstraint({ type: 'IK' }), {
+        influence: 0.2,
+      })
+      expect(ret.option.influence).toBe(0.2)
+    })
+  })
+
+  describe('getEditedKeyframeConstraint', () => {
+    it('should return identity if not edited', () => {
+      expect(
+        getEditedKeyframeConstraint(
+          getKeyframeConstraint({
+            points: { influence: getKeyframePoint({ value: 0 }) },
+          })
+        )
+      ).toEqual(getKeyframeConstraint())
+    })
+    fit('should return edited keyframe constraint', () => {
+      const ret = getEditedKeyframeConstraint(
+        getKeyframeConstraint({
+          points: { influence: getKeyframePoint({ value: 0 }) },
+        }),
+        {
+          influence: 0.2,
+        }
+      )
+      expect(ret.points.influence?.value).toBe(0.2)
     })
   })
 })

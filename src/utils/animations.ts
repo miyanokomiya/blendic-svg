@@ -38,8 +38,9 @@ import {
   toMap,
   Transform,
 } from '/@/models'
-import { KeyframeBase } from '/@/models/keyframe'
+import { KeyframeBase, KeyframeConstraint } from '/@/models/keyframe'
 import { invertPoseTransform, multiPoseTransform } from '/@/utils/armatures'
+import { BoneConstraint, BoneConstraintOption } from '/@/utils/constraints'
 import { circleClamp } from '/@/utils/geometry'
 import { mergeKeyframe } from '/@/utils/keyframes'
 
@@ -292,4 +293,37 @@ export function pastePoseMap(
     }
     return p
   }, {})
+}
+
+export function getEditedConstraint(
+  src: BoneConstraint,
+  edited?: Partial<BoneConstraintOption>
+): BoneConstraint {
+  if (!edited) return src
+
+  return {
+    ...src,
+    option: {
+      ...src.option,
+      influence: edited.influence ?? src.option.influence,
+    },
+  }
+}
+
+export function getEditedKeyframeConstraint(
+  src: KeyframeConstraint,
+  edited?: Partial<BoneConstraintOption>
+): KeyframeConstraint {
+  if (!edited) return src
+
+  return {
+    ...src,
+    points: mapReduce(src.points, (p, key) => {
+      if (!p) return
+      return {
+        ...p,
+        value: (edited as any)[key] ?? p.value,
+      }
+    }),
+  }
 }

@@ -187,7 +187,7 @@ export default defineComponent({
       default: 0,
     },
   },
-  emits: ['update', 'add-keyframe', 'remove-keyframe'],
+  emits: ['update', 'update-item', 'add-keyframe', 'remove-keyframe'],
   setup(props, { emit }) {
     const constraintOptions = computed<
       { value: BoneConstraintType; label: string }[]
@@ -232,9 +232,8 @@ export default defineComponent({
       option: BoneConstraintOption,
       seriesKey?: string
     ) {
-      const constraints = props.constraints.concat()
-      constraints.splice(index, 1, { ...constraints[index], option })
-      update(constraints, seriesKey)
+      const target = props.constraints[index]
+      emit('update-item', { ...target, option }, seriesKey)
     }
 
     function deleteConstraint(index: number) {

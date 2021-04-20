@@ -167,8 +167,8 @@ export default defineComponent({
       const current = constraintList.value[index]
       const existedProps =
         getKeyframeExistedPropsMap(
-          constraintKeyframeMapByTargetId.value[constraint.id]
-        )?.props ?? {}
+          constraintKeyframeMapByTargetId.value[constraint.id] ?? []
+        ).props ?? {}
 
       // TODO only 'influence' supported now
       if (

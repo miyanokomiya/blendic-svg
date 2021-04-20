@@ -31,7 +31,6 @@ import {
 import {
   Action,
   Armature,
-  Bone,
   frameWidth,
   IdMap,
   scaleRate,
@@ -227,19 +226,19 @@ export function cleanActions(
     .filter((action) => !!armatureMap[action.armatureId])
     .map((action) => ({
       ...action,
-      keyframes: cleanKeyframes(
-        action.keyframes,
-        armatureMap[action.armatureId].bones
-      ),
+      keyframes: cleanKeyframes(action.keyframes, [
+        ...armatureMap[action.armatureId].bones,
+        ...armatureMap[action.armatureId].bones.flatMap((b) => b.constraints),
+      ]),
     }))
 }
 
 function cleanKeyframes(
   keyframes: KeyframeBase[],
-  bones: Bone[]
+  targets: { id: string }[]
 ): KeyframeBase[] {
   return toList(
-    extractMap(getKeyframeMapByTargetId(keyframes), toMap(bones))
+    extractMap(getKeyframeMapByTargetId(keyframes), toMap(targets))
   ).flat()
 }
 

@@ -259,7 +259,7 @@ describe('utils/animations.ts', () => {
               keyframes: [
                 getKeyframeBone({ id: 'key_1', targetId: 'bone_1', frame: 1 }),
                 getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 1 }),
-                getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 2 }),
+                getKeyframeBone({ id: 'key_3', targetId: 'bone_2', frame: 2 }),
                 getKeyframeBone({ id: 'key_4', targetId: 'bone_4', frame: 1 }),
               ],
             }),
@@ -277,7 +277,44 @@ describe('utils/animations.ts', () => {
           armatureId: 'arm_1',
           keyframes: [
             getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 1 }),
-            getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 2 }),
+            getKeyframeBone({ id: 'key_3', targetId: 'bone_2', frame: 2 }),
+          ],
+        }),
+      ])
+    })
+    it('drop keyframes of unexisted constraints', () => {
+      const action = getAction({
+        id: 'act_1',
+        armatureId: 'arm_1',
+        keyframes: [
+          getKeyframeConstraint({ id: 'key_1', targetId: 'con_1', frame: 1 }),
+          getKeyframeConstraint({ id: 'key_2', targetId: 'con_2', frame: 1 }),
+          getKeyframeConstraint({ id: 'key_3', targetId: 'con_2', frame: 2 }),
+          getKeyframeConstraint({ id: 'key_4', targetId: 'con_4', frame: 1 }),
+        ],
+      })
+      expect(
+        cleanActions(
+          [action],
+          [
+            getArmature({
+              id: 'arm_1',
+              bones: [
+                getBone({
+                  id: 'bone',
+                  constraints: [getConstraint({ type: 'IK', id: 'con_2' })],
+                }),
+              ],
+            }),
+          ]
+        )
+      ).toEqual([
+        getAction({
+          id: 'act_1',
+          armatureId: 'arm_1',
+          keyframes: [
+            getKeyframeConstraint({ id: 'key_2', targetId: 'con_2', frame: 1 }),
+            getKeyframeConstraint({ id: 'key_3', targetId: 'con_2', frame: 2 }),
           ],
         }),
       ])

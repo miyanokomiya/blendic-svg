@@ -26,6 +26,35 @@ import { getConstraint } from '/@/utils/constraints'
 import * as target from '/@/utils/keyframes/keyframeConstraint'
 
 describe('utils/keyframes/keyframeConstraint.ts', () => {
+  describe('getInterpolatedConstraintMap', () => {
+    it('should return interpolated constraint map', () => {
+      const constraintMap = {
+        a: getConstraint({ id: 'a', type: 'IK' }),
+      }
+      const ret = target.getInterpolatedConstraintMap(
+        constraintMap,
+        {
+          a: [
+            getKeyframeConstraint({
+              frame: 0,
+              points: {
+                influence: { value: 0, curve: getCurve('linear') },
+              },
+            }),
+            getKeyframeConstraint({
+              frame: 10,
+              points: {
+                influence: { value: 1, curve: getCurve('linear') },
+              },
+            }),
+          ],
+        },
+        5
+      )
+      expect(ret.a.option.influence).toBe(0.5)
+    })
+  })
+
   describe('interpolateKeyframe', () => {
     it('influence', () => {
       expect(

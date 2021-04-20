@@ -31,7 +31,23 @@ import { mapReduce } from '/@/utils/commons'
 import { interpolateKeyframeProp } from '/@/utils/keyframes/core'
 import { BoneConstraint } from '/@/utils/constraints/index'
 
-export function getInterpolatedTransformMapByTargetId(
+export function getInterpolatedConstraintMap(
+  constraintMap: IdMap<BoneConstraint>,
+  sortedKeyframesMap: IdMap<KeyframeConstraint[]>,
+  frame: number
+): IdMap<BoneConstraint> {
+  const interpolatedOptionMap = getInterpolatedOptionMapByTargetId(
+    sortedKeyframesMap,
+    frame
+  )
+
+  return mapReduce(constraintMap, (c) => {
+    if (!interpolatedOptionMap[c.id]) return c
+    return { ...c, option: { ...c.option, ...interpolatedOptionMap[c.id] } }
+  })
+}
+
+export function getInterpolatedOptionMapByTargetId(
   sortedKeyframesMap: IdMap<KeyframeConstraint[]>,
   frame: number
 ): IdMap<{ influence: number }> {

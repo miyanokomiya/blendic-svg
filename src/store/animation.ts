@@ -81,7 +81,11 @@ import {
 } from '/@/models/keyframe'
 import { BoneConstraint, BoneConstraintWithBoneId } from '/@/utils/constraints'
 import { convolute, getReplaceItem } from '/@/utils/histories'
-import { getAllSelectedState, isAllExistSelected } from '/@/utils/keyframes'
+import {
+  getAllSelectedState,
+  isAllExistSelected,
+  splitKeyframeMapByName,
+} from '/@/utils/keyframes'
 import {
   getInterpolatedTransformMapByTargetId,
   makeKeyframe,
@@ -163,6 +167,18 @@ const visibledTargetPropsStateMap = computed(() => {
   )
 })
 
+const splitedKeyframeMapByTargetId = computed(() => {
+  return splitKeyframeMapByName(keyframeMapByTargetId.value)
+})
+
+const currentInterpolatedConstraintMap = computed<IdMap<BoneConstraint>>(() => {
+  return keyframeConstraint.getInterpolatedConstraintMap(
+    store.constraintMap.value,
+    splitedKeyframeMapByTargetId.value.constraint,
+    animationFrameStore.currentFrame.value
+  )
+})
+
 const currentInterpolatedTransformMapByTargetId = computed(
   (): IdMap<Transform> => {
     return getInterpolatedTransformMapByTargetId(
@@ -200,6 +216,9 @@ const currentPosedBones = computed(
         store.lastSelectedArmature.value.bones.map((b) => ({
           ...b,
           transform: getCurrentSelfTransforms(b.id),
+          constraints: b.constraints.map(
+            (c) => currentInterpolatedConstraintMap.value[c.id]
+          ),
         }))
       )
     )
@@ -521,6 +540,7 @@ export function useAnimationStore() {
     selectedBones,
     selectedPosedBoneOrigin,
     getCurrentSelfTransforms,
+    currentInterpolatedConstraintMap,
 
     applyEditedTransforms,
     pastePoses,

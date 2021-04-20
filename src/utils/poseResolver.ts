@@ -246,7 +246,10 @@ export function getInterpolatedBoneMap(
       ...bone,
       constraints: bone.constraints.map((c) => {
         if (!interpolatedOptionMap[c.id]) return c
-        return { ...c, ...interpolatedOptionMap[c.id] }
+        return {
+          ...c,
+          option: { ...c.option, ...interpolatedOptionMap[c.id] },
+        }
       }),
     }
   })

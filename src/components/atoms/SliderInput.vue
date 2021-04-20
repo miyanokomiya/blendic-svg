@@ -19,7 +19,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div ref="el" class="slider-wrapper">
-    <div class="slider-background" :style="{ transform: `scaleX(${rate})` }" />
+    <div
+      class="slider-background"
+      :style="{ transform: `scaleX(${scaleX})` }"
+    />
     <input
       ref="inputEl"
       v-model="draftValue"
@@ -108,6 +111,10 @@ export default defineComponent({
       if (!range.value) return 0
       if (props.max === props.min) return 0
       return (props.modelValue - props.min!) / (props.max! - props.min!)
+    })
+
+    const scaleX = computed(() => {
+      return clamp(0, 1, rate.value)
     })
 
     function onUpForward() {
@@ -200,7 +207,7 @@ export default defineComponent({
       },
       onUpForward,
       input,
-      rate,
+      scaleX,
     }
   },
 })

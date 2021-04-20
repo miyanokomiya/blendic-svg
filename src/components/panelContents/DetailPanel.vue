@@ -50,12 +50,13 @@ Copyright (C) 2021, Tomoya Komiyama.
         <CheckboxInput v-model="inheritScale" label="Inherit Scale" />
       </InlineField>
       <ConstraintList
-        :constraints="lastSelectedBone.constraints"
+        :constraints="constraintList"
         :bone-options="otherBoneOptions"
-        :constraint-keyframe-map="constraintKeyframeMap"
+        :constraint-keyframe-map="constraintKeyframeMapByTargetId"
         :current-frame="currentFrame"
         @update="updateConstraints"
         @add-keyframe="addKeyframeConstraint"
+        @remove-keyframe="removeKeyframeConstraint"
       />
     </form>
   </div>
@@ -89,7 +90,7 @@ export default defineComponent({
       return store.lastSelectedBone.value
     })
 
-    const constraintKeyframeMap = animationStore.keyframeMapByTargetId
+    const constraintKeyframeMapByTargetId = animationStore.keyframeMapByTargetId
     const currentFrame = animationStore.currentFrame
 
     const otherBoneOptions = computed(() => {
@@ -100,6 +101,14 @@ export default defineComponent({
         boneMap,
         lastSelectedBone.value.id
       ).map((id) => ({ value: id, label: boneMap[id].name }))
+    })
+
+    const constraintList = computed(() => {
+      if (!lastSelectedBone.value) return []
+
+      return lastSelectedBone.value.constraints.map(
+        (c) => animationStore.currentInterpolatedConstraintMap.value[c.id]
+      )
     })
 
     const selectedObjectType = computed((): 'bone' | 'armature' | '' => {
@@ -142,6 +151,17 @@ export default defineComponent({
       animationStore.execInsertKeyframeConstraint(constraintId, { [key]: true })
     }
 
+    function removeKeyframeConstraint(
+      constraintId: string,
+      key: KeyframeConstraintPropKey
+    ) {
+      const target = constraintKeyframeMapByTargetId.value[constraintId].find(
+        (k) => k.frame === currentFrame.value
+      )
+      if (!target) return
+      animationStore.execDeleteKeyframeConstraint(target.id, { [key]: true })
+    }
+
     watch(store.lastSelectedArmature, initDraftName)
     watch(lastSelectedBone, initDraftName)
 
@@ -149,7 +169,8 @@ export default defineComponent({
       draftName,
       lastSelectedArmature: store.lastSelectedArmature,
       lastSelectedBone,
-      constraintKeyframeMap,
+      constraintList,
+      constraintKeyframeMapByTargetId,
       currentFrame,
       otherBoneOptions,
       selectedObjectType,
@@ -205,6 +226,7 @@ export default defineComponent({
       },
       updateConstraints,
       addKeyframeConstraint,
+      removeKeyframeConstraint,
     }
   },
 })

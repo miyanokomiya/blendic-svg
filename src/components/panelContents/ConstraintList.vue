@@ -61,6 +61,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           (option, seriesKey) => updateConstraint(i, option, seriesKey)
         "
         @add-keyframe="(key) => addKeyframe(i, key)"
+        @remove-keyframe="(key) => removeKeyframe(i, key)"
       />
     </template>
     <template v-else-if="c.type === 'LIMIT_ROTATION'">
@@ -186,7 +187,7 @@ export default defineComponent({
       default: 0,
     },
   },
-  emits: ['update', 'add-keyframe'],
+  emits: ['update', 'add-keyframe', 'remove-keyframe'],
   setup(props, { emit }) {
     const constraintOptions = computed<
       { value: BoneConstraintType; label: string }[]
@@ -260,6 +261,12 @@ export default defineComponent({
       emit('add-keyframe', target.id, key)
     }
 
+    function removeKeyframe(index: number, key: KeyframeConstraintPropKey) {
+      const target = props.constraints[index]
+      if (!target) return
+      emit('remove-keyframe', target.id, key)
+    }
+
     return {
       constraintOptions,
       getKeyframeStatus,
@@ -270,6 +277,7 @@ export default defineComponent({
       upConstraint,
       downConstraint,
       addKeyframe,
+      removeKeyframe,
     }
   },
 })

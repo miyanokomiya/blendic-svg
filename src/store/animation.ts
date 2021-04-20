@@ -442,6 +442,14 @@ function execInsertKeyframe(
 
   historyStore.push(getExecInsertKeyframeItem(keyframes), true)
 }
+function execDeleteKeyframes() {
+  if (!isAnyVisibledSelectedKeyframe.value) return
+  historyStore.push(
+    getExecDeleteKeyframesItem(keyframeState.selectedStateMap.value),
+    true
+  )
+}
+
 function execInsertKeyframeConstraint(
   constraintId: string,
   keys: Partial<
@@ -474,10 +482,23 @@ function execInsertKeyframeConstraint(
 
   historyStore.push(getExecInsertKeyframeItem([keyframe]), true)
 }
-function execDeleteKeyframes() {
+function execDeleteKeyframeConstraint(
+  constraintId: string,
+  keys: Partial<
+    {
+      [key in KeyframeConstraintPropKey]: boolean
+    }
+  > = {}
+) {
   if (!isAnyVisibledSelectedKeyframe.value) return
-  historyStore.push(getExecDeleteKeyframesItem(), true)
+  historyStore.push(
+    getExecDeleteKeyframesItem({
+      [constraintId]: { props: keys },
+    }),
+    true
+  )
 }
+
 function execUpdateKeyframes(
   keyframes: IdMap<KeyframeBase>,
   seriesKey?: string
@@ -569,9 +590,13 @@ export function useAnimationStore() {
     selectKeyframe,
     selectKeyframeByFrame,
     selectAllKeyframes,
+
     execInsertKeyframe,
-    execInsertKeyframeConstraint,
     execDeleteKeyframes,
+
+    execInsertKeyframeConstraint,
+    execDeleteKeyframeConstraint,
+
     execUpdateKeyframes,
     pasteKeyframes,
     completeDuplicateKeyframes,
@@ -672,12 +697,11 @@ function getExecInsertKeyframeItem(
   )
 }
 
-function getExecDeleteKeyframesItem() {
+function getExecDeleteKeyframesItem(
+  selectedStateMap: IdMap<KeyframeSelectedState>
+): HistoryItem {
   return convolute(
-    getDeleteKeyframesItem(
-      getKeyframeAccessor(),
-      keyframeState.selectedStateMap.value
-    ),
+    getDeleteKeyframesItem(getKeyframeAccessor(), selectedStateMap),
     [getSelectKeyframesItem({})]
   )
 }

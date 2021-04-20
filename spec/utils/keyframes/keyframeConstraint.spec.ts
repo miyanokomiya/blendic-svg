@@ -56,38 +56,49 @@ describe('utils/keyframes/keyframeConstraint.ts', () => {
   })
 
   describe('interpolateKeyframe', () => {
-    it('influence', () => {
-      expect(
-        target.interpolateKeyframe(
-          [
-            getKeyframeConstraint({
-              frame: 0,
-              points: {
-                influence: { value: 10, curve: getCurve('linear') },
-              },
-            }),
-            getKeyframeConstraint({
-              frame: 1,
-              points: {
-                influence: { value: 100, curve: getCurve('linear') },
-              },
-            }),
-            getKeyframeConstraint({
-              frame: 2,
-            }),
-            getKeyframeConstraint({
-              frame: 4,
-            }),
-            getKeyframeConstraint({
-              frame: 5,
-              points: {
-                influence: { value: 1000, curve: getCurve('linear') },
-              },
-            }),
-          ],
-          3
-        )
-      ).toEqual({ influence: 550 })
+    describe('influence', () => {
+      it('should be interpolated', () => {
+        expect(
+          target.interpolateKeyframe(
+            [
+              getKeyframeConstraint({
+                frame: 1,
+                points: {
+                  influence: { value: 0.5, curve: getCurve('linear') },
+                },
+              }),
+              getKeyframeConstraint({
+                frame: 5,
+                points: {
+                  influence: { value: 1, curve: getCurve('linear') },
+                },
+              }),
+            ],
+            3
+          )
+        ).toEqual({ influence: 0.75 })
+      })
+      it('should be clamped between 0 to 1', () => {
+        expect(
+          target.interpolateKeyframe(
+            [
+              getKeyframeConstraint({
+                frame: 1,
+                points: {
+                  influence: { value: 0, curve: getCurve('linear') },
+                },
+              }),
+              getKeyframeConstraint({
+                frame: 5,
+                points: {
+                  influence: { value: 10, curve: getCurve('linear') },
+                },
+              }),
+            ],
+            3
+          )
+        ).toEqual({ influence: 1 })
+      })
     })
   })
 

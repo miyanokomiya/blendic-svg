@@ -30,6 +30,7 @@ import {
 import { mapReduce } from '/@/utils/commons'
 import { interpolateKeyframeProp } from '/@/utils/keyframes/core'
 import { BoneConstraint } from '/@/utils/constraints/index'
+import { clamp } from '/@/utils/geometry'
 
 export function getInterpolatedConstraintMap(
   constraintMap: IdMap<BoneConstraint>,
@@ -60,8 +61,11 @@ export function interpolateKeyframe(
   sortedKeyframes: KeyframeConstraint[],
   frame: number
 ): { influence: number } {
-  const influence =
+  const influence = clamp(
+    0,
+    1,
     interpolateKeyframeProp(sortedKeyframes, frame, getInfluence) ?? 1
+  )
 
   return {
     influence,

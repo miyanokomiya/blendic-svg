@@ -401,15 +401,11 @@ describe('utils/animations.ts', () => {
 
   describe('getEditedKeyframeConstraint', () => {
     it('should return identity if not edited', () => {
-      expect(
-        getEditedKeyframeConstraint(
-          getKeyframeConstraint({
-            points: { influence: getKeyframePoint({ value: 0 }) },
-          })
-        )
-      ).toEqual(getKeyframeConstraint())
+      expect(getEditedKeyframeConstraint(getKeyframeConstraint())).toEqual(
+        getKeyframeConstraint()
+      )
     })
-    fit('should return edited keyframe constraint', () => {
+    it('should return edited keyframe constraint', () => {
       const ret = getEditedKeyframeConstraint(
         getKeyframeConstraint({
           points: { influence: getKeyframePoint({ value: 0 }) },

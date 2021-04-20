@@ -91,7 +91,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+import { defineComponent } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
@@ -100,10 +100,9 @@ import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
 import { SpaceType } from '/@/models'
 import {
-  KeyframeConstraintPropKey,
-  KeyframePropsStatus,
-  KeyframeStatus,
-} from '/@/models/keyframe'
+  getProps,
+  spaceTypeOptions,
+} from '/@/components/molecules/constraints/common'
 
 export default defineComponent({
   components: {
@@ -113,43 +112,14 @@ export default defineComponent({
     CheckboxInput,
     KeyDot,
   },
-  props: {
-    modelValue: {
-      type: Object as PropType<BoneConstraintOptions['LIMIT_LOCATION']>,
-      required: true,
-    },
-    keyframeStatusMap: {
-      type: Object as PropType<KeyframePropsStatus['props']>,
-      default: () => ({}),
-    },
-  },
-  emits: ['update:modelValue', 'add-keyframe', 'remove-keyframe'],
+  props: getProps<BoneConstraintOptions['LIMIT_LOCATION']>(),
+  emits: ['update:modelValue'],
   setup(props, { emit }) {
     function emitUpdated(
       val: Partial<BoneConstraintOptions['LIMIT_LOCATION']>,
       seriesKey?: string
     ) {
       emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
-    }
-
-    const spaceTypeOptions = computed<{ value: SpaceType; label: string }[]>(
-      () => {
-        return [
-          { value: 'world', label: 'World' },
-          { value: 'local', label: 'Local' },
-        ]
-      }
-    )
-
-    function updateKeyframeStatus(
-      key: KeyframeConstraintPropKey,
-      status: KeyframeStatus
-    ) {
-      if (status === 'checked') {
-        emit('add-keyframe', key)
-      } else if (status === '') {
-        emit('remove-keyframe', key)
-      }
     }
 
     return {
@@ -185,7 +155,6 @@ export default defineComponent({
       updateInfluence(val: number, seriesKey?: string) {
         emitUpdated({ influence: val }, seriesKey)
       },
-      updateKeyframeStatus,
     }
   },
 })

@@ -42,7 +42,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           <g v-for="k in keyframes" :key="k.id">
             <KeyPointGroup
               :key-frame="k"
-              :child-map="transformMap[k.targetId].children"
+              :child-map="targetMap[k.targetId].children"
               :top="targetTopMap[k.targetId]"
               :selected-state="selectedKeyframeMap[k.id]"
               :expanded="targetExpandedMap[k.targetId]"
@@ -89,10 +89,6 @@ export default defineComponent({
       type: Array as PropType<KeyframeTargetSummary[]>,
       default: () => [],
     },
-    constraintIds: {
-      type: Array as PropType<string[]>,
-      default: () => [],
-    },
     selectedKeyframeMap: {
       type: Object as PropType<IdMap<KeyframeSelectedState>>,
       default: () => ({}),
@@ -129,16 +125,8 @@ export default defineComponent({
       }
     )
 
-    const constraintIndexMap = computed(() => {
-      const targetLength = targetIds.value.length
-      return props.constraintIds.reduce<IdMap<number>>((p, id, i) => {
-        p[id] = i + targetLength
-        return p
-      }, {})
-    })
-
     const indexMap = computed(() => {
-      return { ...targetIndexMap.value, ...constraintIndexMap.value }
+      return targetIndexMap.value
     })
 
     const sortedKeyframeMapByFrame = computed(() => {
@@ -186,7 +174,7 @@ export default defineComponent({
       })
     })
 
-    const transformMap = computed(() => {
+    const targetMap = computed(() => {
       return toMap(props.targetList)
     })
 
@@ -214,7 +202,7 @@ export default defineComponent({
     return {
       frameWidth,
       sortedKeyframeMapByFrame,
-      transformMap,
+      targetMap,
       getSameRangeFrame,
       selectedFrameMap,
       select,

@@ -75,7 +75,7 @@ Copyright (C) 2021, Tomoya Komiyama.
               :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
             >
               <TimelineBones
-                :target-list="selectedTargetList"
+                :target-list="selectedTargetSummaryList"
                 :label-width="size + 1"
                 :scroll-y="viewOrigin.y"
                 :target-expanded-map="expandedMap"
@@ -139,9 +139,8 @@ Copyright (C) 2021, Tomoya Komiyama.
                         v-if="canvasType === 'action'"
                         :scale="scale"
                         :keyframe-map-by-frame="keyframeMapByFrame"
-                        :target-list="selectedTargetList"
+                        :target-list="selectedTargetSummaryList"
                         :target-ids="selectedTargetIdList"
-                        :constraint-ids="selectedAllConstraintIdList"
                         :selected-keyframe-map="selectedKeyframeMap"
                         :scroll-y="viewOrigin.y"
                         :target-expanded-map="expandedMap"
@@ -214,18 +213,18 @@ import { IVec2 } from 'okageo'
 import { toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
 import { useKeyframeEditMode } from '../composables/modes/keyframeEditMode'
-import { IdMap } from '/@/models'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'
 import { EditMovement } from '/@/composables/modes/types'
-import {
-  CurveSelectedState,
-  KeyframeBase,
-  KeyframeName,
-} from '/@/models/keyframe'
+import { CurveSelectedState, KeyframeBase } from '/@/models/keyframe'
 import { useBooleanMap } from '/@/composables/idMap'
 import { Size } from 'okanvas'
-import { KeyframeTargetSummary } from '/@/utils/helpers'
+import {
+  getKeyframeBoneSummary,
+  getKeyframeConstraintSummary,
+  getTargetTopMap,
+  KeyframeTargetSummary,
+} from '/@/utils/helpers'
 
 const labelHeight = 24
 
@@ -406,33 +405,15 @@ export default defineComponent({
     const selectedTargetIdList = computed(() =>
       selectedAllBoneIdList.value.concat(selectedAllConstraintIdList.value)
     )
-    const selectedTargetList = computed<KeyframeTargetSummary[]>(() => {
+    const selectedTargetSummaryList = computed<KeyframeTargetSummary[]>(() => {
       const boneMap = animationStore.selectedBoneMap.value
       const constraintMap = animationStore.selectedConstraintMap.value
       return [
-        ...selectedAllBoneList.value.map((b) => ({
-          id: b.id,
-          name: b.name,
-          type: 'bone' as KeyframeName,
-          children: {
-            translateX: 0,
-            translateY: 1,
-            rotate: 2,
-            scaleX: 3,
-            scaleY: 4,
-          },
-        })),
+        ...selectedAllBoneList.value.map((b) => getKeyframeBoneSummary(b)),
         ...selectedAllConstraintIdList.value.map((id) => {
           const c = constraintMap[id]
           const b = boneMap[c.boneId]
-          return {
-            id,
-            name: `${b.name}_${c.name}`,
-            type: 'constraint' as KeyframeName,
-            children: {
-              influence: 0,
-            },
-          }
+          return getKeyframeConstraintSummary(b, c)
         }),
       ]
     })
@@ -498,19 +479,14 @@ export default defineComponent({
         Object.keys(store.constraintMap.value)
       )
     )
+
     const targetTopMap = computed(() => {
-      let current = 2 * labelHeight
-      return selectedTargetIdList.value.reduce<IdMap<number>>((p, id) => {
-        const expandedHeight =
-          animationStore.selectedTargetIdMap.value[id].type === 'bone' ? 6 : 1
-        const top = current
-        current =
-          current +
-          labelHeight *
-            (keyframeExpandedMap.booleanMap.value[id] ? expandedHeight : 1)
-        p[id] = top
-        return p
-      }, {})
+      return getTargetTopMap(
+        selectedTargetSummaryList.value,
+        keyframeExpandedMap.booleanMap.value,
+        labelHeight,
+        2
+      )
     })
 
     return {
@@ -519,8 +495,7 @@ export default defineComponent({
       playing: animationStore.playing,
       actions: animationStore.actions.value,
       selectedTargetIdList,
-      selectedAllConstraintIdList,
-      selectedTargetList,
+      selectedTargetSummaryList,
       propsStateMap: animationStore.visibledTargetPropsStateMap,
       lastSelectedKeyframe: animationStore.lastSelectedKeyframe,
       keyframeMapByFrame,

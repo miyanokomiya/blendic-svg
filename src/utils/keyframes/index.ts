@@ -30,8 +30,9 @@ import {
   KeyframeName,
   KeyframePoint,
   KeyframeSelectedState,
+  KeyframeStatus,
 } from '/@/models/keyframe'
-import { mapFilter, mapReduce } from '/@/utils/commons'
+import { mapReduce } from '/@/utils/commons'
 import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 import * as keyframeConstraintModule from '/@/utils/keyframes/keyframeConstraint'
 
@@ -395,18 +396,14 @@ export function splitKeyframeMapByName(
 }
 
 export function getKeyframeStatus(
-  constraintKeyframeMap: IdMap<KeyframeConstraint[]>,
+  keyframeMap: IdMap<KeyframeBase[]>,
   currentFrame: number,
   id: string
-) {
-  const keyframes = constraintKeyframeMap[id]
-  if (!keyframes) return
+): IdMap<KeyframeStatus> {
+  const keyframes = keyframeMap[id]
+  if (!keyframes) return {}
 
-  const existedProps = mapFilter(
-    getKeyframePropsMap(keyframes, 'constraint').props,
-    (list) => list.length > 0
-  )
-  return mapReduce(existedProps, (list) => {
+  return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
     return list.some((k) => k.frame === currentFrame) ? 'checked' : 'enabled'
   })
 }

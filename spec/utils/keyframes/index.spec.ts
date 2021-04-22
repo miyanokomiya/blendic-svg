@@ -17,7 +17,11 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
+import {
+  getKeyframeBone,
+  getKeyframeConstraint,
+  getKeyframePoint,
+} from '/@/models/keyframe'
 import * as target from '/@/utils/keyframes'
 import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 
@@ -310,6 +314,38 @@ describe('utils/keyframes/index.ts', () => {
     })
   })
 
+  describe('getKeyframeExistedPropsMap', () => {
+    it('should return existed props map', () => {
+      const key1 = getKeyframeBone({
+        frame: 1,
+        points: {
+          translateX: getKeyframePoint({ value: 1 }),
+        },
+      })
+      const key2 = getKeyframeBone({
+        frame: 2,
+        points: {
+          translateX: getKeyframePoint({ value: 2 }),
+          translateY: getKeyframePoint({ value: 20 }),
+        },
+      })
+      const key3 = getKeyframeBone({
+        frame: 3,
+        points: {
+          translateY: getKeyframePoint(),
+        },
+      })
+
+      const ret = target.getKeyframeExistedPropsMap([key1, key2, key3])
+      expect(ret).toEqual({
+        props: {
+          translateX: [key1, key2],
+          translateY: [key2, key3],
+        },
+      })
+    })
+  })
+
   describe('getSamePropRangeFrameMapByBoneId', () => {
     it('get same range frame map by bone id', () => {
       const t1 = getKeyframePoint({ value: 0 })
@@ -534,6 +570,25 @@ describe('utils/keyframes/index.ts', () => {
       expect(ret.falseMap).toEqual({
         a: { props: { x: true } },
         b: { props: { x: true, y: true } },
+      })
+    })
+  })
+
+  describe('splitKeyframeMapByName', () => {
+    it('should split keyframes by the name', () => {
+      const src = {
+        a: [getKeyframeBone({ id: 'aa' })],
+        b: [getKeyframeBone({ id: 'bb' })],
+        c: [getKeyframeConstraint()],
+        d: [],
+      }
+      const ret = target.splitKeyframeMapByName(src)
+      expect(ret.bone).toEqual({
+        a: [getKeyframeBone({ id: 'aa' })],
+        b: [getKeyframeBone({ id: 'bb' })],
+      })
+      expect(ret.constraint).toEqual({
+        c: [getKeyframeConstraint()],
       })
     })
   })

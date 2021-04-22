@@ -177,6 +177,9 @@ export default defineComponent({
       if (!lastSelectedArmature.value) return {}
 
       if (canvasStore.command.value) {
+        const constraintMap =
+          animationStore.currentInterpolatedConstraintMap.value
+
         return getTransformedBoneMap(
           toMap(
             lastSelectedArmature.value.bones.map((b) => {
@@ -186,6 +189,7 @@ export default defineComponent({
                   animationStore.getCurrentSelfTransforms(b.id),
                   canvasStore.getEditTransforms(b.id),
                 ]),
+                constraints: b.constraints.map((b) => constraintMap[b.id]),
               }
             })
           )

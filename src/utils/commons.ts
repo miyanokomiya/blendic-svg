@@ -300,3 +300,20 @@ export function mergeOrDropMap<T>(
 export function uniq<T>(src: T[]): T[] {
   return Array.from(new Set(src))
 }
+
+export function resetId<T extends { id: string }>(src: T): T {
+  return {
+    ...src,
+    id: v4(),
+  }
+}
+
+export function getFirstProp<A extends string, T extends { [key in A]: K }, K>(
+  src: T[],
+  key: A,
+  defaultValue: K
+): K {
+  const first = src[0]
+  if (!first) return defaultValue
+  return first[key] as K
+}

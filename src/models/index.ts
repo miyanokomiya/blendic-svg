@@ -21,7 +21,7 @@ import { IRectangle, IVec2 } from 'okageo'
 import { v4 } from 'uuid'
 import { toKeyMap } from '../utils/commons'
 import { BoneConstraint } from '../utils/constraints'
-import { KeyframeBone } from '/@/models/keyframe'
+import { KeyframeBase } from '/@/models/keyframe'
 
 export type IdMap<T> = {
   [id: string]: T
@@ -39,7 +39,7 @@ export interface Action {
   name: string
   totalFrame: number
   armatureId: string
-  keyframes: KeyframeBone[]
+  keyframes: KeyframeBase[]
 }
 
 export interface Bone {

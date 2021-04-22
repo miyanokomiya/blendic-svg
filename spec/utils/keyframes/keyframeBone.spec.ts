@@ -21,7 +21,7 @@ import { getTransform } from '/@/models'
 import { getCurve, getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import * as target from '/@/utils/keyframes/keyframeBone'
 
-describe('utils/keyframes/index.ts', () => {
+describe('utils/keyframes/keyframeBone', () => {
   describe('interpolateKeyframe', () => {
     it('translate', () => {
       expect(

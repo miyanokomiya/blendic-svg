@@ -18,8 +18,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { IVec2, IRectangle, isZero } from 'okageo'
-import { ElementNodeAttributes, Transform } from '../models/index'
+import { IdMap, Bone, ElementNodeAttributes, Transform } from '../models/index'
 import { dropMap } from '/@/utils/commons'
+import { BoneConstraint } from '/@/utils/constraints'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
   if (scale.x === 1 && scale.y === 1) return ''
@@ -126,6 +127,60 @@ export function getKeyframeTopMap(
 ): { [key: string]: number } {
   return Object.keys(childMap).reduce<{ [key: string]: number }>((p, c) => {
     p[c] = top + height * (childMap[c] + 1)
+    return p
+  }, {})
+}
+
+export interface KeyframeTargetSummary {
+  id: string
+  name: string
+  children: {
+    [name: string]: number
+  }
+}
+
+const boneLabelChildren = {
+  translateX: 0,
+  translateY: 1,
+  rotate: 2,
+  scaleX: 3,
+  scaleY: 4,
+}
+
+export function getKeyframeBoneSummary(bone: Bone): KeyframeTargetSummary {
+  return {
+    id: bone.id,
+    name: bone.name,
+    children: boneLabelChildren,
+  }
+}
+
+export function getKeyframeConstraintSummary(
+  bone: Bone,
+  constraint: BoneConstraint
+): KeyframeTargetSummary {
+  return {
+    id: constraint.id,
+    name: `${bone.name}:${constraint.name}`,
+    children: { influence: 0 },
+  }
+}
+
+export function getTargetTopMap(
+  summaryList: KeyframeTargetSummary[],
+  keyframeExpandedMap: IdMap<boolean>,
+  labelHeight: number,
+  paddingIndex: number = 0
+) {
+  let current = paddingIndex * labelHeight
+  return summaryList.reduce<IdMap<number>>((p, summary) => {
+    p[summary.id] = current
+    current =
+      current +
+      labelHeight *
+        (keyframeExpandedMap[summary.id]
+          ? Object.keys(summary.children).length + 1
+          : 1)
     return p
   }, {})
 }

@@ -50,28 +50,33 @@ Copyright (C) 2021, Tomoya Komiyama.
         @update:modelValue="updateIterations"
       />
     </InlineField>
+    <InlineField label="Influence" :label-width="labelWidth">
+      <SliderInput
+        :model-value="modelValue.influence"
+        :min="0"
+        :max="1"
+        @update:modelValue="updateInfluence"
+      />
+      <KeyDot
+        :status="keyframeStatusMap['influence']"
+        @update:status="(val) => updateKeyframeStatus('influence', val)"
+      />
+    </InlineField>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { defineComponent } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import KeyDot from '/@/components/atoms/KeyDot.vue'
+import { getProps } from '/@/components/molecules/constraints/common'
 
 export default defineComponent({
-  components: { SliderInput, SelectField, InlineField },
-  props: {
-    modelValue: {
-      type: Object as PropType<BoneConstraintOptions['IK']>,
-      required: true,
-    },
-    boneOptions: {
-      type: Array as PropType<{ value: string; label: string }[]>,
-      required: true,
-    },
-  },
+  components: { SliderInput, SelectField, InlineField, KeyDot },
+  props: getProps<BoneConstraintOptions['IK']>(),
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     function emitUpdated(
@@ -94,6 +99,9 @@ export default defineComponent({
       },
       updateIterations(val: number, seriesKey?: string) {
         emitUpdated({ iterations: val }, seriesKey)
+      },
+      updateInfluence(val: number, seriesKey?: string) {
+        emitUpdated({ influence: val }, seriesKey)
       },
     }
   },

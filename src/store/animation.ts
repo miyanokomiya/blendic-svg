@@ -31,6 +31,8 @@ import {
   getKeyframeMapByFrame,
   slideKeyframesTo,
   pastePoseMap,
+  getEditedConstraint,
+  getEditedKeyframeConstraint,
 } from '../utils/animations'
 import {
   convolutePoseTransforms,
@@ -45,6 +47,7 @@ import {
   mapReduce,
   toList,
   uniq,
+  resetId,
 } from '../utils/commons'
 import { getNotDuplicatedName } from '../utils/relations'
 import { useHistoryStore } from './history'
@@ -71,21 +74,34 @@ import {
   toMap,
   Transform,
   isBoneSelected,
+  mergeMap,
 } from '/@/models'
 import {
-  getKeyframeBone,
   KeyframeBase,
+  KeyframeBone,
+  KeyframeConstraintPropKey,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
+import {
+  BoneConstraint,
+  BoneConstraintOption,
+  BoneConstraintWithBoneId,
+} from '/@/utils/constraints'
 import { convolute, getReplaceItem } from '/@/utils/histories'
-import { getAllSelectedState, isAllExistSelected } from '/@/utils/keyframes'
+import {
+  getAllSelectedState,
+  isAllExistSelected,
+  splitKeyframeMapByName,
+} from '/@/utils/keyframes'
 import {
   getInterpolatedTransformMapByTargetId,
   makeKeyframe,
 } from '/@/utils/keyframes/keyframeBone'
+import * as keyframeConstraint from '/@/utils/keyframes/keyframeConstraint'
 
 const actions = useListState<Action>('Action')
 const editTransforms = ref<IdMap<Transform>>({})
+const editConstraints = ref<IdMap<Partial<BoneConstraintOption>>>({})
 
 const historyStore = useHistoryStore()
 const store = useStore()
@@ -102,8 +118,25 @@ const keyframeMapByTargetId = computed(() => {
   return getKeyframeMapByTargetId(keyframeList.value)
 })
 
+const keyframeBoneMapByTargetId = computed(() => {
+  return extractMap(keyframeMapByTargetId.value, {
+    ...store.boneMap.value,
+    ...store.constraintMap.value,
+  }) as IdMap<KeyframeBone[]>
+})
+
 const visibledKeyframeMapByTargetId = computed(() => {
-  return extractMap(keyframeMapByTargetId.value, selectedBoneIdMap.value)
+  return extractMap(keyframeMapByTargetId.value, {
+    ...selectedBoneIdMap.value,
+    ...selectedConstraintMap.value,
+  })
+})
+
+const selectedTargetIdMap = computed(() => {
+  return {
+    ...mapReduce(selectedBoneIdMap.value, () => ({ type: 'bone' })),
+    ...mapReduce(selectedConstraintMap.value, () => ({ type: 'constraint' })),
+  }
 })
 
 const visibledKeyframeMap = computed(() => {
@@ -117,6 +150,7 @@ const keyframeState = useKeyframeStates(() => visibledKeyframeMap.value)
 function initState(initActions: Action[] = []) {
   actions.state.list = initActions
   editTransforms.value = {}
+  editConstraints.value = {}
   targetPropsState.clear().redo()
   keyframeState.clear().redo()
 }
@@ -142,10 +176,26 @@ const visibledTargetPropsStateMap = computed(() => {
   )
 })
 
+const splitedKeyframeMapByTargetId = computed(() => {
+  return splitKeyframeMapByName(keyframeMapByTargetId.value)
+})
+
+const currentInterpolatedConstraintMap = computed<IdMap<BoneConstraint>>(() => {
+  return keyframeConstraint.getInterpolatedConstraintMap(
+    store.constraintMap.value,
+    mapReduce(splitedKeyframeMapByTargetId.value.constraint, (list) => {
+      return list.map((c) => {
+        return getEditedKeyframeConstraint(c, editConstraints.value[c.targetId])
+      })
+    }),
+    animationFrameStore.currentFrame.value
+  )
+})
+
 const currentInterpolatedTransformMapByTargetId = computed(
   (): IdMap<Transform> => {
     return getInterpolatedTransformMapByTargetId(
-      keyframeMapByTargetId.value,
+      keyframeBoneMapByTargetId.value,
       animationFrameStore.currentFrame.value
     )
   }
@@ -179,6 +229,9 @@ const currentPosedBones = computed(
         store.lastSelectedArmature.value.bones.map((b) => ({
           ...b,
           transform: getCurrentSelfTransforms(b.id),
+          constraints: b.constraints.map(
+            (c) => currentInterpolatedConstraintMap.value[c.id]
+          ),
         }))
       )
     )
@@ -209,6 +262,24 @@ const selectedPosedBoneOrigin = computed(
   }
 )
 
+const selectedConstraintMapByBoneId = computed<{
+  [id: string]: BoneConstraintWithBoneId[]
+}>(() => {
+  return mapReduce(selectedBoneMap.value, (b) =>
+    b.constraints.map((c) => ({ ...c, boneId: b.id }))
+  )
+})
+
+const selectedConstraintMap = computed<{
+  [id: string]: BoneConstraintWithBoneId
+}>(() => {
+  return toMap(
+    toList(selectedConstraintMapByBoneId.value)
+      .flat()
+      .filter((c) => keyframeMapByTargetId.value[c.id])
+  )
+})
+
 function setEditedTransforms(mapByTargetId: IdMap<Transform>) {
   historyStore.push(getUpdateEditedTransformsItem(mapByTargetId), true)
 }
@@ -222,6 +293,26 @@ function applyEditedTransforms(mapByTargetId: IdMap<Transform>) {
     })
   )
 }
+
+function setEditedConstraints(
+  mapByTargetId: IdMap<Partial<BoneConstraintOption>>,
+  seriesKey?: string
+) {
+  historyStore.push(
+    getUpdateEditedConstraintsItem(mapByTargetId, undefined, seriesKey),
+    true
+  )
+}
+function applyEditedConstraint(
+  mapByTargetId: IdMap<Partial<BoneConstraintOption>>,
+  seriesKey?: string
+) {
+  setEditedConstraints(
+    mergeMap(editConstraints.value, mapByTargetId),
+    seriesKey
+  )
+}
+
 function pastePoses(mapByTargetId: IdMap<Transform>, seriesKey?: string) {
   const item = getUpdateEditedTransformsItem(
     {
@@ -252,7 +343,10 @@ function getCurrentSelfTransforms(targetId: string): Transform {
 function updateCurrentFrame(frameItem?: HistoryItem) {
   if (frameItem) {
     historyStore.push(
-      convolute(frameItem, [getUpdateEditedTransformsItem({})]),
+      convolute(frameItem, [
+        getUpdateEditedTransformsItem({}),
+        getUpdateEditedConstraintsItem({}),
+      ]),
       true
     )
   }
@@ -360,6 +454,7 @@ function selectAllKeyframes() {
     historyStore.push(getSelectAllKeyframesItem(), true)
   }
 }
+
 function execInsertKeyframe(
   options: {
     useTranslate?: boolean
@@ -367,7 +462,6 @@ function execInsertKeyframe(
     useScale?: boolean
   } = {}
 ) {
-  if (Object.keys(selectedBoneIdMap.value).length === 0) return
   if (!actions.lastSelectedItem.value) {
     addAction()
   }
@@ -386,8 +480,63 @@ function execInsertKeyframe(
 }
 function execDeleteKeyframes() {
   if (!isAnyVisibledSelectedKeyframe.value) return
-  historyStore.push(getExecDeleteKeyframesItem(), true)
+  historyStore.push(
+    getExecDeleteKeyframesItem(keyframeState.selectedStateMap.value),
+    true
+  )
 }
+
+function getCurrentConstraintById(
+  constraintId: string
+): BoneConstraint | undefined {
+  const target = currentInterpolatedConstraintMap.value[constraintId]
+  if (!target) return
+  return getEditedConstraint(target, editConstraints.value[target.id])
+}
+
+function execInsertKeyframeConstraint(
+  constraintId: string,
+  keys: Partial<
+    {
+      [key in KeyframeConstraintPropKey]: boolean
+    }
+  > = {}
+) {
+  if (Object.keys(selectedBoneIdMap.value).length === 0) return
+  if (!actions.lastSelectedItem.value) {
+    addAction()
+  }
+
+  const target = getCurrentConstraintById(constraintId)
+  if (!target) return
+
+  const keyframe = keyframeConstraint.makeKeyframe(
+    animationFrameStore.currentFrame.value,
+    constraintId,
+    target,
+    keys,
+    true
+  )
+
+  historyStore.push(getExecInsertKeyframeItem([keyframe]), true)
+}
+function execDeleteKeyframeConstraint(
+  constraintId: string,
+  keys: Partial<
+    {
+      [key in KeyframeConstraintPropKey]: boolean
+    }
+  > = {}
+) {
+  if (!isAnyVisibledSelectedKeyframe.value) return
+  historyStore.push(
+    getExecDeleteKeyframesItem({
+      [constraintId]: { props: keys },
+    }),
+    true
+  )
+}
+
 function execUpdateKeyframes(
   keyframes: IdMap<KeyframeBase>,
   seriesKey?: string
@@ -399,7 +548,7 @@ function pasteKeyframes(keyframeList: KeyframeBase[]) {
     slideKeyframesTo(
       keyframeList
         .filter((k) => store.boneMap.value[k.targetId])
-        .map((k) => getKeyframeBone(k, true)),
+        .map((k) => resetId(k)),
       animationFrameStore.currentFrame.value
     )
   )
@@ -431,12 +580,15 @@ export function useAnimationStore() {
     initState,
     actions: computed(() => actions.state.list),
     actionMap: actions.itemMap,
+
     selectedKeyframeMap: keyframeState.selectedStateMap,
     lastSelectedKeyframe,
     keyframeMapByFrame,
     keyframeMapByTargetId,
     visibledKeyframeMap,
     visibledSelectedKeyframeMap,
+    selectedConstraintMap,
+    selectedTargetIdMap,
 
     visibledTargetPropsStateMap,
 
@@ -447,8 +599,11 @@ export function useAnimationStore() {
     selectedBones,
     selectedPosedBoneOrigin,
     getCurrentSelfTransforms,
+    currentInterpolatedConstraintMap,
 
     applyEditedTransforms,
+    applyEditedConstraint,
+
     pastePoses,
 
     playing: animationFrameStore.playing,
@@ -475,8 +630,13 @@ export function useAnimationStore() {
     selectKeyframe,
     selectKeyframeByFrame,
     selectAllKeyframes,
+
     execInsertKeyframe,
     execDeleteKeyframes,
+
+    execInsertKeyframeConstraint,
+    execDeleteKeyframeConstraint,
+
     execUpdateKeyframes,
     pasteKeyframes,
     completeDuplicateKeyframes,
@@ -494,6 +654,20 @@ function getUpdateEditedTransformsItem(
     editTransforms.value,
     val,
     (val) => (editTransforms.value = val),
+    name,
+    seriesKey
+  )
+}
+
+function getUpdateEditedConstraintsItem(
+  val: IdMap<Partial<BoneConstraintOption>>,
+  name = 'Update Constraint',
+  seriesKey?: string
+): HistoryItem {
+  return getReplaceItem(
+    editConstraints.value,
+    val,
+    (val) => (editConstraints.value = val),
     name,
     seriesKey
   )
@@ -577,12 +751,11 @@ function getExecInsertKeyframeItem(
   )
 }
 
-function getExecDeleteKeyframesItem() {
+function getExecDeleteKeyframesItem(
+  selectedStateMap: IdMap<KeyframeSelectedState>
+): HistoryItem {
   return convolute(
-    getDeleteKeyframesItem(
-      getKeyframeAccessor(),
-      keyframeState.selectedStateMap.value
-    ),
+    getDeleteKeyframesItem(getKeyframeAccessor(), selectedStateMap),
     [getSelectKeyframesItem({})]
   )
 }

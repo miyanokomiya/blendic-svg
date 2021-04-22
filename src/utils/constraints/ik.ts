@@ -20,12 +20,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { add, getRadian, IVec2, multi, rotate, sub } from 'okageo'
 import { getParentIdPath, sumReduce } from '../commons'
 import { Bone, IdMap, toMap } from '/@/models'
+import { interpolateTransform } from '/@/utils/armatures'
 
 export interface Option {
   targetId: string
   poleTargetId: string
   iterations: number
   chainLength: number
+  influence: number
 }
 
 export function apply(
@@ -50,6 +52,18 @@ export function apply(
   for (let i = 0; i < option.iterations; i++) {
     applied = step(targetPoint, applied)
   }
+
+  applied = applied.map((dist, i) => {
+    const src = bones[i]
+    return {
+      ...dist,
+      transform: interpolateTransform(
+        src.transform,
+        dist.transform,
+        option.influence
+      ),
+    }
+  })
 
   return {
     ...boneMap,
@@ -178,6 +192,7 @@ export function getOption(src: Partial<Option> = {}): Option {
     poleTargetId: '',
     iterations: 20,
     chainLength: 2,
+    influence: 1,
     ...src,
   }
 }

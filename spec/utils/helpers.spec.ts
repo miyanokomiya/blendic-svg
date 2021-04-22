@@ -17,12 +17,16 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getTransform } from '/@/models'
+import { getBone, getTransform } from '/@/models'
+import { getConstraint } from '/@/utils/constraints'
 import {
   parseStyle,
   toStyle,
   getTnansformStr,
   normalizeAttributes,
+  getKeyframeBoneSummary,
+  getKeyframeConstraintSummary,
+  getTargetTopMap,
 } from '/@/utils/helpers'
 
 describe('utils/helpers.ts', () => {
@@ -129,6 +133,93 @@ describe('utils/helpers.ts', () => {
         style: 'opacity:0.1;',
         fill: 'red',
         stroke: 'green',
+      })
+    })
+  })
+
+  describe('getKeyframeBoneSummary', () => {
+    it('should return a bone summary', () => {
+      expect(getKeyframeBoneSummary(getBone({ id: 'a', name: 'b' }))).toEqual({
+        id: 'a',
+        name: 'b',
+        children: {
+          translateX: 0,
+          translateY: 1,
+          rotate: 2,
+          scaleX: 3,
+          scaleY: 4,
+        },
+      })
+    })
+  })
+
+  describe('getKeyframeConstraintSummary', () => {
+    it('should return a bone summary', () => {
+      expect(
+        getKeyframeConstraintSummary(
+          getBone({ id: 'a', name: 'b' }),
+          getConstraint({
+            id: 'aa',
+            name: 'bb',
+            type: 'IK',
+          })
+        )
+      ).toEqual({
+        id: 'aa',
+        name: 'b:bb',
+        children: {
+          influence: 0,
+        },
+      })
+    })
+  })
+
+  describe('getTargetTopMap', () => {
+    it('should return top map of targets', () => {
+      expect(
+        getTargetTopMap(
+          [
+            {
+              id: 'a',
+              name: 'aa',
+              children: { aaa: 0 },
+            },
+            {
+              id: 'b',
+              name: 'bb',
+              children: { bbb: 0, a: 1 },
+            },
+            {
+              id: 'c',
+              name: 'cc',
+              children: { ccc: 0 },
+            },
+          ],
+          { b: true },
+          10
+        )
+      ).toEqual({
+        a: 0,
+        b: 10,
+        c: 40,
+      })
+    })
+    it('should consiger padding', () => {
+      expect(
+        getTargetTopMap(
+          [
+            {
+              id: 'a',
+              name: 'aa',
+              children: { aaa: 0 },
+            },
+          ],
+          { a: true },
+          10,
+          2
+        )
+      ).toEqual({
+        a: 20,
       })
     })
   })

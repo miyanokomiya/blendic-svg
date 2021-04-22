@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { getBone } from '/@/models'
 import * as ik from '/@/utils/constraints/ik'
 import {
-  getConstraintByType,
+  getConstraint,
   sortBoneByHighDependency,
   sortByDependency,
 } from '/@/utils/constraints/index'
@@ -32,11 +32,11 @@ describe('src/utils/constraints/index.ts', () => {
         getBone({
           id: 'a',
           constraints: [
-            getConstraintByType(
-              'IK',
-              'IK.001',
-              ik.getOption({ targetId: 'c' })
-            ),
+            getConstraint({
+              type: 'IK',
+              name: 'IK.001',
+              option: ik.getOption({ targetId: 'c' }),
+            }),
           ],
         }),
         getBone({

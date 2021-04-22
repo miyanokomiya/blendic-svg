@@ -26,12 +26,18 @@ import {
   multiAffines,
 } from 'okageo'
 import { getBElement, getBone, getElementNode, getTransform } from '/@/models'
-import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
+import {
+  getKeyframeBone,
+  getKeyframeConstraint,
+  getKeyframePoint,
+} from '/@/models/keyframe'
 import { boneToAffine } from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
+import { getConstraint } from '/@/utils/constraints'
 import {
   bakeKeyframe,
   bakeKeyframes,
+  getInterpolatedBoneMap,
   getNativeDeformMatrix,
   getPoseDeformMatrix,
   getPosedElementMatrixMap,
@@ -192,6 +198,42 @@ describe('utils/poseResolver.ts', () => {
           },
           elm_b: {},
         })
+      })
+    })
+
+    describe('getInterpolatedBoneMap', () => {
+      it('should get interpolated bones', () => {
+        const keyframeMapByTargetId = {
+          a: [
+            getKeyframeBone({
+              frame: 0,
+              points: { rotate: getKeyframePoint({ value: 0 }) },
+            }),
+            getKeyframeBone({
+              frame: 10,
+              points: { rotate: getKeyframePoint({ value: 100 }) },
+            }),
+          ],
+          con: [
+            getKeyframeConstraint({
+              frame: 0,
+              points: { influence: getKeyframePoint({ value: 0 }) },
+            }),
+            getKeyframeConstraint({
+              frame: 10,
+              points: { influence: getKeyframePoint({ value: 1 }) },
+            }),
+          ],
+        }
+        const boneMap = {
+          a: getBone({
+            id: 'a',
+            constraints: [getConstraint({ id: 'con', type: 'IK' })],
+          }),
+        }
+        const ret = getInterpolatedBoneMap(keyframeMapByTargetId, boneMap, 2)
+        expect(ret.a.transform.rotate).toBe(20)
+        expect(ret.a.constraints[0].option.influence).toBe(0.2)
       })
     })
 

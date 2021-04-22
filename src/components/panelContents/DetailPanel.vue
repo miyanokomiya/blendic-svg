@@ -50,9 +50,14 @@ Copyright (C) 2021, Tomoya Komiyama.
         <CheckboxInput v-model="inheritScale" label="Inherit Scale" />
       </InlineField>
       <ConstraintList
-        :constraints="lastSelectedBone.constraints"
+        :constraints="constraintList"
         :bone-options="otherBoneOptions"
+        :constraint-keyframe-map="constraintKeyframeMapByTargetId"
+        :current-frame="currentFrame"
         @update="updateConstraints"
+        @update-item="updateConstraint"
+        @add-keyframe="addKeyframeConstraint"
+        @remove-keyframe="removeKeyframeConstraint"
       />
     </form>
   </div>
@@ -67,6 +72,12 @@ import { BoneConstraint } from '/@/utils/constraints'
 import ConstraintList from '/@/components/panelContents/ConstraintList.vue'
 import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import {
+  KeyframeConstraint,
+  KeyframeConstraintPropKey,
+} from '/@/models/keyframe'
+import { useAnimationStore } from '/@/store/animation'
+import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
 
 export default defineComponent({
   components: {
@@ -77,11 +88,15 @@ export default defineComponent({
   },
   setup() {
     const store = useStore()
+    const animationStore = useAnimationStore()
     const draftName = ref('')
 
     const lastSelectedBone = computed(() => {
       return store.lastSelectedBone.value
     })
+
+    const constraintKeyframeMapByTargetId = animationStore.keyframeMapByTargetId
+    const currentFrame = animationStore.currentFrame
 
     const otherBoneOptions = computed(() => {
       if (!lastSelectedBone.value) return []
@@ -91,6 +106,14 @@ export default defineComponent({
         boneMap,
         lastSelectedBone.value.id
       ).map((id) => ({ value: id, label: boneMap[id].name }))
+    })
+
+    const constraintList = computed(() => {
+      if (!lastSelectedBone.value) return []
+
+      return lastSelectedBone.value.constraints.map(
+        (c) => animationStore.currentInterpolatedConstraintMap.value[c.id]
+      )
     })
 
     const selectedObjectType = computed((): 'bone' | 'armature' | '' => {
@@ -118,12 +141,68 @@ export default defineComponent({
       else draftName.value = ''
     }
 
+    function getKeyframeConstraint(
+      constraintId: string
+    ): KeyframeConstraint | undefined {
+      return constraintKeyframeMapByTargetId.value[constraintId].find(
+        (k) => k.frame === currentFrame.value
+      ) as KeyframeConstraint | undefined
+    }
+
     function updateConstraints(
       constraints: BoneConstraint[],
       seriesKey?: string
     ) {
       if (!lastSelectedBone.value) return
+
       store.updateBone({ constraints }, seriesKey)
+    }
+
+    function updateConstraint(constraint: BoneConstraint, seriesKey?: string) {
+      if (!lastSelectedBone.value) return
+
+      const index = constraintList.value.findIndex(
+        (c) => c.id === constraint.id
+      )
+      const current = constraintList.value[index]
+      const existedProps =
+        getKeyframeExistedPropsMap(
+          constraintKeyframeMapByTargetId.value[constraint.id] ?? []
+        ).props ?? {}
+
+      // TODO only 'influence' supported now
+      if (
+        existedProps.influence &&
+        current.option.influence !== constraint.option.influence
+      ) {
+        // update edited parameters
+        animationStore.applyEditedConstraint(
+          {
+            [constraint.id]: { influence: constraint.option.influence },
+          },
+          seriesKey
+        )
+      } else {
+        const next = constraintList.value.concat()
+        next[index] = constraint
+        store.updateBone({ constraints: next }, seriesKey)
+      }
+    }
+
+    function addKeyframeConstraint(
+      constraintId: string,
+      key: KeyframeConstraintPropKey
+    ) {
+      animationStore.execInsertKeyframeConstraint(constraintId, { [key]: true })
+    }
+
+    function removeKeyframeConstraint(
+      constraintId: string,
+      key: KeyframeConstraintPropKey
+    ) {
+      const target = getKeyframeConstraint(constraintId)
+      if (!target) return
+      animationStore.execDeleteKeyframeConstraint(target.id, { [key]: true })
     }
 
     watch(store.lastSelectedArmature, initDraftName)
@@ -133,6 +212,9 @@ export default defineComponent({
       draftName,
       lastSelectedArmature: store.lastSelectedArmature,
       lastSelectedBone,
+      constraintList,
+      constraintKeyframeMapByTargetId,
+      currentFrame,
       otherBoneOptions,
       selectedObjectType,
       connected: computed({
@@ -186,6 +268,9 @@ export default defineComponent({
         store.updateBone({ name: draftName.value })
       },
       updateConstraints,
+      updateConstraint,
+      addKeyframeConstraint,
+      removeKeyframeConstraint,
     }
   },
 })

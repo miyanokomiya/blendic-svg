@@ -56,18 +56,27 @@ Copyright (C) 2021, Tomoya Komiyama.
         :max="1"
         @update:modelValue="updateInfluence"
       />
+      <KeyDot
+        :status="keyframeStatusMap['influence']"
+        @update:status="(val) => updateKeyframeStatus('influence', val)"
+      />
     </InlineField>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+import { defineComponent } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import KeyDot from '/@/components/atoms/KeyDot.vue'
 import { SpaceType } from '/@/models'
+import {
+  getProps,
+  spaceTypeOptions,
+} from '/@/components/molecules/constraints/common'
 
 export default defineComponent({
   components: {
@@ -75,17 +84,9 @@ export default defineComponent({
     SelectField,
     CheckboxInput,
     InlineField,
+    KeyDot,
   },
-  props: {
-    modelValue: {
-      type: Object as PropType<BoneConstraintOptions['COPY_ROTATION']>,
-      required: true,
-    },
-    boneOptions: {
-      type: Array as PropType<{ value: string; label: string }[]>,
-      required: true,
-    },
-  },
+  props: getProps<BoneConstraintOptions['COPY_ROTATION']>(),
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     function emitUpdated(
@@ -94,15 +95,6 @@ export default defineComponent({
     ) {
       emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
     }
-
-    const spaceTypeOptions = computed<{ value: SpaceType; label: string }[]>(
-      () => {
-        return [
-          { value: 'world', label: 'World' },
-          { value: 'local', label: 'Local' },
-        ]
-      }
-    )
 
     return {
       labelWidth: '100px',

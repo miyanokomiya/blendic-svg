@@ -22,7 +22,7 @@ import {
   KeyframeBase,
   KeyframeBone,
   KeyframePoint,
-  KeyframeBoneProps,
+  KeyframeBaseProps,
   getKeyframeBone,
   getKeyframePoint,
 } from '/@/models/keyframe'
@@ -76,7 +76,7 @@ function getScaleY(k: KeyframeBase): KeyframePoint | undefined {
 
 export function getKeyframeDefaultPropsMap<T>(
   val: () => T
-): Required<KeyframeBoneProps<T>> {
+): Required<KeyframeBaseProps<T>> {
   return {
     props: {
       translateX: val(),

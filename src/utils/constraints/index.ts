@@ -26,6 +26,7 @@ import * as copyLocation from './copyLocation'
 import * as copyScale from './copyScale'
 import { Bone, IdMap, toMap } from '/@/models'
 import { dropMap, mapFilter, mapReduce, sumReduce } from '/@/utils/commons'
+import { v4 } from 'uuid'
 
 export type BoneConstraintType =
   | 'IK'
@@ -46,13 +47,19 @@ export interface BoneConstraintOptions {
   COPY_SCALE: copyScale.Option
 }
 
+export type BoneConstraintOption = BoneConstraintOptions[keyof BoneConstraintOptions] & {
+  influence: number
+}
+
 interface _BoneConstraint<N extends BoneConstraintType> {
+  id: string
   type: N
   name: string
-  option: BoneConstraintOptions[N]
+  option: BoneConstraintOption
 }
 export type BoneConstraint = _BoneConstraint<BoneConstraintType>
-export type BoneConstraintOption = BoneConstraintOptions[BoneConstraintType]
+
+export type BoneConstraintWithBoneId = BoneConstraint & { boneId: string }
 
 interface BoneConstraintModule {
   apply(
@@ -135,15 +142,21 @@ function immigrateOption(
   return getConstraintModule(type).immigrate(duplicatedIdMap, option)
 }
 
-export function getConstraintByType(
-  type: BoneConstraintType,
-  name: string = '',
-  opsion: Partial<BoneConstraintOption> = {}
+export function getConstraint(
+  src: {
+    id?: string
+    type: BoneConstraintType
+    name?: string
+    option?: Partial<BoneConstraintOption>
+  },
+  generateId = false
 ): BoneConstraint {
+  const id = generateId ? v4() : src.id ?? ''
   return {
-    type,
-    name: name || type,
-    option: getOptionByType(type, opsion),
+    type: src.type,
+    name: src?.name ?? '',
+    option: getOptionByType(src.type, src?.option),
+    id,
   }
 }
 

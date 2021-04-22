@@ -296,6 +296,50 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
         </div>
         
       </div>
+      <div
+        class="row-block inline-field"
+      >
+        
+        <label
+          style="width: 100px;"
+        >
+          Influence
+        </label>
+        <div
+          class="inline-content"
+        >
+          
+          <div
+            class="slider-wrapper"
+          >
+            <div
+              class="slider-background"
+              style="transform: scaleX(1);"
+            />
+            <input
+              type="text"
+            />
+            <div
+              class="slider-forward"
+            />
+          </div>
+          <button
+            type="button"
+          >
+            <svg
+              viewBox="-8 -8 16 16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                fill="#aaa"
+                r="2.5"
+              />
+            </svg>
+          </button>
+          
+        </div>
+        
+      </div>
     </div>
   </div>
   <div
@@ -534,6 +578,19 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
               class="slider-forward"
             />
           </div>
+          <button
+            type="button"
+          >
+            <svg
+              viewBox="-8 -8 16 16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                fill="#aaa"
+                r="2.5"
+              />
+            </svg>
+          </button>
           
         </div>
         

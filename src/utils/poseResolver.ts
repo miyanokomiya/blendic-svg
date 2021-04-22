@@ -38,11 +38,13 @@ import {
 import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce } from './commons'
 import { getTnansformStr } from './helpers'
-import { KeyframeBone } from '/@/models/keyframe'
+import { KeyframeBase } from '/@/models/keyframe'
 import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
 import { flatElementTree } from '/@/utils/elements'
 import { isIdentityAffine } from '/@/utils/geometry'
+import { splitKeyframeMapByName } from '/@/utils/keyframes'
 import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
+import * as keyframeConstraint from '/@/utils/keyframes/keyframeConstraint'
 
 export type TransformCache = {
   [relativeRootTargetId: string]: { [boneId: string]: Transform }
@@ -205,7 +207,7 @@ function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {
 }
 
 export function bakeKeyframes(
-  keyframeMapByTargetId: IdMap<KeyframeBone[]>,
+  keyframeMapByTargetId: IdMap<KeyframeBase[]>,
   boneMap: IdMap<Bone>,
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
@@ -216,22 +218,53 @@ export function bakeKeyframes(
   })
 }
 
-export function bakeKeyframe(
-  keyframeMapByTargetId: IdMap<KeyframeBone[]>,
+export function getInterpolatedBoneMap(
+  keyframeMapByTargetId: IdMap<KeyframeBase[]>,
   boneMap: IdMap<Bone>,
-  elementMap: IdMap<BElement>,
-  svgRoot: ElementNode,
   currentFrame: number
-): IdMap<ElementNodeAttributes> {
+): IdMap<Bone> {
+  const splitedKeyframeMapByTargetId = splitKeyframeMapByName(
+    keyframeMapByTargetId
+  )
+
   const interpolatedTransformMap = getInterpolatedTransformMapByTargetId(
-    keyframeMapByTargetId,
+    splitedKeyframeMapByTargetId.bone,
     currentFrame
   )
   const interpolatedBoneMap = mapReduce(boneMap, (bone, id) => ({
     ...bone,
     transform: interpolatedTransformMap[id] ?? getTransform(),
   }))
-  const resolvedBoneMap = getTransformedBoneMap(interpolatedBoneMap)
+
+  const interpolatedOptionMap = keyframeConstraint.getInterpolatedOptionMapByTargetId(
+    splitedKeyframeMapByTargetId.constraint,
+    currentFrame
+  )
+
+  return mapReduce(interpolatedBoneMap, (bone) => {
+    return {
+      ...bone,
+      constraints: bone.constraints.map((c) => {
+        if (!interpolatedOptionMap[c.id]) return c
+        return {
+          ...c,
+          option: { ...c.option, ...interpolatedOptionMap[c.id] },
+        }
+      }),
+    }
+  })
+}
+
+export function bakeKeyframe(
+  keyframeMapByTargetId: IdMap<KeyframeBase[]>,
+  boneMap: IdMap<Bone>,
+  elementMap: IdMap<BElement>,
+  svgRoot: ElementNode,
+  currentFrame: number
+): IdMap<ElementNodeAttributes> {
+  const resolvedBoneMap = getTransformedBoneMap(
+    getInterpolatedBoneMap(keyframeMapByTargetId, boneMap, currentFrame)
+  )
   const matrixMap = getPosedElementMatrixMap(
     resolvedBoneMap,
     elementMap,

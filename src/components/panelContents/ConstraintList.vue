@@ -24,7 +24,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       @select="setBoneConstraintType"
     />
   </InlineField>
-  <div v-for="(c, i) in constraints" :key="i" class="constraints-item">
+  <div v-for="(c, i) in constraints" :key="c.id" class="constraints-item">
     <div class="constraint-header">
       <TextInput
         :model-value="c.name"
@@ -44,76 +44,28 @@ Copyright (C) 2021, Tomoya Komiyama.
         <DeleteIcon class="icon" />
       </button>
     </div>
-    <template v-if="c.type === 'IK'">
-      <IKOptionField
-        :model-value="c.option"
-        :bone-options="boneOptions"
-        @update:modelValue="
-          (option, seriesKey) => updateConstraint(i, option, seriesKey)
-        "
-      />
-    </template>
-    <template v-else-if="c.type === 'LIMIT_LOCATION'">
-      <LimitLocationOptionField
-        :model-value="c.option"
-        @update:modelValue="
-          (option, seriesKey) => updateConstraint(i, option, seriesKey)
-        "
-      />
-    </template>
-    <template v-else-if="c.type === 'LIMIT_ROTATION'">
-      <LimitRotationOptionField
-        :model-value="c.option"
-        @update:modelValue="
-          (option, seriesKey) => updateConstraint(i, option, seriesKey)
-        "
-      />
-    </template>
-    <template v-else-if="c.type === 'LIMIT_SCALE'">
-      <LimitScaleOptionField
-        :model-value="c.option"
-        @update:modelValue="
-          (option, seriesKey) => updateConstraint(i, option, seriesKey)
-        "
-      />
-    </template>
-    <template v-else-if="c.type === 'COPY_LOCATION'">
-      <CopyLocationOptionField
-        :model-value="c.option"
-        :bone-options="boneOptions"
-        @update:modelValue="
-          (option, seriesKey) => updateConstraint(i, option, seriesKey)
-        "
-      />
-    </template>
-    <template v-else-if="c.type === 'COPY_ROTATION'">
-      <CopyRotationOptionField
-        :model-value="c.option"
-        :bone-options="boneOptions"
-        @update:modelValue="
-          (option, seriesKey) => updateConstraint(i, option, seriesKey)
-        "
-      />
-    </template>
-    <template v-else-if="c.type === 'COPY_SCALE'">
-      <CopyScaleOptionField
-        :model-value="c.option"
-        :bone-options="boneOptions"
-        @update:modelValue="
-          (option, seriesKey) => updateConstraint(i, option, seriesKey)
-        "
-      />
-    </template>
+    <component
+      :is="componentMap[c.type]"
+      :model-value="c.option"
+      :keyframe-status-map="getKeyframeStatus(c.id)"
+      :bone-options="boneOptions"
+      :update-keyframe-status="getUpdateKeyframeStatusFn(i)"
+      @update:modelValue="
+        (option, seriesKey) => updateConstraint(i, option, seriesKey)
+      "
+      @add-keyframe="(key) => addKeyframe(i, key)"
+      @remove-keyframe="(key) => removeKeyframe(i, key)"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+import { computed, DefineComponent, defineComponent, PropType } from 'vue'
 import {
   BoneConstraint,
   BoneConstraintType,
   BoneConstraintOption,
-  getConstraintByType,
+  getConstraint,
 } from '/@/utils/constraints'
 import SelectButton from '/@/components/atoms/SelectButton.vue'
 import TextInput from '/@/components/atoms/TextInput.vue'
@@ -133,6 +85,14 @@ import {
   unshiftInList,
   updateNameInList,
 } from '/@/utils/relations'
+import {
+  KeyframeConstraint,
+  KeyframeConstraintPropKey,
+  KeyframeStatus,
+} from '/@/models/keyframe'
+import { IdMap } from '/@/models'
+import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
+import { mapReduce } from '/@/utils/commons'
 
 const constraintNameMap: { [key in BoneConstraintType]: string } = {
   IK: 'IK',
@@ -144,6 +104,16 @@ const constraintNameMap: { [key in BoneConstraintType]: string } = {
   COPY_SCALE: 'Copy Scale',
 } as const
 
+const componentMap: { [key in BoneConstraintType]: DefineComponent } = {
+  IK: IKOptionField,
+  LIMIT_LOCATION: LimitLocationOptionField,
+  LIMIT_ROTATION: LimitRotationOptionField,
+  LIMIT_SCALE: LimitScaleOptionField,
+  COPY_LOCATION: CopyLocationOptionField,
+  COPY_ROTATION: CopyRotationOptionField,
+  COPY_SCALE: CopyScaleOptionField,
+}
+
 export default defineComponent({
   components: {
     SelectButton,
@@ -151,13 +121,6 @@ export default defineComponent({
     UpIcon,
     DeleteIcon,
     InlineField,
-    IKOptionField,
-    LimitLocationOptionField,
-    LimitRotationOptionField,
-    LimitScaleOptionField,
-    CopyLocationOptionField,
-    CopyRotationOptionField,
-    CopyScaleOptionField,
   },
   props: {
     constraints: {
@@ -168,8 +131,16 @@ export default defineComponent({
       type: Array as PropType<{ value: string; label: string }[]>,
       required: true,
     },
+    constraintKeyframeMap: {
+      type: Object as PropType<IdMap<KeyframeConstraint[]>>,
+      default: () => ({}),
+    },
+    currentFrame: {
+      type: Number,
+      default: 0,
+    },
   },
-  emits: ['update'],
+  emits: ['update', 'update-item', 'add-keyframe', 'remove-keyframe'],
   setup(props, { emit }) {
     const constraintOptions = computed<
       { value: BoneConstraintType; label: string }[]
@@ -179,6 +150,17 @@ export default defineComponent({
         label: constraintNameMap[key as BoneConstraintType],
       }))
     })
+
+    function getKeyframeStatus(id: string) {
+      const keyframes = props.constraintKeyframeMap[id]
+      if (!keyframes) return
+
+      return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
+        return list.some((k) => k.frame === props.currentFrame)
+          ? 'checked'
+          : 'enabled'
+      })
+    }
 
     function setBoneConstraintType(val: BoneConstraintType) {
       if (!val) return
@@ -190,7 +172,7 @@ export default defineComponent({
     }
 
     function addConstraint(type: BoneConstraintType) {
-      const created = getConstraintByType(type)
+      const created = getConstraint({ type }, true)
       created.name = getNotDuplicatedName(
         constraintNameMap[created.type],
         props.constraints.map((c) => c.name)
@@ -203,9 +185,8 @@ export default defineComponent({
       option: BoneConstraintOption,
       seriesKey?: string
     ) {
-      const constraints = props.constraints.concat()
-      constraints.splice(index, 1, { ...constraints[index], option })
-      update(constraints, seriesKey)
+      const target = props.constraints[index]
+      emit('update-item', { ...target, option }, seriesKey)
     }
 
     function deleteConstraint(index: number) {
@@ -226,14 +207,41 @@ export default defineComponent({
       update(shiftInList(props.constraints, index))
     }
 
+    function addKeyframe(index: number, key: KeyframeConstraintPropKey) {
+      const target = props.constraints[index]
+      if (!target) return
+      emit('add-keyframe', target.id, key)
+    }
+
+    function removeKeyframe(index: number, key: KeyframeConstraintPropKey) {
+      const target = props.constraints[index]
+      if (!target) return
+      emit('remove-keyframe', target.id, key)
+    }
+
+    function getUpdateKeyframeStatusFn(index: number) {
+      return (key: KeyframeConstraintPropKey, status: KeyframeStatus) => {
+        if (status === 'checked') {
+          addKeyframe(index, key)
+        } else {
+          removeKeyframe(index, key)
+        }
+      }
+    }
+
     return {
+      componentMap,
       constraintOptions,
+      getKeyframeStatus,
       setBoneConstraintType,
       deleteConstraint,
       updateName,
       updateConstraint,
       upConstraint,
       downConstraint,
+      addKeyframe,
+      removeKeyframe,
+      getUpdateKeyframeStatusFn,
     }
   },
 })

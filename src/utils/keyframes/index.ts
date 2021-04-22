@@ -21,15 +21,20 @@ import { IVec2 } from 'okageo'
 import { IdMap } from '/@/models'
 import {
   getKeyframeBone,
+  getKeyframeConstraint,
   KeyframeBase,
   KeyframeBaseProps,
   KeyframeBaseSameRange,
+  KeyframeBone,
+  KeyframeConstraint,
   KeyframeName,
   KeyframePoint,
   KeyframeSelectedState,
+  KeyframeStatus,
 } from '/@/models/keyframe'
 import { mapReduce } from '/@/utils/commons'
 import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
+import * as keyframeConstraintModule from '/@/utils/keyframes/keyframeConstraint'
 
 interface KeyframeModule {
   getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps<T>>
@@ -39,6 +44,8 @@ export function getKeyframeModule(name: KeyframeName): KeyframeModule {
   switch (name) {
     case 'bone':
       return keyframeBoneModule
+    case 'constraint':
+      return keyframeConstraintModule
   }
 }
 
@@ -159,6 +166,22 @@ export function getKeyframePropsMap(
   return ret
 }
 
+export function getKeyframeExistedPropsMap(
+  keyframes: KeyframeBase[]
+): KeyframeBaseProps<KeyframeBase[]> {
+  const ret: KeyframeBaseProps<KeyframeBase[]> = { props: {} }
+
+  keyframes.forEach((k) => {
+    Object.keys(k.points).forEach((key) => {
+      if (k.points[key]) {
+        ;(ret.props[key] ??= []).push(k)
+      }
+    })
+  })
+
+  return ret
+}
+
 export function getKeyframeDefaultPropsMap<T>(
   val: () => T,
   name: KeyframeName = 'bone'
@@ -263,7 +286,9 @@ export function getKeyframe(
 ) {
   switch (arg.name) {
     case 'bone':
-      return getKeyframeBone(arg, generateId)
+      return getKeyframeBone({ ...arg, name: 'bone' }, generateId)
+    case 'constraint':
+      return getKeyframeConstraint({ ...arg, name: 'constraint' }, generateId)
   }
 }
 
@@ -340,4 +365,45 @@ export function splitKeyframeProps<T>(
   })
 
   return { trueMap, falseMap }
+}
+
+export function splitKeyframeMapByName(
+  src: IdMap<KeyframeBase[]>
+): {
+  bone: IdMap<KeyframeBone[]>
+  constraint: IdMap<KeyframeConstraint[]>
+} {
+  const bone: IdMap<KeyframeBone[]> = {}
+  const constraint: IdMap<KeyframeConstraint[]> = {}
+
+  Object.keys(src).forEach((targetId) => {
+    const first = src[targetId][0]
+    if (!first) return
+    switch (first.name) {
+      case 'bone':
+        bone[targetId] = src[targetId] as KeyframeBone[]
+        return
+      case 'constraint':
+        constraint[targetId] = src[targetId] as KeyframeConstraint[]
+        return
+    }
+  })
+
+  return {
+    bone,
+    constraint,
+  }
+}
+
+export function getKeyframeStatus(
+  keyframeMap: IdMap<KeyframeBase[]>,
+  currentFrame: number,
+  id: string
+): IdMap<KeyframeStatus> {
+  const keyframes = keyframeMap[id]
+  if (!keyframes) return {}
+
+  return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
+    return list.some((k) => k.frame === currentFrame) ? 'checked' : 'enabled'
+  })
 }

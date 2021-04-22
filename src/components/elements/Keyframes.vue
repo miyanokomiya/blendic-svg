@@ -42,10 +42,10 @@ Copyright (C) 2021, Tomoya Komiyama.
           <g v-for="k in keyframes" :key="k.id">
             <KeyPointGroup
               :key-frame="k"
-              :child-map="transformMap"
-              :top="boneTopMap[k.targetId]"
+              :child-map="targetMap[k.targetId].children"
+              :top="targetTopMap[k.targetId]"
               :selected-state="selectedKeyframeMap[k.id]"
-              :expanded="boneExpandedMap[k.targetId]"
+              :expanded="targetExpandedMap[k.targetId]"
               :same-range-width="getSameRangeFrame(k.targetId, k.frame)"
               :height="height"
               :scroll-y="scrollY"
@@ -63,14 +63,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import KeyPointGroup from '/@/components/elements/molecules/KeyPointGroup.vue'
 import { useSettings } from '/@/composables/settings'
-import { IdMap, frameWidth } from '/@/models'
+import { IdMap, frameWidth, toMap } from '/@/models'
 import {
-  KeyframeBone,
-  KeyframeBoneSameRange,
+  KeyframeBase,
+  KeyframeBaseSameRange,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import { getKeyframeMapByTargetId } from '/@/utils/animations'
 import { mapReduce } from '/@/utils/commons'
+import { KeyframeTargetSummary } from '/@/utils/helpers'
 import { getSamePropRangeFrameMapById } from '/@/utils/keyframes'
 
 export default defineComponent({
@@ -81,11 +82,11 @@ export default defineComponent({
       default: 1,
     },
     keyframeMapByFrame: {
-      type: Object as PropType<IdMap<KeyframeBone[]>>,
+      type: Object as PropType<IdMap<KeyframeBase[]>>,
       default: () => ({}),
     },
-    boneIds: {
-      type: Array as PropType<string[]>,
+    targetList: {
+      type: Array as PropType<KeyframeTargetSummary[]>,
       default: () => [],
     },
     selectedKeyframeMap: {
@@ -100,11 +101,11 @@ export default defineComponent({
       type: Number,
       default: 24,
     },
-    boneExpandedMap: {
+    targetExpandedMap: {
       type: Object as PropType<IdMap<boolean>>,
       default: () => ({}),
     },
-    boneTopMap: {
+    targetTopMap: {
       type: Object as PropType<IdMap<number>>,
       default: () => ({}),
     },
@@ -113,18 +114,24 @@ export default defineComponent({
   setup(props, { emit }) {
     const { settings } = useSettings()
 
-    const boneIndexMap = computed(
+    const targetIds = computed(() => props.targetList.map((t) => t.id))
+
+    const targetIndexMap = computed(
       (): IdMap<number> => {
-        return props.boneIds.reduce<IdMap<number>>((p, id, i) => {
+        return targetIds.value.reduce<IdMap<number>>((p, id, i) => {
           p[id] = i
           return p
         }, {})
       }
     )
 
+    const indexMap = computed(() => {
+      return targetIndexMap.value
+    })
+
     const sortedKeyframeMapByFrame = computed(() => {
       return Object.keys(props.keyframeMapByFrame).reduce<
-        IdMap<KeyframeBone[]>
+        IdMap<KeyframeBase[]>
       >((p, frame) => {
         p[frame] = sortAndFilterKeyframesByTargetId(
           props.keyframeMapByFrame[frame]
@@ -148,7 +155,7 @@ export default defineComponent({
     function getSameRangeFrame(
       targetId: string,
       frame: number
-    ): KeyframeBoneSameRange['props'] | undefined {
+    ): KeyframeBaseSameRange['props'] | undefined {
       const map = sameRangeFrameMapByTargetId.value[targetId]?.[frame]
       if (!map) return
       const ret = mapReduce(
@@ -167,32 +174,16 @@ export default defineComponent({
       })
     })
 
-    const boneRowMap = computed(() => {
-      return mapReduce(
-        boneIndexMap.value,
-        (index) => (index + 1) * props.height
-      )
-    })
-
-    const transformMap = computed(() => {
-      return {
-        translateX: 0,
-        translateY: 1,
-        rotate: 2,
-        scaleX: 3,
-        scaleY: 4,
-      }
+    const targetMap = computed(() => {
+      return toMap(props.targetList)
     })
 
     function sortAndFilterKeyframesByTargetId(
-      keyframes: KeyframeBone[]
-    ): KeyframeBone[] {
+      keyframes: KeyframeBase[]
+    ): KeyframeBase[] {
       return keyframes
-        .filter((k) => boneIndexMap.value[k.targetId] > -1)
-        .sort(
-          (a, b) =>
-            boneIndexMap.value[a.targetId] - boneIndexMap.value[b.targetId]
-        )
+        .filter((k) => indexMap.value[k.targetId] > -1)
+        .sort((a, b) => indexMap.value[a.targetId] - indexMap.value[b.targetId])
     }
 
     function select(keyframeId: string, state: KeyframeSelectedState) {
@@ -210,9 +201,8 @@ export default defineComponent({
 
     return {
       frameWidth,
-      boneIndexMap,
       sortedKeyframeMapByFrame,
-      transformMap,
+      targetMap,
       getSameRangeFrame,
       selectedFrameMap,
       select,
@@ -220,7 +210,6 @@ export default defineComponent({
       selectFrame,
       shiftSelectFrame,
       selectedColor: settings.selectedColor,
-      boneRowMap,
     }
   },
 })

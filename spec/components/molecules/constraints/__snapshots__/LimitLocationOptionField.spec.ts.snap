@@ -237,6 +237,19 @@ exports[`/@/src/components/molecules/constraints/LimitLocationOptionField.vue sn
           class="slider-forward"
         />
       </div>
+      <button
+        type="button"
+      >
+        <svg
+          viewBox="-8 -8 16 16"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            fill="#aaa"
+            r="2.5"
+          />
+        </svg>
+      </button>
       
     </div>
     

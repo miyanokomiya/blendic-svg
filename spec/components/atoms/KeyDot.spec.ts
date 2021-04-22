@@ -18,23 +18,21 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { mount } from '@vue/test-utils'
-import Target from '/@/components/panelContents/ConstraintList.vue'
-import { getConstraint } from '/@/utils/constraints'
+import Target from '/@/components/atoms/KeyDot.vue'
 
-describe('/@/src/components/molecules/constraints/ConstraintList.vue', () => {
-  it('snapshot', () => {
-    const wrapper = mount(Target, {
-      props: {
-        constraints: [
-          getConstraint({ type: 'IK' }),
-          getConstraint({ type: 'LIMIT_ROTATION' }),
-        ],
-        boneOptions: [
-          { value: 'a', label: 'bone_a' },
-          { value: 'b', label: 'bone_b' },
-        ],
-      },
+describe('src/components/atoms/KeyDot.vue', () => {
+  describe('', () => {
+    it('not checked', () => {
+      const wrapper = mount(Target, {
+        props: { checked: false },
+      })
+      expect(wrapper.element).toMatchSnapshot()
     })
-    expect(wrapper.element).toMatchSnapshot()
+    it('checked', () => {
+      const wrapper = mount(Target, {
+        props: { checked: true },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 })

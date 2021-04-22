@@ -772,8 +772,8 @@ function getCompleteDuplicateKeyframesItem(
   updatedKeyframeList: KeyframeBase[]
 ) {
   return convolute(
-    getExecUpdateKeyframeItem(toMap(updatedKeyframeList)),
-    [getExecInsertKeyframeItem(duplicatedKeyframeList, true, true)],
+    getExecInsertKeyframeItem(duplicatedKeyframeList, true, true),
+    [getExecUpdateKeyframeItem(toMap(updatedKeyframeList))],
     'Duplicate Keyframe'
   )
 }

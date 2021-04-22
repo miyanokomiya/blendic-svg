@@ -225,6 +225,7 @@ import {
   getTargetTopMap,
   KeyframeTargetSummary,
 } from '/@/utils/helpers'
+import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
 
 const labelHeight = 24
 
@@ -406,14 +407,23 @@ export default defineComponent({
       selectedAllBoneIdList.value.concat(selectedAllConstraintIdList.value)
     )
     const selectedTargetSummaryList = computed<KeyframeTargetSummary[]>(() => {
+      const keyframeMapByTargetId = animationStore.keyframeMapByTargetId.value
       const boneMap = animationStore.selectedBoneMap.value
       const constraintMap = animationStore.selectedConstraintMap.value
       return [
-        ...selectedAllBoneList.value.map((b) => getKeyframeBoneSummary(b)),
+        ...selectedAllBoneList.value.map((b) =>
+          getKeyframeBoneSummary(
+            b,
+            getKeyframeExistedPropsMap(keyframeMapByTargetId[b.id] ?? []).props
+          )
+        ),
         ...selectedAllConstraintIdList.value.map((id) => {
           const c = constraintMap[id]
-          const b = boneMap[c.boneId]
-          return getKeyframeConstraintSummary(b, c)
+          return getKeyframeConstraintSummary(
+            boneMap[c.boneId],
+            c,
+            getKeyframeExistedPropsMap(keyframeMapByTargetId[id] ?? []).props
+          )
         }),
       ]
     })

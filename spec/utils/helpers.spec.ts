@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getBone, getTransform } from '/@/models'
+import { getKeyframePoint } from '/@/models/keyframe'
 import { getConstraint } from '/@/utils/constraints'
 import {
   parseStyle,
@@ -138,23 +139,53 @@ describe('utils/helpers.ts', () => {
   })
 
   describe('getKeyframeBoneSummary', () => {
-    it('should return a bone summary', () => {
-      expect(getKeyframeBoneSummary(getBone({ id: 'a', name: 'b' }))).toEqual({
+    it('should return a bone summary with children having keyframes', () => {
+      expect(
+        getKeyframeBoneSummary(getBone({ id: 'a', name: 'b' }), {
+          translateX: getKeyframePoint(),
+          rotate: getKeyframePoint(),
+        })
+      ).toEqual({
         id: 'a',
         name: 'b',
         children: {
           translateX: 0,
-          translateY: 1,
-          rotate: 2,
-          scaleX: 3,
-          scaleY: 4,
+          rotate: 1,
         },
+      })
+    })
+    it('should return a bone summary with empty children if the keyframe does not exist', () => {
+      expect(getKeyframeBoneSummary(getBone({ id: 'a', name: 'b' }))).toEqual({
+        id: 'a',
+        name: 'b',
+        children: {},
       })
     })
   })
 
   describe('getKeyframeConstraintSummary', () => {
-    it('should return a bone summary', () => {
+    it('should return a bone summary with children having keyframes', () => {
+      expect(
+        getKeyframeConstraintSummary(
+          getBone({ id: 'a', name: 'b' }),
+          getConstraint({
+            id: 'aa',
+            name: 'bb',
+            type: 'IK',
+          }),
+          {
+            influence: getKeyframePoint(),
+          }
+        )
+      ).toEqual({
+        id: 'aa',
+        name: 'b:bb',
+        children: {
+          influence: 0,
+        },
+      })
+    })
+    it('should return a bone summary with empty children if the keyframe does not exist', () => {
       expect(
         getKeyframeConstraintSummary(
           getBone({ id: 'a', name: 'b' }),
@@ -167,9 +198,7 @@ describe('utils/helpers.ts', () => {
       ).toEqual({
         id: 'aa',
         name: 'b:bb',
-        children: {
-          influence: 0,
-        },
+        children: {},
       })
     })
   })

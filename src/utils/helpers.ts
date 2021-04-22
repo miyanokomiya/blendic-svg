@@ -139,30 +139,45 @@ export interface KeyframeTargetSummary {
   }
 }
 
-const boneLabelChildren = {
-  translateX: 0,
-  translateY: 1,
-  rotate: 2,
-  scaleX: 3,
-  scaleY: 4,
+const boneLabelChildren = [
+  'translateX',
+  'translateY',
+  'rotate',
+  'scaleX',
+  'scaleY',
+]
+
+function getIndexList(target: IdMap<any>, list: string[]): IdMap<number> {
+  return list
+    .filter((key) => target[key])
+    .reduce<IdMap<number>>((p, key, i) => {
+      p[key] = i
+      return p
+    }, {})
 }
 
-export function getKeyframeBoneSummary(bone: Bone): KeyframeTargetSummary {
+export function getKeyframeBoneSummary(
+  bone: Bone,
+  keyframeProps: { [key: string]: any } = {}
+): KeyframeTargetSummary {
   return {
     id: bone.id,
     name: bone.name,
-    children: boneLabelChildren,
+    children: getIndexList(keyframeProps, boneLabelChildren),
   }
 }
 
+const constraintLabelChildren = ['influence']
+
 export function getKeyframeConstraintSummary(
   bone: Bone,
-  constraint: BoneConstraint
+  constraint: BoneConstraint,
+  keyframeProps: { [key: string]: any } = {}
 ): KeyframeTargetSummary {
   return {
     id: constraint.id,
     name: `${bone.name}:${constraint.name}`,
-    children: { influence: 0 },
+    children: getIndexList(keyframeProps, constraintLabelChildren),
   }
 }
 

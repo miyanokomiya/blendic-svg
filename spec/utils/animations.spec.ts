@@ -48,6 +48,8 @@ import {
   pastePoseMap,
   getEditedConstraint,
   getEditedKeyframeConstraint,
+  resetTransformByKeyframe,
+  resetTransformByKeyframeMap,
 } from '/@/utils/animations'
 import { getConstraint } from '/@/utils/constraints'
 
@@ -452,6 +454,82 @@ describe('utils/animations.ts', () => {
         }
       )
       expect(ret.points.influence?.value).toBe(0.2)
+    })
+  })
+
+  describe('resetTransformByKeyframeMap', () => {
+    const src = getTransform({
+      translate: { x: 1, y: 2 },
+      scale: { x: 1, y: 2 },
+      rotate: 10,
+      origin: { x: 1, y: 2 },
+    })
+    it('should reset transform props if keyframes of its exist', () => {
+      expect(
+        resetTransformByKeyframeMap(
+          { a: src, b: src },
+          {
+            a: getKeyframeBone({
+              points: { translateX: getKeyframePoint() },
+            }),
+          }
+        )
+      ).toEqual({
+        a: { ...src, translate: { x: 0, y: 2 } },
+        b: src,
+      })
+    })
+    it('should drop identity transforms', () => {
+      expect(
+        resetTransformByKeyframeMap(
+          { a: getTransform({ rotate: 10 }) },
+          {
+            a: getKeyframeBone({
+              points: { rotate: getKeyframePoint() },
+            }),
+          }
+        )
+      ).toEqual({})
+    })
+  })
+
+  describe('resetTransformByKeyframe', () => {
+    const src = getTransform({
+      translate: { x: 1, y: 2 },
+      scale: { x: 1, y: 2 },
+      rotate: 10,
+      origin: { x: 1, y: 2 },
+    })
+    it('should reset transform props if keyframes of its exist', () => {
+      expect(
+        resetTransformByKeyframe(
+          src,
+          getKeyframeBone({
+            points: {},
+          })
+        )
+      ).toEqual(src)
+      expect(
+        resetTransformByKeyframe(
+          src,
+          getKeyframeBone({
+            points: {
+              translateX: getKeyframePoint(),
+              translateY: getKeyframePoint(),
+              scaleX: getKeyframePoint(),
+              scaleY: getKeyframePoint(),
+              rotate: getKeyframePoint(),
+            },
+          })
+        )
+      ).toEqual(
+        getTransform({
+          origin: { x: 1, y: 2 },
+        })
+      )
+    })
+    it('should return same transform if the keyframe does not exist', () => {
+      expect(resetTransformByKeyframe(src)).toEqual(src)
     })
   })
 })

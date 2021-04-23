@@ -34,7 +34,15 @@ describe('src/utils/animation.ts', () => {
       const item = getInsertKeyframeItem(
         makeAccessors(currentKeyframes),
         makeAccessors(editTransforms),
-        [getKeyframeBone({ id: 'key_a', targetId: 'a' })]
+        [
+          getKeyframeBone({
+            id: 'key_a',
+            targetId: 'a',
+            points: {
+              translateX: getKeyframePoint(),
+            },
+          }),
+        ]
       )
 
       expect(currentKeyframes.value).toEqual([])
@@ -42,7 +50,13 @@ describe('src/utils/animation.ts', () => {
 
       item.redo()
       expect(currentKeyframes.value).toEqual([
-        getKeyframeBone({ id: 'key_a', targetId: 'a' }),
+        getKeyframeBone({
+          id: 'key_a',
+          targetId: 'a',
+          points: {
+            translateX: getKeyframePoint(),
+          },
+        }),
       ])
       expect(editTransforms.value).toEqual({})
 
@@ -51,16 +65,36 @@ describe('src/utils/animation.ts', () => {
       expect(editTransforms.value).toEqual({ a: getTransform() })
     })
 
-    it('should drop edit target transforms', () => {
+    it('should drop edit target transform props', () => {
       const currentKeyframes = { value: [] }
-      const editTransforms = { value: { a: getTransform(), b: getTransform() } }
+      const editTransforms = {
+        value: {
+          a: getTransform({
+            translate: { x: 10, y: 0 },
+          }),
+          b: getTransform({
+            translate: { x: 0, y: 10 },
+          }),
+        },
+      }
       getInsertKeyframeItem(
         makeAccessors(currentKeyframes),
         makeAccessors(editTransforms),
-        [getKeyframeBone({ id: 'key_a', targetId: 'a' })]
+        [
+          getKeyframeBone({
+            targetId: 'a',
+            points: {
+              translateX: getKeyframePoint(),
+            },
+          }),
+        ]
       ).redo()
 
-      expect(editTransforms.value).toEqual({ b: getTransform() })
+      expect(editTransforms.value).toEqual({
+        b: getTransform({
+          translate: { x: 0, y: 10 },
+        }),
+      })
     })
   })
 

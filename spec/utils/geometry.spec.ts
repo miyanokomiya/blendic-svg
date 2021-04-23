@@ -42,6 +42,7 @@ import {
   transformRect,
   isIdentityAffine,
   mapVec,
+  isIdentityTransform,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -156,6 +157,15 @@ describe('src/utils/geometry.ts', () => {
     })
     it('convert axes value of vector by a function', () => {
       expect(mapVec({ x: 2, y: 3 }, (val) => val * val)).toEqual({ x: 4, y: 9 })
+    })
+  })
+
+  describe('isIdentityTransform', () => {
+    it('should return true if it is identity', () => {
+      expect(isIdentityTransform(getTransform())).toBe(true)
+    })
+    it('should return false if it is not identity', () => {
+      expect(isIdentityTransform(getTransform({ rotate: 1 }))).toBe(false)
     })
   })
 

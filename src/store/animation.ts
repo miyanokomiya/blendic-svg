@@ -490,7 +490,6 @@ function execDeleteKeyframes() {
   )
 }
 function execDeleteTargetKeyframe(targetId: string, key: KeyframePropKey) {
-  if (!isAnyVisibledSelectedKeyframe.value) return
   historyStore.push(
     getExecDeleteTargetKeyframeItem(
       targetId,

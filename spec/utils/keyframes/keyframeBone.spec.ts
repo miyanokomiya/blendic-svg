@@ -134,7 +134,7 @@ describe('utils/keyframes/keyframeBone', () => {
     it('should return a keyframe', () => {
       expect(
         target.makeKeyframe(1, 'a', getTransform({ rotate: 10 }), {
-          useRotate: true,
+          rotate: true,
         })
       ).toEqual(
         getKeyframeBone({
@@ -149,7 +149,7 @@ describe('utils/keyframes/keyframeBone', () => {
         1,
         'a',
         getTransform({ translate: { x: 1, y: 2 } }),
-        { useTranslate: true }
+        { translateX: true, translateY: true }
       )
       expect(ret.points.translateX?.value).toBe(1)
       expect(ret.points.translateY?.value).toBe(2)
@@ -157,7 +157,7 @@ describe('utils/keyframes/keyframeBone', () => {
     it('should let a keyframe have the point for rotate', () => {
       expect(
         target.makeKeyframe(1, 'a', getTransform({ rotate: 10 }), {
-          useRotate: true,
+          rotate: true,
         }).points.rotate?.value
       ).toBe(10)
     })
@@ -166,18 +166,29 @@ describe('utils/keyframes/keyframeBone', () => {
         1,
         'a',
         getTransform({ scale: { x: 1, y: 2 } }),
-        { useScale: true }
+        { scaleX: true, scaleY: true }
       )
       expect(ret.points.scaleX?.value).toBe(1)
       expect(ret.points.scaleY?.value).toBe(2)
     })
     it('should generate id if the flag is true', () => {
       expect(
-        target.makeKeyframe(1, 'a', getTransform(), { useScale: true }, false)
-          .id
+        target.makeKeyframe(
+          1,
+          'a',
+          getTransform(),
+          { scaleX: true, scaleY: true },
+          false
+        ).id
       ).toBe('')
       expect(
-        target.makeKeyframe(1, 'a', getTransform(), { useScale: true }, true).id
+        target.makeKeyframe(
+          1,
+          'a',
+          getTransform(),
+          { scaleX: true, scaleY: true },
+          true
+        ).id
       ).not.toBe('')
     })
   })

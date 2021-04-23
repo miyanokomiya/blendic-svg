@@ -457,9 +457,11 @@ function selectAllKeyframes() {
 
 function execInsertKeyframe(
   options: {
-    useTranslate?: boolean
-    useRotate?: boolean
-    useScale?: boolean
+    translateX?: boolean
+    translateY?: boolean
+    rotate?: boolean
+    scaleX?: boolean
+    scaleY?: boolean
   } = {}
 ) {
   if (!actions.lastSelectedItem.value) {

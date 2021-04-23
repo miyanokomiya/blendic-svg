@@ -20,7 +20,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { HistoryItem } from '/@/composables/stores/history'
 import { IdMap, toMap, toTargetIdMap, Transform } from '/@/models'
 import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
-import { mergeKeyframesWithDropped } from '/@/utils/animations'
+import {
+  mergeKeyframesWithDropped,
+  resetTransformByKeyframeMap,
+} from '/@/utils/animations'
 import { dropMap, extractMap, mapReduce, toList } from '/@/utils/commons'
 import { deleteKeyframeByProp } from '/@/utils/keyframes'
 
@@ -46,7 +49,10 @@ export function getInsertKeyframeItem(
     )
     currentKeyframes.set(merged)
     editTransforms.set(
-      dropMap(editTransforms.get(), toTargetIdMap(insertedKeyframes))
+      resetTransformByKeyframeMap(
+        editTransforms.get(),
+        toTargetIdMap(insertedKeyframes)
+      )
     )
   }
   return {

@@ -32,15 +32,20 @@ import {
   Action,
   Armature,
   frameWidth,
+  getTransform,
   IdMap,
   scaleRate,
   toMap,
   Transform,
 } from '/@/models'
-import { KeyframeBase, KeyframeConstraint } from '/@/models/keyframe'
+import {
+  isKeyframeBone,
+  KeyframeBase,
+  KeyframeConstraint,
+} from '/@/models/keyframe'
 import { invertPoseTransform, multiPoseTransform } from '/@/utils/armatures'
 import { BoneConstraint, BoneConstraintOption } from '/@/utils/constraints'
-import { circleClamp } from '/@/utils/geometry'
+import { circleClamp, isIdentityTransform } from '/@/utils/geometry'
 import { mergeKeyframe } from '/@/utils/keyframes'
 
 export function getScaleLog(scale: number): number {
@@ -325,4 +330,38 @@ export function getEditedKeyframeConstraint(
       }
     }),
   }
+}
+
+export function resetTransformByKeyframeMap(
+  src: IdMap<Transform>,
+  keyframeMap: IdMap<KeyframeBase>
+): IdMap<Transform> {
+  return Object.keys(src).reduce<IdMap<Transform>>((p, id) => {
+    const t = resetTransformByKeyframe(src[id], keyframeMap[id])
+    if (!isIdentityTransform(t)) {
+      p[id] = t
+    }
+    return p
+  }, {})
+}
+
+export function resetTransformByKeyframe(
+  src: Transform,
+  keyframe?: KeyframeBase
+): Transform {
+  if (!keyframe) return src
+  if (!isKeyframeBone(keyframe)) return src
+
+  const translateX = keyframe.points.translateX ? 0 : src.translate.x
+  const translateY = keyframe.points.translateY ? 0 : src.translate.y
+  const scaleX = keyframe.points.scaleX ? 1 : src.scale.x
+  const scaleY = keyframe.points.scaleY ? 1 : src.scale.y
+  const rotate = keyframe.points.rotate ? 0 : src.rotate
+
+  return getTransform({
+    translate: { x: translateX, y: translateY },
+    scale: { x: scaleX, y: scaleY },
+    rotate,
+    origin: src.origin,
+  })
 }

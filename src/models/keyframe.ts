@@ -110,6 +110,10 @@ export function getKeyframeBone(
   }
 }
 
+export function isKeyframeBone(src: KeyframeBase): src is KeyframeBone {
+  return src.name === 'bone'
+}
+
 export function getKeyframeConstraint(
   arg: Partial<KeyframeConstraint> = {},
   generateId = false

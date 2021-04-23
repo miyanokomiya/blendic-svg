@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { makeAccessors } from '/@/composables/commons'
 import {
   getDeleteKeyframesItem,
+  getDeleteTargetKeyframeItem,
   getInsertKeyframeItem,
   getUpdateKeyframeItem,
 } from '/@/composables/stores/animation'
@@ -143,6 +144,177 @@ describe('src/utils/animation.ts', () => {
           },
         }),
       ])
+    })
+    it('should drop keyframes if its have no points', () => {
+      const currentKeyframes = {
+        value: [
+          getKeyframeBone({
+            id: 'a',
+            points: {
+              rotate: getKeyframePoint(),
+            },
+          }),
+        ],
+      }
+      getDeleteKeyframesItem(makeAccessors(currentKeyframes), {
+        a: { props: { rotate: true } },
+      }).redo()
+
+      expect(currentKeyframes.value).toEqual([])
+    })
+  })
+
+  describe('getDeleteTargetKeyframeItem', () => {
+    it('should return history item to delete target keyframe prop', () => {
+      const props = {
+        id: 'a',
+        targetId: 'target',
+        frame: 1,
+      }
+      const currentKeyframes = {
+        value: [
+          getKeyframeBone({
+            ...props,
+            points: {
+              translateX: getKeyframePoint(),
+              rotate: getKeyframePoint(),
+            },
+          }),
+        ],
+      }
+      const item = getDeleteTargetKeyframeItem(
+        makeAccessors(currentKeyframes),
+        'target',
+        1,
+        'rotate'
+      )!
+
+      expect(currentKeyframes.value).toEqual([
+        getKeyframeBone({
+          ...props,
+          points: {
+            translateX: getKeyframePoint(),
+            rotate: getKeyframePoint(),
+          },
+        }),
+      ])
+
+      item.redo()
+      expect(currentKeyframes.value).toEqual([
+        getKeyframeBone({
+          ...props,
+          points: { translateX: getKeyframePoint() },
+        }),
+      ])
+
+      item.undo()
+      expect(currentKeyframes.value).toEqual([
+        getKeyframeBone({
+          ...props,
+          points: {
+            translateX: getKeyframePoint(),
+            rotate: getKeyframePoint(),
+          },
+        }),
+      ])
+    })
+    it('should return identities of keyframes expect for the target', () => {
+      const currentKeyframes = {
+        value: [
+          getKeyframeBone({
+            id: 'a',
+            targetId: 'target',
+            frame: 1,
+            points: {
+              rotate: getKeyframePoint(),
+            },
+          }),
+          getKeyframeBone({
+            id: 'b',
+            targetId: 'target_1',
+            frame: 1,
+            points: {
+              rotate: getKeyframePoint(),
+            },
+          }),
+          getKeyframeBone({
+            id: 'c',
+            targetId: 'target',
+            frame: 2,
+            points: {
+              rotate: getKeyframePoint(),
+            },
+          }),
+        ],
+      }
+      getDeleteTargetKeyframeItem(
+        makeAccessors(currentKeyframes),
+        'target',
+        1,
+        'rotate'
+      )!.redo()
+
+      expect(currentKeyframes.value).toEqual([
+        getKeyframeBone({
+          id: 'b',
+          targetId: 'target_1',
+          frame: 1,
+          points: {
+            rotate: getKeyframePoint(),
+          },
+        }),
+        getKeyframeBone({
+          id: 'c',
+          targetId: 'target',
+          frame: 2,
+          points: {
+            rotate: getKeyframePoint(),
+          },
+        }),
+      ])
+    })
+    it('should return undefined if target does not exist', () => {
+      const currentKeyframes = {
+        value: [
+          getKeyframeBone({
+            id: 'a',
+            targetId: 'target',
+            frame: 1,
+            points: {
+              translateX: getKeyframePoint(),
+              rotate: getKeyframePoint(),
+            },
+          }),
+        ],
+      }
+      const item = getDeleteTargetKeyframeItem(
+        makeAccessors(currentKeyframes),
+        'unknown',
+        1,
+        'rotate'
+      )
+      expect(item).toBe(undefined)
+    })
+    fit('should drop target keyframe if it has no points', () => {
+      const currentKeyframes = {
+        value: [
+          getKeyframeBone({
+            id: 'a',
+            targetId: 'target',
+            frame: 1,
+            points: {
+              rotate: getKeyframePoint(),
+            },
+          }),
+        ],
+      }
+      getDeleteTargetKeyframeItem(
+        makeAccessors(currentKeyframes),
+        'target',
+        1,
+        'rotate'
+      )!.redo()
+      expect(currentKeyframes.value).toEqual([])
     })
   })
 

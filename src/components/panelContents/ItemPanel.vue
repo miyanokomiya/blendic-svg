@@ -29,6 +29,10 @@ Copyright (C) 2021, Tomoya Komiyama.
           :disabled="connected"
           @update:modelValue="changeTranslateX"
         />
+        <KeyDot
+          :status="keyframeStatusMap.translateX"
+          @update:status="(val) => updateKeyframeStatus('translateX', val)"
+        />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
         <SliderInput
@@ -36,12 +40,20 @@ Copyright (C) 2021, Tomoya Komiyama.
           :disabled="connected"
           @update:modelValue="changeTranslateY"
         />
+        <KeyDot
+          :status="keyframeStatusMap.translateY"
+          @update:status="(val) => updateKeyframeStatus('translateY', val)"
+        />
       </InlineField>
       <h5>Rotate</h5>
       <InlineField :label-width="labelWidth">
         <SliderInput
           :model-value="draftTransform.rotate"
           @update:modelValue="changeRotate"
+        />
+        <KeyDot
+          :status="keyframeStatusMap.rotate"
+          @update:status="(val) => updateKeyframeStatus('rotate', val)"
         />
       </InlineField>
       <h5>Scale</h5>
@@ -51,12 +63,20 @@ Copyright (C) 2021, Tomoya Komiyama.
           :model-value="draftTransform.scaleX"
           @update:modelValue="changeScaleX"
         />
+        <KeyDot
+          :status="keyframeStatusMap.scaleX"
+          @update:status="(val) => updateKeyframeStatus('scaleX', val)"
+        />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
         <SliderInput
           :step="0.1"
           :model-value="draftTransform.scaleY"
           @update:modelValue="changeScaleY"
+        />
+        <KeyDot
+          :status="keyframeStatusMap.scaleY"
+          @update:status="(val) => updateKeyframeStatus('scaleY', val)"
         />
       </InlineField>
       <InlineField>
@@ -130,11 +150,21 @@ import SliderInput from '/@/components/atoms/SliderInput.vue'
 import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
+import KeyDot from '/@/components/atoms/KeyDot.vue'
 import { posedColor, posedHsva } from '/@/utils/attributesResolver'
 import { HSVA } from '/@/utils/color'
+import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
+import { mapReduce } from '/@/utils/commons'
+import { KeyframeBonePropKey, KeyframeStatus } from '/@/models/keyframe'
 
 export default defineComponent({
-  components: { SliderInput, WeightPanel, InlineField, ColorPicker },
+  components: {
+    SliderInput,
+    WeightPanel,
+    InlineField,
+    ColorPicker,
+    KeyDot,
+  },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
@@ -277,6 +307,34 @@ export default defineComponent({
       )
     }
 
+    const keyframeStatusMap = computed(() => {
+      if (!targetBone.value) return {}
+
+      const keyframes =
+        animationStore.keyframeMapByTargetId.value[targetBone.value.id]
+      if (!keyframes) return {}
+
+      const currentFrame = animationStore.currentFrame.value
+      return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
+        return list.some((k) => k.frame === currentFrame)
+          ? 'checked'
+          : 'enabled'
+      })
+    })
+
+    function updateKeyframeStatus(
+      key: KeyframeBonePropKey,
+      status: KeyframeStatus
+    ) {
+      if (!targetBone.value) return
+
+      if (status === 'checked') {
+        animationStore.execInsertKeyframe({ [key]: true })
+      } else {
+        animationStore.execDeleteTargetKeyframe(targetBone.value.id, key)
+      }
+    }
+
     watchEffect(() => {
       if (!targetBone.value) return
 
@@ -317,6 +375,9 @@ export default defineComponent({
       showColorPicker,
       toggleShowColorPicker,
       updatePoseByColor,
+
+      keyframeStatusMap,
+      updateKeyframeStatus,
     }
   },
 })

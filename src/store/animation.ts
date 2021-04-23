@@ -54,6 +54,7 @@ import { useHistoryStore } from './history'
 import { makeRefAccessors } from '/@/composables/commons'
 import {
   getDeleteKeyframesItem,
+  getDeleteTargetKeyframeItem,
   getInsertKeyframeItem,
   getUpdateKeyframeItem,
 } from '/@/composables/stores/animation'
@@ -80,6 +81,7 @@ import {
   KeyframeBase,
   KeyframeBone,
   KeyframeConstraintPropKey,
+  KeyframePropKey,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import {
@@ -487,6 +489,17 @@ function execDeleteKeyframes() {
     true
   )
 }
+function execDeleteTargetKeyframe(targetId: string, key: KeyframePropKey) {
+  if (!isAnyVisibledSelectedKeyframe.value) return
+  historyStore.push(
+    getExecDeleteTargetKeyframeItem(
+      targetId,
+      animationFrameStore.currentFrame.value,
+      key
+    ),
+    true
+  )
+}
 
 function getCurrentConstraintById(
   constraintId: string
@@ -635,6 +648,7 @@ export function useAnimationStore() {
 
     execInsertKeyframe,
     execDeleteKeyframes,
+    execDeleteTargetKeyframe,
 
     execInsertKeyframeConstraint,
     execDeleteKeyframeConstraint,
@@ -760,6 +774,22 @@ function getExecDeleteKeyframesItem(
     getDeleteKeyframesItem(getKeyframeAccessor(), selectedStateMap),
     [getSelectKeyframesItem({})]
   )
+}
+
+function getExecDeleteTargetKeyframeItem(
+  targetId: string,
+  targetFrame: number,
+  key: KeyframePropKey
+): HistoryItem | undefined {
+  const item = getDeleteTargetKeyframeItem(
+    getKeyframeAccessor(),
+    targetId,
+    targetFrame,
+    key
+  )
+  if (!item) return
+
+  return convolute(item, [getSelectKeyframesItem({})])
 }
 
 function getExecUpdateKeyframeItem(

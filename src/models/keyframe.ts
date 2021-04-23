@@ -38,6 +38,8 @@ export interface KeyframeBaseProps<T> {
   }
 }
 
+export type KeyframePropKey = KeyframeBonePropKey | KeyframeConstraintPropKey
+
 export type KeyframeBonePropKey =
   | 'translateX'
   | 'translateY'

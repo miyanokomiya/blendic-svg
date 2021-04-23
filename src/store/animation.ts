@@ -54,6 +54,7 @@ import { useHistoryStore } from './history'
 import { makeRefAccessors } from '/@/composables/commons'
 import {
   getDeleteKeyframesItem,
+  getDeleteTargetKeyframeItem,
   getInsertKeyframeItem,
   getUpdateKeyframeItem,
 } from '/@/composables/stores/animation'
@@ -80,6 +81,7 @@ import {
   KeyframeBase,
   KeyframeBone,
   KeyframeConstraintPropKey,
+  KeyframePropKey,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import {
@@ -457,9 +459,11 @@ function selectAllKeyframes() {
 
 function execInsertKeyframe(
   options: {
-    useTranslate?: boolean
-    useRotate?: boolean
-    useScale?: boolean
+    translateX?: boolean
+    translateY?: boolean
+    rotate?: boolean
+    scaleX?: boolean
+    scaleY?: boolean
   } = {}
 ) {
   if (!actions.lastSelectedItem.value) {
@@ -482,6 +486,16 @@ function execDeleteKeyframes() {
   if (!isAnyVisibledSelectedKeyframe.value) return
   historyStore.push(
     getExecDeleteKeyframesItem(keyframeState.selectedStateMap.value),
+    true
+  )
+}
+function execDeleteTargetKeyframe(targetId: string, key: KeyframePropKey) {
+  historyStore.push(
+    getExecDeleteTargetKeyframeItem(
+      targetId,
+      animationFrameStore.currentFrame.value,
+      key
+    ),
     true
   )
 }
@@ -633,6 +647,7 @@ export function useAnimationStore() {
 
     execInsertKeyframe,
     execDeleteKeyframes,
+    execDeleteTargetKeyframe,
 
     execInsertKeyframeConstraint,
     execDeleteKeyframeConstraint,
@@ -758,6 +773,22 @@ function getExecDeleteKeyframesItem(
     getDeleteKeyframesItem(getKeyframeAccessor(), selectedStateMap),
     [getSelectKeyframesItem({})]
   )
+}
+
+function getExecDeleteTargetKeyframeItem(
+  targetId: string,
+  targetFrame: number,
+  key: KeyframePropKey
+): HistoryItem | undefined {
+  const item = getDeleteTargetKeyframeItem(
+    getKeyframeAccessor(),
+    targetId,
+    targetFrame,
+    key
+  )
+  if (!item) return
+
+  return convolute(item, [getSelectKeyframesItem({})])
 }
 
 function getExecUpdateKeyframeItem(

@@ -93,9 +93,11 @@ export function makeKeyframe(
   targetId: string,
   targetTransform: Transform,
   options: {
-    useTranslate?: boolean
-    useRotate?: boolean
-    useScale?: boolean
+    translateX?: boolean
+    translateY?: boolean
+    rotate?: boolean
+    scaleX?: boolean
+    scaleY?: boolean
   } = {},
   generateId = false
 ): KeyframeBone {
@@ -104,24 +106,32 @@ export function makeKeyframe(
       frame,
       targetId,
       points: {
-        ...(options.useTranslate
+        ...(options.translateX
           ? {
               translateX: getKeyframePoint({
                 value: targetTransform.translate.x,
               }),
+            }
+          : {}),
+        ...(options.translateY
+          ? {
               translateY: getKeyframePoint({
                 value: targetTransform.translate.y,
               }),
             }
           : {}),
-        ...(options.useRotate
+        ...(options.rotate
           ? {
               rotate: getKeyframePoint({ value: targetTransform.rotate }),
             }
           : {}),
-        ...(options.useScale
+        ...(options.scaleX
           ? {
               scaleX: getKeyframePoint({ value: targetTransform.scale.x }),
+            }
+          : {}),
+        ...(options.scaleY
+          ? {
               scaleY: getKeyframePoint({ value: targetTransform.scale.y }),
             }
           : {}),

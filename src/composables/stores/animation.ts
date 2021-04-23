@@ -19,7 +19,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { HistoryItem } from '/@/composables/stores/history'
 import { IdMap, toMap, toTargetIdMap, Transform } from '/@/models'
-import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
+import {
+  KeyframeBase,
+  KeyframePropKey,
+  KeyframeSelectedState,
+} from '/@/models/keyframe'
 import {
   mergeKeyframesWithDropped,
   resetTransformByKeyframeMap,
@@ -90,6 +94,38 @@ export function getDeleteKeyframesItem(
       const updated = toList({
         ...toMap(currentKeyframes.get()),
         ...deletedMap,
+      }).filter((k): k is KeyframeBase => !!k)
+
+      currentKeyframes.set(updated)
+    },
+  }
+}
+
+export function getDeleteTargetKeyframeItem(
+  currentKeyframes: { get(): KeyframeBase[]; set(val: KeyframeBase[]): void },
+  targetId: string,
+  targetFrame: number,
+  key: KeyframePropKey
+): HistoryItem | undefined {
+  const keyframe = currentKeyframes
+    .get()
+    .find((k) => k.targetId === targetId && k.frame === targetFrame)
+  if (!keyframe) return undefined
+
+  return {
+    name: 'Delete Keyframe',
+    undo: () => {
+      currentKeyframes.set(
+        mergeKeyframesWithDropped(currentKeyframes.get(), [keyframe]).merged
+      )
+    },
+    redo: () => {
+      const deletedTarget = deleteKeyframeByProp(keyframe, {
+        props: { [key]: true },
+      })
+      const updated = toList({
+        ...toMap(currentKeyframes.get()),
+        [keyframe.id]: deletedTarget,
       }).filter((k): k is KeyframeBase => !!k)
 
       currentKeyframes.set(updated)

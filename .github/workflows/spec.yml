@@ -34,8 +34,8 @@ jobs:
       - run: yarn test:unit --coverage
       - run: yarn build
       - run: yarn test:e2e
-      - name: Archive E2E snapshots
+      - name: Archive E2E screenshots
         uses: actions/upload-artifact@v2
         with:
-          name: e2e-snapshots
+          name: e2e-screenshots
           path: __screenshot__

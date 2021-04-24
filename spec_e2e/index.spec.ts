@@ -18,8 +18,13 @@ afterEach(() => {
   page.close()
 })
 
+let count = 0
+
 async function screenshot(name: string) {
-  await page.screenshot({ path: `./__screenshot__/${name}.png` })
+  count++
+  await page.screenshot({
+    path: `./__screenshot__/${count.toString().padStart(3, '0')}.${name}.png`,
+  })
 }
 
 describe('top', () => {

@@ -28,4 +28,5 @@ jobs:
     - run: yarn install
     - run: yarn lint-json
     - run: yarn lint
-    - run: yarn test
+    - run: yarn type
+    - run: yarn test:unit --coverage

@@ -8,6 +8,7 @@
     "build": "vite build",
     "serve": "vite preview",
     "test": "yarn jest --coverage",
+    "test:unit": "yarn jest --config ./spec/jest.config.js",
     "lint": "yarn eslint --ext vue,ts,js ./*.js ./src ./spec",
     "lint-json": "yarn prettier -c ./*.json"
   },

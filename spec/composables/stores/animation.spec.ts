@@ -295,7 +295,7 @@ describe('src/utils/animation.ts', () => {
       )
       expect(item).toBe(undefined)
     })
-    fit('should drop target keyframe if it has no points', () => {
+    it('should drop target keyframe if it has no points', () => {
       const currentKeyframes = {
         value: [
           getKeyframeBone({

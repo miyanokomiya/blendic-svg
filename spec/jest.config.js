@@ -1,11 +1,10 @@
 const { pathsToModuleNameMapper } = require('ts-jest/utils')
-const { compilerOptions } = require('./tsconfig')
+const { compilerOptions } = require('../tsconfig')
 
 module.exports = {
-  roots: ['<rootDir>'],
-  modulePaths: ['<rootDir>'],
+  modulePaths: ['<rootDir>/../'],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-    prefix: '<rootDir>/',
+    prefix: '<rootDir>/../',
   }),
 
   moduleFileExtensions: ['ts', 'js', 'vue'],
@@ -21,5 +20,5 @@ module.exports = {
     },
     NODE_ENV: 'test',
   },
-  testMatch: ['<rootDir>/spec/**/*.spec.ts'],
+  testMatch: ['**/*.spec.ts'],
 }

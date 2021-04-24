@@ -14,6 +14,10 @@ afterAll(() => {
 })
 beforeEach(async () => {
   page = await browser.newPage()
+  await page.setViewportSize({
+    width: 800,
+    height: 600,
+  })
   await page.goto('localhost:3333')
 })
 afterEach(() => {

@@ -13,6 +13,8 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      E2E_SKIP_BUILD: 1
 
     strategy:
       matrix:
@@ -20,13 +22,20 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: yarn install
-    - run: yarn lint-json
-    - run: yarn lint
-    - run: yarn type
-    - run: yarn test:unit --coverage
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn install
+      - run: yarn lint-json
+      - run: yarn lint
+      - run: yarn type
+      - run: yarn test:unit --coverage
+      - run: yarn build
+      - run: yarn test:e2e
+      - name: Archive E2E snapshots
+        uses: actions/upload-artifact@v2
+        with:
+          name: e2e-snapshots
+          path: __screenshot__

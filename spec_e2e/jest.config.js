@@ -1,7 +1,7 @@
 module.exports = {
   testTimeout: 20000,
-  globalSetup: './setup.ts',
-  globalTeardown: './teardown.ts',
+  globalSetup: './global_setup.ts',
+  globalTeardown: './global_teardown.ts',
   modulePaths: ['<rootDir>/../'],
   moduleFileExtensions: ['ts', 'js'],
   preset: 'ts-jest',

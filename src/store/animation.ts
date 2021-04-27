@@ -319,10 +319,10 @@ function pastePoses(mapByTargetId: IdMap<Transform>, seriesKey?: string) {
   const item = getUpdateEditedTransformsItem(
     {
       ...editTransforms.value,
-      ...pastePoseMap(
-        mapByTargetId,
-        (id) => currentInterpolatedTransformMapByTargetId.value[id]
-      ),
+      ...pastePoseMap(mapByTargetId, (id) => {
+        if (!selectedTargetIdMap.value[id]) return
+        return currentInterpolatedTransform(id)
+      }),
     },
     'Paste Pose',
     seriesKey

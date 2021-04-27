@@ -38,17 +38,20 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mouseup="onUpForward"
       @mousedown.prevent="onDown"
     />
+    <GlobalCursor :p="cursor" :cursor="motion" />
   </div>
 </template>
 
 <script lang="ts">
-import { DragArgs, useDrag } from 'okanvas'
+import { IVec2 } from 'okageo'
 import { computed, defineComponent, PropType, ref, watchEffect } from 'vue'
 import { useThrottle } from '/@/composables/throttle'
-import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
+import { usePointerLock } from '/@/composables/window'
 import { clamp, logRound } from '/@/utils/geometry'
+import GlobalCursor from '/@/components/atoms/GlobalCursor.vue'
 
 export default defineComponent({
+  components: { GlobalCursor },
   props: {
     modelValue: { type: Number, default: 0 },
     integer: {
@@ -118,6 +121,7 @@ export default defineComponent({
     })
 
     function onUpForward() {
+      document.exitPointerLock()
       // focus and select the input element if not dragged
       if (!dragged.value) {
         focused.value = true
@@ -125,7 +129,7 @@ export default defineComponent({
       }
     }
 
-    function onDrag(arg: DragArgs) {
+    function onDrag(arg: { base: IVec2; p: IVec2; d: IVec2 }) {
       if (!el.value) return
       const width = el.value.getBoundingClientRect().width
       if (width === 0) return
@@ -154,14 +158,7 @@ export default defineComponent({
     }
     const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
 
-    const drag = useDrag(throttleDrag)
-
-    useGlobalMousemove((e) => {
-      e.preventDefault()
-      drag.onMove(e)
-    })
-    useGlobalMouseup(() => {
-      drag.onUp()
+    const pointerLock = usePointerLock(throttleDrag, () => {
       dragged.value = false
       seriesKey.value = undefined
     })
@@ -199,15 +196,16 @@ export default defineComponent({
       el,
       inputEl,
       onDown: (e: MouseEvent) => {
-        e.preventDefault()
         dragged.value = false
         seriesKey.value = `slider_${Date.now()}`
         dragStartRate.value = rate.value
-        drag.onDown(e)
+        pointerLock.requestPointerLock(e, 'move-h')
       },
       onUpForward,
       input,
       scaleX,
+      cursor: pointerLock.current,
+      motion: pointerLock.motion,
     }
   },
 })

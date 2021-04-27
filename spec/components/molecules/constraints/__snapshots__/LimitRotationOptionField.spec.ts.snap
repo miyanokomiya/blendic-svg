@@ -75,6 +75,7 @@ exports[`/@/src/components/molecules/constraints/LimitRotationOptionField.vue sn
           <div
             class="slider-forward"
           />
+          <!--v-if-->
         </div>
       </div>
       
@@ -118,6 +119,7 @@ exports[`/@/src/components/molecules/constraints/LimitRotationOptionField.vue sn
           <div
             class="slider-forward"
           />
+          <!--v-if-->
         </div>
       </div>
       
@@ -150,6 +152,7 @@ exports[`/@/src/components/molecules/constraints/LimitRotationOptionField.vue sn
         <div
           class="slider-forward"
         />
+        <!--v-if-->
       </div>
       <button
         type="button"

@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/GlobalCursor.vue snapshot move 1`] = `<!--teleport start-->`;
+
+exports[`src/components/atoms/GlobalCursor.vue snapshot move-h 1`] = `<!--teleport start-->`;
+
+exports[`src/components/atoms/GlobalCursor.vue snapshot move-v 1`] = `<!--teleport start-->`;

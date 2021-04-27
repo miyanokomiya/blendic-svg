@@ -2,7 +2,8 @@
 
 # Blendic SVG
 
-SVG Animation Editor for Web
+Blendic SVG is Free Software.  
+This is SVG animation editor for web.
 
 ## Edge version demo
 
@@ -23,4 +24,4 @@ Blendic SVG as a whole is licensed under the GNU Public License, Version 3. Indi
 ## Special thanks
 
 Blendic SVG is greatly inspired by Blender, and respects Blender's license.  
-See [blender.org/about/license](blender.org/about/license) for details.
+See [https://www.blender.org/about/license/](https://www.blender.org/about/license/) for details.

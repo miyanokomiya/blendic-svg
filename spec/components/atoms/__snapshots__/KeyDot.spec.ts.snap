@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`src/components/atoms/KeyDot.vue  checked 1`] = `
+exports[`src/components/atoms/KeyDot.vue snapshot checked 1`] = `
 <button
   checked="true"
   type="button"
@@ -17,7 +17,7 @@ exports[`src/components/atoms/KeyDot.vue  checked 1`] = `
 </button>
 `;
 
-exports[`src/components/atoms/KeyDot.vue  not checked 1`] = `
+exports[`src/components/atoms/KeyDot.vue snapshot not checked 1`] = `
 <button
   checked="false"
   type="button"

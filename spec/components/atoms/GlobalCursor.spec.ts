@@ -18,19 +18,25 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { mount } from '@vue/test-utils'
-import Target from '/@/components/atoms/KeyDot.vue'
+import Target from '/@/components/atoms/GlobalCursor.vue'
 
-describe('src/components/atoms/KeyDot.vue', () => {
+describe('src/components/atoms/GlobalCursor.vue', () => {
   describe('snapshot', () => {
-    it('not checked', () => {
+    it('move', () => {
       const wrapper = mount(Target, {
-        props: { checked: false },
+        props: { cursor: 'move', p: { x: 10, y: 20 } },
       })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('checked', () => {
+    it('move-v', () => {
       const wrapper = mount(Target, {
-        props: { checked: true },
+        props: { cursor: 'move-v', p: { x: 10, y: 20 } },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('move-h', () => {
+      const wrapper = mount(Target, {
+        props: { cursor: 'move-h', p: { x: 10, y: 20 } },
       })
       expect(wrapper.element).toMatchSnapshot()
     })

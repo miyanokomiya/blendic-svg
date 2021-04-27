@@ -40,6 +40,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { IVec2 } from 'okageo'
 import { computed, defineComponent, PropType } from 'vue'
+import { useWindow } from '/@/composables/window'
+import { circleClamp } from '/@/utils/geometry'
 
 export default defineComponent({
   props: {
@@ -53,10 +55,23 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const windowState = useWindow()
+
+    const adjustedP = computed(() => {
+      if (!props.p) return
+      return {
+        x: circleClamp(0, windowState.state.size.width, props.p.x),
+        y: circleClamp(0, windowState.state.size.height, props.p.y),
+      }
+    })
+
     return {
-      transform: computed(
-        () => `translate(${props.p.x - 13}px, ${props.p.y - 13}px)`
-      ),
+      transform: computed(() => {
+        if (!adjustedP.value) return
+        return `translate(${adjustedP.value.x - 13}px, ${
+          adjustedP.value.y - 13
+        }px)`
+      }),
       rotateList: computed(() => {
         switch (props.cursor) {
           case 'move':

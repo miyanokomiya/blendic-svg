@@ -18,9 +18,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <teleport to="body">
+  <teleport v-if="p" to="body">
     <svg
-      v-if="p"
       class="global-cursor"
       :style="{ transform }"
       xmlns="http://www.w3.org/2000/svg"

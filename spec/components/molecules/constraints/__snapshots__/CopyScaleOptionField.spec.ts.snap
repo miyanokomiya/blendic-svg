@@ -186,6 +186,7 @@ exports[`/@/src/components/molecules/constraints/CopyScaleOptionField.vue snapsh
         <div
           class="slider-forward"
         />
+        <!--v-if-->
       </div>
       
     </div>
@@ -217,6 +218,7 @@ exports[`/@/src/components/molecules/constraints/CopyScaleOptionField.vue snapsh
         <div
           class="slider-forward"
         />
+        <!--v-if-->
       </div>
       <button
         type="button"

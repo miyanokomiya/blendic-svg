@@ -21,7 +21,7 @@ import { add, IVec2 } from 'okageo'
 import { onMounted, onUnmounted, reactive, ref } from 'vue'
 
 const state = reactive({
-  size: { width: 100, height: 100 },
+  size: { width: window.innerWidth, height: window.innerHeight },
 })
 
 window.addEventListener('resize', () => {

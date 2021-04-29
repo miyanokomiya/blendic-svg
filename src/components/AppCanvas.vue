@@ -30,29 +30,15 @@ Copyright (C) 2021, Tomoya Komiyama.
       :width="viewSize.width"
       :height="viewSize.height"
       @wheel.prevent="wheel"
-      @click.right.prevent="keyDownEscape"
+      @click.right.prevent
+      @mouseup.right.prevent="keyDownEscape"
       @mouseenter="focus"
       @mousedown.left.prevent="downLeft"
       @mouseup.left.prevent="upLeft"
-      @mousemove.prevent="mousemove"
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
       @mouseleave="leave"
-      @keydown.escape.exact.prevent="keyDownEscape"
-      @keydown.tab.exact.prevent="keyDownTab"
-      @keydown.tab.shift.exact.prevent="keyDownCtrlTab"
-      @keydown.g.exact.prevent="editKeyDown('g')"
-      @keydown.s.exact.prevent="editKeyDown('s')"
-      @keydown.r.exact.prevent="editKeyDown('r')"
-      @keydown.e.exact.prevent="editKeyDown('e')"
-      @keydown.x.exact.prevent="editKeyDown('x')"
-      @keydown.y.exact.prevent="editKeyDown('y')"
-      @keydown.a.exact.prevent="editKeyDown('a')"
-      @keydown.a.shift.exact.prevent="editKeyDown('shift-a')"
-      @keydown.i.exact.prevent="editKeyDown('i')"
-      @keydown.c.ctrl.exact.prevent="editKeyDown('ctrl-c')"
-      @keydown.v.ctrl.exact.prevent="editKeyDown('ctrl-v')"
-      @keydown.d.shift.exact.prevent="editKeyDown('shift-d')"
+      @keydown.prevent="editKeyDownA"
     >
       <g v-if="showAxis" :stroke-width="1 * scale" stroke-opacity="0.3">
         <line x1="-20000" x2="20000" stroke="red" />
@@ -98,7 +84,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-if="canvasMode === 'edit'"
         class="armature-menu"
         @symmetrize="symmetrize"
-        @delete="editKeyDown('x')"
+        @delete="execDelete"
       />
     </div>
     <CommandExamPanel
@@ -114,12 +100,20 @@ Copyright (C) 2021, Tomoya Komiyama.
         top: `${popupMenuListPosition.y - 10}px`,
       }"
     />
+    <GlobalCursor :p="cursor" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
-import { getPointInTarget } from 'okanvas'
+import {
+  defineComponent,
+  PropType,
+  ref,
+  computed,
+  watch,
+  onMounted,
+  nextTick,
+} from 'vue'
 import { IRectangle, IVec2 } from 'okageo'
 import { CanvasCommand, CanvasMode } from '/@/composables/modes/types'
 import * as helpers from '/@/utils/helpers'
@@ -129,27 +123,18 @@ import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import CanvasArmatureMenu from '/@/components/molecules/CanvasArmatureMenu.vue'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
+import GlobalCursor from '/@/components/atoms/GlobalCursor.vue'
 import { useCanvasStore } from '/@/store/canvas'
-import { useWindow } from '../composables/window'
+import {
+  PointerMovement,
+  usePointerLock,
+  useWindow,
+} from '../composables/window'
 import { useAnimationStore } from '../store/animation'
 import { useSettings } from '/@/composables/settings'
 import { centerizeView, useCanvas } from '../composables/canvas'
-import { isCtrlOrMeta } from '/@/utils/devices'
 import { useThrottle } from '/@/composables/throttle'
-
-type KeyType =
-  | 'g'
-  | 's'
-  | 'r'
-  | 'e'
-  | 'x'
-  | 'y'
-  | 'a'
-  | 'shift-a'
-  | 'i'
-  | 'ctrl-c'
-  | 'ctrl-v'
-  | 'shift-d'
+import { isCtrlOrMeta } from '/@/utils/devices'
 
 export default defineComponent({
   components: {
@@ -158,6 +143,7 @@ export default defineComponent({
     CommandExamPanel,
     CanvasArmatureMenu,
     PopupMenuList,
+    GlobalCursor,
   },
   props: {
     originalViewBox: {
@@ -195,7 +181,14 @@ export default defineComponent({
     const canvasStore = useCanvasStore()
     const animationStore = useAnimationStore()
     const { settings } = useSettings()
+
+    const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
+    const pointerLock = usePointerLock(throttleMousemove, undefined, escape)
     const canvas = useCanvas()
+
+    watch(pointerLock.globalCurrent, (to) => {
+      canvas.mousePoint.value = to
+    })
 
     const selectedBonesOrigin = computed(() => {
       if (canvasStore.state.canvasMode === 'edit') {
@@ -228,7 +221,6 @@ export default defineComponent({
     })
 
     const scaleNaviElm = computed(() => {
-      if (!canvas.mousePoint.value) return
       if (!['scale', 'rotate'].includes(props.currentCommand)) return
       return {
         origin: selectedBonesOrigin.value,
@@ -243,6 +235,7 @@ export default defineComponent({
         canvasStore.setAxisGrid('')
         if (to === '') {
           canvas.editStartPoint.value = undefined
+          pointerLock.exitPointerLock()
         }
       }
     )
@@ -263,9 +256,7 @@ export default defineComponent({
       popupMenuListPosition.value = canvas.mousePoint.value
     })
 
-    function mousemove(e: MouseEvent) {
-      canvas.mousePoint.value = getPointInTarget(e)
-
+    function mousemove(arg: PointerMovement) {
       if (canvas.dragInfo.value) {
         // rect select
       } else if (canvas.viewMovingInfo.value) {
@@ -275,12 +266,15 @@ export default defineComponent({
         canvasStore.mousemove({
           current: canvas.viewToCanvas(canvas.mousePoint.value),
           start: canvas.viewToCanvas(canvas.editStartPoint.value),
-          ctrl: isCtrlOrMeta(e),
+          ctrl: arg.ctrl,
           scale: canvas.scale.value,
         })
       }
     }
-    const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
+
+    function escape() {
+      emit('escape')
+    }
 
     return {
       showAxis: computed(() => settings.showAxis),
@@ -299,10 +293,12 @@ export default defineComponent({
         if (svg.value) svg.value.focus()
       },
       wheel: canvas.wheel,
-      downMiddle: canvas.downMiddle,
+      downMiddle(e: Event) {
+        pointerLock.requestPointerLock(e)
+        canvas.downMiddle()
+      },
       upMiddle: canvas.upMiddle,
       downLeft: () => {
-        if (!canvas.mousePoint.value) return
         if (canvasStore.command.value) return
         if (canvasStore.state.canvasMode === 'object') return
         if (canvasStore.state.canvasMode === 'weight') return
@@ -331,28 +327,58 @@ export default defineComponent({
         canvas.upLeft()
       },
       leave: canvas.leave,
-      mousemove: throttleMousemove,
-      keyDownTab: () => {
-        emit('tab')
+      keyDownEscape: escape,
+      execDelete() {
+        emit('x')
       },
-      keyDownCtrlTab: () => emit('ctrl-tab'),
-      keyDownEscape: () => {
-        emit('escape')
-      },
-      editKeyDown(key: KeyType) {
-        if (!canvas.mousePoint.value) return
-
-        if (
-          (['grab', 'scale'] as CanvasCommand[]).includes(props.currentCommand)
-        ) {
-          if (key === 'x' || key === 'y') {
-            canvasStore.switchAxisGrid(key)
-            return
-          }
+      editKeyDownA(e: KeyboardEvent) {
+        switch (e.key) {
+          case 'Escape':
+            emit('escape')
+            break
+          case 'Tab':
+            if (e.shiftKey) {
+              emit('ctrl-tab')
+            } else {
+              emit('tab')
+            }
+            break
+          case 'g':
+          case 'r':
+          case 's':
+          case 'e':
+          case 'x':
+          case 'y':
+          case 'a':
+          case 'i':
+            emit(e.key)
+            break
+          case 'A':
+            emit('shift-a')
+            break
+          case 'D':
+            emit('shift-d')
+            break
+          case 'c':
+            if (isCtrlOrMeta(e)) {
+              emit('ctrl-c')
+            }
+            break
+          case 'v':
+            if (isCtrlOrMeta(e)) {
+              emit('ctrl-v')
+            }
+            break
         }
 
-        canvas.editStartPoint.value = canvas.mousePoint.value
-        emit(key)
+        pointerLock.requestPointerLock(e)
+        canvas.editStartPoint.value = pointerLock.current.value
+
+        nextTick().then(() => {
+          if (!props.currentCommand) {
+            pointerLock.exitPointerLock()
+          }
+        })
       },
       changeMode(canvasMode: CanvasMode) {
         emit('change-mode', canvasMode)
@@ -361,6 +387,12 @@ export default defineComponent({
       symmetrize() {
         canvasStore.symmetrizeBones()
       },
+      cursor: computed(() => {
+        if (props.currentCommand === 'grab') {
+          return pointerLock.globalCurrent.value
+        }
+        return undefined
+      }),
     }
   },
 })

@@ -18,7 +18,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { add, IVec2 } from 'okageo'
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { isCtrlOrMeta } from '/@/utils/devices'
 
 const state = reactive({
   size: { width: window.innerWidth, height: window.innerHeight },
@@ -57,45 +58,74 @@ export function useGlobalMouseup(fn: (e: MouseEvent) => void) {
   return {}
 }
 
-type Motion = 'move' | 'move-v' | 'move-h'
+export type PointerType = 'move' | 'move-v' | 'move-h'
+export interface PointerMovement {
+  base: IVec2
+  p: IVec2
+  d: IVec2
+  ctrl: boolean
+}
 
 export function usePointerLock(
-  onMove: (arg: { base: IVec2; p: IVec2; d: IVec2 }) => void,
-  onUp?: () => void
+  onMove: (arg: PointerMovement) => void,
+  onUp?: () => void,
+  onEscape?: () => void
 ) {
   let locked = false
   let base: IVec2 = { x: 0, y: 0 }
+  const globalCurrent = ref<IVec2>({ x: 0, y: 0 })
   const current = ref<IVec2>()
-  const motionRef = ref<Motion>('move')
+  const motionRef = ref<PointerType>('move')
 
   useGlobalMousemove((e) => {
-    if (!locked || !current.value) return
+    if (!locked || !current.value) {
+      globalCurrent.value = { x: e.pageX, y: e.pageY }
+      return
+    }
 
     const d: IVec2 = {
       x: motionRef.value === 'move-v' ? 0 : e.movementX,
       y: motionRef.value === 'move-h' ? 0 : e.movementY,
     }
     current.value = add(current.value, d)
-    onMove({ base, p: current.value, d })
+    globalCurrent.value = current.value
+    onMove({ base, p: current.value, d, ctrl: isCtrlOrMeta(e) })
   })
 
-  useGlobalMouseup(() => {
+  function exitPointerLock() {
     document.exitPointerLock()
     locked = false
     current.value = undefined
+  }
+
+  useGlobalMouseup(() => {
+    exitPointerLock()
     onUp?.()
   })
 
+  function onPointerlockchange() {
+    if (!document.pointerLockElement) {
+      onEscape?.()
+    }
+  }
+
+  document.addEventListener('pointerlockchange', onPointerlockchange)
+  onUnmounted(() => {
+    document.removeEventListener('pointerlockchange', onPointerlockchange)
+  })
+
   return {
-    current,
+    globalCurrent: computed(() => globalCurrent.value),
+    current: computed(() => current.value),
     motion: motionRef,
-    requestPointerLock(e: MouseEvent, motion: Motion = 'move') {
-      base = { x: e.pageX, y: e.pageY }
+    requestPointerLock(e: Event, motion: PointerType = 'move') {
+      base = globalCurrent.value
       motionRef.value = motion
-      current.value = base
+      current.value = globalCurrent.value
       e.preventDefault()
       ;(e.target as Element).requestPointerLock()
       locked = true
     },
+    exitPointerLock,
   }
 }

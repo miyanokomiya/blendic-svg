@@ -18,9 +18,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <teleport v-if="p" to="body">
+  <teleport v-if="transform" to="body">
     <svg
       class="global-cursor"
+      :class="{ fade: !p }"
       :style="{ transform }"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="-20 -20 40 40"
@@ -33,14 +34,27 @@ Copyright (C) 2021, Tomoya Komiyama.
         <path d="M-20,0L-10,-10L-10,10z" />
       </g>
     </svg>
+    <svg
+      v-if="originTransform"
+      class="global-cursor"
+      :style="{ transform: originTransform }"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="-20 -20 40 40"
+      stroke="#000"
+    >
+      <line x1="-10" x2="10" />
+      <line y1="-10" y2="10" />
+    </svg>
   </teleport>
 </template>
 
 <script lang="ts">
 import { IVec2 } from 'okageo'
-import { computed, defineComponent, PropType } from 'vue'
-import { useWindow } from '/@/composables/window'
+import { computed, defineComponent, PropType, ref, watch } from 'vue'
+import { PointerType, useWindow } from '/@/composables/window'
 import { circleClamp } from '/@/utils/geometry'
+
+const margin = 13
 
 export default defineComponent({
   props: {
@@ -49,7 +63,7 @@ export default defineComponent({
       default: undefined,
     },
     cursor: {
-      type: String as PropType<'move' | 'move-v' | 'move-h'>,
+      type: String as PropType<PointerType>,
       default: 'move',
     },
   },
@@ -64,11 +78,39 @@ export default defineComponent({
       }
     })
 
+    const origin = ref<IVec2>()
+    let timer: any = 0
+
+    watch(
+      () => props.p,
+      (to, from) => {
+        if (!from && to) {
+          origin.value = to
+          clearTimeout(timer)
+        } else if (from && !to) {
+          timer = setTimeout(() => {
+            origin.value = undefined
+          }, 200)
+        }
+      }
+    )
+
     return {
+      originTransform: computed(() => {
+        if (!origin.value) return
+        return `translate(${origin.value.x - margin}px, ${
+          origin.value.y - margin
+        }px)`
+      }),
       transform: computed(() => {
-        if (!adjustedP.value) return
-        return `translate(${adjustedP.value.x - 13}px, ${
-          adjustedP.value.y - 13
+        if (!adjustedP.value) {
+          if (!origin.value) return
+          return `translate(${origin.value.x - margin}px, ${
+            origin.value.y - margin
+          }px)`
+        }
+        return `translate(${adjustedP.value.x - margin}px, ${
+          adjustedP.value.y - margin
         }px)`
       }),
       rotateList: computed(() => {
@@ -93,9 +135,12 @@ export default defineComponent({
   top: 0;
   left: 0;
   z-index: 10;
-}
-svg {
   width: 26px;
   height: 26px;
+  pointer-events: none;
+}
+.fade {
+  transition: all 0.2s;
+  opacity: 0.5;
 }
 </style>

@@ -51,7 +51,7 @@ export function useCanvas(
   }
 
   const editStartPoint = ref<IVec2>()
-  const mousePoint = ref<IVec2>()
+  const mousePoint = ref<IVec2>({ x: 0, y: 0 })
   const viewMovingInfo = ref<MoveInfo>()
   const dragInfo = ref<{ dragType: Dragtype; downAt: IVec2 }>()
 

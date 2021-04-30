@@ -23,26 +23,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <ResizableH :initial-rate="0.8" class="top">
         <template #left>
           <div class="main">
-            <AppCanvas
-              :original-view-box="viewBox"
-              :current-command="canvasCommand"
-              class="canvas"
-              @change-mode="changeMode"
-              @escape="escape"
-              @tab="toggleCanvasMode"
-              @ctrl-tab="ctrlToggleCanvasMode"
-              @g="setEditMode('grab')"
-              @s="setEditMode('scale')"
-              @r="setEditMode('rotate')"
-              @e="setEditMode('extrude')"
-              @x="execDelete"
-              @a="selectAll"
-              @shift-a="addItem"
-              @i="saveKeyframe"
-              @ctrl-c="clip"
-              @ctrl-v="paste"
-              @shift-d="duplicate"
-            >
+            <AppCanvas :original-view-box="viewBox" class="canvas">
               <template #default="{ scale }">
                 <ElementLayer
                   :bone-map="posedMap"
@@ -110,11 +91,7 @@ import ArmatureElm from './components/elements/ArmatureElm.vue'
 import SideBar from '/@/components/SideBar.vue'
 import BoneLayer from '/@/components/elements/BoneLayer.vue'
 import { Bone, IdMap, toMap } from './models/index'
-import {
-  CanvasMode,
-  EditMode,
-  editModeToCanvasCommand,
-} from './composables/modes/types'
+import { EditMode } from './composables/modes/types'
 
 import {
   convolutePoseTransforms,
@@ -220,10 +197,6 @@ export default defineComponent({
       }
     })
 
-    const canvasCommand = computed(() => {
-      return editModeToCanvasCommand(canvasStore.command.value)
-    })
-
     const strage = useStrage()
 
     function onGlobalKeyDown(e: KeyboardEvent) {
@@ -289,7 +262,6 @@ export default defineComponent({
       visibledBoneMap,
       selectedBones,
       canvasMode,
-      canvasCommand,
       selectBone(id: string, state: { [key: string]: boolean }) {
         canvasStore.select(id, state)
       },
@@ -302,48 +274,12 @@ export default defineComponent({
       shiftSelectArmature(id: string, selected: boolean) {
         store.selectArmature(selected ? id : '')
       },
-      escape() {
-        canvasStore.cancel()
-      },
-      toggleCanvasMode() {
-        if (!store.lastSelectedArmature.value) return
-        canvasStore.toggleCanvasMode()
-      },
-      ctrlToggleCanvasMode() {
-        if (!store.lastSelectedArmature.value) return
-        canvasStore.ctrlToggleCanvasMode()
-      },
-      changeMode(canvasMode: CanvasMode) {
-        if (canvasMode === 'weight') {
-          if (elementStore.lastSelectedActor.value) {
-            canvasStore.setCanvasMode(canvasMode)
-          }
-        } else {
-          if (store.lastSelectedArmature.value) {
-            canvasStore.setCanvasMode(canvasMode)
-          } else {
-            canvasStore.setCanvasMode('object')
-          }
-        }
-      },
       setEditMode(mode: EditMode) {
         canvasStore.setEditMode(mode)
-      },
-      execDelete() {
-        canvasStore.execDelete()
       },
       selectAll() {
         canvasStore.selectAll()
       },
-      addItem() {
-        canvasStore.execAdd()
-      },
-      saveKeyframe() {
-        canvasStore.insert()
-      },
-      clip: canvasStore.clip,
-      paste: canvasStore.paste,
-      duplicate: canvasStore.duplicate,
     }
   },
 })

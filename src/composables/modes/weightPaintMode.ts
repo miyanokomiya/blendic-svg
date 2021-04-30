@@ -24,13 +24,13 @@ import {
   EditMovement,
   CanvasEditModeBase,
 } from '/@/composables/modes/types'
-import { useElementStore } from '/@/store/element'
+import { ElementStore } from '/@/store/element'
 
 export interface WeightPaintMode extends CanvasEditModeBase {}
 
-export function useWeightPaintMode(): WeightPaintMode {
-  const elementStore = useElementStore()
-
+export function useWeightPaintMode(
+  elementStore: ElementStore
+): WeightPaintMode {
   function cancel() {}
 
   function clickAny() {}

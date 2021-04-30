@@ -19,7 +19,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div ref="wrapper" class="app-canvas-root">
-    <!-- ctrl+tab cannot work -->
     <svg
       ref="svg"
       tabindex="-1"
@@ -31,14 +30,14 @@ Copyright (C) 2021, Tomoya Komiyama.
       :height="viewSize.height"
       @wheel.prevent="wheel"
       @click.right.prevent
-      @mouseup.right.prevent="keyDownEscape"
+      @mouseup.right.prevent="escape"
       @mouseenter="focus"
       @mousedown.left.prevent="downLeft"
       @mouseup.left.prevent="upLeft"
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
       @mouseleave="leave"
-      @keydown.prevent="editKeyDownA"
+      @keydown.prevent="editKeyDown"
     >
       <g v-if="showAxis" :stroke-width="1 * scale" stroke-opacity="0.3">
         <line x1="-20000" x2="20000" stroke="red" />
@@ -105,19 +104,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  PropType,
-  ref,
-  computed,
-  watch,
-  onMounted,
-  nextTick,
-} from 'vue'
+import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
 import { IRectangle, IVec2 } from 'okageo'
-import { CanvasCommand, CanvasMode } from '/@/composables/modes/types'
 import * as helpers from '/@/utils/helpers'
-import { useStore } from '../store'
 import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
@@ -130,7 +119,6 @@ import {
   usePointerLock,
   useWindow,
 } from '../composables/window'
-import { useAnimationStore } from '../store/animation'
 import { useSettings } from '/@/composables/settings'
 import { centerizeView, useCanvas } from '../composables/canvas'
 import { useThrottle } from '/@/composables/throttle'
@@ -150,36 +138,12 @@ export default defineComponent({
       type: Object as PropType<IRectangle>,
       required: true,
     },
-    currentCommand: {
-      type: String as PropType<CanvasCommand>,
-      default: '',
-    },
   },
-  emits: [
-    'change-mode',
-    'escape',
-    'tab',
-    'ctrl-tab',
-    'g',
-    's',
-    'r',
-    'e',
-    'x',
-    'y',
-    'a',
-    'shift-a',
-    'i',
-    'ctrl-c',
-    'ctrl-v',
-    'shift-d',
-  ],
-  setup(props, { emit }) {
+  setup(props) {
     const svg = ref<SVGElement>()
     const wrapper = ref<SVGElement>()
 
-    const store = useStore()
     const canvasStore = useCanvasStore()
-    const animationStore = useAnimationStore()
     const { settings } = useSettings()
 
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
@@ -188,14 +152,6 @@ export default defineComponent({
 
     watch(pointerLock.globalCurrent, (to) => {
       canvas.mousePoint.value = to
-    })
-
-    const selectedBonesOrigin = computed(() => {
-      if (canvasStore.state.canvasMode === 'edit') {
-        return store.selectedBonesOrigin.value
-      } else {
-        return animationStore.selectedPosedBoneOrigin.value
-      }
     })
 
     function initView() {
@@ -216,23 +172,22 @@ export default defineComponent({
         canvas.scale.value,
         canvasStore.state.axisGrid,
         canvas.viewCanvasRect.value,
-        selectedBonesOrigin.value
+        canvasStore.selectedBonesOrigin.value
       )
     })
 
     const scaleNaviElm = computed(() => {
-      if (!['scale', 'rotate'].includes(props.currentCommand)) return
+      if (!['scale', 'rotate'].includes(canvasStore.command.value)) return
       return {
-        origin: selectedBonesOrigin.value,
+        origin: canvasStore.selectedBonesOrigin.value,
         current: canvas.viewToCanvas(canvas.mousePoint.value),
-        side: props.currentCommand === 'rotate',
+        side: canvasStore.command.value === 'rotate',
       }
     })
 
     watch(
-      () => props.currentCommand,
+      () => canvasStore.command.value,
       (to) => {
-        canvasStore.setAxisGrid('')
         if (to === '') {
           canvas.editStartPoint.value = undefined
           pointerLock.exitPointerLock()
@@ -273,7 +228,7 @@ export default defineComponent({
     }
 
     function escape() {
-      emit('escape')
+      canvasStore.cancel()
     }
 
     return {
@@ -327,68 +282,25 @@ export default defineComponent({
         canvas.upLeft()
       },
       leave: canvas.leave,
-      keyDownEscape: escape,
-      execDelete() {
-        emit('x')
-      },
-      editKeyDownA(e: KeyboardEvent) {
-        switch (e.key) {
-          case 'Escape':
-            emit('escape')
-            break
-          case 'Tab':
-            if (e.shiftKey) {
-              emit('ctrl-tab')
-            } else {
-              emit('tab')
-            }
-            break
-          case 'g':
-          case 'r':
-          case 's':
-          case 'e':
-          case 'x':
-          case 'y':
-          case 'a':
-          case 'i':
-            emit(e.key)
-            break
-          case 'A':
-            emit('shift-a')
-            break
-          case 'D':
-            emit('shift-d')
-            break
-          case 'c':
-            if (isCtrlOrMeta(e)) {
-              emit('ctrl-c')
-            }
-            break
-          case 'v':
-            if (isCtrlOrMeta(e)) {
-              emit('ctrl-v')
-            }
-            break
-        }
-
-        pointerLock.requestPointerLock(e)
-        canvas.editStartPoint.value = pointerLock.current.value
-
-        nextTick().then(() => {
-          if (!props.currentCommand) {
-            pointerLock.exitPointerLock()
-          }
+      escape,
+      execDelete: canvasStore.execDelete,
+      editKeyDown(e: KeyboardEvent) {
+        const { needLock } = canvasStore.editKeyDown(e.key, {
+          shift: e.shiftKey,
+          ctrl: isCtrlOrMeta(e),
         })
+        if (needLock) {
+          pointerLock.requestPointerLock(e)
+          canvas.editStartPoint.value = pointerLock.current.value
+        }
       },
-      changeMode(canvasMode: CanvasMode) {
-        emit('change-mode', canvasMode)
-      },
+      changeMode: canvasStore.changeCanvasMode,
       availableCommandList: canvasStore.availableCommandList,
       symmetrize() {
         canvasStore.symmetrizeBones()
       },
       cursor: computed(() => {
-        if (props.currentCommand === 'grab') {
+        if (canvasStore.command.value === 'grab') {
           return pointerLock.globalCurrent.value
         }
         return undefined

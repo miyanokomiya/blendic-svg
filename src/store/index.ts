@@ -344,6 +344,7 @@ export function useStore() {
     updateBone,
   }
 }
+export type Store = ReturnType<typeof useStore>
 
 function getSelectArmatureItem(id: string): HistoryItem {
   const current = { ...state.selectedArmatures }

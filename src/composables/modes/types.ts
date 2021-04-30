@@ -59,7 +59,7 @@ export interface CanvasEditModeBase {
   insert: () => void
   clip: () => void
   paste: () => void
-  duplicate: () => void
+  duplicate: () => boolean
   availableCommandList: ComputedRef<CommandExam[]>
   popupMenuList: ComputedRef<PopupMenuItem[]>
 }
@@ -98,12 +98,4 @@ export interface KeyframeEditModeBase {
     pointKey: string,
     controls: CurveSelectedState
   ) => void
-}
-
-export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {
-  if (editMode === 'grab') return 'grab'
-  if (editMode === 'extrude') return 'grab'
-  if (editMode === 'rotate') return 'rotate'
-  if (editMode === 'scale') return 'scale'
-  return ''
 }

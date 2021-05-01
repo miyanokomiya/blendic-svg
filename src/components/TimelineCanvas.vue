@@ -39,14 +39,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mouseup.middle.prevent="upMiddle"
       @mouseleave="leave"
       @keydown.escape.exact.prevent="keyDownEscape"
-      @keydown.g.exact.prevent="editKeyDown('g')"
-      @keydown.t.exact.prevent="editKeyDown('t')"
-      @keydown.x.exact.prevent="editKeyDown('x')"
-      @keydown.y.exact.prevent="editKeyDown('y')"
-      @keydown.a.exact.prevent="editKeyDown('a')"
-      @keydown.c.ctrl.exact.prevent="editKeyDown('ctrl-c')"
-      @keydown.v.ctrl.exact.prevent="editKeyDown('ctrl-v')"
-      @keydown.d.shift.exact.prevent="editKeyDown('shift-d')"
+      @keydown.prevent="editKeyDown"
     >
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
     </svg>
@@ -77,7 +70,11 @@ import { useWindow } from '../composables/window'
 import { useCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import { add, IVec2 } from 'okageo'
-import { KeyframeEditCommand, PopupMenuItem } from '/@/composables/modes/types'
+import {
+  KeyframeEditCommand,
+  KeyframeEditModeBase,
+  PopupMenuItem,
+} from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
 import { isCtrlOrMeta } from '/@/utils/devices'
 
@@ -92,6 +89,10 @@ export default defineComponent({
           ignoreNegativeY: true,
           scaleAtFixY: true,
         }),
+    },
+    mode: {
+      type: Object as PropType<KeyframeEditModeBase>,
+      required: true,
     },
     popupMenuList: {
       type: Array as PropType<PopupMenuItem[]>,
@@ -109,15 +110,6 @@ export default defineComponent({
     'drag',
     'click-any',
     'click-empty',
-    'escape',
-    'snap',
-    'g',
-    't',
-    'x',
-    'a',
-    'ctrl-c',
-    'ctrl-v',
-    'shift-d',
   ],
   setup(props, { emit }) {
     const svg = ref<SVGElement>()
@@ -205,24 +197,14 @@ export default defineComponent({
       downMiddle: () => canvas.value.downMiddle(),
       upMiddle: () => canvas.value.upMiddle(),
       leave: () => canvas.value.leave(),
-      editKeyDown: (
-        key: 'g' | 't' | 'x' | 'y' | 'a' | 'ctrl-c' | 'ctrl-v' | 'shift-d'
-      ) => {
-        if (!canvas.value.mousePoint.value) return
-
-        if (props.currentCommand === 'grab') {
-          if (key === 'x' || key === 'y') {
-            emit('snap', key)
-            return
-          }
-        }
-
-        if (key === 'y') return
-
+      editKeyDown: (e: KeyboardEvent) => {
         canvas.value.editStartPoint.value = canvas.value.mousePoint.value
-        emit(key)
+        props.mode.execKey({
+          key: e.key,
+          shift: e.shiftKey,
+          ctrl: isCtrlOrMeta(e),
+        })
       },
-
       wrapper,
       svg,
       popupMenuListPosition,
@@ -231,7 +213,7 @@ export default defineComponent({
       },
       clickAny,
       keyDownEscape: () => {
-        emit('escape')
+        props.mode.cancel()
       },
     }
   },

@@ -48,6 +48,8 @@ import { useSettings } from '/@/composables/settings'
 import { pointToControl, moveCurveControlsMap } from '/@/utils/graphCurves'
 import { logRound, mapVec } from '/@/utils/geometry'
 
+const notNeedLock = { needLock: false }
+
 interface State {
   command: KeyframeEditCommand
   editMovement: EditMovement | undefined
@@ -133,11 +135,71 @@ export function useKeyframeEditMode(
     }
   }
 
-  function setEditMode(mode: KeyframeEditCommand) {
-    if (!isAnySelected.value) return
+  function execIfKeyframeSelected(
+    fn: () => void,
+    needLock: boolean
+  ): { needLock: boolean } {
+    if (isAnySelected.value) {
+      fn()
+      return { needLock }
+    } else {
+      return { needLock: false }
+    }
+  }
 
-    cancel()
-    state.command = mode
+  function execKey(arg: {
+    key: string
+    shift?: boolean
+    ctrl?: boolean
+  }): { needLock: boolean } {
+    switch (arg.key) {
+      case 'a':
+        cancel()
+        animationStore.selectAllKeyframes()
+        return notNeedLock
+      case 'x':
+        if (state.command === 'grab') {
+          snap('x')
+        } else {
+          cancel()
+          animationStore.execDeleteKeyframes()
+        }
+        return notNeedLock
+      case 'y':
+        if (state.command === 'grab') {
+          snap('y')
+        }
+        return notNeedLock
+      case 'g':
+        cancel()
+        return execIfKeyframeSelected(() => {
+          state.command = 'grab'
+        }, true)
+      case 't':
+        cancel()
+        return execIfKeyframeSelected(() => {
+          state.command = 'interpolation'
+        }, true)
+      case 'c':
+        if (arg.ctrl) {
+          return execIfKeyframeSelected(() => {
+            clip()
+          }, false)
+        } else {
+          return notNeedLock
+        }
+      case 'v':
+        if (arg.ctrl) {
+          paste()
+        }
+        return notNeedLock
+      case 'D':
+        cancel()
+        return duplicate()
+      default:
+        cancel()
+        return notNeedLock
+    }
   }
 
   const editVector = computed((): IVec2 | undefined => {
@@ -268,10 +330,11 @@ export function useKeyframeEditMode(
     animationStore.pasteKeyframes(state.clipboard)
   }
 
-  function duplicate() {
+  function duplicate(): { needLock: boolean } {
+    if (!isAnySelected.value) return notNeedLock
     if (state.command) {
       cancel()
-      return
+      return notNeedLock
     }
 
     // duplicate current edit targets as tmp keyframes
@@ -285,6 +348,7 @@ export function useKeyframeEditMode(
     )
     state.tmpKeyframes = duplicated
     state.command = 'grab'
+    return { needLock: true }
   }
 
   const availableCommandList = computed(() => {
@@ -406,7 +470,7 @@ export function useKeyframeEditMode(
     end: () => cancel(),
     cancel,
     snap,
-    setEditMode,
+    execKey,
     select,
     shiftSelect,
     selectFrame,
@@ -418,9 +482,6 @@ export function useKeyframeEditMode(
     clickEmpty,
     upLeft,
     execDelete,
-    clip,
-    paste,
-    duplicate,
     availableCommandList,
     popupMenuList,
     editedKeyframeMap,

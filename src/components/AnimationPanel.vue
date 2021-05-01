@@ -69,7 +69,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <ResizableH class="middle" :initial-rate="0.15" dense>
       <template #left="{ size }">
-        <TimelineCanvas class="label-canvas" :canvas="labelCanvas">
+        <TimelineCanvas class="label-canvas" :canvas="labelCanvas" :mode="mode">
           <template #default="{ scale, viewOrigin }">
             <g
               :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
@@ -95,6 +95,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             <div class="timeline-canvas-inner">
               <TimelineCanvas
                 :canvas="currentCanvas"
+                :mode="mode"
                 :popup-menu-list="popupMenuList"
                 :current-command="currentCommand"
                 @up-left="upLeft"
@@ -104,14 +105,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                 @click-empty="clickEmpty"
                 @click-any="clickAny"
                 @escape="escape"
-                @snap="snap"
-                @a="selectAll"
-                @x="deleteKeyframes"
-                @g="grab"
-                @t="interpolation"
-                @ctrl-c="clipKeyframes"
-                @ctrl-v="pasteKeyframes"
-                @shift-d="duplicateKeyframes"
               >
                 <template #default="{ scale, viewOrigin, viewSize }">
                   <g
@@ -275,9 +268,6 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       escape() {
         mode.value.cancel()
       },
-      snap(axis: 'x' | 'y') {
-        mode.value.snap(axis)
-      },
       selectKeyframe(id: string, selectedState: { [key: string]: boolean }) {
         mode.value.select(id, selectedState)
       },
@@ -295,24 +285,6 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       },
       selectAll() {
         mode.value.selectAll()
-      },
-      grab() {
-        mode.value.setEditMode('grab')
-      },
-      interpolation() {
-        mode.value.setEditMode('interpolation')
-      },
-      deleteKeyframes() {
-        mode.value.execDelete()
-      },
-      clipKeyframes() {
-        mode.value.clip()
-      },
-      pasteKeyframes() {
-        mode.value.paste()
-      },
-      duplicateKeyframes() {
-        mode.value.duplicate()
       },
       clickEmpty() {
         mode.value.clickEmpty()
@@ -560,6 +532,7 @@ export default defineComponent({
       availableCommandList: computed(
         () => canvasMode.mode.value.availableCommandList.value
       ),
+      mode: canvasMode.mode,
       ...canvasMode.handlers,
     }
   },

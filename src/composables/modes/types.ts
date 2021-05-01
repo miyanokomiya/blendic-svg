@@ -77,7 +77,11 @@ export interface KeyframeEditModeBase {
   end: () => void
   cancel: () => void
   snap: (axis: 'x' | 'y') => void
-  setEditMode: (mode: KeyframeEditCommand) => void
+  execKey: (arg: {
+    key: string
+    shift?: boolean
+    ctrl?: boolean
+  }) => { needLock: boolean }
   select: (id: string, selectedState: { [key: string]: boolean }) => void
   shiftSelect: (id: string, selectedState: { [key: string]: boolean }) => void
   selectAll: () => void
@@ -87,9 +91,6 @@ export interface KeyframeEditModeBase {
   clickEmpty: () => void
   upLeft: () => void
   execDelete: () => void
-  clip: () => void
-  paste: () => void
-  duplicate: () => void
   availableCommandList: ComputedRef<CommandExam[]>
   popupMenuList: ComputedRef<PopupMenuItem[]>
   grabCurrentFrame: () => void

@@ -127,11 +127,8 @@ export function useKeyframeEditMode(
   }
 
   function upLeft() {
-    if (
-      state.command === 'grab-control' ||
-      state.command === 'grab-current-frame'
-    ) {
-      cancel()
+    if (state.command) {
+      completeEdit()
     }
   }
 
@@ -252,8 +249,6 @@ export function useKeyframeEditMode(
   )
 
   function completeEdit() {
-    if (!isAnySelected.value) return
-
     if (editedKeyframeMap.value) {
       animationStore.completeDuplicateKeyframes(
         toList(editedKeyframeMap.value.notSelected),

@@ -56,18 +56,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  onMounted,
-  watch,
-  computed,
-  PropType,
-  provide,
-} from 'vue'
+import { defineComponent, ref, onMounted, watch, computed, PropType } from 'vue'
 import { getPointInTarget } from 'okanvas'
 import { useWindow } from '../composables/window'
-import { useCanvas } from '../composables/canvas'
+import { provideScale, useCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import { add, IVec2 } from 'okageo'
 import {
@@ -107,6 +99,8 @@ export default defineComponent({
     const svg = ref<SVGElement>()
     const wrapper = ref<SVGElement>()
 
+    provideScale(() => props.canvas.scale.value)
+
     function adjustSvgSize() {
       if (!wrapper.value) return
       const rect = wrapper.value.getBoundingClientRect()
@@ -140,29 +134,33 @@ export default defineComponent({
     }
 
     function mousemove(e: MouseEvent) {
-      props.canvas.setEditStartPoint(getPointInTarget(e))
+      const p = getPointInTarget(e)
+      props.canvas.setMousePoint(p)
+
+      if (props.canvas.viewMovingInfo.value) {
+        props.canvas.viewMove()
+        return
+      }
+
+      const info = {
+        current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+        ctrl: isCtrlOrMeta(e),
+        scale: props.canvas.scale.value,
+      }
 
       if (props.canvas.dragInfo.value) {
         props.mode.drag({
-          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
           start: props.canvas.viewToCanvas(props.canvas.dragInfo.value.downAt),
-          ctrl: isCtrlOrMeta(e),
-          scale: props.canvas.scale.value,
+          ...info,
         })
-      } else if (props.canvas.viewMovingInfo.value) {
-        props.canvas.viewMove()
       } else if (props.canvas.editStartPoint.value) {
         props.mode.mousemove({
-          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
           start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
-          ctrl: isCtrlOrMeta(e),
-          scale: props.canvas.scale.value,
+          ...info,
         })
       }
     }
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
-
-    provide('getScale', () => props.canvas.scale.value)
 
     return {
       scale: computed(() => props.canvas.scale.value),
@@ -174,9 +172,6 @@ export default defineComponent({
       wheel: (e: WheelEvent) => props.canvas.wheel(e, true),
       downLeft: (e: MouseEvent) => {
         isDownEmpty.value = e.target === svg.value
-
-        if (!props.canvas.mousePoint.value) return
-
         props.canvas.downLeft()
         const current = props.canvas.viewToCanvas(props.canvas.mousePoint.value)
         props.mode.drag({
@@ -193,24 +188,24 @@ export default defineComponent({
       downMiddle: () => props.canvas.downMiddle(),
       upMiddle: () => props.canvas.upMiddle(),
       leave: () => props.canvas.leave(),
+      clickAny,
+      cancel: () => props.mode.cancel(),
       editKeyDown: (e: KeyboardEvent) => {
-        props.canvas.setEditStartPoint(props.canvas.mousePoint.value)
-        props.mode.execKey({
+        const { needLock } = props.mode.execKey({
           key: e.key,
           shift: e.shiftKey,
           ctrl: isCtrlOrMeta(e),
         })
+
+        if (needLock) {
+          props.canvas.setEditStartPoint(props.canvas.mousePoint.value)
+        }
       },
+
       wrapper,
       svg,
       popupMenuListPosition,
-      focus() {
-        svg.value?.focus()
-      },
-      clickAny,
-      cancel: () => {
-        props.mode.cancel()
-      },
+      focus: () => svg.value?.focus(),
     }
   },
 })

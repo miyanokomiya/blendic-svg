@@ -32,21 +32,13 @@ Copyright (C) 2021, Tomoya Komiyama.
       :stroke-width="scale"
       :stroke-dasharray="`${2 * scale} ${2 * scale}`"
     />
-    <g
-      :transform="`translate(${current.x}, ${current.y}) rotate(${rotate}) scale(${scale})`"
-    >
-      <circle r="2" />
-      <g :transform="`rotate(${side ? 90 : 0})`">
-        <path d="M-20,0L-10,-10L-10,10z" />
-        <path d="M20,0L10,-10L10,10z" />
-      </g>
-    </g>
   </g>
 </template>
 
 <script lang="ts">
 import { getRadian, IVec2 } from 'okageo'
 import { defineComponent, PropType, computed } from 'vue'
+import { injectScale } from '/@/composables/canvas'
 
 export default defineComponent({
   props: {
@@ -58,17 +50,12 @@ export default defineComponent({
       type: Object as PropType<IVec2>,
       required: true,
     },
-    scale: {
-      type: Number,
-      required: true,
-    },
-    side: {
-      type: Boolean,
-      default: false,
-    },
   },
   setup(props) {
+    const getScale = injectScale()
+
     return {
+      scale: computed(getScale),
       rotate: computed(
         () => (getRadian(props.current, props.origin) / Math.PI) * 180
       ),
@@ -76,5 +63,3 @@ export default defineComponent({
   },
 })
 </script>
-
-<style lang="scss" scoped></style>

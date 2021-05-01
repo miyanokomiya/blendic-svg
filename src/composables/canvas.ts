@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ref, computed, Ref } from 'vue'
+import { ref, computed, Ref, provide, inject } from 'vue'
 import { IVec2, multi, sub, add, getRectCenter, IRectangle } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import { scaleRate } from '../models'
@@ -228,4 +228,12 @@ export function centerizeView(
       scale,
     }
   }
+}
+
+export function provideScale(getScale: () => number) {
+  provide('getScale', getScale)
+}
+
+export function injectScale(): () => number {
+  return inject<() => number>('getScale', () => 1)
 }

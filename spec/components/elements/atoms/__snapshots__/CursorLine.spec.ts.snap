@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/atoms/CursorLine.vue snapshot default 1`] = `
+<g
+  fill="black"
+  stroke="black"
+>
+  <g
+    transform="translate(1, 2) rotate(63.43494882292201) scale(1)"
+  >
+    <circle
+      r="2"
+    />
+  </g>
+  <line
+    stroke-dasharray="2 2"
+    stroke-width="1"
+    x1="1"
+    x2="10"
+    y1="2"
+    y2="20"
+  />
+</g>
+`;

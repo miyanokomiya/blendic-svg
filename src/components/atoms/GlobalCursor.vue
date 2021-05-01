@@ -28,10 +28,12 @@ Copyright (C) 2021, Tomoya Komiyama.
       stroke="none"
       fill="#000"
     >
-      <circle r="2" />
-      <g v-for="r in rotateList" :key="r" :transform="`rotate(${r})`">
-        <path d="M20,0L10,-10L10,10z" />
-        <path d="M-20,0L-10,-10L-10,10z" />
+      <g :transform="`rotate(${rotate})`">
+        <circle r="2" />
+        <g v-for="r in rotateList" :key="r" :transform="`rotate(${r})`">
+          <path d="M20,0L10,-10L10,10z" />
+          <path d="M-20,0L-10,-10L-10,10z" />
+        </g>
       </g>
     </svg>
     <svg
@@ -65,6 +67,10 @@ export default defineComponent({
     cursor: {
       type: String as PropType<PointerType>,
       default: 'move',
+    },
+    rotate: {
+      type: Number,
+      default: 0,
     },
   },
   setup(props) {

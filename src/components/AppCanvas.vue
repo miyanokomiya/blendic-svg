@@ -36,7 +36,6 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mouseup.left.prevent="upLeft"
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
-      @mouseleave="leave"
       @keydown.prevent="editKeyDown"
     >
       <g v-if="showAxis" :stroke-width="1 * scale" stroke-opacity="0.3">
@@ -53,13 +52,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         :stroke-width="gridLineElm.strokeWidth"
       />
       <slot :scale="scale" />
-      <ScaleMarker
-        v-if="scaleNaviElm"
-        :origin="scaleNaviElm.origin"
-        :current="scaleNaviElm.current"
-        :scale="scale"
-        :side="scaleNaviElm.side"
-      />
       <rect
         v-if="dragRectangle"
         :x="dragRectangle.x"
@@ -71,6 +63,11 @@ Copyright (C) 2021, Tomoya Komiyama.
         :stroke-width="2 * scale"
         :stroke-dasharray="`${4 * scale} ${4 * scale}`"
         class="view-only"
+      />
+      <CursorLine
+        v-if="cursorInfo"
+        :origin="cursorInfo.origin"
+        :current="cursorInfo.current"
       />
     </svg>
     <div class="left-top-space">
@@ -99,39 +96,40 @@ Copyright (C) 2021, Tomoya Komiyama.
         top: `${popupMenuListPosition.y - 10}px`,
       }"
     />
-    <GlobalCursor :p="cursor" />
+    <GlobalCursor :p="cursor" :rotate="cursorRotate" :cursor="cursorType" />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
-import { IRectangle, IVec2 } from 'okageo'
+import { getRadian, IRectangle, IVec2 } from 'okageo'
 import * as helpers from '/@/utils/helpers'
-import ScaleMarker from '/@/components/elements/atoms/ScaleMarker.vue'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import CanvasArmatureMenu from '/@/components/molecules/CanvasArmatureMenu.vue'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import GlobalCursor from '/@/components/atoms/GlobalCursor.vue'
+import CursorLine from '/@/components/elements/atoms/CursorLine.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import {
   PointerMovement,
+  PointerType,
   usePointerLock,
   useWindow,
 } from '../composables/window'
 import { useSettings } from '/@/composables/settings'
-import { centerizeView, useCanvas } from '../composables/canvas'
+import { centerizeView, provideScale, useCanvas } from '../composables/canvas'
 import { useThrottle } from '/@/composables/throttle'
 import { isCtrlOrMeta } from '/@/utils/devices'
 
 export default defineComponent({
   components: {
-    ScaleMarker,
     CanvasModepanel,
     CommandExamPanel,
     CanvasArmatureMenu,
     PopupMenuList,
     GlobalCursor,
+    CursorLine,
   },
   props: {
     originalViewBox: {
@@ -174,15 +172,6 @@ export default defineComponent({
         canvas.viewCanvasRect.value,
         canvasStore.selectedBonesOrigin.value
       )
-    })
-
-    const scaleNaviElm = computed(() => {
-      if (!['scale', 'rotate'].includes(canvasStore.command.value)) return
-      return {
-        origin: canvasStore.selectedBonesOrigin.value,
-        current: canvas.viewToCanvas(canvas.mousePoint.value),
-        side: canvasStore.command.value === 'rotate',
-      }
     })
 
     watch(
@@ -231,6 +220,42 @@ export default defineComponent({
       canvasStore.cancel()
     }
 
+    const cursorInfo = computed(() => {
+      if (!['scale', 'rotate'].includes(canvasStore.command.value)) return
+      return {
+        origin: canvasStore.selectedBonesOrigin.value,
+        current: canvas.viewToCanvas(canvas.mousePoint.value),
+      }
+    })
+
+    const cursorRotate = computed(() => {
+      if (!cursorInfo.value) return 0
+      return (
+        (getRadian(cursorInfo.value.current, cursorInfo.value.origin) * 180) /
+        Math.PI
+      )
+    })
+
+    const cursorType = computed<PointerType>(() => {
+      switch (canvasStore.command.value) {
+        case 'rotate':
+          return 'move-v'
+        case 'scale':
+          return 'move-h'
+        default:
+          return 'move'
+      }
+    })
+
+    const cursor = computed(() => {
+      if (['grab', 'rotate', 'scale'].includes(canvasStore.command.value)) {
+        return canvas.mousePoint.value
+      }
+      return undefined
+    })
+
+    provideScale(() => canvas.scale.value)
+
     return {
       showAxis: computed(() => settings.showAxis),
       scale: canvas.scale,
@@ -239,7 +264,6 @@ export default defineComponent({
       wrapper,
       viewBox: canvas.viewBox,
       gridLineElm,
-      scaleNaviElm,
       dragRectangle: canvas.dragRectangle,
       canvasMode: computed(() => canvasStore.state.canvasMode),
       popupMenuList,
@@ -281,7 +305,6 @@ export default defineComponent({
         }
         canvas.upLeft()
       },
-      leave: canvas.leave,
       escape,
       execDelete: canvasStore.execDelete,
       editKeyDown(e: KeyboardEvent) {
@@ -299,12 +322,11 @@ export default defineComponent({
       symmetrize() {
         canvasStore.symmetrizeBones()
       },
-      cursor: computed(() => {
-        if (canvasStore.command.value === 'grab') {
-          return pointerLock.globalCurrent.value
-        }
-        return undefined
-      }),
+
+      cursorInfo,
+      cursorRotate,
+      cursorType,
+      cursor,
     }
   },
 })

@@ -98,13 +98,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                 :mode="mode"
                 :popup-menu-list="popupMenuList"
                 :current-command="currentCommand"
-                @up-left="upLeft"
-                @drag="drag"
-                @down-left="downLeft"
-                @mousemove="mousemove"
-                @click-empty="clickEmpty"
-                @click-any="clickAny"
-                @escape="escape"
               >
                 <template #default="{ scale, viewOrigin, viewSize }">
                   <g
@@ -208,7 +201,6 @@ import { useAnimationLoop } from '../composables/animationLoop'
 import { useKeyframeEditMode } from '../composables/modes/keyframeEditMode'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'
-import { EditMovement } from '/@/composables/modes/types'
 import { CurveSelectedState, KeyframeBase } from '/@/models/keyframe'
 import { useBooleanMap } from '/@/composables/idMap'
 import { Size } from 'okanvas'
@@ -256,15 +248,6 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       downCurrentFrame() {
         mode.value.grabCurrentFrame()
       },
-      downLeft(arg: EditMovement) {
-        mode.value.drag(arg)
-      },
-      drag(arg: EditMovement) {
-        mode.value.drag(arg)
-      },
-      upLeft() {
-        mode.value.upLeft()
-      },
       escape() {
         mode.value.cancel()
       },
@@ -285,15 +268,6 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       },
       selectAll() {
         mode.value.selectAll()
-      },
-      clickEmpty() {
-        mode.value.clickEmpty()
-      },
-      clickAny() {
-        mode.value.clickAny()
-      },
-      mousemove(arg: EditMovement) {
-        mode.value.mousemove(arg)
       },
       grabControl(
         keyframeId: string,

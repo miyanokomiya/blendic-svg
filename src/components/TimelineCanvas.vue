@@ -30,7 +30,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :height="viewSize.height"
       @wheel.prevent="wheel"
       @click.left.prevent="clickAny"
-      @click.right.prevent="keyDownEscape"
+      @click.right.prevent="cancel"
       @mouseenter="focus"
       @mousedown.left.prevent="downLeft"
       @mouseup.left.prevent="upLeft"
@@ -38,7 +38,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
       @mouseleave="leave"
-      @keydown.escape.exact.prevent="keyDownEscape"
+      @keydown.escape.exact.prevent="cancel"
       @keydown.prevent="editKeyDown"
     >
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
@@ -103,26 +103,14 @@ export default defineComponent({
       default: '',
     },
   },
-  emits: [
-    'down-left',
-    'up-left',
-    'mousemove',
-    'drag',
-    'click-any',
-    'click-empty',
-  ],
-  setup(props, { emit }) {
+  setup(props) {
     const svg = ref<SVGElement>()
     const wrapper = ref<SVGElement>()
-
-    const canvas = computed(() => {
-      return props.canvas
-    })
 
     function adjustSvgSize() {
       if (!wrapper.value) return
       const rect = wrapper.value.getBoundingClientRect()
-      canvas.value.setViewSize({ width: rect.width, height: rect.height })
+      props.canvas.setViewSize({ width: rect.width, height: rect.height })
     }
 
     const windowState = useWindow()
@@ -145,60 +133,68 @@ export default defineComponent({
     const isDownEmpty = ref(false)
     function clickAny(e: any) {
       if (e.target === svg.value && isDownEmpty.value) {
-        canvas.value.editStartPoint.value = undefined
-        emit('click-empty')
+        props.mode.clickEmpty()
       } else {
-        emit('click-any')
+        props.mode.clickAny()
       }
     }
 
     function mousemove(e: MouseEvent) {
-      canvas.value.mousePoint.value = getPointInTarget(e)
+      props.canvas.setEditStartPoint(getPointInTarget(e))
 
-      if (canvas.value.dragInfo.value) {
-        emit('drag', {
-          current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
-          start: canvas.value.viewToCanvas(canvas.value.dragInfo.value.downAt),
-        })
-      } else if (canvas.value.viewMovingInfo.value) {
-        canvas.value.viewMove()
-      } else if (canvas.value.editStartPoint.value) {
-        emit('mousemove', {
-          current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
-          start: canvas.value.viewToCanvas(canvas.value.editStartPoint.value),
+      if (props.canvas.dragInfo.value) {
+        props.mode.drag({
+          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          start: props.canvas.viewToCanvas(props.canvas.dragInfo.value.downAt),
           ctrl: isCtrlOrMeta(e),
+          scale: props.canvas.scale.value,
+        })
+      } else if (props.canvas.viewMovingInfo.value) {
+        props.canvas.viewMove()
+      } else if (props.canvas.editStartPoint.value) {
+        props.mode.mousemove({
+          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
+          ctrl: isCtrlOrMeta(e),
+          scale: props.canvas.scale.value,
         })
       }
     }
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
 
-    provide('getScale', () => canvas.value.scale.value)
+    provide('getScale', () => props.canvas.scale.value)
 
     return {
-      scale: computed(() => canvas.value.scale.value),
-      viewOrigin: computed(() => canvas.value.viewOrigin.value),
-      viewSize: computed(() => canvas.value.viewSize.value),
-      viewBox: computed(() => canvas.value.viewBox.value),
+      scale: computed(() => props.canvas.scale.value),
+      viewOrigin: computed(() => props.canvas.viewOrigin.value),
+      viewSize: computed(() => props.canvas.viewSize.value),
+      viewBox: computed(() => props.canvas.viewBox.value),
 
       mousemove: throttleMousemove,
-      wheel: (e: WheelEvent) => canvas.value.wheel(e, true),
+      wheel: (e: WheelEvent) => props.canvas.wheel(e, true),
       downLeft: (e: MouseEvent) => {
         isDownEmpty.value = e.target === svg.value
 
-        if (!canvas.value.mousePoint.value) return
-        canvas.value.downLeft()
-        const current = canvas.value.viewToCanvas(canvas.value.mousePoint.value)
-        emit('down-left', { current, start: current })
+        if (!props.canvas.mousePoint.value) return
+
+        props.canvas.downLeft()
+        const current = props.canvas.viewToCanvas(props.canvas.mousePoint.value)
+        props.mode.drag({
+          current,
+          start: current,
+          ctrl: isCtrlOrMeta(e),
+          scale: props.canvas.scale.value,
+        })
       },
       upLeft: () => {
-        canvas.value.upLeft()
-        emit('up-left')
+        props.canvas.upLeft()
+        props.mode.upLeft()
       },
-      downMiddle: () => canvas.value.downMiddle(),
-      upMiddle: () => canvas.value.upMiddle(),
-      leave: () => canvas.value.leave(),
+      downMiddle: () => props.canvas.downMiddle(),
+      upMiddle: () => props.canvas.upMiddle(),
+      leave: () => props.canvas.leave(),
       editKeyDown: (e: KeyboardEvent) => {
-        canvas.value.editStartPoint.value = canvas.value.mousePoint.value
+        props.canvas.setEditStartPoint(props.canvas.mousePoint.value)
         props.mode.execKey({
           key: e.key,
           shift: e.shiftKey,
@@ -209,10 +205,10 @@ export default defineComponent({
       svg,
       popupMenuListPosition,
       focus() {
-        if (svg.value) svg.value.focus()
+        svg.value?.focus()
       },
       clickAny,
-      keyDownEscape: () => {
+      cancel: () => {
         props.mode.cancel()
       },
     }

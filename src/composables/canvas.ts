@@ -55,6 +55,10 @@ export function useCanvas(
   const viewMovingInfo = ref<MoveInfo>()
   const dragInfo = ref<{ dragType: Dragtype; downAt: IVec2 }>()
 
+  function setEditStartPoint(val: IVec2 | undefined) {
+    editStartPoint.value = val
+  }
+
   const viewDragRectangle = computed<IRectangle | undefined>(() => {
     if (
       !mousePoint.value ||
@@ -110,6 +114,7 @@ export function useCanvas(
     viewSize,
     setViewSize,
     editStartPoint,
+    setEditStartPoint,
     mousePoint,
     scale,
     viewOrigin,

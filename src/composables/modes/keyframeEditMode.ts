@@ -176,7 +176,7 @@ export function useKeyframeEditMode(
         cancel()
         return execIfKeyframeSelected(() => {
           state.command = 'interpolation'
-        }, true)
+        }, false)
       case 'c':
         if (arg.ctrl) {
           return execIfKeyframeSelected(() => {

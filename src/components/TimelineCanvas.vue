@@ -30,7 +30,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :height="viewSize.height"
       @wheel.prevent="wheel"
       @click.left.prevent="clickAny"
-      @click.right.prevent="cancel"
+      @click.right.prevent="escape"
       @mouseenter="focus"
       @mousedown.left.prevent="downLeft"
       @mouseup.left.prevent="upLeft"
@@ -38,7 +38,6 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
       @mouseleave="leave"
-      @keydown.escape.exact.prevent="cancel"
       @keydown.prevent="editKeyDown"
     >
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
@@ -57,11 +56,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, watch, computed, PropType } from 'vue'
-import { getPointInTarget } from 'okanvas'
-import { useWindow } from '../composables/window'
+import {
+  PointerMovement,
+  usePointerLock,
+  useWindow,
+} from '../composables/window'
 import { provideScale, useCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
-import { add, IVec2 } from 'okageo'
+import { add, IVec2, sub } from 'okageo'
 import {
   KeyframeEditCommand,
   KeyframeEditModeBase,
@@ -133,10 +135,7 @@ export default defineComponent({
       }
     }
 
-    function mousemove(e: MouseEvent) {
-      const p = getPointInTarget(e)
-      props.canvas.setMousePoint(p)
-
+    function mousemove(arg: PointerMovement) {
       if (props.canvas.viewMovingInfo.value) {
         props.canvas.viewMove()
         return
@@ -144,7 +143,7 @@ export default defineComponent({
 
       const info = {
         current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-        ctrl: isCtrlOrMeta(e),
+        ctrl: arg.ctrl,
         scale: props.canvas.scale.value,
       }
 
@@ -161,6 +160,27 @@ export default defineComponent({
       }
     }
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
+    const pointerLock = usePointerLock(throttleMousemove, undefined, escape)
+
+    watch(pointerLock.globalCurrent, (to) => {
+      if (!svg.value) return
+      // adjust in the canvas
+      const svgRect = svg.value.getBoundingClientRect()
+      props.canvas.setMousePoint(sub(to, { x: svgRect.left, y: svgRect.top }))
+    })
+
+    watch(
+      () => props.mode.command.value,
+      (to) => {
+        if (to === '') {
+          pointerLock.exitPointerLock()
+        }
+      }
+    )
+
+    function escape() {
+      props.mode.cancel()
+    }
 
     return {
       scale: computed(() => props.canvas.scale.value),
@@ -185,11 +205,17 @@ export default defineComponent({
         props.canvas.upLeft()
         props.mode.upLeft()
       },
-      downMiddle: () => props.canvas.downMiddle(),
-      upMiddle: () => props.canvas.upMiddle(),
+      downMiddle: (e: MouseEvent) => {
+        props.canvas.downMiddle()
+        pointerLock.requestPointerLock(e)
+      },
+      upMiddle: () => {
+        props.canvas.upMiddle()
+        pointerLock.exitPointerLock()
+      },
       leave: () => props.canvas.leave(),
       clickAny,
-      cancel: () => props.mode.cancel(),
+      escape,
       editKeyDown: (e: KeyboardEvent) => {
         const { needLock } = props.mode.execKey({
           key: e.key,
@@ -198,6 +224,7 @@ export default defineComponent({
         })
 
         if (needLock) {
+          pointerLock.requestPointerLock(e)
           props.canvas.setEditStartPoint(props.canvas.mousePoint.value)
         }
       },

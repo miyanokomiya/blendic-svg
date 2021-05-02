@@ -2,6 +2,7 @@ const { pathsToModuleNameMapper } = require('ts-jest/utils')
 const { compilerOptions } = require('../tsconfig')
 
 module.exports = {
+  roots: ['<rootDir>/../'],
   modulePaths: ['<rootDir>/../'],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
     prefix: '<rootDir>/../',
@@ -20,5 +21,5 @@ module.exports = {
     },
     NODE_ENV: 'test',
   },
-  testMatch: ['**/*.spec.ts'],
+  testMatch: ['<rootDir>/**/*.spec.ts'],
 }

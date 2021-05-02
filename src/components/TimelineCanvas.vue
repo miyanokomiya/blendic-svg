@@ -37,7 +37,6 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mousemove.prevent="mousemove"
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
-      @mouseleave="leave"
       @keydown.prevent="editKeyDown"
     >
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
@@ -64,11 +63,7 @@ import {
 import { provideScale, useCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import { add, IVec2, sub } from 'okageo'
-import {
-  KeyframeEditCommand,
-  KeyframeEditModeBase,
-  PopupMenuItem,
-} from '/@/composables/modes/types'
+import { KeyframeEditModeBase } from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
 import { isCtrlOrMeta } from '/@/utils/devices'
 
@@ -77,24 +72,11 @@ export default defineComponent({
   props: {
     canvas: {
       type: Object as PropType<ReturnType<typeof useCanvas>>,
-      default: () =>
-        useCanvas({
-          scaleMin: 1,
-          ignoreNegativeY: true,
-          scaleAtFixY: true,
-        }),
+      required: true,
     },
     mode: {
       type: Object as PropType<KeyframeEditModeBase>,
       required: true,
-    },
-    popupMenuList: {
-      type: Array as PropType<PopupMenuItem[]>,
-      default: () => [],
-    },
-    currentCommand: {
-      type: String as PropType<KeyframeEditCommand>,
-      default: '',
     },
   },
   setup(props) {
@@ -113,18 +95,16 @@ export default defineComponent({
     onMounted(adjustSvgSize)
     watch(() => windowState.state.size, adjustSvgSize)
 
+    const popupMenuList = computed(() => props.mode.popupMenuList.value)
     const popupMenuListPosition = ref<IVec2>()
-    watch(
-      () => props.popupMenuList,
-      () => {
-        if (!wrapper.value || !props.canvas.mousePoint.value) return
-        const rect = wrapper.value.getBoundingClientRect()
-        popupMenuListPosition.value = add(props.canvas.mousePoint.value, {
-          x: rect.left,
-          y: rect.top,
-        })
-      }
-    )
+    watch(popupMenuList, () => {
+      if (!wrapper.value || !props.canvas.mousePoint.value) return
+      const rect = wrapper.value.getBoundingClientRect()
+      popupMenuListPosition.value = add(props.canvas.mousePoint.value, {
+        x: rect.left,
+        y: rect.top,
+      })
+    })
 
     const isDownEmpty = ref(false)
     function clickAny(e: any) {
@@ -187,6 +167,7 @@ export default defineComponent({
       viewOrigin: computed(() => props.canvas.viewOrigin.value),
       viewSize: computed(() => props.canvas.viewSize.value),
       viewBox: computed(() => props.canvas.viewBox.value),
+      popupMenuList,
 
       mousemove: throttleMousemove,
       wheel: (e: WheelEvent) => props.canvas.wheel(e, true),
@@ -213,7 +194,6 @@ export default defineComponent({
         props.canvas.upMiddle()
         pointerLock.exitPointerLock()
       },
-      leave: () => props.canvas.leave(),
       clickAny,
       escape,
       editKeyDown: (e: KeyboardEvent) => {

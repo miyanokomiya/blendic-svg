@@ -93,12 +93,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <ResizableH class="timeline-canvas-space" :initial-rate="0.8" dense>
           <template #left>
             <div class="timeline-canvas-inner">
-              <TimelineCanvas
-                :canvas="currentCanvas"
-                :mode="mode"
-                :popup-menu-list="popupMenuList"
-                :current-command="currentCommand"
-              >
+              <TimelineCanvas :canvas="currentCanvas" :mode="mode">
                 <template #default="{ scale, viewOrigin, viewSize }">
                   <g
                     v-if="canvasType === 'graph'"
@@ -248,9 +243,6 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       downCurrentFrame() {
         mode.value.grabCurrentFrame()
       },
-      escape() {
-        mode.value.cancel()
-      },
       selectKeyframe(id: string, selectedState: { [key: string]: boolean }) {
         mode.value.select(id, selectedState)
       },
@@ -265,9 +257,6 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       },
       shiftSelectKeyframeByFrame(frame: number) {
         mode.value.shiftSelectFrame(frame)
-      },
-      selectAll() {
-        mode.value.selectAll()
       },
       grabControl(
         keyframeId: string,
@@ -501,8 +490,6 @@ export default defineComponent({
       canvasOptions: canvasList.canvasOptions,
       keyframePointColorMap,
 
-      currentCommand: computed(() => canvasMode.mode.value.command.value),
-      popupMenuList: computed(() => canvasMode.mode.value.popupMenuList.value),
       availableCommandList: computed(
         () => canvasMode.mode.value.availableCommandList.value
       ),

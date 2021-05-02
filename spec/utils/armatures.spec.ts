@@ -786,16 +786,22 @@ describe('utils/armatures', () => {
             head: { x: 0, y: 0 },
             tail: { x: 1, y: 1 },
             parentId: 'a',
+            connected: true,
           }),
         },
         ['b']
       )
       expect(res[0].id).not.toBe('b')
-      expect(res[0].name).toBe('b.L')
-      expect(res[0].head.x).toBeCloseTo(2)
-      expect(res[0].head.y).toBeCloseTo(0)
-      expect(res[0].tail.x).toBeCloseTo(1)
-      expect(res[0].tail.y).toBeCloseTo(1)
+      expect(res[0]).toEqual(
+        getBone({
+          id: expect.anything(),
+          name: 'b.L',
+          head: { x: 2, y: 0 },
+          tail: { x: 1, y: 1 },
+          parentId: 'a',
+          connected: true,
+        })
+      )
     })
     it('not symmetrize bones not having special name', () => {
       const res = target.symmetrizeBones(
@@ -813,22 +819,41 @@ describe('utils/armatures', () => {
       )
       expect(res.length).toBe(0)
     })
-    it('prevent duplicated name', () => {
+    it('should override symmetrized bones and inherit current id', () => {
       const res = target.symmetrizeBones(
         {
           a: getBone({
             id: 'a',
-            name: 'a.R',
-            parentId: 'b',
+            name: 'a',
+            tail: { x: 1, y: 1 },
           }),
-          b: getBone({
-            id: 'b',
-            name: 'a.L',
+          b_R: getBone({
+            id: 'b_R',
+            name: 'b.R',
+            head: { x: 0, y: 0 },
+            tail: { x: 1, y: 1 },
+            parentId: 'a',
+          }),
+          b_L: getBone({
+            id: 'b_L',
+            name: 'b.L',
+            head: { x: 10, y: 0 },
+            tail: { x: 11, y: 1 },
+            parentId: 'a',
           }),
         },
-        ['a']
+        ['b_R']
       )
-      expect(res[0].name).toBe('a.L.001')
+      expect(res).toHaveLength(1)
+      expect(res[0]).toEqual(
+        getBone({
+          id: 'b_L',
+          name: 'b.L',
+          head: { x: 2, y: 0 },
+          tail: { x: 1, y: 1 },
+          parentId: 'a',
+        })
+      )
     })
   })
 

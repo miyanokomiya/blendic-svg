@@ -69,7 +69,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <ResizableH class="middle" :initial-rate="0.15" dense>
       <template #left="{ size }">
-        <TimelineCanvas class="label-canvas" :canvas="labelCanvas">
+        <TimelineCanvas class="label-canvas" :canvas="labelCanvas" :mode="mode">
           <template #default="{ scale, viewOrigin }">
             <g
               :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
@@ -93,26 +93,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <ResizableH class="timeline-canvas-space" :initial-rate="0.8" dense>
           <template #left>
             <div class="timeline-canvas-inner">
-              <TimelineCanvas
-                :canvas="currentCanvas"
-                :popup-menu-list="popupMenuList"
-                :current-command="currentCommand"
-                @up-left="upLeft"
-                @drag="drag"
-                @down-left="downLeft"
-                @mousemove="mousemove"
-                @click-empty="clickEmpty"
-                @click-any="clickAny"
-                @escape="escape"
-                @snap="snap"
-                @a="selectAll"
-                @x="deleteKeyframes"
-                @g="grab"
-                @t="interpolation"
-                @ctrl-c="clipKeyframes"
-                @ctrl-v="pasteKeyframes"
-                @shift-d="duplicateKeyframes"
-              >
+              <TimelineCanvas :canvas="currentCanvas" :mode="mode">
                 <template #default="{ scale, viewOrigin, viewSize }">
                   <g
                     v-if="canvasType === 'graph'"
@@ -215,7 +196,6 @@ import { useAnimationLoop } from '../composables/animationLoop'
 import { useKeyframeEditMode } from '../composables/modes/keyframeEditMode'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'
-import { EditMovement } from '/@/composables/modes/types'
 import { CurveSelectedState, KeyframeBase } from '/@/models/keyframe'
 import { useBooleanMap } from '/@/composables/idMap'
 import { Size } from 'okanvas'
@@ -263,21 +243,6 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       downCurrentFrame() {
         mode.value.grabCurrentFrame()
       },
-      downLeft(arg: EditMovement) {
-        mode.value.drag(arg)
-      },
-      drag(arg: EditMovement) {
-        mode.value.drag(arg)
-      },
-      upLeft() {
-        mode.value.upLeft()
-      },
-      escape() {
-        mode.value.cancel()
-      },
-      snap(axis: 'x' | 'y') {
-        mode.value.snap(axis)
-      },
       selectKeyframe(id: string, selectedState: { [key: string]: boolean }) {
         mode.value.select(id, selectedState)
       },
@@ -292,36 +257,6 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       },
       shiftSelectKeyframeByFrame(frame: number) {
         mode.value.shiftSelectFrame(frame)
-      },
-      selectAll() {
-        mode.value.selectAll()
-      },
-      grab() {
-        mode.value.setEditMode('grab')
-      },
-      interpolation() {
-        mode.value.setEditMode('interpolation')
-      },
-      deleteKeyframes() {
-        mode.value.execDelete()
-      },
-      clipKeyframes() {
-        mode.value.clip()
-      },
-      pasteKeyframes() {
-        mode.value.paste()
-      },
-      duplicateKeyframes() {
-        mode.value.duplicate()
-      },
-      clickEmpty() {
-        mode.value.clickEmpty()
-      },
-      clickAny() {
-        mode.value.clickAny()
-      },
-      mousemove(arg: EditMovement) {
-        mode.value.mousemove(arg)
       },
       grabControl(
         keyframeId: string,
@@ -555,11 +490,10 @@ export default defineComponent({
       canvasOptions: canvasList.canvasOptions,
       keyframePointColorMap,
 
-      currentCommand: computed(() => canvasMode.mode.value.command.value),
-      popupMenuList: computed(() => canvasMode.mode.value.popupMenuList.value),
       availableCommandList: computed(
         () => canvasMode.mode.value.availableCommandList.value
       ),
+      mode: canvasMode.mode,
       ...canvasMode.handlers,
     }
   },

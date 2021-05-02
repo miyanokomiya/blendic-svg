@@ -40,7 +40,7 @@ import {
   symmetrizeBones,
 } from '/@/utils/armatures'
 import { getNotDuplicatedName } from '/@/utils/relations'
-import { useStore } from '/@/store/index'
+import { Store } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { mapReduce } from '/@/utils/commons'
 import { snapGrid, snapRotate, snapScale } from '/@/utils/geometry'
@@ -55,13 +55,14 @@ export interface BoneEditMode extends CanvasEditModeBase {
   symmetrize(): void
 }
 
-export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
+export function useBoneEditMode(
+  store: Store,
+  canvasStore: CanvasStore
+): BoneEditMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
   })
-
-  const store = useStore()
   const selectedBones = computed(() => store.state.selectedBones)
   const lastSelectedBoneId = computed(() => store.lastSelectedBone.value?.id)
 
@@ -90,12 +91,6 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     }
   }
 
-  function extrude(parent: Bone, fromHead = false): Bone {
-    return {
-      ...extrudeFromParent(parent, fromHead),
-    }
-  }
-
   function setEditMode(mode: EditMode) {
     if (!target.value) return
 
@@ -113,8 +108,8 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
           const parent = store.boneMap.value[id]
 
           const bones: Bone[] = []
-          if (selectedState.tail) bones.push(extrude(parent))
-          if (selectedState.head) bones.push(extrude(parent, true))
+          if (selectedState.tail) bones.push(extrudeFromParent(parent))
+          if (selectedState.head) bones.push(extrudeFromParent(parent, true))
 
           bones.forEach((b) => {
             // prevent to extruding from same parent
@@ -127,7 +122,12 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
           })
         })
 
-        store.addBones(extrudedBones, { tail: true })
+        if (extrudedBones.length > 0) {
+          store.addBones(extrudedBones, { tail: true })
+          state.command = 'grab'
+        } else {
+          state.command = ''
+        }
       }
     }
   }
@@ -267,22 +267,23 @@ export function useBoneEditMode(canvasStore: CanvasStore): BoneEditMode {
     store.addBone()
   }
 
-  function duplicate() {
+  function duplicate(): boolean {
     if (state.command) {
       cancel()
-      return
+      return false
     }
 
     const srcBones = store.allSelectedBones.value
     const names = allNames.value.concat()
     const duplicated = duplicateBones(srcBones, names)
-    if (duplicated.length > 0) {
-      store.addBones(duplicated, {
-        head: true,
-        tail: true,
-      })
-      setEditMode('grab')
-    }
+    if (duplicated.length === 0) return false
+
+    store.addBones(duplicated, {
+      head: true,
+      tail: true,
+    })
+    setEditMode('grab')
+    return true
   }
 
   const availableCommandList = computed(() => {

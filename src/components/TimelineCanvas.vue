@@ -30,23 +30,14 @@ Copyright (C) 2021, Tomoya Komiyama.
       :height="viewSize.height"
       @wheel.prevent="wheel"
       @click.left.prevent="clickAny"
-      @click.right.prevent="keyDownEscape"
+      @click.right.prevent="escape"
       @mouseenter="focus"
       @mousedown.left.prevent="downLeft"
       @mouseup.left.prevent="upLeft"
       @mousemove.prevent="mousemove"
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
-      @mouseleave="leave"
-      @keydown.escape.exact.prevent="keyDownEscape"
-      @keydown.g.exact.prevent="editKeyDown('g')"
-      @keydown.t.exact.prevent="editKeyDown('t')"
-      @keydown.x.exact.prevent="editKeyDown('x')"
-      @keydown.y.exact.prevent="editKeyDown('y')"
-      @keydown.a.exact.prevent="editKeyDown('a')"
-      @keydown.c.ctrl.exact.prevent="editKeyDown('ctrl-c')"
-      @keydown.v.ctrl.exact.prevent="editKeyDown('ctrl-v')"
-      @keydown.d.shift.exact.prevent="editKeyDown('shift-d')"
+      @keydown.prevent="editKeyDown"
     >
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
     </svg>
@@ -63,21 +54,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
+import { defineComponent, ref, onMounted, watch, computed, PropType } from 'vue'
 import {
-  defineComponent,
-  ref,
-  onMounted,
-  watch,
-  computed,
-  PropType,
-  provide,
-} from 'vue'
-import { getPointInTarget } from 'okanvas'
-import { useWindow } from '../composables/window'
-import { useCanvas } from '../composables/canvas'
+  PointerMovement,
+  usePointerLock,
+  useWindow,
+} from '../composables/window'
+import { provideScale, useCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
-import { add, IVec2 } from 'okageo'
-import { KeyframeEditCommand, PopupMenuItem } from '/@/composables/modes/types'
+import { add, IVec2, sub } from 'okageo'
+import { KeyframeEditModeBase } from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
 import { isCtrlOrMeta } from '/@/utils/devices'
 
@@ -86,153 +72,150 @@ export default defineComponent({
   props: {
     canvas: {
       type: Object as PropType<ReturnType<typeof useCanvas>>,
-      default: () =>
-        useCanvas({
-          scaleMin: 1,
-          ignoreNegativeY: true,
-          scaleAtFixY: true,
-        }),
+      required: true,
     },
-    popupMenuList: {
-      type: Array as PropType<PopupMenuItem[]>,
-      default: () => [],
-    },
-    currentCommand: {
-      type: String as PropType<KeyframeEditCommand>,
-      default: '',
+    mode: {
+      type: Object as PropType<KeyframeEditModeBase>,
+      required: true,
     },
   },
-  emits: [
-    'down-left',
-    'up-left',
-    'mousemove',
-    'drag',
-    'click-any',
-    'click-empty',
-    'escape',
-    'snap',
-    'g',
-    't',
-    'x',
-    'a',
-    'ctrl-c',
-    'ctrl-v',
-    'shift-d',
-  ],
-  setup(props, { emit }) {
+  setup(props) {
     const svg = ref<SVGElement>()
     const wrapper = ref<SVGElement>()
 
-    const canvas = computed(() => {
-      return props.canvas
-    })
+    provideScale(() => props.canvas.scale.value)
 
     function adjustSvgSize() {
       if (!wrapper.value) return
       const rect = wrapper.value.getBoundingClientRect()
-      canvas.value.setViewSize({ width: rect.width, height: rect.height })
+      props.canvas.setViewSize({ width: rect.width, height: rect.height })
     }
 
     const windowState = useWindow()
     onMounted(adjustSvgSize)
     watch(() => windowState.state.size, adjustSvgSize)
 
+    const popupMenuList = computed(() => props.mode.popupMenuList.value)
     const popupMenuListPosition = ref<IVec2>()
-    watch(
-      () => props.popupMenuList,
-      () => {
-        if (!wrapper.value || !props.canvas.mousePoint.value) return
-        const rect = wrapper.value.getBoundingClientRect()
-        popupMenuListPosition.value = add(props.canvas.mousePoint.value, {
-          x: rect.left,
-          y: rect.top,
-        })
-      }
-    )
+    watch(popupMenuList, () => {
+      if (!wrapper.value || !props.canvas.mousePoint.value) return
+      const rect = wrapper.value.getBoundingClientRect()
+      popupMenuListPosition.value = add(props.canvas.mousePoint.value, {
+        x: rect.left,
+        y: rect.top,
+      })
+    })
 
     const isDownEmpty = ref(false)
     function clickAny(e: any) {
       if (e.target === svg.value && isDownEmpty.value) {
-        canvas.value.editStartPoint.value = undefined
-        emit('click-empty')
+        props.mode.clickEmpty()
       } else {
-        emit('click-any')
+        props.mode.clickAny()
       }
     }
 
-    function mousemove(e: MouseEvent) {
-      canvas.value.mousePoint.value = getPointInTarget(e)
+    function mousemove(arg: PointerMovement) {
+      if (props.canvas.viewMovingInfo.value) {
+        props.canvas.viewMove()
+        return
+      }
 
-      if (canvas.value.dragInfo.value) {
-        emit('drag', {
-          current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
-          start: canvas.value.viewToCanvas(canvas.value.dragInfo.value.downAt),
+      const info = {
+        current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+        ctrl: arg.ctrl,
+        scale: props.canvas.scale.value,
+      }
+
+      if (props.canvas.dragInfo.value) {
+        props.mode.drag({
+          start: props.canvas.viewToCanvas(props.canvas.dragInfo.value.downAt),
+          ...info,
         })
-      } else if (canvas.value.viewMovingInfo.value) {
-        canvas.value.viewMove()
-      } else if (canvas.value.editStartPoint.value) {
-        emit('mousemove', {
-          current: canvas.value.viewToCanvas(canvas.value.mousePoint.value),
-          start: canvas.value.viewToCanvas(canvas.value.editStartPoint.value),
-          ctrl: isCtrlOrMeta(e),
+      } else if (props.canvas.editStartPoint.value) {
+        props.mode.mousemove({
+          start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
+          ...info,
         })
       }
     }
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
+    const pointerLock = usePointerLock({
+      onMove: throttleMousemove,
+      onGlobalMove: (arg) => {
+        if (!svg.value) return
+        // adjust in the canvas
+        const svgRect = svg.value.getBoundingClientRect()
+        props.canvas.setMousePoint(
+          sub(arg.p, { x: svgRect.left, y: svgRect.top })
+        )
+      },
+    })
 
-    provide('getScale', () => canvas.value.scale.value)
+    watch(
+      () => props.mode.command.value,
+      (to) => {
+        if (to === '') {
+          pointerLock.exitPointerLock()
+        }
+      }
+    )
+
+    function escape() {
+      props.mode.cancel()
+    }
 
     return {
-      scale: computed(() => canvas.value.scale.value),
-      viewOrigin: computed(() => canvas.value.viewOrigin.value),
-      viewSize: computed(() => canvas.value.viewSize.value),
-      viewBox: computed(() => canvas.value.viewBox.value),
+      scale: computed(() => props.canvas.scale.value),
+      viewOrigin: computed(() => props.canvas.viewOrigin.value),
+      viewSize: computed(() => props.canvas.viewSize.value),
+      viewBox: computed(() => props.canvas.viewBox.value),
+      popupMenuList,
 
       mousemove: throttleMousemove,
-      wheel: (e: WheelEvent) => canvas.value.wheel(e, true),
+      wheel: (e: WheelEvent) => props.canvas.wheel(e, true),
       downLeft: (e: MouseEvent) => {
         isDownEmpty.value = e.target === svg.value
-
-        if (!canvas.value.mousePoint.value) return
-        canvas.value.downLeft()
-        const current = canvas.value.viewToCanvas(canvas.value.mousePoint.value)
-        emit('down-left', { current, start: current })
+        props.canvas.downLeft()
+        const current = props.canvas.viewToCanvas(props.canvas.mousePoint.value)
+        props.mode.drag({
+          current,
+          start: current,
+          ctrl: isCtrlOrMeta(e),
+          scale: props.canvas.scale.value,
+        })
       },
       upLeft: () => {
-        canvas.value.upLeft()
-        emit('up-left')
+        props.canvas.upLeft()
+        props.mode.upLeft()
       },
-      downMiddle: () => canvas.value.downMiddle(),
-      upMiddle: () => canvas.value.upMiddle(),
-      leave: () => canvas.value.leave(),
-      editKeyDown: (
-        key: 'g' | 't' | 'x' | 'y' | 'a' | 'ctrl-c' | 'ctrl-v' | 'shift-d'
-      ) => {
-        if (!canvas.value.mousePoint.value) return
+      downMiddle: (e: MouseEvent) => {
+        props.canvas.downMiddle()
+        pointerLock.requestPointerLock(e)
+      },
+      upMiddle: () => {
+        props.canvas.upMiddle()
+        pointerLock.exitPointerLock()
+      },
+      clickAny,
+      escape,
+      editKeyDown: (e: KeyboardEvent) => {
+        const { needLock } = props.mode.execKey({
+          key: e.key,
+          shift: e.shiftKey,
+          ctrl: isCtrlOrMeta(e),
+        })
 
-        if (props.currentCommand === 'grab') {
-          if (key === 'x' || key === 'y') {
-            emit('snap', key)
-            return
-          }
+        if (needLock) {
+          pointerLock.requestPointerLock(e)
+          props.canvas.setEditStartPoint(props.canvas.mousePoint.value)
         }
-
-        if (key === 'y') return
-
-        canvas.value.editStartPoint.value = canvas.value.mousePoint.value
-        emit(key)
       },
 
       wrapper,
       svg,
       popupMenuListPosition,
-      focus() {
-        if (svg.value) svg.value.focus()
-      },
-      clickAny,
-      keyDownEscape: () => {
-        emit('escape')
-      },
+      focus: () => svg.value?.focus(),
     }
   },
 })

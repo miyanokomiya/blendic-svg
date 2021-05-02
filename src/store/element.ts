@@ -131,6 +131,7 @@ export function useElementStore() {
     selectAllElement,
   }
 }
+export type ElementStore = ReturnType<typeof useElementStore>
 
 export function getSelectItem(id: string, shift = false): HistoryItem {
   const current = { ...selectedElements.value }

@@ -59,7 +59,7 @@ export interface CanvasEditModeBase {
   insert: () => void
   clip: () => void
   paste: () => void
-  duplicate: () => void
+  duplicate: () => boolean
   availableCommandList: ComputedRef<CommandExam[]>
   popupMenuList: ComputedRef<PopupMenuItem[]>
 }
@@ -77,7 +77,11 @@ export interface KeyframeEditModeBase {
   end: () => void
   cancel: () => void
   snap: (axis: 'x' | 'y') => void
-  setEditMode: (mode: KeyframeEditCommand) => void
+  execKey: (arg: {
+    key: string
+    shift?: boolean
+    ctrl?: boolean
+  }) => { needLock: boolean }
   select: (id: string, selectedState: { [key: string]: boolean }) => void
   shiftSelect: (id: string, selectedState: { [key: string]: boolean }) => void
   selectAll: () => void
@@ -87,9 +91,6 @@ export interface KeyframeEditModeBase {
   clickEmpty: () => void
   upLeft: () => void
   execDelete: () => void
-  clip: () => void
-  paste: () => void
-  duplicate: () => void
   availableCommandList: ComputedRef<CommandExam[]>
   popupMenuList: ComputedRef<PopupMenuItem[]>
   grabCurrentFrame: () => void
@@ -98,12 +99,4 @@ export interface KeyframeEditModeBase {
     pointKey: string,
     controls: CurveSelectedState
   ) => void
-}
-
-export function editModeToCanvasCommand(editMode: EditMode): CanvasCommand {
-  if (editMode === 'grab') return 'grab'
-  if (editMode === 'extrude') return 'grab'
-  if (editMode === 'rotate') return 'rotate'
-  if (editMode === 'scale') return 'scale'
-  return ''
 }

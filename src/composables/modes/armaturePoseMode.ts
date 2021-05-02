@@ -31,7 +31,7 @@ import {
   EditMovement,
   PopupMenuItem,
 } from '/@/composables/modes/types'
-import { useStore } from '/@/store/index'
+import { Store } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '/@/store/animation'
 import { mapReduce } from '/@/utils/commons'
@@ -60,7 +60,10 @@ interface State {
 
 export interface BonePoseMode extends CanvasEditModeBase {}
 
-export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
+export function useBonePoseMode(
+  store: Store,
+  canvasStore: CanvasStore
+): BonePoseMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
@@ -71,7 +74,6 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     currentTotalRad: 0,
   })
 
-  const store = useStore()
   const animationStore = useAnimationStore()
   const lastSelectedBoneId = computed(() => store.lastSelectedBone.value?.id)
 
@@ -382,7 +384,7 @@ export function useBonePoseMode(canvasStore: CanvasStore): BonePoseMode {
     insert,
     clip,
     paste,
-    duplicate: () => {},
+    duplicate: () => false,
     availableCommandList,
     popupMenuList,
   }

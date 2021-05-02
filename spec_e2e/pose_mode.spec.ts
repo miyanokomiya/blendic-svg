@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { Browser, Page } from 'playwright-chromium'
-import { initBrowser, initPage, useScreenshot } from './utils'
+import { initBrowser, initPage, moveAndClick, useScreenshot } from './utils'
 
 let browser: Browser
 let page: Page
@@ -65,12 +65,13 @@ describe('posing', () => {
     // Pose
     await page.mouse.move(100, 100)
     await page.press('.app-canvas-root', 'g')
-    await page.mouse.click(400, 200)
+    await moveAndClick(page, 400, 200)
     await page.press('.app-canvas-root', 'r')
-    await page.mouse.click(200, 100)
+    await moveAndClick(page, 200, 100)
     await screenshot('posing')
 
     // Insert keyframe
+    await page.mouse.move(100, 100)
     await page.press('.app-canvas-root', 'i')
     await page.click('text=Location & Rotation')
     await screenshot('insert_keyframe_1')

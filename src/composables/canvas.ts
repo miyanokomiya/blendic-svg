@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ref, computed, Ref } from 'vue'
+import { ref, computed, Ref, provide, inject } from 'vue'
 import { IVec2, multi, sub, add, getRectCenter, IRectangle } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import { scaleRate } from '../models'
@@ -50,10 +50,18 @@ export function useCanvas(
     viewSize.value = val
   }
 
-  const editStartPoint = ref<IVec2>()
-  const mousePoint = ref<IVec2>()
   const viewMovingInfo = ref<MoveInfo>()
   const dragInfo = ref<{ dragType: Dragtype; downAt: IVec2 }>()
+
+  const editStartPoint = ref<IVec2>()
+  function setEditStartPoint(val: IVec2 | undefined) {
+    editStartPoint.value = val
+  }
+
+  const mousePoint = ref<IVec2>({ x: 0, y: 0 })
+  function setMousePoint(val: IVec2) {
+    mousePoint.value = val
+  }
 
   const viewDragRectangle = computed<IRectangle | undefined>(() => {
     if (
@@ -110,7 +118,9 @@ export function useCanvas(
     viewSize,
     setViewSize,
     editStartPoint,
+    setEditStartPoint,
     mousePoint,
+    setMousePoint,
     scale,
     viewOrigin,
     dragRectangle,
@@ -228,4 +238,12 @@ export function centerizeView(
       scale,
     }
   }
+}
+
+export function provideScale(getScale: () => number) {
+  provide('getScale', getScale)
+}
+
+export function injectScale(): () => number {
+  return inject<() => number>('getScale', () => 1)
 }

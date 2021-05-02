@@ -38,10 +38,17 @@ import {
   PopupMenuItem,
 } from '/@/composables/modes/types'
 import { HistoryItem } from '/@/composables/stores/history'
+import { useStore } from '/@/store'
+import { useAnimationStore } from '/@/store/animation'
+import { useElementStore } from '/@/store/element'
 
 export type AxisGrid = '' | 'x' | 'y'
 
 const historyStore = useHistoryStore()
+const store = useStore()
+const animationStore = useAnimationStore()
+const elementStore = useElementStore()
+
 const state = reactive({
   canvasMode: 'object' as CanvasMode,
   pastCanvasMode: 'edit' as CanvasMode,
@@ -59,17 +66,25 @@ const canvasEditMode = computed(():
   | ObjectMode
   | BonePoseMode => {
   if (state.canvasMode === 'edit') {
-    return useBoneEditMode(useCanvasStore())
+    return useBoneEditMode(store, useCanvasStore())
   } else if (state.canvasMode === 'pose') {
-    return useBonePoseMode(useCanvasStore())
+    return useBonePoseMode(store, useCanvasStore())
   } else if (state.canvasMode === 'weight') {
-    return useWeightPaintMode()
+    return useWeightPaintMode(useElementStore())
   } else {
     return useObjectMode()
   }
 })
 watch(canvasEditMode, (_to, from) => {
   if (from) from.end()
+})
+
+const selectedBonesOrigin = computed(() => {
+  if (state.canvasMode === 'edit') {
+    return store.selectedBonesOrigin.value
+  } else {
+    return animationStore.selectedPosedBoneOrigin.value
+  }
 })
 
 const command = computed((): EditMode => canvasEditMode.value.command.value)
@@ -110,6 +125,14 @@ function setCanvasMode(canvasMode: CanvasMode) {
 function setAxisGrid(val: AxisGrid) {
   state.axisGrid = val
 }
+
+watch(
+  () => command.value,
+  () => {
+    setAxisGrid('')
+  }
+)
+
 function switchAxisGrid(val: AxisGrid) {
   state.axisGrid = state.axisGrid === val ? '' : val
 }
@@ -143,16 +166,123 @@ function symmetrizeBones() {
   ;(canvasEditMode.value as BoneEditMode).symmetrize()
 }
 
+const axisGridEnabled = computed<boolean>(() => {
+  return ['grab', 'scale'].includes(command.value)
+})
+
+function changeCanvasMode(canvasMode: CanvasMode) {
+  if (canvasMode === 'weight') {
+    if (elementStore.lastSelectedActor.value) {
+      setCanvasMode(canvasMode)
+    }
+  } else {
+    if (store.lastSelectedArmature.value) {
+      setCanvasMode(canvasMode)
+    } else {
+      setCanvasMode('object')
+    }
+  }
+}
+
+function execIfBoneSelected(
+  fn: () => void,
+  needLock: boolean
+): { needLock: boolean } {
+  if (store.lastSelectedBone.value) {
+    fn()
+    return { needLock }
+  } else {
+    return { needLock: false }
+  }
+}
+
+function editKeyDown(
+  key: string,
+  options: { shift?: boolean; ctrl?: boolean }
+): { needLock: boolean } {
+  switch (key) {
+    case 'Escape':
+      canvasEditMode.value.cancel
+      return { needLock: false }
+    case 'Tab':
+      if (store.lastSelectedArmature.value) {
+        // Ctrl + Tab cannot be controlled by JS
+        if (options.shift) {
+          ctrlToggleCanvasMode()
+        } else {
+          toggleCanvasMode()
+        }
+      }
+      return { needLock: false }
+    case 'g':
+      return execIfBoneSelected(
+        () => canvasEditMode.value.setEditMode('grab'),
+        true
+      )
+    case 'r':
+      return execIfBoneSelected(
+        () => canvasEditMode.value.setEditMode('rotate'),
+        true
+      )
+    case 's':
+      return execIfBoneSelected(
+        () => canvasEditMode.value.setEditMode('scale'),
+        true
+      )
+    case 'e':
+      return execIfBoneSelected(
+        () => canvasEditMode.value.setEditMode('extrude'),
+        true
+      )
+    case 'x':
+      if (axisGridEnabled.value) {
+        switchAxisGrid(key)
+      } else {
+        canvasEditMode.value.execDelete()
+      }
+      return { needLock: false }
+    case 'y':
+      if (axisGridEnabled.value) {
+        switchAxisGrid(key)
+      }
+      return { needLock: false }
+    case 'a':
+      canvasEditMode.value.selectAll()
+      return { needLock: false }
+    case 'i':
+      canvasEditMode.value.insert()
+      return { needLock: false }
+    case 'A':
+      canvasEditMode.value.execAdd()
+      return { needLock: false }
+    case 'D':
+      if (canvasEditMode.value.duplicate()) {
+        return { needLock: true }
+      } else {
+        return { needLock: false }
+      }
+    case 'c':
+      if (options.ctrl) {
+        canvasEditMode.value.clip()
+      }
+      return { needLock: false }
+    case 'v':
+      if (options.ctrl) {
+        canvasEditMode.value.paste()
+      }
+      return { needLock: false }
+    default:
+      return { needLock: false }
+  }
+}
+
 export function useCanvasStore() {
   return {
     initState,
     state,
     command,
-    toggleCanvasMode,
-    ctrlToggleCanvasMode,
-    setCanvasMode,
-    setAxisGrid,
-    switchAxisGrid,
+    selectedBonesOrigin,
+    changeCanvasMode,
     snapScale,
     snapTranslate,
     isOppositeSide,
@@ -163,9 +293,8 @@ export function useCanvasStore() {
     clickEmpty: () => canvasEditMode.value.clickEmpty(),
     cancel: () => canvasEditMode.value.cancel(),
     setEditMode: (mode: EditMode) => canvasEditMode.value.setEditMode(mode),
+    editKeyDown,
     execDelete: () => canvasEditMode.value.execDelete(),
-    execAdd: () => canvasEditMode.value.execAdd(),
-    insert: () => canvasEditMode.value.insert(),
     select: (id: string, selectedState: { [key: string]: boolean }) =>
       canvasEditMode.value.select(id, selectedState),
     shiftSelect: (id: string, selectedState: { [key: string]: boolean }) =>
@@ -173,9 +302,6 @@ export function useCanvasStore() {
     rectSelect: (rect: IRectangle, shift = false) =>
       canvasEditMode.value.rectSelect(rect, shift),
     selectAll: () => canvasEditMode.value.selectAll(),
-    clip: () => canvasEditMode.value.clip(),
-    paste: () => canvasEditMode.value.paste(),
-    duplicate: () => canvasEditMode.value.duplicate(),
     availableCommandList,
     symmetrizeBones,
     popupMenuList,

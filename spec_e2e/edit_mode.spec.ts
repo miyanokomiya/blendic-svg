@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { Browser, Page } from 'playwright-chromium'
-import { initBrowser, initPage, useScreenshot } from './utils'
+import { initBrowser, initPage, moveAndClick, useScreenshot } from './utils'
 
 let browser: Browser
 let page: Page
@@ -56,7 +56,7 @@ describe('edit bones', () => {
     // Extlude
     await page.mouse.move(100, 100)
     await page.press('.app-canvas-root', 'e')
-    await page.mouse.click(200, 150)
+    await moveAndClick(page, 200, 150)
     await screenshot('extlude_bone')
 
     // Select a bone
@@ -64,16 +64,14 @@ describe('edit bones', () => {
     await screenshot('select_bone_body')
 
     // Scale
-    await page.mouse.move(100, 100)
     await page.press('.app-canvas-root', 's')
-    await page.mouse.click(150, 150)
+    await moveAndClick(page, 150, 150)
     await screenshot('scale_bone')
     await page.press('.app-canvas-root', 'Control+z')
 
     // Rotate
-    await page.mouse.move(100, 100)
     await page.press('.app-canvas-root', 'r')
-    await page.mouse.click(200, 300)
+    await moveAndClick(page, 200, 300)
     await screenshot('rotate_bone')
     await page.press('.app-canvas-root', 'Control+z')
 

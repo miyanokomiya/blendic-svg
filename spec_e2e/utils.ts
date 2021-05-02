@@ -28,3 +28,8 @@ export async function initPage(browser: Browser) {
   await page.goto('localhost:3333')
   return page
 }
+
+export async function moveAndClick(page: Page, x: number, y: number) {
+  await page.mouse.move(x, y, { steps: 3 })
+  await page.mouse.click(x, y)
+}

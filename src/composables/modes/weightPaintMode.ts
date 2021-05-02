@@ -86,7 +86,7 @@ export function useWeightPaintMode(
     insert: () => {},
     clip,
     paste,
-    duplicate: () => {},
+    duplicate: () => false,
     availableCommandList,
     popupMenuList: computed(() => []),
   }

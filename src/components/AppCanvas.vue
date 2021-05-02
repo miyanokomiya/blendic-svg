@@ -145,12 +145,14 @@ export default defineComponent({
     const { settings } = useSettings()
 
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
-    const pointerLock = usePointerLock(throttleMousemove, undefined, escape)
-    const canvas = useCanvas()
-
-    watch(pointerLock.globalCurrent, (to) => {
-      canvas.mousePoint.value = to
+    const pointerLock = usePointerLock({
+      onMove: throttleMousemove,
+      onGlobalMove: (arg) => {
+        canvas.mousePoint.value = arg.p
+      },
+      onEscape: escape,
     })
+    const canvas = useCanvas()
 
     function initView() {
       const ret = centerizeView(

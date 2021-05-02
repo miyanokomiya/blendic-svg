@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, IVec2 } from 'okageo'
+import { add, IVec2, sub } from 'okageo'
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { isCtrlOrMeta } from '/@/utils/devices'
 
@@ -66,11 +66,12 @@ export interface PointerMovement {
   ctrl: boolean
 }
 
-export function usePointerLock(
-  onMove: (arg: PointerMovement) => void,
-  onUp?: () => void,
+export function usePointerLock(handlers: {
+  onGlobalMove?: (arg: PointerMovement) => void
+  onMove: (arg: PointerMovement) => void
+  onUp?: () => void
   onEscape?: () => void
-) {
+}) {
   let locked = false
   let base: IVec2 = { x: 0, y: 0 }
   const globalCurrent = ref<IVec2>({ x: 0, y: 0 })
@@ -79,7 +80,15 @@ export function usePointerLock(
 
   useGlobalMousemove((e) => {
     if (!locked || !current.value) {
-      globalCurrent.value = { x: e.pageX, y: e.pageY }
+      const next = { x: e.pageX, y: e.pageY }
+      const d = sub(globalCurrent.value, next)
+      globalCurrent.value = next
+      handlers.onGlobalMove?.({
+        base,
+        p: next,
+        d,
+        ctrl: isCtrlOrMeta(e),
+      })
       return
     }
 
@@ -89,7 +98,14 @@ export function usePointerLock(
     }
     current.value = add(current.value, d)
     globalCurrent.value = current.value
-    onMove({ base, p: current.value, d, ctrl: isCtrlOrMeta(e) })
+
+    handlers.onGlobalMove?.({
+      base,
+      p: current.value,
+      d,
+      ctrl: isCtrlOrMeta(e),
+    })
+    handlers.onMove({ base, p: current.value, d, ctrl: isCtrlOrMeta(e) })
   })
 
   function exitPointerLock() {
@@ -100,12 +116,12 @@ export function usePointerLock(
 
   useGlobalMouseup(() => {
     exitPointerLock()
-    onUp?.()
+    handlers.onUp?.()
   })
 
   function onPointerlockchange() {
     if (!document.pointerLockElement) {
-      onEscape?.()
+      handlers.onEscape?.()
     }
   }
 

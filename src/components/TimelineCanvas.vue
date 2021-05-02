@@ -140,13 +140,16 @@ export default defineComponent({
       }
     }
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
-    const pointerLock = usePointerLock(throttleMousemove, undefined, escape)
-
-    watch(pointerLock.globalCurrent, (to) => {
-      if (!svg.value) return
-      // adjust in the canvas
-      const svgRect = svg.value.getBoundingClientRect()
-      props.canvas.setMousePoint(sub(to, { x: svgRect.left, y: svgRect.top }))
+    const pointerLock = usePointerLock({
+      onMove: throttleMousemove,
+      onGlobalMove: (arg) => {
+        if (!svg.value) return
+        // adjust in the canvas
+        const svgRect = svg.value.getBoundingClientRect()
+        props.canvas.setMousePoint(
+          sub(arg.p, { x: svgRect.left, y: svgRect.top })
+        )
+      },
     })
 
     watch(

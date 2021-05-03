@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, IVec2, sub } from 'okageo'
+import { add, getNorm, IVec2, sub } from 'okageo'
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { isCtrlOrMeta } from '/@/utils/devices'
 
@@ -96,6 +96,11 @@ export function usePointerLock(handlers: {
       x: motionRef.value === 'move-v' ? 0 : e.movementX,
       y: motionRef.value === 'move-h' ? 0 : e.movementY,
     }
+
+    // workaround for Chrome's bug
+    // https://stackoverflow.com/questions/24853288/pointer-lock-api-entry-is-giving-a-large-number-when-window-is-squished-why
+    if (getNorm(d) > 200) return
+
     current.value = add(current.value, d)
     globalCurrent.value = current.value
 

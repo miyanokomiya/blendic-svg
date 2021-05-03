@@ -124,11 +124,13 @@ export function applyBoneConstraints(
 
 export function immigrateConstraints(
   duplicatedIdMap: IdMap<string>,
-  constraints: BoneConstraint[]
+  constraints: BoneConstraint[],
+  getId: (src: BoneConstraint) => string = (src) => src.id
 ): BoneConstraint[] {
   return constraints.map((src) => {
     return {
       ...src,
+      id: getId(src),
       option: immigrateOption(duplicatedIdMap, src.type, src.option),
     }
   })

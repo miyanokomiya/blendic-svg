@@ -44,6 +44,7 @@ import {
   uniq,
   resetId,
   getFirstProp,
+  splitList,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -527,6 +528,15 @@ describe('utils/commons.ts', () => {
     })
     it('should get default value if src is empty', () => {
       expect(getFirstProp([], 'val', 0 as number)).toBe(0)
+    })
+  })
+
+  describe('splitList', () => {
+    it('should split list by checkFn', () => {
+      expect(splitList([1, 2, 3, 4, 5], (n) => n < 3)).toEqual([
+        [1, 2],
+        [3, 4, 5],
+      ])
     })
   })
 })

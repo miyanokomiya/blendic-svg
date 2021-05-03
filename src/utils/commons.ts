@@ -317,3 +317,19 @@ export function getFirstProp<A extends string, T extends { [key in A]: K }, K>(
   if (!first) return defaultValue
   return first[key] as K
 }
+
+export function splitList<T>(
+  list: T[],
+  checkfn: (item: T) => boolean = (item) => !!item
+): [trueList: T[], falseList: T[]] {
+  const t: T[] = []
+  const f: T[] = []
+  list.forEach((item) => {
+    if (checkfn(item)) {
+      t.push(item)
+    } else {
+      f.push(item)
+    }
+  })
+  return [t, f]
+}

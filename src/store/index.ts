@@ -36,6 +36,8 @@ import * as armatureUtils from '/@/utils/armatures'
 import { IVec2 } from 'okageo'
 import { useHistoryStore } from './history'
 import { HistoryItem } from '/@/composables/stores/history'
+import { splitList } from '/@/utils/commons'
+import { convolute } from '/@/utils/histories'
 
 const historyStore = useHistoryStore()
 
@@ -318,6 +320,27 @@ function updateBone(diff: Partial<Bone>, seriesKey?: string) {
   item.redo()
   historyStore.push(item)
 }
+function upsertBones(
+  bones: Bone[],
+  selectedStateMap: IdMap<BoneSelectedState> = {}
+) {
+  if (!lastSelectedArmature.value) return
+
+  const [existedbones, newbones] = splitList(
+    bones,
+    (b) => !!boneMap.value[b.id]
+  )
+
+  const item = convolute(
+    getAddBoneItem(newbones, {}),
+    [
+      getUpdateBonesItem(toMap(existedbones)),
+      getSelectBonesItem(selectedStateMap),
+    ],
+    'Upsert Bone'
+  )
+  historyStore.push(item, true)
+}
 
 export function useStore() {
   return {
@@ -337,11 +360,13 @@ export function useStore() {
     selectAllBone,
     selectBone,
     selectBones,
+
     deleteBone,
     addBone,
     addBones,
     updateBones,
     updateBone,
+    upsertBones,
   }
 }
 export type Store = ReturnType<typeof useStore>

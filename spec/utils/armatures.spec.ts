@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import * as target from '../../src/utils/armatures'
 import { getArmature, getBone, getTransform } from '../../src/models/index'
+import { getConstraint, getOptionByType } from '/@/utils/constraints'
 
 describe('utils/armatures', () => {
   describe('invertPoseTransform', () => {
@@ -743,14 +744,44 @@ describe('utils/armatures', () => {
   })
 
   describe('immigrateBoneRelations', () => {
-    it('switch new parent if the parent is duplicated together', () => {
+    const aa = getBone({
+      id: 'aa',
+      parentId: 'c',
+      connected: true,
+      constraints: [
+        getConstraint({
+          id: 'ik',
+          type: 'IK',
+          option: getOptionByType('IK', { targetId: 'b' }),
+        }),
+      ],
+    })
+    it('should replace the props for a parent', () => {
       const ret = target.immigrateBoneRelations({ a: 'aa', b: 'bb' }, [
-        getBone({ id: 'aa', parentId: 'c', connected: true }),
+        aa,
         getBone({ id: 'bb', parentId: 'a' }),
       ])
+      expect(ret[0].id).toBe('aa')
       expect(ret[0].parentId).toBe('c')
       expect(ret[0].connected).toBe(false)
       expect(ret[1].parentId).toBe('aa')
+    })
+    it('should replace ids of constraints', () => {
+      const ret = target.immigrateBoneRelations({ a: 'aa', b: 'bb' }, [
+        aa,
+        getBone({ id: 'bb', parentId: 'a' }),
+      ])
+      expect(ret[0].constraints[0].id).toBe('ik')
+      expect((ret[0].constraints[0].option as any).targetId).toBe('bb')
+    })
+    describe('options', () => {
+      it('should reset constraint ids if resetConstraintId is true', () => {
+        const ret = target.immigrateBoneRelations({ a: 'aa' }, [aa], {
+          resetConstraintId: true,
+        })
+        expect(ret[0].id).toBe('aa')
+        expect(ret[0].constraints[0].id).not.toBe('ik')
+      })
     })
   })
 
@@ -783,8 +814,8 @@ describe('utils/armatures', () => {
           b: getBone({
             id: 'b',
             name: 'b.R',
-            head: { x: 0, y: 0 },
-            tail: { x: 1, y: 1 },
+            head: { x: 1, y: 1 },
+            tail: { x: 2, y: 2 },
             parentId: 'a',
             connected: true,
           }),
@@ -796,8 +827,8 @@ describe('utils/armatures', () => {
         getBone({
           id: expect.anything(),
           name: 'b.L',
-          head: { x: 2, y: 0 },
-          tail: { x: 1, y: 1 },
+          head: { x: 1, y: 1 },
+          tail: { x: 0, y: 2 },
           parentId: 'a',
           connected: true,
         })
@@ -854,6 +885,60 @@ describe('utils/armatures', () => {
           parentId: 'a',
         })
       )
+    })
+    it('should immigrate symmetrized relations', () => {
+      const res = target.symmetrizeBones(
+        {
+          a: getBone({
+            id: 'a',
+            name: 'a',
+            tail: { x: 0, y: 0 },
+          }),
+          b1_R: getBone({
+            id: 'b1_R',
+            name: 'b1.R',
+            head: { x: 1, y: 0 },
+            parentId: 'a',
+          }),
+          b2_R: getBone({
+            id: 'b2_R',
+            name: 'b2.R',
+            head: { x: 2, y: 0 },
+            parentId: 'b1_R',
+          }),
+          b1_L: getBone({
+            id: 'b1_L',
+            name: 'b1.L',
+            head: { x: -1, y: 0 },
+            parentId: 'a',
+          }),
+        },
+        ['b2_R']
+      )
+      expect(res).toHaveLength(1)
+      expect(res[0]).toEqual(
+        getBone({
+          id: expect.anything(),
+          name: 'b2.L',
+          head: { x: -2, y: 0 },
+          parentId: 'b1_L',
+        })
+      )
+    })
+  })
+
+  describe('getSymmetrizedIdMap', () => {
+    it('should return id map to convert src to symmetrized', () => {
+      const ret = target.getSymmetrizedIdMap({
+        a: { id: 'a', name: 'a.L' },
+        b: { id: 'b', name: 'b' },
+        c: { id: 'c', name: 'c.R' },
+        aa: { id: 'aa', name: 'a.R' },
+      })
+      expect(ret).toEqual({
+        a: 'aa',
+        aa: 'a',
+      })
     })
   })
 

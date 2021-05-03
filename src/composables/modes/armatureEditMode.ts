@@ -326,7 +326,7 @@ export function useBoneEditMode(
       store.boneMap.value,
       Object.keys(store.allSelectedBones.value)
     )
-    store.addBones(
+    store.upsertBones(
       newBones,
       mapReduce(toMap(newBones), () => ({ head: true, tail: true }))
     )

@@ -464,20 +464,25 @@ export function interpolateTransform(
 }
 
 export function immigrateBoneRelations(
-  duplicatedIdMap: IdMap<string>,
-  bones: Bone[]
+  immigratedIdMap: IdMap<string>,
+  bones: Bone[],
+  options: { resetConstraintId?: boolean } = {}
 ): Bone[] {
   return bones.map((src) => {
     // switch new parent if current parent is duplicated together
-    const parentId = duplicatedIdMap[src.parentId] ?? src.parentId
+    const parentId = immigratedIdMap[src.parentId] ?? src.parentId
     // connect if current parent is duplicated together
-    const connected = src.connected && !!duplicatedIdMap[src.parentId]
+    const connected = src.connected && !!immigratedIdMap[src.parentId]
 
     return {
       ...src,
       parentId,
       connected,
-      constraints: immigrateConstraints(duplicatedIdMap, src.constraints),
+      constraints: immigrateConstraints(
+        immigratedIdMap,
+        src.constraints,
+        (src) => (options.resetConstraintId ? v4() : src.id)
+      ),
     }
   })
 }
@@ -499,7 +504,8 @@ export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
         names.push(b.name)
         return b
       })
-    ).sort((a, b) => (a.name >= b.name ? 1 : -1))
+    ).sort((a, b) => (a.name >= b.name ? 1 : -1)),
+    { resetConstraintId: true }
   )
 }
 
@@ -535,38 +541,69 @@ export function symmetrizeBones(
 
   const connectedIdMap: { [id: string]: boolean } = {}
 
-  const newBones = immigrateBoneRelations(
-    symmetrizedIdMap,
-    Object.keys(symmetrizedIdMap)
-      .map((id) => {
-        const b = boneMap[id]
-        const name = symmetrizedNameMap[id]
-        // symmetrize at root parent's tail
-        const parentPath = getParentIdPath(boneMap, b.id)
+  const symmetrizedList = Object.keys(symmetrizedIdMap)
+    .map((id) => {
+      const b = boneMap[id]
+      const name = symmetrizedNameMap[id]
+      // symmetrize at root parent's tail
+      const parentPath = getParentIdPath(boneMap, b.id)
 
-        // a parent is not a symmetrized target but a tree root node
-        // => should inherit connected value
-        // TODO: should symmetrize parent id and other relations in similar situation
-        if (b.connected && b.parentId === parentPath[0]) {
-          connectedIdMap[symmetrizedIdMap[id]] = true
-        }
+      // a parent is not a symmetrized target but a tree root node
+      // => should inherit connected value
+      if (b.connected && b.parentId === parentPath[0]) {
+        connectedIdMap[symmetrizedIdMap[id]] = true
+      }
 
-        return getBone({
-          ...symmetrizeBone(
-            b,
-            parentPath[0] ? boneMap[parentPath[0]].tail : b.head
-          ),
-          id: symmetrizedIdMap[id],
-          name,
-        })
+      return getBone({
+        ...symmetrizeBone(
+          b,
+          parentPath[0] ? boneMap[parentPath[0]].tail : b.head
+        ),
+        id: symmetrizedIdMap[id],
+        name,
       })
-      .filter((b): b is Bone => !!b)
-  )
+    })
+    .filter((b): b is Bone => !!b)
 
-  return newBones.map((b) => ({
+  const immigratedIdMap = getSymmetrizedIdMap({
+    ...boneMap,
+    ...toMap(symmetrizedList),
+  })
+  const newBones = immigrateBoneRelations(immigratedIdMap, symmetrizedList, {
+    resetConstraintId: true,
+  }).map((b) => ({
     ...b,
     connected: b.connected || !!connectedIdMap[b.id],
   }))
+
+  const updatedConnections = updateConnections(
+    toList({ ...boneMap, ...toMap(newBones) })
+  )
+  return newBones.map((b) => ({ ...b, ...(updatedConnections[b.id] ?? {}) }))
+}
+
+export function getSymmetrizedIdMap(
+  srcMap: IdMap<{ id: string; name: string }>
+): { [id: string]: string } {
+  const nextMapByName: { [id: string]: string } = Object.keys(srcMap).reduce<{
+    [id: string]: string
+  }>((p, id) => {
+    const name = symmetrizeName(srcMap[id].name)
+    if (name !== srcMap[id].name) {
+      p[symmetrizeName(srcMap[id].name)] = id
+    }
+    return p
+  }, {})
+
+  return Object.keys(srcMap).reduce<{
+    [id: string]: string
+  }>((p, id) => {
+    const next = nextMapByName[srcMap[id].name]
+    if (next) {
+      p[id] = next
+    }
+    return p
+  }, {})
 }
 
 function canSymmetrize(boneMap: IdMap<Bone>, id: string): boolean {

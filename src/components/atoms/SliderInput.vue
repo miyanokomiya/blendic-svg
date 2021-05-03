@@ -158,9 +158,12 @@ export default defineComponent({
     }
     const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
 
-    const pointerLock = usePointerLock(throttleDrag, () => {
-      dragged.value = false
-      seriesKey.value = undefined
+    const pointerLock = usePointerLock({
+      onMove: throttleDrag,
+      onEscape: () => {
+        dragged.value = false
+        seriesKey.value = undefined
+      },
     })
 
     function clampValue(val: number) {

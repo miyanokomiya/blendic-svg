@@ -940,6 +940,23 @@ describe('utils/armatures', () => {
         aa: 'a',
       })
     })
+    it('should include all ids if the option is true', () => {
+      const ret = target.getSymmetrizedIdMap(
+        {
+          a: { id: 'a', name: 'a.L' },
+          b: { id: 'b', name: 'b' },
+          c: { id: 'c', name: 'c.R' },
+          aa: { id: 'aa', name: 'a.R' },
+        },
+        true
+      )
+      expect(ret).toEqual({
+        a: 'aa',
+        b: 'b',
+        c: 'c',
+        aa: 'a',
+      })
+    })
   })
 
   describe('symmetrizeBone', () => {

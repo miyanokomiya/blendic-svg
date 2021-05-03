@@ -539,42 +539,29 @@ export function symmetrizeBones(
     }
   })
 
-  const connectedIdMap: { [id: string]: boolean } = {}
+  const symmetrizedList = Object.keys(symmetrizedIdMap).map((id) => {
+    const b = boneMap[id]
+    const name = symmetrizedNameMap[id]
+    // symmetrize at the tail of the root node
+    const parentPath = getParentIdPath(boneMap, b.id)
 
-  const symmetrizedList = Object.keys(symmetrizedIdMap)
-    .map((id) => {
-      const b = boneMap[id]
-      const name = symmetrizedNameMap[id]
-      // symmetrize at root parent's tail
-      const parentPath = getParentIdPath(boneMap, b.id)
-
-      // a parent is not a symmetrized target but a tree root node
-      // => should inherit connected value
-      if (b.connected && b.parentId === parentPath[0]) {
-        connectedIdMap[symmetrizedIdMap[id]] = true
-      }
-
-      return getBone({
-        ...symmetrizeBone(
-          b,
-          parentPath[0] ? boneMap[parentPath[0]].tail : b.head
-        ),
-        id: symmetrizedIdMap[id],
-        name,
-      })
+    return getBone({
+      ...symmetrizeBone(
+        b,
+        parentPath[0] ? boneMap[parentPath[0]].tail : b.head
+      ),
+      id: symmetrizedIdMap[id],
+      name,
     })
-    .filter((b): b is Bone => !!b)
-
-  const immigratedIdMap = getSymmetrizedIdMap({
-    ...boneMap,
-    ...toMap(symmetrizedList),
   })
-  const newBones = immigrateBoneRelations(immigratedIdMap, symmetrizedList, {
-    resetConstraintId: true,
-  }).map((b) => ({
-    ...b,
-    connected: b.connected || !!connectedIdMap[b.id],
-  }))
+
+  const newBones = immigrateBoneRelations(
+    getSymmetrizedIdMap({ ...boneMap, ...toMap(symmetrizedList) }, true),
+    symmetrizedList,
+    {
+      resetConstraintId: true,
+    }
+  )
 
   const updatedConnections = updateConnections(
     toList({ ...boneMap, ...toMap(newBones) })
@@ -583,24 +570,26 @@ export function symmetrizeBones(
 }
 
 export function getSymmetrizedIdMap(
-  srcMap: IdMap<{ id: string; name: string }>
+  srcMap: IdMap<{ id: string; name: string }>,
+  includeAllIds = false
 ): { [id: string]: string } {
-  const nextMapByName: { [id: string]: string } = Object.keys(srcMap).reduce<{
-    [id: string]: string
-  }>((p, id) => {
-    const name = symmetrizeName(srcMap[id].name)
-    if (name !== srcMap[id].name) {
-      p[symmetrizeName(srcMap[id].name)] = id
-    }
-    return p
-  }, {})
+  const nextMapByName = Object.keys(srcMap).reduce<{ [id: string]: string }>(
+    (p, id) => {
+      const name = symmetrizeName(srcMap[id].name)
+      if (name !== srcMap[id].name) {
+        p[symmetrizeName(srcMap[id].name)] = id
+      }
+      return p
+    },
+    {}
+  )
 
-  return Object.keys(srcMap).reduce<{
-    [id: string]: string
-  }>((p, id) => {
+  return Object.keys(srcMap).reduce<{ [id: string]: string }>((p, id) => {
     const next = nextMapByName[srcMap[id].name]
     if (next) {
       p[id] = next
+    } else if (includeAllIds) {
+      p[id] = id
     }
     return p
   }, {})

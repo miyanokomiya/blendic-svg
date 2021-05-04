@@ -328,10 +328,19 @@ export function useBoneEditMode(
       store.boneMap.value,
       Object.keys(store.allSelectedBones.value)
     )
-    store.upsertBones(
-      toList(upsertedBones),
-      mapReduce(upsertedBones, () => ({ head: true, tail: true }))
-    )
+    // select subdivided bones
+    const subdividedIdMap = Object.keys(upsertedBones).reduce<
+      IdMap<BoneSelectedState>
+    >((p, id) => {
+      if (!store.boneMap.value[id]) {
+        p[id] = { head: true, tail: true }
+        // subdivided new bone must have a parent
+        p[upsertedBones[id].parentId] = { head: true, tail: true }
+      }
+      return p
+    }, {})
+
+    store.upsertBones(toList(upsertedBones), subdividedIdMap)
   }
 
   function symmetrize() {

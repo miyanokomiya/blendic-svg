@@ -27,16 +27,17 @@ import DropdownMenu from '/@/components/molecules/DropdownMenu.vue'
 
 export default defineComponent({
   components: { DropdownMenu },
-  emits: ['symmetrize', 'delete'],
+  emits: ['subdivide', 'symmetrize', 'delete'],
   setup(_, { emit }) {
     const items = [
+      { value: 'subdivide', label: 'Subdivide' },
       { value: 'symmetrize', label: 'Symmetrize', underline: true },
       { value: 'delete', label: 'Delete' },
     ]
 
     return {
       items,
-      select(action: 'symmetrize' | 'delete') {
+      select(action: 'subdivide' | 'symmetrize' | 'delete') {
         emit(action)
       },
     }

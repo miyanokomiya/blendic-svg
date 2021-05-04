@@ -166,6 +166,11 @@ function symmetrizeBones() {
   ;(canvasEditMode.value as BoneEditMode).symmetrize()
 }
 
+function subdivideBones() {
+  if (state.canvasMode !== 'edit') return
+  ;(canvasEditMode.value as BoneEditMode).subdivide()
+}
+
 const axisGridEnabled = computed<boolean>(() => {
   return ['grab', 'scale'].includes(command.value)
 })
@@ -303,6 +308,7 @@ export function useCanvasStore() {
       canvasEditMode.value.rectSelect(rect, shift),
     selectAll: () => canvasEditMode.value.selectAll(),
     availableCommandList,
+    subdivideBones,
     symmetrizeBones,
     popupMenuList,
   }

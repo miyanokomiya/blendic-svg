@@ -32,6 +32,7 @@ import {
 import {
   add,
   AffineMatrix,
+  getCenter,
   getPolygonCenter,
   getRadian,
   interpolateScaler,
@@ -52,6 +53,7 @@ import {
   sortByValue,
   symmetrizeName,
   toList,
+  extractMap,
 } from './commons'
 import { getNotDuplicatedName } from './relations'
 import {
@@ -635,4 +637,81 @@ export function getBoneIdsWithoutDescendants(
 
 export function sortBoneByName(bones: Bone[]): Bone[] {
   return sortByValue(bones, 'name')
+}
+
+/**
+ * @return Upserted bones
+ */
+export function subdivideBones(
+  boneMap: IdMap<Bone>,
+  targetIds: string[],
+  generateId: () => string = v4
+): IdMap<Bone> {
+  const upsertedIdMap: { [id: string]: true } = {}
+  const allMap = targetIds.reduce<IdMap<Bone>>(
+    (p, targetId) => {
+      const upsertedMap = subdivideBone(p, targetId, generateId)
+      Object.keys(upsertedMap).forEach((id) => {
+        upsertedIdMap[id] = true
+        p[id] = upsertedMap[id]
+      })
+      return p
+    },
+    { ...boneMap }
+  )
+
+  return extractMap(allMap, upsertedIdMap)
+}
+
+/**
+ * @return Upserted bones
+ */
+export function subdivideBone(
+  boneMap: IdMap<Bone>,
+  targetId: string,
+  generateId: () => string = v4
+): IdMap<Bone> {
+  const target = boneMap[targetId]
+  if (!target) return boneMap
+
+  const [b1, b2] = splitBone(
+    target,
+    toList(boneMap).map((b) => b.name),
+    generateId
+  )
+
+  return {
+    ...toMap(
+      toList(boneMap)
+        .filter((b) => b.parentId === targetId)
+        .map((b) => ({ ...b, parentId: b2.id }))
+    ),
+    [b1.id]: b1,
+    [b2.id]: b2,
+  }
+}
+
+function splitBone(
+  src: Bone,
+  names: string[],
+  generateId: () => string
+): [head: Bone, tail: Bone] {
+  const center = getCenter(src.head, src.tail)
+  return [
+    getBone({
+      ...src,
+      tail: center,
+    }),
+    getBone({
+      ...src,
+      id: generateId(),
+      name: getNotDuplicatedName(src.name, names),
+      head: center,
+      parentId: src.id,
+      connected: true,
+      constraints: [],
+      inheritRotation: true,
+      inheritScale: true,
+    }),
+  ]
 }

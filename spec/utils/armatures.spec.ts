@@ -1022,4 +1022,123 @@ describe('utils/armatures', () => {
       ])
     })
   })
+
+  describe('subdivideBones', () => {
+    it('should subdivide target bones', () => {
+      let count = 0
+      const boneMap = {
+        a: getBone({
+          id: 'a',
+          name: 'name_a',
+          head: { x: 1, y: 2 },
+          tail: { x: 11, y: 22 },
+        }),
+        b: getBone({
+          id: 'b',
+          name: 'name_b',
+        }),
+        c: getBone({ id: 'c' }),
+      }
+      expect(
+        target.subdivideBones(boneMap, ['a', 'b'], () => {
+          count++
+          return `id_${count}`
+        })
+      ).toEqual({
+        a: getBone({
+          id: 'a',
+          name: 'name_a',
+          head: { x: 1, y: 2 },
+          tail: { x: 6, y: 12 },
+        }),
+        id_1: getBone({
+          id: 'id_1',
+          name: 'name_a.001',
+          head: { x: 6, y: 12 },
+          tail: { x: 11, y: 22 },
+          parentId: 'a',
+          connected: true,
+        }),
+        b: getBone({
+          id: 'b',
+          name: 'name_b',
+        }),
+        id_2: getBone({
+          id: 'id_2',
+          name: 'name_b.001',
+          parentId: 'b',
+          connected: true,
+        }),
+      })
+      expect(Object.keys(boneMap)).toHaveLength(3)
+    })
+  })
+
+  describe('subdivideBone', () => {
+    it('should subdivide target bone', () => {
+      expect(
+        target.subdivideBone(
+          {
+            a: getBone({
+              id: 'a',
+              name: 'name_a',
+              head: { x: 1, y: 2 },
+              tail: { x: 11, y: 22 },
+              constraints: [getConstraint({ id: 'ik', type: 'IK' })],
+              inheritRotation: false,
+              inheritScale: false,
+            }),
+            c: getBone({ id: 'c' }),
+          },
+          'a',
+          () => 'b'
+        )
+      ).toEqual({
+        a: getBone({
+          id: 'a',
+          name: 'name_a',
+          head: { x: 1, y: 2 },
+          tail: { x: 6, y: 12 },
+          constraints: [getConstraint({ id: 'ik', type: 'IK' })],
+          inheritRotation: false,
+          inheritScale: false,
+        }),
+        b: getBone({
+          id: 'b',
+          name: 'name_a.001',
+          head: { x: 6, y: 12 },
+          tail: { x: 11, y: 22 },
+          parentId: 'a',
+          connected: true,
+          constraints: [],
+          inheritRotation: true,
+          inheritScale: true,
+        }),
+      })
+    })
+    it('should immigrate children', () => {
+      expect(
+        target.subdivideBone(
+          {
+            a: getBone({ id: 'a', name: 'a' }),
+            child: getBone({
+              id: 'child',
+              parentId: 'a',
+            }),
+          },
+          'a',
+          () => 'b'
+        )
+      ).toEqual({
+        a: getBone({ id: 'a', name: 'a' }),
+        b: getBone({
+          id: 'b',
+          name: 'a.001',
+          parentId: 'a',
+          connected: true,
+        }),
+        child: getBone({ id: 'child', parentId: 'b' }),
+      })
+    })
+  })
 })

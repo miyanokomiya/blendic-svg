@@ -36,7 +36,7 @@ import * as armatureUtils from '/@/utils/armatures'
 import { IVec2 } from 'okageo'
 import { useHistoryStore } from './history'
 import { HistoryItem } from '/@/composables/stores/history'
-import { splitList } from '/@/utils/commons'
+import { splitList, toList } from '/@/utils/commons'
 import { convolute } from '/@/utils/histories'
 
 const historyStore = useHistoryStore()
@@ -326,17 +326,9 @@ function upsertBones(
 ) {
   if (!lastSelectedArmature.value) return
 
-  const [existedbones, newbones] = splitList(
-    bones,
-    (b) => !!boneMap.value[b.id]
-  )
-
   const item = convolute(
-    getAddBoneItem(newbones, {}),
-    [
-      getUpdateBonesItem(toMap(existedbones)),
-      getSelectBonesItem(selectedStateMap),
-    ],
+    getUpsertBonesItem(bones),
+    [getSelectBonesItem(selectedStateMap)],
     'Upsert Bone'
   )
   historyStore.push(item, true)
@@ -597,6 +589,48 @@ function getUpdateBonesItem(
       )
     },
     redo,
+    seriesKey,
+  }
+}
+function getUpsertBonesItem(bones: Bone[], seriesKey?: string): HistoryItem {
+  const [existedbones, newbones] = splitList(
+    bones,
+    (b) => !!boneMap.value[b.id]
+  )
+  const existedboneMap = toMap(existedbones)
+  const newBoneMap = toMap(newbones)
+
+  const updatedMap = mergeMap<Partial<Bone>>(
+    existedboneMap,
+    armatureUtils.updateConnections(
+      toList({
+        ...toMap(lastSelectedArmature.value!.bones),
+        ...existedboneMap,
+        ...newBoneMap,
+      })
+    )
+  )
+  const currentMap = Object.keys(updatedMap).reduce<IdMap<Partial<Bone>>>(
+    (p, id) => {
+      if (boneMap.value[id])
+        p[id] = getOriginPartial(boneMap.value[id], updatedMap[id])
+      return p
+    },
+    {}
+  )
+
+  return {
+    name: 'Upsert Bone',
+    undo: () => {
+      lastSelectedArmature.value!.bones = lastSelectedArmature
+        .value!.bones.filter((b) => !newBoneMap[b.id])
+        .map((b) => ({ ...b, ...currentMap[b.id] }))
+    },
+    redo: () => {
+      lastSelectedArmature.value!.bones = lastSelectedArmature
+        .value!.bones.map((b) => ({ ...b, ...updatedMap[b.id] }))
+        .concat(newbones)
+    },
     seriesKey,
   }
 }

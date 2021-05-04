@@ -1,4 +1,4 @@
-<!--
+/*
 This file is part of Blendic SVG.
 
 Blendic SVG is free software: you can redistribute it and/or modify
@@ -15,32 +15,25 @@ You should have received a copy of the GNU General Public License
 along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 
 Copyright (C) 2021, Tomoya Komiyama.
--->
+*/
 
-<template>
-  <DropdownMenu label="Armature" :items="items" @select="select" />
-</template>
-
-<script lang="ts">
-import { defineComponent } from 'vue'
+import { mount } from '@vue/test-utils'
+import Target from '/@/components/molecules/CanvasArmatureMenu.vue'
 import DropdownMenu from '/@/components/molecules/DropdownMenu.vue'
 
-export default defineComponent({
-  components: { DropdownMenu },
-  emits: ['subdivide', 'symmetrize', 'delete'],
-  setup(_, { emit }) {
-    const items = [
-      { value: 'subdivide', label: 'Subdivide' },
-      { value: 'symmetrize', label: 'Symmetrize', underline: true },
-      { value: 'delete', label: 'Delete' },
-    ]
+describe('src/components/molecules/CanvasArmatureMenu.vue', () => {
+  describe('snapshot', () => {
+    it('default', () => {
+      const wrapper = mount(Target)
+      expect(wrapper.element).toMatchSnapshot()
+    })
+  })
 
-    return {
-      items,
-      select(action: 'subdivide' | 'symmetrize' | 'delete') {
-        emit(action)
-      },
-    }
-  },
+  describe('emits', () => {
+    it.each([['subdivide'], ['symmetrize'], ['delete']])('%s', (name) => {
+      const wrapper = mount(Target)
+      wrapper.findComponent(DropdownMenu).vm.$emit('select', name)
+      expect(wrapper.emitted(name)).toEqual([[]])
+    })
+  })
 })
-</script>

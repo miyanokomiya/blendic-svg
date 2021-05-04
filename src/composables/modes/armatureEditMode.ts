@@ -37,12 +37,13 @@ import {
   editTransform,
   extrudeFromParent,
   selectBoneInRect,
+  subdivideBones,
   symmetrizeBones,
 } from '/@/utils/armatures'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { Store } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
-import { mapReduce } from '/@/utils/commons'
+import { mapReduce, toList } from '/@/utils/commons'
 import { snapGrid, snapRotate, snapScale } from '/@/utils/geometry'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 
@@ -52,6 +53,7 @@ interface State {
 }
 
 export interface BoneEditMode extends CanvasEditModeBase {
+  subdivide(): void
   symmetrize(): void
 }
 
@@ -316,6 +318,31 @@ export function useBoneEditMode(
     }
   })
 
+  function subdivide() {
+    if (state.command) {
+      cancel()
+      return
+    }
+
+    const upsertedBones = subdivideBones(
+      store.boneMap.value,
+      Object.keys(store.allSelectedBones.value)
+    )
+    // select subdivided bones
+    const subdividedIdMap = Object.keys(upsertedBones).reduce<
+      IdMap<BoneSelectedState>
+    >((p, id) => {
+      if (!store.boneMap.value[id]) {
+        p[id] = { head: true, tail: true }
+        // subdivided new bone must have a parent
+        p[upsertedBones[id].parentId] = { head: true, tail: true }
+      }
+      return p
+    }, {})
+
+    store.upsertBones(toList(upsertedBones), subdividedIdMap)
+  }
+
   function symmetrize() {
     if (state.command) {
       cancel()
@@ -354,6 +381,7 @@ export function useBoneEditMode(
     paste: () => {},
     duplicate,
     availableCommandList,
+    subdivide,
     symmetrize,
     popupMenuList: computed(() => []),
   }

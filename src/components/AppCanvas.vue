@@ -79,6 +79,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <CanvasArmatureMenu
         v-if="canvasMode === 'edit'"
         class="armature-menu"
+        @subdivide="subdivide"
         @symmetrize="symmetrize"
         @delete="execDelete"
       />
@@ -321,6 +322,9 @@ export default defineComponent({
       },
       changeMode: canvasStore.changeCanvasMode,
       availableCommandList: canvasStore.availableCommandList,
+      subdivide() {
+        canvasStore.subdivideBones()
+      },
       symmetrize() {
         canvasStore.symmetrizeBones()
       },

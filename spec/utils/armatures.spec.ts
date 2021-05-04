@@ -1025,19 +1025,25 @@ describe('utils/armatures', () => {
 
   describe('subdivideBones', () => {
     it('should subdivide target bones', () => {
+      let count = 0
+      const boneMap = {
+        a: getBone({
+          id: 'a',
+          name: 'name_a',
+          head: { x: 1, y: 2 },
+          tail: { x: 11, y: 22 },
+        }),
+        b: getBone({
+          id: 'b',
+          name: 'name_b',
+        }),
+        c: getBone({ id: 'c' }),
+      }
       expect(
-        target.subdivideBones(
-          {
-            a: getBone({
-              id: 'a',
-              name: 'name_a',
-              head: { x: 1, y: 2 },
-              tail: { x: 11, y: 22 },
-            }),
-          },
-          ['a'],
-          () => 'b'
-        )
+        target.subdivideBones(boneMap, ['a', 'b'], () => {
+          count++
+          return `id_${count}`
+        })
       ).toEqual({
         a: getBone({
           id: 'a',
@@ -1045,15 +1051,26 @@ describe('utils/armatures', () => {
           head: { x: 1, y: 2 },
           tail: { x: 6, y: 12 },
         }),
-        b: getBone({
-          id: 'b',
+        id_1: getBone({
+          id: 'id_1',
           name: 'name_a.001',
           head: { x: 6, y: 12 },
           tail: { x: 11, y: 22 },
           parentId: 'a',
           connected: true,
         }),
+        b: getBone({
+          id: 'b',
+          name: 'name_b',
+        }),
+        id_2: getBone({
+          id: 'id_2',
+          name: 'name_b.001',
+          parentId: 'b',
+          connected: true,
+        }),
       })
+      expect(Object.keys(boneMap)).toHaveLength(3)
     })
   })
 
@@ -1071,6 +1088,7 @@ describe('utils/armatures', () => {
               inheritRotation: false,
               inheritScale: false,
             }),
+            c: getBone({ id: 'c' }),
           },
           'a',
           () => 'b'

@@ -53,6 +53,7 @@ import {
   sortByValue,
   symmetrizeName,
   toList,
+  extractMap,
 } from './commons'
 import { getNotDuplicatedName } from './relations'
 import {
@@ -638,16 +639,33 @@ export function sortBoneByName(bones: Bone[]): Bone[] {
   return sortByValue(bones, 'name')
 }
 
+/**
+ * @return Upserted bones
+ */
 export function subdivideBones(
   boneMap: IdMap<Bone>,
   targetIds: string[],
   generateId: () => string = v4
 ): IdMap<Bone> {
-  return targetIds.reduce<IdMap<Bone>>((p, targetId) => {
-    return subdivideBone(p, targetId, generateId)
-  }, boneMap)
+  const upsertedIdMap: { [id: string]: true } = {}
+  const allMap = targetIds.reduce<IdMap<Bone>>(
+    (p, targetId) => {
+      const upsertedMap = subdivideBone(p, targetId, generateId)
+      Object.keys(upsertedMap).forEach((id) => {
+        upsertedIdMap[id] = true
+        p[id] = upsertedMap[id]
+      })
+      return p
+    },
+    { ...boneMap }
+  )
+
+  return extractMap(allMap, upsertedIdMap)
 }
 
+/**
+ * @return Upserted bones
+ */
 export function subdivideBone(
   boneMap: IdMap<Bone>,
   targetId: string,
@@ -663,10 +681,11 @@ export function subdivideBone(
   )
 
   return {
-    ...mapReduce(boneMap, (b) => {
-      if (b.parentId !== targetId) return b
-      return { ...b, parentId: b2.id }
-    }),
+    ...toMap(
+      toList(boneMap)
+        .filter((b) => b.parentId === targetId)
+        .map((b) => ({ ...b, parentId: b2.id }))
+    ),
     [b1.id]: b1,
     [b2.id]: b2,
   }

@@ -32,6 +32,7 @@ import {
 import {
   add,
   AffineMatrix,
+  getCenter,
   getPolygonCenter,
   getRadian,
   interpolateScaler,
@@ -635,4 +636,63 @@ export function getBoneIdsWithoutDescendants(
 
 export function sortBoneByName(bones: Bone[]): Bone[] {
   return sortByValue(bones, 'name')
+}
+
+export function subdivideBones(
+  boneMap: IdMap<Bone>,
+  targetIds: string[],
+  generateId: () => string = v4
+): IdMap<Bone> {
+  return targetIds.reduce<IdMap<Bone>>((p, targetId) => {
+    return subdivideBone(p, targetId, generateId)
+  }, boneMap)
+}
+
+export function subdivideBone(
+  boneMap: IdMap<Bone>,
+  targetId: string,
+  generateId: () => string = v4
+): IdMap<Bone> {
+  const target = boneMap[targetId]
+  if (!target) return boneMap
+
+  const [b1, b2] = splitBone(
+    target,
+    toList(boneMap).map((b) => b.name),
+    generateId
+  )
+
+  return {
+    ...mapReduce(boneMap, (b) => {
+      if (b.parentId !== targetId) return b
+      return { ...b, parentId: b2.id }
+    }),
+    [b1.id]: b1,
+    [b2.id]: b2,
+  }
+}
+
+function splitBone(
+  src: Bone,
+  names: string[],
+  generateId: () => string
+): [head: Bone, tail: Bone] {
+  const center = getCenter(src.head, src.tail)
+  return [
+    getBone({
+      ...src,
+      tail: center,
+    }),
+    getBone({
+      ...src,
+      id: generateId(),
+      name: getNotDuplicatedName(src.name, names),
+      head: center,
+      parentId: src.id,
+      connected: true,
+      constraints: [],
+      inheritRotation: true,
+      inheritScale: true,
+    }),
+  ]
 }

@@ -1022,4 +1022,105 @@ describe('utils/armatures', () => {
       ])
     })
   })
+
+  describe('subdivideBones', () => {
+    it('should subdivide target bones', () => {
+      expect(
+        target.subdivideBones(
+          {
+            a: getBone({
+              id: 'a',
+              name: 'name_a',
+              head: { x: 1, y: 2 },
+              tail: { x: 11, y: 22 },
+            }),
+          },
+          ['a'],
+          () => 'b'
+        )
+      ).toEqual({
+        a: getBone({
+          id: 'a',
+          name: 'name_a',
+          head: { x: 1, y: 2 },
+          tail: { x: 6, y: 12 },
+        }),
+        b: getBone({
+          id: 'b',
+          name: 'name_a.001',
+          head: { x: 6, y: 12 },
+          tail: { x: 11, y: 22 },
+          parentId: 'a',
+          connected: true,
+        }),
+      })
+    })
+  })
+
+  describe('subdivideBone', () => {
+    it('should subdivide target bone', () => {
+      expect(
+        target.subdivideBone(
+          {
+            a: getBone({
+              id: 'a',
+              name: 'name_a',
+              head: { x: 1, y: 2 },
+              tail: { x: 11, y: 22 },
+              constraints: [getConstraint({ id: 'ik', type: 'IK' })],
+              inheritRotation: false,
+              inheritScale: false,
+            }),
+          },
+          'a',
+          () => 'b'
+        )
+      ).toEqual({
+        a: getBone({
+          id: 'a',
+          name: 'name_a',
+          head: { x: 1, y: 2 },
+          tail: { x: 6, y: 12 },
+          constraints: [getConstraint({ id: 'ik', type: 'IK' })],
+          inheritRotation: false,
+          inheritScale: false,
+        }),
+        b: getBone({
+          id: 'b',
+          name: 'name_a.001',
+          head: { x: 6, y: 12 },
+          tail: { x: 11, y: 22 },
+          parentId: 'a',
+          connected: true,
+          constraints: [],
+          inheritRotation: true,
+          inheritScale: true,
+        }),
+      })
+    })
+    it('should immigrate children', () => {
+      expect(
+        target.subdivideBone(
+          {
+            a: getBone({ id: 'a', name: 'a' }),
+            child: getBone({
+              id: 'child',
+              parentId: 'a',
+            }),
+          },
+          'a',
+          () => 'b'
+        )
+      ).toEqual({
+        a: getBone({ id: 'a', name: 'a' }),
+        b: getBone({
+          id: 'b',
+          name: 'a.001',
+          parentId: 'a',
+          connected: true,
+        }),
+        child: getBone({ id: 'child', parentId: 'b' }),
+      })
+    })
+  })
 })

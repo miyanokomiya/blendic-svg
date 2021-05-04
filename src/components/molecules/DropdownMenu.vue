@@ -23,7 +23,9 @@ Copyright (C) 2021, Tomoya Komiyama.
     <ul v-if="opened" class="drop-menu">
       <template v-for="item in items" :key="item.value">
         <li>
-          <button @click="exec(item.value)">{{ item.label }}</button>
+          <button type="button" @click="exec(item.value)">
+            {{ item.label }}
+          </button>
         </li>
         <hr v-if="item.underline" />
       </template>

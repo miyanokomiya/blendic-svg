@@ -1141,4 +1141,78 @@ describe('utils/armatures', () => {
       })
     })
   })
+
+  describe('getUpdatedBonesByDissolvingBones', () => {
+    it('should return bones to dissolve the target', () => {
+      const boneMap = {
+        a: getBone({
+          id: 'a',
+        }),
+        b: getBone({
+          id: 'b',
+          parentId: 'a',
+        }),
+        c: getBone({
+          id: 'c',
+          parentId: 'b',
+          constraints: [
+            getConstraint({
+              type: 'IK',
+              option: getOptionByType('IK', { targetId: 'b' }),
+            }),
+          ],
+        }),
+      }
+      const ret = target.getUpdatedBonesByDissolvingBones(boneMap, ['b'])
+      expect(ret).toEqual({
+        c: getBone({
+          id: 'c',
+          parentId: 'a',
+          constraints: [
+            getConstraint({
+              type: 'IK',
+              option: getOptionByType('IK', { targetId: 'a' }),
+            }),
+          ],
+        }),
+      })
+    })
+  })
+
+  describe('getUpdatedBonesByDissolvingBone', () => {
+    it('should return bones to dissolve the target', () => {
+      const boneMap = {
+        a: getBone({
+          id: 'a',
+        }),
+        b: getBone({
+          id: 'b',
+          parentId: 'a',
+        }),
+        c: getBone({
+          id: 'c',
+          parentId: 'b',
+          constraints: [
+            getConstraint({
+              type: 'IK',
+              option: getOptionByType('IK', { targetId: 'b' }),
+            }),
+          ],
+        }),
+      }
+      const ret = target.getUpdatedBonesByDissolvingBone(boneMap, 'b')
+      expect(ret).toEqual({
+        c: getBone({
+          id: 'c',
+          parentId: 'a',
+          constraints: [
+            getConstraint({
+              type: 'IK',
+              option: getOptionByType('IK', { targetId: 'a' }),
+            }),
+          ],
+        }),
+      })
+    })
+  })
 })

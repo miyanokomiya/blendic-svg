@@ -58,6 +58,7 @@ import {
 import { getNotDuplicatedName } from './relations'
 import {
   applyBoneConstraints,
+  getDependentCountMap,
   immigrateConstraints,
   sortBoneByHighDependency,
 } from '/@/utils/constraints'
@@ -642,15 +643,15 @@ export function sortBoneByName(bones: Bone[]): Bone[] {
 /**
  * @return Upserted bones
  */
-export function subdivideBones(
+function reduceUpdateBones(
   boneMap: IdMap<Bone>,
   targetIds: string[],
-  generateId: () => string = v4
+  updatePartialFn: (arg: IdMap<Bone>, targetId: string) => IdMap<Bone>
 ): IdMap<Bone> {
   const upsertedIdMap: { [id: string]: true } = {}
   const allMap = targetIds.reduce<IdMap<Bone>>(
     (p, targetId) => {
-      const upsertedMap = subdivideBone(p, targetId, generateId)
+      const upsertedMap = updatePartialFn(p, targetId)
       Object.keys(upsertedMap).forEach((id) => {
         upsertedIdMap[id] = true
         p[id] = upsertedMap[id]
@@ -661,6 +662,19 @@ export function subdivideBones(
   )
 
   return extractMap(allMap, upsertedIdMap)
+}
+
+/**
+ * @return Upserted bones
+ */
+export function subdivideBones(
+  boneMap: IdMap<Bone>,
+  targetIds: string[],
+  generateId: () => string = v4
+): IdMap<Bone> {
+  return reduceUpdateBones(boneMap, targetIds, (p, targetId) => {
+    return subdivideBone(p, targetId, generateId)
+  })
 }
 
 /**
@@ -714,4 +728,36 @@ function splitBone(
       inheritScale: true,
     }),
   ]
+}
+
+/**
+ * @return Updated bones
+ */
+export function getUpdatedBonesByDissolvingBones(
+  boneMap: IdMap<Bone>,
+  targetIds: string[]
+): IdMap<Bone> {
+  return reduceUpdateBones(boneMap, targetIds, getUpdatedBonesByDissolvingBone)
+}
+
+/**
+ * @return Updated bones
+ */
+export function getUpdatedBonesByDissolvingBone(
+  boneMap: IdMap<Bone>,
+  targetId: string
+): IdMap<Bone> {
+  const target = boneMap[targetId]
+  if (!target || !target.parentId) return boneMap
+
+  const dependentBoneIdMap = mapFilter(
+    getDependentCountMap(boneMap),
+    (map) => targetId in map
+  )
+  return extractMap(
+    toMap(
+      immigrateBoneRelations({ [targetId]: target.parentId }, toList(boneMap))
+    ),
+    dependentBoneIdMap
+  )
 }

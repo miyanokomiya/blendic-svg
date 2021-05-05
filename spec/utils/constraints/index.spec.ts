@@ -21,6 +21,7 @@ import { getBone } from '/@/models'
 import * as ik from '/@/utils/constraints/ik'
 import {
   getConstraint,
+  getDependentCountMap,
   sortBoneByHighDependency,
   sortByDependency,
 } from '/@/utils/constraints/index'
@@ -47,6 +48,34 @@ describe('src/utils/constraints/index.ts', () => {
       ]
       const res = sortBoneByHighDependency(bones)
       expect(res.map((b) => b.id)).toEqual(['c', 'a', 'b'])
+    })
+  })
+
+  describe('getDependentCountMap', () => {
+    it('should return dependency map', () => {
+      const boneMap = {
+        a: getBone({
+          id: 'a',
+          constraints: [
+            getConstraint({
+              type: 'IK',
+              name: 'IK.001',
+              option: ik.getOption({ targetId: 'c' }),
+            }),
+          ],
+        }),
+        b: getBone({
+          id: 'b',
+          parentId: 'a',
+        }),
+        c: getBone({ id: 'c' }),
+      }
+      const res = getDependentCountMap(boneMap)
+      expect(res).toEqual({
+        a: { c: 1 },
+        b: { a: 1 },
+        c: {},
+      })
     })
   })
 

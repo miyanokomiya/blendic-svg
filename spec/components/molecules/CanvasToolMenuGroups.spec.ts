@@ -18,22 +18,32 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { mount } from '@vue/test-utils'
-import Target from '/@/components/molecules/CanvasArmatureMenu.vue'
-import DropdownMenu from '/@/components/molecules/DropdownMenu.vue'
+import Target from '/@/components/molecules/CanvasToolMenuGroups.vue'
 
-describe('src/components/molecules/CanvasArmatureMenu.vue', () => {
+describe('src/components/molecules/CanvasToolMenuGroups.vue', () => {
   describe('snapshot', () => {
-    it('default', () => {
-      const wrapper = mount(Target)
+    it('menu list', () => {
+      const wrapper = mount(Target, {
+        props: {
+          props: [
+            {
+              label: 'group 1',
+              items: [
+                { label: 'item 1', exec: () => {} },
+                { label: 'item 2', exec: () => {} },
+              ],
+            },
+            {
+              label: 'group 2',
+              items: [
+                { label: 'item 1', exec: () => {} },
+                { label: 'item 2', exec: () => {} },
+              ],
+            },
+          ],
+        },
+      })
       expect(wrapper.element).toMatchSnapshot()
-    })
-  })
-
-  describe('emits', () => {
-    it.each([['subdivide'], ['symmetrize'], ['delete']])('%s', (name) => {
-      const wrapper = mount(Target)
-      wrapper.findComponent(DropdownMenu).vm.$emit('select', name)
-      expect(wrapper.emitted(name)).toEqual([[]])
     })
   })
 })

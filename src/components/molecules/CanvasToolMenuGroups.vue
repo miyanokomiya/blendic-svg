@@ -18,29 +18,39 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <DropdownMenu label="Armature" :items="items" @select="select" />
+  <div class="group-wrapper">
+    <DropdownMenu
+      v-for="g in groups"
+      :key="g.label"
+      :items="g.items"
+      :label="g.label"
+      class="group"
+    />
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, PropType } from 'vue'
 import DropdownMenu from '/@/components/molecules/DropdownMenu.vue'
+import { ToolMenuGroup } from '/@/composables/modes/types'
 
 export default defineComponent({
   components: { DropdownMenu },
-  emits: ['subdivide', 'symmetrize', 'delete'],
-  setup(_, { emit }) {
-    const items = [
-      { value: 'subdivide', label: 'Subdivide' },
-      { value: 'symmetrize', label: 'Symmetrize', underline: true },
-      { value: 'delete', label: 'Delete' },
-    ]
-
-    return {
-      items,
-      select(action: 'subdivide' | 'symmetrize' | 'delete') {
-        emit(action)
-      },
-    }
+  props: {
+    groups: {
+      type: Array as PropType<ToolMenuGroup[]>,
+      default: () => [],
+    },
   },
 })
 </script>
+
+<style lang="scss" scoped>
+.group-wrapper {
+  display: flex;
+  align-items: center;
+}
+.group + .group {
+  margin-left: 10px;
+}
+</style>

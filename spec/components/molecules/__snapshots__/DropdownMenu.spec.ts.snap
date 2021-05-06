@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/molecules/DropdownMenu.vue snapshot default 1`] = `
+<div
+  class="dropdown-menu"
+>
+  <button
+    type="button"
+  >
+    menu1
+  </button>
+  <!--v-if-->
+</div>
+`;
+
+exports[`src/components/molecules/DropdownMenu.vue snapshot opened 1`] = `
+<div
+  class="dropdown-menu"
+>
+  <button
+    type="button"
+  >
+    menu1
+  </button>
+  <ul
+    class="drop-menu"
+  >
+    
+    
+    <li>
+      <button
+        type="button"
+      >
+        item1
+      </button>
+    </li>
+    <!--v-if-->
+    
+    
+    <li>
+      <button
+        type="button"
+      >
+        item2
+      </button>
+    </li>
+    <hr />
+    
+    
+    <li>
+      <button
+        type="button"
+      >
+        item3
+      </button>
+    </li>
+    <!--v-if-->
+    
+    
+  </ul>
+</div>
+`;

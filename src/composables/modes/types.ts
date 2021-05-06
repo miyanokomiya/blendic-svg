@@ -39,6 +39,17 @@ export interface PopupMenuItem {
   focus?: boolean
 }
 
+export interface ToolMenuGroup {
+  label: string
+  items: ToolMenuItem[]
+}
+
+export interface ToolMenuItem {
+  label: string
+  exec: () => void
+  underline?: boolean
+}
+
 export type CommandExam = { command: string; title: string }
 
 export interface CanvasEditModeBase {
@@ -62,6 +73,7 @@ export interface CanvasEditModeBase {
   duplicate: () => boolean
   availableCommandList: ComputedRef<CommandExam[]>
   popupMenuList: ComputedRef<PopupMenuItem[]>
+  toolMenuGroupList: ComputedRef<ToolMenuGroup[]>
 }
 
 export type KeyframeModeName = 'action'

@@ -31,7 +31,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
-import { PopupMenuItem } from '/@/models'
+import { PopupMenuItem } from '/@/composables/modes/types'
 
 export default defineComponent({
   props: {

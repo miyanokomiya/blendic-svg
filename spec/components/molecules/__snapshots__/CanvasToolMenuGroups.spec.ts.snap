@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/molecules/CanvasToolMenuGroups.vue snapshot menu list 1`] = `
+<div
+  class="group-wrapper"
+  props="[object Object],[object Object]"
+>
+  
+  
+</div>
+`;

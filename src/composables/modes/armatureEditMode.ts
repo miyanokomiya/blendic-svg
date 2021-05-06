@@ -262,6 +262,14 @@ export function useBoneEditMode(
     store.deleteBone()
   }
 
+  function execDissolve() {
+    if (state.command) {
+      cancel()
+      return
+    }
+    store.dissolveBone()
+  }
+
   function execAdd() {
     if (state.command) {
       cancel()
@@ -369,6 +377,7 @@ export function useBoneEditMode(
         items: [
           { label: 'Subdivide', exec: subdivide },
           { label: 'Symmetrize', exec: symmetrize, underline: true },
+          { label: 'Dissolve', exec: execDissolve },
           { label: 'Delete', exec: execDelete },
         ],
       },

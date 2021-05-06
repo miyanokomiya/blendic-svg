@@ -265,10 +265,11 @@ function selectBones(
 
 function deleteBone() {
   if (!lastSelectedArmature.value) return
-
-  const item = getDeleteBoneItem()
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(getDeleteBoneItem(), true)
+}
+function dissolveBone() {
+  if (!lastSelectedArmature.value) return
+  historyStore.push(getDissolveBoneItem(), true)
 }
 function addBone() {
   if (!lastSelectedArmature.value) return
@@ -354,6 +355,7 @@ export function useStore() {
     selectBones,
 
     deleteBone,
+    dissolveBone,
     addBone,
     addBones,
     updateBones,
@@ -634,30 +636,44 @@ function getUpsertBonesItem(bones: Bone[], seriesKey?: string): HistoryItem {
     seriesKey,
   }
 }
-function getDeleteBoneItem(): HistoryItem {
+function getDeleteAndUpdateBoneItem(
+  name: string,
+  updateFn: (existed: Bone[]) => IdMap<Partial<Bone>>
+): HistoryItem {
   const current = lastSelectedArmature.value!.bones.concat()
-  const updated = lastSelectedArmature.value!.bones.filter(
-    (b) => !state.selectedBones[b.id]
+  const existed = lastSelectedArmature.value!.bones.filter(
+    (b) => !allSelectedBones.value[b.id]
   )
 
-  const updateItem = getUpdateBonesItem(
-    armatureUtils.updateConnections(updated)
-  )
+  const updateItem = getUpdateBonesItem(updateFn(existed))
   const selectItem = getSelectBoneItem('')
 
-  const redo = () => {
-    lastSelectedArmature.value!.bones = updated
-    updateItem.redo()
-  }
   return {
-    name: 'Delete Bone',
+    name,
     undo: () => {
       lastSelectedArmature.value!.bones = current.concat()
-      selectItem.undo()
       updateItem.undo()
+      selectItem.undo()
     },
-    redo,
+    redo: () => {
+      lastSelectedArmature.value!.bones = existed
+      selectItem.redo()
+      updateItem.redo()
+    },
   }
+}
+function getDeleteBoneItem(): HistoryItem {
+  return getDeleteAndUpdateBoneItem('Delete Bone', (existed) =>
+    armatureUtils.updateConnections(existed)
+  )
+}
+function getDissolveBoneItem(): HistoryItem {
+  return getDeleteAndUpdateBoneItem('Dissolve Bone', () =>
+    armatureUtils.getUpdatedBonesByDissolvingBones(
+      boneMap.value,
+      Object.keys(allSelectedBones.value)
+    )
+  )
 }
 function getAddBoneItem(
   bones: Bone[],

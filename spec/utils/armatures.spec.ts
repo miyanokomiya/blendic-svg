@@ -276,8 +276,15 @@ describe('utils/armatures', () => {
         connected: true,
         head: { x: 10, y: 20 },
       })
-      expect(target.updateConnections([connected])).toEqual({
+      const unconnected = getBone({
+        id: 'unconnected',
+        parentId: 'parent',
+        connected: false,
+        head: { x: 10, y: 20 },
+      })
+      expect(target.updateConnections([connected, unconnected])).toEqual({
         connected: { connected: false, parentId: '' },
+        unconnected: { connected: false, parentId: '' },
       })
     })
   })

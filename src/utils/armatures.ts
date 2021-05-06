@@ -258,9 +258,11 @@ export function fixConnections(bones: Bone[]): Bone[] {
 
 export function updateConnections(bones: Bone[]): IdMap<Partial<Bone>> {
   return bones.reduce<IdMap<Partial<Bone>>>((p, b) => {
+    if (!b.parentId) return p
+
     const parent = findBone(bones, b.parentId)
     if (!parent) {
-      if (b.connected) p[b.id] = { connected: false, parentId: '' }
+      p[b.id] = { connected: false, parentId: '' }
     } else if (b.connected) {
       p[b.id] = { connected: isSame(parent.tail, b.head) }
     }

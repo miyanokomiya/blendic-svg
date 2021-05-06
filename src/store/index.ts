@@ -644,21 +644,21 @@ function getDeleteAndUpdateBoneItem(
   const existed = lastSelectedArmature.value!.bones.filter(
     (b) => !allSelectedBones.value[b.id]
   )
-
-  const updateItem = getUpdateBonesItem(updateFn(existed))
   const selectItem = getSelectBoneItem('')
 
   return {
     name,
     undo: () => {
       lastSelectedArmature.value!.bones = current.concat()
-      updateItem.undo()
       selectItem.undo()
     },
     redo: () => {
-      lastSelectedArmature.value!.bones = existed
+      const updatedMap = updateFn(existed)
+      lastSelectedArmature.value!.bones = existed.map((b) => ({
+        ...b,
+        ...updatedMap[b.id],
+      }))
       selectItem.redo()
-      updateItem.redo()
     },
   }
 }

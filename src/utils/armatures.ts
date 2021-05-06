@@ -755,7 +755,7 @@ export function getUpdatedBonesByDissolvingBone(
   targetId: string
 ): IdMap<Bone> {
   const target = boneMap[targetId]
-  if (!target || !target.parentId) return boneMap
+  if (!target) return boneMap
 
   const dependentBoneIdMap = mapFilter(
     getDependentCountMap(boneMap),

@@ -1241,6 +1241,26 @@ describe('utils/armatures', () => {
         }),
       })
     })
+    it('should clear parent connection if the parent is dissolved and not have self parent', () => {
+      const boneMap = {
+        b: getBone({
+          id: 'b',
+        }),
+        c: getBone({
+          id: 'c',
+          parentId: 'b',
+          connected: true,
+        }),
+      }
+      const ret = target.getUpdatedBonesByDissolvingBone(boneMap, 'b')
+      expect(ret).toEqual({
+        c: getBone({
+          id: 'c',
+          parentId: '',
+          connected: false,
+        }),
+      })
+    })
     it('should let connected head move to a tail of new parent', () => {
       const boneMap = {
         a: getBone({

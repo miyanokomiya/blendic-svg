@@ -471,18 +471,14 @@ export function interpolateTransform(
 export function immigrateBoneRelations(
   immigratedIdMap: IdMap<string>,
   bones: Bone[],
-  options: { resetConstraintId?: boolean } = {}
+  options: {
+    resetConstraintId?: boolean
+  } = {}
 ): Bone[] {
   return bones.map((src) => {
-    // switch new parent if current parent is duplicated together
-    const parentId = immigratedIdMap[src.parentId] ?? src.parentId
-    // connect if current parent is duplicated together
-    const connected = src.connected && !!immigratedIdMap[src.parentId]
-
     return {
       ...src,
-      parentId,
-      connected,
+      parentId: immigratedIdMap[src.parentId] ?? src.parentId,
       constraints: immigrateConstraints(
         immigratedIdMap,
         src.constraints,
@@ -497,6 +493,13 @@ export function immigrateBoneRelations(
  */
 export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
   const duplicatedIdMap = mapReduce(srcBones, () => v4())
+  const nextIdMap = Object.values(duplicatedIdMap).reduce<{
+    [id: string]: boolean
+  }>((p, id) => {
+    p[id] = true
+    return p
+  }, {})
+
   return immigrateBoneRelations(
     duplicatedIdMap,
     toList(
@@ -511,7 +514,11 @@ export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
       })
     ).sort((a, b) => (a.name >= b.name ? 1 : -1)),
     { resetConstraintId: true }
-  )
+  ).map((b) => {
+    // set connected false if the parent is not duplicated together
+    if (!b.parentId || nextIdMap[b.parentId]) return b
+    return { ...b, connected: false }
+  })
 }
 
 /**
@@ -563,9 +570,7 @@ export function symmetrizeBones(
   const newBones = immigrateBoneRelations(
     getSymmetrizedIdMap({ ...boneMap, ...toMap(symmetrizedList) }, true),
     symmetrizedList,
-    {
-      resetConstraintId: true,
-    }
+    { resetConstraintId: true }
   )
 
   const updatedConnections = updateConnections(
@@ -756,10 +761,24 @@ export function getUpdatedBonesByDissolvingBone(
     getDependentCountMap(boneMap),
     (map) => targetId in map
   )
-  return extractMap(
-    toMap(
-      immigrateBoneRelations({ [targetId]: target.parentId }, toList(boneMap))
-    ),
-    dependentBoneIdMap
+
+  return toMap(
+    immigrateBoneRelations(
+      { [targetId]: target.parentId },
+      toList(boneMap)
+        .filter((b) => !!dependentBoneIdMap[b.id])
+        // replace bone's head to new parent's tail if the connected parent will be dissolved
+        .map((b) => {
+          if (b.parentId !== targetId || !b.connected) return b
+
+          const parent = boneMap[targetId]
+          if (!parent.parentId) return { ...b, parentId: '', connected: false }
+
+          const newParent = boneMap[parent.parentId]
+          if (!newParent) return b
+
+          return { ...b, parentId: parent.parentId, head: newParent.tail }
+        })
+    )
   )
 }

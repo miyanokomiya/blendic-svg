@@ -7,17 +7,23 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot default 1`] = `
   <ul>
     
     <li>
-      <button>
+      <button
+        data-test-id="item1"
+      >
         item1
       </button>
     </li>
     <li>
-      <button>
+      <button
+        data-test-id="item2"
+      >
         item2
       </button>
     </li>
     <li>
-      <button>
+      <button
+        data-test-id="item3"
+      >
         item3
       </button>
     </li>
@@ -34,17 +40,23 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot focused item 1`] = 
   <ul>
     
     <li>
-      <button>
+      <button
+        data-test-id="item1"
+      >
         item1
       </button>
     </li>
     <li>
-      <button>
+      <button
+        data-test-id="item2"
+      >
         item2
       </button>
     </li>
     <li>
-      <button>
+      <button
+        data-test-id="item3"
+      >
         item3
       </button>
     </li>

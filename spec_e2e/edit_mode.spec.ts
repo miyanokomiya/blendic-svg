@@ -77,6 +77,8 @@ describe('edit bones', () => {
 
     // Delete
     await page.press('.app-canvas-root', 'x')
-    await screenshot('delete_bone')
+    await screenshot('delete_bone_show_menu')
+    await page.click('button[data-test-id="Delete"]')
+    await screenshot('delete_bone_exec')
   })
 })

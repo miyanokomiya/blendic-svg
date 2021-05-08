@@ -32,6 +32,7 @@ import {
   CanvasEditModeBase,
   EditMovement,
   ToolMenuGroup,
+  PopupMenuItem,
 } from '/@/composables/modes/types'
 import {
   duplicateBones,
@@ -47,6 +48,7 @@ import { CanvasStore } from '/@/store/canvas'
 import { mapReduce, toList } from '/@/utils/commons'
 import { snapGrid, snapRotate, snapScale } from '/@/utils/geometry'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
+import { useMenuList } from '/@/composables/menuList'
 
 interface State {
   command: EditMode
@@ -96,42 +98,48 @@ export function useBoneEditMode(
 
   function setEditMode(mode: EditMode) {
     if (!target.value) return
-
     cancel()
+    if (!isAnySelected.value) return
 
-    if (isAnySelected.value) {
-      state.command = mode
-      if (mode === 'extrude') {
-        const shouldSkipBones: IdMap<boolean> = {}
-        const names = allNames.value.concat()
-        const extrudedBones: Bone[] = []
+    switch (mode) {
+      case 'extrude':
+        execExtrude()
+        return
+      default:
+        state.command = mode
+    }
+  }
 
-        Object.keys(selectedBones.value).forEach((id) => {
-          const selectedState = selectedBones.value[id]
-          const parent = store.boneMap.value[id]
+  function execExtrude() {
+    const shouldSkipBones: IdMap<boolean> = {}
+    const names = allNames.value.concat()
+    const extrudedBones: Bone[] = []
 
-          const bones: Bone[] = []
-          if (selectedState.tail) bones.push(extrudeFromParent(parent))
-          if (selectedState.head) bones.push(extrudeFromParent(parent, true))
+    Object.keys(selectedBones.value).forEach((id) => {
+      const selectedState = selectedBones.value[id]
+      const parent = store.boneMap.value[id]
 
-          bones.forEach((b) => {
-            // prevent to extruding from same parent
-            if (!shouldSkipBones[b.parentId]) {
-              b.name = getNotDuplicatedName(parent.name, names)
-              extrudedBones.push(b)
-              names.push(b.name)
-              shouldSkipBones[b.parentId] = true
-            }
-          })
-        })
+      const bones: Bone[] = []
+      if (selectedState.tail) bones.push(extrudeFromParent(parent))
+      if (selectedState.head) bones.push(extrudeFromParent(parent, true))
 
-        if (extrudedBones.length > 0) {
-          store.addBones(extrudedBones, { tail: true })
-          state.command = 'grab'
-        } else {
-          state.command = ''
+      bones.forEach((b) => {
+        // prevent to extruding from same parent
+        if (!shouldSkipBones[b.parentId]) {
+          b.name = getNotDuplicatedName(parent.name, names)
+          extrudedBones.push(b)
+          names.push(b.name)
+          shouldSkipBones[b.parentId] = true
         }
-      }
+      })
+    })
+
+    // grab the new bones if its are extruded
+    if (extrudedBones.length > 0) {
+      store.addBones(extrudedBones, { tail: true })
+      state.command = 'grab'
+    } else {
+      state.command = ''
     }
   }
 
@@ -257,7 +265,6 @@ export function useBoneEditMode(
   function execDelete() {
     if (state.command) {
       cancel()
-      return
     }
     store.deleteBone()
   }
@@ -265,7 +272,6 @@ export function useBoneEditMode(
   function execDissolve() {
     if (state.command) {
       cancel()
-      return
     }
     store.dissolveBone()
   }
@@ -384,6 +390,20 @@ export function useBoneEditMode(
     ]
   })
 
+  const deleteMenuList = useMenuList(() => [
+    { label: 'Dissolve', exec: execDissolve },
+    { label: 'Delete', exec: execDelete },
+  ])
+
+  const popupMenuList = computed<PopupMenuItem[]>(() => {
+    switch (state.command) {
+      case 'delete':
+        return deleteMenuList.list.value
+      default:
+        return []
+    }
+  })
+
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
@@ -408,7 +428,7 @@ export function useBoneEditMode(
     availableCommandList,
     subdivide,
     symmetrize,
-    popupMenuList: computed(() => []),
+    popupMenuList,
     toolMenuGroupList,
   }
 }

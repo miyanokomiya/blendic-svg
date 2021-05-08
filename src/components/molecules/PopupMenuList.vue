@@ -21,7 +21,7 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="popup-menu-list-wrapper" :style="{ transform }">
     <ul>
       <li v-for="item in popupMenuList" :key="item.label">
-        <button @click="item.exec">
+        <button :data-test-id="item.label" @click="item.exec">
           {{ item.label }}
         </button>
       </li>

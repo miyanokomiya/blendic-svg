@@ -164,6 +164,8 @@ export default defineComponent({
     }
     watch(() => props.originalViewBox, initView)
 
+    const isDownEmpty = ref(false)
+
     const gridLineElm = computed(() => {
       if (canvasStore.state.axisGrid === '') return
       if (!canvas.editStartPoint.value) return
@@ -270,7 +272,7 @@ export default defineComponent({
       popupMenuList,
       popupMenuListPosition,
       focus() {
-        if (svg.value) svg.value.focus()
+        svg.value?.focus()
       },
       wheel: canvas.wheel,
       downMiddle(e: Event) {
@@ -278,34 +280,32 @@ export default defineComponent({
         canvas.downMiddle()
       },
       upMiddle: canvas.upMiddle,
-      downLeft: () => {
+
+      downLeft: (e: MouseEvent) => {
+        isDownEmpty.value = e.target === svg.value
+
         if (canvasStore.command.value) return
-        if (canvasStore.state.canvasMode === 'object') return
-        if (canvasStore.state.canvasMode === 'weight') return
-        canvas.downLeft('rect-select')
+
+        // NOTE: rect-select only supports 'edit' and 'pose' modes currently
+        if (['edit', 'pose'].includes(canvasStore.state.canvasMode)) {
+          canvas.downLeft('rect-select')
+        }
       },
       upLeft: (e: MouseEvent) => {
-        if (!canvasStore.command.value && !canvas.dragInfo.value) return
-        if (!['object', 'weight'].includes(canvasStore.state.canvasMode)) {
-          if (!canvas.isSomeAction.value) return
-        }
-
-        if (
-          canvas.dragRectangle.value &&
-          (Math.abs(canvas.dragRectangle.value.width) > 0 ||
-            Math.abs(canvas.dragRectangle.value.height) > 0)
-        ) {
+        if (canvas.dragRectangle.value && canvas.isValidDragRectangle.value) {
           canvasStore.rectSelect(canvas.dragRectangle.value, e.shiftKey)
         } else {
-          if (e.target === svg.value) {
-            canvas.editStartPoint.value = undefined
+          if (e.target === svg.value && isDownEmpty.value) {
             canvasStore.clickEmpty()
           } else {
             canvasStore.clickAny()
           }
         }
+
         canvas.upLeft()
+        isDownEmpty.value = false
       },
+
       escape,
       editKeyDown(e: KeyboardEvent) {
         const { needLock } = canvasStore.editKeyDown(e.key, {

@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive, computed, ref } from 'vue'
+import { reactive, computed } from 'vue'
 import { getDistance, getRadian, IRectangle, IVec2, multi, sub } from 'okageo'
 import {
   Transform,
@@ -49,6 +49,7 @@ import {
   snapScale,
 } from '/@/utils/geometry'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
+import { useMenuList } from '/@/composables/menuList'
 
 interface State {
   command: EditMode
@@ -301,8 +302,6 @@ export function useBonePoseMode(
     state.command = 'insert'
   }
 
-  const lastSelectedPopupItem = ref<string>()
-
   function execInsert(
     useTranslate: boolean,
     useRotate: boolean,
@@ -318,49 +317,40 @@ export function useBonePoseMode(
     state.command = ''
   }
 
-  const popupMenuListSrc = computed<PopupMenuItem[]>(() => {
-    return [
-      {
-        label: 'Location',
-        exec: () => execInsert(true, false, false),
-      },
-      {
-        label: 'Rotation',
-        exec: () => execInsert(false, true, false),
-      },
-      {
-        label: 'Scale',
-        exec: () => execInsert(false, false, true),
-      },
-      {
-        label: 'Location & Rotation',
-        exec: () => execInsert(true, true, false),
-      },
-      {
-        label: 'Location & Scale',
-        exec: () => execInsert(true, false, true),
-      },
-      {
-        label: 'Rotation & Scale',
-        exec: () => execInsert(false, true, true),
-      },
-      {
-        label: 'All Transforms',
-        exec: () => execInsert(true, true, true),
-      },
-    ]
-  })
+  const insertMenuList = useMenuList(() => [
+    {
+      label: 'Location',
+      exec: () => execInsert(true, false, false),
+    },
+    {
+      label: 'Rotation',
+      exec: () => execInsert(false, true, false),
+    },
+    {
+      label: 'Scale',
+      exec: () => execInsert(false, false, true),
+    },
+    {
+      label: 'Location & Rotation',
+      exec: () => execInsert(true, true, false),
+    },
+    {
+      label: 'Location & Scale',
+      exec: () => execInsert(true, false, true),
+    },
+    {
+      label: 'Rotation & Scale',
+      exec: () => execInsert(false, true, true),
+    },
+    {
+      label: 'All Transforms',
+      exec: () => execInsert(true, true, true),
+    },
+  ])
 
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     if (state.command === 'insert') {
-      return popupMenuListSrc.value.map((item) => ({
-        ...item,
-        exec: () => {
-          lastSelectedPopupItem.value = item.label
-          item.exec()
-        },
-        focus: item.label === lastSelectedPopupItem.value,
-      }))
+      return insertMenuList.list.value
     } else {
       return []
     }

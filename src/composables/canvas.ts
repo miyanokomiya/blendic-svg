@@ -85,6 +85,13 @@ export function useCanvas(
       height: viewDragRectangle.value.height * scale.value,
     }
   })
+  const isValidDragRectangle = computed(() => {
+    return (
+      dragRectangle.value &&
+      (Math.abs(dragRectangle.value.width) > 0 ||
+        Math.abs(dragRectangle.value.height) > 0)
+    )
+  })
 
   const viewCanvasRect = computed(() => ({
     x: viewOrigin.value.x,
@@ -123,8 +130,11 @@ export function useCanvas(
     setMousePoint,
     scale,
     viewOrigin,
+
     dragRectangle,
+    isValidDragRectangle,
     dragInfo,
+
     viewMovingInfo,
     viewCenter,
     viewBox,
@@ -185,9 +195,6 @@ export function useCanvas(
         )
       )
     },
-    isSomeAction: computed(() => {
-      return !!(editStartPoint.value || dragRectangle.value)
-    }),
   }
 }
 

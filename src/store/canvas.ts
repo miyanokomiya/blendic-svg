@@ -232,7 +232,7 @@ function editKeyDown(
       if (axisGridEnabled.value) {
         switchAxisGrid(key)
       } else {
-        canvasEditMode.value.execDelete()
+        canvasEditMode.value.setEditMode('delete')
       }
       return { needLock: false }
     case 'y':

@@ -13,8 +13,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    env:
-      E2E_SKIP_BUILD: 1
 
     strategy:
       matrix:

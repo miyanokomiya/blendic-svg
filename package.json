@@ -9,7 +9,7 @@
     "serve": "vite preview",
     "test": "yarn jest --coverage",
     "test:unit": "yarn jest --config ./spec/jest.config.js",
-    "test:e2e": "yarn jest --config ./spec_e2e/jest.config.js",
+    "test:e2e": "yarn jest --config ./spec_e2e/jest.config.js --runInBand",
     "lint": "yarn eslint --ext vue,ts,js ./*.js ./src ./spec",
     "lint-json": "yarn prettier -c ./*.json"
   },

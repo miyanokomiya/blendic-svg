@@ -24,7 +24,14 @@ import { CurveSelectedState } from '/@/models/keyframe'
 
 export type CanvasMode = 'object' | 'edit' | 'pose' | 'weight'
 export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
-export type EditMode = '' | 'grab' | 'rotate' | 'scale' | 'extrude' | 'insert'
+export type EditMode =
+  | ''
+  | 'grab'
+  | 'rotate'
+  | 'scale'
+  | 'extrude'
+  | 'insert'
+  | 'delete'
 
 export type EditMovement = {
   current: IVec2

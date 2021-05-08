@@ -68,9 +68,15 @@ export function useObjectMode(): ObjectMode {
 
   function setEditMode(mode: EditMode) {
     if (!target.value) return
-
     cancel()
-    state.command = mode
+
+    switch (mode) {
+      case 'delete':
+        execDelete()
+        return
+      default:
+        state.command = mode
+    }
   }
 
   const editTransforms = computed(

@@ -107,12 +107,13 @@ export default defineComponent({
     })
 
     const isDownEmpty = ref(false)
-    function clickAny(e: any) {
+    function clickAny(e: MouseEvent) {
       if (e.target === svg.value && isDownEmpty.value) {
         props.mode.clickEmpty()
       } else {
         props.mode.clickAny()
       }
+      isDownEmpty.value = false
     }
 
     function mousemove(arg: PointerMovement) {
@@ -188,6 +189,7 @@ export default defineComponent({
       upLeft: () => {
         props.canvas.upLeft()
         props.mode.upLeft()
+        isDownEmpty.value = false
       },
       downMiddle: (e: MouseEvent) => {
         props.canvas.downMiddle()

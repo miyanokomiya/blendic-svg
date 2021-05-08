@@ -29,8 +29,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       :width="viewSize.width"
       :height="viewSize.height"
       @wheel.prevent="wheel"
-      @click.left.prevent="clickAny"
-      @click.right.prevent="escape"
+      @click.right.prevent
+      @mouseup.right.prevent="escape"
       @mouseenter="focus"
       @mousedown.left.prevent="downLeft"
       @mouseup.left.prevent="upLeft"
@@ -107,14 +107,6 @@ export default defineComponent({
     })
 
     const isDownEmpty = ref(false)
-    function clickAny(e: MouseEvent) {
-      if (e.target === svg.value && isDownEmpty.value) {
-        props.mode.clickEmpty()
-      } else {
-        props.mode.clickAny()
-      }
-      isDownEmpty.value = false
-    }
 
     function mousemove(arg: PointerMovement) {
       if (props.canvas.viewMovingInfo.value) {
@@ -186,7 +178,13 @@ export default defineComponent({
           scale: props.canvas.scale.value,
         })
       },
-      upLeft: () => {
+      upLeft: (e: MouseEvent) => {
+        if (e.target === svg.value && isDownEmpty.value) {
+          props.mode.clickEmpty()
+        } else {
+          props.mode.clickAny()
+        }
+
         props.canvas.upLeft()
         props.mode.upLeft()
         isDownEmpty.value = false
@@ -199,7 +197,6 @@ export default defineComponent({
         props.canvas.upMiddle()
         pointerLock.exitPointerLock()
       },
-      clickAny,
       escape,
       editKeyDown: (e: KeyboardEvent) => {
         const { needLock } = props.mode.execKey({

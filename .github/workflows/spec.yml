@@ -32,8 +32,7 @@ jobs:
       - run: yarn lint
       - run: yarn type
       - run: yarn test:unit --coverage
-      - run: yarn build
-      - run: E2E_SKIP_BUILD=1 yarn test:e2e
+      - run: yarn test:e2e
       - name: Archive E2E screenshots
         uses: actions/upload-artifact@v2
         with:

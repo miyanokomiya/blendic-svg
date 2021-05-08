@@ -32,6 +32,7 @@ import {
   CanvasEditModeBase,
   EditMovement,
   ToolMenuGroup,
+  PopupMenuItem,
 } from '/@/composables/modes/types'
 import {
   duplicateBones,
@@ -47,6 +48,7 @@ import { CanvasStore } from '/@/store/canvas'
 import { mapReduce, toList } from '/@/utils/commons'
 import { snapGrid, snapRotate, snapScale } from '/@/utils/geometry'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
+import { useMenuList } from '/@/composables/menuList'
 
 interface State {
   command: EditMode
@@ -388,13 +390,15 @@ export function useBoneEditMode(
     ]
   })
 
-  const popupMenuList = computed(() => {
+  const deleteMenuList = useMenuList(() => [
+    { label: 'Dissolve', exec: execDissolve },
+    { label: 'Delete', exec: execDelete },
+  ])
+
+  const popupMenuList = computed<PopupMenuItem[]>(() => {
     switch (state.command) {
       case 'delete':
-        return [
-          { label: 'Dissolve', exec: execDissolve },
-          { label: 'Delete', exec: execDelete },
-        ]
+        return deleteMenuList.list.value
       default:
         return []
     }

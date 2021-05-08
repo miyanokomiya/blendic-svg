@@ -168,5 +168,6 @@ export function useObjectMode(): ObjectMode {
     duplicate: () => false,
     availableCommandList,
     popupMenuList: computed(() => []),
+    toolMenuGroupList: computed(() => []),
   }
 }

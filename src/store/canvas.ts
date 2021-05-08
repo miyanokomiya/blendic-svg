@@ -31,12 +31,7 @@ import { ObjectMode, useObjectMode } from '/@/composables/modes/objectMode'
 import { useWeightPaintMode } from '/@/composables/modes/weightPaintMode'
 import { useHistoryStore } from './history'
 import { getTransform, Transform } from '/@/models'
-import {
-  CanvasMode,
-  EditMode,
-  EditMovement,
-  PopupMenuItem,
-} from '/@/composables/modes/types'
+import { CanvasMode, EditMode, EditMovement } from '/@/composables/modes/types'
 import { HistoryItem } from '/@/composables/stores/history'
 import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
@@ -93,8 +88,12 @@ const availableCommandList = computed(
   () => canvasEditMode.value.availableCommandList.value
 )
 
-const popupMenuList = computed<PopupMenuItem[]>(() => {
+const popupMenuList = computed(() => {
   return canvasEditMode.value.popupMenuList.value
+})
+
+const toolMenuGroupList = computed(() => {
+  return canvasEditMode.value.toolMenuGroupList.value
 })
 
 function toggleCanvasMode() {
@@ -159,16 +158,6 @@ function getEditTransforms(id: string): Transform {
 function getEditPoseTransforms(id: string): Transform {
   if (state.canvasMode !== 'pose') return getTransform()
   return canvasEditMode.value.getEditTransforms(id)
-}
-
-function symmetrizeBones() {
-  if (state.canvasMode !== 'edit') return
-  ;(canvasEditMode.value as BoneEditMode).symmetrize()
-}
-
-function subdivideBones() {
-  if (state.canvasMode !== 'edit') return
-  ;(canvasEditMode.value as BoneEditMode).subdivide()
 }
 
 const axisGridEnabled = computed<boolean>(() => {
@@ -299,7 +288,6 @@ export function useCanvasStore() {
     cancel: () => canvasEditMode.value.cancel(),
     setEditMode: (mode: EditMode) => canvasEditMode.value.setEditMode(mode),
     editKeyDown,
-    execDelete: () => canvasEditMode.value.execDelete(),
     select: (id: string, selectedState: { [key: string]: boolean }) =>
       canvasEditMode.value.select(id, selectedState),
     shiftSelect: (id: string, selectedState: { [key: string]: boolean }) =>
@@ -308,9 +296,8 @@ export function useCanvasStore() {
       canvasEditMode.value.rectSelect(rect, shift),
     selectAll: () => canvasEditMode.value.selectAll(),
     availableCommandList,
-    subdivideBones,
-    symmetrizeBones,
     popupMenuList,
+    toolMenuGroupList,
   }
 }
 export type CanvasStore = ReturnType<typeof useCanvasStore>

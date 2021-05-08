@@ -19,11 +19,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div ref="root" class="dropdown-menu">
-    <button @click="toggle">{{ label }}</button>
+    <button type="button" @click="toggle">{{ label }}</button>
     <ul v-if="opened" class="drop-menu">
-      <template v-for="item in items" :key="item.value">
+      <template v-for="item in items" :key="item.label">
         <li>
-          <button type="button" @click="exec(item.value)">
+          <button type="button" @click="exec(item.exec)">
             {{ item.label }}
           </button>
         </li>
@@ -35,6 +35,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType, ref, watch } from 'vue'
+import { ToolMenuItem } from '/@/composables/modes/types'
 
 export default defineComponent({
   props: {
@@ -43,14 +44,11 @@ export default defineComponent({
       required: true,
     },
     items: {
-      type: Array as PropType<
-        { value: string; label: string; underline: boolean }[]
-      >,
+      type: Array as PropType<ToolMenuItem[]>,
       default: () => [],
     },
   },
-  emits: ['select'],
-  setup(_, { emit }) {
+  setup() {
     const root = ref<Element>()
     const opened = ref(false)
 
@@ -76,8 +74,8 @@ export default defineComponent({
       toggle() {
         opened.value = !opened.value
       },
-      exec(action: string) {
-        emit('select', action)
+      exec(fn: () => void) {
+        fn()
         opened.value = false
       },
     }
@@ -91,16 +89,12 @@ export default defineComponent({
   font-size: 12px;
   > button {
     position: relative;
-    margin-right: 4px;
     padding: 2px 18px 2px 10px;
     border: solid 1px #777;
     border-radius: 4px;
     background-color: #fff;
     &.selected {
       background-color: #ddd;
-    }
-    &:last-child {
-      margin-right: 0;
     }
     &::after {
       display: block;

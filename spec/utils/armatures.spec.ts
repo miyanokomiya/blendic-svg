@@ -276,8 +276,15 @@ describe('utils/armatures', () => {
         connected: true,
         head: { x: 10, y: 20 },
       })
-      expect(target.updateConnections([connected])).toEqual({
+      const unconnected = getBone({
+        id: 'unconnected',
+        parentId: 'parent',
+        connected: false,
+        head: { x: 10, y: 20 },
+      })
+      expect(target.updateConnections([connected, unconnected])).toEqual({
         connected: { connected: false, parentId: '' },
+        unconnected: { connected: false, parentId: '' },
       })
     })
   })
@@ -763,8 +770,9 @@ describe('utils/armatures', () => {
       ])
       expect(ret[0].id).toBe('aa')
       expect(ret[0].parentId).toBe('c')
-      expect(ret[0].connected).toBe(false)
+      expect(ret[0].connected).toBe(true)
       expect(ret[1].parentId).toBe('aa')
+      expect(ret[1].connected).toBe(false)
     })
     it('should replace ids of constraints', () => {
       const ret = target.immigrateBoneRelations({ a: 'aa', b: 'bb' }, [
@@ -799,6 +807,23 @@ describe('utils/armatures', () => {
       expect(ret[0].name).toBe('aa.002')
       expect(ret[1].id).not.toBe('b')
       expect(ret[1].name).toBe('b.001')
+    })
+    it('should set connected false if the parent is not duplicated together', () => {
+      const ret = target.duplicateBones(
+        {
+          a: getBone({ id: 'a', name: 'aa', parentId: 'b', connected: true }),
+        },
+        ['aa']
+      )
+      expect(ret).toHaveLength(1)
+      expect(ret[0]).toEqual(
+        getBone({
+          id: expect.anything(),
+          name: 'aa.001',
+          parentId: 'b',
+          connected: false,
+        })
+      )
     })
   })
 
@@ -1138,6 +1163,142 @@ describe('utils/armatures', () => {
           connected: true,
         }),
         child: getBone({ id: 'child', parentId: 'b' }),
+      })
+    })
+  })
+
+  describe('getUpdatedBonesByDissolvingBones', () => {
+    it('should return bones to dissolve the target', () => {
+      const boneMap = {
+        a: getBone({
+          id: 'a',
+        }),
+        b: getBone({
+          id: 'b',
+          parentId: 'a',
+        }),
+        c: getBone({
+          id: 'c',
+          parentId: 'b',
+          constraints: [
+            getConstraint({
+              type: 'IK',
+              option: getOptionByType('IK', { targetId: 'b' }),
+            }),
+          ],
+        }),
+      }
+      const ret = target.getUpdatedBonesByDissolvingBones(boneMap, ['b'])
+      expect(ret).toEqual({
+        c: getBone({
+          id: 'c',
+          parentId: 'a',
+          constraints: [
+            getConstraint({
+              type: 'IK',
+              option: getOptionByType('IK', { targetId: 'a' }),
+            }),
+          ],
+        }),
+      })
+    })
+  })
+
+  describe('getUpdatedBonesByDissolvingBone', () => {
+    it('should return updated bones to replace refs of the dissolved target', () => {
+      const boneMap = {
+        a: getBone({
+          id: 'a',
+          tail: { x: 10, y: 20 },
+        }),
+        b: getBone({
+          id: 'b',
+          parentId: 'a',
+          tail: { x: 100, y: 200 },
+        }),
+        c: getBone({
+          id: 'c',
+          parentId: 'b',
+          constraints: [
+            getConstraint({
+              type: 'IK',
+              option: getOptionByType('IK', { targetId: 'b' }),
+            }),
+          ],
+        }),
+      }
+      const ret = target.getUpdatedBonesByDissolvingBone(boneMap, 'b')
+      expect(ret).toEqual({
+        c: getBone({
+          id: 'c',
+          parentId: 'a',
+          constraints: [
+            getConstraint({
+              type: 'IK',
+              option: getOptionByType('IK', { targetId: 'a' }),
+            }),
+          ],
+        }),
+      })
+    })
+    it('should clear parent connection if the parent is dissolved and not have self parent', () => {
+      const boneMap = {
+        b: getBone({
+          id: 'b',
+        }),
+        c: getBone({
+          id: 'c',
+          parentId: 'b',
+          connected: true,
+        }),
+      }
+      const ret = target.getUpdatedBonesByDissolvingBone(boneMap, 'b')
+      expect(ret).toEqual({
+        c: getBone({
+          id: 'c',
+          parentId: '',
+          connected: false,
+        }),
+      })
+    })
+    it('should let connected head move to a tail of new parent', () => {
+      const boneMap = {
+        a: getBone({
+          id: 'a',
+          tail: { x: 10, y: 20 },
+        }),
+        b: getBone({
+          id: 'b',
+          parentId: 'a',
+          tail: { x: 100, y: 200 },
+        }),
+        c: getBone({
+          id: 'c',
+          parentId: 'b',
+          connected: true,
+          head: { x: 100, y: 200 },
+        }),
+        d: getBone({
+          id: 'd',
+          parentId: 'b',
+          connected: false,
+          head: { x: 100, y: 200 },
+        }),
+      }
+      const ret = target.getUpdatedBonesByDissolvingBone(boneMap, 'b')
+      expect(ret).toEqual({
+        c: getBone({
+          id: 'c',
+          parentId: 'a',
+          connected: true,
+          head: { x: 10, y: 20 },
+        }),
+        d: getBone({
+          id: 'd',
+          parentId: 'a',
+          connected: false,
+          head: { x: 100, y: 200 },
+        }),
       })
     })
   })

@@ -176,7 +176,9 @@ export function sortBoneByHighDependency(bones: Bone[]): Bone[] {
   return sortedIds.map((id) => boneMap[id])
 }
 
-function getDependentCountMap(boneMap: IdMap<Bone>): IdMap<IdMap<number>> {
+export function getDependentCountMap(
+  boneMap: IdMap<Bone>
+): IdMap<IdMap<number>> {
   return mapReduce(boneMap, (b) => {
     return sumReduce(
       b.constraints.map(getDependentCountMapOfConstrain).concat(

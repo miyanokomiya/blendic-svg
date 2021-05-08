@@ -31,6 +31,7 @@ import {
   EditMode,
   CanvasEditModeBase,
   EditMovement,
+  ToolMenuGroup,
 } from '/@/composables/modes/types'
 import {
   duplicateBones,
@@ -261,6 +262,14 @@ export function useBoneEditMode(
     store.deleteBone()
   }
 
+  function execDissolve() {
+    if (state.command) {
+      cancel()
+      return
+    }
+    store.dissolveBone()
+  }
+
   function execAdd() {
     if (state.command) {
       cancel()
@@ -359,6 +368,22 @@ export function useBoneEditMode(
     )
   }
 
+  const toolMenuGroupList = computed<ToolMenuGroup[]>(() => {
+    if (!isAnySelected.value) return []
+
+    return [
+      {
+        label: 'Armature',
+        items: [
+          { label: 'Subdivide', exec: subdivide },
+          { label: 'Symmetrize', exec: symmetrize, underline: true },
+          { label: 'Dissolve', exec: execDissolve },
+          { label: 'Delete', exec: execDelete },
+        ],
+      },
+    ]
+  })
+
   return {
     command: computed(() => state.command),
     getEditTransforms(id: string) {
@@ -384,5 +409,6 @@ export function useBoneEditMode(
     subdivide,
     symmetrize,
     popupMenuList: computed(() => []),
+    toolMenuGroupList,
   }
 }

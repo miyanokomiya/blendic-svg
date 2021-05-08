@@ -89,5 +89,6 @@ export function useWeightPaintMode(
     duplicate: () => false,
     availableCommandList,
     popupMenuList: computed(() => []),
+    toolMenuGroupList: computed(() => []),
   }
 }

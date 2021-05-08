@@ -387,5 +387,6 @@ export function useBonePoseMode(
     duplicate: () => false,
     availableCommandList,
     popupMenuList,
+    toolMenuGroupList: computed(() => []),
   }
 }

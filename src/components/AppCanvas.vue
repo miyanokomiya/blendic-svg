@@ -76,12 +76,10 @@ Copyright (C) 2021, Tomoya Komiyama.
         :canvas-mode="canvasMode"
         @change-mode="changeMode"
       />
-      <CanvasArmatureMenu
+      <CanvasToolMenuGroups
         v-if="canvasMode === 'edit'"
         class="armature-menu"
-        @subdivide="subdivide"
-        @symmetrize="symmetrize"
-        @delete="execDelete"
+        :groups="toolMenuGroupList"
       />
     </div>
     <CommandExamPanel
@@ -107,7 +105,7 @@ import { getRadian, IRectangle, IVec2 } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
-import CanvasArmatureMenu from '/@/components/molecules/CanvasArmatureMenu.vue'
+import CanvasToolMenuGroups from '/@/components/molecules/CanvasToolMenuGroups.vue'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import GlobalCursor from '/@/components/atoms/GlobalCursor.vue'
 import CursorLine from '/@/components/elements/atoms/CursorLine.vue'
@@ -127,7 +125,7 @@ export default defineComponent({
   components: {
     CanvasModepanel,
     CommandExamPanel,
-    CanvasArmatureMenu,
+    CanvasToolMenuGroups,
     PopupMenuList,
     GlobalCursor,
     CursorLine,
@@ -309,7 +307,6 @@ export default defineComponent({
         canvas.upLeft()
       },
       escape,
-      execDelete: canvasStore.execDelete,
       editKeyDown(e: KeyboardEvent) {
         const { needLock } = canvasStore.editKeyDown(e.key, {
           shift: e.shiftKey,
@@ -322,12 +319,7 @@ export default defineComponent({
       },
       changeMode: canvasStore.changeCanvasMode,
       availableCommandList: canvasStore.availableCommandList,
-      subdivide() {
-        canvasStore.subdivideBones()
-      },
-      symmetrize() {
-        canvasStore.symmetrizeBones()
-      },
+      toolMenuGroupList: canvasStore.toolMenuGroupList,
 
       cursorInfo,
       cursorRotate,

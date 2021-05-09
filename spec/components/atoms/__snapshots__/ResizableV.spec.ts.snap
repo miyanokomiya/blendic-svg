@@ -2,7 +2,7 @@
 
 exports[`src/components/atoms/ResizableV.vue snapshot 1`] = `
 <div
-  class="resizable-h-wrapper"
+  class="resizable-v-wrapper"
 >
   <div
     class="top"

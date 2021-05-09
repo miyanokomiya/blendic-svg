@@ -47,6 +47,7 @@ import { IVec2, sub } from 'okageo'
 import { useSettings } from '/@/composables/settings'
 import { pointToControl, moveCurveControlsMap } from '/@/utils/graphCurves'
 import { logRound, mapVec } from '/@/utils/geometry'
+import { useMenuList } from '/@/composables/menuList'
 
 const notNeedLock = { needLock: false }
 
@@ -373,8 +374,6 @@ export function useKeyframeEditMode(
     }
   })
 
-  const lastSelectedCurveName = ref('constant')
-
   function setInterpolation(curveName: CurveName) {
     const selectedState = targetSelectedStates.value
     animationStore.execUpdateKeyframes(
@@ -384,18 +383,20 @@ export function useKeyframeEditMode(
         (p) => ({ ...p, curve: { ...p.curve, name: curveName } })
       )
     )
-    lastSelectedCurveName.value = curveName
     state.command = ''
   }
+
+  const interpolationMenuList = useMenuList(() =>
+    curveItems.map((item) => ({
+      label: item.label,
+      exec: () => setInterpolation(item.name),
+    }))
+  )
 
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     switch (state.command) {
       case 'interpolation':
-        return curveItems.map((item) => ({
-          label: item.label,
-          exec: () => setInterpolation(item.name),
-          focus: item.name === lastSelectedCurveName.value,
-        }))
+        return interpolationMenuList.list.value
       default:
         return []
     }

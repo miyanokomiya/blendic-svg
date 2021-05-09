@@ -22,7 +22,7 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot no keyframe 1`] = 
       >
         <div
           class="slider-background"
-          style="transform: scaleX(0.55);"
+          style="transform: scaleX(0.47368421052631576);"
         />
         <input
           type="text"
@@ -36,6 +36,7 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot no keyframe 1`] = 
     </div>
     
   </div>
+  <hr />
   <!--v-if-->
 </div>
 `;
@@ -62,7 +63,7 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyf
       >
         <div
           class="slider-background"
-          style="transform: scaleX(0.55);"
+          style="transform: scaleX(0.47368421052631576);"
         />
         <input
           type="text"
@@ -76,6 +77,7 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyf
     </div>
     
   </div>
+  <hr />
   
   <div
     class="row-block"

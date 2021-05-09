@@ -402,11 +402,11 @@ h5 {
 }
 .color-popup {
   position: relative;
+  top: 10px;
+  left: -50%;
   z-index: 1;
   .color-picker {
-    position: absolute;
-    top: 4px;
-    left: 50%;
+    position: fixed;
     transform: translateX(-50%);
     border: solid 1px #aaa;
   }

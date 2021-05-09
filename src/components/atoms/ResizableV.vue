@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div ref="root" class="resizable-h-wrapper">
+  <div ref="root" class="resizable-v-wrapper">
     <div class="top" :style="{ height: topSize }">
       <slot name="top" />
     </div>
@@ -101,7 +101,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.resizable-h-wrapper {
+.resizable-v-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;

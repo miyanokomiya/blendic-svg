@@ -167,6 +167,12 @@ export function getBoneWorldLocation(bone: Bone): IVec2 {
   return add(bone.head, bone.transform.translate)
 }
 
+export function getBoneSquaredSize(bone: Bone): number {
+  const dx = bone.head.x - bone.tail.x
+  const dy = bone.head.y - bone.tail.y
+  return dx * dx + dy * dy
+}
+
 export function applyScale(
   p: IVec2,
   scale: IVec2,

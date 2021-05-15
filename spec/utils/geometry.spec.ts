@@ -43,6 +43,7 @@ import {
   isIdentityAffine,
   mapVec,
   isIdentityTransform,
+  getBoneSquaredSize,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -358,6 +359,19 @@ describe('src/utils/geometry.ts', () => {
           })
         )
       ).toEqual({ x: 11, y: 22 })
+    })
+  })
+
+  describe('getBoneSquaredSize', () => {
+    it('should return squared distance between the head and the tail', () => {
+      expect(
+        getBoneSquaredSize(
+          getBone({
+            head: { x: 1, y: 2 },
+            tail: { x: 3, y: 5 },
+          })
+        )
+      ).toBe(13)
     })
   })
 

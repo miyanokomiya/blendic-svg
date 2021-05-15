@@ -367,9 +367,7 @@ export function splitKeyframeProps<T>(
   return { trueMap, falseMap }
 }
 
-export function splitKeyframeMapByName(
-  src: IdMap<KeyframeBase[]>
-): {
+export function splitKeyframeMapByName(src: IdMap<KeyframeBase[]>): {
   bone: IdMap<KeyframeBone[]>
   constraint: IdMap<KeyframeConstraint[]>
 } {

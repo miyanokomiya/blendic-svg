@@ -116,14 +116,12 @@ export default defineComponent({
 
     const targetIds = computed(() => props.targetList.map((t) => t.id))
 
-    const targetIndexMap = computed(
-      (): IdMap<number> => {
-        return targetIds.value.reduce<IdMap<number>>((p, id, i) => {
-          p[id] = i
-          return p
-        }, {})
-      }
-    )
+    const targetIndexMap = computed((): IdMap<number> => {
+      return targetIds.value.reduce<IdMap<number>>((p, id, i) => {
+        p[id] = i
+        return p
+      }, {})
+    })
 
     const indexMap = computed(() => {
       return targetIndexMap.value

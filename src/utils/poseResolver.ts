@@ -236,10 +236,11 @@ export function getInterpolatedBoneMap(
     transform: interpolatedTransformMap[id] ?? getTransform(),
   }))
 
-  const interpolatedOptionMap = keyframeConstraint.getInterpolatedOptionMapByTargetId(
-    splitedKeyframeMapByTargetId.constraint,
-    currentFrame
-  )
+  const interpolatedOptionMap =
+    keyframeConstraint.getInterpolatedOptionMapByTargetId(
+      splitedKeyframeMapByTargetId.constraint,
+      currentFrame
+    )
 
   return mapReduce(interpolatedBoneMap, (bone) => {
     return {

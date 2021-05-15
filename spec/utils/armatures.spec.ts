@@ -1302,4 +1302,20 @@ describe('utils/armatures', () => {
       })
     })
   })
+
+  describe('sortBoneBySize', () => {
+    it('should sort bones by size', () => {
+      expect(
+        target.sortBoneBySize([
+          getBone({ id: 'a', tail: { x: 1, y: 1 } }),
+          getBone({ id: 'b', tail: { x: 2, y: 2 } }),
+          getBone({ id: 'c', tail: { x: 2, y: 1 } }),
+        ])
+      ).toEqual([
+        getBone({ id: 'b', tail: { x: 2, y: 2 } }),
+        getBone({ id: 'c', tail: { x: 2, y: 1 } }),
+        getBone({ id: 'a', tail: { x: 1, y: 1 } }),
+      ])
+    })
+  })
 })

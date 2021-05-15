@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <g>
     <BoneElm
-      v-for="bone in boneMap"
+      v-for="bone in sortedBoneMap"
       :key="bone.id"
       :bone="bone"
       :parent="boneMap[bone.parentId]"
@@ -35,9 +35,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
-import { Bone, BoneSelectedState, CanvasMode, IdMap } from '/@/models'
+import { computed, defineComponent, PropType } from 'vue'
+import { Bone, BoneSelectedState, IdMap } from '/@/models'
 import BoneElm from '/@/components/elements/Bone.vue'
+import { CanvasMode } from '/@/composables/modes/types'
+import { sortBoneBySize } from '/@/utils/armatures'
+import { toList } from '/@/utils/commons'
 
 export default defineComponent({
   components: { BoneElm },
@@ -60,8 +63,13 @@ export default defineComponent({
     },
   },
   emits: ['select', 'shift-select'],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
+    const sortedBoneMap = computed(() => {
+      return sortBoneBySize(toList(props.boneMap))
+    })
+
     return {
+      sortedBoneMap,
       selectBone(boneId: string, state: BoneSelectedState) {
         emit('select', boneId, state)
       },

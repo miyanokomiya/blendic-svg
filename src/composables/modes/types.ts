@@ -96,11 +96,9 @@ export interface KeyframeEditModeBase {
   end: () => void
   cancel: () => void
   snap: (axis: 'x' | 'y') => void
-  execKey: (arg: {
-    key: string
-    shift?: boolean
-    ctrl?: boolean
-  }) => { needLock: boolean }
+  execKey: (arg: { key: string; shift?: boolean; ctrl?: boolean }) => {
+    needLock: boolean
+  }
   select: (id: string, selectedState: { [key: string]: boolean }) => void
   shiftSelect: (id: string, selectedState: { [key: string]: boolean }) => void
   selectAll: () => void

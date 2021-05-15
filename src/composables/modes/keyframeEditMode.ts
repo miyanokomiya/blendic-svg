@@ -145,11 +145,9 @@ export function useKeyframeEditMode(
     }
   }
 
-  function execKey(arg: {
-    key: string
-    shift?: boolean
-    ctrl?: boolean
-  }): { needLock: boolean } {
+  function execKey(arg: { key: string; shift?: boolean; ctrl?: boolean }): {
+    needLock: boolean
+  } {
     switch (arg.key) {
       case 'a':
         cancel()

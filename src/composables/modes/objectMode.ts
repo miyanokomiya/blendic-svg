@@ -79,11 +79,9 @@ export function useObjectMode(): ObjectMode {
     }
   }
 
-  const editTransforms = computed(
-    (): IdMap<Transform> => {
-      return {}
-    }
-  )
+  const editTransforms = computed((): IdMap<Transform> => {
+    return {}
+  })
 
   function completeEdit() {
     if (!target.value) return

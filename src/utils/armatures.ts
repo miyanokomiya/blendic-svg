@@ -65,6 +65,7 @@ import {
 import {
   applyPosedTransformToPoint,
   applyTransform,
+  getBoneSquaredSize,
   invertScaleOrZero,
 } from '/@/utils/geometry'
 
@@ -781,4 +782,10 @@ export function getUpdatedBonesByDissolvingBone(
         })
     )
   )
+}
+
+export function sortBoneBySize(bones: Bone[]): Bone[] {
+  return bones.concat().sort((a, b) => {
+    return getBoneSquaredSize(b) - getBoneSquaredSize(a)
+  })
 }

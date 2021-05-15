@@ -18,10 +18,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g stroke="black" :transform="transform" :opacity="opacity">
+  <g :transform="transform" :opacity="opacity">
     <BoneElm
-      v-for="bone in armature.bones"
-      :key="bone.name"
+      v-for="bone in sortedBoneMap"
+      :key="bone.id"
       :bone="bone"
       :selected-state="boneSelectedState"
       :parent="boneMap[bone.parentId]"
@@ -37,6 +37,7 @@ import { defineComponent, PropType, computed } from 'vue'
 import { Armature, toMap } from '/@/models/index'
 import { getTnansformStr } from '/@/utils/helpers'
 import BoneElm from '/@/components/elements/Bone.vue'
+import { sortBoneBySize } from '/@/utils/armatures'
 
 export default defineComponent({
   components: { BoneElm },
@@ -54,8 +55,13 @@ export default defineComponent({
   },
   emits: ['select', 'shift-select'],
   setup(props, { emit }) {
+    const sortedBoneMap = computed(() => {
+      return sortBoneBySize(props.armature.bones)
+    })
+
     return {
-      boneMap: computed(() => toMap(props.armature.bones)),
+      sortedBoneMap,
+      boneMap: computed(() => toMap(sortedBoneMap.value)),
       transform: computed(() => getTnansformStr(props.armature.transform)),
       boneSelectedState: computed(() =>
         props.selected ? { head: true, tail: true } : undefined

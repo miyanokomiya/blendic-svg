@@ -81,9 +81,10 @@ function posedViewBox(node: ElementNode, bone: Bone): string | undefined {
   )
 }
 
-export function posedColorAttributes(
-  transform: Transform
-): { color: string; opacity: string } {
+export function posedColorAttributes(transform: Transform): {
+  color: string
+  opacity: string
+} {
   const hsva = hsvaToRgba(posedHsva(transform))
   return {
     color: `rgb(${hsva.r},${hsva.g},${hsva.b})`,

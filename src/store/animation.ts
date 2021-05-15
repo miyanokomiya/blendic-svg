@@ -211,34 +211,30 @@ const posedTargetIds = computed(() => {
   )
 })
 
-const currentSelfTransforms = computed(
-  (): IdMap<Transform> => {
-    return posedTargetIds.value.reduce<IdMap<Transform>>((p, id) => {
-      p[id] = convolutePoseTransforms([
-        currentInterpolatedTransform(id),
-        getBoneEditedTransforms(id),
-      ])
-      return p
-    }, {})
-  }
-)
+const currentSelfTransforms = computed((): IdMap<Transform> => {
+  return posedTargetIds.value.reduce<IdMap<Transform>>((p, id) => {
+    p[id] = convolutePoseTransforms([
+      currentInterpolatedTransform(id),
+      getBoneEditedTransforms(id),
+    ])
+    return p
+  }, {})
+})
 
-const currentPosedBones = computed(
-  (): IdMap<Bone> => {
-    if (!store.lastSelectedArmature.value) return {}
-    return getTransformedBoneMap(
-      toMap(
-        store.lastSelectedArmature.value.bones.map((b) => ({
-          ...b,
-          transform: getCurrentSelfTransforms(b.id),
-          constraints: b.constraints.map(
-            (c) => currentInterpolatedConstraintMap.value[c.id]
-          ),
-        }))
-      )
+const currentPosedBones = computed((): IdMap<Bone> => {
+  if (!store.lastSelectedArmature.value) return {}
+  return getTransformedBoneMap(
+    toMap(
+      store.lastSelectedArmature.value.bones.map((b) => ({
+        ...b,
+        transform: getCurrentSelfTransforms(b.id),
+        constraints: b.constraints.map(
+          (c) => currentInterpolatedConstraintMap.value[c.id]
+        ),
+      }))
     )
-  }
-)
+  )
+})
 
 const selectedBoneIdMap = computed(() => {
   return mapReduce(
@@ -257,12 +253,10 @@ const selectedBones = computed(() => {
   )
 })
 
-const selectedPosedBoneOrigin = computed(
-  (): IVec2 => {
-    if (!store.lastSelectedArmature.value) return { x: 0, y: 0 }
-    return getPosedBoneHeadsOrigin(selectedBones.value)
-  }
-)
+const selectedPosedBoneOrigin = computed((): IVec2 => {
+  if (!store.lastSelectedArmature.value) return { x: 0, y: 0 }
+  return getPosedBoneHeadsOrigin(selectedBones.value)
+})
 
 const selectedConstraintMapByBoneId = computed<{
   [id: string]: BoneConstraintWithBoneId[]

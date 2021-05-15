@@ -65,9 +65,7 @@ function isOldKeyframe2(k: OldKeyframe2 | KeyframeBase): k is OldKeyframe2 {
   return !(k as any).points
 }
 
-function toTransformMap(
-  t: Transform
-): {
+function toTransformMap(t: Transform): {
   translateX: KeyframePoint
   translateY: KeyframePoint
   rotate: KeyframePoint

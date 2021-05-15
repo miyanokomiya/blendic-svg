@@ -19,17 +19,19 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { Ref } from '@vue/reactivity'
 
-export function makeAccessors<T>(target: {
-  value: T
-}): { get(): T; set(val: T): void } {
+export function makeAccessors<T>(target: { value: T }): {
+  get(): T
+  set(val: T): void
+} {
   return {
     get: () => target.value,
     set: (val) => (target.value = val),
   }
 }
 
-export function makeRefAccessors<T>(
-  target: Ref<T>
-): { get(): T; set(val: T): void } {
+export function makeRefAccessors<T>(target: Ref<T>): {
+  get(): T
+  set(val: T): void
+} {
   return makeAccessors(target)
 }

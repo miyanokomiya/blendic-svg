@@ -684,18 +684,18 @@ function getAddBoneItem(
   )
 
   const redo = () => {
-    lastSelectedArmature.value!.bones = lastSelectedArmature.value!.bones.concat(
-      bones
-    )
+    lastSelectedArmature.value!.bones =
+      lastSelectedArmature.value!.bones.concat(bones)
     selectItems.forEach((i) => i.redo())
   }
   return {
     name: 'Add Bone',
     undo: () => {
-      lastSelectedArmature.value!.bones = lastSelectedArmature.value!.bones.slice(
-        0,
-        lastSelectedArmature.value!.bones.length - bones.length
-      )
+      lastSelectedArmature.value!.bones =
+        lastSelectedArmature.value!.bones.slice(
+          0,
+          lastSelectedArmature.value!.bones.length - bones.length
+        )
       selectItems.forEach((i) => i.undo())
     },
     redo,

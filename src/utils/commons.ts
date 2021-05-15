@@ -194,9 +194,9 @@ export function sortByValue<T extends { [key: string]: any }, K extends string>(
   return items.concat().sort((a, b) => orderMap[a[key]] - orderMap[b[key]])
 }
 
-export function sumReduce(
-  list: { [key: string]: number }[]
-): { [key: string]: number } {
+export function sumReduce(list: { [key: string]: number }[]): {
+  [key: string]: number
+} {
   return list.reduce<{ [key: string]: number }>((p, c) => {
     return sumMap(p, c)
   }, {})

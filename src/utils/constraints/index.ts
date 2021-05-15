@@ -47,9 +47,10 @@ export interface BoneConstraintOptions {
   COPY_SCALE: copyScale.Option
 }
 
-export type BoneConstraintOption = BoneConstraintOptions[keyof BoneConstraintOptions] & {
-  influence: number
-}
+export type BoneConstraintOption =
+  BoneConstraintOptions[keyof BoneConstraintOptions] & {
+    influence: number
+  }
 
 interface _BoneConstraint<N extends BoneConstraintType> {
   id: string

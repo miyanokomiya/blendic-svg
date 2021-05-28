@@ -26,18 +26,15 @@ import {
   toRaw,
 } from '@vue/runtime-core'
 
-type KeyMap = { [key: string]: any }
-type KeyMapFn = () => KeyMap
-
 export function useKeysCache<T>(
-  keyMap: Ref<KeyMap> | ComputedRef<KeyMap> | KeyMapFn,
+  getKeyMap: () => { [key: string]: any },
   data: Ref<T> | ComputedRef<T>
 ) {
   const cache = ref<T>()
-  const keyMapRef = typeof keyMap === 'function' ? computed(keyMap) : keyMap
+  const keyMap = computed(getKeyMap)
 
   function getKeys(): string {
-    return Object.keys(keyMapRef.value).sort().join(',')
+    return Object.keys(keyMap.value).sort().join(',')
   }
 
   function updateCache() {

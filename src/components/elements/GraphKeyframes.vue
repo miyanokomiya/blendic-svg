@@ -65,7 +65,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent, PropType, watch } from 'vue'
-import { IdMap } from '/@/models'
+import { IdMap, toMap } from '/@/models'
 import {
   CurveSelectedState,
   KeyframeBase,
@@ -160,7 +160,7 @@ export default defineComponent({
     // Cache unselected keyframes
     // => These keyframes are needless to update and improve performance to rendering.
     const keyframePointsMapByTargetIdCache = useKeysCache(
-      () => flatKeyListMap(props.keyframeMapByFrame),
+      () => toMap(flatKeyListMap(props.keyframeMapByFrame)),
       keyframePointsMapByTargetId
     )
     watch(
@@ -174,18 +174,21 @@ export default defineComponent({
       )
     }
     function getKeyframes(targetId: string, key: string): KeyframeBase[] {
-      const list = !isSelected(targetId, key)
-        ? keyframePointsMapByTargetIdCache.cache.value![targetId].props[key]
-        : keyframePointsMapByTargetId.value[targetId].props[key]
+      if (isSelected(targetId, key)) {
+        return keyframePointsMapByTargetId.value[targetId].props[key]
+      }
+
+      const list =
+        keyframePointsMapByTargetIdCache.cache.value?.[targetId]?.props[key]
 
       if (!list) {
         console.warn(
           `Invalid cache for id: ${targetId} key: ${key}: Fallback to original data.`
         )
         return keyframePointsMapByTargetId.value![targetId].props[key]
-      } else {
-        return list
       }
+
+      return list
     }
 
     return {

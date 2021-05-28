@@ -48,6 +48,7 @@ import {
   toList,
   uniq,
   resetId,
+  dropMap,
 } from '../utils/commons'
 import { getNotDuplicatedName } from '../utils/relations'
 import { useHistoryStore } from './history'
@@ -744,6 +745,23 @@ function getKeyframeAccessor() {
   }
 }
 
+function getVisibledKeyframeAccessor() {
+  return {
+    get: () => toList(visibledKeyframeMap.value),
+    set: (val: KeyframeBase[]) => {
+      actions.lastSelectedItem.value!.keyframes = [
+        ...toList(
+          dropMap(
+            toMap(actions.lastSelectedItem.value!.keyframes),
+            visibledKeyframeMap.value
+          )
+        ),
+        ...val,
+      ]
+    },
+  }
+}
+
 function getExecInsertKeyframeItem(
   keyframes: KeyframeBase[],
   replace = false,
@@ -764,7 +782,7 @@ function getExecDeleteKeyframesItem(
   selectedStateMap: IdMap<KeyframeSelectedState>
 ): HistoryItem {
   return convolute(
-    getDeleteKeyframesItem(getKeyframeAccessor(), selectedStateMap),
+    getDeleteKeyframesItem(getVisibledKeyframeAccessor(), selectedStateMap),
     [getSelectKeyframesItem({})]
   )
 }
@@ -775,7 +793,7 @@ function getExecDeleteTargetKeyframeItem(
   key: KeyframePropKey
 ): HistoryItem | undefined {
   const item = getDeleteTargetKeyframeItem(
-    getKeyframeAccessor(),
+    getVisibledKeyframeAccessor(),
     targetId,
     targetFrame,
     key
@@ -789,7 +807,11 @@ function getExecUpdateKeyframeItem(
   keyframes: IdMap<KeyframeBase>,
   seriesKey?: string
 ) {
-  return getUpdateKeyframeItem(getKeyframeAccessor(), keyframes, seriesKey)
+  return getUpdateKeyframeItem(
+    getVisibledKeyframeAccessor(),
+    keyframes,
+    seriesKey
+  )
 }
 
 function getCompleteDuplicateKeyframesItem(

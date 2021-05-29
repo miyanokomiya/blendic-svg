@@ -91,7 +91,8 @@ function d1(head: IVec2, tail: IVec2, scaleX: number, invert = false): IVec2 {
 }
 
 function getCircleR(head: IVec2, tail: IVec2): number {
-  return getDistance(head, tail) * 0.04
+  // keep minimal scaled anchor to select
+  return Math.max(getDistance(head, tail) * 0.04, 5)
 }
 
 export default defineComponent({

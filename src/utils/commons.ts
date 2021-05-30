@@ -67,7 +67,7 @@ export function mapReduce<T, R>(
 
 export function extractMap<T>(
   origin: { [key: string]: T },
-  keyMap: { [key: string]: any }
+  keyMap: { [key: string]: unknown }
 ): { [key: string]: T } {
   return Object.keys(keyMap).reduce<{ [key: string]: T }>((p, c) => {
     if (origin[c] !== undefined) {
@@ -79,7 +79,7 @@ export function extractMap<T>(
 
 export function dropMap<T>(
   origin: { [key: string]: T },
-  keyMap: { [key: string]: any }
+  keyMap: { [key: string]: unknown }
 ): { [key: string]: T } {
   return mapFilter(origin, (_t, key) => keyMap[key] === undefined)
 }
@@ -180,10 +180,10 @@ export function getUnduplicatedNameMap(
   }, {})
 }
 
-export function sortByValue<T extends { [key: string]: any }, K extends string>(
-  items: T[],
-  key: K
-): T[] {
+export function sortByValue<
+  K extends string,
+  T extends { [key in K]: string | number }
+>(items: T[], key: K): T[] {
   const orderMap = items
     .map((b) => b[key])
     .sort()
@@ -232,7 +232,7 @@ export function pickAnyItem<T>(map: { [key: string]: T }): T | undefined {
 
 export function mapFilterExec<T>(
   srcMap: { [key: string]: T },
-  targetMap: { [key: string]: any },
+  targetMap: { [key: string]: unknown },
   fn: (map: { [key: string]: T }) => { [key: string]: T }
 ): { [key: string]: T } {
   return {
@@ -241,7 +241,7 @@ export function mapFilterExec<T>(
   }
 }
 
-export function hasSameProps<T extends { [key: string]: any }>(
+export function hasSameProps<T extends { [key: string]: unknown }>(
   a: T,
   b: T
 ): boolean {

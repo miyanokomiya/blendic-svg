@@ -147,7 +147,8 @@ const visibledKeyframeMap = computed(() => {
 })
 
 const animationFrameStore = useAnimationFrameStore()
-const targetPropsState = useTargetProps(() => store.state.selectedBones)
+// Note: All bones are visible currently
+const targetPropsState = useTargetProps(() => ({}))
 const keyframeState = useKeyframeStates(() => visibledKeyframeMap.value)
 
 function initState(initActions: Action[] = []) {

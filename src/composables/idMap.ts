@@ -34,7 +34,7 @@ export function useBooleanMap(getIds: () => string[]) {
   }
 
   watch(getIds, (ids) => {
-    const idMap = ids.reduce<{ [id: string]: any }>(
+    const idMap = ids.reduce<{ [id: string]: unknown }>(
       (p, c) => ({ ...p, [c]: true }),
       {}
     )

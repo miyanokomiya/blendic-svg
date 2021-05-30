@@ -37,7 +37,7 @@ import { convolute, getReplaceItem } from '/@/utils/histories'
 
 export interface TargetProps {
   id: string
-  points: { [key: string]: any }
+  points: { [key: string]: unknown }
 }
 
 export function useKeyframeStates(getVisibledMap: () => IdMap<TargetProps>) {
@@ -101,7 +101,7 @@ export function useKeyframeStates(getVisibledMap: () => IdMap<TargetProps>) {
     )
   }
 
-  function filter(keepIdMap: { [id: string]: any } = {}): HistoryItem {
+  function filter(keepIdMap: { [id: string]: unknown } = {}): HistoryItem {
     return convolute(
       getReplaceItem(
         selectedStateMap.value,
@@ -114,7 +114,7 @@ export function useKeyframeStates(getVisibledMap: () => IdMap<TargetProps>) {
     )
   }
 
-  function drop(dropIdMap: { [id: string]: any } = {}): HistoryItem {
+  function drop(dropIdMap: { [id: string]: unknown } = {}): HistoryItem {
     return convolute(
       getReplaceItem(
         selectedStateMap.value,
@@ -206,7 +206,7 @@ function isAllExistStatesSelected(
 function getSelectListItem(
   state: IdMap<KeyframeSelectedState>,
   selectedTargetMap: { [id: string]: TargetProps } = {},
-  visibledMap: { [id: string]: any } = {},
+  visibledMap: { [id: string]: unknown } = {},
   shift = false,
   setFn: (val: IdMap<KeyframeSelectedState>) => void
 ): HistoryItem {

@@ -35,14 +35,14 @@ type PropStatus = 'selected' | 'hidden'
 
 export interface TargetProps {
   id: string
-  props: { [key: string]: any }
+  props: { [key: string]: unknown }
 }
 
 export interface TargetPropsState {
   props: { [key: string]: PropStatus }
 }
 
-export function useTargetProps(getVisibledMap: () => { [id: string]: any }) {
+export function useTargetProps(getVisibledMap: () => IdMap<TargetPropsState>) {
   const empty = {}
   const selectedStateMap = ref<IdMap<TargetPropsState>>(empty)
 
@@ -82,7 +82,7 @@ export function useTargetProps(getVisibledMap: () => { [id: string]: any }) {
     )
   }
 
-  function filter(keepIdMap: { [id: string]: any } = {}): HistoryItem {
+  function filter(keepIdMap: { [id: string]: unknown } = {}): HistoryItem {
     return getReplaceItem(
       selectedStateMap.value,
       mapFilterExec(selectedStateMap.value, getVisibledMap(), (map) =>
@@ -92,7 +92,7 @@ export function useTargetProps(getVisibledMap: () => { [id: string]: any }) {
     )
   }
 
-  function drop(targetMap: { [id: string]: any } = {}): HistoryItem {
+  function drop(targetMap: { [id: string]: unknown } = {}): HistoryItem {
     return getReplaceItem(
       selectedStateMap.value,
       dropMap(selectedStateMap.value, targetMap),

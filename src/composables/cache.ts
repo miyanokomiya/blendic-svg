@@ -27,7 +27,7 @@ import {
 } from '@vue/runtime-core'
 
 export function useKeysCache<T>(
-  getKeyMap: () => { [key: string]: any },
+  getKeyMap: () => { [key: string]: unknown },
   data: Ref<T> | ComputedRef<T>
 ) {
   const cache = ref<T>()

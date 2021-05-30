@@ -147,7 +147,7 @@ const boneLabelChildren = [
   'scaleY',
 ]
 
-function getIndexList(target: IdMap<any>, list: string[]): IdMap<number> {
+function getIndexList(target: IdMap<unknown>, list: string[]): IdMap<number> {
   return list
     .filter((key) => target[key])
     .reduce<IdMap<number>>((p, key, i) => {
@@ -158,7 +158,7 @@ function getIndexList(target: IdMap<any>, list: string[]): IdMap<number> {
 
 export function getKeyframeBoneSummary(
   bone: Bone,
-  keyframeProps: { [key: string]: any } = {}
+  keyframeProps: { [key: string]: unknown } = {}
 ): KeyframeTargetSummary {
   return {
     id: bone.id,
@@ -172,7 +172,7 @@ const constraintLabelChildren = ['influence']
 export function getKeyframeConstraintSummary(
   bone: Bone,
   constraint: BoneConstraint,
-  keyframeProps: { [key: string]: any } = {}
+  keyframeProps: { [key: string]: unknown } = {}
 ): KeyframeTargetSummary {
   return {
     id: constraint.id,

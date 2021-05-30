@@ -34,7 +34,12 @@ import {
 } from '/@/utils/commons'
 import { canvasToFrameValue, canvasToNearestFrame } from '/@/utils/animations'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
-import { CurveName, CurveSelectedState, KeyframeBase } from '/@/models/keyframe'
+import {
+  CurveName,
+  CurveSelectedState,
+  KeyframeBase,
+  KeyframeSelectedState,
+} from '/@/models/keyframe'
 import {
   batchUpdatePoints,
   getKeyframe,
@@ -261,7 +266,7 @@ export function useKeyframeEditMode(
     state.snapAxis = ''
   }
 
-  function select(id: string, selectedState: any) {
+  function select(id: string, selectedState: KeyframeSelectedState) {
     if (state.command) {
       completeEdit()
       return
@@ -269,7 +274,7 @@ export function useKeyframeEditMode(
     animationStore.selectKeyframe(id, selectedState)
   }
 
-  function shiftSelect(id: string, selectedState: any) {
+  function shiftSelect(id: string, selectedState: KeyframeSelectedState) {
     if (state.command) {
       completeEdit()
       return

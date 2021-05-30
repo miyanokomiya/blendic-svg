@@ -31,6 +31,7 @@ import { computed, defineComponent, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
 import TreeNode from '/@/components/atoms/TreeNode.vue'
 import { useCanvasStore } from '/@/store/canvas'
+import { getTreeFromElementNode } from '/@/utils/elements'
 
 export default defineComponent({
   components: { TreeNode },
@@ -40,12 +41,9 @@ export default defineComponent({
 
     const targetActor = computed(() => elementStore.lastSelectedActor.value)
 
-    const rootChildren = computed(() => {
-      return targetActor.value?.elements ?? []
-    })
-
     const treeRoot = computed(() => {
-      return targetActor.value?.svgTree
+      if (!targetActor.value) return
+      return getTreeFromElementNode(targetActor.value.svgTree)
     })
 
     const selectedMap = computed(() => {
@@ -62,7 +60,6 @@ export default defineComponent({
     provide('selectedMap', selectedMap)
 
     return {
-      rootChildren,
       treeRoot,
     }
   },

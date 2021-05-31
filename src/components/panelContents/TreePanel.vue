@@ -116,8 +116,34 @@ export default defineComponent({
       }
     }
 
+    function updateName(id: string, name: string) {
+      if (!name) return
+
+      switch (canvasStore.state.canvasMode) {
+        case 'edit':
+        case 'pose':
+          if (!store.lastSelectedArmature.value) return
+
+          if (id === store.lastSelectedArmature.value.id) {
+            store.updateArmatureName(name)
+          } else {
+            if (
+              store.lastSelectedArmature.value.bones.every(
+                (b) => b.name !== name
+              )
+            ) {
+              store.updateBone({ name })
+            }
+          }
+          return
+        default:
+          return
+      }
+    }
+
     provide('onClickElement', clickElement)
     provide('selectedMap', selectedMap)
+    provide('updateName', updateName)
 
     return {
       treeType,

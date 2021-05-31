@@ -25,11 +25,20 @@ Copyright (C) 2021, Tomoya Komiyama.
         <UpIcon :flipped="!closed" :right="closed" />
       </button>
       <div v-else class="spacer" :style="{ width: '16px' }" />
+      <TextInput
+        v-if="editingName"
+        :model-value="node.name"
+        autofocus
+        @update:modelValue="updateName"
+        @blur="endEditingName"
+      />
       <a
+        v-else
         class="node-name"
         :class="{ selected }"
         @click.left.exact.prevent="click"
         @click.left.shift.exact.prevent="shiftClick"
+        @dblclick.prevent="startEditingName"
         >{{ node.name }}</a
       >
     </div>
@@ -55,10 +64,11 @@ import {
 } from 'vue'
 import UpIcon from '/@/components/atoms/UpIcon.vue'
 import { TreeNode } from '/@/utils/relations'
+import TextInput from '/@/components/atoms/TextInput.vue'
 
 export default defineComponent({
   name: 'TreeNode',
-  components: { UpIcon },
+  components: { UpIcon, TextInput },
   props: {
     node: {
       type: Object as PropType<TreeNode>,
@@ -94,6 +104,12 @@ export default defineComponent({
       closed.value = !closed.value
     }
 
+    const editingName = ref(false)
+    const updateName = inject<(id: string, name: string) => void>(
+      'updateName',
+      () => {}
+    )
+
     return {
       hasChildren: computed(() => props.node.children.length > 0),
       closed,
@@ -102,6 +118,14 @@ export default defineComponent({
       click: () => onClickElement(props.node.id, false),
       shiftClick: () => onClickElement(props.node.id, true),
       selected,
+
+      editingName,
+      startEditingName: () => (editingName.value = true),
+      endEditingName: () => (editingName.value = false),
+      updateName(name: string) {
+        updateName(props.node.id, name)
+        editingName.value = false
+      },
     }
   },
 })

@@ -140,6 +140,7 @@ export default defineComponent({
   }
 }
 .node-name {
+  flex-grow: 1;
   display: flex;
   align-items: center;
   white-space: nowrap;

@@ -139,6 +139,7 @@ export default defineComponent({
     provide('onClickElement', clickElement)
     provide('selectedMap', selectedMap)
     provide('updateName', updateName)
+    provide('getEditable', () => canvasStore.state.canvasMode !== 'weight')
 
     return {
       treeType,

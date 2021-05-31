@@ -109,6 +109,8 @@ export default defineComponent({
       'updateName',
       () => {}
     )
+    const getEditable = inject<() => boolean>('getEditable', () => false)
+    const editable = computed(getEditable)
 
     return {
       hasChildren: computed(() => props.node.children.length > 0),
@@ -120,9 +122,13 @@ export default defineComponent({
       selected,
 
       editingName,
-      startEditingName: () => (editingName.value = true),
+      startEditingName: () => {
+        if (!editable.value) return
+        editingName.value = true
+      },
       endEditingName: () => (editingName.value = false),
       updateName(name: string) {
+        if (!editable.value) return
         updateName(props.node.id, name)
         editingName.value = false
       },

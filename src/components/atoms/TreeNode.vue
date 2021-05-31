@@ -30,7 +30,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :class="{ selected }"
         @click.left.exact.prevent="click"
         @click.left.shift.exact.prevent="shiftClick"
-        >{{ node.tag }} #{{ node.id }}</a
+        >{{ node.name }}</a
       >
     </div>
     <div v-if="!closed" class="children-space">

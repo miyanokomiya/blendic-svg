@@ -94,10 +94,19 @@ export default defineComponent({
     function clickElement(id: string, shift: boolean) {
       switch (canvasStore.state.canvasMode) {
         case 'edit':
-          store.selectBone(id, { head: true, tail: true }, shift)
-          return
         case 'pose':
-          store.selectBone(id, { head: true, tail: true }, shift, true)
+          if (!store.lastSelectedArmature.value) return
+
+          if (id === store.lastSelectedArmature.value.id) {
+            store.selectAllBone()
+          } else {
+            store.selectBone(
+              id,
+              { head: true, tail: true },
+              shift,
+              canvasStore.state.canvasMode === 'pose'
+            )
+          }
           return
         case 'weight':
           elementStore.selectElement(id, shift)

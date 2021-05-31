@@ -120,6 +120,7 @@ export default defineComponent({
       if (!name) return
 
       switch (canvasStore.state.canvasMode) {
+        case 'object':
         case 'edit':
         case 'pose':
           if (!store.lastSelectedArmature.value) return
@@ -127,13 +128,7 @@ export default defineComponent({
           if (id === store.lastSelectedArmature.value.id) {
             store.updateArmatureName(name)
           } else {
-            if (
-              store.lastSelectedArmature.value.bones.every(
-                (b) => b.name !== name
-              )
-            ) {
-              store.updateBone({ name })
-            }
+            store.updateBone({ name })
           }
           return
         default:

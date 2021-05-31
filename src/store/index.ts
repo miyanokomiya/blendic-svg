@@ -189,9 +189,16 @@ function selectArmature(id: string = '') {
   historyStore.push(item)
 }
 function updateArmatureName(name: string) {
+  if (!name) return
   if (!lastSelectedArmature.value) return
+  if (lastSelectedArmature.value.name === name) return
 
-  const item = getUpdateArmatureItem({ name })
+  const item = getUpdateArmatureItem({
+    name: getNotDuplicatedName(
+      name,
+      state.armatures.map((a) => a.name)
+    ),
+  })
   item.redo()
   historyStore.push(item)
 }
@@ -213,8 +220,7 @@ function addArmature() {
       true
     )
   )
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 
 function selectAllBone() {
@@ -321,6 +327,20 @@ function updateBone(diff: Partial<Bone>, seriesKey?: string) {
   item.redo()
   historyStore.push(item)
 }
+function updateBoneName(name: string) {
+  if (!name) return
+  if (!lastSelectedArmature.value) return
+  if (!lastSelectedBone.value) return
+  if (lastSelectedBone.value.name === name) return
+
+  const item = getUpdateBoneItem({
+    name: getNotDuplicatedName(
+      name,
+      lastSelectedArmature.value.bones.map((b) => b.name)
+    ),
+  })
+  historyStore.push(item, true)
+}
 function upsertBones(
   bones: Bone[],
   selectedStateMap: IdMap<BoneSelectedState> = {}
@@ -360,6 +380,7 @@ export function useStore() {
     addBones,
     updateBones,
     updateBone,
+    updateBoneName,
     upsertBones,
   }
 }

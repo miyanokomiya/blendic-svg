@@ -18,19 +18,28 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div class="tree-node" :class="{ 'g-tag': isG }">
+  <div class="tree-node" :class="{ 'has-children': hasChildren }">
     <div class="node-view">
       <div class="spacer" :style="{ width: `${nestIndex * 10}px` }" />
-      <button v-if="isG" class="toggle-closed" @click="toggleClosed">
+      <button v-if="hasChildren" class="toggle-closed" @click="toggleClosed">
         <UpIcon :flipped="!closed" :right="closed" />
       </button>
       <div v-else class="spacer" :style="{ width: '16px' }" />
+      <TextInput
+        v-if="editingName"
+        :model-value="node.name"
+        autofocus
+        @update:modelValue="updateName"
+        @blur="endEditingName"
+      />
       <a
+        v-else
         class="node-name"
         :class="{ selected }"
         @click.left.exact.prevent="click"
         @click.left.shift.exact.prevent="shiftClick"
-        >{{ node.tag }} #{{ node.id }}</a
+        @dblclick.prevent="startEditingName"
+        >{{ node.name }}</a
       >
     </div>
     <div v-if="!closed" class="children-space">
@@ -53,16 +62,16 @@ import {
   PropType,
   ref,
 } from 'vue'
-import { ElementNode } from '/@/models'
 import UpIcon from '/@/components/atoms/UpIcon.vue'
-import { testEditableTag } from '/@/utils/elements'
+import { TreeNode } from '/@/utils/relations'
+import TextInput from '/@/components/atoms/TextInput.vue'
 
 export default defineComponent({
   name: 'TreeNode',
-  components: { UpIcon },
+  components: { UpIcon, TextInput },
   props: {
     node: {
-      type: Object as PropType<ElementNode>,
+      type: Object as PropType<TreeNode>,
       required: true,
     },
     nestIndex: {
@@ -73,8 +82,6 @@ export default defineComponent({
   setup(props) {
     const children = computed(() => {
       return props.node.children
-        .filter((c): c is ElementNode => typeof c !== 'string')
-        .filter((elm) => testEditableTag(elm.tag))
     })
 
     // eslint-disable-next-line no-unused-vars
@@ -92,20 +99,39 @@ export default defineComponent({
       return !!selectedMap.value[props.node.id]
     })
 
-    const isG = computed(() => props.node.tag === 'g')
     const closed = ref(false)
     function toggleClosed() {
       closed.value = !closed.value
     }
 
+    const editingName = ref(false)
+    const updateName = inject<(id: string, name: string) => void>(
+      'updateName',
+      () => {}
+    )
+    const getEditable = inject<() => boolean>('getEditable', () => false)
+    const editable = computed(getEditable)
+
     return {
-      isG,
+      hasChildren: computed(() => props.node.children.length > 0),
       closed,
       toggleClosed,
       children,
       click: () => onClickElement(props.node.id, false),
       shiftClick: () => onClickElement(props.node.id, true),
       selected,
+
+      editingName,
+      startEditingName: () => {
+        if (!editable.value) return
+        editingName.value = true
+      },
+      endEditingName: () => (editingName.value = false),
+      updateName(name: string) {
+        if (!editable.value) return
+        updateName(props.node.id, name)
+        editingName.value = false
+      },
     }
   },
 })
@@ -120,7 +146,7 @@ export default defineComponent({
   font-size: 16px;
   background-color: #fff;
   user-select: none;
-  &.g-tag {
+  &.has-children {
     border: solid 1px #ccc;
     background-color: #eee;
   }
@@ -144,6 +170,7 @@ export default defineComponent({
   }
 }
 .node-name {
+  flex-grow: 1;
   display: flex;
   align-items: center;
   white-space: nowrap;

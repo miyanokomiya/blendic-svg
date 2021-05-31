@@ -77,3 +77,9 @@ export function shiftInList<T>(src: T[], index: number): T[] {
   ret[index] = tmp
   return ret
 }
+
+export interface TreeNode {
+  id: string
+  name: string
+  children: TreeNode[]
+}

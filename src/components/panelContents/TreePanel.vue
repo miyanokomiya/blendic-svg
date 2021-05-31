@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div class="file-panel">
-    <h3>Element Tree</h3>
+    <h3>{{ treeType }}</h3>
     <div v-if="treeRoot" class="tree-view">
       <TreeNode :node="treeRoot" />
     </div>
@@ -31,38 +31,118 @@ import { computed, defineComponent, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
 import TreeNode from '/@/components/atoms/TreeNode.vue'
 import { useCanvasStore } from '/@/store/canvas'
+import { getTreeFromElementNode } from '/@/utils/elements'
+import { useStore } from '/@/store'
+import { mapReduce } from '/@/utils/commons'
+import { getTree } from '/@/utils/armatures'
 
 export default defineComponent({
   components: { TreeNode },
   setup() {
     const elementStore = useElementStore()
     const canvasStore = useCanvasStore()
+    const store = useStore()
 
-    const targetActor = computed(() => elementStore.lastSelectedActor.value)
+    const treeType = computed(() => {
+      switch (canvasStore.state.canvasMode) {
+        case 'object':
+        case 'edit':
+        case 'pose':
+          return 'Armature Tree'
+        case 'weight':
+          return 'Element Tree'
+        default:
+          return ''
+      }
+    })
 
-    const rootChildren = computed(() => {
-      return targetActor.value?.elements ?? []
+    const targetActor = computed(() => {
+      return elementStore.lastSelectedActor.value
     })
 
     const treeRoot = computed(() => {
-      return targetActor.value?.svgTree
+      switch (canvasStore.state.canvasMode) {
+        case 'object':
+        case 'edit':
+        case 'pose':
+          if (!store.lastSelectedArmature.value) return undefined
+          return {
+            id: store.lastSelectedArmature.value.id,
+            name: store.lastSelectedArmature.value.name,
+            children: getTree(store.boneMap.value),
+          }
+        case 'weight':
+          if (!targetActor.value) return
+          return getTreeFromElementNode(targetActor.value.svgTree)
+        default:
+          return undefined
+      }
     })
 
     const selectedMap = computed(() => {
-      if (canvasStore.state.canvasMode !== 'weight') return {}
-      return elementStore.selectedElements.value
+      switch (canvasStore.state.canvasMode) {
+        case 'edit':
+        case 'pose':
+          return mapReduce(store.allSelectedBones.value, () => true)
+        case 'weight':
+          return elementStore.selectedElements.value
+        default:
+          return {}
+      }
     })
 
     function clickElement(id: string, shift: boolean) {
-      if (canvasStore.state.canvasMode !== 'weight') return
-      elementStore.selectElement(id, shift)
+      switch (canvasStore.state.canvasMode) {
+        case 'edit':
+        case 'pose':
+          if (!store.lastSelectedArmature.value) return
+
+          if (id === store.lastSelectedArmature.value.id) {
+            store.selectAllBone()
+          } else {
+            store.selectBone(
+              id,
+              { head: true, tail: true },
+              shift,
+              canvasStore.state.canvasMode === 'pose'
+            )
+          }
+          return
+        case 'weight':
+          elementStore.selectElement(id, shift)
+          return
+        default:
+          return
+      }
+    }
+
+    function updateName(id: string, name: string) {
+      if (!name) return
+
+      switch (canvasStore.state.canvasMode) {
+        case 'object':
+        case 'edit':
+        case 'pose':
+          if (!store.lastSelectedArmature.value) return
+
+          if (id === store.lastSelectedArmature.value.id) {
+            store.updateArmatureName(name)
+          } else {
+            store.updateBone({ name })
+          }
+          return
+        default:
+          return
+      }
     }
 
     provide('onClickElement', clickElement)
     provide('selectedMap', selectedMap)
+    provide('updateName', updateName)
+    provide('getEditable', () => canvasStore.state.canvasMode !== 'weight')
 
     return {
-      rootChildren,
+      treeType,
       treeRoot,
     }
   },

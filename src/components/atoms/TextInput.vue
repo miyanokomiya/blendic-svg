@@ -33,7 +33,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect } from 'vue'
+import { defineComponent, ref, watchEffect, onMounted } from 'vue'
 
 export default defineComponent({
   props: {
@@ -42,11 +42,15 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    autofocus: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'blur'],
   setup(props, { emit }) {
     const inputEl = ref<HTMLInputElement>()
-    const focused = ref(false)
+    const focused = ref(props.autofocus)
 
     const draftValue = ref('')
 
@@ -61,15 +65,26 @@ export default defineComponent({
     }
 
     function onClick() {
-      if (!inputEl.value) return
-      inputEl.value.focus()
-      inputEl.value.select()
+      inputEl.value?.focus()
+      inputEl.value?.select()
+    }
+
+    onMounted(() => {
+      if (props.autofocus) {
+        inputEl.value?.focus()
+        inputEl.value?.select()
+      }
+    })
+
+    function onBlur() {
+      focused.value = false
+      emit('blur')
     }
 
     return {
       focused,
       onFocus: () => (focused.value = true),
-      onBlur: () => (focused.value = false),
+      onBlur,
       draftValue,
       inputEl,
       input,

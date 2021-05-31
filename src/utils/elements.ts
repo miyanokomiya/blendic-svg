@@ -29,6 +29,7 @@ import {
   toMap,
 } from '../models'
 import { extractMap, toList } from './commons'
+import { TreeNode } from '/@/utils/relations'
 
 export function parseFromSvg(svgText: string): Actor {
   const domParser = new DOMParser()
@@ -137,4 +138,15 @@ export function flatElementTree(
 
 export function testEditableTag(tag: string): boolean {
   return !/defs|metadata|namedview|script|style|tspan/.test(tag.toLowerCase())
+}
+
+export function getTreeFromElementNode(svg: ElementNode): TreeNode {
+  return {
+    id: svg.id,
+    name: `${svg.tag} #${svg.id}`,
+    children: svg.children
+      .filter((c): c is ElementNode => typeof c !== 'string')
+      .filter((c) => testEditableTag(c.tag))
+      .map(getTreeFromElementNode),
+  }
 }

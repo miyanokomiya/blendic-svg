@@ -27,6 +27,7 @@ import {
 import {
   cleanActors,
   flatElementTree,
+  getTreeFromElementNode,
   inheritWeight,
   parseFromSvg,
 } from '/@/utils/elements'
@@ -236,6 +237,100 @@ describe('utils/elements.ts', () => {
         'rect_1',
         'text_1',
       ])
+    })
+  })
+
+  describe('getTreeFromElementNode', () => {
+    it('should convert svg element to tree node', () => {
+      const tree = getElementNode({
+        id: 'svg_1',
+        tag: 'svg',
+        children: [
+          getElementNode({
+            id: 'g_1',
+            tag: 'g',
+            children: [
+              getElementNode({
+                id: 'rect_1',
+                tag: 'rect',
+              }),
+              getElementNode({
+                id: 'rect_2',
+                tag: 'rect',
+              }),
+            ],
+          }),
+        ],
+      })
+      expect(getTreeFromElementNode(tree)).toEqual({
+        id: 'svg_1',
+        name: 'svg #svg_1',
+        children: [
+          {
+            id: 'g_1',
+            name: 'g #g_1',
+            children: [
+              {
+                id: 'rect_1',
+                name: 'rect #rect_1',
+                children: [],
+              },
+              {
+                id: 'rect_2',
+                name: 'rect #rect_2',
+                children: [],
+              },
+            ],
+          },
+        ],
+      })
+    })
+    it('should drop string items', () => {
+      const tree = getElementNode({
+        id: 'svg_1',
+        tag: 'svg',
+        children: [
+          getElementNode({
+            id: 'text_1',
+            tag: 'text',
+            children: ['message', 'abc'],
+          }),
+        ],
+      })
+      expect(getTreeFromElementNode(tree)).toEqual({
+        id: 'svg_1',
+        name: 'svg #svg_1',
+        children: [
+          {
+            id: 'text_1',
+            name: 'text #text_1',
+            children: [],
+          },
+        ],
+      })
+    })
+    it('should drop meta items', () => {
+      const tree = getElementNode({
+        id: 'svg_1',
+        tag: 'svg',
+        children: [
+          getElementNode({
+            id: 'script_1',
+            tag: 'script',
+            children: [],
+          }),
+          getElementNode({
+            id: 'defs_1',
+            tag: 'defs',
+            children: [],
+          }),
+        ],
+      })
+      expect(getTreeFromElementNode(tree)).toEqual({
+        id: 'svg_1',
+        name: 'svg #svg_1',
+        children: [],
+      })
     })
   })
 })

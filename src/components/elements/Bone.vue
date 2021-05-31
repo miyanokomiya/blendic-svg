@@ -90,9 +90,9 @@ function d1(head: IVec2, tail: IVec2, scaleX: number, invert = false): IVec2 {
   )
 }
 
-function getCircleR(head: IVec2, tail: IVec2): number {
+function getCircleR(head: IVec2, tail: IVec2, scale: number): number {
   // keep minimal scaled anchor to select
-  return Math.max(getDistance(head, tail) * 0.04, 5)
+  return Math.max(getDistance(head, tail) * 0.04, 2 * scale)
 }
 
 export default defineComponent({
@@ -141,7 +141,9 @@ export default defineComponent({
       }
     })
 
-    const circleR = computed(() => getCircleR(head.value, tail.value))
+    const circleR = computed(() =>
+      getCircleR(head.value, tail.value, props.scale)
+    )
 
     return {
       adjustedOpacity: computed(() => props.opacity * settings.boneOpacity),

@@ -35,4 +35,24 @@ describe('src/components/atoms/TextInput.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
   })
+
+  describe('options', () => {
+    it('autofocus', () => {
+      const wrapper = mount(Target, {
+        props: { modelValue: 'text', autofocus: true },
+      })
+      expect(wrapper.find('.input-forward').exists()).toBe(false)
+    })
+  })
+
+  describe('blur', () => {
+    it('should emit event', () => {
+      const wrapper = mount(Target, {
+        props: { modelValue: 'text', autofocus: true },
+      })
+      wrapper.find('input').trigger('blur')
+      expect(wrapper.find('input').exists()).toBe(true)
+      expect(wrapper.emitted('blur')).toEqual([[]])
+    })
+  })
 })

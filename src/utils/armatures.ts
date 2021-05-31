@@ -55,7 +55,7 @@ import {
   toList,
   extractMap,
 } from './commons'
-import { getNotDuplicatedName } from './relations'
+import { getNotDuplicatedName, TreeNode } from './relations'
 import {
   applyBoneConstraints,
   getDependentCountMap,
@@ -296,14 +296,9 @@ export function getPosedBoneHeadsOrigin(boneMap: IdMap<Bone>): IVec2 {
   return getPolygonCenter(points)
 }
 
-interface TreeNode {
-  id: string
-  children: TreeNode[]
-}
-
-export function getTree<T extends { id: string; parentId: string }>(
-  idMap: IdMap<T>
-): TreeNode[] {
+export function getTree<
+  T extends { id: string; name: string; parentId: string }
+>(idMap: IdMap<T>): TreeNode[] {
   const noParents: T[] = []
   const parentMap: IdMap<T[]> = Object.keys(idMap).reduce<IdMap<T[]>>(
     (p, c) => {
@@ -325,10 +320,9 @@ export function getTree<T extends { id: string; parentId: string }>(
   })
 }
 
-function getChildNodes<T extends { id: string; parentId: string }>(
-  parentMap: IdMap<T[]>,
-  parentId: string
-): TreeNode[] {
+function getChildNodes<
+  T extends { id: string; name: string; parentId: string }
+>(parentMap: IdMap<T[]>, parentId: string): TreeNode[] {
   return (
     parentMap[parentId]?.map((b) => {
       return { ...b, children: getChildNodes(parentMap, b.id) }

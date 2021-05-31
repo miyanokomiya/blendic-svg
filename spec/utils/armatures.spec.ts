@@ -331,56 +331,60 @@ describe('utils/armatures', () => {
   describe('getTree', () => {
     it('get nodes tree: nested children', () => {
       const boneMap = {
-        a: { id: 'a', parentId: '' },
-        aa: { id: 'aa', parentId: 'a' },
-        aaa: { id: 'aaa', parentId: 'aa' },
-        b: { id: 'b', parentId: '' },
+        a: { id: 'a', parentId: '', name: '' },
+        aa: { id: 'aa', parentId: 'a', name: '' },
+        aaa: { id: 'aaa', parentId: 'aa', name: '' },
+        b: { id: 'b', parentId: '', name: '' },
       }
       expect(target.getTree(boneMap)).toEqual([
         {
           id: 'a',
+          name: '',
           parentId: '',
           children: [
             {
               id: 'aa',
-              children: [{ id: 'aaa', children: [], parentId: 'aa' }],
+              name: '',
+              children: [{ id: 'aaa', name: '', children: [], parentId: 'aa' }],
               parentId: 'a',
             },
           ],
         },
-        { id: 'b', children: [], parentId: '' },
+        { id: 'b', name: '', children: [], parentId: '' },
       ])
     })
     it('get nodes tree: multi children', () => {
       const boneMap = {
-        a: { id: 'a', parentId: '' },
-        aa: { id: 'aa', parentId: 'a' },
-        ab: { id: 'ab', parentId: 'a' },
+        a: { id: 'a', parentId: '', name: '' },
+        aa: { id: 'aa', parentId: 'a', name: '' },
+        ab: { id: 'ab', parentId: 'a', name: '' },
       }
       expect(target.getTree(boneMap)).toEqual([
         {
           id: 'a',
+          name: '',
           parentId: '',
           children: [
-            { id: 'aa', children: [], parentId: 'a' },
-            { id: 'ab', children: [], parentId: 'a' },
+            { id: 'aa', name: '', children: [], parentId: 'a' },
+            { id: 'ab', name: '', children: [], parentId: 'a' },
           ],
         },
       ])
     })
     it('ignore the parent does not exist', () => {
       const boneMap = {
-        a: { id: 'a', parentId: '' },
-        aa: { id: 'aa', parentId: 'a' },
-        ab: { id: 'ab', parentId: 'b' },
+        a: { id: 'a', parentId: '', name: '' },
+        aa: { id: 'aa', parentId: 'a', name: '' },
+        ab: { id: 'ab', parentId: 'b', name: '' },
       }
       expect(target.getTree(boneMap)).toEqual([
         {
           id: 'a',
+          name: '',
           parentId: '',
-          children: [{ id: 'aa', children: [], parentId: 'a' }],
+          children: [{ id: 'aa', name: '', children: [], parentId: 'a' }],
         },
-        { id: 'ab', children: [], parentId: 'b' },
+        { id: 'ab', name: '', children: [], parentId: 'b' },
       ])
     })
   })

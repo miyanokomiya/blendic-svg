@@ -19,10 +19,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div>
-    <form v-if="selectedObjectType === 'armature'" @submit.prevent>
+    <form
+      v-if="selectedObjectType === 'armature' && lastSelectedArmature"
+      @submit.prevent
+    >
       <h3>Armature</h3>
       <InlineField label="Name" label-width="50px">
-        <input v-model="draftName" type="text" @change="changeArmatureName" />
+        <TextInput
+          :model-value="lastSelectedArmature.name"
+          @update:modelValue="changeArmatureName"
+        />
       </InlineField>
     </form>
     <form
@@ -31,7 +37,10 @@ Copyright (C) 2021, Tomoya Komiyama.
     >
       <h3>Bone</h3>
       <InlineField label="Name" label-width="50px">
-        <input v-model="draftName" type="text" @change="changeBoneName" />
+        <TextInput
+          :model-value="lastSelectedBone.name"
+          @update:modelValue="changeBoneName"
+        />
       </InlineField>
       <InlineField label="Parent" label-width="50px">
         <SelectField v-model="parentId" :options="otherBoneOptions" />
@@ -64,7 +73,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, computed } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { useStore } from '/@/store/index'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
@@ -72,6 +81,7 @@ import { BoneConstraint } from '/@/utils/constraints'
 import ConstraintList from '/@/components/panelContents/ConstraintList.vue'
 import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import TextInput from '/@/components/atoms/TextInput.vue'
 import {
   KeyframeConstraint,
   KeyframeConstraintPropKey,
@@ -85,11 +95,11 @@ export default defineComponent({
     CheckboxInput,
     ConstraintList,
     InlineField,
+    TextInput,
   },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
-    const draftName = ref('')
 
     const lastSelectedBone = computed(() => {
       return store.lastSelectedBone.value
@@ -121,25 +131,6 @@ export default defineComponent({
       if (store.lastSelectedArmature.value) return 'armature'
       return ''
     })
-
-    const isArmatureNameDuplicated = computed(() => {
-      if (draftName.value === store.lastSelectedArmature.value?.name)
-        return false
-      return store.state.armatures.map((a) => a.name).includes(draftName.value)
-    })
-
-    const isBoneNameDuplicated = computed(() => {
-      return otherBoneOptions.value
-        .map((o) => o.label)
-        .includes(draftName.value)
-    })
-
-    function initDraftName() {
-      if (lastSelectedBone.value) draftName.value = lastSelectedBone.value.name
-      else if (store.lastSelectedArmature.value)
-        draftName.value = store.lastSelectedArmature.value.name
-      else draftName.value = ''
-    }
 
     function getKeyframeConstraint(
       constraintId: string
@@ -205,11 +196,7 @@ export default defineComponent({
       animationStore.execDeleteKeyframeConstraint(target.id, { [key]: true })
     }
 
-    watch(store.lastSelectedArmature, initDraftName)
-    watch(lastSelectedBone, initDraftName)
-
     return {
-      draftName,
       lastSelectedArmature: store.lastSelectedArmature,
       lastSelectedBone,
       constraintList,
@@ -249,23 +236,11 @@ export default defineComponent({
           store.updateBone({ parentId: val })
         },
       }),
-      changeArmatureName() {
-        if (!draftName.value) return
-        if (
-          isArmatureNameDuplicated.value &&
-          store.lastSelectedArmature.value
-        ) {
-          draftName.value = store.lastSelectedArmature.value.name
-          return
-        }
-        store.updateArmatureName(draftName.value)
+      changeArmatureName(name: string) {
+        store.updateArmatureName(name)
       },
-      changeBoneName() {
-        if (!draftName.value) return
-        if (isBoneNameDuplicated.value && lastSelectedBone.value) {
-          draftName.value = lastSelectedBone.value.name
-        }
-        store.updateBone({ name: draftName.value })
+      changeBoneName(name: string) {
+        store.updateBoneName(name)
       },
       updateConstraints,
       updateConstraint,

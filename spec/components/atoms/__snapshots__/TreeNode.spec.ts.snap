@@ -1,0 +1,205 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/TreeNode.vue snapshot closed nested tree 1`] = `
+<div
+  class="tree-node has-children"
+>
+  <div
+    class="node-view"
+  >
+    <div
+      class="spacer"
+      style="width: 0px;"
+    />
+    <button
+      class="toggle-closed"
+    >
+      <svg
+        transform="rotate(0) scale(1, -1)"
+        viewBox="0 0 10 10"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect
+          fill="#888"
+          height="10"
+          stroke="none"
+          width="10"
+        />
+        <path
+          d="M2 7L8 7L5 2z"
+          fill="#fff"
+          stroke="none"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+    <a
+      class="node-name"
+    >
+      name_a
+    </a>
+  </div>
+  <div
+    class="children-space"
+  >
+    
+    <div
+      class="tree-node"
+    >
+      <div
+        class="node-view"
+      >
+        <div
+          class="spacer"
+          style="width: 10px;"
+        />
+        <div
+          class="spacer"
+          style="width: 16px;"
+        />
+        <a
+          class="node-name"
+        >
+          name_aa
+        </a>
+      </div>
+      <div
+        class="children-space"
+      >
+        
+        
+      </div>
+    </div>
+    <div
+      class="tree-node"
+    >
+      <div
+        class="node-view"
+      >
+        <div
+          class="spacer"
+          style="width: 10px;"
+        />
+        <div
+          class="spacer"
+          style="width: 16px;"
+        />
+        <a
+          class="node-name"
+        >
+          name_bb
+        </a>
+      </div>
+      <div
+        class="children-space"
+      >
+        
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+`;
+
+exports[`src/components/atoms/TreeNode.vue snapshot nested tree 1`] = `
+<div
+  class="tree-node has-children"
+>
+  <div
+    class="node-view"
+  >
+    <div
+      class="spacer"
+      style="width: 0px;"
+    />
+    <button
+      class="toggle-closed"
+    >
+      <svg
+        transform="rotate(0) scale(1, -1)"
+        viewBox="0 0 10 10"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect
+          fill="#888"
+          height="10"
+          stroke="none"
+          width="10"
+        />
+        <path
+          d="M2 7L8 7L5 2z"
+          fill="#fff"
+          stroke="none"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+    <a
+      class="node-name"
+    >
+      name_a
+    </a>
+  </div>
+  <div
+    class="children-space"
+  >
+    
+    <div
+      class="tree-node"
+    >
+      <div
+        class="node-view"
+      >
+        <div
+          class="spacer"
+          style="width: 10px;"
+        />
+        <div
+          class="spacer"
+          style="width: 16px;"
+        />
+        <a
+          class="node-name"
+        >
+          name_aa
+        </a>
+      </div>
+      <div
+        class="children-space"
+      >
+        
+        
+      </div>
+    </div>
+    <div
+      class="tree-node"
+    >
+      <div
+        class="node-view"
+      >
+        <div
+          class="spacer"
+          style="width: 10px;"
+        />
+        <div
+          class="spacer"
+          style="width: 16px;"
+        />
+        <a
+          class="node-name"
+        >
+          name_bb
+        </a>
+      </div>
+      <div
+        class="children-space"
+      >
+        
+        
+      </div>
+    </div>
+    
+  </div>
+</div>
+`;

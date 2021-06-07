@@ -30,6 +30,7 @@ import {
   CanvasEditModeBase,
   EditMovement,
   PopupMenuItem,
+  SelectOptions,
 } from '/@/composables/modes/types'
 import { Store } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
@@ -206,20 +207,21 @@ export function useBonePoseMode(
     state.currentTotalRad = 0
   }
 
-  function select(id: string, selectedState: BoneSelectedState) {
+  function select(
+    id: string,
+    selectedState: BoneSelectedState,
+    option?: SelectOptions
+  ) {
     if (state.command) {
       completeEdit()
       return
     }
-    store.selectBone(id, selectedState, false, true)
-  }
 
-  function shiftSelect(id: string, selectedState: BoneSelectedState) {
-    if (state.command) {
-      completeEdit()
-      return
+    if (option?.shift) {
+      store.selectBone(id, selectedState, true, true)
+    } else {
+      store.selectBone(id, selectedState, false, true)
     }
-    store.selectBone(id, selectedState, true, true)
   }
 
   function rectSelect(rect: IRectangle, shift = false) {
@@ -363,7 +365,6 @@ export function useBonePoseMode(
     cancel,
     setEditMode,
     select,
-    shiftSelect,
     rectSelect,
     selectAll,
     mousemove,

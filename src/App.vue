@@ -266,7 +266,7 @@ export default defineComponent({
         canvasStore.select(id, state)
       },
       shiftSelectBone(id: string, state: { [key: string]: boolean }) {
-        canvasStore.shiftSelect(id, state)
+        canvasStore.select(id, state, { shift: true })
       },
       selectArmature(id: string, selected: boolean) {
         store.selectArmature(selected ? id : '')

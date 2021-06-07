@@ -33,6 +33,7 @@ import {
   EditMovement,
   ToolMenuGroup,
   PopupMenuItem,
+  SelectOptions,
 } from '/@/composables/modes/types'
 import {
   duplicateBones,
@@ -227,20 +228,21 @@ export function useBoneEditMode(
     state.command = ''
   }
 
-  function select(id: string, selectedState: BoneSelectedState) {
+  function select(
+    id: string,
+    selectedState: BoneSelectedState,
+    option?: SelectOptions
+  ) {
     if (state.command) {
       completeEdit()
       return
     }
-    store.selectBone(id, selectedState)
-  }
 
-  function shiftSelect(id: string, selectedState: BoneSelectedState) {
-    if (state.command) {
-      completeEdit()
-      return
+    if (option?.shift) {
+      store.selectBone(id, selectedState, true)
+    } else {
+      store.selectBone(id, selectedState)
     }
-    store.selectBone(id, selectedState, true)
   }
 
   function rectSelect(rect: IRectangle, shift = false) {
@@ -305,6 +307,10 @@ export function useBoneEditMode(
 
   const availableCommandList = computed(() => {
     const ctrl = { command: getCtrlOrMetaStr(), title: 'Snap' }
+    const selects = [
+      { command: 'a', title: 'All Select' },
+      { command: 'A', title: 'Add' },
+    ]
 
     if (state.command === 'grab' || state.command === 'scale') {
       return [
@@ -320,16 +326,12 @@ export function useBoneEditMode(
         { command: 'g', title: 'Grab' },
         { command: 'r', title: 'Rotate' },
         { command: 's', title: 'Scale' },
-        { command: 'a', title: 'All Select' },
+        ...selects,
         { command: 'x', title: 'Delete' },
-        { command: 'A', title: 'Add' },
         { command: 'D', title: 'Duplicate' },
       ]
     } else {
-      return [
-        { command: 'a', title: 'All Select' },
-        { command: 'A', title: 'Add' },
-      ]
+      return [...selects]
     }
   })
 
@@ -413,7 +415,6 @@ export function useBoneEditMode(
     cancel,
     setEditMode,
     select,
-    shiftSelect,
     selectAll,
     rectSelect,
     mousemove,

@@ -18,12 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { reactive, computed } from 'vue'
-import {
-  Transform,
-  BoneSelectedState,
-  IdMap,
-  getTransform,
-} from '/@/models/index'
+import { Transform, IdMap, getTransform } from '/@/models/index'
 import {
   EditMode,
   CanvasEditModeBase,
@@ -90,21 +85,7 @@ export function useObjectMode(): ObjectMode {
     state.command = ''
   }
 
-  function select(id: string, selectedState: BoneSelectedState) {
-    if (state.command) {
-      completeEdit()
-      return
-    }
-    store.selectBone(id, selectedState)
-  }
-
-  function shiftSelect(id: string, selectedState: BoneSelectedState) {
-    if (state.command) {
-      completeEdit()
-      return
-    }
-    store.selectBone(id, selectedState, true)
-  }
+  function select() {}
 
   function rectSelect() {}
 
@@ -158,7 +139,6 @@ export function useObjectMode(): ObjectMode {
     cancel,
     setEditMode,
     select,
-    shiftSelect,
     rectSelect,
     selectAll,
     mousemove,

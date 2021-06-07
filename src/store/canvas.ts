@@ -30,8 +30,13 @@ import {
 import { ObjectMode, useObjectMode } from '/@/composables/modes/objectMode'
 import { useWeightPaintMode } from '/@/composables/modes/weightPaintMode'
 import { useHistoryStore } from './history'
-import { getTransform, Transform } from '/@/models'
-import { CanvasMode, EditMode, EditMovement } from '/@/composables/modes/types'
+import { BoneSelectedState, getTransform, Transform } from '/@/models'
+import {
+  CanvasMode,
+  EditMode,
+  EditMovement,
+  SelectOptions,
+} from '/@/composables/modes/types'
 import { HistoryItem } from '/@/composables/stores/history'
 import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
@@ -288,10 +293,11 @@ export function useCanvasStore() {
     cancel: () => canvasEditMode.value.cancel(),
     setEditMode: (mode: EditMode) => canvasEditMode.value.setEditMode(mode),
     editKeyDown,
-    select: (id: string, selectedState: { [key: string]: boolean }) =>
-      canvasEditMode.value.select(id, selectedState),
-    shiftSelect: (id: string, selectedState: { [key: string]: boolean }) =>
-      canvasEditMode.value.shiftSelect(id, selectedState),
+    select: (
+      id: string,
+      selectedState: BoneSelectedState,
+      options?: SelectOptions
+    ) => canvasEditMode.value.select(id, selectedState, options),
     rectSelect: (rect: IRectangle, shift = false) =>
       canvasEditMode.value.rectSelect(rect, shift),
     selectAll: () => canvasEditMode.value.selectAll(),

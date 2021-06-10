@@ -1322,4 +1322,61 @@ describe('utils/armatures', () => {
       ])
     })
   })
+
+  describe('getShiftClickedBoneState', () => {
+    describe('when head and tail are clicked', () => {
+      it('should clear all if head and tail are selected', () => {
+        expect(
+          target.getShiftClickedBoneState(
+            { head: true, tail: true },
+            { head: true, tail: true }
+          )
+        ).toEqual({ head: false, tail: false })
+      })
+      it('should select all if either head and tail are selected', () => {
+        expect(
+          target.getShiftClickedBoneState(
+            { head: false, tail: true },
+            { head: true, tail: true }
+          )
+        ).toEqual({ head: true, tail: true })
+      })
+    })
+    describe('when only head is clicked', () => {
+      it('should clear head if head is selected', () => {
+        expect(
+          target.getShiftClickedBoneState(
+            { head: true, tail: true },
+            { head: true, tail: false }
+          )
+        ).toEqual({ head: false, tail: true })
+      })
+      it('should select head if head is not selected', () => {
+        expect(
+          target.getShiftClickedBoneState(
+            { head: false, tail: true },
+            { head: true, tail: false }
+          )
+        ).toEqual({ head: true, tail: true })
+      })
+    })
+    describe('when only tail is clicked', () => {
+      it('should clear tail if tail is selected', () => {
+        expect(
+          target.getShiftClickedBoneState(
+            { head: true, tail: true },
+            { head: false, tail: true }
+          )
+        ).toEqual({ head: true, tail: false })
+      })
+      it('should select tail if tail is not selected', () => {
+        expect(
+          target.getShiftClickedBoneState(
+            { head: true, tail: false },
+            { head: false, tail: true }
+          )
+        ).toEqual({ head: true, tail: true })
+      })
+    })
+  })
 })

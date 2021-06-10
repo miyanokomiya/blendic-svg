@@ -783,3 +783,19 @@ export function sortBoneBySize(bones: Bone[]): Bone[] {
     return getBoneSquaredSize(b) - getBoneSquaredSize(a)
   })
 }
+
+export function getShiftClickedBoneState(
+  current: BoneSelectedState,
+  clicked: BoneSelectedState
+): BoneSelectedState {
+  if (clicked.head && clicked.tail) {
+    return current.head && current.tail
+      ? { head: false, tail: false }
+      : { head: true, tail: true }
+  }
+
+  return {
+    head: clicked.head ? !current.head : current.head,
+    tail: clicked.tail ? !current.tail : current.tail,
+  }
+}

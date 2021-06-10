@@ -116,7 +116,7 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ['select', 'shift-select'],
+  emits: ['select'],
   setup(props, { emit }) {
     const { settings } = useSettings()
 
@@ -144,6 +144,10 @@ export default defineComponent({
     const circleR = computed(() =>
       getCircleR(head.value, tail.value, props.scale)
     )
+
+    function shiftClick(state: BoneSelectedState) {
+      emit('select', state, { shift: true })
+    }
 
     return {
       adjustedOpacity: computed(() => props.opacity * settings.boneOpacity),
@@ -175,24 +179,24 @@ export default defineComponent({
       shiftClick: (state: BoneSelectedState) => {
         if (props.poseMode) {
           if (selectedAll.value) {
-            emit('shift-select', { head: false, tail: false })
+            shiftClick({ head: false, tail: false })
           } else {
-            emit('shift-select', { head: true, tail: true })
+            shiftClick({ head: true, tail: true })
           }
         } else {
           if (state.head && state.tail) {
             if (selectedAll.value) {
-              emit('shift-select', { head: false, tail: false })
+              shiftClick({ head: false, tail: false })
             } else {
-              emit('shift-select', { head: true, tail: true })
+              shiftClick({ head: true, tail: true })
             }
           } else if (state.head) {
-            emit('shift-select', {
+            shiftClick({
               ...props.selectedState,
               head: !props.selectedState.head,
             })
           } else if (state.tail) {
-            emit('shift-select', {
+            shiftClick({
               ...props.selectedState,
               tail: !props.selectedState.tail,
             })

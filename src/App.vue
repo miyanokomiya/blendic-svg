@@ -40,9 +40,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                     @select="
                       (selected) => selectArmature(armature.id, selected)
                     "
-                    @shift-select="
-                      (selected) => shiftSelectArmature(armature.id, selected)
-                    "
                   />
                 </g>
                 <g v-else>
@@ -60,7 +57,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                     :selected-bones="selectedBones"
                     :canvas-mode="canvasMode"
                     @select="selectBone"
-                    @shift-select="shiftSelectBone"
                   />
                 </g>
               </template>
@@ -90,8 +86,8 @@ import ElementLayer from './components/elements/ElementLayer.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import SideBar from '/@/components/SideBar.vue'
 import BoneLayer from '/@/components/elements/BoneLayer.vue'
-import { Bone, IdMap, toMap } from './models/index'
-import { EditMode } from './composables/modes/types'
+import { Bone, BoneSelectedState, IdMap, toMap } from './models/index'
+import { EditMode, SelectOptions } from './composables/modes/types'
 
 import {
   convolutePoseTransforms,
@@ -262,16 +258,10 @@ export default defineComponent({
       visibledBoneMap,
       selectedBones,
       canvasMode,
-      selectBone(id: string, state: { [key: string]: boolean }) {
-        canvasStore.select(id, state)
-      },
-      shiftSelectBone(id: string, state: { [key: string]: boolean }) {
-        canvasStore.select(id, state, { shift: true })
+      selectBone(id: string, state: BoneSelectedState, options: SelectOptions) {
+        canvasStore.select(id, state, options)
       },
       selectArmature(id: string, selected: boolean) {
-        store.selectArmature(selected ? id : '')
-      },
-      shiftSelectArmature(id: string, selected: boolean) {
         store.selectArmature(selected ? id : '')
       },
       setEditMode(mode: EditMode) {

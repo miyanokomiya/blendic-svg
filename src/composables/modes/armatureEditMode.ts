@@ -46,7 +46,7 @@ import {
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { Store } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
-import { mapReduce, toList } from '/@/utils/commons'
+import { getTreeIdPath, mapReduce, reduceToMap, toList } from '/@/utils/commons'
 import { snapGrid, snapRotate, snapScale } from '/@/utils/geometry'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { useMenuList } from '/@/composables/menuList'
@@ -238,7 +238,19 @@ export function useBoneEditMode(
       return
     }
 
-    if (option?.shift) {
+    if (option?.ctrl) {
+      if (lastSelectedBoneId.value) {
+        store.selectBones(
+          reduceToMap(
+            getTreeIdPath(store.boneMap.value, lastSelectedBoneId.value, id),
+            () => ({ head: true, tail: true })
+          ),
+          true
+        )
+      } else {
+        store.selectBone(id, { head: true, tail: true })
+      }
+    } else if (option?.shift) {
       store.selectBone(id, selectedState, true)
     } else {
       store.selectBone(id, selectedState)

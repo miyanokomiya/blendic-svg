@@ -293,7 +293,10 @@ export default defineComponent({
       },
       upLeft: (e: MouseEvent) => {
         if (canvas.dragRectangle.value && canvas.isValidDragRectangle.value) {
-          canvasStore.rectSelect(canvas.dragRectangle.value, e.shiftKey)
+          canvasStore.rectSelect(
+            canvas.dragRectangle.value,
+            e.shiftKey || isCtrlOrMeta(e)
+          )
         } else {
           if (e.target === svg.value && isDownEmpty.value) {
             canvasStore.clickEmpty()

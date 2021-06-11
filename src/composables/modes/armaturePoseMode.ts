@@ -35,7 +35,7 @@ import {
 import { Store } from '/@/store/index'
 import { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '/@/store/animation'
-import { mapReduce } from '/@/utils/commons'
+import { getTreeIdPath, mapReduce, reduceToMap } from '/@/utils/commons'
 import {
   convolutePoseTransforms,
   getTransformedBoneMap,
@@ -217,7 +217,19 @@ export function useBonePoseMode(
       return
     }
 
-    if (option?.shift) {
+    if (option?.ctrl) {
+      if (lastSelectedBoneId.value) {
+        store.selectBones(
+          reduceToMap(
+            getTreeIdPath(store.boneMap.value, lastSelectedBoneId.value, id),
+            () => ({ head: true, tail: true })
+          ),
+          true
+        )
+      } else {
+        store.selectBone(id, { head: true, tail: true }, false, true)
+      }
+    } else if (option?.shift) {
       store.selectBone(id, selectedState, true, true)
     } else {
       store.selectBone(id, selectedState, false, true)

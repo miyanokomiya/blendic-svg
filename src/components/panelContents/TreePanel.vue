@@ -35,6 +35,7 @@ import { getTreeFromElementNode } from '/@/utils/elements'
 import { useStore } from '/@/store'
 import { mapReduce } from '/@/utils/commons'
 import { getTree } from '/@/utils/armatures'
+import { SelectOptions } from '/@/composables/modes/types'
 
 export default defineComponent({
   components: { TreeNode },
@@ -91,7 +92,7 @@ export default defineComponent({
       }
     })
 
-    function clickElement(id: string, shift: boolean) {
+    function clickElement(id: string, options?: SelectOptions) {
       switch (canvasStore.state.canvasMode) {
         case 'edit':
         case 'pose':
@@ -103,13 +104,13 @@ export default defineComponent({
             store.selectBone(
               id,
               { head: true, tail: true },
-              shift,
+              options,
               canvasStore.state.canvasMode === 'pose'
             )
           }
           return
         case 'weight':
-          elementStore.selectElement(id, shift)
+          elementStore.selectElement(id, options?.shift)
           return
         default:
           return

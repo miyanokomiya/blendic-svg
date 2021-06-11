@@ -36,8 +36,9 @@ import * as armatureUtils from '/@/utils/armatures'
 import { IVec2 } from 'okageo'
 import { useHistoryStore } from './history'
 import { HistoryItem } from '/@/composables/stores/history'
-import { splitList, toList } from '/@/utils/commons'
+import { getTreeIdPath, reduceToMap, splitList, toList } from '/@/utils/commons'
 import { convolute } from '/@/utils/histories'
+import { SelectOptions } from '/@/composables/modes/types'
 
 const historyStore = useHistoryStore()
 
@@ -236,7 +237,7 @@ function selectAllBone() {
     historyStore.push(item)
   }
 }
-function selectBone(
+function _selectBone(
   id: string = '',
   selectedState: BoneSelectedState = { head: true, tail: true },
   shift = false,
@@ -267,6 +268,24 @@ function selectBones(
   const item = getSelectBonesItem(selectedStateMap, shift)
   item.redo()
   historyStore.push(item)
+}
+function selectBone(
+  id?: string,
+  selectedState: BoneSelectedState = { head: true, tail: true },
+  options?: SelectOptions,
+  ignoreConnection = false
+) {
+  if (id && options?.ctrl && lastSelectedBone.value) {
+    selectBones(
+      reduceToMap(
+        getTreeIdPath(boneMap.value, lastSelectedBone.value.id, id),
+        () => ({ head: true, tail: true })
+      ),
+      true
+    )
+  } else {
+    _selectBone(id, selectedState, options?.shift, ignoreConnection)
+  }
 }
 
 function deleteBone() {

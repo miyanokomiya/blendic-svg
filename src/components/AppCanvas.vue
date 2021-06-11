@@ -119,7 +119,7 @@ import {
 import { useSettings } from '/@/composables/settings'
 import { centerizeView, provideScale, useCanvas } from '../composables/canvas'
 import { useThrottle } from '/@/composables/throttle'
-import { isCtrlOrMeta } from '/@/utils/devices'
+import { getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 
 export default defineComponent({
   components: {
@@ -293,10 +293,7 @@ export default defineComponent({
       },
       upLeft: (e: MouseEvent) => {
         if (canvas.dragRectangle.value && canvas.isValidDragRectangle.value) {
-          canvasStore.rectSelect(
-            canvas.dragRectangle.value,
-            e.shiftKey || isCtrlOrMeta(e)
-          )
+          canvasStore.rectSelect(canvas.dragRectangle.value, getMouseOptions(e))
         } else {
           if (e.target === svg.value && isDownEmpty.value) {
             canvasStore.clickEmpty()

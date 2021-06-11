@@ -25,15 +25,15 @@ import {
   BoneSelectedState,
   IdMap,
 } from '/@/models/index'
-import {
+import type {
   EditMode,
   CanvasEditModeBase,
   EditMovement,
   PopupMenuItem,
   SelectOptions,
 } from '/@/composables/modes/types'
-import { Store } from '/@/store/index'
-import { CanvasStore } from '/@/store/canvas'
+import type { Store } from '/@/store/index'
+import type { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '/@/store/animation'
 import { getTreeIdPath, mapReduce, reduceToMap } from '/@/utils/commons'
 import {
@@ -236,7 +236,7 @@ export function useBonePoseMode(
     }
   }
 
-  function rectSelect(rect: IRectangle, shift = false) {
+  function rectSelect(rect: IRectangle, options?: SelectOptions) {
     // FIXME: it may be performance issue someday to resolve poses here
     const boneMap = getTransformedBoneMap(
       mapReduce(store.boneMap.value, (b) => {
@@ -250,7 +250,7 @@ export function useBonePoseMode(
       })
     )
     const stateMap = selectBoneInRect(rect, boneMap)
-    store.selectBones(stateMap, shift)
+    store.selectBones(stateMap, options?.shift || options?.ctrl)
   }
 
   function selectAll() {

@@ -298,8 +298,8 @@ export function useCanvasStore() {
       selectedState: BoneSelectedState,
       options?: SelectOptions
     ) => canvasEditMode.value.select(id, selectedState, options),
-    rectSelect: (rect: IRectangle, shift = false) =>
-      canvasEditMode.value.rectSelect(rect, shift),
+    rectSelect: (rect: IRectangle, options: SelectOptions) =>
+      canvasEditMode.value.rectSelect(rect, options),
     selectAll: () => canvasEditMode.value.selectAll(),
     availableCommandList,
     popupMenuList,

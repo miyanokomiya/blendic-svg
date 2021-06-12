@@ -71,7 +71,7 @@ export interface KeyframeBoneSameRange extends KeyframeBaseSameRange {
   }
 }
 
-export type KeyframeStatus = '' | 'enabled' | 'checked'
+export type KeyframeStatus = 'none' | 'others' | 'self'
 
 export interface KeyframePropsStatus
   extends KeyframeBaseProps<KeyframeStatus> {}

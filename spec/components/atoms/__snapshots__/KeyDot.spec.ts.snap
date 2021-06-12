@@ -1,8 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`src/components/atoms/KeyDot.vue snapshot checked 1`] = `
+exports[`src/components/atoms/KeyDot.vue snapshot status: none 1`] = `
 <button
-  checked="true"
   type="button"
 >
   <svg
@@ -17,18 +16,56 @@ exports[`src/components/atoms/KeyDot.vue snapshot checked 1`] = `
 </button>
 `;
 
-exports[`src/components/atoms/KeyDot.vue snapshot not checked 1`] = `
+exports[`src/components/atoms/KeyDot.vue snapshot status: others 1`] = `
 <button
-  checked="false"
   type="button"
 >
   <svg
     viewBox="-8 -8 16 16"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle
+    <path
+      d="M0,-5 L5,0 L0,5 L-5,0z"
       fill="#aaa"
-      r="2.5"
+      stroke="none"
+    />
+  </svg>
+</button>
+`;
+
+exports[`src/components/atoms/KeyDot.vue snapshot status: self 1`] = `
+<button
+  type="button"
+>
+  <svg
+    viewBox="-8 -8 16 16"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M0,-5 L5,0 L0,5 L-5,0z"
+      fill="none"
+      stroke="#aaa"
+      stroke-linejoin="round"
+      stroke-width="1.5"
+    />
+  </svg>
+</button>
+`;
+
+exports[`src/components/atoms/KeyDot.vue snapshot updated 1`] = `
+<button
+  type="button"
+>
+  <svg
+    viewBox="-8 -8 16 16"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M0,-5 L5,0 L0,5 L-5,0z"
+      fill="none"
+      stroke="#ffc0cb"
+      stroke-linejoin="round"
+      stroke-width="1.5"
     />
   </svg>
 </button>

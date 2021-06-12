@@ -28,9 +28,9 @@ export default defineConfig({
                     const dir = p as DirectiveNode
                     if (!dir.arg) return true
                     if (dir.arg.type !== 4) return true
-                    return !(dir.arg as SimpleExpressionNode).content.startsWith(
-                      TEST_PREFIX
-                    )
+                    return !(
+                      dir.arg as SimpleExpressionNode
+                    ).content.startsWith(TEST_PREFIX)
                   }
                   default:
                     return true

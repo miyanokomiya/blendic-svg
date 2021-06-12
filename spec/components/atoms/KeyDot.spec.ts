@@ -22,15 +22,27 @@ import Target from '/@/components/atoms/KeyDot.vue'
 
 describe('src/components/atoms/KeyDot.vue', () => {
   describe('snapshot', () => {
-    it('not checked', () => {
+    it('status: none', () => {
       const wrapper = mount(Target, {
-        props: { checked: false },
+        props: { status: 'none' },
       })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('checked', () => {
+    it('status: others', () => {
       const wrapper = mount(Target, {
-        props: { checked: true },
+        props: { status: 'others' },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('status: self', () => {
+      const wrapper = mount(Target, {
+        props: { status: 'self' },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('updated', () => {
+      const wrapper = mount(Target, {
+        props: { status: 'self', updated: true },
       })
       expect(wrapper.element).toMatchSnapshot()
     })

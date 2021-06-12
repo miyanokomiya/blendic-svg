@@ -47,9 +47,11 @@ Copyright (C) 2021, Tomoya Komiyama.
     <component
       :is="componentMap[c.type]"
       :model-value="c.option"
+      :props-updated-status="getKeyframeUpdatedStatus(c.id)"
       :keyframe-status-map="getKeyframeStatus(c.id)"
       :bone-options="boneOptions"
-      :update-keyframe-status="getUpdateKeyframeStatusFn(i)"
+      :create-keyframe="createKeyframe(i)"
+      :delete-keyframe="deleteKeyframe(i)"
       @update:modelValue="
         (option, seriesKey) => updateConstraint(i, option, seriesKey)
       "
@@ -60,7 +62,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, DefineComponent, defineComponent, PropType } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 import {
   BoneConstraint,
   BoneConstraintType,
@@ -88,9 +90,8 @@ import {
 import {
   KeyframeConstraint,
   KeyframeConstraintPropKey,
-  KeyframeStatus,
 } from '/@/models/keyframe'
-import { IdMap } from '/@/models'
+import { IdMap, toMap } from '/@/models'
 import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
 import { mapReduce } from '/@/utils/commons'
 
@@ -104,7 +105,9 @@ const constraintNameMap: { [key in BoneConstraintType]: string } = {
   COPY_SCALE: 'Copy Scale',
 } as const
 
-const componentMap: { [key in BoneConstraintType]: DefineComponent } = {
+const componentMap: {
+  [key in BoneConstraintType]: typeof LimitLocationOptionField
+} = {
   IK: IKOptionField,
   LIMIT_LOCATION: LimitLocationOptionField,
   LIMIT_ROTATION: LimitRotationOptionField,
@@ -127,6 +130,10 @@ export default defineComponent({
       type: Array as PropType<BoneConstraint[]>,
       required: true,
     },
+    originalConstraints: {
+      type: Object as PropType<IdMap<BoneConstraint>>,
+      default: () => ({}),
+    },
     boneOptions: {
       type: Array as PropType<{ value: string; label: string }[]>,
       required: true,
@@ -142,6 +149,8 @@ export default defineComponent({
   },
   emits: ['update', 'update-item', 'add-keyframe', 'remove-keyframe'],
   setup(props, { emit }) {
+    const constraintMap = computed(() => toMap(props.constraints))
+
     const constraintOptions = computed<
       { value: BoneConstraintType; label: string }[]
     >(() => {
@@ -157,9 +166,21 @@ export default defineComponent({
 
       return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
         return list.some((k) => k.frame === props.currentFrame)
-          ? 'checked'
-          : 'enabled'
+          ? 'self'
+          : 'others'
       })
+    }
+
+    function getKeyframeUpdatedStatus(
+      id: string
+    ): Partial<{ [key in KeyframeConstraintPropKey]: boolean }> {
+      const origin = props.originalConstraints[id]
+      const current = constraintMap.value[id]
+      if (!origin || !current) return {}
+
+      return {
+        influence: origin.option.influence !== current.option.influence,
+      }
     }
 
     function setBoneConstraintType(val: BoneConstraintType) {
@@ -219,13 +240,14 @@ export default defineComponent({
       emit('remove-keyframe', target.id, key)
     }
 
-    function getUpdateKeyframeStatusFn(index: number) {
-      return (key: KeyframeConstraintPropKey, status: KeyframeStatus) => {
-        if (status === 'checked') {
-          addKeyframe(index, key)
-        } else {
-          removeKeyframe(index, key)
-        }
+    function createKeyframe(index: number) {
+      return (key: KeyframeConstraintPropKey) => {
+        addKeyframe(index, key)
+      }
+    }
+    function deleteKeyframe(index: number) {
+      return (key: KeyframeConstraintPropKey) => {
+        removeKeyframe(index, key)
       }
     }
 
@@ -239,9 +261,12 @@ export default defineComponent({
       updateConstraint,
       upConstraint,
       downConstraint,
+
+      getKeyframeUpdatedStatus,
       addKeyframe,
       removeKeyframe,
-      getUpdateKeyframeStatusFn,
+      createKeyframe,
+      deleteKeyframe,
     }
   },
 })

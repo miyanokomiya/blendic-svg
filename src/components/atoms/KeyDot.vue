@@ -20,19 +20,19 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <button type="button" @click="toggle">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="-8 -8 16 16">
-      <circle v-if="status === ''" r="2.5" fill="#aaa" />
+      <circle v-if="status === 'none'" r="2.5" :fill="color" />
       <path
-        v-else-if="status === 'enabled'"
+        v-else-if="status === 'others'"
         d="M0,-5 L5,0 L0,5 L-5,0z"
         stroke="none"
-        fill="#aaa"
+        :fill="color"
       />
       <path
         v-else
         d="M0,-5 L5,0 L0,5 L-5,0z"
         stroke-linejoin="round"
         stroke-width="1.5"
-        stroke="#aaa"
+        :stroke="color"
         fill="none"
       />
     </svg>
@@ -40,21 +40,42 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
+import { defineComponent, PropType, computed } from 'vue'
+import type { KeyframeStatus } from '/@/models/keyframe'
 
 export default defineComponent({
   props: {
     status: {
-      type: String as PropType<'' | 'enabled' | 'checked'>,
-      default: '',
+      type: String as PropType<KeyframeStatus>,
+      default: 'none',
+    },
+    updated: {
+      type: Boolean,
+      default: false,
     },
   },
-  emits: ['update:status'],
+  emits: ['create', 'delete'],
   setup(props, { emit }) {
+    function toggle() {
+      if (props.updated) {
+        emit('create')
+        return
+      }
+
+      switch (props.status) {
+        case 'none':
+        case 'others':
+          emit('create')
+          return
+        case 'self':
+          emit('delete')
+          return
+      }
+    }
+
     return {
-      toggle() {
-        emit('update:status', props.status === 'checked' ? '' : 'checked')
-      },
+      toggle,
+      color: computed(() => (props.updated ? '#ffc0cb' : '#aaa')),
     }
   },
 })

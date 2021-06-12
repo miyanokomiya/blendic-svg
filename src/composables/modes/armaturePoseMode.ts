@@ -37,7 +37,7 @@ import type { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '/@/store/animation'
 import { mapReduce } from '/@/utils/commons'
 import {
-  convolutePoseTransforms,
+  addPoseTransform,
   getTransformedBoneMap,
   invertPoseTransform,
   selectBoneInRect,
@@ -128,6 +128,10 @@ export function useBonePoseMode(
     return Math.sign(scale.x * scale.y)
   }
 
+  function getDefaultEditTransform(arg: Partial<Transform> = {}) {
+    return getTransform({ scale: { x: 0, y: 0 }, ...arg })
+  }
+
   const editTransforms = computed(() => {
     const editMovement = state.editMovement
     if (!editMovement) return {}
@@ -150,7 +154,9 @@ export function useBonePoseMode(
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>
       >((map, id) => {
-        map[id] = getTransform({ rotate: snappedRotate * rotateDirection(id) })
+        map[id] = getDefaultEditTransform({
+          rotate: snappedRotate * rotateDirection(id),
+        })
         return map
       }, {})
     } else if (state.command === 'scale') {
@@ -163,7 +169,8 @@ export function useBonePoseMode(
       const scale = multi(
         multi({ x: 1, y: 1 }, isOppositeSide ? -1 : 1),
         getDistance(editMovement.current, origin) /
-          getDistance(editMovement.start, origin)
+          getDistance(editMovement.start, origin) -
+          1
       )
       const gridScale = editMovement.ctrl ? snapScale(scale) : scale
       const snappedScale = canvasStore.snapScale(gridScale)
@@ -171,7 +178,7 @@ export function useBonePoseMode(
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>
       >((map, id) => {
-        map[id] = getTransform({ scale: snappedScale })
+        map[id] = getDefaultEditTransform({ scale: snappedScale })
         return map
       }, {})
     } else if (state.command === 'grab') {
@@ -186,7 +193,7 @@ export function useBonePoseMode(
         IdMap<Transform>
       >((map, id) => {
         if (!animationStore.selectedBones.value[id].connected) {
-          map[id] = getTransform({
+          map[id] = getDefaultEditTransform({
             translate: convertToPosedSpace(snappedTranslate, id),
           })
         }
@@ -226,10 +233,10 @@ export function useBonePoseMode(
       mapReduce(store.boneMap.value, (b) => {
         return {
           ...b,
-          transform: convolutePoseTransforms([
+          transform: addPoseTransform(
             animationStore.getCurrentSelfTransforms(b.id),
-            getEditTransforms(b.id),
-          ]),
+            getEditTransforms(b.id)
+          ),
         }
       })
     )
@@ -292,7 +299,7 @@ export function useBonePoseMode(
   })
 
   function getEditTransforms(id: string) {
-    return editTransforms.value[id] ?? getTransform()
+    return editTransforms.value[id] ?? getDefaultEditTransform()
   }
 
   function insert() {

@@ -90,7 +90,7 @@ import { Bone, BoneSelectedState, IdMap, toMap } from './models/index'
 import { EditMode, SelectOptions } from './composables/modes/types'
 
 import {
-  convolutePoseTransforms,
+  addPoseTransform,
   editTransform,
   getTransformedBoneMap,
   posedTransform,
@@ -158,10 +158,10 @@ export default defineComponent({
             lastSelectedArmature.value.bones.map((b) => {
               return {
                 ...b,
-                transform: convolutePoseTransforms([
+                transform: addPoseTransform(
                   animationStore.getCurrentSelfTransforms(b.id),
-                  canvasStore.getEditTransforms(b.id),
-                ]),
+                  canvasStore.getEditTransforms(b.id)
+                ),
                 constraints: b.constraints.map((b) => constraintMap[b.id]),
               }
             })

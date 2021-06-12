@@ -31,7 +31,11 @@ import {
   getKeyframeConstraint,
   getKeyframePoint,
 } from '/@/models/keyframe'
-import { boneToAffine } from '/@/utils/armatures'
+import {
+  addPoseTransform,
+  boneToAffine,
+  subPoseTransform,
+} from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
 import { getConstraint } from '/@/utils/constraints'
 import {
@@ -198,6 +202,56 @@ describe('utils/poseResolver.ts', () => {
           },
           elm_b: {},
         })
+      })
+    })
+
+    describe('addPoseTransform', () => {
+      it('should add two transforms', () => {
+        expect(
+          addPoseTransform(
+            getTransform({
+              translate: { x: 1, y: 2 },
+              scale: { x: 3, y: 4 },
+              rotate: 5,
+            }),
+            getTransform({
+              translate: { x: 10, y: 20 },
+              scale: { x: 30, y: 40 },
+              rotate: 50,
+            })
+          )
+        ).toEqual(
+          getTransform({
+            translate: { x: 11, y: 22 },
+            scale: { x: 33, y: 44 },
+            rotate: 55,
+          })
+        )
+      })
+    })
+
+    describe('subPoseTransform', () => {
+      it('should sub two transforms', () => {
+        expect(
+          subPoseTransform(
+            getTransform({
+              translate: { x: 10, y: 20 },
+              scale: { x: 30, y: 40 },
+              rotate: 50,
+            }),
+            getTransform({
+              translate: { x: 1, y: 2 },
+              scale: { x: 3, y: 4 },
+              rotate: 5,
+            })
+          )
+        ).toEqual(
+          getTransform({
+            translate: { x: 9, y: 18 },
+            scale: { x: 27, y: 36 },
+            rotate: 45,
+          })
+        )
       })
     })
 

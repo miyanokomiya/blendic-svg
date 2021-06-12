@@ -43,7 +43,7 @@ import {
   KeyframeBase,
   KeyframeConstraint,
 } from '/@/models/keyframe'
-import { invertPoseTransform, multiPoseTransform } from '/@/utils/armatures'
+import { subPoseTransform } from '/@/utils/armatures'
 import { BoneConstraint, BoneConstraintOption } from '/@/utils/constraints'
 import { circleClamp, isIdentityTransform } from '/@/utils/geometry'
 import { mergeKeyframe } from '/@/utils/keyframes'
@@ -290,10 +290,7 @@ export function pastePoseMap(
   return Object.keys(nextPoseMapByBoneId).reduce<IdMap<Transform>>((p, c) => {
     const currentPose = getCurrentPose(c)
     if (currentPose) {
-      p[c] = multiPoseTransform(
-        nextPoseMapByBoneId[c],
-        invertPoseTransform(currentPose)
-      )
+      p[c] = subPoseTransform(nextPoseMapByBoneId[c], currentPose)
     }
     return p
   }, {})
@@ -354,8 +351,8 @@ export function resetTransformByKeyframe(
 
   const translateX = keyframe.points.translateX ? 0 : src.translate.x
   const translateY = keyframe.points.translateY ? 0 : src.translate.y
-  const scaleX = keyframe.points.scaleX ? 1 : src.scale.x
-  const scaleY = keyframe.points.scaleY ? 1 : src.scale.y
+  const scaleX = keyframe.points.scaleX ? 0 : src.scale.x
+  const scaleY = keyframe.points.scaleY ? 0 : src.scale.y
   const rotate = keyframe.points.rotate ? 0 : src.rotate
 
   return getTransform({

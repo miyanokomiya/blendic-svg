@@ -56,6 +56,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           @update:modelValue="changeRotate"
         />
         <KeyDot
+          data-test-id="key-dot-rotate"
           :status="keyframeStatusMap.rotate"
           :updated="posePropsUpdatedStatus.rotate"
           @create="createKeyframe('rotate')"

@@ -81,5 +81,19 @@ describe('posing', () => {
     await page.waitForTimeout(50)
     await page.click('button[title="pause"]')
     await screenshot('change_frame_1')
+
+    // Pose
+    await page.mouse.move(100, 100)
+    await page.press('.app-canvas-root', 'r')
+    await moveAndClick(page, 200, 100)
+    await screenshot('posing_2')
+
+    // Insert keyframe in the item panel
+    await page.click('button[data-test-id="key-dot-rotate"]')
+    await screenshot('insert_keyframe_in_panel')
+
+    // Delete keyframe in the item panel
+    await page.click('button[data-test-id="key-dot-rotate"]')
+    await screenshot('delete_keyframe_in_panel')
   })
 })

@@ -88,6 +88,22 @@ export function boneToAffine(bone: Bone): AffineMatrix {
   ])
 }
 
+export function addPoseTransform(a: Transform, b: Transform): Transform {
+  return getTransform({
+    scale: add(a.scale, b.scale),
+    rotate: a.rotate + b.rotate,
+    translate: add(a.translate, b.translate),
+  })
+}
+
+export function subPoseTransform(a: Transform, b: Transform): Transform {
+  return getTransform({
+    scale: sub(a.scale, b.scale),
+    rotate: a.rotate - b.rotate,
+    translate: sub(a.translate, b.translate),
+  })
+}
+
 export function multiPoseTransform(a: Transform, b: Transform): Transform {
   return getTransform({
     scale: { x: a.scale.x * b.scale.x, y: a.scale.y * b.scale.y },

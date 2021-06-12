@@ -35,7 +35,7 @@ import {
   getEditedKeyframeConstraint,
 } from '../utils/animations'
 import {
-  convolutePoseTransforms,
+  addPoseTransform,
   getPosedBoneHeadsOrigin,
   getPoseSelectedBones,
   getTransformedBoneMap,
@@ -230,10 +230,10 @@ const posedTargetIds = computed(() => {
 
 const currentSelfTransforms = computed((): IdMap<Transform> => {
   return posedTargetIds.value.reduce<IdMap<Transform>>((p, id) => {
-    p[id] = convolutePoseTransforms([
+    p[id] = addPoseTransform(
       currentInterpolatedTransform(id),
-      getBoneEditedTransforms(id),
-    ])
+      getBoneEditedTransforms(id)
+    )
     return p
   }, {})
 })
@@ -299,10 +299,8 @@ function setEditedTransforms(mapByTargetId: IdMap<Transform>) {
 function applyEditedTransforms(mapByTargetId: IdMap<Transform>) {
   setEditedTransforms(
     mapReduce({ ...editTransforms.value, ...mapByTargetId }, (_p, id) => {
-      return convolutePoseTransforms([
-        getBoneEditedTransforms(id),
-        mapByTargetId[id] ?? getTransform(),
-      ])
+      if (!mapByTargetId[id]) return getBoneEditedTransforms(id)
+      return addPoseTransform(getBoneEditedTransforms(id), mapByTargetId[id])
     })
   )
 }
@@ -326,11 +324,14 @@ function applyEditedConstraint(
   )
 }
 
-function pastePoses(mapByTargetId: IdMap<Transform>, seriesKey?: string) {
+function pastePoses(
+  nextPoseMapByTargetId: IdMap<Transform>,
+  seriesKey?: string
+) {
   const item = getUpdateEditedTransformsItem(
     {
       ...editTransforms.value,
-      ...pastePoseMap(mapByTargetId, (id) => {
+      ...pastePoseMap(nextPoseMapByTargetId, (id) => {
         if (!selectedTargetIdMap.value[id]) return
         return currentInterpolatedTransform(id)
       }),
@@ -347,7 +348,9 @@ function currentInterpolatedTransform(targetId: string): Transform {
   )
 }
 function getBoneEditedTransforms(targetId: string): Transform {
-  return editTransforms.value[targetId] ?? getTransform()
+  return (
+    editTransforms.value[targetId] ?? getTransform({ scale: { x: 0, y: 0 } })
+  )
 }
 function getCurrentSelfTransforms(targetId: string): Transform {
   return currentSelfTransforms.value[targetId] ?? getTransform()

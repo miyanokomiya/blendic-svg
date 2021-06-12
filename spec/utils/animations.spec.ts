@@ -407,11 +407,26 @@ describe('utils/animations.ts', () => {
     it('should override current pose', () => {
       const ret = pastePoseMap(
         {
-          a: getTransform({ rotate: 10 }),
+          a: getTransform({
+            translate: { x: 100, y: 200 },
+            scale: { x: 1000, y: 2000 },
+            rotate: 10,
+          }),
         },
-        () => getTransform({ rotate: 100 })
+        () =>
+          getTransform({
+            translate: { x: 120, y: 230 },
+            scale: { x: 1040, y: 2050 },
+            rotate: 100,
+          })
       )
-      expect(ret.a).toEqual(getTransform({ rotate: -90 }))
+      expect(ret.a).toEqual(
+        getTransform({
+          translate: { x: -20, y: -30 },
+          scale: { x: -40, y: -50 },
+          rotate: -90,
+        })
+      )
     })
     it('should drop items if those transform are not exist', () => {
       const ret = pastePoseMap(
@@ -525,6 +540,7 @@ describe('utils/animations.ts', () => {
       ).toEqual(
         getTransform({
           origin: { x: 1, y: 2 },
+          scale: { x: 0, y: 0 },
         })
       )
     })

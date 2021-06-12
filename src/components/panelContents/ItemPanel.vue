@@ -156,7 +156,7 @@ import { Bone, getTransform, IdMap, Transform } from '/@/models'
 import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
 import { useCanvasStore } from '/@/store/canvas'
-import { convolutePoseTransforms, editTransform } from '/@/utils/armatures'
+import { addPoseTransform, editTransform } from '/@/utils/armatures'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
@@ -222,10 +222,11 @@ export default defineComponent({
     const targetTransform = computed((): Transform | undefined => {
       if (!targetBone.value) return undefined
       if (canvasStore.state.canvasMode !== 'pose') return undefined
-      return convolutePoseTransforms([
+
+      return addPoseTransform(
         animationStore.getCurrentSelfTransforms(targetBone.value.id),
-        canvasStore.getEditTransforms(targetBone.value.id),
-      ])
+        canvasStore.getEditTransforms(targetBone.value.id)
+      )
     })
 
     const showColorPicker = ref(false)

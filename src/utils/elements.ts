@@ -58,7 +58,8 @@ function parseElementNode(parentElm: SVGElement): ElementNode {
   return getElementNode(
     {
       id,
-      tag: parentElm.tagName.toLowerCase(),
+      // NOTE: case-sensitive e.g. <foreignObject>
+      tag: parentElm.tagName,
       attributes: Array.from(parentElm.attributes).reduce<{
         [name: string]: string
       }>((p, c) => ({ ...p, [c.name]: c.value }), {}),

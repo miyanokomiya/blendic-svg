@@ -123,17 +123,21 @@ describe('utils/helpers.ts', () => {
   })
 
   describe('normalizeAttributes', () => {
-    it('drop styles duplicated with attributes', () => {
-      expect(
-        normalizeAttributes({
-          style: 'fill:black;opacity:0.1;stroke:black;',
-          fill: 'red',
-          stroke: 'green',
-        })
-      ).toEqual({
-        style: 'opacity:0.1;',
+    it('should override styles including the attributes', () => {
+      const ret = normalizeAttributes({
+        style: 'fill:black;opacity:0.1;stroke:black;',
         fill: 'red',
         stroke: 'green',
+      })
+      expect(ret).toEqual({
+        style: expect.anything(),
+        fill: 'red',
+        stroke: 'green',
+      })
+      expect(parseStyle(ret.style)).toEqual({
+        fill: 'red',
+        stroke: 'green',
+        opacity: '0.1',
       })
     })
   })

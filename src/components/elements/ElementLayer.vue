@@ -29,11 +29,13 @@ Copyright (C) 2021, Tomoya Komiyama.
       stroke="#777"
       stroke-dasharray="2 2"
     ></rect>
-    <NativeElement
-      v-for="node in elementRoot.children"
-      :key="getId(node)"
-      :element="node"
-    />
+    <g :id="elementRoot.id">
+      <NativeElement
+        v-for="node in elementRoot.children"
+        :key="getId(node)"
+        :element="node"
+      />
+    </g>
   </g>
 </template>
 

@@ -62,7 +62,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, DefineComponent, defineComponent, PropType } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 import {
   BoneConstraint,
   BoneConstraintType,
@@ -105,7 +105,9 @@ const constraintNameMap: { [key in BoneConstraintType]: string } = {
   COPY_SCALE: 'Copy Scale',
 } as const
 
-const componentMap: { [key in BoneConstraintType]: DefineComponent } = {
+const componentMap: {
+  [key in BoneConstraintType]: typeof LimitLocationOptionField
+} = {
   IK: IKOptionField,
   LIMIT_LOCATION: LimitLocationOptionField,
   LIMIT_ROTATION: LimitRotationOptionField,

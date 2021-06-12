@@ -110,7 +110,7 @@ export default defineComponent({
           }
           return
         case 'weight':
-          elementStore.selectElement(id, options?.shift)
+          elementStore.selectElement(id, options)
           return
         default:
           return

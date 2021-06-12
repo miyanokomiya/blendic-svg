@@ -22,6 +22,7 @@ import { useListState } from '../composables/listState'
 import { Actor, BElement, IdMap, toMap } from '../models'
 import { extractMap, mapReduce, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
+import { SelectOptions } from '/@/composables/modes/types'
 import { HistoryItem } from '/@/composables/stores/history'
 import { flatElementTree } from '/@/utils/elements'
 
@@ -72,16 +73,17 @@ function importActor(actor: Actor) {
   historyStore.push(item)
 }
 
-function selectElement(id = '', shift = false) {
+function selectElement(id = '', options?: SelectOptions) {
   if (!id && Object.keys(selectedElements.value).length === 0) return
   if (
-    !shift &&
+    !options?.shift &&
     id === lastSelectedElementId.value &&
     selectedElementCount.value === 1
   )
     return
 
-  const item = getSelectItem(id, shift)
+  // TODO: ctrl selecting
+  const item = getSelectItem(id, options?.shift)
   item.redo()
   historyStore.push(item)
 }

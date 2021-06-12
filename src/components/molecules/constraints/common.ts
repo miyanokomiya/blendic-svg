@@ -19,10 +19,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { PropType } from 'vue'
 import { SpaceType } from '/@/models'
-import {
+import type {
   KeyframeConstraintPropKey,
   KeyframePropsStatus,
-  KeyframeStatus,
 } from '/@/models/keyframe'
 import { BoneConstraintOption } from '/@/utils/constraints'
 
@@ -32,6 +31,12 @@ export function getProps<T extends BoneConstraintOption>() {
       type: Object as PropType<T>,
       required: true,
     },
+    propsUpdatedStatus: {
+      type: Object as PropType<
+        Partial<{ [key in KeyframeConstraintPropKey]: boolean }>
+      >,
+      default: () => ({}),
+    },
     boneOptions: {
       type: Array as PropType<{ value: string; label: string }[]>,
       default: () => [],
@@ -40,10 +45,12 @@ export function getProps<T extends BoneConstraintOption>() {
       type: Object as PropType<KeyframePropsStatus['props']>,
       default: () => ({}),
     },
-    updateKeyframeStatus: {
-      type: Function as PropType<
-        (key: KeyframeConstraintPropKey, status: KeyframeStatus) => void
-      >,
+    createKeyframe: {
+      type: Function as PropType<(key: KeyframeConstraintPropKey) => void>,
+      default: () => {},
+    },
+    deleteKeyframe: {
+      type: Function as PropType<(key: KeyframeConstraintPropKey) => void>,
       default: () => {},
     },
   } as const

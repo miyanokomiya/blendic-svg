@@ -184,7 +184,22 @@ const splitedKeyframeMapByTargetId = computed(() => {
   return splitKeyframeMapByName(keyframeMapByTargetId.value)
 })
 
+const originalInterpolatedConstraintMap = computed<IdMap<BoneConstraint>>(
+  () => {
+    return keyframeConstraint.getInterpolatedConstraintMap(
+      store.constraintMap.value,
+      splitedKeyframeMapByTargetId.value.constraint,
+      animationFrameStore.currentFrame.value
+    )
+  }
+)
+
 const currentInterpolatedConstraintMap = computed<IdMap<BoneConstraint>>(() => {
+  // it is needless to interpolate again if any constraints having keyframes are not edited
+  if (Object.keys(editConstraints.value).length === 0) {
+    return originalInterpolatedConstraintMap.value
+  }
+
   return keyframeConstraint.getInterpolatedConstraintMap(
     store.constraintMap.value,
     mapReduce(splitedKeyframeMapByTargetId.value.constraint, (list) => {
@@ -608,9 +623,11 @@ export function useAnimationStore() {
     selectedBoneMap,
     selectedBones,
     selectedPosedBoneOrigin,
+    getBoneEditedTransforms,
     getCurrentSelfTransforms,
     currentInterpolatedConstraintMap,
 
+    originalInterpolatedConstraintMap,
     applyEditedTransforms,
     applyEditedConstraint,
 

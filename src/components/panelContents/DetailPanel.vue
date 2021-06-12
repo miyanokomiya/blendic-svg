@@ -60,6 +60,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       </InlineField>
       <ConstraintList
         :constraints="constraintList"
+        :original-constraints="originalInterpolatedConstraintMap"
         :bone-options="otherBoneOptions"
         :constraint-keyframe-map="constraintKeyframeMapByTargetId"
         :current-frame="currentFrame"
@@ -242,6 +243,9 @@ export default defineComponent({
       changeBoneName(name: string) {
         store.updateBoneName(name)
       },
+
+      originalInterpolatedConstraintMap:
+        animationStore.originalInterpolatedConstraintMap,
       updateConstraints,
       updateConstraint,
       addKeyframeConstraint,

@@ -402,6 +402,6 @@ export function getKeyframeStatus(
   if (!keyframes) return {}
 
   return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
-    return list.some((k) => k.frame === currentFrame) ? 'checked' : 'enabled'
+    return list.some((k) => k.frame === currentFrame) ? 'self' : 'others'
   })
 }

@@ -59,7 +59,9 @@ Copyright (C) 2021, Tomoya Komiyama.
       />
       <KeyDot
         :status="keyframeStatusMap['influence']"
-        @update:status="(val) => updateKeyframeStatus('influence', val)"
+        :updated="propsUpdatedStatus.influence"
+        @create="createKeyframe('influence')"
+        @delete="deleteKeyframe('influence')"
       />
     </InlineField>
   </div>

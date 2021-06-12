@@ -31,7 +31,9 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <KeyDot
           :status="keyframeStatusMap.translateX"
-          @update:status="(val) => updateKeyframeStatus('translateX', val)"
+          :updated="posePropsUpdatedStatus.translateX"
+          @create="createKeyframe('translateX')"
+          @delete="deleteKeyframe('translateX')"
         />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
@@ -42,7 +44,9 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <KeyDot
           :status="keyframeStatusMap.translateY"
-          @update:status="(val) => updateKeyframeStatus('translateY', val)"
+          :updated="posePropsUpdatedStatus.translateY"
+          @create="createKeyframe('translateY')"
+          @delete="deleteKeyframe('translateY')"
         />
       </InlineField>
       <h5>Rotate</h5>
@@ -53,7 +57,9 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <KeyDot
           :status="keyframeStatusMap.rotate"
-          @update:status="(val) => updateKeyframeStatus('rotate', val)"
+          :updated="posePropsUpdatedStatus.rotate"
+          @create="createKeyframe('rotate')"
+          @delete="deleteKeyframe('rotate')"
         />
       </InlineField>
       <h5>Scale</h5>
@@ -65,7 +71,9 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <KeyDot
           :status="keyframeStatusMap.scaleX"
-          @update:status="(val) => updateKeyframeStatus('scaleX', val)"
+          :updated="posePropsUpdatedStatus.scaleX"
+          @create="createKeyframe('scaleX')"
+          @delete="deleteKeyframe('scaleX')"
         />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
@@ -76,7 +84,9 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <KeyDot
           :status="keyframeStatusMap.scaleY"
-          @update:status="(val) => updateKeyframeStatus('scaleY', val)"
+          :updated="posePropsUpdatedStatus.scaleY"
+          @create="createKeyframe('scaleY')"
+          @delete="deleteKeyframe('scaleY')"
         />
       </InlineField>
       <InlineField>
@@ -141,7 +151,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent, reactive, ref, watchEffect } from 'vue'
-import { Bone, getTransform, Transform } from '/@/models'
+import { Bone, getTransform, IdMap, Transform } from '/@/models'
 import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
 import { useCanvasStore } from '/@/store/canvas'
@@ -307,32 +317,53 @@ export default defineComponent({
       )
     }
 
-    const keyframeStatusMap = computed(() => {
-      if (!targetBone.value) return {}
+    const posePropsUpdatedStatus = computed<
+      Partial<{ [key in KeyframeBonePropKey]: boolean }>
+    >(() => {
+      const target = targetBone.value
+      if (!target) return {}
 
-      const keyframes =
-        animationStore.keyframeMapByTargetId.value[targetBone.value.id]
-      if (!keyframes) return {}
-
-      const currentFrame = animationStore.currentFrame.value
-      return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
-        return list.some((k) => k.frame === currentFrame)
-          ? 'checked'
-          : 'enabled'
-      })
+      const editedTransform = animationStore.getBoneEditedTransforms(
+        targetBone.value!.id
+      )
+      return {
+        translateX:
+          target.transform.translate.x !== editedTransform.translate.x,
+        translateY:
+          target.transform.translate.y !== editedTransform.translate.y,
+        scaleX: target.transform.scale.x !== editedTransform.scale.x,
+        scaleY: target.transform.scale.y !== editedTransform.scale.y,
+        rotate: target.transform.rotate !== editedTransform.rotate,
+      }
     })
 
-    function updateKeyframeStatus(
-      key: KeyframeBonePropKey,
-      status: KeyframeStatus
-    ) {
-      if (!targetBone.value) return
+    const keyframeStatusMap = computed<IdMap<KeyframeStatus | 'updated'>>(
+      () => {
+        if (!targetBone.value) return {}
 
-      if (status === 'checked') {
-        animationStore.execInsertKeyframe({ [key]: true })
-      } else {
-        animationStore.execDeleteTargetKeyframe(targetBone.value.id, key)
+        const keyframes =
+          animationStore.keyframeMapByTargetId.value[targetBone.value.id]
+        if (!keyframes) return {}
+
+        const currentFrame = animationStore.currentFrame.value
+        return mapReduce(
+          getKeyframeExistedPropsMap(keyframes).props,
+          (list) => {
+            return list.some((k) => k.frame === currentFrame)
+              ? 'self'
+              : 'others'
+          }
+        )
       }
+    )
+
+    function createKeyframe(key: KeyframeBonePropKey) {
+      if (!targetBone.value) return
+      animationStore.execInsertKeyframe({ [key]: true })
+    }
+    function deleteKeyframe(key: KeyframeBonePropKey) {
+      if (!targetBone.value) return
+      animationStore.execDeleteTargetKeyframe(targetBone.value.id, key)
     }
 
     watchEffect(() => {
@@ -377,7 +408,9 @@ export default defineComponent({
       updatePoseByColor,
 
       keyframeStatusMap,
-      updateKeyframeStatus,
+      posePropsUpdatedStatus,
+      createKeyframe,
+      deleteKeyframe,
     }
   },
 })

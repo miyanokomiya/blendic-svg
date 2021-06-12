@@ -329,13 +329,11 @@ export default defineComponent({
         targetBone.value!.id
       )
       return {
-        translateX:
-          target.transform.translate.x !== editedTransform.translate.x,
-        translateY:
-          target.transform.translate.y !== editedTransform.translate.y,
-        scaleX: target.transform.scale.x !== editedTransform.scale.x,
-        scaleY: target.transform.scale.y !== editedTransform.scale.y,
-        rotate: target.transform.rotate !== editedTransform.rotate,
+        translateX: editedTransform.translate.x !== 0,
+        translateY: editedTransform.translate.y !== 0,
+        scaleX: editedTransform.scale.x !== 0,
+        scaleY: editedTransform.scale.y !== 0,
+        rotate: editedTransform.rotate !== 0,
       }
     })
 

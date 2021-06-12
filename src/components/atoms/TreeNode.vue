@@ -36,8 +36,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-else
         class="node-name"
         :class="{ selected }"
-        @click.left.exact.prevent="click"
-        @click.left.shift.exact.prevent="shiftClick"
+        @click.left.prevent="click"
         @dblclick.prevent="startEditingName"
         >{{ node.name }}</a
       >
@@ -65,6 +64,8 @@ import {
 import UpIcon from '/@/components/atoms/UpIcon.vue'
 import { TreeNode } from '/@/utils/relations'
 import TextInput from '/@/components/atoms/TextInput.vue'
+import { SelectOptions } from '/@/composables/modes/types'
+import { getMouseOptions } from '/@/utils/devices'
 
 export default defineComponent({
   name: 'TreeNode',
@@ -85,10 +86,9 @@ export default defineComponent({
     })
 
     // eslint-disable-next-line no-unused-vars
-    const onClickElement = inject<(id: string, shift: boolean) => void>(
-      'onClickElement',
-      () => {}
-    )
+    const onClickElement = inject<
+      (id: string, options?: SelectOptions) => void
+    >('onClickElement', () => {})
 
     const selectedMap = inject<ComputedRef<{ [id: string]: boolean }>>(
       'selectedMap',
@@ -117,8 +117,8 @@ export default defineComponent({
       closed,
       toggleClosed,
       children,
-      click: () => onClickElement(props.node.id, false),
-      shiftClick: () => onClickElement(props.node.id, true),
+      click: (e: MouseEvent) =>
+        onClickElement(props.node.id, getMouseOptions(e)),
       selected,
 
       editingName,

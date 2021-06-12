@@ -30,3 +30,25 @@ export function isCtrlOrMeta(e: MouseEvent | KeyboardEvent): boolean {
 export function getCtrlOrMetaStr(): string {
   return isMac() ? 'Command' : 'Ctrl'
 }
+
+export function switchClick(
+  e: MouseEvent,
+  callbacks: { plain?: () => void; shift?: () => void; ctrl?: () => void }
+) {
+  if (isCtrlOrMeta(e)) {
+    callbacks.ctrl?.()
+  } else if (e.shiftKey) {
+    callbacks.shift?.()
+  } else {
+    callbacks.plain?.()
+  }
+}
+
+export type MouseOptions = { shift?: boolean; ctrl?: boolean }
+
+export function getMouseOptions(e: MouseEvent): MouseOptions {
+  return {
+    shift: e.shiftKey,
+    ctrl: isCtrlOrMeta(e),
+  }
+}

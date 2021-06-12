@@ -26,8 +26,10 @@ import {
   inject,
   PropType,
 } from 'vue'
+import { SelectOptions } from '/@/composables/modes/types'
 import { useSettings } from '/@/composables/settings'
 import { ElementNode } from '/@/models'
+import { getMouseOptions } from '/@/utils/devices'
 import { testEditableTag } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
@@ -67,15 +69,14 @@ const NativeElement: any = defineComponent({
     const isElement = computed(() => typeof props.element !== 'string')
     const element = computed(() => props.element as ElementNode)
 
-    const onClickElement = inject<(id: string, shift: boolean) => void>(
-      'onClickElement',
-      () => {}
-    )
+    const onClickElement = inject<
+      (id: string, options?: SelectOptions) => void
+    >('onClickElement', () => {})
 
     function onClick(e: MouseEvent) {
       if (!testEditableTag(element.value.tag)) return
       e.stopPropagation()
-      onClickElement(element.value.id, e.shiftKey)
+      onClickElement(element.value.id, getMouseOptions(e))
     }
 
     const groupSelected = computed(() => {

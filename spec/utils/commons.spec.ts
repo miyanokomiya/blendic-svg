@@ -45,6 +45,8 @@ import {
   resetId,
   getFirstProp,
   splitList,
+  getTreeIdPath,
+  reduceToMap,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -311,6 +313,21 @@ describe('utils/commons.ts', () => {
     })
   })
 
+  describe('getTreeIdPath', () => {
+    it('should return id path: a ~ b', () => {
+      const map = {
+        a: { id: 'a', parentId: '' },
+        b: { id: 'b', parentId: 'a' },
+        c: { id: 'c', parentId: 'b' },
+        d: { id: 'd', parentId: 'c' },
+        e: { id: 'e', parentId: 'd' },
+      }
+      expect(getTreeIdPath(map, 'b', 'd')).toEqual(['b', 'c', 'd'])
+      expect(getTreeIdPath(map, 'd', 'b')).toEqual(['b', 'c', 'd'])
+      expect(getTreeIdPath(map, 'b', 'c')).toEqual(['b', 'c'])
+    })
+  })
+
   describe('hasLeftRightName', () => {
     it.each([
       ['a', ''],
@@ -537,6 +554,12 @@ describe('utils/commons.ts', () => {
         [1, 2],
         [3, 4, 5],
       ])
+    })
+  })
+
+  describe('reduceToMap', () => {
+    it('should return boolean map', () => {
+      expect(reduceToMap(['a', 'b'], () => true)).toEqual({ a: true, b: true })
     })
   })
 })

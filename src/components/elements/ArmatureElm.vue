@@ -27,7 +27,6 @@ Copyright (C) 2021, Tomoya Komiyama.
       :parent="boneMap[bone.parentId]"
       :scale="scale"
       @select="click"
-      @shift-select="shiftClick"
     />
   </g>
 </template>
@@ -53,7 +52,7 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ['select', 'shift-select'],
+  emits: ['select'],
   setup(props, { emit }) {
     const sortedBoneMap = computed(() => {
       return sortBoneBySize(props.armature.bones)
@@ -67,7 +66,6 @@ export default defineComponent({
         props.selected ? { head: true, tail: true } : undefined
       ),
       click: () => emit('select', !props.selected),
-      shiftClick: () => emit('shift-select', !props.selected),
     }
   },
 })

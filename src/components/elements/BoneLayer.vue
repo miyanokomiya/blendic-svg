@@ -28,8 +28,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :scale="scale"
       :pose-mode="canvasMode === 'pose'"
       :class="{ 'view-only': canvasMode === 'weight' }"
-      @select="(state) => selectBone(bone.id, state)"
-      @shift-select="(state) => shiftSelectBone(bone.id, state)"
+      @select="(state, options) => selectBone(bone.id, state, options)"
     />
   </g>
 </template>
@@ -38,7 +37,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType } from 'vue'
 import { Bone, BoneSelectedState, IdMap } from '/@/models'
 import BoneElm from '/@/components/elements/Bone.vue'
-import { CanvasMode } from '/@/composables/modes/types'
+import { CanvasMode, SelectOptions } from '/@/composables/modes/types'
 import { sortBoneBySize } from '/@/utils/armatures'
 import { toList } from '/@/utils/commons'
 
@@ -62,7 +61,7 @@ export default defineComponent({
       default: 'object',
     },
   },
-  emits: ['select', 'shift-select'],
+  emits: ['select'],
   setup(props, { emit }) {
     const sortedBoneMap = computed(() => {
       return sortBoneBySize(toList(props.boneMap))
@@ -70,11 +69,12 @@ export default defineComponent({
 
     return {
       sortedBoneMap,
-      selectBone(boneId: string, state: BoneSelectedState) {
-        emit('select', boneId, state)
-      },
-      shiftSelectBone(boneId: string, state: BoneSelectedState) {
-        emit('shift-select', boneId, state)
+      selectBone(
+        boneId: string,
+        state: BoneSelectedState,
+        options?: SelectOptions
+      ) {
+        emit('select', boneId, state, options)
       },
     }
   },

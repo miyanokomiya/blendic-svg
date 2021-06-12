@@ -27,12 +27,13 @@ import {
   IdMap,
   toMap,
 } from '/@/models/index'
-import {
+import type {
   EditMode,
   CanvasEditModeBase,
   EditMovement,
   ToolMenuGroup,
   PopupMenuItem,
+  SelectOptions,
 } from '/@/composables/modes/types'
 import {
   duplicateBones,
@@ -43,8 +44,8 @@ import {
   symmetrizeBones,
 } from '/@/utils/armatures'
 import { getNotDuplicatedName } from '/@/utils/relations'
-import { Store } from '/@/store/index'
-import { CanvasStore } from '/@/store/canvas'
+import type { Store } from '/@/store/index'
+import type { CanvasStore } from '/@/store/canvas'
 import { mapReduce, toList } from '/@/utils/commons'
 import { snapGrid, snapRotate, snapScale } from '/@/utils/geometry'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
@@ -227,25 +228,22 @@ export function useBoneEditMode(
     state.command = ''
   }
 
-  function select(id: string, selectedState: BoneSelectedState) {
+  function select(
+    id: string,
+    selectedState: BoneSelectedState,
+    options?: SelectOptions
+  ) {
     if (state.command) {
       completeEdit()
       return
     }
-    store.selectBone(id, selectedState)
+
+    store.selectBone(id, selectedState, options)
   }
 
-  function shiftSelect(id: string, selectedState: BoneSelectedState) {
-    if (state.command) {
-      completeEdit()
-      return
-    }
-    store.selectBone(id, selectedState, true)
-  }
-
-  function rectSelect(rect: IRectangle, shift = false) {
+  function rectSelect(rect: IRectangle, options?: SelectOptions) {
     const stateMap = selectBoneInRect(rect, store.boneMap.value)
-    store.selectBones(stateMap, shift)
+    store.selectBones(stateMap, options?.shift || options?.ctrl)
   }
 
   function selectAll() {
@@ -305,6 +303,10 @@ export function useBoneEditMode(
 
   const availableCommandList = computed(() => {
     const ctrl = { command: getCtrlOrMetaStr(), title: 'Snap' }
+    const selects = [
+      { command: 'a', title: 'All Select' },
+      { command: 'A', title: 'Add' },
+    ]
 
     if (state.command === 'grab' || state.command === 'scale') {
       return [
@@ -320,16 +322,12 @@ export function useBoneEditMode(
         { command: 'g', title: 'Grab' },
         { command: 'r', title: 'Rotate' },
         { command: 's', title: 'Scale' },
-        { command: 'a', title: 'All Select' },
+        ...selects,
         { command: 'x', title: 'Delete' },
-        { command: 'A', title: 'Add' },
         { command: 'D', title: 'Duplicate' },
       ]
     } else {
-      return [
-        { command: 'a', title: 'All Select' },
-        { command: 'A', title: 'Add' },
-      ]
+      return [...selects]
     }
   })
 
@@ -413,7 +411,6 @@ export function useBoneEditMode(
     cancel,
     setEditMode,
     select,
-    shiftSelect,
     selectAll,
     rectSelect,
     mousemove,

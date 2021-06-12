@@ -45,10 +45,6 @@ export function useWeightPaintMode(
     cancel()
   }
 
-  function shiftSelect(_id: string) {
-    cancel()
-  }
-
   function rectSelect() {}
 
   function selectAll() {
@@ -75,7 +71,6 @@ export function useWeightPaintMode(
     cancel,
     setEditMode,
     select,
-    shiftSelect,
     rectSelect,
     selectAll,
     mousemove,

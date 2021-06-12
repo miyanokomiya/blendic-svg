@@ -19,8 +19,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { ComputedRef } from '@vue/reactivity'
 import { IRectangle, IVec2 } from 'okageo'
-import { Transform } from '/@/models'
+import { BoneSelectedState, Transform } from '/@/models'
 import { CurveSelectedState, KeyframeSelectedState } from '/@/models/keyframe'
+import { MouseOptions } from '/@/utils/devices'
 
 export type CanvasMode = 'object' | 'edit' | 'pose' | 'weight'
 export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
@@ -59,15 +60,20 @@ export interface ToolMenuItem {
 
 export type CommandExam = { command: string; title: string }
 
+export type SelectOptions = Pick<MouseOptions, 'shift' | 'ctrl'>
+
 export interface CanvasEditModeBase {
   command: ComputedRef<EditMode>
   getEditTransforms: (id: string) => Transform
   end: () => void
   cancel: () => void
   setEditMode: (mode: EditMode) => void
-  select: (id: string, selectedState: { [key: string]: boolean }) => void
-  shiftSelect: (id: string, selectedState: { [key: string]: boolean }) => void
-  rectSelect: (rect: IRectangle, shift: boolean) => void
+  select: (
+    id: string,
+    selectedState: BoneSelectedState,
+    options?: SelectOptions
+  ) => void
+  rectSelect: (rect: IRectangle, options?: SelectOptions) => void
   selectAll: () => void
   mousemove: (arg: EditMovement) => void
   clickAny: () => void

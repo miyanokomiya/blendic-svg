@@ -136,6 +136,26 @@ export function getParentIdPath(
   }
 }
 
+export function getTreeIdPath(
+  idMap: IdMap<{ id: string; parentId: string }>,
+  a: string,
+  b: string
+): string[] {
+  const aPath = getParentIdPath(idMap, a)
+  const aIndex = aPath.findIndex((id) => id === b)
+  if (aIndex !== -1) {
+    return [...aPath.slice(aIndex), a]
+  }
+
+  const bPath = getParentIdPath(idMap, b)
+  const bIndex = bPath.findIndex((id) => id === a)
+  if (bIndex !== -1) {
+    return [...bPath.slice(bIndex), b]
+  }
+
+  return [a, b]
+}
+
 export function hasLeftRightName(name: string): '' | 'r' | 'R' | 'l' | 'L' {
   if (/\.r\.?/.test(name)) {
     return 'r'
@@ -332,4 +352,11 @@ export function splitList<T>(
     }
   })
   return [t, f]
+}
+
+export function reduceToMap<T>(ids: string[], fn: (id: string) => T): IdMap<T> {
+  return ids.reduce<IdMap<T>>((p, c) => {
+    p[c] = fn(c)
+    return p
+  }, {})
 }

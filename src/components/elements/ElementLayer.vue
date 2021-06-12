@@ -41,10 +41,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
-import { Bone, CanvasMode, ElementNode, IdMap, toMap } from '/@/models'
+import { Bone, ElementNode, IdMap, toMap } from '/@/models'
 import { getPosedElementTree } from '/@/utils/poseResolver'
 import { parseViewBoxFromStr } from '/@/utils/elements'
 import { useSettings } from '/@/composables/settings'
+import type { CanvasMode, SelectOptions } from '/@/composables/modes/types'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -94,9 +95,9 @@ export default defineComponent({
       return parseViewBoxFromStr(posedElementRoot.value.attributes.viewBox)
     })
 
-    function clickElement(id: string, shift: boolean) {
+    function clickElement(id: string, options?: SelectOptions) {
       if (props.canvasMode !== 'weight') return
-      elementStore.selectElement(id, shift)
+      elementStore.selectElement(id, options)
     }
     provide('onClickElement', clickElement)
 

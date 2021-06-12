@@ -19,7 +19,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { IVec2, IRectangle, isZero } from 'okageo'
 import { IdMap, Bone, ElementNodeAttributes, Transform } from '../models/index'
-import { dropMap } from '/@/utils/commons'
 import { BoneConstraint } from '/@/utils/constraints'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
@@ -116,7 +115,11 @@ export function normalizeAttributes(
 ): ElementNodeAttributes {
   return {
     ...attributes,
-    style: toStyle(dropMap(parseStyle(attributes.style), attributes)),
+    style: toStyle({
+      ...parseStyle(attributes.style),
+      ...(attributes.fill ? { fill: attributes.fill } : {}),
+      ...(attributes.stroke ? { stroke: attributes.stroke } : {}),
+    }),
   }
 }
 

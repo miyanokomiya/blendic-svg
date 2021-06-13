@@ -83,7 +83,7 @@ export default defineComponent({
   props: {
     modelValue: {
       type: [String, Object] as PropType<string | HSVA>,
-      default: undefined,
+      default: '',
     },
     extraHue: {
       type: Boolean,

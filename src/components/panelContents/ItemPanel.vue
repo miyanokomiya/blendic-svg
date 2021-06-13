@@ -337,25 +337,18 @@ export default defineComponent({
       }
     })
 
-    const keyframeStatusMap = computed<IdMap<KeyframeStatus | 'updated'>>(
-      () => {
-        if (!targetBone.value) return {}
+    const keyframeStatusMap = computed<IdMap<KeyframeStatus>>(() => {
+      if (!targetBone.value) return {}
 
-        const keyframes =
-          animationStore.keyframeMapByTargetId.value[targetBone.value.id]
-        if (!keyframes) return {}
+      const keyframes =
+        animationStore.keyframeMapByTargetId.value[targetBone.value.id]
+      if (!keyframes) return {}
 
-        const currentFrame = animationStore.currentFrame.value
-        return mapReduce(
-          getKeyframeExistedPropsMap(keyframes).props,
-          (list) => {
-            return list.some((k) => k.frame === currentFrame)
-              ? 'self'
-              : 'others'
-          }
-        )
-      }
-    )
+      const currentFrame = animationStore.currentFrame.value
+      return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
+        return list.some((k) => k.frame === currentFrame) ? 'self' : 'others'
+      })
+    })
 
     function createKeyframe(key: KeyframeBonePropKey) {
       if (!targetBone.value) return

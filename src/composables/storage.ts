@@ -30,7 +30,7 @@ import {
 } from '../utils/animations'
 import { cleanActors, inheritWeight, parseFromSvg } from '../utils/elements'
 import { bakeKeyframes, getPosedElementTree } from '../utils/poseResolver'
-import { initialize, StrageRoot } from '/@/models/strage'
+import { initialize, StorageRoot } from '/@/models/storage'
 import { makeSvg } from '/@/utils/svgMaker'
 
 interface BakedData {
@@ -48,7 +48,7 @@ const fileSystemEnable = 'showOpenFilePicker' in window
 const defaultProjectFileName = 'blendic.json'
 let fileHandle: FileHandle | undefined = undefined
 
-export function useStrage() {
+export function useStorage() {
   const store = useStore()
   const animationStore = useAnimationStore()
   const historyStore = useHistoryStore()
@@ -59,12 +59,12 @@ export function useStrage() {
     const armatures = store.state.armatures
     const actions = cleanActions(animationStore.actions.value, armatures)
     const actors = cleanActors(elementStore.actors.value, armatures)
-    const root: StrageRoot = { armatures, actions, actors }
+    const root: StorageRoot = { armatures, actions, actors }
     return JSON.stringify(root)
   }
   function deserialize(src: string) {
     try {
-      const root: StrageRoot = initialize(JSON.parse(src))
+      const root: StorageRoot = initialize(JSON.parse(src))
       historyStore.clearHistory()
       canvasStore.initState()
       store.initState(root.armatures)

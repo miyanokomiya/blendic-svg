@@ -26,10 +26,10 @@ import {
   getElementNode,
 } from '/@/models'
 import { getKeyframeBone } from '/@/models/keyframe'
-import { initialize } from '/@/models/strage'
+import { initialize } from '/@/models/storage'
 import { getConstraint } from '/@/utils/constraints'
 
-describe('src/models/strage.ts', () => {
+describe('src/models/storage.ts', () => {
   describe('initialize', () => {
     it('init migrated properties', () => {
       const src = {

@@ -71,7 +71,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
-import { useStrage } from '/@/composables/strage'
+import { useStorage } from '/@/composables/storage'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import DialogBase from '/@/components/molecules/dialogs/DialogBase.vue'
 import DialogButton from '/@/components/atoms/DialogButton.vue'
@@ -82,7 +82,7 @@ export default defineComponent({
   components: { CheckboxInput, DialogBase, DialogButton },
   emits: [],
   setup() {
-    const strage = useStrage()
+    const storage = useStorage()
     const isInheritWeight = ref(true)
 
     const store = useStore()
@@ -105,18 +105,18 @@ export default defineComponent({
     return {
       appVersion: process.env.APP_VERSION,
 
-      fileSystemEnable: strage.fileSystemEnable,
-      openFile: strage.loadProjectFile,
-      saveProjectFile: strage.saveProjectFile,
-      overrideProjectFile: strage.overrideProjectFile,
+      fileSystemEnable: storage.fileSystemEnable,
+      openFile: storage.loadProjectFile,
+      saveProjectFile: storage.saveProjectFile,
+      overrideProjectFile: storage.overrideProjectFile,
 
       isInheritWeight,
       importSvg() {
-        strage.loadSvgFile(isInheritWeight.value)
+        storage.loadSvgFile(isInheritWeight.value)
       },
-      exportSvg: strage.bakeSvg,
+      exportSvg: storage.bakeSvg,
 
-      bakeAction: () => strage.bakeAction(exportingActionIds.value),
+      bakeAction: () => storage.bakeAction(exportingActionIds.value),
       selectedActionIds,
       exportableActions,
       exportingActionIds,

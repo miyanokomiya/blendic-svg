@@ -99,7 +99,7 @@ import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
 import { useAnimationStore } from './store/animation'
-import { useStrage } from './composables/strage'
+import { useStorage } from './composables/storage'
 import { useElementStore } from './store/element'
 import { isCtrlOrMeta } from '/@/utils/devices'
 import ResizableV from '/@/components/atoms/ResizableV.vue'
@@ -193,7 +193,7 @@ export default defineComponent({
       }
     })
 
-    const strage = useStrage()
+    const storage = useStorage()
 
     function onGlobalKeyDown(e: KeyboardEvent) {
       if (
@@ -215,13 +215,13 @@ export default defineComponent({
         animationStore.togglePlaying()
       } else if (isCtrlOrMeta(e) && e.key.toLowerCase() === 's') {
         e.preventDefault()
-        strage.overrideProjectFile()
+        storage.overrideProjectFile()
       } else if (isCtrlOrMeta(e) && e.key.toLowerCase() === 'o') {
         e.preventDefault()
         if (e.shiftKey) {
-          strage.loadSvgFile()
+          storage.loadSvgFile()
         } else {
-          strage.loadProjectFile()
+          storage.loadProjectFile()
         }
       }
     }

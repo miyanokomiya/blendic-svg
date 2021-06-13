@@ -33,13 +33,13 @@ import { KeyframeBase } from '/@/models/keyframe'
 import { getConstraint } from '/@/utils/constraints'
 import { migrateConstraint, migrateKeyframe } from '/@/utils/migrations'
 
-export interface StrageRoot {
+export interface StorageRoot {
   armatures: Armature[]
   actions: Action[]
   actors: Actor[]
 }
 
-export function initialize(src: StrageRoot): StrageRoot {
+export function initialize(src: StorageRoot): StorageRoot {
   return {
     armatures: src.armatures.map(initializeArmature),
     actions: src.actions.map(initializeAction),

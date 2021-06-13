@@ -160,20 +160,22 @@ export default defineComponent({
       // add a few count to prevent early overflow
       return Math.ceil(visibledFrameRange.value / frameInterval.value) + 3
     })
-    const frames = computed((): {
-      f: number
-      labelSize: number
-      strokeWidth: number
-    }[] => {
-      return [...Array(count.value)].map((_, i) => {
-        const f = i * frameInterval.value + visibledFrameStart.value
-        return {
-          f,
-          labelSize: f % 10 === 0 ? 14 : f % 5 === 0 ? 11 : 0,
-          strokeWidth: f % 10 === 0 ? 2 : 1,
-        }
-      })
-    })
+    const frames = computed(
+      (): {
+        f: number
+        labelSize: number
+        strokeWidth: number
+      }[] => {
+        return [...Array(count.value)].map((_, i) => {
+          const f = i * frameInterval.value + visibledFrameStart.value
+          return {
+            f,
+            labelSize: f % 10 === 0 ? 14 : f % 5 === 0 ? 11 : 0,
+            strokeWidth: f % 10 === 0 ? 2 : 1,
+          }
+        })
+      }
+    )
     const currentFrameX = computed(() => {
       return props.currentFrame * frameWidth
     })

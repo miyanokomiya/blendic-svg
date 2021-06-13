@@ -61,20 +61,19 @@ function initState() {
   state.axisGrid = ''
 }
 
-const canvasEditMode = computed(():
-  | BoneEditMode
-  | ObjectMode
-  | BonePoseMode => {
-  if (state.canvasMode === 'edit') {
-    return useBoneEditMode(store, useCanvasStore())
-  } else if (state.canvasMode === 'pose') {
-    return useBonePoseMode(store, useCanvasStore())
-  } else if (state.canvasMode === 'weight') {
-    return useWeightPaintMode(useElementStore())
-  } else {
-    return useObjectMode()
+const canvasEditMode = computed(
+  (): BoneEditMode | ObjectMode | BonePoseMode => {
+    if (state.canvasMode === 'edit') {
+      return useBoneEditMode(store, useCanvasStore())
+    } else if (state.canvasMode === 'pose') {
+      return useBonePoseMode(store, useCanvasStore())
+    } else if (state.canvasMode === 'weight') {
+      return useWeightPaintMode(useElementStore())
+    } else {
+      return useObjectMode()
+    }
   }
-})
+)
 watch(canvasEditMode, (_to, from) => {
   if (from) from.end()
 })

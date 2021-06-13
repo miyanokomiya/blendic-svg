@@ -10,8 +10,9 @@
     "test": "yarn jest --coverage",
     "test:unit": "yarn jest --config ./spec/jest.config.js",
     "test:e2e": "yarn jest --config ./spec_e2e/jest.config.js --runInBand",
-    "lint": "yarn eslint --ext vue,ts,js ./*.js ./src ./spec",
-    "lint-json": "yarn prettier -c ./*.json"
+    "lint": "yarn eslint --ext vue,ts,js ./*.js ./*.ts ./src ./spec",
+    "lint-json": "yarn prettier -c ./*.json",
+    "lint:fix": "yarn lint --fix && yarn lint-json -w"
   },
   "dependencies": {
     "okageo": "^2.0.9",

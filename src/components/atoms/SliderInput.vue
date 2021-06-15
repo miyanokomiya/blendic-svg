@@ -42,10 +42,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { IVec2 } from 'okageo'
 import { computed, defineComponent, PropType, ref, watchEffect } from 'vue'
 import { useThrottle } from '/@/composables/throttle'
-import { usePointerLock } from '/@/composables/window'
+import { PointerMovement, usePointerLock } from '/@/composables/window'
 import { clamp, logRound } from '/@/utils/geometry'
 
 export default defineComponent({
@@ -134,7 +133,7 @@ export default defineComponent({
       }
     }
 
-    function onDrag(arg: { base: IVec2; p: IVec2; d: IVec2 }) {
+    function onDrag(arg: PointerMovement) {
       if (!el.value) return
       const width = el.value.getBoundingClientRect().width
       if (width === 0) return

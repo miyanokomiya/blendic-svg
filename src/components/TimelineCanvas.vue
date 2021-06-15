@@ -32,9 +32,9 @@ Copyright (C) 2021, Tomoya Komiyama.
       @click.right.prevent
       @mouseup.right.prevent="escape"
       @mouseenter="focus"
+      @mousemove.prevent="mousemoveNative"
       @mousedown.left.prevent="downLeft"
       @mouseup.left.prevent="upLeft"
-      @mousemove.prevent="mousemove"
       @mousedown.middle.prevent="downMiddle"
       @mouseup.middle.prevent="upMiddle"
       @keydown.prevent="editKeyDown"
@@ -108,27 +108,29 @@ export default defineComponent({
 
     const isDownEmpty = ref(false)
 
+    function mousemoveNative(e: MouseEvent) {
+      if (!props.canvas.dragInfo.value) return
+
+      props.mode.drag({
+        start: props.canvas.viewToCanvas(props.canvas.dragInfo.value.downAt),
+        current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+        ctrl: isCtrlOrMeta(e),
+        scale: props.canvas.scale.value,
+      })
+    }
+
     function mousemove(arg: PointerMovement) {
       if (props.canvas.viewMovingInfo.value) {
         props.canvas.viewMove()
         return
       }
 
-      const info = {
-        current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-        ctrl: arg.ctrl,
-        scale: props.canvas.scale.value,
-      }
-
-      if (props.canvas.dragInfo.value) {
-        props.mode.drag({
-          start: props.canvas.viewToCanvas(props.canvas.dragInfo.value.downAt),
-          ...info,
-        })
-      } else if (props.canvas.editStartPoint.value) {
+      if (props.canvas.editStartPoint.value) {
         props.mode.mousemove({
           start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
-          ...info,
+          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          ctrl: arg.ctrl ?? false,
+          scale: props.canvas.scale.value,
         })
       }
     }
@@ -143,6 +145,7 @@ export default defineComponent({
           sub(arg.p, { x: svgRect.left, y: svgRect.top })
         )
       },
+      onEscape: escape,
     })
 
     watch(
@@ -165,7 +168,7 @@ export default defineComponent({
       viewBox: computed(() => props.canvas.viewBox.value),
       popupMenuList,
 
-      mousemove: throttleMousemove,
+      mousemoveNative,
       wheel: (e: WheelEvent) => props.canvas.wheel(e, true),
       downLeft: (e: MouseEvent) => {
         isDownEmpty.value = e.target === svg.value

@@ -38,20 +38,16 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mouseup="onUpForward"
       @mousedown.prevent="onDown"
     />
-    <GlobalCursor :p="cursor" :cursor="motion" />
   </div>
 </template>
 
 <script lang="ts">
-import { IVec2 } from 'okageo'
 import { computed, defineComponent, PropType, ref, watchEffect } from 'vue'
 import { useThrottle } from '/@/composables/throttle'
-import { usePointerLock } from '/@/composables/window'
+import { PointerMovement, usePointerLock } from '/@/composables/window'
 import { clamp, logRound } from '/@/utils/geometry'
-import GlobalCursor from '/@/components/atoms/GlobalCursor.vue'
 
 export default defineComponent({
-  components: { GlobalCursor },
   props: {
     modelValue: { type: Number, default: 0 },
     integer: {
@@ -79,7 +75,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const el = ref<Element>()
     const inputEl = ref<HTMLInputElement>()
-    const dragStartRate = ref(0)
+    const dragStartValue = ref(0)
     const focused = ref(false)
     const dragged = ref(false)
     const seriesKey = ref<string>()
@@ -110,10 +106,18 @@ export default defineComponent({
       }
     })
 
-    const rate = computed(() => {
+    function getRate(value: number): number {
       if (!range.value) return 0
       if (props.max === props.min) return 0
-      return (props.modelValue - props.min!) / (props.max! - props.min!)
+      return (value - props.min!) / (props.max! - props.min!)
+    }
+
+    const rate = computed(() => {
+      return getRate(props.modelValue)
+    })
+
+    const dragStartRate = computed(() => {
+      return getRate(dragStartValue.value)
     })
 
     const scaleX = computed(() => {
@@ -129,7 +133,7 @@ export default defineComponent({
       }
     }
 
-    function onDrag(arg: { base: IVec2; p: IVec2; d: IVec2 }) {
+    function onDrag(arg: PointerMovement) {
       if (!el.value) return
       const width = el.value.getBoundingClientRect().width
       if (width === 0) return
@@ -148,9 +152,11 @@ export default defineComponent({
           props.integer ? Math.round(val) : val
         ).toString()
       } else {
+        // the same speed as pixel is too high to slide
+        const diffX = (arg.p.x - arg.base.x) * 0.4
         draftValue.value = logRound(
           stepLog.value,
-          clampValue(parseDraftValue.value + arg.d.x * props.step)
+          clampValue(dragStartValue.value + diffX * props.step)
         ).toString()
       }
 
@@ -201,14 +207,12 @@ export default defineComponent({
       onDown: (e: MouseEvent) => {
         dragged.value = false
         seriesKey.value = `slider_${Date.now()}`
-        dragStartRate.value = rate.value
+        dragStartValue.value = props.modelValue
         pointerLock.requestPointerLock(e, 'move-h')
       },
       onUpForward,
       input,
       scaleX,
-      cursor: pointerLock.current,
-      motion: pointerLock.motion,
     }
   },
 })

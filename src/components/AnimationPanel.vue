@@ -196,7 +196,11 @@ import { useAnimationLoop } from '../composables/animationLoop'
 import { useKeyframeEditMode } from '../composables/modes/keyframeEditMode'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useCanvas } from '/@/composables/canvas'
-import { CurveSelectedState, KeyframeBase } from '/@/models/keyframe'
+import {
+  CurveSelectedState,
+  KeyframeBase,
+  KeyframeSelectedState,
+} from '/@/models/keyframe'
 import { useBooleanMap } from '/@/composables/idMap'
 import { Size } from 'okanvas'
 import {
@@ -243,13 +247,10 @@ function useCanvasMode(canvasType: Ref<CanvasType>) {
       downCurrentFrame() {
         mode.value.grabCurrentFrame()
       },
-      selectKeyframe(id: string, selectedState: { [key: string]: boolean }) {
+      selectKeyframe(id: string, selectedState: KeyframeSelectedState) {
         mode.value.select(id, selectedState)
       },
-      shiftSelectKeyframe(
-        id: string,
-        selectedState: { [key: string]: boolean }
-      ) {
+      shiftSelectKeyframe(id: string, selectedState: KeyframeSelectedState) {
         mode.value.shiftSelect(id, selectedState)
       },
       selectKeyframeByFrame(frame: number) {

@@ -17,9 +17,9 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, getNorm, IVec2, sub } from 'okageo'
+import { add, getNorm, IVec2, multi, sub } from 'okageo'
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
-import { isCtrlOrMeta } from '/@/utils/devices'
+import { getMouseOptions, MouseOptions } from '/@/utils/devices'
 
 const state = reactive({
   size: { width: window.innerWidth, height: window.innerHeight },
@@ -59,11 +59,10 @@ export function useGlobalMouseup(fn: (e: MouseEvent) => void) {
 }
 
 export type PointerType = 'move' | 'move-v' | 'move-h'
-export interface PointerMovement {
+export interface PointerMovement extends MouseOptions {
   base: IVec2
   p: IVec2
   d: IVec2
-  ctrl: boolean
 }
 
 export function usePointerLock(handlers: {
@@ -87,7 +86,7 @@ export function usePointerLock(handlers: {
         base,
         p: next,
         d,
-        ctrl: isCtrlOrMeta(e),
+        ...getMouseOptions(e),
       })
       return
     }
@@ -101,16 +100,14 @@ export function usePointerLock(handlers: {
     // https://stackoverflow.com/questions/24853288/pointer-lock-api-entry-is-giving-a-large-number-when-window-is-squished-why
     if (getNorm(d) > 200) return
 
-    current.value = add(current.value, d)
+    const options = getMouseOptions(e)
+    // make the distance smaller if shift key is pressed
+    current.value = add(current.value, multi(d, options.shift ? 0.1 : 1))
     globalCurrent.value = current.value
 
-    handlers.onGlobalMove?.({
-      base,
-      p: current.value,
-      d,
-      ctrl: isCtrlOrMeta(e),
-    })
-    handlers.onMove({ base, p: current.value, d, ctrl: isCtrlOrMeta(e) })
+    const args = { base, p: current.value, d, ...options }
+    handlers.onGlobalMove?.(args)
+    handlers.onMove(args)
   })
 
   function exitPointerLock() {

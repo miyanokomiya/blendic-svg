@@ -154,6 +154,9 @@ export function useKeyframeEditMode(
     needLock: boolean
   } {
     switch (arg.key) {
+      case 'Escape':
+        cancel()
+        return notNeedLock
       case 'a':
         cancel()
         animationStore.selectAllKeyframes()
@@ -198,7 +201,6 @@ export function useKeyframeEditMode(
         cancel()
         return duplicate()
       default:
-        cancel()
         return notNeedLock
     }
   }

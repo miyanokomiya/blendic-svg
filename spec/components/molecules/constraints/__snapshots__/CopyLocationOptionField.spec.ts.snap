@@ -232,7 +232,6 @@ exports[`/@/src/components/molecules/constraints/CopyLocationOptionField.vue sna
         <div
           class="slider-forward"
         />
-        <!--v-if-->
       </div>
       <button
         type="button"

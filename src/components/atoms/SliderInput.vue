@@ -38,7 +38,6 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mouseup="onUpForward"
       @mousedown.prevent="onDown"
     />
-    <GlobalCursor :p="cursor" :cursor="motion" />
   </div>
 </template>
 
@@ -48,10 +47,8 @@ import { computed, defineComponent, PropType, ref, watchEffect } from 'vue'
 import { useThrottle } from '/@/composables/throttle'
 import { usePointerLock } from '/@/composables/window'
 import { clamp, logRound } from '/@/utils/geometry'
-import GlobalCursor from '/@/components/atoms/GlobalCursor.vue'
 
 export default defineComponent({
-  components: { GlobalCursor },
   props: {
     modelValue: { type: Number, default: 0 },
     integer: {
@@ -217,8 +214,6 @@ export default defineComponent({
       onUpForward,
       input,
       scaleX,
-      cursor: pointerLock.current,
-      motion: pointerLock.motion,
     }
   },
 })

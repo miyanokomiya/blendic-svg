@@ -14,7 +14,6 @@ exports[`src/components/atoms/SliderInput.vue snapshot default 1`] = `
   <div
     class="slider-forward"
   />
-  <!--v-if-->
 </div>
 `;
 
@@ -30,7 +29,6 @@ exports[`src/components/atoms/SliderInput.vue snapshot disabled 1`] = `
     disabled=""
     type="text"
   />
-  <!--v-if-->
   <!--v-if-->
 </div>
 `;

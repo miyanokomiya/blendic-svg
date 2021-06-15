@@ -30,7 +30,6 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot no keyframe 1`] = 
         <div
           class="slider-forward"
         />
-        <!--v-if-->
       </div>
       
     </div>
@@ -71,7 +70,6 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyf
         <div
           class="slider-forward"
         />
-        <!--v-if-->
       </div>
       
     </div>
@@ -146,7 +144,6 @@ exports[`src/components/panelContents/GraphPanel.vue snapshot with selected keyf
         <div
           class="slider-forward"
         />
-        <!--v-if-->
       </div>
       
     </div>

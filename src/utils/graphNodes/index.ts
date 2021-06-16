@@ -41,15 +41,38 @@ const NODE_STRUCTS = {
   },
 } as const
 
-export function resolve(
+export function resolveAllNode(nodeMap: GraphNodeMap): GraphNodeOutputMap {
+  return Object.keys(nodeMap).reduce<GraphNodeOutputMap>((p, id) => {
+    if (p[id]) return p
+    return { ...p, ...resolveNode(nodeMap, p, id) }
+  }, {})
+}
+
+export function resolveNode(
   nodeMap: GraphNodeMap,
   outputMap: GraphNodeOutputMap,
-  targetId: string
+  targetId: string,
+  currentPathMap: { [id: string]: true } = {}
 ): GraphNodeOutputMap {
+  if (currentPathMap[targetId]) {
+    throw new Error('Failed to resolve: circular references are founded')
+  }
+
   const target = nodeMap[targetId]
+  if (!target) return outputMap
+
+  const nextPathMap: { [id: string]: true } = {
+    ...currentPathMap,
+    [targetId]: true,
+  }
+
+  const fromOutputMap = getInputFromIds(target.inputs ?? {}).reduce((p, id) => {
+    return resolveNode(nodeMap, p, id, nextPathMap)
+  }, outputMap)
+
   return {
-    ...outputMap,
-    [targetId]: compute(outputMap, target),
+    ...fromOutputMap,
+    [targetId]: compute(fromOutputMap, target),
   }
 }
 
@@ -90,4 +113,12 @@ export function getOutput(
 ): unknown {
   const output = outputMap[id]
   return output[key]
+}
+
+export function getInputFromIds(inputs: GraphNodeInputs): string[] {
+  return Object.values(inputs)
+    .map((input) => {
+      return input.from?.id
+    })
+    .filter((id): id is string => !!id)
 }

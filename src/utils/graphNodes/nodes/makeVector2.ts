@@ -9,7 +9,7 @@ export const struct: NodeStruce<GraphNodeMakeVector2> = {
   outputs: {
     object: GRAPH_VALUE_TYPE.VECTOR2,
   },
-  computation(_self, inputs) {
+  computation(inputs) {
     return { value: inputs }
   },
 }

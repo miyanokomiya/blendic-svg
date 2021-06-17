@@ -6,7 +6,7 @@ import {
   GraphNodeOutputValues,
   GraphNodeType,
 } from '/@/models/graphNode'
-import { NodeStruce } from '/@/utils/graphNodes/core'
+import { NodeStruce, NodeContext } from '/@/utils/graphNodes/core'
 import * as scaler from './nodes/scaler'
 import * as make_vector2 from './nodes/makeVector2'
 import * as break_vector2 from './nodes/breakVector2'
@@ -21,14 +21,18 @@ const NODE_MODULES: { [key in GraphNodeType]: { struct: NodeStruce<any> } } = {
   set_transform,
 } as const
 
-export function resolveAllNodes(nodeMap: GraphNodeMap): GraphNodeOutputMap {
+export function resolveAllNodes(
+  context: NodeContext,
+  nodeMap: GraphNodeMap
+): GraphNodeOutputMap {
   return Object.keys(nodeMap).reduce<GraphNodeOutputMap>((p, id) => {
     if (p[id]) return p
-    return { ...p, ...resolveNode(nodeMap, p, id) }
+    return { ...p, ...resolveNode(context, nodeMap, p, id) }
   }, {})
 }
 
 export function resolveNode(
+  context: NodeContext,
   nodeMap: GraphNodeMap,
   outputMap: GraphNodeOutputMap,
   targetId: string,
@@ -47,22 +51,24 @@ export function resolveNode(
   }
 
   const fromOutputMap = getInputFromIds(target.inputs ?? {}).reduce((p, id) => {
-    return resolveNode(nodeMap, p, id, nextPathMap)
+    return resolveNode(context, nodeMap, p, id, nextPathMap)
   }, outputMap)
 
   return {
     ...fromOutputMap,
-    [targetId]: compute(fromOutputMap, target),
+    [targetId]: compute(context, fromOutputMap, target),
   }
 }
 
 export function compute(
+  context: NodeContext,
   outputMap: GraphNodeOutputMap,
   target: GraphNode
 ): GraphNodeOutputValues {
   return NODE_MODULES[target.type].struct.computation(
+    getInputs(outputMap, target.inputs),
     target,
-    getInputs(outputMap, target.inputs)
+    context
   )
 }
 

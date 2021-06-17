@@ -11,7 +11,7 @@ export const struct: NodeStruce<GraphNodeMakeTransform> = {
   outputs: {
     value: GRAPH_VALUE_TYPE.TRANSFORM,
   },
-  computation(_self, inputs): { value: Transform } {
+  computation(inputs): { value: Transform } {
     return {
       value: getTransform({
         translate: inputs.translate,

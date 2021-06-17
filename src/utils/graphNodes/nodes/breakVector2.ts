@@ -9,7 +9,7 @@ export const struct: NodeStruce<GraphNodeBreakVector2> = {
     x: GRAPH_VALUE_TYPE.SCALER,
     y: GRAPH_VALUE_TYPE.SCALER,
   },
-  computation(_self, inputs) {
+  computation(inputs) {
     return { x: inputs.value.x, y: inputs.value.y }
   },
 }

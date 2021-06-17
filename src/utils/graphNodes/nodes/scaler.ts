@@ -6,7 +6,7 @@ export const struct: NodeStruce<GraphNodeScaler> = {
     value: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
   },
   outputs: {},
-  computation(self) {
+  computation(_inputs, self) {
     return { value: self.data.value }
   },
 }

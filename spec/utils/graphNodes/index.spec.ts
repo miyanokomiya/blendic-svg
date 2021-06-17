@@ -13,6 +13,11 @@ import {
   validateNode,
   validateAllNodes,
 } from '../../../src/utils/graphNodes/index'
+import { NodeContext } from '/@/utils/graphNodes/core'
+
+const context: NodeContext = {
+  setTransform() {},
+}
 
 describe('src/utils/graphNodes/index.ts', () => {
   const nodes = {
@@ -56,7 +61,7 @@ describe('src/utils/graphNodes/index.ts', () => {
 
   describe('resolveAllNodes', () => {
     it('make_vector2', () => {
-      expect(resolveAllNodes(nodes)).toEqual({
+      expect(resolveAllNodes(context, nodes)).toEqual({
         scaler1: { value: 1 },
         scaler2: { value: 10 },
         make_vector2: { value: { x: 1, y: 10 } },
@@ -67,7 +72,7 @@ describe('src/utils/graphNodes/index.ts', () => {
 
   describe('resolveNode', () => {
     it('make_vector2', () => {
-      expect(resolveNode(nodes, {}, 'make_vector2')).toEqual({
+      expect(resolveNode(context, nodes, {}, 'make_vector2')).toEqual({
         scaler1: { value: 1 },
         scaler2: { value: 10 },
         make_vector2: { value: { x: 1, y: 10 } },
@@ -76,6 +81,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should throw an error if circular references are founded', () => {
       expect(() =>
         resolveNode(
+          context,
           {
             make_vector2: {
               id: 'make_vector2',
@@ -108,6 +114,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should use the value if input references is invalid', () => {
       expect(
         resolveNode(
+          context,
           {
             make_vector2: {
               id: 'make_vector2',
@@ -131,13 +138,13 @@ describe('src/utils/graphNodes/index.ts', () => {
 
   describe('compute', () => {
     it('scaler', () => {
-      expect(compute({}, nodes.scaler1)).toEqual({ value: 1 })
+      expect(compute(context, {}, nodes.scaler1)).toEqual({ value: 1 })
     })
     it('make_vector2', () => {
       const ret: GraphNodeOutputMap = {}
-      ret[nodes.scaler1.id] = compute(ret, nodes.scaler1)
-      ret[nodes.scaler2.id] = compute(ret, nodes.scaler2)
-      expect(compute(ret, nodes.make_vector2)).toEqual({
+      ret[nodes.scaler1.id] = compute(context, ret, nodes.scaler1)
+      ret[nodes.scaler2.id] = compute(context, ret, nodes.scaler2)
+      expect(compute(context, ret, nodes.make_vector2)).toEqual({
         value: { x: 1, y: 10 },
       })
     })
@@ -145,7 +152,10 @@ describe('src/utils/graphNodes/index.ts', () => {
       const ret: GraphNodeOutputMap = {
         make_vector2: { value: { x: 1, y: 10 } },
       }
-      expect(compute(ret, nodes.break_vector2)).toEqual({ x: 1, y: 10 })
+      expect(compute(context, ret, nodes.break_vector2)).toEqual({
+        x: 1,
+        y: 10,
+      })
     })
   })
 

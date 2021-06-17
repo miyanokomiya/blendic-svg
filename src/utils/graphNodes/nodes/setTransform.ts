@@ -10,7 +10,8 @@ export const struct: NodeStruce<GraphNodeSetTransform> = {
   outputs: {
     object: GRAPH_VALUE_TYPE.OBJECT,
   },
-  computation(_self, inputs): { object: string } {
+  computation(inputs, _self, context): { object: string } {
+    context.setTransform(inputs.object, inputs.transform)
     return {
       object: inputs.object,
     }

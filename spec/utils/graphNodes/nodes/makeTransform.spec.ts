@@ -16,13 +16,17 @@ describe('src/utils/graphNodes/nodes/makeTransform.ts', () => {
   }
 
   describe('computation', () => {
-    it('scaler', () => {
+    it('should return a transform', () => {
       expect(
-        target.struct.computation(node, {
-          translate: { x: 1, y: 2 },
-          rotate: 3,
-          scale: { x: 4, y: 5 },
-        })
+        target.struct.computation(
+          {
+            translate: { x: 1, y: 2 },
+            rotate: 3,
+            scale: { x: 4, y: 5 },
+          },
+          node,
+          {} as any
+        )
       ).toEqual({
         value: getTransform({
           translate: { x: 1, y: 2 },

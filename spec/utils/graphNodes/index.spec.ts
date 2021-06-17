@@ -8,7 +8,10 @@ import {
   compute,
   getInputFromIds,
   resolveNode,
-  resolveAllNode,
+  resolveAllNodes,
+  validateInput,
+  validateNode,
+  validateAllNodes,
 } from '../../../src/utils/graphNodes/index'
 
 describe('src/utils/graphNodes/index.ts', () => {
@@ -51,9 +54,9 @@ describe('src/utils/graphNodes/index.ts', () => {
     } as GraphNodeBreakVector2,
   } as const
 
-  describe('resolveAllNode', () => {
+  describe('resolveAllNodes', () => {
     it('make_vector2', () => {
-      expect(resolveAllNode(nodes)).toEqual({
+      expect(resolveAllNodes(nodes)).toEqual({
         scaler1: { value: 1 },
         scaler2: { value: 10 },
         make_vector2: { value: { x: 1, y: 10 } },
@@ -155,6 +158,74 @@ describe('src/utils/graphNodes/index.ts', () => {
           c: { value: 0 },
         }).sort()
       ).toEqual(['1', '2'])
+    })
+  })
+
+  describe('validateAllNodes', () => {
+    const node = {
+      id: 'node',
+      type: 'make_vector2',
+      data: {},
+      inputs: { x: { value: 1 }, y: {} },
+      position: { x: 0, y: 0 },
+    } as const
+
+    it('should return validated map of all nodes', () => {
+      expect(validateAllNodes({ node, node2: node })).toEqual({
+        node: { x: true, y: false },
+        node2: { x: true, y: false },
+      })
+    })
+  })
+
+  describe('validateNode', () => {
+    const node = {
+      id: 'node',
+      type: 'make_vector2',
+      data: {},
+      inputs: { x: { value: 1 }, y: {} },
+      position: { x: 0, y: 0 },
+    } as const
+
+    it('should return validated map of inputs', () => {
+      expect(validateNode({ node }, 'node')).toEqual({ x: true, y: false })
+    })
+  })
+
+  describe('validateInput', () => {
+    const node = {
+      id: 'node',
+      type: 'scaler',
+      data: { value: 1 },
+      inputs: {},
+      position: { x: 0, y: 0 },
+    } as const
+
+    it('should return true if value is defined', () => {
+      expect(
+        validateInput({ node }, { x: { value: 0 }, y: { value: 0 } }, 'x')
+      ).toBe(true)
+    })
+    it('should return true if from relation is valid', () => {
+      expect(
+        validateInput(
+          { node },
+          { x: { from: { id: 'node', key: 'value' } }, y: { value: 0 } },
+          'x'
+        )
+      ).toBe(true)
+    })
+    it('should return false if from relation is invalid', () => {
+      expect(validateInput({ node }, { x: {}, y: { value: 0 } }, 'x')).toBe(
+        false
+      )
+      expect(
+        validateInput(
+          { node },
+          { x: { from: { id: 'invalid', key: 'value' } }, y: { value: 0 } },
+          'x'
+        )
+      ).toBe(false)
     })
   })
 })

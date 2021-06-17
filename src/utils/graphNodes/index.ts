@@ -17,7 +17,7 @@ const NODE_MODULES: { [key in GraphNodeType]: { struct: NodeStruce<any> } } = {
   break_vector2,
 } as const
 
-export function resolveAllNode(nodeMap: GraphNodeMap): GraphNodeOutputMap {
+export function resolveAllNodes(nodeMap: GraphNodeMap): GraphNodeOutputMap {
   return Object.keys(nodeMap).reduce<GraphNodeOutputMap>((p, id) => {
     if (p[id]) return p
     return { ...p, ...resolveNode(nodeMap, p, id) }
@@ -67,7 +67,9 @@ export function getInputs<T extends GraphNodeInputs, K extends keyof T>(
   inputs: T
 ): Required<T[K]>['value'] {
   return Object.keys(inputs).reduce<Required<T[K]>['value']>((p: any, key) => {
-    p[key] = getInput(outputMap, inputs, key)
+    const value = getInput(outputMap, inputs, key)
+    if (value === undefined) throw new Error('Not found required input')
+    p[key] = value
     return p
   }, {})
 }
@@ -76,11 +78,11 @@ export function getInput<T extends GraphNodeInputs, K extends keyof T>(
   outputMap: GraphNodeOutputMap,
   inputs: T,
   key: K
-): Required<T[K]>['value'] {
+): T[K]['value'] {
   const from = inputs[key].from
   if (from && outputMap[from.id]) return getOutput(outputMap, from.id, from.key)
   if (inputs[key].value !== undefined) return inputs[key].value
-  throw new Error('Not found required input')
+  return undefined
 }
 
 export function getOutput(
@@ -98,4 +100,42 @@ export function getInputFromIds(inputs: GraphNodeInputs): string[] {
       return input.from?.id
     })
     .filter((id): id is string => !!id)
+}
+export function validateAllNodes(nodeMap: GraphNodeMap): {
+  [id: string]: { [key: string]: boolean }
+} {
+  return Object.keys(nodeMap).reduce<{
+    [id: string]: { [key: string]: boolean }
+  }>((p, id) => {
+    p[id] = validateNode(nodeMap, id)
+    return p
+  }, {})
+}
+
+export function validateNode(
+  nodeMap: GraphNodeMap,
+  targetId: string
+): {
+  [key: string]: boolean
+} {
+  const target = nodeMap[targetId]
+  if (!target) return {}
+
+  return Object.keys(target.inputs).reduce<{
+    [key: string]: boolean
+  }>((p: any, key) => {
+    p[key] = validateInput(nodeMap, target.inputs, key)
+    return p
+  }, {})
+}
+
+export function validateInput<T extends GraphNodeInputs>(
+  nodeMap: GraphNodeMap,
+  inputs: T,
+  key: string
+): boolean {
+  const input = inputs[key]
+  if (input.value !== undefined) return true
+  if (input.from && nodeMap[input.from.id]) return true
+  return false
 }

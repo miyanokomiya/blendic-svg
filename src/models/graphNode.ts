@@ -15,7 +15,7 @@ export interface GraphNodeBase {
   id: string
   type: GraphNodeType
   data: { [key: string]: unknown }
-  inputs?: GraphNodeInputs
+  inputs: GraphNodeInputs
   position: IVec2
 }
 
@@ -42,6 +42,7 @@ export type GraphNodeInputs = { [key: string]: GraphNodeInput<unknown> }
 export interface GraphNodeScaler extends GraphNodeBase {
   type: 'scaler'
   data: { value: number }
+  inputs: {}
 }
 
 export interface GraphNodeMakeVector2 extends GraphNodeBase {

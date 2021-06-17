@@ -17,12 +17,14 @@ describe('src/utils/graphNodes/index.ts', () => {
       id: 'scaler1',
       type: 'scaler',
       data: { value: 1 },
+      inputs: {},
       position: { x: 0, y: 0 },
     } as GraphNodeScaler,
     scaler2: {
       id: 'scaler2',
       type: 'scaler',
       data: { value: 10 },
+      inputs: {},
       position: { x: 0, y: 0 },
     } as GraphNodeScaler,
     make_vector2: {

@@ -1,11 +1,15 @@
-import { GraphNodeBreakVector2 } from '/@/models/graphNode'
+import { GraphNodeBreakVector2, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { NodeStruce } from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruce<GraphNodeBreakVector2> = {
   inputs: {
-    value: { required: true },
+    value: { type: GRAPH_VALUE_TYPE.VECTOR2, required: true },
   },
-  computation(_self: GraphNodeBreakVector2, inputs): { x: number; y: number } {
-    return inputs.value
+  outputs: {
+    x: GRAPH_VALUE_TYPE.SCALER,
+    y: GRAPH_VALUE_TYPE.SCALER,
+  },
+  computation(_self, inputs) {
+    return { x: inputs.value.x, y: inputs.value.y }
   },
 }

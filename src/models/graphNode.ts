@@ -30,11 +30,12 @@ export interface GraphNodes {
 export type GraphNodeType = keyof GraphNodes
 export type GraphNode = GraphNodes[GraphNodeType]
 
-export interface GraphValueType {
-  scaler: number
-  vector2: IVec2
-}
-export type GraphValueTypeKey = keyof GraphValueType
+export const GRAPH_VALUE_TYPE = {
+  SCALER: 'SCALER',
+  VECTOR2: 'VECTOR2',
+  OBJECT: 'OBJECT',
+  TRANSFORM: 'TRANSFORM',
+} as const
 
 export interface GraphNodeInput<T> {
   from?: { id: string; key: string }

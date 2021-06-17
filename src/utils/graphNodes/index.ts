@@ -101,6 +101,7 @@ export function getInputFromIds(inputs: GraphNodeInputs): string[] {
     })
     .filter((id): id is string => !!id)
 }
+
 export function validateAllNodes(nodeMap: GraphNodeMap): {
   [id: string]: { [key: string]: boolean }
 } {

@@ -1,4 +1,5 @@
 import { IVec2 } from 'okageo'
+import { Transform } from '/@/models'
 
 export interface GraphEdge {
   id: string
@@ -23,6 +24,8 @@ export interface GraphNodes {
   scaler: GraphNodeScaler
   make_vector2: GraphNodeMakeVector2
   break_vector2: GraphNodeBreakVector2
+  make_transform: GraphNodeMakeTransform
+  set_transform: GraphNodeSetTransform
 }
 export type GraphNodeType = keyof GraphNodes
 export type GraphNode = GraphNodes[GraphNodeType]
@@ -53,6 +56,23 @@ export interface GraphNodeMakeVector2 extends GraphNodeBase {
 export interface GraphNodeBreakVector2 extends GraphNodeBase {
   type: 'break_vector2'
   inputs: { value: GraphNodeInput<IVec2> }
+}
+
+export interface GraphNodeMakeTransform extends GraphNodeBase {
+  type: 'make_transform'
+  inputs: {
+    translate: GraphNodeInput<IVec2>
+    rotate: GraphNodeInput<number>
+    scale: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeSetTransform extends GraphNodeBase {
+  type: 'set_transform'
+  inputs: {
+    object: GraphNodeInput<string>
+    transform: GraphNodeInput<Transform>
+  }
 }
 
 export interface GraphNodeMap {

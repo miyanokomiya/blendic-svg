@@ -8,7 +8,6 @@ export const struct: NodeStruce<GraphNodeMakeVector2> = {
     y: { default: 0 },
   },
   computation(_self: GraphNodeMakeVector2, inputs: IVec2): { value: IVec2 } {
-    inputs.x
     return { value: inputs }
   },
 }

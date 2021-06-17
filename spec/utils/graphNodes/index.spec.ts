@@ -3,7 +3,7 @@ import type {
   GraphNodeMakeVector2,
   GraphNodeScaler,
   GraphNodeOutputMap,
-} from '/@/models/nodeEditor'
+} from '/@/models/graphNode'
 import {
   compute,
   getInputFromIds,

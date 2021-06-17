@@ -8,7 +8,7 @@ import {
   GraphNodeOutputMap,
   GraphNodeOutputValues,
   GraphNodeScaler,
-} from '/@/models/nodeEditor'
+} from '/@/models/graphNode'
 
 const NODE_STRUCTS = {
   scaler: {

@@ -22,47 +22,54 @@ Copyright (C) 2021, Tomoya Komiyama.
     <template #top>
       <ResizableH :initial-rate="0.8" class="top">
         <template #left>
-          <div class="main">
-            <AppCanvas :original-view-box="viewBox" class="canvas">
-              <template #default="{ scale }">
-                <ElementLayer
-                  :bone-map="posedMap"
-                  :canvas-mode="canvasMode"
-                  :class="{ 'view-only': canvasMode !== 'weight' }"
-                />
-                <g v-if="canvasMode === 'object'">
-                  <ArmatureElm
-                    v-for="armature in armatures"
-                    :key="armature.id"
-                    :armature="armature"
-                    :selected="lastSelectedArmatureId === armature.id"
-                    :scale="scale"
-                    @select="
-                      (selected) => selectArmature(armature.id, selected)
-                    "
-                  />
-                </g>
-                <g v-else>
-                  <ArmatureElm
-                    v-for="armature in otherArmatures"
-                    :key="armature.id"
-                    :armature="armature"
-                    :opacity="0.3"
-                    :scale="scale"
-                    class="view-only"
-                  />
-                  <BoneLayer
-                    :scale="scale"
-                    :bone-map="visibledBoneMap"
-                    :selected-bones="selectedBones"
-                    :canvas-mode="canvasMode"
-                    @select="selectBone"
-                  />
-                </g>
-              </template>
-            </AppCanvas>
-            <SideBar class="side-bar" />
-          </div>
+          <ResizableH :initial-rate="0.5" class="main-wrapper">
+            <template #left>
+              <AnimationGraphPanel class="animation-graph" />
+            </template>
+            <template #right>
+              <div class="main">
+                <AppCanvas :original-view-box="viewBox" class="canvas">
+                  <template #default="{ scale }">
+                    <ElementLayer
+                      :bone-map="posedMap"
+                      :canvas-mode="canvasMode"
+                      :class="{ 'view-only': canvasMode !== 'weight' }"
+                    />
+                    <g v-if="canvasMode === 'object'">
+                      <ArmatureElm
+                        v-for="armature in armatures"
+                        :key="armature.id"
+                        :armature="armature"
+                        :selected="lastSelectedArmatureId === armature.id"
+                        :scale="scale"
+                        @select="
+                          (selected) => selectArmature(armature.id, selected)
+                        "
+                      />
+                    </g>
+                    <g v-else>
+                      <ArmatureElm
+                        v-for="armature in otherArmatures"
+                        :key="armature.id"
+                        :armature="armature"
+                        :opacity="0.3"
+                        :scale="scale"
+                        class="view-only"
+                      />
+                      <BoneLayer
+                        :scale="scale"
+                        :bone-map="visibledBoneMap"
+                        :selected-bones="selectedBones"
+                        :canvas-mode="canvasMode"
+                        @select="selectBone"
+                      />
+                    </g>
+                  </template>
+                </AppCanvas>
+                <SideBar class="side-bar" />
+              </div>
+            </template>
+          </ResizableH>
         </template>
         <template #right>
           <SidePanel class="side-panel" />
@@ -81,6 +88,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { defineComponent, computed, onMounted, onUnmounted } from 'vue'
 import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
+import AnimationGraphPanel from './components/AnimationGraphPanel.vue'
 import AnimationPanel from './components/AnimationPanel.vue'
 import ElementLayer from './components/elements/ElementLayer.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
@@ -110,6 +118,7 @@ export default defineComponent({
     AppCanvas,
     ArmatureElm,
     SidePanel,
+    AnimationGraphPanel,
     AnimationPanel,
     SideBar,
     ElementLayer,
@@ -311,6 +320,12 @@ $wide-panel-width: 240px;
   height: 100vh;
 }
 .top {
+  height: 100%;
+}
+.main-wrapper {
+  height: 100%;
+}
+.animation-graph {
   height: 100%;
 }
 .main {

@@ -21,6 +21,7 @@ import { reactive, computed, watch } from 'vue'
 import { useHistoryStore } from '../store/history'
 import { HistoryItem } from '/@/composables/stores/history'
 import { getOriginPartial, IdMap, toMap } from '/@/models'
+import { convolute } from '/@/utils/histories'
 
 interface State<T extends { id: string }> {
   label: string
@@ -88,10 +89,12 @@ export function useListState<T extends { id: string }>(label: string) {
     item.redo()
     historyStore.push(item)
   }
-  function addItem<T extends { id: string }>(val: T) {
-    const item = getAddItem(state, val as any) // FIXME tsserver worning
-    item.redo()
-    historyStore.push(item)
+  function addItem<T extends { id: string }>(val: T, select = false) {
+    const item = convolute(
+      getAddItem(state, val as any), // FIXME tsserver worning
+      select ? [getSelectItem(state, val.id)] : []
+    )
+    historyStore.push(item, true)
   }
   function deleteItem() {
     if (lastSelectedIndex.value === -1) return

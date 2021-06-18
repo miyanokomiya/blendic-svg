@@ -21,7 +21,7 @@ import { IRectangle, IVec2 } from 'okageo'
 import { v4 } from 'uuid'
 import { toKeyMap } from '../utils/commons'
 import { BoneConstraint } from '../utils/constraints'
-import { GraphNodes } from '/@/models/graphNode'
+import { GraphNode } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
 
 export type IdMap<T> = {
@@ -92,8 +92,23 @@ export interface Actor {
 
 export interface AnimationGraph {
   id: string
+  name: string
   armatureId: string
-  nodes: GraphNodes
+  nodes: GraphNode[]
+}
+
+export function getAnimationGraph(
+  arg: Partial<AnimationGraph> = {},
+  generateId = false
+): AnimationGraph {
+  const id = generateId ? v4() : arg.id ?? ''
+  return {
+    name: '',
+    armatureId: '',
+    nodes: [],
+    ...arg,
+    id,
+  }
 }
 
 export interface GraphObject {

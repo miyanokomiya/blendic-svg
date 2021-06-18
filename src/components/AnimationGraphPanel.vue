@@ -40,9 +40,13 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <div class="canvas">
       <AnimationGraphCanvas :canvas="canvas" :mode="mode">
-        <text v-for="node in nodeMap" :key="node.id" fill="#000">{{
-          node.type
-        }}</text>
+        <GraphNode
+          v-for="node in nodeMap"
+          :key="node.id"
+          :node="node"
+          :selected="selectedNodes[node.id]"
+          @select="selectNode"
+        />
       </AnimationGraphCanvas>
     </div>
   </div>
@@ -58,8 +62,10 @@ import AnimationGraphCanvas from '/@/components/AnimationGraphCanvas.vue'
 import SelectField from './atoms/SelectField.vue'
 import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
+import GraphNode from '/@/components/elements/GraphNode.vue'
 import { getAnimationGraph } from '/@/models'
 import { getNotDuplicatedName } from '/@/utils/relations'
+import { SelectOptions } from '/@/composables/modes/types'
 
 export default defineComponent({
   components: {
@@ -67,6 +73,7 @@ export default defineComponent({
     SelectField,
     AddIcon,
     DeleteIcon,
+    GraphNode,
   },
   setup() {
     const store = useStore()
@@ -121,6 +128,12 @@ export default defineComponent({
       set: (id: string) => graphStore.selectGraph(id),
     })
 
+    const selectedNodes = graphStore.selectedNodes
+
+    function selectNode(id: string, options: SelectOptions) {
+      graphStore.selectNode(id, options)
+    }
+
     return {
       canvas,
       mode,
@@ -135,6 +148,9 @@ export default defineComponent({
 
       addGraph,
       deleteGraph: graphStore.deleteGraph,
+
+      selectedNodes,
+      selectNode,
     }
   },
 })

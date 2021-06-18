@@ -26,6 +26,7 @@ export interface GraphNodes {
   break_vector2: GraphNodeBreakVector2
   make_transform: GraphNodeMakeTransform
   set_transform: GraphNodeSetTransform
+  get_frame: GraphNodeGetFrame
 }
 export type GraphNodeType = keyof GraphNodes
 export type GraphNode = GraphNodes[GraphNodeType]
@@ -74,6 +75,11 @@ export interface GraphNodeSetTransform extends GraphNodeBase {
     object: GraphNodeInput<string>
     transform: GraphNodeInput<Transform>
   }
+}
+
+export interface GraphNodeGetFrame extends GraphNodeBase {
+  type: 'get_frame'
+  inputs: {}
 }
 
 export interface GraphNodeMap {

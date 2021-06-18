@@ -22,4 +22,5 @@ export interface NodeStruce<T extends GraphNodeBase> {
 
 export interface NodeContext {
   setTransform: (objectId: string, transform: Transform) => void
+  getFrame: () => number
 }

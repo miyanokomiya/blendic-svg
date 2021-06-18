@@ -24,7 +24,16 @@ import { extractMap, mapReduce, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { SelectOptions } from '/@/composables/modes/types'
 import { HistoryItem } from '/@/composables/stores/history'
-import { GraphNode } from '/@/models/graphNode'
+import { GraphNode, GraphNodeType } from '/@/models/graphNode'
+import { createGraphNode } from '/@/utils/graphNodes'
+import {
+  convolute,
+  getAddItemHistory,
+  getSelectItemHistory,
+  LastSelectedItemIdAccessor,
+  ListItemAccessor,
+  SelectedItemAccessor,
+} from '/@/utils/histories'
 
 const historyStore = useHistoryStore()
 
@@ -51,6 +60,30 @@ function initState(graph: AnimationGraph[]) {
   graphState.state.list = graph
 }
 
+const nodesAccessor: ListItemAccessor<GraphNode> = {
+  get: () => lastSelectedGraph.value?.nodes ?? [],
+  set: (val) => {
+    if (!lastSelectedGraph.value) return
+    lastSelectedGraph.value.nodes = val
+  },
+}
+
+const selectedNodesAccessor: SelectedItemAccessor = {
+  get: () => selectedNodes.value,
+  set: (val) => {
+    if (!lastSelectedGraph.value) return
+    selectedNodes.value = val
+  },
+}
+
+const lastSelectedNodeIdAccessor: LastSelectedItemIdAccessor = {
+  get: () => lastSelectedNodeId.value ?? '',
+  set: (val) => {
+    if (!lastSelectedGraph.value) return
+    lastSelectedNodeId.value = val
+  },
+}
+
 function selectNode(id = '', options?: SelectOptions) {
   if (!id && Object.keys(selectedNodes.value).length === 0) return
   if (
@@ -60,9 +93,12 @@ function selectNode(id = '', options?: SelectOptions) {
   )
     return
 
-  const item = getSelectItem(id, options?.shift)
-  item.redo()
-  historyStore.push(item)
+  const item = getSelectItemHistory(
+    selectedNodesAccessor,
+    lastSelectedNodeIdAccessor,
+    id
+  )
+  historyStore.push(item, true)
 }
 
 function selectAllNode() {
@@ -101,6 +137,21 @@ function updateNodes(val: IdMap<Partial<GraphNode>>) {
   historyStore.push(item)
 }
 
+function addNode(type: GraphNodeType) {
+  if (!lastSelectedGraph.value) return
+
+  const node = createGraphNode(type, true)
+  const item = convolute(getAddItemHistory(nodesAccessor, node), [
+    getSelectItemHistory(
+      selectedNodesAccessor,
+      lastSelectedNodeIdAccessor,
+      node.id
+    ),
+  ])
+  historyStore.push(item, true)
+  console.log(nodeMap.value)
+}
+
 export function useAnimationGraphStore() {
   return {
     initState,
@@ -121,6 +172,7 @@ export function useAnimationGraphStore() {
     updateArmatureId,
     updateNode,
     updateNodes,
+    addNode,
 
     selectedNodes,
     selectNode,
@@ -128,40 +180,6 @@ export function useAnimationGraphStore() {
   }
 }
 export type AnimationGraphStore = ReturnType<typeof useAnimationGraphStore>
-
-export function getSelectItem(id: string, shift = false): HistoryItem {
-  const current = { ...selectedNodes.value }
-  const currentLast = lastSelectedNodeId.value
-
-  const redo = () => {
-    if (shift) {
-      if (selectedNodes.value[id]) {
-        delete selectedNodes.value[id]
-        if (lastSelectedNodeId.value === id) {
-          lastSelectedNodeId.value = ''
-        }
-      } else {
-        selectedNodes.value[id] = true
-        lastSelectedNodeId.value = id
-      }
-    } else {
-      selectedNodes.value = id ? { [id]: true } : {}
-      lastSelectedNodeId.value = id
-    }
-
-    if (!lastSelectedNodeId.value && selectedNodeCount.value > 0) {
-      lastSelectedNodeId.value = Object.keys(selectedNodes.value)[0]
-    }
-  }
-  return {
-    name: 'Select Node',
-    undo: () => {
-      selectedNodes.value = { ...current }
-      lastSelectedNodeId.value = currentLast
-    },
-    redo,
-  }
-}
 
 export function getSelectAllItem(): HistoryItem {
   const current = { ...selectedNodes.value }

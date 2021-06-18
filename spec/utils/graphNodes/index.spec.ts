@@ -13,11 +13,10 @@ import {
   validateNode,
   validateAllNodes,
 } from '../../../src/utils/graphNodes/index'
-import { NodeContext } from '/@/utils/graphNodes/core'
 
-const context: NodeContext = {
+const context = {
   setTransform() {},
-}
+} as any
 
 describe('src/utils/graphNodes/index.ts', () => {
   const nodes = {

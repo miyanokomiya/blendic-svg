@@ -63,9 +63,9 @@ import {
 import { provideScale, useCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import { add, IVec2, sub } from 'okageo'
-import { KeyframeEditModeBase } from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
 import { isCtrlOrMeta } from '/@/utils/devices'
+import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
 
 export default defineComponent({
   components: { PopupMenuList },
@@ -75,7 +75,7 @@ export default defineComponent({
       required: true,
     },
     mode: {
-      type: Object as PropType<KeyframeEditModeBase>,
+      type: Object as PropType<AnimationGraphMode>,
       required: true,
     },
   },

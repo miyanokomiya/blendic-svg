@@ -21,8 +21,6 @@ import { reactive, computed } from 'vue'
 import { add, IRectangle, sub } from 'okageo'
 import { Transform, getTransform, IdMap } from '/@/models/index'
 import type {
-  EditMode,
-  CanvasEditModeBase,
   EditMovement,
   PopupMenuItem,
   SelectOptions,
@@ -30,15 +28,17 @@ import type {
 import { snapGrid } from '/@/utils/geometry'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { useMenuList } from '/@/composables/menuList'
-import { AnimationGraphStore } from '/@/store/element'
-import { GraphNode } from '/@/models/graphNode'
+import { AnimationGraphStore } from '/@/store/animationGraph'
+import { GraphNode, GraphNodeType } from '/@/models/graphNode'
+
+export type EditMode = '' | 'grab' | 'add' | 'delete'
 
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
 }
 
-export interface AnimationGraphMode extends CanvasEditModeBase {}
+const notNeedLock = { needLock: false }
 
 export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   const state = reactive<State>({
@@ -68,6 +68,12 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
       completeEdit()
     } else {
       graphStore.selectNode()
+    }
+  }
+
+  function upLeft() {
+    if (state.command) {
+      completeEdit()
     }
   }
 
@@ -144,11 +150,28 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     graphStore.selectAllNode()
   }
 
+  function execKey(arg: { key: string; shift?: boolean; ctrl?: boolean }): {
+    needLock: boolean
+  } {
+    switch (arg.key) {
+      case 'Escape':
+        cancel()
+        return notNeedLock
+      case 'A':
+        cancel()
+        state.command = 'add'
+        return notNeedLock
+      default:
+        return notNeedLock
+    }
+  }
   function mousemove(arg: EditMovement) {
     if (state.command) {
       state.editMovement = arg
     }
   }
+
+  function drag(_arg: EditMovement) {}
 
   function execDelete() {
     if (state.command) {
@@ -158,13 +181,13 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     // graphStore.deleteNode()
   }
 
-  function execAdd() {
-    if (state.command) {
+  function execAddNode(type: GraphNodeType) {
+    if (state.command && state.command !== 'add') {
       cancel()
       return
     }
-    // TODO
-    // graphStore.addNode()
+    graphStore.addNode(type)
+    cancel()
   }
 
   function duplicate(): boolean {
@@ -193,14 +216,12 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
       { command: 'A', title: 'Add' },
     ]
 
-    if (state.command === 'grab' || state.command === 'scale') {
+    if (state.command === 'grab') {
       return [
         { command: 'x', title: 'On Axis X' },
         { command: 'y', title: 'On Axis Y' },
         ctrl,
       ]
-    } else if (state.command === 'rotate') {
-      return [ctrl]
     } else if (isAnySelected.value) {
       return [
         { command: 'g', title: 'Grab' },
@@ -213,12 +234,18 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
   })
 
+  const addMenuList = useMenuList(() => [
+    { label: 'Number', exec: () => execAddNode('scaler') },
+  ])
+
   const deleteMenuList = useMenuList(() => [
     { label: 'Delete', exec: execDelete },
   ])
 
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     switch (state.command) {
+      case 'add':
+        return addMenuList.list.value
       case 'delete':
         return deleteMenuList.list.value
       default:
@@ -237,11 +264,16 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     select,
     selectAll,
     rectSelect,
+
+    execKey,
     mousemove,
+    drag,
     clickAny,
     clickEmpty,
+    upLeft,
+
     execDelete,
-    execAdd,
+    execAddNode,
     insert: () => {},
     clip: () => {},
     paste: () => {},
@@ -250,3 +282,4 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     popupMenuList,
   }
 }
+export type AnimationGraphMode = ReturnType<typeof useAnimationGraphMode>

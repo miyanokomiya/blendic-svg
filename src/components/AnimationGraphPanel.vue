@@ -40,6 +40,9 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <div class="canvas">
       <AnimationGraphCanvas :canvas="canvas" :mode="mode">
+        <text v-for="node in nodeMap" :key="node.id" fill="#000">{{
+          node.type
+        }}</text>
       </AnimationGraphCanvas>
     </div>
   </div>
@@ -121,6 +124,8 @@ export default defineComponent({
     return {
       canvas,
       mode,
+
+      nodeMap: graphStore.nodeMap,
 
       draftName,
       changeGraphName,

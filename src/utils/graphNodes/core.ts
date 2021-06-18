@@ -2,6 +2,7 @@ import { Transform } from '/@/models'
 import { GraphNodeBase, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 
 export interface NodeStruce<T extends GraphNodeBase> {
+  create: (arg?: Partial<T>) => T
   inputs: {
     [key in keyof T['inputs']]: { type: keyof typeof GRAPH_VALUE_TYPE } & (
       | { default: Required<T['inputs'][key]>['value'] }
@@ -25,4 +26,17 @@ export interface NodeContext<T> {
   getFrame: () => number
   getObjectMap: () => { [id: string]: T }
   cloneObject: (objectId: string) => string
+}
+
+export function createBaseNode(
+  arg: Partial<GraphNodeBase> = {}
+): GraphNodeBase {
+  return {
+    id: '',
+    type: 'scaler',
+    data: {},
+    inputs: {},
+    position: { x: 0, y: 0 },
+    ...arg,
+  }
 }

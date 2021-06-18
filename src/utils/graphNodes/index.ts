@@ -4,6 +4,7 @@ import {
   GraphNodeMap,
   GraphNodeOutputMap,
   GraphNodeOutputValues,
+  GraphNodes,
   GraphNodeType,
 } from '/@/models/graphNode'
 import { NodeStruce, NodeContext } from '/@/utils/graphNodes/core'
@@ -12,6 +13,8 @@ import * as make_vector2 from './nodes/makeVector2'
 import * as break_vector2 from './nodes/breakVector2'
 import * as make_transform from './nodes/makeTransform'
 import * as set_transform from './nodes/setTransform'
+import * as get_frame from './nodes/getFrame'
+import { v4 } from 'uuid'
 
 const NODE_MODULES: { [key in GraphNodeType]: { struct: NodeStruce<any> } } = {
   scaler,
@@ -19,20 +22,21 @@ const NODE_MODULES: { [key in GraphNodeType]: { struct: NodeStruce<any> } } = {
   break_vector2,
   make_transform,
   set_transform,
+  get_frame,
 } as const
 
-export function resolveAllNodes(
-  context: NodeContext,
+export function resolveAllNodes<T>(
+  context: NodeContext<T>,
   nodeMap: GraphNodeMap
 ): GraphNodeOutputMap {
   return Object.keys(nodeMap).reduce<GraphNodeOutputMap>((p, id) => {
     if (p[id]) return p
-    return { ...p, ...resolveNode(context, nodeMap, p, id) }
+    return { ...p, ...resolveNode<T>(context, nodeMap, p, id) }
   }, {})
 }
 
-export function resolveNode(
-  context: NodeContext,
+export function resolveNode<T>(
+  context: NodeContext<T>,
   nodeMap: GraphNodeMap,
   outputMap: GraphNodeOutputMap,
   targetId: string,
@@ -56,12 +60,12 @@ export function resolveNode(
 
   return {
     ...fromOutputMap,
-    [targetId]: compute(context, fromOutputMap, target),
+    [targetId]: compute<T>(context, fromOutputMap, target),
   }
 }
 
-export function compute(
-  context: NodeContext,
+export function compute<T>(
+  context: NodeContext<T>,
   outputMap: GraphNodeOutputMap,
   target: GraphNode
 ): GraphNodeOutputValues {
@@ -149,4 +153,15 @@ export function validateInput<T extends GraphNodeInputs>(
   if (input.value !== undefined) return true
   if (input.from && nodeMap[input.from.id]) return true
   return false
+}
+
+export function createGraphNode<T extends GraphNodeType>(
+  type: T,
+  generateId = false
+): GraphNodes[T] {
+  const node = NODE_MODULES[type].struct.create()
+  if (generateId) {
+    node.id = v4()
+  }
+  return node
 }

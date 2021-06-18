@@ -17,7 +17,13 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { convolute, getReplaceItem, hasSameSeriesKey } from '/@/utils/histories'
+import {
+  convolute,
+  getAddItemHistory,
+  getReplaceItem,
+  getSelectItemHistory,
+  hasSameSeriesKey,
+} from '/@/utils/histories'
 
 describe('src/utils/histories.ts', () => {
   describe('convolute', () => {
@@ -140,6 +146,45 @@ describe('src/utils/histories.ts', () => {
       expect(hasSameSeriesKey({ seriesKey: 'a' }, { seriesKey: 'a' })).toBe(
         true
       )
+    })
+  })
+
+  describe('getAddItemHistory', () => {
+    it('should return a history item to add an item', () => {
+      const accessor = {
+        get: jest.fn().mockReturnValue([]),
+        set: jest.fn(),
+      }
+      const val = { id: 'a' }
+      const ret = getAddItemHistory(accessor, val)
+      ret.redo()
+      expect(accessor.set).toHaveBeenCalledWith([val])
+      ret.undo()
+      expect(accessor.set).toHaveBeenCalledWith([])
+    })
+  })
+
+  describe('getSelectItemHistory', () => {
+    it('should return a history item to select an item', () => {
+      const selectedNodesAccessor = {
+        get: jest.fn().mockReturnValue({}),
+        set: jest.fn(),
+      }
+      const lastSelectedNodeAccessor = {
+        get: jest.fn().mockReturnValue(''),
+        set: jest.fn(),
+      }
+      const ret = getSelectItemHistory(
+        selectedNodesAccessor,
+        lastSelectedNodeAccessor,
+        'a'
+      )
+      ret.redo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ a: true })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+      ret.undo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
     })
   })
 })

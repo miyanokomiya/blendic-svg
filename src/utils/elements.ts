@@ -20,15 +20,21 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { IRectangle } from 'okageo'
 import {
   Actor,
+  GraphObject,
   Armature,
   BElement,
   ElementNode,
   getActor,
   getBElement,
   getElementNode,
+  getGraphObject,
+  IdMap,
   toMap,
 } from '../models'
-import { extractMap, toList } from './commons'
+import { extractMap, mapReduce, toList } from './commons'
+import { GraphNodeMap } from '/@/models/graphNode'
+import { resolveAllNodes } from '/@/utils/graphNodes'
+import { NodeContext } from '/@/utils/graphNodes/core'
 import { TreeNode } from '/@/utils/relations'
 
 export function parseFromSvg(svgText: string): Actor {
@@ -150,4 +156,47 @@ export function getTreeFromElementNode(svg: ElementNode): TreeNode {
       .filter((c) => testEditableTag(c.tag))
       .map(getTreeFromElementNode),
   }
+}
+
+export function createGraphNodeContext(
+  elementMap: IdMap<BElement>,
+  currentFrame: number
+): NodeContext<GraphObject> {
+  const graphElementMap: IdMap<GraphObject> = mapReduce(elementMap, (e) =>
+    getGraphObject({ id: e.id, elementId: e.id })
+  )
+
+  return {
+    setTransform(objectId, transform) {
+      graphElementMap[objectId] ??= getGraphObject(
+        { elementId: objectId },
+        true
+      )
+      graphElementMap[objectId].transform = transform
+    },
+    getFrame() {
+      return currentFrame
+    },
+    getObjectMap() {
+      return graphElementMap
+    },
+    cloneObject(objectId) {
+      const src = graphElementMap[objectId]
+      if (!src) return ''
+
+      const cloned = getGraphObject({ ...src, clone: true }, true)
+      graphElementMap[cloned.id] = cloned
+      return cloned.id
+    },
+  }
+}
+
+export function resolveAnimationGraph(
+  elementMap: IdMap<BElement>,
+  currentFrame: number,
+  graphNodes: GraphNodeMap
+): IdMap<GraphObject> {
+  const context = createGraphNodeContext(elementMap, currentFrame)
+  resolveAllNodes(context, graphNodes)
+  return context.getObjectMap()
 }

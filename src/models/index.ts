@@ -21,6 +21,7 @@ import { IRectangle, IVec2 } from 'okageo'
 import { v4 } from 'uuid'
 import { toKeyMap } from '../utils/commons'
 import { BoneConstraint } from '../utils/constraints'
+import { GraphNodes } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
 
 export type IdMap<T> = {
@@ -87,6 +88,33 @@ export interface Actor {
   svgTree: ElementNode
   elements: BElement[]
   viewBox: IRectangle
+}
+
+export interface AnimationGraph {
+  id: string
+  armatureId: string
+  nodes: GraphNodes
+}
+
+export interface GraphObject {
+  id: string
+  elementId: string
+  transform?: Transform
+  fill?: Transform
+  stroke?: Transform
+  clone?: boolean
+}
+
+export function getGraphObject(
+  arg: Partial<GraphObject> = {},
+  generateId = false
+): GraphObject {
+  const id = generateId ? v4() : arg.id ?? ''
+  return {
+    elementId: '',
+    ...arg,
+    id,
+  }
 }
 
 export type SpaceType = 'world' | 'local'

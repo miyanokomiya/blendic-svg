@@ -16,11 +16,13 @@ export interface NodeStruce<T extends GraphNodeBase> {
       [key in keyof T['inputs']]: Required<T['inputs'][key]>['value']
     },
     self: T,
-    context: NodeContext
+    context: NodeContext<unknown>
   ) => { [key in keyof NodeStruce<T>['outputs']]: unknown }
 }
 
-export interface NodeContext {
+export interface NodeContext<T> {
   setTransform: (objectId: string, transform: Transform) => void
   getFrame: () => number
+  getObjectMap: () => { [id: string]: T }
+  cloneObject: (objectId: string) => string
 }

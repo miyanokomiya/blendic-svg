@@ -23,9 +23,11 @@ import {
   getBElement,
   getBone,
   getElementNode,
+  getTransform,
 } from '/@/models'
 import {
   cleanActors,
+  createGraphNodeContext,
   flatElementTree,
   getTreeFromElementNode,
   inheritWeight,
@@ -330,6 +332,62 @@ describe('utils/elements.ts', () => {
         id: 'svg_1',
         name: 'svg #svg_1',
         children: [],
+      })
+    })
+  })
+
+  describe('createGraphNodeContext', () => {
+    it('should return a context to setTransform', () => {
+      const context = createGraphNodeContext(
+        { a: getBElement({ id: 'a' }) },
+        10
+      )
+      context.setTransform('a', getTransform({ rotate: 20 }))
+      expect(context.getObjectMap()).toEqual({
+        a: {
+          id: expect.anything(),
+          elementId: 'a',
+          transform: getTransform({ rotate: 20 }),
+        },
+      })
+      context.setTransform('a', getTransform({ rotate: 50 }))
+      expect(context.getObjectMap()).toEqual({
+        a: {
+          id: expect.anything(),
+          elementId: 'a',
+          transform: getTransform({ rotate: 50 }),
+        },
+      })
+    })
+    it('should return a context to getFrame', () => {
+      const context = createGraphNodeContext(
+        { a: getBElement({ id: 'a' }) },
+        10
+      )
+      context.setTransform('a', getTransform({ rotate: 20 }))
+      expect(context.getFrame()).toBe(10)
+    })
+    it('should return a context to cloneObject', () => {
+      const context = createGraphNodeContext(
+        { a: getBElement({ id: 'a' }) },
+        10
+      )
+      context.setTransform('a', getTransform({ rotate: 20 }))
+      context.cloneObject('a')
+      const ret = context.getObjectMap()
+
+      expect(ret['a']).toEqual({
+        id: expect.anything(),
+        elementId: 'a',
+        transform: getTransform({ rotate: 20 }),
+      })
+
+      delete ret['a']
+      expect(Object.values(ret)[0]).toEqual({
+        id: expect.anything(),
+        elementId: 'a',
+        transform: getTransform({ rotate: 20 }),
+        clone: true,
       })
     })
   })

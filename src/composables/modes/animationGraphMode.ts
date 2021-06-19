@@ -31,12 +31,13 @@ import { useMenuList } from '/@/composables/menuList'
 import { AnimationGraphStore } from '/@/store/animationGraph'
 import { GraphNode, GraphNodeType } from '/@/models/graphNode'
 
-export type EditMode = '' | 'grab' | 'add' | 'delete'
+export type EditMode = '' | 'grab' | 'add' | 'delete' | 'drag-node'
 
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
   keyDownPosition: IVec2
+  dragTarget: { type: 'node' | 'edge'; id: string } | undefined
 }
 
 const notNeedLock = { needLock: false }
@@ -46,6 +47,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     command: '',
     editMovement: undefined,
     keyDownPosition: { x: 0, y: 0 },
+    dragTarget: undefined,
   })
   const selectedNodes = computed(() => graphStore.selectedNodes)
   const lastSelectedNodeId = computed(
@@ -57,6 +59,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   function cancel() {
     state.command = ''
     state.editMovement = undefined
+    state.dragTarget = undefined
   }
 
   function clickAny() {
@@ -98,14 +101,21 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     const gridTranslate = editMovement.ctrl
       ? snapGrid(editMovement.scale, translate)
       : translate
+    const transform = getTransform({ translate: gridTranslate })
 
-    return Object.keys(selectedNodes.value).reduce<IdMap<Transform>>(
-      (map, id) => {
-        map[id] = getTransform({ translate: gridTranslate })
-        return map
-      },
-      {}
-    )
+    if (state.dragTarget?.type === 'node') {
+      return {
+        [state.dragTarget.id]: transform,
+      }
+    } else {
+      return Object.keys(selectedNodes.value).reduce<IdMap<Transform>>(
+        (map, id) => {
+          map[id] = transform
+          return map
+        },
+        {}
+      )
+    }
   })
 
   const editedNodeMap = computed<IdMap<GraphNode>>(() => {
@@ -129,6 +139,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     graphStore.updateNodes(editedNodeMap.value)
     state.editMovement = undefined
     state.command = ''
+    state.dragTarget = undefined
   }
 
   function select(id: string, options?: SelectOptions) {
@@ -179,7 +190,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
   }
 
-  function drag(_arg: EditMovement) {}
+  function drag(arg: EditMovement) {
+    if (state.dragTarget?.type === 'node') {
+      state.editMovement = arg
+    }
+  }
 
   function execDelete() {
     if (state.command) {
@@ -264,6 +279,12 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
   })
 
+  function downNodeBody(id: string) {
+    select(id)
+    state.dragTarget = { type: 'node', id }
+    state.command = 'drag-node'
+  }
+
   return {
     command: computed(() => state.command),
     keyDownPosition: computed(() => state.keyDownPosition),
@@ -277,6 +298,8 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     select,
     selectAll,
     rectSelect,
+
+    downNodeBody,
 
     execKey,
     mousemove,

@@ -25,7 +25,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     :title="node.type"
     :transform="`translate(${node.position.x}, ${node.position.y})`"
   >
-    <g @click="select">
+    <g @click="select" @mousedown.exact="downBody">
       <path :d="outline" stroke="#555" fill="eee" />
     </g>
     <text fill="#000">{{ node.type }}</text>
@@ -48,7 +48,7 @@ export default defineComponent({
     scale: { type: Number, default: 1 },
     selected: { type: Boolean, default: false },
   },
-  emits: ['select'],
+  emits: ['select', 'down-body'],
   setup(props, { emit }) {
     const { settings } = useSettings()
 
@@ -74,6 +74,7 @@ export default defineComponent({
           ctrl: () => emit('select', props.node.id),
         })
       },
+      downBody: () => emit('down-body', props.node.id),
     }
   },
 })

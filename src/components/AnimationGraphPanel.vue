@@ -41,11 +41,12 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div class="canvas">
       <AnimationGraphCanvas :canvas="canvas" :mode="mode">
         <GraphNode
-          v-for="node in nodeMap"
+          v-for="node in editedNodeMap"
           :key="node.id"
           :node="node"
           :selected="selectedNodes[node.id]"
           @select="selectNode"
+          @down-body="downNodeBody"
         />
       </AnimationGraphCanvas>
     </div>
@@ -66,6 +67,8 @@ import GraphNode from '/@/components/elements/GraphNode.vue'
 import { getAnimationGraph } from '/@/models'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { SelectOptions } from '/@/composables/modes/types'
+import { mapReduce } from '/@/utils/commons'
+import { add } from 'okageo'
 
 export default defineComponent({
   components: {
@@ -134,11 +137,24 @@ export default defineComponent({
       graphStore.selectNode(id, options)
     }
 
+    function downNodeBody(id: string) {
+      mode.downNodeBody(id)
+    }
+
+    const editedNodeMap = computed(() => {
+      return mapReduce(graphStore.nodeMap.value, (n, id) => {
+        return {
+          ...n,
+          position: add(n.position, mode.getEditTransforms(id).translate),
+        }
+      })
+    })
+
     return {
       canvas,
       mode,
 
-      nodeMap: graphStore.nodeMap,
+      editedNodeMap,
 
       draftName,
       changeGraphName,
@@ -151,6 +167,7 @@ export default defineComponent({
 
       selectedNodes,
       selectNode,
+      downNodeBody,
     }
   },
 })

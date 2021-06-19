@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { reactive, computed } from 'vue'
-import { add, IRectangle, IVec2, sub } from 'okageo'
+import { add, IRectangle, isSame, IVec2, sub } from 'okageo'
 import { Transform, getTransform, IdMap } from '/@/models/index'
 import type {
   EditMovement,
@@ -135,8 +135,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
 
   function completeEdit() {
     if (!target.value) return
+    if (!state.editMovement) return
 
-    graphStore.updateNodes(editedNodeMap.value)
+    if (!isSame(state.editMovement.start, state.editMovement.current)) {
+      graphStore.updateNodes(editedNodeMap.value)
+    }
     state.editMovement = undefined
     state.command = ''
     state.dragTarget = undefined

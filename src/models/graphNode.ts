@@ -2,9 +2,13 @@ import { IVec2 } from 'okageo'
 import { Transform } from '/@/models'
 
 export interface GraphEdge {
-  id: string
-  from: string
-  to: string
+  from: GraphEdgeConnection
+  to: GraphEdgeConnection
+}
+
+export type GraphEdgeConnection = {
+  nodeId: string
+  key: string
 }
 
 export interface GraphEdgeBinder {
@@ -47,7 +51,6 @@ export type GraphNodeInputs = { [key: string]: GraphNodeInput<unknown> }
 export interface GraphNodeScaler extends GraphNodeBase {
   type: 'scaler'
   data: { value: number }
-  inputs: {}
 }
 
 export interface GraphNodeMakeVector2 extends GraphNodeBase {
@@ -92,4 +95,9 @@ export interface GraphNodeOutputValues {
 
 export interface GraphNodeOutputMap {
   [id: string]: GraphNodeOutputValues
+}
+
+export interface GraphNodeEdgePositions {
+  inputs: { [key: string]: IVec2 }
+  outputs: { [key: string]: IVec2 }
 }

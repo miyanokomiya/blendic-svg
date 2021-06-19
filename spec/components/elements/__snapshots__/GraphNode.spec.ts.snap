@@ -33,65 +33,10 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
   </g>
   <g>
     
-    <g
-      transform="translate(0, 64)"
-    >
-      <text
-        class="view-only"
-        dominant-baseline="middle"
-        fill="#000"
-        font-size="14"
-        x="10"
-      >
-        x
-      </text>
-      <circle
-        fill="#333"
-        r="5"
-        stroke="none"
-      />
-    </g>
-    <g
-      transform="translate(0, 84)"
-    >
-      <text
-        class="view-only"
-        dominant-baseline="middle"
-        fill="#000"
-        font-size="14"
-        x="10"
-      >
-        y
-      </text>
-      <circle
-        fill="#333"
-        r="5"
-        stroke="none"
-      />
-    </g>
     
   </g>
   <g>
     
-    <g
-      transform="translate(140, 40)"
-    >
-      <text
-        class="view-only"
-        dominant-baseline="middle"
-        fill="#000"
-        font-size="14"
-        text-anchor="end"
-        x="-10"
-      >
-        vector2
-      </text>
-      <circle
-        fill="#333"
-        r="5"
-        stroke="none"
-      />
-    </g>
     
   </g>
 </g>
@@ -130,65 +75,10 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
   </g>
   <g>
     
-    <g
-      transform="translate(0, 64)"
-    >
-      <text
-        class="view-only"
-        dominant-baseline="middle"
-        fill="#000"
-        font-size="14"
-        x="10"
-      >
-        x
-      </text>
-      <circle
-        fill="#333"
-        r="5"
-        stroke="none"
-      />
-    </g>
-    <g
-      transform="translate(0, 84)"
-    >
-      <text
-        class="view-only"
-        dominant-baseline="middle"
-        fill="#000"
-        font-size="14"
-        x="10"
-      >
-        y
-      </text>
-      <circle
-        fill="#333"
-        r="5"
-        stroke="none"
-      />
-    </g>
     
   </g>
   <g>
     
-    <g
-      transform="translate(140, 40)"
-    >
-      <text
-        class="view-only"
-        dominant-baseline="middle"
-        fill="#000"
-        font-size="14"
-        text-anchor="end"
-        x="-10"
-      >
-        vector2
-      </text>
-      <circle
-        fill="#333"
-        r="5"
-        stroke="none"
-      />
-    </g>
     
   </g>
 </g>

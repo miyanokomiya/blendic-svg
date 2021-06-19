@@ -44,37 +44,53 @@ Copyright (C) 2021, Tomoya Komiyama.
     </g>
     <g>
       <g
-        v-for="(p, key) in inputsPosition"
+        v-for="(p, key) in edgePositions.inputs"
         :key="key"
         :transform="`translate(${p.x}, ${p.y})`"
       >
-        <text
-          x="10"
-          dominant-baseline="middle"
-          font-size="14"
-          fill="#000"
-          class="view-only"
-          >{{ key }}</text
-        >
-        <circle r="5" fill="#333" stroke="none" />
+        <g @mousedown.left.exact.prevent="downFromEdge(key)">
+          <rect
+            :y="-GRAPH_NODE_ROW_HEIGHT / 2"
+            :width="size.width / 2"
+            :height="GRAPH_NODE_ROW_HEIGHT"
+            fill="transparent"
+            stroke="none"
+          />
+          <text x="10" dominant-baseline="middle" font-size="14" fill="#000">{{
+            key
+          }}</text>
+          <circle r="8" fill="transparent" stroke="none" />
+        </g>
+        <circle r="5" fill="#333" stroke="none" class="view-only" />
       </g>
     </g>
     <g>
       <g
-        v-for="(p, key) in outputsPosition"
+        v-for="(p, key) in edgePositions.outputs"
         :key="key"
         :transform="`translate(${p.x}, ${p.y})`"
       >
-        <text
-          x="-10"
-          dominant-baseline="middle"
-          text-anchor="end"
-          font-size="14"
-          fill="#000"
-          class="view-only"
-          >{{ key }}</text
-        >
-        <circle r="5" fill="#333" stroke="none" />
+        <g @mousedown.left.exact.prevent="downToEdge(key)">
+          <rect
+            :x="-size.width / 2"
+            :y="-GRAPH_NODE_ROW_HEIGHT / 2"
+            :width="size.width / 2"
+            :height="GRAPH_NODE_ROW_HEIGHT"
+            fill="transparent"
+            stroke="none"
+          />
+          <text
+            x="-10"
+            dominant-baseline="middle"
+            text-anchor="end"
+            font-size="14"
+            fill="#000"
+            class="view-only"
+            >{{ key }}</text
+          >
+          <circle r="8" fill="transparent" stroke="none" />
+        </g>
+        <circle r="5" fill="#333" stroke="none" class="view-only" />
       </g>
     </g>
   </g>
@@ -84,8 +100,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { defineComponent, PropType, computed } from 'vue'
 import { useSettings } from '../../composables/settings'
 import { switchClick } from '/@/utils/devices'
-import { GraphNode } from '/@/models/graphNode'
+import { GraphNode, GraphNodeEdgePositions } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
+import { add } from 'okageo'
 
 export default defineComponent({
   props: {
@@ -93,10 +110,13 @@ export default defineComponent({
       type: Object as PropType<GraphNode>,
       required: true,
     },
-    scale: { type: Number, default: 1 },
+    edgePositions: {
+      type: Object as PropType<GraphNodeEdgePositions>,
+      default: () => ({}),
+    },
     selected: { type: Boolean, default: false },
   },
-  emits: ['select', 'down-body'],
+  emits: ['select', 'down-body', 'down-edge'],
   setup(props, { emit }) {
     const { settings } = useSettings()
 
@@ -117,18 +137,10 @@ export default defineComponent({
       )
     })
 
-    const inputsPosition = computed(() =>
-      helpers.getGraphNodeInputsPosition(props.node)
-    )
-    const outputsPosition = computed(() =>
-      helpers.getGraphNodeOutputsPosition(props.node)
-    )
-
     return {
+      GRAPH_NODE_ROW_HEIGHT: helpers.GRAPH_NODE_ROW_HEIGHT,
       size,
       outline,
-      inputsPosition,
-      outputsPosition,
       outlineStroke: computed(() =>
         props.selected ? settings.selectedColor : '#555'
       ),
@@ -141,6 +153,18 @@ export default defineComponent({
         })
       },
       downBody: () => emit('down-body', props.node.id),
+      downFromEdge: (key: string) =>
+        emit('down-edge', {
+          type: 'draft-from',
+          from: add(props.node.position, props.edgePositions.inputs[key]),
+          to: { nodeId: props.node.id, key },
+        }),
+      downToEdge: (key: string) =>
+        emit('down-edge', {
+          type: 'draft-to',
+          from: { nodeId: props.node.id, key },
+          to: add(props.node.position, props.edgePositions.outputs[key]),
+        }),
     }
   },
 })

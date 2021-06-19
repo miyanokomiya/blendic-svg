@@ -207,7 +207,7 @@ export function getTargetTopMap(
 }
 
 export const GRAPH_NODE_HEAD_HEIGHT = 40
-const GRAPH_NODE_ROW_HEIGHT = 20
+export const GRAPH_NODE_ROW_HEIGHT = 20
 const GRAPH_NODE_ROW_MARGIN = 4
 
 export function getGraphNodeSize(node: GraphNode): Size {

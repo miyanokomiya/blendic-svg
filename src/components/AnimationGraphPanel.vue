@@ -40,14 +40,27 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <div class="canvas">
       <AnimationGraphCanvas :canvas="canvas" :mode="mode">
+        <g v-for="(edgeMapOfNode, id) in edgeMap" :key="id">
+          <GraphEdge
+            v-for="(edge, key) in edgeMapOfNode"
+            :key="key"
+            :from="edge.from"
+            :to="edge.to"
+          />
+        </g>
         <GraphNode
           v-for="node in editedNodeMap"
           :key="node.id"
           :node="node"
+          :edge-positions="edgePositionMap[node.id]"
           :selected="selectedNodes[node.id]"
           @select="selectNode"
           @down-body="downNodeBody"
+          @down-edge="downNodeEdge"
         />
+        <g v-if="draftEdge">
+          <GraphEdge :from="draftEdge.from" :to="draftEdge.to" selected />
+        </g>
       </AnimationGraphCanvas>
     </div>
   </div>
@@ -64,11 +77,16 @@ import SelectField from './atoms/SelectField.vue'
 import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import GraphNode from '/@/components/elements/GraphNode.vue'
+import GraphEdge from '/@/components/elements/GraphEdge.vue'
 import { getAnimationGraph } from '/@/models'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { SelectOptions } from '/@/composables/modes/types'
 import { mapReduce } from '/@/utils/commons'
-import { add } from 'okageo'
+import { add, IVec2 } from 'okageo'
+import {
+  getGraphNodeInputsPosition,
+  getGraphNodeOutputsPosition,
+} from '/@/utils/helpers'
 
 export default defineComponent({
   components: {
@@ -77,6 +95,7 @@ export default defineComponent({
     AddIcon,
     DeleteIcon,
     GraphNode,
+    GraphEdge,
   },
   setup() {
     const store = useStore()
@@ -150,11 +169,83 @@ export default defineComponent({
       })
     })
 
+    const edgePositionMap = computed(() => {
+      return mapReduce(editedNodeMap.value, (node) => {
+        const inputsPosition = getGraphNodeInputsPosition(node)
+        const outputsPosition = getGraphNodeOutputsPosition(node)
+        return { inputs: inputsPosition, outputs: outputsPosition }
+      })
+    })
+
+    const edgeMap = computed(() => {
+      const draftFromInfo =
+        mode.draftEdgeInfo.value?.type === 'draft-to'
+          ? {
+              id: mode.draftEdgeInfo.value.from.nodeId,
+              key: mode.draftEdgeInfo.value.from.key,
+            }
+          : undefined
+
+      const allNodes = editedNodeMap.value
+
+      return mapReduce(allNodes, (node) => {
+        const inputsPositions = edgePositionMap.value[node.id].inputs
+        return Object.entries(node.inputs).reduce<{
+          [key: string]: { from: IVec2; to: IVec2 }
+        }>((p, [key, input]) => {
+          if (!input.from || edgePositionMap.value[input.from.id]) return p
+          if (
+            draftFromInfo &&
+            draftFromInfo.id === node.id &&
+            draftFromInfo.key === key
+          )
+            return p
+          p[key] = {
+            from: add(
+              allNodes[input.from.id].position,
+              edgePositionMap.value[input.from.id].outputs[input.from.key]
+            ),
+            to: add(node.position, inputsPositions[key]),
+          }
+          return p
+        }, {})
+      })
+    })
+
+    const draftEdge = computed<{ from: IVec2; to: IVec2 } | undefined>(() => {
+      if (!mode.draftEdgeInfo.value) return undefined
+
+      if (mode.draftEdgeInfo.value.type === 'draft-to') {
+        return {
+          from: add(
+            editedNodeMap.value[mode.draftEdgeInfo.value.from.nodeId].position,
+            edgePositionMap.value[mode.draftEdgeInfo.value.from.nodeId].outputs[
+              mode.draftEdgeInfo.value.from.key
+            ]
+          ),
+          to: mode.draftEdgeInfo.value.to,
+        }
+      } else {
+        return {
+          from: mode.draftEdgeInfo.value.from,
+          to: add(
+            editedNodeMap.value[mode.draftEdgeInfo.value.to.nodeId].position,
+            edgePositionMap.value[mode.draftEdgeInfo.value.to.nodeId].inputs[
+              mode.draftEdgeInfo.value.to.key
+            ]
+          ),
+        }
+      }
+    })
+
     return {
       canvas,
       mode,
 
       editedNodeMap,
+      edgePositionMap,
+      edgeMap,
+      draftEdge,
 
       draftName,
       changeGraphName,
@@ -168,6 +259,7 @@ export default defineComponent({
       selectedNodes,
       selectNode,
       downNodeBody,
+      downNodeEdge: mode.downNodeEdge,
     }
   },
 })

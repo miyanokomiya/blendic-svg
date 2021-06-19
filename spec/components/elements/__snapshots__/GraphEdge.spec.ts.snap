@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/GraphEdge.vue snapshot initial 1`] = `
+<g>
+  <path
+    d="M1,2 L10,20"
+    stroke="#888"
+    stroke-width="2.5"
+  />
+  <circle
+    cx="1"
+    cy="2"
+    fill="#dda0dd"
+    r="5"
+    stroke="none"
+  />
+  <circle
+    cx="10"
+    cy="20"
+    fill="#dda0dd"
+    r="5"
+    stroke="none"
+  />
+</g>
+`;
+
+exports[`src/components/elements/GraphEdge.vue snapshot selected 1`] = `
+<g>
+  <path
+    d="M1,2 L10,20"
+    stroke="#888"
+    stroke-width="2.5"
+  />
+  <circle
+    cx="1"
+    cy="2"
+    fill="orange"
+    r="5"
+    stroke="none"
+  />
+  <circle
+    cx="10"
+    cy="20"
+    fill="orange"
+    r="5"
+    stroke="none"
+  />
+</g>
+`;

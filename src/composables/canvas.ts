@@ -109,6 +109,10 @@ export function useCanvas(
     return add(viewOrigin.value, multi(v, scale.value))
   }
 
+  function canvasToView(v: IVec2): IVec2 {
+    return multi(sub(v, viewOrigin.value), 1 / scale.value)
+  }
+
   function fixOrigin(origin: IVec2): IVec2 {
     // negative y space is not used
     if (options.ignoreNegativeY) {
@@ -140,6 +144,7 @@ export function useCanvas(
     viewBox,
     viewCanvasRect,
     viewToCanvas,
+    canvasToView,
     wheel(e: WheelEvent, center = false) {
       const origin =
         !center && mousePoint.value ? mousePoint.value : viewCenter.value

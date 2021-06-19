@@ -23,6 +23,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     :fill="fill"
     :stroke-width="1.2 * Math.min(scale, 1)"
     :title="node.type"
+    :transform="`translate(${node.position.x}, ${node.position.y})`"
   >
     <g @click="select">
       <path :d="outline" stroke="#555" fill="eee" />
@@ -37,7 +38,6 @@ import { useSettings } from '../../composables/settings'
 import { switchClick } from '/@/utils/devices'
 import { GraphNode } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
-import { add } from 'okageo'
 
 export default defineComponent({
   props: {
@@ -55,10 +55,10 @@ export default defineComponent({
     const outline = computed(() => {
       return helpers.d(
         [
-          props.node.position,
-          add(props.node.position, { x: 100, y: 0 }),
-          add(props.node.position, { x: 100, y: 200 }),
-          add(props.node.position, { x: 0, y: 200 }),
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 100, y: 200 },
+          { x: 0, y: 200 },
         ],
         true
       )

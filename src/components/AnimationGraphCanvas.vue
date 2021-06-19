@@ -62,7 +62,7 @@ import {
 } from '../composables/window'
 import { provideScale, useCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
-import { add, IVec2, sub } from 'okageo'
+import { add, sub } from 'okageo'
 import { useThrottle } from '/@/composables/throttle'
 import { isCtrlOrMeta } from '/@/utils/devices'
 import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
@@ -96,11 +96,10 @@ export default defineComponent({
     watch(() => windowState.state.size, adjustSvgSize)
 
     const popupMenuList = computed(() => props.mode.popupMenuList.value)
-    const popupMenuListPosition = ref<IVec2>()
-    watch(popupMenuList, () => {
-      if (!wrapper.value || !props.canvas.mousePoint.value) return
+    const popupMenuListPosition = computed(() => {
+      if (!wrapper.value) return
       const rect = wrapper.value.getBoundingClientRect()
-      popupMenuListPosition.value = add(props.canvas.mousePoint.value, {
+      return add(props.canvas.canvasToView(props.mode.keyDownPosition.value), {
         x: rect.left,
         y: rect.top,
       })
@@ -204,6 +203,7 @@ export default defineComponent({
       editKeyDown: (e: KeyboardEvent) => {
         const { needLock } = props.mode.execKey({
           key: e.key,
+          position: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
           shift: e.shiftKey,
           ctrl: isCtrlOrMeta(e),
         })

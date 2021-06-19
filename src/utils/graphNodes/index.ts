@@ -157,9 +157,10 @@ export function validateInput<T extends GraphNodeInputs>(
 
 export function createGraphNode<T extends GraphNodeType>(
   type: T,
+  arg: Partial<GraphNodes[T]> = {},
   generateId = false
 ): GraphNodes[T] {
-  const node = NODE_MODULES[type].struct.create()
+  const node = NODE_MODULES[type].struct.create(arg)
   if (generateId) {
     node.id = v4()
   }

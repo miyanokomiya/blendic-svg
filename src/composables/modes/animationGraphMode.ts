@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { reactive, computed } from 'vue'
-import { add, IRectangle, sub } from 'okageo'
+import { add, IRectangle, IVec2, sub } from 'okageo'
 import { Transform, getTransform, IdMap } from '/@/models/index'
 import type {
   EditMovement,
@@ -36,6 +36,7 @@ export type EditMode = '' | 'grab' | 'add' | 'delete'
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
+  keyDownPosition: IVec2
 }
 
 const notNeedLock = { needLock: false }
@@ -44,6 +45,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
+    keyDownPosition: { x: 0, y: 0 },
   })
   const selectedNodes = computed(() => graphStore.selectedNodes)
   const lastSelectedNodeId = computed(
@@ -150,7 +152,12 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     graphStore.selectAllNode()
   }
 
-  function execKey(arg: { key: string; shift?: boolean; ctrl?: boolean }): {
+  function execKey(arg: {
+    key: string
+    position: IVec2
+    shift?: boolean
+    ctrl?: boolean
+  }): {
     needLock: boolean
   } {
     switch (arg.key) {
@@ -159,6 +166,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         return notNeedLock
       case 'A':
         cancel()
+        state.keyDownPosition = arg.position
         state.command = 'add'
         return notNeedLock
       default:
@@ -181,12 +189,12 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     // graphStore.deleteNode()
   }
 
-  function execAddNode(type: GraphNodeType) {
+  function execAddNode(type: GraphNodeType, position: IVec2) {
     if (state.command && state.command !== 'add') {
       cancel()
       return
     }
-    graphStore.addNode(type)
+    graphStore.addNode(type, { position })
     cancel()
   }
 
@@ -235,7 +243,10 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   })
 
   const addMenuList = useMenuList(() => [
-    { label: 'Number', exec: () => execAddNode('scaler') },
+    {
+      label: 'Number',
+      exec: () => execAddNode('scaler', state.keyDownPosition),
+    },
   ])
 
   const deleteMenuList = useMenuList(() => [
@@ -255,6 +266,8 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
 
   return {
     command: computed(() => state.command),
+    keyDownPosition: computed(() => state.keyDownPosition),
+
     getEditTransforms(id: string) {
       return editTransforms.value[id] || getTransform()
     },

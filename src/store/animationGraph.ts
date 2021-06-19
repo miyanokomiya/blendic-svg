@@ -24,7 +24,7 @@ import { extractMap, mapReduce, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { SelectOptions } from '/@/composables/modes/types'
 import { HistoryItem } from '/@/composables/stores/history'
-import { GraphNode, GraphNodeType } from '/@/models/graphNode'
+import { GraphNode, GraphNodes, GraphNodeType } from '/@/models/graphNode'
 import { createGraphNode } from '/@/utils/graphNodes'
 import {
   convolute,
@@ -137,10 +137,13 @@ function updateNodes(val: IdMap<Partial<GraphNode>>) {
   historyStore.push(item)
 }
 
-function addNode(type: GraphNodeType) {
+function addNode<T extends GraphNodeType>(
+  type: T,
+  arg: Partial<GraphNodes[T]> = {}
+) {
   if (!lastSelectedGraph.value) return
 
-  const node = createGraphNode(type, true)
+  const node = createGraphNode(type, arg, true)
   const item = convolute(getAddItemHistory(nodesAccessor, node), [
     getSelectItemHistory(
       selectedNodesAccessor,
@@ -149,7 +152,6 @@ function addNode(type: GraphNodeType) {
     ),
   ])
   historyStore.push(item, true)
-  console.log(nodeMap.value)
 }
 
 export function useAnimationGraphStore() {

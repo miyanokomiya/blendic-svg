@@ -6,6 +6,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
   stroke="black"
   stroke-width="1.2"
   title="make_vector2"
+  transform="translate(0, 0)"
 >
   <g>
     <path
@@ -28,6 +29,7 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
   stroke="black"
   stroke-width="1.2"
   title="make_vector2"
+  transform="translate(0, 0)"
 >
   <g>
     <path

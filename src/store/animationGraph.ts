@@ -108,8 +108,7 @@ function selectAllNode() {
     selectNode('')
   } else {
     const item = getSelectAllItem()
-    item.redo()
-    historyStore.push(item)
+    historyStore.push(item, true)
   }
 }
 
@@ -117,24 +116,21 @@ function updateArmatureId(id: string) {
   if (!lastSelectedNode.value) return
 
   const item = getUpdateArmatureIdItem(id)
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 
 function updateNode(id: string, val: Partial<GraphNode>) {
   if (!lastSelectedNode.value) return
 
   const item = getUpdateNodesItem({ [id]: val })
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 
 function updateNodes(val: IdMap<Partial<GraphNode>>) {
   if (!lastSelectedNode.value) return
 
   const item = getUpdateNodesItem(val)
-  item.redo()
-  historyStore.push(item)
+  historyStore.push(item, true)
 }
 
 function addNode<T extends GraphNodeType>(

@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`src/components/elements/GraphEdge.vue snapshot initial 1`] = `
-<g>
+<g
+  class="view-only"
+>
   <path
     d="M1,2 L10,20"
     stroke="#888"
@@ -25,7 +27,9 @@ exports[`src/components/elements/GraphEdge.vue snapshot initial 1`] = `
 `;
 
 exports[`src/components/elements/GraphEdge.vue snapshot selected 1`] = `
-<g>
+<g
+  class="view-only"
+>
   <path
     d="M1,2 L10,20"
     stroke="#888"

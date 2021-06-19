@@ -48,10 +48,13 @@ Copyright (C) 2021, Tomoya Komiyama.
         :key="key"
         :transform="`translate(${p.x}, ${p.y})`"
       >
-        <g @mousedown.left.exact.prevent="downFromEdge(key)">
+        <g
+          @mouseup.left.exact="upFromEdge(key)"
+          @mousedown.left.exact.prevent="downFromEdge(key)"
+        >
           <rect
             :y="-GRAPH_NODE_ROW_HEIGHT / 2"
-            :width="size.width / 2"
+            :width="edgeAnchorWidth"
             :height="GRAPH_NODE_ROW_HEIGHT"
             fill="transparent"
             stroke="none"
@@ -70,11 +73,14 @@ Copyright (C) 2021, Tomoya Komiyama.
         :key="key"
         :transform="`translate(${p.x}, ${p.y})`"
       >
-        <g @mousedown.left.exact.prevent="downToEdge(key)">
+        <g
+          @mouseup.left.exact="upToEdge(key)"
+          @mousedown.left.exact.prevent="downToEdge(key)"
+        >
           <rect
-            :x="-size.width / 2"
+            :x="-edgeAnchorWidth"
             :y="-GRAPH_NODE_ROW_HEIGHT / 2"
-            :width="size.width / 2"
+            :width="edgeAnchorWidth"
             :height="GRAPH_NODE_ROW_HEIGHT"
             fill="transparent"
             stroke="none"
@@ -116,7 +122,7 @@ export default defineComponent({
     },
     selected: { type: Boolean, default: false },
   },
-  emits: ['select', 'down-body', 'down-edge'],
+  emits: ['select', 'down-body', 'down-edge', 'up-edge'],
   setup(props, { emit }) {
     const { settings } = useSettings()
 
@@ -144,6 +150,7 @@ export default defineComponent({
       outlineStroke: computed(() =>
         props.selected ? settings.selectedColor : '#555'
       ),
+      edgeAnchorWidth: computed(() => 30),
       outlineStrokeWidth: computed(() => (props.selected ? 2 : 1)),
       select: (e: MouseEvent) => {
         switchClick(e, {
@@ -165,6 +172,10 @@ export default defineComponent({
           from: { nodeId: props.node.id, key },
           to: add(props.node.position, props.edgePositions.outputs[key]),
         }),
+      upFromEdge: (key: string) =>
+        emit('up-edge', { nodeId: props.node.id, type: 'input', key }),
+      upToEdge: (key: string) =>
+        emit('up-edge', { nodeId: props.node.id, type: 'output', key }),
     }
   },
 })

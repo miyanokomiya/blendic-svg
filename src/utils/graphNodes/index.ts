@@ -172,3 +172,18 @@ export function createGraphNode<T extends GraphNodeType>(
   }
   return node
 }
+
+export function validateConnection(
+  from: {
+    type: GraphNodeType
+    key: string
+  },
+  to: {
+    type: GraphNodeType
+    key: string
+  }
+): boolean {
+  const inputType = NODE_MODULES[to.type].struct.inputs[to.key].type
+  const outputType = NODE_MODULES[from.type].struct.outputs[from.key]
+  return inputType === outputType
+}

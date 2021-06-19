@@ -57,6 +57,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           @select="selectNode"
           @down-body="downNodeBody"
           @down-edge="downNodeEdge"
+          @up-edge="upNodeEdge"
         />
         <g v-if="draftEdge">
           <GraphEdge :from="draftEdge.from" :to="draftEdge.to" selected />
@@ -78,7 +79,7 @@ import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import GraphNode from '/@/components/elements/GraphNode.vue'
 import GraphEdge from '/@/components/elements/GraphEdge.vue'
-import { getAnimationGraph } from '/@/models'
+import { getAnimationGraph, IdMap } from '/@/models'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { SelectOptions } from '/@/composables/modes/types'
 import { mapReduce } from '/@/utils/commons'
@@ -87,6 +88,7 @@ import {
   getGraphNodeInputsPosition,
   getGraphNodeOutputsPosition,
 } from '/@/utils/helpers'
+import { GraphNodeEdgePositions } from '/@/models/graphNode'
 
 export default defineComponent({
   components: {
@@ -169,7 +171,7 @@ export default defineComponent({
       })
     })
 
-    const edgePositionMap = computed(() => {
+    const edgePositionMap = computed<IdMap<GraphNodeEdgePositions>>(() => {
       return mapReduce(editedNodeMap.value, (node) => {
         const inputsPosition = getGraphNodeInputsPosition(node)
         const outputsPosition = getGraphNodeOutputsPosition(node)
@@ -193,7 +195,7 @@ export default defineComponent({
         return Object.entries(node.inputs).reduce<{
           [key: string]: { from: IVec2; to: IVec2 }
         }>((p, [key, input]) => {
-          if (!input.from || edgePositionMap.value[input.from.id]) return p
+          if (!input.from || !edgePositionMap.value[input.from.id]) return p
           if (
             draftFromInfo &&
             draftFromInfo.id === node.id &&
@@ -260,6 +262,7 @@ export default defineComponent({
       selectNode,
       downNodeBody,
       downNodeEdge: mode.downNodeEdge,
+      upNodeEdge: mode.upNodeEdge,
     }
   },
 })

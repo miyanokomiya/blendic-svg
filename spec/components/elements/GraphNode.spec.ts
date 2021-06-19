@@ -25,13 +25,22 @@ describe('src/components/elements/GraphNode.vue', () => {
   describe('snapshot', () => {
     it('initial', () => {
       const wrapper = mount(Target, {
-        props: { node: createGraphNode('make_vector2') },
+        props: {
+          node: createGraphNode('make_vector2'),
+          edgePositions: {
+            inputs: { x: { x: 1, y: 2 } },
+            outputs: { value: { x: 1, y: 2 } },
+          },
+        },
       })
       expect(wrapper.element).toMatchSnapshot()
     })
     it('selected', () => {
       const wrapper = mount(Target, {
-        props: { node: createGraphNode('make_vector2'), selected: true },
+        props: {
+          node: createGraphNode('make_vector2'),
+          selected: true,
+        },
       })
       expect(wrapper.element).toMatchSnapshot()
     })

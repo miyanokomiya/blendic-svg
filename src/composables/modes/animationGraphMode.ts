@@ -34,8 +34,15 @@ import {
   GraphNode,
   GraphNodeType,
 } from '/@/models/graphNode'
+import { validateConnection } from '/@/utils/graphNodes'
 
-export type EditMode = '' | 'grab' | 'add' | 'delete' | 'drag-node'
+export type EditMode =
+  | ''
+  | 'grab'
+  | 'add'
+  | 'delete'
+  | 'drag-node'
+  | 'drag-edge'
 
 type DraftGraphEdge =
   | {
@@ -49,6 +56,12 @@ type DraftGraphEdge =
       to: GraphEdgeConnection
     }
 
+interface EdgeInfo {
+  nodeId: string
+  type: 'input' | 'output'
+  key: string
+}
+
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
@@ -57,6 +70,7 @@ interface State {
     | { type: 'node'; id: string }
     | { type: 'edge'; draftGraphEdge: DraftGraphEdge }
     | undefined
+  closestEdgeInfo: EdgeInfo | undefined
 }
 
 const notNeedLock = { needLock: false }
@@ -67,6 +81,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     editMovement: undefined,
     keyDownPosition: { x: 0, y: 0 },
     dragTarget: undefined,
+    closestEdgeInfo: undefined,
   })
   const selectedNodes = computed(() => graphStore.selectedNodes)
   const lastSelectedNodeId = computed(
@@ -79,10 +94,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     state.command = ''
     state.editMovement = undefined
     state.dragTarget = undefined
+    state.closestEdgeInfo = undefined
   }
 
   function clickAny() {
-    if (state.command) {
+    if (state.command && !state.dragTarget) {
       completeEdit()
     }
   }
@@ -95,8 +111,82 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
   }
 
+  const isValidDraftConnection = computed(() => {
+    if (
+      state.command === 'drag-edge' &&
+      state.dragTarget?.type === 'edge' &&
+      state.closestEdgeInfo
+    ) {
+      if (state.dragTarget.draftGraphEdge.type === 'draft-to') {
+        if (state.closestEdgeInfo.type === 'output') return false
+
+        const from = state.dragTarget.draftGraphEdge.from
+        const fromNode = graphStore.nodeMap.value[from.nodeId]
+        const fromKey = from.key
+
+        const toNode = graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
+        const toKey = state.closestEdgeInfo.key
+        return validateConnection(
+          { type: fromNode.type, key: fromKey },
+          { type: toNode.type, key: toKey }
+        )
+      } else {
+        if (state.closestEdgeInfo.type === 'input') return false
+
+        const fromNode = graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
+        const fromKey = state.closestEdgeInfo.key
+
+        const to = state.dragTarget.draftGraphEdge.to
+        const toNode = graphStore.nodeMap.value[to.nodeId]
+        const toKey = to.key
+        return validateConnection(
+          { type: fromNode.type, key: fromKey },
+          { type: toNode.type, key: toKey }
+        )
+      }
+    }
+
+    return false
+  })
+
   function upLeft() {
-    if (state.command) {
+    if (state.command === 'drag-edge' && state.dragTarget?.type === 'edge') {
+      if (state.closestEdgeInfo && isValidDraftConnection.value) {
+        if (state.dragTarget.draftGraphEdge.type === 'draft-to') {
+          const from = state.dragTarget.draftGraphEdge.from
+          const fromNode = graphStore.nodeMap.value[from.nodeId]
+          const fromKey = from.key
+
+          const toNode = graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
+          const toKey = state.closestEdgeInfo.key
+
+          graphStore.updateNode(toNode.id, {
+            ...toNode,
+            inputs: {
+              ...toNode.inputs,
+              [toKey]: { from: { id: fromNode.id, key: fromKey } },
+            } as any,
+          })
+        } else {
+          const fromNode =
+            graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
+          const fromKey = state.closestEdgeInfo.key
+
+          const to = state.dragTarget.draftGraphEdge.to
+          const toNode = graphStore.nodeMap.value[to.nodeId]
+          const toKey = to.key
+
+          graphStore.updateNode(toNode.id, {
+            ...toNode,
+            inputs: {
+              ...toNode.inputs,
+              [toKey]: { from: { id: fromNode.id, key: fromKey } },
+            } as any,
+          })
+        }
+      }
+      completeEdit()
+    } else if (state.command) {
       completeEdit()
     }
   }
@@ -180,6 +270,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     state.editMovement = undefined
     state.command = ''
     state.dragTarget = undefined
+    state.closestEdgeInfo = undefined
   }
 
   function select(id: string, options?: SelectOptions) {
@@ -336,7 +427,17 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
 
   function downNodeEdge(draftGraphEdge: DraftGraphEdge) {
     state.dragTarget = { type: 'edge', draftGraphEdge }
-    state.command = 'drag-node'
+    state.command = 'drag-edge'
+  }
+
+  function upNodeEdge(closestEdgeInfo: {
+    nodeId: string
+    type: 'input' | 'output'
+    key: string
+  }) {
+    if (state.command === 'drag-edge') {
+      state.closestEdgeInfo = closestEdgeInfo
+    }
   }
 
   return {
@@ -355,6 +456,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
 
     downNodeBody,
     downNodeEdge,
+    upNodeEdge,
     draftEdgeInfo,
 
     execKey,

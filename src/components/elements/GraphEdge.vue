@@ -18,8 +18,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g>
-    <path :d="pathD" stroke="#888" :stroke-width="2.5 * scale" />
+  <g class="view-only">
+    <path :d="pathD" :stroke="stroke" :stroke-width="2.5 * scale" />
     <circle :cx="from.x" :cy="from.y" r="5" :fill="fill" stroke="none" />
     <circle :cx="to.x" :cy="to.y" r="5" :fill="fill" stroke="none" />
   </g>
@@ -51,6 +51,9 @@ export default defineComponent({
       pathD,
       fill: computed(() =>
         props.selected ? settings.selectedColor : '#dda0dd'
+      ),
+      stroke: computed(() =>
+        props.selected ? settings.selectedColor : '#888'
       ),
     }
   },

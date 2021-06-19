@@ -12,6 +12,7 @@ import {
   validateInput,
   validateNode,
   validateAllNodes,
+  validateConnection,
 } from '../../../src/utils/graphNodes/index'
 
 const context = {
@@ -233,6 +234,25 @@ describe('src/utils/graphNodes/index.ts', () => {
           { node },
           { x: { from: { id: 'invalid', key: 'value' } }, y: { value: 0 } },
           'x'
+        )
+      ).toBe(false)
+    })
+  })
+
+  describe('validateConnection', () => {
+    it('should return true if the input and the output are valid combination', () => {
+      expect(
+        validateConnection(
+          { type: 'break_vector2', key: 'y' },
+          { type: 'make_vector2', key: 'x' }
+        )
+      ).toBe(true)
+    })
+    it('should return false if the input and the output are invalid combination', () => {
+      expect(
+        validateConnection(
+          { type: 'make_vector2', key: 'vector2' },
+          { type: 'make_vector2', key: 'x' }
         )
       ).toBe(false)
     })

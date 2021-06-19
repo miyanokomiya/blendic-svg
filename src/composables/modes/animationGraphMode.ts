@@ -33,6 +33,7 @@ import {
   GraphEdgeConnection,
   GraphNode,
   GraphNodeType,
+  GraphNodeInput,
 } from '/@/models/graphNode'
 import { validateConnection } from '/@/utils/graphNodes'
 
@@ -168,13 +169,13 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
             } as any,
           })
         } else {
-          const fromNode =
-            graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
-          const fromKey = state.closestEdgeInfo.key
-
           const to = state.dragTarget.draftGraphEdge.to
           const toNode = graphStore.nodeMap.value[to.nodeId]
           const toKey = to.key
+
+          const fromNode =
+            graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
+          const fromKey = state.closestEdgeInfo.key
 
           graphStore.updateNode(toNode.id, {
             ...toNode,
@@ -183,6 +184,23 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
               [toKey]: { from: { id: fromNode.id, key: fromKey } },
             } as any,
           })
+        }
+      } else {
+        if (state.dragTarget.draftGraphEdge.type === 'draft-from') {
+          const to = state.dragTarget.draftGraphEdge.to
+          const toNode = graphStore.nodeMap.value[to.nodeId]
+          const toKey = to.key
+          const input = (toNode.inputs as any)[toKey] as GraphNodeInput<unknown>
+          if (input.from) {
+            // delete current edge
+            graphStore.updateNode(toNode.id, {
+              ...toNode,
+              inputs: {
+                ...toNode.inputs,
+                [toKey]: { ...input, from: undefined },
+              } as any,
+            })
+          }
         }
       }
       completeEdit()

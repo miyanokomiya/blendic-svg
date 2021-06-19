@@ -180,11 +180,11 @@ export default defineComponent({
     })
 
     const edgeMap = computed(() => {
-      const draftFromInfo =
-        mode.draftEdgeInfo.value?.type === 'draft-to'
+      const draftToInfo =
+        mode.draftEdgeInfo.value?.type === 'draft-from'
           ? {
-              id: mode.draftEdgeInfo.value.from.nodeId,
-              key: mode.draftEdgeInfo.value.from.key,
+              id: mode.draftEdgeInfo.value.to.nodeId,
+              key: mode.draftEdgeInfo.value.to.key,
             }
           : undefined
 
@@ -197,9 +197,9 @@ export default defineComponent({
         }>((p, [key, input]) => {
           if (!input.from || !edgePositionMap.value[input.from.id]) return p
           if (
-            draftFromInfo &&
-            draftFromInfo.id === node.id &&
-            draftFromInfo.key === key
+            draftToInfo &&
+            draftToInfo.id === node.id &&
+            draftToInfo.key === key
           )
             return p
           p[key] = {

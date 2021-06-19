@@ -1,7 +1,11 @@
 import { Transform } from '/@/models'
 import { GraphNodeBase, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 
-export interface NodeStruce<T extends GraphNodeBase> {
+export interface NodeModule<T extends GraphNodeBase> {
+  struct: NodeStruct<T>
+}
+
+export interface NodeStruct<T extends GraphNodeBase> {
   create: (arg?: Partial<T>) => T
   inputs: {
     [key in keyof T['inputs']]: { type: keyof typeof GRAPH_VALUE_TYPE } & (
@@ -18,7 +22,8 @@ export interface NodeStruce<T extends GraphNodeBase> {
     },
     self: T,
     context: NodeContext<unknown>
-  ) => { [key in keyof NodeStruce<T>['outputs']]: unknown }
+  ) => { [key in keyof NodeStruct<T>['outputs']]: unknown }
+  width: number
 }
 
 export interface NodeContext<T> {

@@ -23,7 +23,7 @@ describe('src/utils/graphNodes/nodes/getFrame.ts', () => {
           node,
           { getFrame } as any
         )
-      ).toEqual({ value: 10 })
+      ).toEqual({ frame: 10 })
       expect(getFrame).toHaveReturnedTimes(1)
     })
   })

@@ -57,7 +57,7 @@ export interface GraphNodeMakeVector2 extends GraphNodeBase {
 
 export interface GraphNodeBreakVector2 extends GraphNodeBase {
   type: 'break_vector2'
-  inputs: { value: GraphNodeInput<IVec2> }
+  inputs: { vector2: GraphNodeInput<IVec2> }
 }
 
 export interface GraphNodeMakeTransform extends GraphNodeBase {

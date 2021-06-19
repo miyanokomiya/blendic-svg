@@ -19,16 +19,64 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g
-    stroke="black"
-    :fill="fill"
-    :stroke-width="1.2 * Math.min(scale, 1)"
     :title="node.type"
     :transform="`translate(${node.position.x}, ${node.position.y})`"
   >
     <g @click="select" @mousedown.exact="downBody">
-      <path :d="outline" stroke="#555" fill="eee" />
+      <path
+        :d="outline"
+        :stroke="outlineStroke"
+        :stroke-width="outlineStrokeWidth"
+        fill="#eee"
+      />
     </g>
-    <text fill="#000">{{ node.type }}</text>
+    <g>
+      <text
+        x="8"
+        y="3"
+        dominant-baseline="text-before-edge"
+        font-size="16"
+        fill="#000"
+        class="view-only"
+        >{{ node.type }}</text
+      >
+      <line y1="28" y2="28" :x2="size.width" stroke="#555" />
+    </g>
+    <g>
+      <g
+        v-for="(p, key) in inputsPosition"
+        :key="key"
+        :transform="`translate(${p.x}, ${p.y})`"
+      >
+        <text
+          x="10"
+          dominant-baseline="middle"
+          font-size="14"
+          fill="#000"
+          class="view-only"
+          >{{ key }}</text
+        >
+        <circle r="5" fill="#333" stroke="none" />
+      </g>
+    </g>
+    <g>
+      <g
+        v-for="(p, key) in outputsPosition"
+        :key="key"
+        :transform="`translate(${p.x}, ${p.y})`"
+      >
+        <text
+          x="-10"
+          dominant-baseline="middle"
+          text-anchor="end"
+          font-size="14"
+          fill="#000"
+          class="view-only"
+          >{{ key }}</text
+        >
+        <circle r="5" fill="#333" stroke="none" />
+      </g>
+    </g>
   </g>
 </template>
 
@@ -52,21 +100,39 @@ export default defineComponent({
   setup(props, { emit }) {
     const { settings } = useSettings()
 
+    const size = computed(() => {
+      return helpers.getGraphNodeSize(props.node)
+    })
+
     const outline = computed(() => {
+      const s = size.value
       return helpers.d(
         [
           { x: 0, y: 0 },
-          { x: 100, y: 0 },
-          { x: 100, y: 200 },
-          { x: 0, y: 200 },
+          { x: s.width, y: 0 },
+          { x: s.width, y: s.height },
+          { x: 0, y: s.height },
         ],
         true
       )
     })
 
+    const inputsPosition = computed(() =>
+      helpers.getGraphNodeInputsPosition(props.node)
+    )
+    const outputsPosition = computed(() =>
+      helpers.getGraphNodeOutputsPosition(props.node)
+    )
+
     return {
+      size,
       outline,
-      fill: computed(() => (props.selected ? settings.selectedColor : '#ddd')),
+      inputsPosition,
+      outputsPosition,
+      outlineStroke: computed(() =>
+        props.selected ? settings.selectedColor : '#555'
+      ),
+      outlineStrokeWidth: computed(() => (props.selected ? 2 : 1)),
       select: (e: MouseEvent) => {
         switchClick(e, {
           plain: () => emit('select', props.node.id),

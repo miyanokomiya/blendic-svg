@@ -1,7 +1,7 @@
 import { GraphNodeMakeVector2, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruce } from '/@/utils/graphNodes/core'
+import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruce<GraphNodeMakeVector2> = {
+export const struct: NodeStruct<GraphNodeMakeVector2> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
@@ -16,9 +16,10 @@ export const struct: NodeStruce<GraphNodeMakeVector2> = {
     y: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
   },
   outputs: {
-    object: GRAPH_VALUE_TYPE.VECTOR2,
+    vector2: GRAPH_VALUE_TYPE.VECTOR2,
   },
   computation(inputs) {
-    return { value: inputs }
+    return { vector2: inputs }
   },
+  width: 140,
 }

@@ -1,8 +1,8 @@
 import { getTransform, Transform } from '/@/models'
 import { GraphNodeMakeTransform, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruce } from '/@/utils/graphNodes/core'
+import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruce<GraphNodeMakeTransform> = {
+export const struct: NodeStruct<GraphNodeMakeTransform> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
@@ -22,15 +22,16 @@ export const struct: NodeStruce<GraphNodeMakeTransform> = {
     scale: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.TRANSFORM,
+    transform: GRAPH_VALUE_TYPE.TRANSFORM,
   },
-  computation(inputs): { value: Transform } {
+  computation(inputs): { transform: Transform } {
     return {
-      value: getTransform({
+      transform: getTransform({
         translate: inputs.translate,
         rotate: inputs.rotate,
         scale: inputs.scale,
       }),
     }
   },
+  width: 140,
 }

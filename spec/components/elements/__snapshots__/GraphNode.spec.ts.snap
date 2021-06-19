@@ -2,46 +2,194 @@
 
 exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
 <g
-  fill="#ddd"
-  stroke="black"
-  stroke-width="1.2"
   title="make_vector2"
   transform="translate(0, 0)"
 >
   <g>
     <path
-      d="M0,0L100,0L100,200L0,200z"
-      fill="eee"
+      d="M0,0L140,0L140,100L0,100z"
+      fill="#eee"
       stroke="#555"
+      stroke-width="1"
     />
   </g>
-  <text
-    fill="#000"
-  >
-    make_vector2
-  </text>
+  <g>
+    <text
+      class="view-only"
+      dominant-baseline="text-before-edge"
+      fill="#000"
+      font-size="16"
+      x="8"
+      y="3"
+    >
+      make_vector2
+    </text>
+    <line
+      stroke="#555"
+      x2="140"
+      y1="28"
+      y2="28"
+    />
+  </g>
+  <g>
+    
+    <g
+      transform="translate(0, 64)"
+    >
+      <text
+        class="view-only"
+        dominant-baseline="middle"
+        fill="#000"
+        font-size="14"
+        x="10"
+      >
+        x
+      </text>
+      <circle
+        fill="#333"
+        r="5"
+        stroke="none"
+      />
+    </g>
+    <g
+      transform="translate(0, 84)"
+    >
+      <text
+        class="view-only"
+        dominant-baseline="middle"
+        fill="#000"
+        font-size="14"
+        x="10"
+      >
+        y
+      </text>
+      <circle
+        fill="#333"
+        r="5"
+        stroke="none"
+      />
+    </g>
+    
+  </g>
+  <g>
+    
+    <g
+      transform="translate(140, 40)"
+    >
+      <text
+        class="view-only"
+        dominant-baseline="middle"
+        fill="#000"
+        font-size="14"
+        text-anchor="end"
+        x="-10"
+      >
+        vector2
+      </text>
+      <circle
+        fill="#333"
+        r="5"
+        stroke="none"
+      />
+    </g>
+    
+  </g>
 </g>
 `;
 
 exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
 <g
-  fill="orange"
-  stroke="black"
-  stroke-width="1.2"
   title="make_vector2"
   transform="translate(0, 0)"
 >
   <g>
     <path
-      d="M0,0L100,0L100,200L0,200z"
-      fill="eee"
-      stroke="#555"
+      d="M0,0L140,0L140,100L0,100z"
+      fill="#eee"
+      stroke="orange"
+      stroke-width="2"
     />
   </g>
-  <text
-    fill="#000"
-  >
-    make_vector2
-  </text>
+  <g>
+    <text
+      class="view-only"
+      dominant-baseline="text-before-edge"
+      fill="#000"
+      font-size="16"
+      x="8"
+      y="3"
+    >
+      make_vector2
+    </text>
+    <line
+      stroke="#555"
+      x2="140"
+      y1="28"
+      y2="28"
+    />
+  </g>
+  <g>
+    
+    <g
+      transform="translate(0, 64)"
+    >
+      <text
+        class="view-only"
+        dominant-baseline="middle"
+        fill="#000"
+        font-size="14"
+        x="10"
+      >
+        x
+      </text>
+      <circle
+        fill="#333"
+        r="5"
+        stroke="none"
+      />
+    </g>
+    <g
+      transform="translate(0, 84)"
+    >
+      <text
+        class="view-only"
+        dominant-baseline="middle"
+        fill="#000"
+        font-size="14"
+        x="10"
+      >
+        y
+      </text>
+      <circle
+        fill="#333"
+        r="5"
+        stroke="none"
+      />
+    </g>
+    
+  </g>
+  <g>
+    
+    <g
+      transform="translate(140, 40)"
+    >
+      <text
+        class="view-only"
+        dominant-baseline="middle"
+        fill="#000"
+        font-size="14"
+        text-anchor="end"
+        x="-10"
+      >
+        vector2
+      </text>
+      <circle
+        fill="#333"
+        r="5"
+        stroke="none"
+      />
+    </g>
+    
+  </g>
 </g>
 `;

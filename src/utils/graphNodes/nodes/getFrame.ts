@@ -1,7 +1,7 @@
 import { GraphNodeGetFrame, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruce } from '/@/utils/graphNodes/core'
+import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruce<GraphNodeGetFrame> = {
+export const struct: NodeStruct<GraphNodeGetFrame> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
@@ -12,8 +12,9 @@ export const struct: NodeStruce<GraphNodeGetFrame> = {
     } as GraphNodeGetFrame
   },
   inputs: {},
-  outputs: { value: GRAPH_VALUE_TYPE.SCALER },
+  outputs: { frame: GRAPH_VALUE_TYPE.SCALER },
   computation(_inputs, _self, context) {
-    return { value: context.getFrame() }
+    return { frame: context.getFrame() }
   },
+  width: 120,
 }

@@ -49,8 +49,8 @@ describe('src/utils/graphNodes/index.ts', () => {
       type: 'break_vector2',
       data: {},
       inputs: {
-        value: {
-          from: { id: 'make_vector2', key: 'value' },
+        vector2: {
+          from: { id: 'make_vector2', key: 'vector2' },
           value: { x: 0, y: 0 },
         },
       },
@@ -63,7 +63,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       expect(resolveAllNodes(context, nodes)).toEqual({
         scaler1: { value: 1 },
         scaler2: { value: 10 },
-        make_vector2: { value: { x: 1, y: 10 } },
+        make_vector2: { vector2: { x: 1, y: 10 } },
         break_vector2: { x: 1, y: 10 },
       })
     })
@@ -74,7 +74,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       expect(resolveNode(context, nodes, {}, 'make_vector2')).toEqual({
         scaler1: { value: 1 },
         scaler2: { value: 10 },
-        make_vector2: { value: { x: 1, y: 10 } },
+        make_vector2: { vector2: { x: 1, y: 10 } },
       })
     })
     it('should throw an error if circular references are founded', () => {
@@ -97,8 +97,8 @@ describe('src/utils/graphNodes/index.ts', () => {
               type: 'break_vector2',
               data: {},
               inputs: {
-                value: {
-                  from: { id: 'make_vector2', key: 'value' },
+                vector2: {
+                  from: { id: 'make_vector2', key: 'vector2' },
                   value: { x: 0, y: 0 },
                 },
               },
@@ -130,7 +130,7 @@ describe('src/utils/graphNodes/index.ts', () => {
           'make_vector2'
         )
       ).toEqual({
-        make_vector2: { value: { x: 2, y: 4 } },
+        make_vector2: { vector2: { x: 2, y: 4 } },
       })
     })
   })
@@ -144,12 +144,12 @@ describe('src/utils/graphNodes/index.ts', () => {
       ret[nodes.scaler1.id] = compute(context, ret, nodes.scaler1)
       ret[nodes.scaler2.id] = compute(context, ret, nodes.scaler2)
       expect(compute(context, ret, nodes.make_vector2)).toEqual({
-        value: { x: 1, y: 10 },
+        vector2: { x: 1, y: 10 },
       })
     })
     it('break_vector2', () => {
       const ret: GraphNodeOutputMap = {
-        make_vector2: { value: { x: 1, y: 10 } },
+        make_vector2: { vector2: { x: 1, y: 10 } },
       }
       expect(compute(context, ret, nodes.break_vector2)).toEqual({
         x: 1,

@@ -1,7 +1,7 @@
 import { GraphNodeScaler, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruce } from '/@/utils/graphNodes/core'
+import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruce<GraphNodeScaler> = {
+export const struct: NodeStruct<GraphNodeScaler> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
@@ -16,4 +16,5 @@ export const struct: NodeStruce<GraphNodeScaler> = {
   computation(_inputs, self) {
     return { value: self.data.value }
   },
+  width: 120,
 }

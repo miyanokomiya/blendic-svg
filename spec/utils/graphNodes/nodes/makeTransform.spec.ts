@@ -28,7 +28,7 @@ describe('src/utils/graphNodes/nodes/makeTransform.ts', () => {
           {} as any
         )
       ).toEqual({
-        value: getTransform({
+        transform: getTransform({
           translate: { x: 1, y: 2 },
           rotate: 3,
           scale: { x: 4, y: 5 },

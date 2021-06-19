@@ -1,8 +1,8 @@
 import { getTransform } from '/@/models'
 import { GraphNodeSetTransform, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruce } from '/@/utils/graphNodes/core'
+import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruce<GraphNodeSetTransform> = {
+export const struct: NodeStruct<GraphNodeSetTransform> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
@@ -25,4 +25,5 @@ export const struct: NodeStruce<GraphNodeSetTransform> = {
       object: inputs.object,
     }
   },
+  width: 140,
 }

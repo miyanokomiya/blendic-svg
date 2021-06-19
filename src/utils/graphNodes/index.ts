@@ -7,7 +7,7 @@ import {
   GraphNodes,
   GraphNodeType,
 } from '/@/models/graphNode'
-import { NodeStruce, NodeContext } from '/@/utils/graphNodes/core'
+import { NodeModule, NodeContext } from '/@/utils/graphNodes/core'
 import * as scaler from './nodes/scaler'
 import * as make_vector2 from './nodes/makeVector2'
 import * as break_vector2 from './nodes/breakVector2'
@@ -16,7 +16,7 @@ import * as set_transform from './nodes/setTransform'
 import * as get_frame from './nodes/getFrame'
 import { v4 } from 'uuid'
 
-const NODE_MODULES: { [key in GraphNodeType]: { struct: NodeStruce<any> } } = {
+const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   scaler,
   make_vector2,
   break_vector2,
@@ -24,6 +24,12 @@ const NODE_MODULES: { [key in GraphNodeType]: { struct: NodeStruce<any> } } = {
   set_transform,
   get_frame,
 } as const
+
+export function getGraphNodeModule<T extends GraphNodeType>(
+  type: T
+): NodeModule<GraphNodes[T]> {
+  return NODE_MODULES[type]
+}
 
 export function resolveAllNodes<T>(
   context: NodeContext<T>,

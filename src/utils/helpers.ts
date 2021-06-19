@@ -17,9 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IVec2, IRectangle, isZero } from 'okageo'
+import { IVec2, IRectangle, isZero, add } from 'okageo'
+import { Size } from 'okanvas'
 import { IdMap, Bone, ElementNodeAttributes, Transform } from '../models/index'
+import { GraphNode } from '/@/models/graphNode'
 import { BoneConstraint } from '/@/utils/constraints'
+import { getGraphNodeModule } from '/@/utils/graphNodes'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
   if (scale.x === 1 && scale.y === 1) return ''
@@ -199,6 +202,83 @@ export function getTargetTopMap(
         (keyframeExpandedMap[summary.id]
           ? Object.keys(summary.children).length + 1
           : 1)
+    return p
+  }, {})
+}
+
+export const GRAPH_NODE_HEAD_HEIGHT = 40
+const GRAPH_NODE_ROW_HEIGHT = 20
+const GRAPH_NODE_ROW_MARGIN = 4
+
+export function getGraphNodeSize(node: GraphNode): Size {
+  const dataHeight = getGraphNodeDataHeight(node)
+  const inputsHeight = getGraphNodeInputsHeight(node)
+  const outputsHeight = getGraphNodeOutputsHeight(node)
+
+  return {
+    width: getGraphNodeWidth(node),
+    height: GRAPH_NODE_HEAD_HEIGHT + outputsHeight + dataHeight + inputsHeight,
+  }
+}
+
+function getGraphNodeDataHeight(node: GraphNode): number {
+  return GRAPH_NODE_ROW_HEIGHT * Object.keys(node.data).length
+}
+
+function getGraphNodeWidth(node: GraphNode): number {
+  const module = getGraphNodeModule(node.type)
+  return module.struct.width
+}
+
+function getGraphNodeInputsHeight(node: GraphNode): number {
+  const module = getGraphNodeModule(node.type)
+  return GRAPH_NODE_ROW_HEIGHT * Object.keys(module.struct.inputs).length
+}
+
+function getGraphNodeOutputsHeight(node: GraphNode): number {
+  const module = getGraphNodeModule(node.type)
+  return GRAPH_NODE_ROW_HEIGHT * Object.keys(module.struct.outputs).length
+}
+
+export function getGraphNodeInputsPosition(node: GraphNode): {
+  [key: string]: IVec2
+} {
+  const dataHeight = getGraphNodeDataHeight(node)
+  const outputsHeight = getGraphNodeOutputsHeight(node)
+  const module = getGraphNodeModule(node.type)
+  return getGraphNodeRowsPosition(Object.keys(module.struct.inputs), {
+    x: 0,
+    y:
+      GRAPH_NODE_HEAD_HEIGHT +
+      dataHeight +
+      GRAPH_NODE_ROW_MARGIN +
+      outputsHeight,
+  })
+}
+
+export function getGraphNodeOutputsPosition(node: GraphNode): {
+  [key: string]: IVec2
+} {
+  const dataHeight = getGraphNodeDataHeight(node)
+  const module = getGraphNodeModule(node.type)
+  const { width } = getGraphNodeSize(node)
+  return getGraphNodeRowsPosition(Object.keys(module.struct.outputs), {
+    x: width,
+    y: GRAPH_NODE_HEAD_HEIGHT + dataHeight,
+  })
+}
+
+function getGraphNodeRowsPosition(
+  keys: string[],
+  margin: IVec2 = { x: 0, y: 0 }
+): {
+  [key: string]: IVec2
+} {
+  return keys.reduce<{ [key: string]: IVec2 }>((p, key, i) => {
+    p[key] = add(margin, {
+      x: 0,
+      y: GRAPH_NODE_ROW_HEIGHT * i,
+    })
     return p
   }, {})
 }

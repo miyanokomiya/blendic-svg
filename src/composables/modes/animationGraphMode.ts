@@ -262,6 +262,14 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
       label: 'Number',
       exec: () => execAddNode('scaler', state.keyDownPosition),
     },
+    {
+      label: 'Make Vector2',
+      exec: () => execAddNode('make_vector2', state.keyDownPosition),
+    },
+    {
+      label: 'Break Vector2',
+      exec: () => execAddNode('break_vector2', state.keyDownPosition),
+    },
   ])
 
   const deleteMenuList = useMenuList(() => [

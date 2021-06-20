@@ -17,11 +17,11 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import * as target from '/@/utils/graphNodes/nodes/addScaler'
+import * as target from '/@/utils/graphNodes/nodes/subScaler'
 
-describe('src/utils/graphNodes/nodes/addScaler.ts', () => {
+describe('src/utils/graphNodes/nodes/subScaler.ts', () => {
   describe('computation', () => {
-    it('should return result of a + b', () => {
+    it('should return result of a - b', () => {
       expect(
         target.struct.computation(
           {
@@ -31,7 +31,7 @@ describe('src/utils/graphNodes/nodes/addScaler.ts', () => {
           {} as any,
           {} as any
         )
-      ).toEqual({ value: 11 })
+      ).toEqual({ value: -9 })
     })
   })
 })

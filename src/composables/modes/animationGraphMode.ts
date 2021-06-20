@@ -422,7 +422,8 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     { label: 'Make Transform', type: 'make_transform' },
   ]
   const nodesSrcMath: { label: string; type: GraphNodeType }[] = [
-    { label: 'Add Scaler', type: 'add_scaler' },
+    { label: '(+) Scaler', type: 'add_scaler' },
+    { label: '(-) Scaler', type: 'sub_scaler' },
   ]
   const nodesSrcObject: { label: string; type: GraphNodeType }[] = [
     { label: 'Get Object', type: 'get_object' },

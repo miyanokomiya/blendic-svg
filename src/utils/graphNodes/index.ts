@@ -8,6 +8,7 @@ import {
   GraphNodeType,
 } from '/@/models/graphNode'
 import { NodeModule, NodeContext } from '/@/utils/graphNodes/core'
+import { v4 } from 'uuid'
 import * as scaler from './nodes/scaler'
 import * as make_vector2 from './nodes/makeVector2'
 import * as break_vector2 from './nodes/breakVector2'
@@ -16,17 +17,20 @@ import * as set_transform from './nodes/setTransform'
 import * as get_frame from './nodes/getFrame'
 import * as get_object from './nodes/getObject'
 import * as add_scaler from './nodes/addScaler'
-import { v4 } from 'uuid'
+import * as sub_scaler from './nodes/subScaler'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
+  get_frame,
   scaler,
   make_vector2,
   break_vector2,
   make_transform,
-  set_transform,
-  get_frame,
-  get_object,
+
   add_scaler,
+  sub_scaler,
+
+  set_transform,
+  get_object,
 } as const
 
 export function getGraphNodeModule<T extends GraphNodeType>(

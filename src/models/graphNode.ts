@@ -86,6 +86,7 @@ export interface GraphNodes {
   get_frame: GraphNodeGetFrame
   get_object: GraphNodeGetObject
   add_scaler: GraphNodeAddScaler
+  sub_scaler: GraphNodeSubScaler
 }
 export type GraphNodeType = keyof GraphNodes
 export type GraphNode = GraphNodes[GraphNodeType]
@@ -133,5 +134,10 @@ export interface GraphNodeGetObject extends GraphNodeBase {
 
 export interface GraphNodeAddScaler extends GraphNodeBase {
   type: 'add_scaler'
+  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeSubScaler extends GraphNodeBase {
+  type: 'sub_scaler'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
 }

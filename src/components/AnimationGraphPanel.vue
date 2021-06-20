@@ -25,7 +25,12 @@ Copyright (C) 2021, Tomoya Komiyama.
       </div>
       <input v-model="draftName" type="text" @change="changeGraphName" />
       <div class="graph-buttons">
-        <button class="add-graph" title="Add graph" @click="addGraph">
+        <button
+          class="add-graph"
+          title="Add graph"
+          :disabled="!selectedArmature"
+          @click="addGraph"
+        >
           <AddIcon />
         </button>
         <button
@@ -114,6 +119,7 @@ export default defineComponent({
     const canvas = useCanvas()
     const mode = useAnimationGraphMode(graphStore)
 
+    const selectedArmature = computed(() => store.lastSelectedArmature.value)
     const selectedGraph = computed(() => graphStore.lastSelectedGraph.value)
 
     const allNames = computed(() =>
@@ -135,7 +141,7 @@ export default defineComponent({
 
     const graphOptions = computed(() =>
       graphStore.graphList.value.map((g) => {
-        const valid = store.lastSelectedArmature.value?.id !== g.armatureId
+        const valid = selectedArmature.value?.id !== g.armatureId
         return {
           value: g.id,
           label: `${valid ? '(x)' : ''} ${g.name}`,
@@ -148,7 +154,7 @@ export default defineComponent({
         getAnimationGraph(
           {
             name: getNotDuplicatedName('Graph', allNames.value),
-            armatureId: store.lastSelectedArmature.value?.id ?? '',
+            armatureId: selectedArmature.value?.id ?? '',
           },
           true
         )
@@ -271,6 +277,7 @@ export default defineComponent({
       canvas,
       mode,
 
+      selectedArmature,
       currentGraph,
       editedNodeMap,
       edgePositionMap,

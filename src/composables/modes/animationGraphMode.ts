@@ -280,9 +280,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
 
   function completeEdit() {
     if (!target.value) return
-    if (!state.editMovement) return
 
-    if (!isSame(state.editMovement.start, state.editMovement.current)) {
+    if (
+      state.editMovement &&
+      !isSame(state.editMovement.start, state.editMovement.current)
+    ) {
       graphStore.updateNodes(editedNodeMap.value)
     }
     state.editMovement = undefined
@@ -421,12 +423,16 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
       exec: () => execAddNode('break_vector2', state.keyDownPosition),
     },
     {
-      label: 'Current Frame',
-      exec: () => execAddNode('get_frame', state.keyDownPosition),
+      label: 'Make Transform',
+      exec: () => execAddNode('make_transform', state.keyDownPosition),
     },
     {
       label: 'Set Transform',
       exec: () => execAddNode('set_transform', state.keyDownPosition),
+    },
+    {
+      label: 'Get Frame',
+      exec: () => execAddNode('get_frame', state.keyDownPosition),
     },
     {
       label: 'Get Object',

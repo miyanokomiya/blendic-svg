@@ -61,10 +61,10 @@ export default defineComponent({
       if (!targetNode.value) return {}
 
       const dataStruct = getGraphNodeModule(targetNode.value.type).struct.data
-      return mapReduce(targetNode.value.data, (d, key) => {
+      return mapReduce(targetNode.value.data, (value, key) => {
         return {
           type: (dataStruct as any)[key].type as string,
-          value: (d as any)[key],
+          value,
         }
       })
     })

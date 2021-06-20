@@ -37,13 +37,7 @@ import {
 } from '/@/models/graphNode'
 import { validateConnection } from '/@/utils/graphNodes'
 
-export type EditMode =
-  | ''
-  | 'grab'
-  | 'add'
-  | 'delete'
-  | 'drag-node'
-  | 'drag-edge'
+export type EditMode = '' | 'grab' | 'add' | 'drag-node' | 'drag-edge'
 
 type DraftGraphEdge =
   | {
@@ -331,6 +325,10 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         state.keyDownPosition = arg.position
         state.command = 'add'
         return notNeedLock
+      case 'x':
+        cancel()
+        execDelete()
+        return notNeedLock
       default:
         return notNeedLock
     }
@@ -352,8 +350,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     if (state.command) {
       cancel()
     }
-    // TODO
-    // graphStore.deleteNode()
+    graphStore.deleteNodes()
   }
 
   function execAddNode(type: GraphNodeType, position: IVec2) {
@@ -440,16 +437,10 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     },
   ])
 
-  const deleteMenuList = useMenuList(() => [
-    { label: 'Delete', exec: execDelete },
-  ])
-
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     switch (state.command) {
       case 'add':
         return addMenuList.list.value
-      case 'delete':
-        return deleteMenuList.list.value
       default:
         return []
     }

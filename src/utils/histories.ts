@@ -18,7 +18,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { HistoryItem } from '/@/composables/stores/history'
-import { IdMap } from '/@/models'
+import { IdMap, toMap } from '/@/models'
+import { dropMap, extractMap, toList } from '/@/utils/commons'
 
 export function convolute(
   head: HistoryItem,
@@ -120,6 +121,27 @@ export function getSelectItemHistory(
         selectedNodesAccessor.set({})
         lastSelectedNodeAccessor.set('')
       }
+    },
+  }
+}
+
+export function getDeleteItemHistory<T extends { id: string }>(
+  nodeAccessor: ListItemAccessor<T>,
+  targetIds: IdMap<unknown>
+): HistoryItem {
+  const deletedMap = extractMap(toMap(nodeAccessor.get()), targetIds)
+  return {
+    name: 'Delete Item',
+    undo: () => {
+      nodeAccessor.set(
+        toList({
+          ...toMap(nodeAccessor.get()),
+          ...deletedMap,
+        })
+      )
+    },
+    redo: () => {
+      nodeAccessor.set(toList(dropMap(toMap(nodeAccessor.get()), targetIds)))
     },
   }
 }

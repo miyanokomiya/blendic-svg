@@ -29,6 +29,7 @@ import { createGraphNode } from '/@/utils/graphNodes'
 import {
   convolute,
   getAddItemHistory,
+  getDeleteItemHistory,
   getSelectItemHistory,
   LastSelectedItemIdAccessor,
   ListItemAccessor,
@@ -150,6 +151,22 @@ function addNode<T extends GraphNodeType>(
   historyStore.push(item, true)
 }
 
+function deleteNodes() {
+  if (!lastSelectedGraph.value) return
+
+  const item = convolute(
+    getDeleteItemHistory(nodesAccessor, selectedNodes.value),
+    [
+      getSelectItemHistory(
+        selectedNodesAccessor,
+        lastSelectedNodeIdAccessor,
+        ''
+      ),
+    ]
+  )
+  historyStore.push(item, true)
+}
+
 export function useAnimationGraphStore() {
   return {
     initState,
@@ -171,6 +188,7 @@ export function useAnimationGraphStore() {
     updateNode,
     updateNodes,
     addNode,
+    deleteNodes,
 
     selectedNodes,
     selectNode,

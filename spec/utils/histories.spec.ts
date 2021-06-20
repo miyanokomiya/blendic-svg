@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import {
   convolute,
   getAddItemHistory,
+  getDeleteItemHistory,
   getReplaceItem,
   getSelectItemHistory,
   hasSameSeriesKey,
@@ -185,6 +186,21 @@ describe('src/utils/histories.ts', () => {
       ret.undo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
+    })
+  })
+
+  describe('getDeleteItemHistory', () => {
+    it('should return a history item to delete an items', () => {
+      const accessor = {
+        get: jest.fn().mockReturnValue([{ id: 'a' }, { id: 'b' }]),
+        set: jest.fn(),
+      }
+      const targetIds = { a: true }
+      const ret = getDeleteItemHistory(accessor, targetIds)
+      ret.redo()
+      expect(accessor.set).toHaveBeenCalledWith([{ id: 'b' }])
+      ret.undo()
+      expect(accessor.set).toHaveBeenCalledWith([{ id: 'a' }, { id: 'b' }])
     })
   })
 })

@@ -147,10 +147,14 @@ export function testEditableTag(tag: string): boolean {
   return !/defs|metadata|namedview|script|style|tspan/.test(tag.toLowerCase())
 }
 
+export function getElementLabel(element: ElementNode): string {
+  return `${element.tag} #${element.id}`
+}
+
 export function getTreeFromElementNode(svg: ElementNode): TreeNode {
   return {
     id: svg.id,
-    name: `${svg.tag} #${svg.id}`,
+    name: getElementLabel(svg),
     children: svg.children
       .filter((c): c is ElementNode => typeof c !== 'string')
       .filter((c) => testEditableTag(c.tag))

@@ -225,7 +225,7 @@ export function getGraphNodeSize(node: GraphNode): Size {
 function getGraphNodeDataHeight(node: GraphNode): number {
   const module = getGraphNodeModule(node.type)
   return Object.values(module.struct.data).reduce<number>((p, d) => {
-    return p + getGraphNodeDataSize(d.type).height
+    return p + getGraphNodeDataSize((d as any).type).height
   }, 0)
 }
 
@@ -249,13 +249,13 @@ export function getGraphNodeDataPosition(node: GraphNode): {
 } {
   const outputsHeight = getGraphNodeOutputsHeight(node)
   const module = getGraphNodeModule(node.type)
+  let current = GRAPH_NODE_HEAD_HEIGHT + outputsHeight
+
   return Object.entries(module.struct.data).reduce<{
     [key: string]: IVec2
   }>((p, [key, d]) => {
-    p[key] = add(
-      { x: 0, y: outputsHeight },
-      { x: 8, y: getGraphNodeDataSize(d.type).height }
-    )
+    p[key] = { x: 8, y: current }
+    current = current + getGraphNodeDataSize((d as any).type).height
     return p
   }, {})
 }
@@ -305,8 +305,8 @@ function getGraphNodeRowsPosition(
 function getGraphNodeDataSize(type: keyof typeof GRAPH_VALUE_TYPE): Size {
   switch (type) {
     case 'SCALER':
-      return { width: 120, height: 40 }
+      return { width: 120, height: 48 }
     default:
-      return { width: 120, height: 40 }
+      return { width: 120, height: 48 }
   }
 }

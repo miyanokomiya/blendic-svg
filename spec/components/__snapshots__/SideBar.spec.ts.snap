@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/SideBar.vue snapshot defalut 1`] = `
+<div
+  class="side-bar"
+>
+  <ul
+    class="tab-list"
+  >
+    
+    <li
+      class=""
+    >
+      <a
+        href="#"
+      />
+    </li>
+    <li
+      class=""
+    >
+      <a
+        href="#"
+      />
+    </li>
+    <li
+      class=""
+    >
+      <a
+        href="#"
+      />
+    </li>
+    
+  </ul>
+  <div
+    class="tab-content"
+  >
+    
+    
+    <div>
+      bbb
+    </div>
+    
+    
+  </div>
+</div>
+`;

@@ -38,8 +38,8 @@ Copyright (C) 2021, Tomoya Komiyama.
         </button>
       </div>
     </div>
-    <div class="canvas">
-      <AnimationGraphCanvas :canvas="canvas" :mode="mode">
+    <div class="main">
+      <AnimationGraphCanvas class="canvas" :canvas="canvas" :mode="mode">
         <g v-for="(edgeMapOfNode, id) in edgeMap" :key="id">
           <GraphEdge
             v-for="(edge, key) in edgeMapOfNode"
@@ -64,12 +64,13 @@ Copyright (C) 2021, Tomoya Komiyama.
           <GraphEdge :from="draftEdge.from" :to="draftEdge.to" selected />
         </g>
       </AnimationGraphCanvas>
+      <GraphSideBar class="side-bar" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, watchEffect, computed, ref } from 'vue'
+import { defineComponent, watchEffect, computed, ref, provide } from 'vue'
 import { useCanvas } from '/@/composables/canvas'
 import { useAnimationGraphMode } from '/@/composables/modes/animationGraphMode'
 import { useStore } from '/@/store'
@@ -90,6 +91,9 @@ import {
   getGraphNodeOutputsPosition,
 } from '/@/utils/helpers'
 import { GraphNodeEdgePositions } from '/@/models/graphNode'
+import { useElementStore } from '/@/store/element'
+import GraphSideBar from '/@/components/GraphSideBar.vue'
+import { getElementLabel } from '/@/utils/elements'
 
 export default defineComponent({
   components: {
@@ -99,10 +103,13 @@ export default defineComponent({
     DeleteIcon,
     GraphNode,
     GraphEdge,
+    GraphSideBar,
   },
   setup() {
     const store = useStore()
+    const elementStore = useElementStore()
     const graphStore = useAnimationGraphStore()
+    const currentGraph = computed(() => graphStore.lastSelectedGraph.value)
 
     const canvas = useCanvas()
     const mode = useAnimationGraphMode(graphStore)
@@ -246,10 +253,25 @@ export default defineComponent({
       graphStore.updateNode(id, { ...node, data }, seriesKey)
     }
 
+    provide('getObjectOptions', () => {
+      if (!currentGraph.value) return []
+
+      const elementMap = elementStore.nativeElementMap.value
+      const actor = elementStore.actors.value.find(
+        (a) => a.armatureId === currentGraph.value!.armatureId
+      )
+      return (
+        actor?.elements.map((e) => {
+          return { value: e.id, label: getElementLabel(elementMap[e.id]) }
+        }) ?? []
+      )
+    })
+
     return {
       canvas,
       mode,
 
+      currentGraph,
       editedNodeMap,
       edgePositionMap,
       edgeMap,
@@ -305,8 +327,15 @@ export default defineComponent({
     }
   }
 }
-.canvas {
+.main {
   flex: 1;
   min-height: 0;
+  display: flex;
+  .canvas {
+    width: calc(100% - 24px);
+  }
+  .side-bar {
+    flex-shrink: 0;
+  }
 }
 </style>

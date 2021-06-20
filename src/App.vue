@@ -66,7 +66,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                     </g>
                   </template>
                 </AppCanvas>
-                <SideBar class="side-bar" />
+                <CanvasSideBar class="side-bar" />
               </div>
             </template>
           </ResizableH>
@@ -92,7 +92,7 @@ import AnimationGraphPanel from './components/AnimationGraphPanel.vue'
 import AnimationPanel from './components/AnimationPanel.vue'
 import ElementLayer from './components/elements/ElementLayer.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
-import SideBar from '/@/components/SideBar.vue'
+import CanvasSideBar from '/@/components/CanvasSideBar.vue'
 import BoneLayer from '/@/components/elements/BoneLayer.vue'
 import { Bone, BoneSelectedState, IdMap, toMap } from './models/index'
 import { EditMode, SelectOptions } from './composables/modes/types'
@@ -120,7 +120,7 @@ export default defineComponent({
     SidePanel,
     AnimationGraphPanel,
     AnimationPanel,
-    SideBar,
+    CanvasSideBar,
     ElementLayer,
     BoneLayer,
     ResizableV,

@@ -29,34 +29,33 @@ Copyright (C) 2021, Tomoya Komiyama.
       </li>
     </ul>
     <div v-if="currentTab !== ''" class="tab-content">
-      <ItemPanel v-if="currentTab === 'item'" />
-      <ViewPanel v-else-if="currentTab === 'view'" />
+      <slot :name="currentTab" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from 'vue'
-import ItemPanel from '/@/components/panelContents/ItemPanel.vue'
-import ViewPanel from '/@/components/panelContents/ViewPanel.vue'
-
-type TabName = '' | 'item' | 'weight' | 'view'
+import { defineComponent, ref, PropType } from 'vue'
 
 export default defineComponent({
-  components: { ItemPanel, ViewPanel },
-  setup() {
-    const currentTab = ref<TabName>('item')
+  props: {
+    tabs: {
+      type: Array as PropType<{ key: string; label: string }[]>,
+      default: () => [],
+    },
+    defaultTab: {
+      type: String,
+      default: '',
+    },
+  },
+  setup(props) {
+    const currentTab = ref(props.defaultTab)
 
-    const tabs = computed((): { key: TabName; label: string }[] => [
-      { key: 'item', label: 'Item' },
-      { key: 'view', label: 'View' },
-    ])
-
-    function toggleTab(tab: TabName) {
+    function toggleTab(tab: string) {
       currentTab.value = currentTab.value === tab ? '' : tab
     }
 
-    return { tabs, currentTab, toggleTab }
+    return { currentTab, toggleTab }
   },
 })
 </script>

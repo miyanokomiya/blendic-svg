@@ -124,6 +124,7 @@ export function useElementStore() {
     lastSelectedActor,
     lastSelectedElement,
     lastSelectedNativeElement,
+    nativeElementMap,
 
     updateArmatureId,
     updateElement,

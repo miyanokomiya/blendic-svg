@@ -31,6 +31,7 @@ export interface GraphNodes {
   make_transform: GraphNodeMakeTransform
   set_transform: GraphNodeSetTransform
   get_frame: GraphNodeGetFrame
+  get_object: GraphNodeGetObject
 }
 export type GraphNodeType = keyof GraphNodes
 export type GraphNode = GraphNodes[GraphNodeType]
@@ -82,7 +83,11 @@ export interface GraphNodeSetTransform extends GraphNodeBase {
 
 export interface GraphNodeGetFrame extends GraphNodeBase {
   type: 'get_frame'
-  inputs: {}
+}
+
+export interface GraphNodeGetObject extends GraphNodeBase {
+  type: 'get_object'
+  data: { object: string }
 }
 
 export interface GraphNodeMap {

@@ -33,6 +33,47 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
   </g>
   <g>
     
+    <g
+      transform="translate(1, 2)"
+    >
+      <g>
+        <rect
+          fill="transparent"
+          height="20"
+          stroke="none"
+          width="30"
+          x="-30"
+          y="-10"
+        />
+        <text
+          class="view-only"
+          dominant-baseline="middle"
+          fill="#000"
+          font-size="14"
+          text-anchor="end"
+          x="-10"
+        >
+          value
+        </text>
+        <circle
+          fill="transparent"
+          r="8"
+          stroke="none"
+        />
+      </g>
+      <circle
+        class="view-only"
+        fill="#333"
+        r="5"
+        stroke="none"
+      />
+    </g>
+    
+  </g>
+  <g
+    class="view-only"
+  >
+    
     
   </g>
   <g>
@@ -55,45 +96,6 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
           x="10"
         >
           x
-        </text>
-        <circle
-          fill="transparent"
-          r="8"
-          stroke="none"
-        />
-      </g>
-      <circle
-        class="view-only"
-        fill="#333"
-        r="5"
-        stroke="none"
-      />
-    </g>
-    
-  </g>
-  <g>
-    
-    <g
-      transform="translate(1, 2)"
-    >
-      <g>
-        <rect
-          fill="transparent"
-          height="20"
-          stroke="none"
-          width="30"
-          x="-30"
-          y="-10"
-        />
-        <text
-          class="view-only"
-          dominant-baseline="middle"
-          fill="#000"
-          font-size="14"
-          text-anchor="end"
-          x="-10"
-        >
-          value
         </text>
         <circle
           fill="transparent"
@@ -148,7 +150,9 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
     
     
   </g>
-  <g>
+  <g
+    class="view-only"
+  >
     
     
   </g>
@@ -166,7 +170,7 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
 >
   <g>
     <path
-      d="M0,0L120,0L120,100L0,100z"
+      d="M0,0L120,0L120,108L0,108z"
       fill="#eee"
       stroke="orange"
       stroke-width="2"
@@ -192,6 +196,12 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
   </g>
   <g>
     
+    
+  </g>
+  <g
+    class="view-only"
+  >
+    
     <g
       transform="translate(8, 60)"
     >
@@ -199,30 +209,20 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
         height="40"
         width="100"
       >
+        <!-- FIXME: forms are readonly because those in foreignObject do not work well -->
         <div
+          class="field"
           xmlns="http://www.w3.org/1999/xhtml"
         >
-          <div
-            class="slider-wrapper"
-          >
-            <div
-              class="slider-background"
-              style="transform: scaleX(0);"
-            />
-            <input
-              type="text"
-            />
-            <div
-              class="slider-forward"
-            />
-          </div>
+          <h5>
+            value
+          </h5>
+          <p>
+            0
+          </p>
         </div>
       </foreignobject>
     </g>
-    
-  </g>
-  <g>
-    
     
   </g>
   <g>

@@ -18,20 +18,33 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <foreignObject width="100" height="40">
-    <!-- FIXME: forms are readonly because those in foreignObject do not work well -->
-    <div xmlns="http://www.w3.org/1999/xhtml" class="field">
-      <h5>{{ label }}</h5>
-      <p>{{ modelValue }}</p>
-    </div>
-  </foreignObject>
+  <div>
+    <h5>{{ label }}</h5>
+    <SliderInput
+      v-if="type === 'SCALER'"
+      :model-value="modelValue"
+      @update:modelValue="update"
+    />
+    <SelectField
+      v-else-if="type === 'OBJECT'"
+      :model-value="modelValue"
+      :options="objectOptions"
+      @update:modelValue="update"
+    />
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, computed, inject } from 'vue'
 import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
+import SelectField from '/@/components/atoms/SelectField.vue'
 
 export default defineComponent({
+  components: {
+    SliderInput,
+    SelectField,
+  },
   props: {
     modelValue: { type: null, required: true },
     label: { type: String, required: true },
@@ -57,7 +70,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.field {
-  text-align: left;
+h5 {
+  margin-bottom: 8px;
 }
 </style>

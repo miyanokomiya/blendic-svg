@@ -44,11 +44,44 @@ Copyright (C) 2021, Tomoya Komiyama.
     </g>
     <g>
       <g
+        v-for="(p, key) in edgePositions.outputs"
+        :key="key"
+        :transform="`translate(${p.x}, ${p.y})`"
+      >
+        <g
+          @mouseup.left.exact="upToEdge(key)"
+          @mousedown.left.exact.prevent="downToEdge(key)"
+        >
+          <rect
+            :x="-edgeAnchorWidth"
+            :y="-GRAPH_NODE_ROW_HEIGHT / 2"
+            :width="edgeAnchorWidth"
+            :height="GRAPH_NODE_ROW_HEIGHT"
+            fill="transparent"
+            stroke="none"
+          />
+          <text
+            x="-10"
+            dominant-baseline="middle"
+            text-anchor="end"
+            font-size="14"
+            fill="#000"
+            class="view-only"
+            >{{ key }}</text
+          >
+          <circle r="8" fill="transparent" stroke="none" />
+        </g>
+        <circle r="5" fill="#333" stroke="none" class="view-only" />
+      </g>
+    </g>
+    <g class="view-only">
+      <g
         v-for="(data, key) in dataMap"
         :key="key"
         :transform="`translate(${data.position.x}, ${data.position.y})`"
       >
         <GraphNodeDataField
+          :label="key"
           :type="data.type"
           :model-value="data.value"
           @update:modelValue="
@@ -77,38 +110,6 @@ Copyright (C) 2021, Tomoya Komiyama.
           <text x="10" dominant-baseline="middle" font-size="14" fill="#000">{{
             key
           }}</text>
-          <circle r="8" fill="transparent" stroke="none" />
-        </g>
-        <circle r="5" fill="#333" stroke="none" class="view-only" />
-      </g>
-    </g>
-    <g>
-      <g
-        v-for="(p, key) in edgePositions.outputs"
-        :key="key"
-        :transform="`translate(${p.x}, ${p.y})`"
-      >
-        <g
-          @mouseup.left.exact="upToEdge(key)"
-          @mousedown.left.exact.prevent="downToEdge(key)"
-        >
-          <rect
-            :x="-edgeAnchorWidth"
-            :y="-GRAPH_NODE_ROW_HEIGHT / 2"
-            :width="edgeAnchorWidth"
-            :height="GRAPH_NODE_ROW_HEIGHT"
-            fill="transparent"
-            stroke="none"
-          />
-          <text
-            x="-10"
-            dominant-baseline="middle"
-            text-anchor="end"
-            font-size="14"
-            fill="#000"
-            class="view-only"
-            >{{ key }}</text
-          >
           <circle r="8" fill="transparent" stroke="none" />
         </g>
         <circle r="5" fill="#333" stroke="none" class="view-only" />
@@ -172,7 +173,7 @@ export default defineComponent({
       return mapReduce(dataPositions.value, (position, key) => {
         return {
           position,
-          type: dataStruct[key].type,
+          type: (dataStruct as any)[key].type as string,
           value: props.node.data[key],
         }
       })

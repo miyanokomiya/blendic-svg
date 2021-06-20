@@ -420,6 +420,18 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
       label: 'Break Vector2',
       exec: () => execAddNode('break_vector2', state.keyDownPosition),
     },
+    {
+      label: 'Current Frame',
+      exec: () => execAddNode('get_frame', state.keyDownPosition),
+    },
+    {
+      label: 'Set Transform',
+      exec: () => execAddNode('set_transform', state.keyDownPosition),
+    },
+    {
+      label: 'Get Object',
+      exec: () => execAddNode('get_object', state.keyDownPosition),
+    },
   ])
 
   const deleteMenuList = useMenuList(() => [

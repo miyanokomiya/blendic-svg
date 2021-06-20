@@ -46,6 +46,25 @@ describe('src/components/molecules/PopupMenuList.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
+    it('with children', () => {
+      const wrapper = mount(Target, {
+        props: {
+          popupMenuList: [
+            { label: 'item1', exec() {} },
+            { label: 'item2', exec() {} },
+            {
+              label: 'item3',
+              opened: true,
+              children: [
+                { label: 'child1', exec() {} },
+                { label: 'child2', exec() {} },
+              ],
+            },
+          ],
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 
   describe('click a item', () => {

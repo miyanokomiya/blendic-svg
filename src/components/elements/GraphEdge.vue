@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g class="view-only">
-    <path :d="pathD" :stroke="stroke" :stroke-width="2.5 * scale" />
+    <path :d="pathD" :stroke="stroke" :stroke-width="2.5 * scale" fill="none" />
     <circle :cx="from.x" :cy="from.y" r="5" :fill="fill" stroke="none" />
     <circle :cx="to.x" :cy="to.y" r="5" :fill="fill" stroke="none" />
   </g>
@@ -41,7 +41,10 @@ export default defineComponent({
     const { settings } = useSettings()
 
     const pathD = computed(() => {
-      return `M${props.from.x},${props.from.y} L${props.to.x},${props.to.y}`
+      const xD = Math.sqrt(Math.abs(props.from.x - props.to.x)) * 12
+      return `M${props.from.x},${props.from.y} C${props.from.x + xD},${
+        props.from.y
+      } ${props.to.x - xD},${props.to.y} ${props.to.x},${props.to.y}`
     })
 
     const scale = computed(injectScale())

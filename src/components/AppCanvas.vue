@@ -101,7 +101,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
-import { getRadian, IRectangle, IVec2 } from 'okageo'
+import { getRadian, IRectangle, IVec2, sub } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
@@ -147,7 +147,10 @@ export default defineComponent({
     const pointerLock = usePointerLock({
       onMove: throttleMousemove,
       onGlobalMove: (arg) => {
-        canvas.mousePoint.value = arg.p
+        if (!svg.value) return
+        // adjust in the canvas
+        const svgRect = svg.value.getBoundingClientRect()
+        canvas.setMousePoint(sub(arg.p, { x: svgRect.left, y: svgRect.top }))
       },
       onEscape: escape,
     })

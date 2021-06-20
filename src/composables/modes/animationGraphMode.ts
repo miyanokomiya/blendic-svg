@@ -144,40 +144,46 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     return false
   })
 
+  function updateNodeInput(
+    node: GraphNode,
+    inputKey: string,
+    targetId: string,
+    targetKey: string
+  ) {
+    const input = (node.inputs as any)[inputKey] as GraphNodeInput<unknown>
+    // ignore if the input is not updated
+    if (input.from?.id === targetId && input.from?.key === targetKey) return
+
+    graphStore.updateNode(node.id, {
+      ...node,
+      inputs: {
+        ...node.inputs,
+        [inputKey]: { from: { id: targetId, key: targetKey } },
+      } as any,
+    })
+  }
+
   function upLeft() {
     if (state.command === 'drag-edge' && state.dragTarget?.type === 'edge') {
       if (state.closestEdgeInfo && isValidDraftConnection.value) {
         if (state.dragTarget.draftGraphEdge.type === 'draft-to') {
           const from = state.dragTarget.draftGraphEdge.from
-          const fromNode = graphStore.nodeMap.value[from.nodeId]
-          const fromKey = from.key
-
           const toNode = graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
-          const toKey = state.closestEdgeInfo.key
-
-          graphStore.updateNode(toNode.id, {
-            ...toNode,
-            inputs: {
-              ...toNode.inputs,
-              [toKey]: { from: { id: fromNode.id, key: fromKey } },
-            } as any,
-          })
+          updateNodeInput(
+            toNode,
+            state.closestEdgeInfo.key,
+            from.nodeId,
+            from.key
+          )
         } else {
           const to = state.dragTarget.draftGraphEdge.to
           const toNode = graphStore.nodeMap.value[to.nodeId]
-          const toKey = to.key
-
-          const fromNode =
-            graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
-          const fromKey = state.closestEdgeInfo.key
-
-          graphStore.updateNode(toNode.id, {
-            ...toNode,
-            inputs: {
-              ...toNode.inputs,
-              [toKey]: { from: { id: fromNode.id, key: fromKey } },
-            } as any,
-          })
+          updateNodeInput(
+            toNode,
+            to.key,
+            state.closestEdgeInfo.nodeId,
+            state.closestEdgeInfo.key
+          )
         }
       } else {
         if (state.dragTarget.draftGraphEdge.type === 'draft-from') {
@@ -197,7 +203,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
           }
         }
       }
-      completeEdit()
+      cancel()
     } else if (state.command) {
       completeEdit()
     }

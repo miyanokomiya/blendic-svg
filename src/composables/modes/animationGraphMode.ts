@@ -35,7 +35,7 @@ import {
   GraphNodeType,
   GraphNodeInput,
 } from '/@/models/graphNode'
-import { validateConnection } from '/@/utils/graphNodes'
+import { resetInput, validateConnection } from '/@/utils/graphNodes'
 
 export type EditMode = '' | 'grab' | 'add' | 'drag-node' | 'drag-edge'
 
@@ -197,7 +197,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
               ...toNode,
               inputs: {
                 ...toNode.inputs,
-                [toKey]: { ...input, from: undefined },
+                [toKey]: resetInput(toNode.type, toKey),
               } as any,
             })
           }

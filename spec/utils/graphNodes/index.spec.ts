@@ -13,7 +13,9 @@ import {
   validateNode,
   validateAllNodes,
   validateConnection,
+  resetInput,
 } from '../../../src/utils/graphNodes/index'
+import { getTransform } from '/@/models'
 
 const context = {
   setTransform() {},
@@ -255,6 +257,15 @@ describe('src/utils/graphNodes/index.ts', () => {
           { type: 'make_vector2', key: 'x' }
         )
       ).toBe(false)
+    })
+  })
+
+  describe('resetInput', () => {
+    it('should return default input data', () => {
+      expect(resetInput('make_vector2', 'x')).toEqual({ value: 0 })
+      expect(resetInput('set_transform', 'transform')).toEqual({
+        value: getTransform(),
+      })
     })
   })
 })

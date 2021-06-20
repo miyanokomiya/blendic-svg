@@ -34,6 +34,7 @@ import {
   getTransform,
   ElementNodeAttributes,
   toMap,
+  GraphObject,
 } from '../models'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce } from './commons'
@@ -41,7 +42,7 @@ import { getTnansformStr } from './helpers'
 import { KeyframeBase } from '/@/models/keyframe'
 import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
 import { flatElementTree } from '/@/utils/elements'
-import { isIdentityAffine } from '/@/utils/geometry'
+import { isIdentityAffine, transformToAffine } from '/@/utils/geometry'
 import { splitKeyframeMapByName } from '/@/utils/keyframes'
 import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
 import * as keyframeConstraint from '/@/utils/keyframes/keyframeConstraint'
@@ -281,4 +282,37 @@ export function bakeKeyframe(
       nodeMap[nodeId]
     )
   })
+}
+
+export function getGraphResolvedElementTree(
+  graphObjectMap: IdMap<GraphObject>,
+  svgTree: ElementNode
+): ElementNode {
+  return getGraphResolvedElement(graphObjectMap, svgTree)
+}
+
+export function getGraphResolvedElement(
+  graphObjectMap: IdMap<GraphObject>,
+  node: ElementNode
+): ElementNode {
+  const graphObject = graphObjectMap[node.id]
+  const graphTransform = graphObject.transform
+
+  const matrix = graphTransform
+    ? transformToAffine(graphTransform)
+    : node.attributes.transform
+    ? parseTransform(node.attributes.transform)
+    : undefined
+
+  return {
+    ...node,
+    attributes: {
+      ...node.attributes,
+      ...(matrix ? { transform: affineToTransform(matrix) } : {}),
+    },
+    children: node.children.map((c) => {
+      if (typeof c === 'string') return c
+      return getGraphResolvedElement(graphObjectMap, c)
+    }),
+  }
 }

@@ -44,10 +44,15 @@ import { computed, defineComponent, PropType, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
 import { Bone, ElementNode, IdMap, toMap } from '/@/models'
-import { getPosedElementTree } from '/@/utils/poseResolver'
-import { parseViewBoxFromStr } from '/@/utils/elements'
+import {
+  getGraphResolvedElementTree,
+  getPosedElementTree,
+} from '/@/utils/poseResolver'
+import { parseViewBoxFromStr, resolveAnimationGraph } from '/@/utils/elements'
 import { useSettings } from '/@/composables/settings'
 import type { CanvasMode, SelectOptions } from '/@/composables/modes/types'
+import { useAnimationStore } from '/@/store/animation'
+import { useAnimationGraphStore } from '/@/store/animationGraph'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -67,6 +72,8 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const animationStore = useAnimationStore()
+    const graphStore = useAnimationGraphStore()
     const elementStore = useElementStore()
     const { settings } = useSettings()
 
@@ -91,10 +98,31 @@ export default defineComponent({
       )
     })
 
-    const viewBox = computed(() => {
+    const graphResolvedElement = computed(() => {
+      if (!elementStore.lastSelectedActor.value) return
       if (!posedElementRoot.value) return
 
-      return parseViewBoxFromStr(posedElementRoot.value.attributes.viewBox)
+      // TODO: for develop try-catch
+      try {
+        const graphObjectMap = resolveAnimationGraph(
+          toMap(elementStore.lastSelectedActor.value.elements),
+          animationStore.currentFrame.value,
+          graphStore.nodeMap.value
+        )
+        return getGraphResolvedElementTree(
+          graphObjectMap,
+          posedElementRoot.value
+        )
+      } catch (e) {
+        console.warn(e)
+        return posedElementRoot.value
+      }
+    })
+
+    const viewBox = computed(() => {
+      if (!graphResolvedElement.value) return
+
+      return parseViewBoxFromStr(graphResolvedElement.value.attributes.viewBox)
     })
 
     function clickElement(id: string, options?: SelectOptions) {
@@ -104,7 +132,7 @@ export default defineComponent({
     provide('onClickElement', clickElement)
 
     return {
-      elementRoot: posedElementRoot,
+      elementRoot: graphResolvedElement,
       getId,
       viewBox,
       settings,

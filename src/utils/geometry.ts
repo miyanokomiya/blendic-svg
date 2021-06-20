@@ -27,6 +27,7 @@ import {
   isSame,
   IVec2,
   multi,
+  multiAffines,
   rotate,
   sub,
 } from 'okageo'
@@ -263,4 +264,17 @@ export function transformRect(
 
 export function isIdentityAffine(matrix: AffineMatrix): boolean {
   return matrix.every((v, i) => v === IDENTITY_AFFINE[i])
+}
+
+export function transformToAffine(transform: Transform): AffineMatrix {
+  const rad = (transform.rotate / 180) * Math.PI
+  const cos = Math.cos(rad)
+  const sin = Math.sin(rad)
+  return multiAffines([
+    [1, 0, 0, 1, transform.translate.x, transform.translate.y],
+    [1, 0, 0, 1, transform.origin.x, transform.origin.y],
+    [cos, sin, -sin, cos, 0, 0],
+    [transform.scale.x, 0, 0, transform.scale.y, 0, 0],
+    [1, 0, 0, 1, -transform.origin.x, -transform.origin.y],
+  ])
 }

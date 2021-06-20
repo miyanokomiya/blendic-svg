@@ -44,6 +44,7 @@ import {
   mapVec,
   isIdentityTransform,
   getBoneSquaredSize,
+  transformToAffine,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -515,6 +516,32 @@ describe('src/utils/geometry.ts', () => {
     })
     it('return false if it is not identy affine', () => {
       expect(isIdentityAffine([2, 0, 0, 1, 0, 0])).toBe(false)
+    })
+  })
+
+  describe('transformToAffine', () => {
+    it('return affine matrix', () => {
+      expect(
+        transformToAffine(
+          getTransform({
+            translate: { x: 1, y: 2 },
+          })
+        )
+      ).toEqual([1, 0, 0, 1, 1, 2])
+      expect(
+        transformToAffine(
+          getTransform({
+            scale: { x: 10, y: 20 },
+          })
+        )
+      ).toEqual([10, 0, 0, 20, 0, 0])
+      const ret = transformToAffine(getTransform({ rotate: 90 }))
+      expect(ret[0]).toBeCloseTo(0)
+      expect(ret[1]).toBeCloseTo(1)
+      expect(ret[2]).toBeCloseTo(-1)
+      expect(ret[3]).toBeCloseTo(0)
+      expect(ret[4]).toBeCloseTo(0)
+      expect(ret[5]).toBeCloseTo(0)
     })
   })
 })

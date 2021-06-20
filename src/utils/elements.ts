@@ -172,10 +172,7 @@ export function createGraphNodeContext(
 
   return {
     setTransform(objectId, transform) {
-      graphElementMap[objectId] ??= getGraphObject(
-        { elementId: objectId },
-        true
-      )
+      if (!graphElementMap[objectId]) return
       graphElementMap[objectId].transform = transform
     },
     getFrame() {

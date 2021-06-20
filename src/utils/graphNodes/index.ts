@@ -87,11 +87,9 @@ export function compute<T>(
 export function getInputs<T extends GraphNodeInputs, K extends keyof T>(
   outputMap: GraphNodeOutputMap,
   inputs: T
-): Required<T[K]>['value'] {
+): T[K]['value'] {
   return Object.keys(inputs).reduce<Required<T[K]>['value']>((p: any, key) => {
-    const value = getInput(outputMap, inputs, key)
-    if (value === undefined) throw new Error('Not found required input')
-    p[key] = value
+    p[key] = getInput(outputMap, inputs, key)
     return p
   }, {})
 }
@@ -188,4 +186,12 @@ export function validateConnection(
   const inputType = NODE_MODULES[to.type].struct.inputs[to.key].type
   const outputType = NODE_MODULES[from.type].struct.outputs[from.key]
   return inputType === outputType
+}
+
+export function resetInput<T extends GraphNodeType>(
+  type: T,
+  key: string
+): { value: unknown } {
+  const struct = getGraphNodeModule(type).struct
+  return { value: (struct.inputs as any)[key].default }
 }

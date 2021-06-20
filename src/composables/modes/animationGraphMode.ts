@@ -35,7 +35,11 @@ import {
   GraphNodeType,
   GraphNodeInput,
 } from '/@/models/graphNode'
-import { resetInput, validateConnection } from '/@/utils/graphNodes'
+import {
+  NODE_MENU_OPTIONS_SRC,
+  resetInput,
+  validateConnection,
+} from '/@/utils/graphNodes'
 
 export type EditMode = '' | 'grab' | 'add' | 'drag-node' | 'drag-edge'
 
@@ -414,45 +418,15 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
   })
 
-  const nodesSrcPrimitive: { label: string; type: GraphNodeType }[] = [
-    { label: 'Get Frame', type: 'get_frame' },
-    { label: 'Number', type: 'scaler' },
-    { label: 'Make Vector2', type: 'make_vector2' },
-    { label: 'Break Vector2', type: 'break_vector2' },
-    { label: 'Make Transform', type: 'make_transform' },
-  ]
-  const nodesSrcMath: { label: string; type: GraphNodeType }[] = [
-    { label: '(+) Scaler', type: 'add_scaler' },
-    { label: '(-) Scaler', type: 'sub_scaler' },
-  ]
-  const nodesSrcObject: { label: string; type: GraphNodeType }[] = [
-    { label: 'Get Object', type: 'get_object' },
-    { label: 'Set Transform', type: 'set_transform' },
-  ]
-
-  const addMenuList = useMenuList(() => [
-    {
-      label: 'Primitive',
-      children: nodesSrcPrimitive.map(({ label, type }) => ({
+  const addMenuList = useMenuList(() =>
+    NODE_MENU_OPTIONS_SRC.map(({ label, children }) => ({
+      label,
+      children: children.map(({ label, type }) => ({
         label,
         exec: () => execAddNode(type, state.keyDownPosition),
       })),
-    },
-    {
-      label: 'Math',
-      children: nodesSrcMath.map(({ label, type }) => ({
-        label,
-        exec: () => execAddNode(type, state.keyDownPosition),
-      })),
-    },
-    {
-      label: 'Object',
-      children: nodesSrcObject.map(({ label, type }) => ({
-        label,
-        exec: () => execAddNode(type, state.keyDownPosition),
-      })),
-    },
-  ])
+    }))
+  )
 
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     switch (state.command) {

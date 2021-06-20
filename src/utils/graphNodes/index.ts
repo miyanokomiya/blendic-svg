@@ -33,6 +33,36 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_object,
 } as const
 
+export const NODE_MENU_OPTIONS_SRC: {
+  label: string
+  children: { label: string; type: GraphNodeType }[]
+}[] = [
+  {
+    label: 'Primitive',
+    children: [
+      { label: 'Get Frame', type: 'get_frame' },
+      { label: 'Number', type: 'scaler' },
+      { label: 'Make Vector2', type: 'make_vector2' },
+      { label: 'Break Vector2', type: 'break_vector2' },
+      { label: 'Make Transform', type: 'make_transform' },
+    ],
+  },
+  {
+    label: 'Math',
+    children: [
+      { label: '(+) Scaler', type: 'add_scaler' },
+      { label: '(-) Scaler', type: 'sub_scaler' },
+    ],
+  },
+  {
+    label: 'Object',
+    children: [
+      { label: 'Get Object', type: 'get_object' },
+      { label: 'Set Transform', type: 'set_transform' },
+    ],
+  },
+]
+
 export function getGraphNodeModule<T extends GraphNodeType>(
   type: T
 ): NodeModule<GraphNodes[T]> {

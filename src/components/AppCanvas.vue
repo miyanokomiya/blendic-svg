@@ -101,7 +101,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
-import { getRadian, IRectangle, IVec2, sub } from 'okageo'
+import { add, getRadian, IRectangle, IVec2, sub } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
@@ -143,14 +143,27 @@ export default defineComponent({
     const canvasStore = useCanvasStore()
     const { settings } = useSettings()
 
+    function removeRootPosition(p: IVec2): IVec2 | undefined {
+      if (!svg.value) return
+      // adjust in the canvas
+      const svgRect = svg.value.getBoundingClientRect()
+      return sub(p, { x: svgRect.left, y: svgRect.top })
+    }
+
+    function addRootPosition(p: IVec2): IVec2 | undefined {
+      if (!svg.value) return
+      // adjust in the canvas
+      const svgRect = svg.value.getBoundingClientRect()
+      return add(p, { x: svgRect.left, y: svgRect.top })
+    }
+
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
     const pointerLock = usePointerLock({
       onMove: throttleMousemove,
       onGlobalMove: (arg) => {
-        if (!svg.value) return
-        // adjust in the canvas
-        const svgRect = svg.value.getBoundingClientRect()
-        canvas.setMousePoint(sub(arg.p, { x: svgRect.left, y: svgRect.top }))
+        const p = removeRootPosition(arg.p)
+        if (!p) return
+        canvas.setMousePoint(p)
       },
       onEscape: escape,
     })
@@ -216,7 +229,7 @@ export default defineComponent({
         canvasStore.mousemove({
           current: canvas.viewToCanvas(canvas.mousePoint.value),
           start: canvas.viewToCanvas(canvas.editStartPoint.value),
-          ctrl: arg.ctrl,
+          ctrl: !!arg.ctrl,
           scale: canvas.scale.value,
         })
       }
@@ -255,7 +268,7 @@ export default defineComponent({
 
     const cursor = computed(() => {
       if (['grab', 'rotate', 'scale'].includes(canvasStore.command.value)) {
-        return canvas.mousePoint.value
+        return addRootPosition(canvas.mousePoint.value)
       }
       return undefined
     })
@@ -317,7 +330,10 @@ export default defineComponent({
         })
         if (needLock) {
           pointerLock.requestPointerLock(e)
-          canvas.editStartPoint.value = pointerLock.current.value
+          if (!pointerLock.current.value) return
+          const p = removeRootPosition(pointerLock.current.value)
+          if (!p) return
+          canvas.editStartPoint.value = p
         }
       },
       changeMode: canvasStore.changeCanvasMode,

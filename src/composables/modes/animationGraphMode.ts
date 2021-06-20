@@ -322,6 +322,8 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   }): {
     needLock: boolean
   } {
+    if (!target.value) return notNeedLock
+
     switch (arg.key) {
       case 'Escape':
         cancel()

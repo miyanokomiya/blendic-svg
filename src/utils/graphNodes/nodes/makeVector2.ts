@@ -11,6 +11,7 @@ export const struct: NodeStruct<GraphNodeMakeVector2> = {
       type: 'make_vector2',
     } as GraphNodeMakeVector2
   },
+  data: {},
   inputs: {
     x: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
     y: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },

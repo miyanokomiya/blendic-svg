@@ -11,6 +11,7 @@ export const struct: NodeStruct<GraphNodeBreakVector2> = {
       type: 'break_vector2',
     } as GraphNodeBreakVector2
   },
+  data: {},
   inputs: {
     vector2: { type: GRAPH_VALUE_TYPE.VECTOR2, required: true },
   },

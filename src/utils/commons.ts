@@ -55,12 +55,12 @@ export function toList<T>(map: { [key: string]: T }): T[] {
   return Object.keys(map).map((key) => map[key])
 }
 
-export function mapReduce<T, R>(
-  map: { [key: string]: T },
-  fn: (t: T, key: string) => R
-): { [key: string]: R } {
-  return Object.keys(map).reduce<{ [key: string]: R }>((p, c) => {
-    p[c] = fn(map[c], c)
+export function mapReduce<T, R, K extends string>(
+  map: { [key in K]?: T },
+  fn: (t: T, key: K) => R
+): { [key in K]: R } {
+  return Object.keys(map).reduce<any>((p, c) => {
+    p[c] = fn((map as any)[c], c as K)
     return p
   }, {})
 }

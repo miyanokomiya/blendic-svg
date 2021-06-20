@@ -32,7 +32,7 @@ exports[`src/components/elements/GraphEdge.vue snapshot selected 1`] = `
 >
   <path
     d="M1,2 L10,20"
-    stroke="#888"
+    stroke="orange"
     stroke-width="2.5"
   />
   <circle

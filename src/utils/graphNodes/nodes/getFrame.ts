@@ -11,6 +11,7 @@ export const struct: NodeStruct<GraphNodeGetFrame> = {
       type: 'get_frame',
     } as GraphNodeGetFrame
   },
+  data: {},
   inputs: {},
   outputs: { frame: GRAPH_VALUE_TYPE.SCALER },
   computation(_inputs, _self, context) {

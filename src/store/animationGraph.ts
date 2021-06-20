@@ -119,10 +119,10 @@ function updateArmatureId(id: string) {
   historyStore.push(item, true)
 }
 
-function updateNode(id: string, val: Partial<GraphNode>) {
+function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
   if (!lastSelectedNode.value) return
 
-  const item = getUpdateNodesItem({ [id]: val })
+  const item = getUpdateNodesItem({ [id]: val }, seriesKey)
   historyStore.push(item, true)
 }
 
@@ -221,7 +221,8 @@ export function getUpdateArmatureIdItem(id: string): HistoryItem {
 }
 
 export function getUpdateNodesItem(
-  val: IdMap<Partial<GraphNode>>
+  val: IdMap<Partial<GraphNode>>,
+  seriesKey?: string
 ): HistoryItem {
   const current = extractMap(nodeMap.value, val)
 
@@ -240,5 +241,6 @@ export function getUpdateNodesItem(
       })
     },
     redo,
+    seriesKey,
   }
 }

@@ -16,6 +16,7 @@ export const struct: NodeStruct<GraphNodeMakeTransform> = {
       type: 'make_transform',
     } as GraphNodeMakeTransform
   },
+  data: {},
   inputs: {
     translate: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
     rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },

@@ -44,5 +44,14 @@ describe('src/components/elements/GraphNode.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
+    it('with data fields', () => {
+      const wrapper = mount(Target, {
+        props: {
+          node: createGraphNode('scaler'),
+          selected: true,
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 })

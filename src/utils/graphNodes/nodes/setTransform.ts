@@ -12,6 +12,7 @@ export const struct: NodeStruct<GraphNodeSetTransform> = {
       type: 'set_transform',
     } as GraphNodeSetTransform
   },
+  data: {},
   inputs: {
     object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
     transform: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },

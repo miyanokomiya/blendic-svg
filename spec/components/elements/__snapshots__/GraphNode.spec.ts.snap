@@ -33,6 +33,10 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
   </g>
   <g>
     
+    
+  </g>
+  <g>
+    
     <g
       transform="translate(1, 2)"
     >
@@ -139,6 +143,83 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
       y1="28"
       y2="28"
     />
+  </g>
+  <g>
+    
+    
+  </g>
+  <g>
+    
+    
+  </g>
+  <g>
+    
+    
+  </g>
+</g>
+`;
+
+exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
+<g
+  title="scaler"
+  transform="translate(0, 0)"
+>
+  <g>
+    <path
+      d="M0,0L120,0L120,100L0,100z"
+      fill="#eee"
+      stroke="orange"
+      stroke-width="2"
+    />
+  </g>
+  <g>
+    <text
+      class="view-only"
+      dominant-baseline="text-before-edge"
+      fill="#000"
+      font-size="16"
+      x="8"
+      y="3"
+    >
+      scaler
+    </text>
+    <line
+      stroke="#555"
+      x2="120"
+      y1="28"
+      y2="28"
+    />
+  </g>
+  <g>
+    
+    <g
+      transform="translate(8, 60)"
+    >
+      <foreignobject
+        height="40"
+        width="100"
+      >
+        <div
+          xmlns="http://www.w3.org/1999/xhtml"
+        >
+          <div
+            class="slider-wrapper"
+          >
+            <div
+              class="slider-background"
+              style="transform: scaleX(0);"
+            />
+            <input
+              type="text"
+            />
+            <div
+              class="slider-forward"
+            />
+          </div>
+        </div>
+      </foreignobject>
+    </g>
+    
   </g>
   <g>
     

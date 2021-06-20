@@ -20,9 +20,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { IVec2, IRectangle, isZero, add } from 'okageo'
 import { Size } from 'okanvas'
 import { IdMap, Bone, ElementNodeAttributes, Transform } from '../models/index'
-import { GraphNode } from '/@/models/graphNode'
+import { GraphNode, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { BoneConstraint } from '/@/utils/constraints'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
+import { NodeStruct } from '/@/utils/graphNodes/core'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
   if (scale.x === 1 && scale.y === 1) return ''
@@ -222,7 +223,10 @@ export function getGraphNodeSize(node: GraphNode): Size {
 }
 
 function getGraphNodeDataHeight(node: GraphNode): number {
-  return GRAPH_NODE_ROW_HEIGHT * Object.keys(node.data).length
+  const module = getGraphNodeModule(node.type)
+  return Object.values(module.struct.data).reduce<number>((p, d) => {
+    return p + getGraphNodeDataSize(d.type).height
+  }, 0)
 }
 
 function getGraphNodeWidth(node: GraphNode): number {
@@ -238,6 +242,22 @@ function getGraphNodeInputsHeight(node: GraphNode): number {
 function getGraphNodeOutputsHeight(node: GraphNode): number {
   const module = getGraphNodeModule(node.type)
   return GRAPH_NODE_ROW_HEIGHT * Object.keys(module.struct.outputs).length
+}
+
+export function getGraphNodeDataPosition(node: GraphNode): {
+  [key in keyof NodeStruct<GraphNode>['data']]?: IVec2
+} {
+  const outputsHeight = getGraphNodeOutputsHeight(node)
+  const module = getGraphNodeModule(node.type)
+  return Object.entries(module.struct.data).reduce<{
+    [key: string]: IVec2
+  }>((p, [key, d]) => {
+    p[key] = add(
+      { x: 0, y: outputsHeight },
+      { x: 8, y: getGraphNodeDataSize(d.type).height }
+    )
+    return p
+  }, {})
 }
 
 export function getGraphNodeInputsPosition(node: GraphNode): {
@@ -259,12 +279,11 @@ export function getGraphNodeInputsPosition(node: GraphNode): {
 export function getGraphNodeOutputsPosition(node: GraphNode): {
   [key: string]: IVec2
 } {
-  const dataHeight = getGraphNodeDataHeight(node)
   const module = getGraphNodeModule(node.type)
   const { width } = getGraphNodeSize(node)
   return getGraphNodeRowsPosition(Object.keys(module.struct.outputs), {
     x: width,
-    y: GRAPH_NODE_HEAD_HEIGHT + dataHeight,
+    y: GRAPH_NODE_HEAD_HEIGHT,
   })
 }
 
@@ -281,4 +300,13 @@ function getGraphNodeRowsPosition(
     })
     return p
   }, {})
+}
+
+function getGraphNodeDataSize(type: keyof typeof GRAPH_VALUE_TYPE): Size {
+  switch (type) {
+    case 'SCALER':
+      return { width: 120, height: 40 }
+    default:
+      return { width: 120, height: 40 }
+  }
 }

@@ -44,6 +44,21 @@ Copyright (C) 2021, Tomoya Komiyama.
     </g>
     <g>
       <g
+        v-for="(data, key) in dataMap"
+        :key="key"
+        :transform="`translate(${data.position.x}, ${data.position.y})`"
+      >
+        <GraphNodeDataField
+          :type="data.type"
+          :model-value="data.value"
+          @update:modelValue="
+            (val, seriesKey) => updateData(key, val, seriesKey)
+          "
+        />
+      </g>
+    </g>
+    <g>
+      <g
         v-for="(p, key) in edgePositions.inputs"
         :key="key"
         :transform="`translate(${p.x}, ${p.y})`"
@@ -109,8 +124,14 @@ import { switchClick } from '/@/utils/devices'
 import { GraphNode, GraphNodeEdgePositions } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
 import { add } from 'okageo'
+import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
+import { mapReduce } from '/@/utils/commons'
+import { getGraphNodeModule } from '/@/utils/graphNodes'
 
 export default defineComponent({
+  components: {
+    GraphNodeDataField,
+  },
   props: {
     node: {
       type: Object as PropType<GraphNode>,
@@ -122,7 +143,7 @@ export default defineComponent({
     },
     selected: { type: Boolean, default: false },
   },
-  emits: ['select', 'down-body', 'down-edge', 'up-edge'],
+  emits: ['select', 'down-body', 'down-edge', 'up-edge', 'update:data'],
   setup(props, { emit }) {
     const { settings } = useSettings()
 
@@ -143,6 +164,29 @@ export default defineComponent({
       )
     })
 
+    const dataPositions = computed(() =>
+      helpers.getGraphNodeDataPosition(props.node)
+    )
+    const dataMap = computed(() => {
+      const dataStruct = getGraphNodeModule(props.node.type).struct.data
+      return mapReduce(dataPositions.value, (position, key) => {
+        return {
+          position,
+          type: dataStruct[key].type,
+          value: props.node.data[key],
+        }
+      })
+    })
+
+    function updateData(key: string, val: any, seriesKey?: string) {
+      emit(
+        'update:data',
+        props.node.id,
+        { ...props.node.data, [key]: val },
+        seriesKey
+      )
+    }
+
     return {
       GRAPH_NODE_ROW_HEIGHT: helpers.GRAPH_NODE_ROW_HEIGHT,
       size,
@@ -152,6 +196,7 @@ export default defineComponent({
       ),
       edgeAnchorWidth: computed(() => 30),
       outlineStrokeWidth: computed(() => (props.selected ? 2 : 1)),
+      dataMap,
       select: (e: MouseEvent) => {
         switchClick(e, {
           plain: () => emit('select', props.node.id),
@@ -176,6 +221,7 @@ export default defineComponent({
         emit('up-edge', { nodeId: props.node.id, type: 'input', key }),
       upToEdge: (key: string) =>
         emit('up-edge', { nodeId: props.node.id, type: 'output', key }),
+      updateData,
     }
   },
 })

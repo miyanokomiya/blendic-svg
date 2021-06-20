@@ -58,6 +58,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           @down-body="downNodeBody"
           @down-edge="downNodeEdge"
           @up-edge="upNodeEdge"
+          @update:data="updateNodeData"
         />
         <g v-if="draftEdge">
           <GraphEdge :from="draftEdge.from" :to="draftEdge.to" selected />
@@ -240,6 +241,11 @@ export default defineComponent({
       }
     })
 
+    function updateNodeData(id: string, data: any, seriesKey?: string) {
+      const node = graphStore.nodeMap.value[id]
+      graphStore.updateNode(id, { ...node, data }, seriesKey)
+    }
+
     return {
       canvas,
       mode,
@@ -263,6 +269,7 @@ export default defineComponent({
       downNodeBody,
       downNodeEdge: mode.downNodeEdge,
       upNodeEdge: mode.upNodeEdge,
+      updateNodeData,
     }
   },
 })

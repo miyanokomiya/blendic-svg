@@ -168,7 +168,7 @@ export default defineComponent({
       popupMenuList,
 
       mousemoveNative,
-      wheel: (e: WheelEvent) => props.canvas.wheel(e, true),
+      wheel: props.canvas.wheel,
       downLeft: (e: MouseEvent) => {
         isDownEmpty.value = e.target === svg.value
         props.canvas.downLeft()

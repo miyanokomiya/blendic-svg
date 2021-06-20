@@ -17,42 +17,21 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getTransform } from '/@/models'
-import type { GraphNodeMakeTransform } from '/@/models/graphNode'
-import * as target from '/@/utils/graphNodes/nodes/makeTransform'
+import * as target from '/@/utils/graphNodes/nodes/addScaler'
 
-describe('src/utils/graphNodes/nodes/makeTransform.ts', () => {
-  const node: GraphNodeMakeTransform = {
-    id: 'node',
-    type: 'make_transform',
-    data: {},
-    inputs: {
-      translate: { from: { id: '', key: '' } },
-      rotate: { from: { id: '', key: '' } },
-      scale: { from: { id: '', key: '' } },
-    },
-    position: { x: 0, y: 0 },
-  }
-
+describe('src/utils/graphNodes/nodes/addScaler.ts', () => {
   describe('computation', () => {
     it('should return a transform', () => {
       expect(
         target.struct.computation(
           {
-            translate: { x: 1, y: 2 },
-            rotate: 3,
-            scale: { x: 4, y: 5 },
+            a: 1,
+            b: 10,
           },
-          node,
+          {} as any,
           {} as any
         )
-      ).toEqual({
-        transform: getTransform({
-          translate: { x: 1, y: 2 },
-          rotate: 3,
-          scale: { x: 4, y: 5 },
-        }),
-      })
+      ).toEqual({ value: 11 })
     })
   })
 })

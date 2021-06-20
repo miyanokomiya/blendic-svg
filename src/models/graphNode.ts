@@ -1,3 +1,22 @@
+/*
+This file is part of Blendic SVG.
+
+Blendic SVG is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Blendic SVG is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
+
+Copyright (C) 2021, Tomoya Komiyama.
+*/
+
 import { IVec2 } from 'okageo'
 import { Transform } from '/@/models'
 
@@ -24,18 +43,6 @@ export interface GraphNodeBase {
   position: IVec2
 }
 
-export interface GraphNodes {
-  scaler: GraphNodeScaler
-  make_vector2: GraphNodeMakeVector2
-  break_vector2: GraphNodeBreakVector2
-  make_transform: GraphNodeMakeTransform
-  set_transform: GraphNodeSetTransform
-  get_frame: GraphNodeGetFrame
-  get_object: GraphNodeGetObject
-}
-export type GraphNodeType = keyof GraphNodes
-export type GraphNode = GraphNodes[GraphNodeType]
-
 export const GRAPH_VALUE_TYPE = {
   SCALER: 'SCALER',
   VECTOR2: 'VECTOR2',
@@ -48,6 +55,40 @@ export interface GraphNodeInput<T> {
   value?: T
 }
 export type GraphNodeInputs = { [key: string]: GraphNodeInput<unknown> }
+
+export interface GraphNodeMap {
+  [id: string]: GraphNode
+}
+
+export interface GraphNodeOutputValues {
+  [key: string]: unknown
+}
+
+export interface GraphNodeOutputMap {
+  [id: string]: GraphNodeOutputValues
+}
+
+export interface GraphNodeEdgePositions {
+  inputs: { [key: string]: IVec2 }
+  outputs: { [key: string]: IVec2 }
+}
+
+////
+// GraphNodes
+////
+
+export interface GraphNodes {
+  scaler: GraphNodeScaler
+  make_vector2: GraphNodeMakeVector2
+  break_vector2: GraphNodeBreakVector2
+  make_transform: GraphNodeMakeTransform
+  set_transform: GraphNodeSetTransform
+  get_frame: GraphNodeGetFrame
+  get_object: GraphNodeGetObject
+  add_scaler: GraphNodeAddScaler
+}
+export type GraphNodeType = keyof GraphNodes
+export type GraphNode = GraphNodes[GraphNodeType]
 
 export interface GraphNodeScaler extends GraphNodeBase {
   type: 'scaler'
@@ -90,19 +131,7 @@ export interface GraphNodeGetObject extends GraphNodeBase {
   data: { object: string }
 }
 
-export interface GraphNodeMap {
-  [id: string]: GraphNode
-}
-
-export interface GraphNodeOutputValues {
-  [key: string]: unknown
-}
-
-export interface GraphNodeOutputMap {
-  [id: string]: GraphNodeOutputValues
-}
-
-export interface GraphNodeEdgePositions {
-  inputs: { [key: string]: IVec2 }
-  outputs: { [key: string]: IVec2 }
+export interface GraphNodeAddScaler extends GraphNodeBase {
+  type: 'add_scaler'
+  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
 }

@@ -225,7 +225,7 @@ export function getGraphNodeSize(node: GraphNode): Size {
 function getGraphNodeDataHeight(node: GraphNode): number {
   const module = getGraphNodeModule(node.type)
   return Object.values(module.struct.data).reduce<number>((p, d) => {
-    return p + getGraphNodeDataSize((d as any).type).height
+    return p + getGraphNodeDataUnitHeight((d as any).type)
   }, 0)
 }
 
@@ -255,7 +255,7 @@ export function getGraphNodeDataPosition(node: GraphNode): {
     [key: string]: IVec2
   }>((p, [key, d]) => {
     p[key] = { x: 8, y: current }
-    current = current + getGraphNodeDataSize((d as any).type).height
+    current = current + getGraphNodeDataUnitHeight((d as any).type)
     return p
   }, {})
 }
@@ -302,11 +302,13 @@ function getGraphNodeRowsPosition(
   }, {})
 }
 
-function getGraphNodeDataSize(type: keyof typeof GRAPH_VALUE_TYPE): Size {
+function getGraphNodeDataUnitHeight(
+  type: keyof typeof GRAPH_VALUE_TYPE
+): number {
   switch (type) {
     case 'SCALER':
-      return { width: 120, height: 48 }
+      return 48
     default:
-      return { width: 120, height: 48 }
+      return 48
   }
 }

@@ -15,6 +15,7 @@ import * as make_transform from './nodes/makeTransform'
 import * as set_transform from './nodes/setTransform'
 import * as get_frame from './nodes/getFrame'
 import * as get_object from './nodes/getObject'
+import * as add_scaler from './nodes/addScaler'
 import { v4 } from 'uuid'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
@@ -25,6 +26,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   set_transform,
   get_frame,
   get_object,
+  add_scaler,
 } as const
 
 export function getGraphNodeModule<T extends GraphNodeType>(

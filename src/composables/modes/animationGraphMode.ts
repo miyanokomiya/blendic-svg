@@ -412,36 +412,22 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
   })
 
-  const addMenuList = useMenuList(() => [
-    {
-      label: 'Number',
-      exec: () => execAddNode('scaler', state.keyDownPosition),
-    },
-    {
-      label: 'Make Vector2',
-      exec: () => execAddNode('make_vector2', state.keyDownPosition),
-    },
-    {
-      label: 'Break Vector2',
-      exec: () => execAddNode('break_vector2', state.keyDownPosition),
-    },
-    {
-      label: 'Make Transform',
-      exec: () => execAddNode('make_transform', state.keyDownPosition),
-    },
-    {
-      label: 'Set Transform',
-      exec: () => execAddNode('set_transform', state.keyDownPosition),
-    },
-    {
-      label: 'Get Frame',
-      exec: () => execAddNode('get_frame', state.keyDownPosition),
-    },
-    {
-      label: 'Get Object',
-      exec: () => execAddNode('get_object', state.keyDownPosition),
-    },
-  ])
+  const nodesSrc: { label: string; type: GraphNodeType }[] = [
+    { label: 'Number', type: 'scaler' },
+    { label: 'Make Vector2', type: 'make_vector2' },
+    { label: 'Break Vector2', type: 'break_vector2' },
+    { label: 'Make Transform', type: 'make_transform' },
+    { label: 'Set Transform', type: 'set_transform' },
+    { label: 'Get Frame', type: 'get_frame' },
+    { label: 'Add Scaler', type: 'add_scaler' },
+  ]
+
+  const addMenuList = useMenuList(() =>
+    nodesSrc.map(({ label, type }) => ({
+      label,
+      exec: () => execAddNode(type, state.keyDownPosition),
+    }))
+  )
 
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     switch (state.command) {

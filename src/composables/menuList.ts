@@ -22,16 +22,31 @@ import { PopupMenuItem } from '/@/composables/modes/types'
 
 export function useMenuList(getSrcList: () => PopupMenuItem[]) {
   const lastSelectedItem = ref<string>()
+  const openedParent = ref<string>()
 
   const list = computed<PopupMenuItem[]>(() => {
     return getSrcList().map((item) => {
       return {
         ...item,
         focus: item.label === lastSelectedItem.value,
+        opened: item.label === openedParent.value,
         exec() {
-          lastSelectedItem.value = item.label
-          item.exec()
+          if (item.exec) {
+            lastSelectedItem.value = item.label
+            openedParent.value = ''
+            item.exec()
+          } else if (item.children) {
+            openedParent.value =
+              openedParent.value === item.label ? '' : item.label
+          }
         },
+        // child items cannot be focused
+        children: item.children?.map((child) => ({
+          ...child,
+          exec() {
+            child.exec?.()
+          },
+        })),
       }
     })
   })

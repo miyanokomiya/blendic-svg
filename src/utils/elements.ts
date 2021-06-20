@@ -30,6 +30,7 @@ import {
   getGraphObject,
   IdMap,
   toMap,
+  AnimationGraph,
 } from '../models'
 import { extractMap, mapReduce, toList } from './commons'
 import { GraphNodeMap } from '/@/models/graphNode'
@@ -122,6 +123,11 @@ export function cleanActors(actors: Actor[], armatures: Armature[]): Actor[] {
       })),
     }
   })
+}
+
+export function cleanGraphs(graphs: AnimationGraph[]): AnimationGraph[] {
+  // TODO: check armatureId, objectId
+  return graphs
 }
 
 export function inheritWeight(old: Actor, next: Actor): Actor {

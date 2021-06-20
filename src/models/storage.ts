@@ -28,6 +28,8 @@ import {
   getActor,
   BElement,
   getBElement,
+  AnimationGraph,
+  getAnimationGraph,
 } from '../models'
 import { KeyframeBase } from '/@/models/keyframe'
 import { getConstraint } from '/@/utils/constraints'
@@ -37,6 +39,7 @@ export interface StorageRoot {
   armatures: Armature[]
   actions: Action[]
   actors: Actor[]
+  graphs: AnimationGraph[]
 }
 
 export function initialize(src: StorageRoot): StorageRoot {
@@ -44,6 +47,7 @@ export function initialize(src: StorageRoot): StorageRoot {
     armatures: src.armatures.map(initializeArmature),
     actions: src.actions.map(initializeAction),
     actors: src.actors.map(initializeActor),
+    graphs: src.graphs?.map(initializeGraph) ?? [],
   }
 }
 
@@ -92,4 +96,8 @@ function initializeActor(actor: Partial<Actor>): Actor {
 
 function initializeElement(elm: BElement): BElement {
   return getBElement(elm)
+}
+
+function initializeGraph(graph: AnimationGraph): AnimationGraph {
+  return getAnimationGraph(graph)
 }

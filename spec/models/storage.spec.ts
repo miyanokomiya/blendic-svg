@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import {
   getAction,
   getActor,
+  getAnimationGraph,
   getArmature,
   getBElement,
   getBone,
@@ -59,6 +60,7 @@ describe('src/models/storage.ts', () => {
             elements: [{ id: 'elm' }],
           },
         ],
+        graphs: [{ id: 'graph' }],
       }
       expect(initialize(src as any)).toEqual({
         armatures: [
@@ -92,6 +94,7 @@ describe('src/models/storage.ts', () => {
             elements: [getBElement({ id: 'elm' })],
           }),
         ],
+        graphs: [getAnimationGraph({ id: 'graph' })],
       })
     })
 
@@ -120,6 +123,7 @@ describe('src/models/storage.ts', () => {
             ],
           }),
         ],
+        graphs: [],
       })
     })
   })

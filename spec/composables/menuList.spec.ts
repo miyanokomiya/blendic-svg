@@ -37,7 +37,7 @@ describe('src/composables/menuList.ts', () => {
         { label: 'c', exec: jest.fn() },
       ]
       const ret = useMenuList(() => srcList)
-      ret.list.value[1].exec()
+      ret.list.value[1].exec?.()
       expect(srcList[1].exec).toHaveReturnedTimes(1)
       expect(ret.list.value[1].focus).toBe(true)
     })

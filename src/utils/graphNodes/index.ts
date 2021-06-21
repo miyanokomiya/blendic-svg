@@ -39,6 +39,7 @@ import * as add_scaler from './nodes/addScaler'
 import * as sub_scaler from './nodes/subScaler'
 import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
+import * as clone_object from './nodes/cloneObject'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -52,8 +53,9 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   multi_scaler,
   divide_scaler,
 
-  set_transform,
   get_object,
+  set_transform,
+  clone_object,
 } as const
 
 export const NODE_MENU_OPTIONS_SRC: {
@@ -84,6 +86,7 @@ export const NODE_MENU_OPTIONS_SRC: {
     children: [
       { label: 'Get Object', type: 'get_object' },
       { label: 'Set Transform', type: 'set_transform' },
+      { label: 'Clone Object', type: 'clone_object' },
     ],
   },
 ]

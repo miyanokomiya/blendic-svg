@@ -288,7 +288,10 @@ export function getGraphResolvedElementTree(
   graphObjectMap: IdMap<GraphObject>,
   svgTree: ElementNode
 ): ElementNode {
-  return getGraphResolvedElement(graphObjectMap, svgTree)
+  return getClonedElementsTree(
+    graphObjectMap,
+    getGraphResolvedElement(graphObjectMap, svgTree)
+  )
 }
 
 export function getGraphResolvedElement(
@@ -296,23 +299,157 @@ export function getGraphResolvedElement(
   node: ElementNode
 ): ElementNode {
   const graphObject = graphObjectMap[node.id]
-  const graphTransform = graphObject.transform
-
-  const matrix = graphTransform
-    ? transformToAffine(graphTransform)
-    : node.attributes.transform
-    ? parseTransform(node.attributes.transform)
-    : undefined
 
   return {
     ...node,
-    attributes: {
-      ...node.attributes,
-      ...(matrix ? { transform: affineToTransform(matrix) } : {}),
-    },
+    attributes: getGraphResolvedAttributes(graphObject, node.attributes),
     children: node.children.map((c) => {
       if (typeof c === 'string') return c
       return getGraphResolvedElement(graphObjectMap, c)
     }),
+  }
+}
+
+function getGraphResolvedAttributes(
+  graphObject: GraphObject,
+  nodeAttributes: ElementNodeAttributes
+): ElementNodeAttributes {
+  const graphTransform = graphObject.transform
+
+  const matrix = graphTransform
+    ? transformToAffine(graphTransform)
+    : nodeAttributes.transform
+    ? parseTransform(nodeAttributes.transform)
+    : undefined
+
+  return {
+    ...nodeAttributes,
+    ...(matrix ? { transform: affineToTransform(matrix) } : {}),
+  }
+}
+
+export function getClonedElementsTree(
+  graphObjectMap: IdMap<GraphObject>,
+  svgTree: ElementNode
+): ElementNode {
+  const clonedObjects = Object.values(graphObjectMap).filter((o) => o.clone)
+  const attributesMap: IdMap<ElementNodeAttributes> = {}
+  const useTree = convertUseTree(clonedObjects, svgTree, attributesMap)
+  return insertClonedElementTree(clonedObjects, useTree, attributesMap)
+}
+
+function insertClonedElementTree(
+  clonedObjects: GraphObject[],
+  svgTree: ElementNode,
+  attributesMap: IdMap<ElementNodeAttributes>
+): ElementNode {
+  const clonedObjectMapByElementId = clonedObjects.reduce<IdMap<GraphObject[]>>(
+    (p, o) => {
+      p[o.elementId] = p[o.elementId] ? [...p[o.elementId], o] : [o]
+      return p
+    },
+    {}
+  )
+  return insertClonedElement(clonedObjectMapByElementId, svgTree, attributesMap)
+}
+
+const DATA_CLONE_ID_KEY = 'data-blendic-use-id'
+
+function insertClonedElement(
+  clonedObjectMapByElementId: IdMap<GraphObject[]>,
+  node: ElementNode,
+  attributesMap: IdMap<ElementNodeAttributes>
+): ElementNode {
+  const children = node.children.map((c) => {
+    if (typeof c === 'string') return c
+    return insertClonedElement(clonedObjectMapByElementId, c, attributesMap)
+  })
+
+  const srcId = node.attributes[DATA_CLONE_ID_KEY]
+  const objs = clonedObjectMapByElementId[srcId]
+  if (objs) {
+    return {
+      ...node,
+      children: [
+        ...children,
+        ...objs.map((o) => {
+          return {
+            id: `clone_${o.id}`,
+            tag: 'use',
+            attributes: {
+              href: `#${srcId}`,
+              ...getGraphResolvedAttributes(o, attributesMap[srcId]),
+            },
+            children: [],
+          }
+        }),
+      ],
+    }
+  } else {
+    return { ...node, children }
+  }
+}
+
+function convertUseTree(
+  clonedObjects: GraphObject[],
+  svgTree: ElementNode,
+  attributesMap: IdMap<ElementNodeAttributes>
+): ElementNode {
+  const clonedElementIds = clonedObjects
+    .map((o) => o.elementId)
+    .reduce<IdMap<boolean>>((p, id) => {
+      p[id] = true
+      return p
+    }, {})
+  return convertUseElement(clonedElementIds, svgTree, attributesMap)
+}
+
+function convertUseElement(
+  clonedElementIds: IdMap<boolean>,
+  node: ElementNode,
+  attributesMap: IdMap<ElementNodeAttributes>
+): ElementNode {
+  const children = node.children.map((c) => {
+    if (typeof c === 'string') return c
+    return convertUseElement(clonedElementIds, c, attributesMap)
+  })
+
+  if (clonedElementIds[node.id]) {
+    attributesMap[node.id] = node.attributes
+    const attributes = { ...node.attributes }
+    delete attributes.transform
+    delete attributes.fill
+    delete attributes.stroke
+    return {
+      id: `blendic_group_${node.id}`,
+      tag: 'g',
+      attributes: { [DATA_CLONE_ID_KEY]: node.id },
+      children: [
+        {
+          id: '',
+          tag: 'template',
+          attributes: {},
+          children: [
+            {
+              id: node.id,
+              tag: node.tag,
+              attributes,
+              children,
+            },
+          ],
+        },
+        {
+          id: `origin_${node.id}`,
+          tag: 'use',
+          attributes: {
+            href: `#${node.id}`,
+            ...attributes,
+          },
+          children: [],
+        },
+      ],
+    }
+  } else {
+    return { ...node, children }
   }
 }

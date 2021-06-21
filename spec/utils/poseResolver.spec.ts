@@ -48,6 +48,7 @@ import { getConstraint } from '/@/utils/constraints'
 import {
   bakeKeyframe,
   bakeKeyframes,
+  getClonedElementsTree,
   getGraphResolvedElementTree,
   getInterpolatedBoneMap,
   getNativeDeformMatrix,
@@ -356,6 +357,53 @@ describe('utils/poseResolver.ts', () => {
       expect((ret.children[0] as ElementNode).attributes.transform).toBe(
         'matrix(1,0,0,1,10,20)'
       )
+    })
+  })
+
+  describe('getClonedElementsTree', () => {
+    it('should clone target elements', () => {
+      const ret = getClonedElementsTree(
+        {
+          b: getGraphObject({
+            id: 'b',
+            elementId: 'a',
+            clone: true,
+          }),
+        },
+        getElementNode({ id: 'a', tag: 'rect' })
+      )
+      expect(ret).toEqual({
+        id: 'blendic_group_a',
+        tag: 'g',
+        attributes: { 'data-blendic-use-id': 'a' },
+        children: [
+          {
+            id: '',
+            tag: 'template',
+            attributes: {},
+            children: [
+              {
+                id: 'a',
+                tag: 'rect',
+                attributes: {},
+                children: [],
+              },
+            ],
+          },
+          {
+            id: 'origin_a',
+            tag: 'use',
+            attributes: { href: '#a' },
+            children: [],
+          },
+          {
+            id: 'clone_b',
+            tag: 'use',
+            attributes: { href: '#a' },
+            children: [],
+          },
+        ],
+      })
     })
   })
 })

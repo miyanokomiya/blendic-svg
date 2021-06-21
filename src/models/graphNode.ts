@@ -78,13 +78,16 @@ export interface GraphNodeEdgePositions {
 ////
 
 export interface GraphNodes {
+  get_frame: GraphNodeGetFrame
   scaler: GraphNodeScaler
   make_vector2: GraphNodeMakeVector2
   break_vector2: GraphNodeBreakVector2
   make_transform: GraphNodeMakeTransform
-  set_transform: GraphNodeSetTransform
-  get_frame: GraphNodeGetFrame
+
   get_object: GraphNodeGetObject
+  set_transform: GraphNodeSetTransform
+  clone_object: GraphNodeCloneObject
+
   add_scaler: GraphNodeAddScaler
   sub_scaler: GraphNodeSubScaler
   multi_scaler: GraphNodeMultiScaler
@@ -118,6 +121,15 @@ export interface GraphNodeMakeTransform extends GraphNodeBase {
   }
 }
 
+export interface GraphNodeGetFrame extends GraphNodeBase {
+  type: 'get_frame'
+}
+
+export interface GraphNodeGetObject extends GraphNodeBase {
+  type: 'get_object'
+  data: { object: string }
+}
+
 export interface GraphNodeSetTransform extends GraphNodeBase {
   type: 'set_transform'
   inputs: {
@@ -126,13 +138,11 @@ export interface GraphNodeSetTransform extends GraphNodeBase {
   }
 }
 
-export interface GraphNodeGetFrame extends GraphNodeBase {
-  type: 'get_frame'
-}
-
-export interface GraphNodeGetObject extends GraphNodeBase {
-  type: 'get_object'
-  data: { object: string }
+export interface GraphNodeCloneObject extends GraphNodeBase {
+  type: 'clone_object'
+  inputs: {
+    object: GraphNodeInput<string>
+  }
 }
 
 export interface GraphNodeAddScaler extends GraphNodeBase {

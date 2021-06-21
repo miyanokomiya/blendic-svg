@@ -10,6 +10,7 @@ export const struct: NodeStruct<GraphNodeMakeTransform> = {
           translate: { value: { x: 0, y: 0 } },
           rotate: { value: 0 },
           scale: { value: { x: 1, y: 1 } },
+          origin: { value: { x: 0, y: 0 } },
         },
         ...arg,
       }),
@@ -21,6 +22,7 @@ export const struct: NodeStruct<GraphNodeMakeTransform> = {
     translate: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
     rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
     scale: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 1, y: 1 } },
+    origin: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
   },
   outputs: {
     transform: GRAPH_VALUE_TYPE.TRANSFORM,
@@ -31,6 +33,7 @@ export const struct: NodeStruct<GraphNodeMakeTransform> = {
         translate: inputs.translate,
         rotate: inputs.rotate,
         scale: inputs.scale,
+        origin: inputs.origin,
       }),
     }
   },

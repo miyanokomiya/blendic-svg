@@ -114,6 +114,7 @@ export interface GraphNodeMakeTransform extends GraphNodeBase {
     translate: GraphNodeInput<IVec2>
     rotate: GraphNodeInput<number>
     scale: GraphNodeInput<IVec2>
+    origin: GraphNodeInput<IVec2>
   }
 }
 

@@ -27,8 +27,9 @@ import {
   getElementNode,
 } from '/@/models'
 import { getKeyframeBone } from '/@/models/keyframe'
-import { initialize } from '/@/models/storage'
+import { initialize, initializeGraphNode } from '/@/models/storage'
 import { getConstraint } from '/@/utils/constraints'
+import { createGraphNode } from '/@/utils/graphNodes'
 
 describe('src/models/storage.ts', () => {
   describe('initialize', () => {
@@ -124,6 +125,33 @@ describe('src/models/storage.ts', () => {
           }),
         ],
         graphs: [],
+      })
+    })
+  })
+
+  describe('initializeGraphNode', () => {
+    it('should complete new inputs', () => {
+      const base = createGraphNode('make_vector2')
+      expect(
+        initializeGraphNode({
+          type: 'make_vector2',
+          inputs: { x: { from: 'a', key: 'b' } },
+        } as any)
+      ).toEqual({
+        ...base,
+        inputs: { ...base.inputs, x: { from: 'a', key: 'b' } },
+      })
+    })
+    it('should complete new data', () => {
+      const base = createGraphNode('scaler')
+      expect(
+        initializeGraphNode({
+          type: 'scaler',
+          data: { tmp: 1 },
+        } as any)
+      ).toEqual({
+        ...base,
+        data: { ...base.data, tmp: 1 },
       })
     })
   })

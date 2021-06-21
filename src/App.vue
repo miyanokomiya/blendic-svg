@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <template #top>
       <ResizableH :initial-rate="0.8" class="top">
         <template #left>
-          <ResizableH :initial-rate="0.5" class="main-wrapper">
+          <ResizableH :initial-rate="0.1" class="main-wrapper">
             <template #left>
               <AnimationGraphPanel class="animation-graph" />
             </template>
@@ -331,6 +331,7 @@ $wide-panel-width: 240px;
 .main {
   height: 100%;
   display: flex;
+  background-color: #fff;
   .canvas {
     width: calc(100% - 24px);
   }

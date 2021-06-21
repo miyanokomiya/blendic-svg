@@ -48,7 +48,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { CanvasMode } from '/@/models'
+import { CanvasMode } from '/@/composables/modes/types'
 
 export default defineComponent({
   props: {

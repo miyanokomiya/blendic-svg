@@ -23,7 +23,12 @@ Copyright (C) 2021, Tomoya Komiyama.
       <div class="select-graph">
         <SelectField v-model="selectedGraphId" :options="graphOptions" />
       </div>
-      <input v-model="draftName" type="text" @change="changeGraphName" />
+      <input
+        v-model="draftName"
+        type="text"
+        class="name-input"
+        @change="changeGraphName"
+      />
       <div class="graph-buttons">
         <button
           class="add-graph"
@@ -42,6 +47,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           <DeleteIcon />
         </button>
       </div>
+      <p>(!!Experimental!!)</p>
     </div>
     <div class="main">
       <AnimationGraphCanvas class="canvas" :canvas="canvas" :mode="mode">
@@ -322,6 +328,9 @@ export default defineComponent({
   .select-graph {
     width: 160px;
   }
+  .name-input {
+    overflow: hidden;
+  }
   .graph-buttons {
     display: flex;
     align-items: center;
@@ -332,6 +341,10 @@ export default defineComponent({
         margin-left: 4px;
       }
     }
+  }
+  p {
+    white-space: nowrap;
+    overflow: hidden;
   }
 }
 .main {

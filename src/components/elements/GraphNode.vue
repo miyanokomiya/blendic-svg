@@ -46,7 +46,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         class="view-only"
         >{{ node.type }}</text
       >
-      <line y1="28" y2="28" :x2="size.width" stroke="#555" />
     </g>
     <g>
       <g
@@ -134,6 +133,29 @@ import { add } from 'okageo'
 import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
 import { mapReduce } from '/@/utils/commons'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
+import { Size } from 'okanvas'
+
+function getHeadOutline(s: Size) {
+  const r = 14
+  return `M${0},${
+    helpers.GRAPH_NODE_HEAD_HEIGHT
+  } L${0},${r} A${r},${r} 0 0 1 ${r},${0} L${
+    s.width - r
+  },${0} A${r},${r} 0 0 1 ${s.width},${r} L${s.width},${
+    helpers.GRAPH_NODE_HEAD_HEIGHT
+  }`
+}
+
+function getOutline(s: Size) {
+  const r = 8
+  return `M${0},${helpers.GRAPH_NODE_HEAD_HEIGHT} L${0},${
+    s.height - r
+  } A${r},${r} 0 0 0 ${r},${s.height} L${s.width - r},${
+    s.height
+  } A${r},${r} 0 0 0 ${s.width},${s.height - r} L${s.width},${
+    helpers.GRAPH_NODE_HEAD_HEIGHT
+  }`
+}
 
 export default defineComponent({
   components: {
@@ -159,26 +181,11 @@ export default defineComponent({
     })
 
     const headOutline = computed(() => {
-      const s = size.value
-
-      const r = 14
-      return `M${0},${
-        helpers.GRAPH_NODE_HEAD_HEIGHT
-      } L${0},${r} A${r},${r} 0 0 1 ${r},${0} L${
-        s.width - r
-      },${0} A${r},${r} 0 0 1 ${s.width},${r} L${s.width},${
-        helpers.GRAPH_NODE_HEAD_HEIGHT
-      }`
+      return getHeadOutline(size.value)
     })
 
     const outline = computed(() => {
-      const s = size.value
-      return helpers.d([
-        { x: 0, y: helpers.GRAPH_NODE_HEAD_HEIGHT },
-        { x: 0, y: s.height },
-        { x: s.width, y: s.height },
-        { x: s.width, y: helpers.GRAPH_NODE_HEAD_HEIGHT },
-      ])
+      return getOutline(size.value)
     })
 
     const color = computed(

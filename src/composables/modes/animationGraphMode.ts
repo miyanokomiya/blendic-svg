@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive, computed } from 'vue'
+import { reactive, computed, watch } from 'vue'
 import { add, IRectangle, isSame, IVec2, sub } from 'okageo'
 import { Transform, getTransform, IdMap } from '/@/models/index'
 import type {
@@ -427,6 +427,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
       })),
     }))
   )
+  watch(() => state.command, addMenuList.clearOpened)
 
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     switch (state.command) {

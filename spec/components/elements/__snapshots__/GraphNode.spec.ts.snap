@@ -7,7 +7,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
 >
   <g>
     <path
-      d="M0,30L0,90L140,90L140,30"
+      d="M0,30 L0,98 A8,8 0 0 0 8,106 L132,106 A8,8 0 0 0 140,98 L140,30"
       fill="#eee"
       stroke="#555"
       stroke-width="1"
@@ -30,12 +30,6 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
     >
       make_vector2
     </text>
-    <line
-      stroke="#555"
-      x2="140"
-      y1="28"
-      y2="28"
-    />
   </g>
   <g>
     
@@ -128,7 +122,7 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
 >
   <g>
     <path
-      d="M0,30L0,90L140,90L140,30"
+      d="M0,30 L0,98 A8,8 0 0 0 8,106 L132,106 A8,8 0 0 0 140,98 L140,30"
       fill="#eee"
       stroke="orange"
       stroke-width="2"
@@ -151,12 +145,6 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
     >
       make_vector2
     </text>
-    <line
-      stroke="#555"
-      x2="140"
-      y1="28"
-      y2="28"
-    />
   </g>
   <g>
     
@@ -182,7 +170,7 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
 >
   <g>
     <path
-      d="M0,30L0,98L120,98L120,30"
+      d="M0,30 L0,100 A8,8 0 0 0 8,108 L112,108 A8,8 0 0 0 120,100 L120,30"
       fill="#eee"
       stroke="orange"
       stroke-width="2"
@@ -205,12 +193,6 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
     >
       scaler
     </text>
-    <line
-      stroke="#555"
-      x2="120"
-      y1="28"
-      y2="28"
-    />
   </g>
   <g>
     
@@ -221,7 +203,7 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
   >
     
     <g
-      transform="translate(8, 50)"
+      transform="translate(8, 60)"
     >
       <foreignobject
         height="40"

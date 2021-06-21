@@ -209,7 +209,6 @@ export function getTargetTopMap(
 
 export const GRAPH_NODE_HEAD_HEIGHT = 30
 export const GRAPH_NODE_ROW_HEIGHT = 20
-const GRAPH_NODE_ROW_MARGIN = 4
 
 export function getGraphNodeSize(node: GraphNode): Size {
   const dataHeight = getGraphNodeDataHeight(node)
@@ -224,9 +223,12 @@ export function getGraphNodeSize(node: GraphNode): Size {
 
 function getGraphNodeDataHeight(node: GraphNode): number {
   const module = getGraphNodeModule(node.type)
-  return Object.values(module.struct.data).reduce<number>((p, d) => {
-    return p + getGraphNodeDataUnitHeight((d as any).type)
-  }, 0)
+  const values = Object.values(module.struct.data)
+  return values.length === 0
+    ? 0
+    : values.reduce<number>((p, d) => {
+        return p + getGraphNodeDataUnitHeight((d as any).type)
+      }, 0)
 }
 
 function getGraphNodeWidth(node: GraphNode): number {
@@ -236,12 +238,18 @@ function getGraphNodeWidth(node: GraphNode): number {
 
 function getGraphNodeInputsHeight(node: GraphNode): number {
   const module = getGraphNodeModule(node.type)
-  return GRAPH_NODE_ROW_HEIGHT * Object.keys(module.struct.inputs).length
+  const length = Object.keys(module.struct.inputs).length
+  return length === 0
+    ? 0
+    : GRAPH_NODE_ROW_HEIGHT * (0.3 + Object.keys(module.struct.inputs).length)
 }
 
 function getGraphNodeOutputsHeight(node: GraphNode): number {
   const module = getGraphNodeModule(node.type)
-  return GRAPH_NODE_ROW_HEIGHT * Object.keys(module.struct.outputs).length
+  const length = Object.keys(module.struct.outputs).length
+  return length === 0
+    ? 0
+    : GRAPH_NODE_ROW_HEIGHT * (0.5 + Object.keys(module.struct.outputs).length)
 }
 
 export function getGraphNodeDataPosition(node: GraphNode): {
@@ -270,9 +278,9 @@ export function getGraphNodeInputsPosition(node: GraphNode): {
     x: 0,
     y:
       GRAPH_NODE_HEAD_HEIGHT +
+      outputsHeight +
       dataHeight +
-      GRAPH_NODE_ROW_MARGIN +
-      outputsHeight,
+      GRAPH_NODE_ROW_HEIGHT / 2,
   })
 }
 
@@ -283,7 +291,7 @@ export function getGraphNodeOutputsPosition(node: GraphNode): {
   const { width } = getGraphNodeSize(node)
   return getGraphNodeRowsPosition(Object.keys(module.struct.outputs), {
     x: width,
-    y: GRAPH_NODE_HEAD_HEIGHT + GRAPH_NODE_ROW_HEIGHT / 2,
+    y: GRAPH_NODE_HEAD_HEIGHT + (GRAPH_NODE_ROW_HEIGHT * 2) / 3,
   })
 }
 

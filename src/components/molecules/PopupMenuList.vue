@@ -21,7 +21,11 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="popup-menu-list-wrapper" :style="{ transform }">
     <ul>
       <li v-for="item in popupMenuList" :key="item.label">
-        <button :data-test-id="item.label" @click="item.exec">
+        <button
+          :data-test-id="item.label"
+          @click="item.exec"
+          @mousemove="item.hover"
+        >
           {{ item.label }}
           <UpIcon v-if="item.children" right class="right-arrow" />
         </button>
@@ -38,8 +42,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
-import { PopupMenuItem } from '/@/composables/modes/types'
 import UpIcon from '/@/components/atoms/UpIcon.vue'
+import { UIPopupMenuItem } from '/@/composables/menuList'
 
 const ITEM_HEIGHT = 26
 
@@ -48,7 +52,7 @@ export default defineComponent({
   components: { UpIcon },
   props: {
     popupMenuList: {
-      type: Array as PropType<PopupMenuItem[]>,
+      type: Array as PropType<UIPopupMenuItem[]>,
       required: true,
     },
   },

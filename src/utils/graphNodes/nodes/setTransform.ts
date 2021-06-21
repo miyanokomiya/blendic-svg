@@ -27,4 +27,6 @@ export const struct: NodeStruct<GraphNodeSetTransform> = {
     }
   },
   width: 140,
+  color: '#dc143c',
+  textColor: '#fff',
 }

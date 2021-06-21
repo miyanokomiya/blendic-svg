@@ -27,6 +27,8 @@ export interface NodeStruct<T extends GraphNodeBase> {
     context: NodeContext<unknown>
   ) => { [key in keyof NodeStruct<T>['outputs']]: unknown }
   width: number
+  color?: string
+  textColor?: string
 }
 
 export interface NodeContext<T> {

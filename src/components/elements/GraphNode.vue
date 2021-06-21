@@ -29,6 +29,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         :stroke-width="outlineStrokeWidth"
         fill="#eee"
       />
+      <path
+        :d="headOutline"
+        :stroke="outlineStroke"
+        :stroke-width="outlineStrokeWidth"
+        :fill="color"
+      />
     </g>
     <g>
       <text
@@ -36,7 +42,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         y="3"
         dominant-baseline="text-before-edge"
         font-size="16"
-        fill="#000"
+        :fill="textColor"
         class="view-only"
         >{{ node.type }}</text
       >
@@ -152,18 +158,35 @@ export default defineComponent({
       return helpers.getGraphNodeSize(props.node)
     })
 
+    const headOutline = computed(() => {
+      const s = size.value
+
+      const r = 14
+      return `M${0},${
+        helpers.GRAPH_NODE_HEAD_HEIGHT
+      } L${0},${r} A${r},${r} 0 0 1 ${r},${0} L${
+        s.width - r
+      },${0} A${r},${r} 0 0 1 ${s.width},${r} L${s.width},${
+        helpers.GRAPH_NODE_HEAD_HEIGHT
+      }`
+    })
+
     const outline = computed(() => {
       const s = size.value
-      return helpers.d(
-        [
-          { x: 0, y: 0 },
-          { x: s.width, y: 0 },
-          { x: s.width, y: s.height },
-          { x: 0, y: s.height },
-        ],
-        true
-      )
+      return helpers.d([
+        { x: 0, y: helpers.GRAPH_NODE_HEAD_HEIGHT },
+        { x: 0, y: s.height },
+        { x: s.width, y: s.height },
+        { x: s.width, y: helpers.GRAPH_NODE_HEAD_HEIGHT },
+      ])
     })
+
+    const color = computed(
+      () => getGraphNodeModule(props.node.type).struct.color ?? '#eee'
+    )
+    const textColor = computed(
+      () => getGraphNodeModule(props.node.type).struct.textColor ?? '#000'
+    )
 
     const dataPositions = computed(() =>
       helpers.getGraphNodeDataPosition(props.node)
@@ -190,7 +213,10 @@ export default defineComponent({
 
     return {
       GRAPH_NODE_ROW_HEIGHT: helpers.GRAPH_NODE_ROW_HEIGHT,
+      color,
+      textColor,
       size,
+      headOutline,
       outline,
       outlineStroke: computed(() =>
         props.selected ? settings.selectedColor : '#555'

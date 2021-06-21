@@ -17,18 +17,18 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeAddScaler, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { GraphNodeMultiScaler, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeAddScaler> = {
+export const struct: NodeStruct<GraphNodeMultiScaler> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
         inputs: { a: { value: 0 }, b: { value: 0 } },
         ...arg,
       }),
-      type: 'add_scaler',
-    } as GraphNodeAddScaler
+      type: 'multi_scaler',
+    } as GraphNodeMultiScaler
   },
   data: {},
   inputs: {
@@ -39,7 +39,7 @@ export const struct: NodeStruct<GraphNodeAddScaler> = {
     value: GRAPH_VALUE_TYPE.SCALER,
   },
   computation(inputs) {
-    return { value: inputs.a + inputs.b }
+    return { value: inputs.a * inputs.b }
   },
   width: 120,
   color: '#4169e1',

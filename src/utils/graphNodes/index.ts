@@ -1,3 +1,22 @@
+/*
+This file is part of Blendic SVG.
+
+Blendic SVG is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Blendic SVG is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
+
+Copyright (C) 2021, Tomoya Komiyama.
+*/
+
 import {
   GraphNode,
   GraphNodeInputs,
@@ -18,6 +37,7 @@ import * as get_frame from './nodes/getFrame'
 import * as get_object from './nodes/getObject'
 import * as add_scaler from './nodes/addScaler'
 import * as sub_scaler from './nodes/subScaler'
+import * as multi_scaler from './nodes/multiScaler'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -28,6 +48,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
 
   add_scaler,
   sub_scaler,
+  multi_scaler,
 
   set_transform,
   get_object,
@@ -52,6 +73,7 @@ export const NODE_MENU_OPTIONS_SRC: {
     children: [
       { label: '(+) Scaler', type: 'add_scaler' },
       { label: '(-) Scaler', type: 'sub_scaler' },
+      { label: '(x) Scaler', type: 'multi_scaler' },
     ],
   },
   {

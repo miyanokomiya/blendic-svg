@@ -19,4 +19,5 @@ export const struct: NodeStruct<GraphNodeScaler> = {
     return { value: self.data.value }
   },
   width: 120,
+  color: '#f0e68c',
 }

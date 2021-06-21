@@ -7,8 +7,14 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
 >
   <g>
     <path
-      d="M0,0L140,0L140,100L0,100z"
+      d="M0,30L0,90L140,90L140,30"
       fill="#eee"
+      stroke="#555"
+      stroke-width="1"
+    />
+    <path
+      d="M0,30 L0,14 A14,14 0 0 1 14,0 L126,0 A14,14 0 0 1 140,14 L140,30"
+      fill="#f0e68c"
       stroke="#555"
       stroke-width="1"
     />
@@ -122,8 +128,14 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
 >
   <g>
     <path
-      d="M0,0L140,0L140,100L0,100z"
+      d="M0,30L0,90L140,90L140,30"
       fill="#eee"
+      stroke="orange"
+      stroke-width="2"
+    />
+    <path
+      d="M0,30 L0,14 A14,14 0 0 1 14,0 L126,0 A14,14 0 0 1 140,14 L140,30"
+      fill="#f0e68c"
       stroke="orange"
       stroke-width="2"
     />
@@ -170,8 +182,14 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
 >
   <g>
     <path
-      d="M0,0L120,0L120,108L0,108z"
+      d="M0,30L0,98L120,98L120,30"
       fill="#eee"
+      stroke="orange"
+      stroke-width="2"
+    />
+    <path
+      d="M0,30 L0,14 A14,14 0 0 1 14,0 L106,0 A14,14 0 0 1 120,14 L120,30"
+      fill="#f0e68c"
       stroke="orange"
       stroke-width="2"
     />
@@ -203,7 +221,7 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
   >
     
     <g
-      transform="translate(8, 60)"
+      transform="translate(8, 50)"
     >
       <foreignobject
         height="40"

@@ -207,7 +207,7 @@ export function getTargetTopMap(
   }, {})
 }
 
-export const GRAPH_NODE_HEAD_HEIGHT = 40
+export const GRAPH_NODE_HEAD_HEIGHT = 30
 export const GRAPH_NODE_ROW_HEIGHT = 20
 const GRAPH_NODE_ROW_MARGIN = 4
 
@@ -283,7 +283,7 @@ export function getGraphNodeOutputsPosition(node: GraphNode): {
   const { width } = getGraphNodeSize(node)
   return getGraphNodeRowsPosition(Object.keys(module.struct.outputs), {
     x: width,
-    y: GRAPH_NODE_HEAD_HEIGHT,
+    y: GRAPH_NODE_HEAD_HEIGHT + GRAPH_NODE_ROW_HEIGHT / 2,
   })
 }
 

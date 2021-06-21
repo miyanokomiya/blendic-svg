@@ -23,4 +23,5 @@ export const struct: NodeStruct<GraphNodeBreakVector2> = {
     return { x: inputs.vector2.x, y: inputs.vector2.y }
   },
   width: 140,
+  color: '#f0e68c',
 }

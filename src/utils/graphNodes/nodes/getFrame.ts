@@ -18,4 +18,5 @@ export const struct: NodeStruct<GraphNodeGetFrame> = {
     return { frame: context.getFrame() }
   },
   width: 120,
+  color: '#f0e68c',
 }

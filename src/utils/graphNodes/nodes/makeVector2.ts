@@ -23,4 +23,5 @@ export const struct: NodeStruct<GraphNodeMakeVector2> = {
     return { vector2: inputs }
   },
   width: 140,
+  color: '#f0e68c',
 }

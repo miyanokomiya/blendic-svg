@@ -41,7 +41,7 @@ export default defineComponent({
     const { settings } = useSettings()
 
     const pathD = computed(() => {
-      const xD = Math.sqrt(Math.abs(props.from.x - props.to.x)) * 12
+      const xD = Math.sqrt(Math.abs(props.from.x - props.to.x)) * 8
       return `M${props.from.x},${props.from.y} C${props.from.x + xD},${
         props.from.y
       } ${props.to.x - xD},${props.to.y} ${props.to.x},${props.to.y}`

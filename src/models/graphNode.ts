@@ -88,6 +88,7 @@ export interface GraphNodes {
   add_scaler: GraphNodeAddScaler
   sub_scaler: GraphNodeSubScaler
   multi_scaler: GraphNodeMultiScaler
+  divide_scaler: GraphNodeDivideScaler
 }
 export type GraphNodeType = keyof GraphNodes
 export type GraphNode = GraphNodes[GraphNodeType]
@@ -145,5 +146,10 @@ export interface GraphNodeSubScaler extends GraphNodeBase {
 
 export interface GraphNodeMultiScaler extends GraphNodeBase {
   type: 'multi_scaler'
+  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeDivideScaler extends GraphNodeBase {
+  type: 'divide_scaler'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
 }

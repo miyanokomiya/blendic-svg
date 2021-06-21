@@ -5,7 +5,7 @@ exports[`src/components/elements/GraphEdge.vue snapshot initial 1`] = `
   class="view-only"
 >
   <path
-    d="M1,2 C37,2 -26,20 10,20"
+    d="M1,2 C25,2 -14,20 10,20"
     fill="none"
     stroke="#888"
     stroke-width="2.5"
@@ -32,7 +32,7 @@ exports[`src/components/elements/GraphEdge.vue snapshot selected 1`] = `
   class="view-only"
 >
   <path
-    d="M1,2 C37,2 -26,20 10,20"
+    d="M1,2 C25,2 -14,20 10,20"
     fill="none"
     stroke="orange"
     stroke-width="2.5"

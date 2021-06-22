@@ -28,15 +28,20 @@ import {
   getActor,
   BElement,
   getBElement,
+  AnimationGraph,
+  getAnimationGraph,
 } from '../models'
+import { GraphNode } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
 import { getConstraint } from '/@/utils/constraints'
+import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { migrateConstraint, migrateKeyframe } from '/@/utils/migrations'
 
 export interface StorageRoot {
   armatures: Armature[]
   actions: Action[]
   actors: Actor[]
+  graphs: AnimationGraph[]
 }
 
 export function initialize(src: StorageRoot): StorageRoot {
@@ -44,6 +49,7 @@ export function initialize(src: StorageRoot): StorageRoot {
     armatures: src.armatures.map(initializeArmature),
     actions: src.actions.map(initializeAction),
     actors: src.actors.map(initializeActor),
+    graphs: src.graphs?.map(initializeGraph) ?? [],
   }
 }
 
@@ -92,4 +98,23 @@ function initializeActor(actor: Partial<Actor>): Actor {
 
 function initializeElement(elm: BElement): BElement {
   return getBElement(elm)
+}
+
+function initializeGraph(graph: AnimationGraph): AnimationGraph {
+  const g = getAnimationGraph(graph)
+  return {
+    ...g,
+    nodes: g.nodes.map(initializeGraphNode),
+  }
+}
+
+export function initializeGraphNode(node: GraphNode): GraphNode {
+  const module = getGraphNodeModule(node.type)
+  const model = module.struct.create()
+  return {
+    ...model,
+    ...node,
+    inputs: { ...model.inputs, ...node.inputs },
+    data: { ...model.data, ...node.data },
+  } as GraphNode
 }

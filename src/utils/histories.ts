@@ -18,7 +18,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { HistoryItem } from '/@/composables/stores/history'
-import { IdMap } from '/@/models'
+import { IdMap, toMap } from '/@/models'
+import { dropMap, extractMap, toList } from '/@/utils/commons'
 
 export function convolute(
   head: HistoryItem,
@@ -66,4 +67,81 @@ export function hasSameSeriesKey<T extends { seriesKey?: string }>(
   b: T
 ): boolean {
   return a.seriesKey !== undefined && a.seriesKey === b.seriesKey
+}
+
+export interface ListItemAccessor<T> {
+  get: () => T[]
+  set: (val: T[]) => void
+}
+
+export interface SelectedItemAccessor {
+  get: () => IdMap<boolean>
+  set: (val: IdMap<boolean>) => void
+}
+
+export interface LastSelectedItemIdAccessor {
+  get: () => string
+  set: (val: string) => void
+}
+
+export function getAddItemHistory<T extends { id: string }>(
+  nodeAccessor: ListItemAccessor<T>,
+  val: T
+): HistoryItem {
+  return {
+    name: 'Add Item',
+    undo: () => {
+      nodeAccessor.set(nodeAccessor.get().filter((n) => n.id !== val.id))
+    },
+    redo: () => {
+      nodeAccessor.set([...nodeAccessor.get(), val])
+    },
+  }
+}
+
+export function getSelectItemHistory(
+  selectedNodesAccessor: SelectedItemAccessor,
+  lastSelectedNodeAccessor: LastSelectedItemIdAccessor,
+  id: string
+): HistoryItem {
+  const currentSelected = selectedNodesAccessor.get()
+  const currentLast = lastSelectedNodeAccessor.get()
+
+  return {
+    name: 'Select Item',
+    undo: () => {
+      selectedNodesAccessor.set(currentSelected)
+      lastSelectedNodeAccessor.set(currentLast)
+    },
+    redo: () => {
+      if (id) {
+        selectedNodesAccessor.set({ [id]: true })
+        lastSelectedNodeAccessor.set(id)
+      } else {
+        selectedNodesAccessor.set({})
+        lastSelectedNodeAccessor.set('')
+      }
+    },
+  }
+}
+
+export function getDeleteItemHistory<T extends { id: string }>(
+  nodeAccessor: ListItemAccessor<T>,
+  targetIds: IdMap<unknown>
+): HistoryItem {
+  const deletedMap = extractMap(toMap(nodeAccessor.get()), targetIds)
+  return {
+    name: 'Delete Item',
+    undo: () => {
+      nodeAccessor.set(
+        toList({
+          ...toMap(nodeAccessor.get()),
+          ...deletedMap,
+        })
+      )
+    },
+    redo: () => {
+      nodeAccessor.set(toList(dropMap(toMap(nodeAccessor.get()), targetIds)))
+    },
+  }
 }

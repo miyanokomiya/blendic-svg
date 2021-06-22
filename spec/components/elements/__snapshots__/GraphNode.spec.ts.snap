@@ -1,0 +1,233 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
+<g
+  title="make_vector2"
+  transform="translate(0, 0)"
+>
+  <g>
+    <path
+      d="M0,30 L0,98 A8,8 0 0 0 8,106 L132,106 A8,8 0 0 0 140,98 L140,30"
+      fill="#fafafa"
+      stroke="#555"
+      stroke-width="1"
+    />
+    <path
+      d="M0,30 L0,14 A14,14 0 0 1 14,0 L126,0 A14,14 0 0 1 140,14 L140,30"
+      fill="#f0e68c"
+      stroke="#555"
+      stroke-width="1"
+    />
+  </g>
+  <g>
+    <text
+      class="view-only"
+      dominant-baseline="text-before-edge"
+      fill="#000"
+      font-size="16"
+      x="8"
+      y="3"
+    >
+      make_vector2
+    </text>
+  </g>
+  <g>
+    
+    <g
+      transform="translate(1, 2)"
+    >
+      <g>
+        <rect
+          fill="transparent"
+          height="20"
+          stroke="none"
+          width="30"
+          x="-30"
+          y="-10"
+        />
+        <text
+          class="view-only"
+          dominant-baseline="middle"
+          fill="#000"
+          font-size="14"
+          text-anchor="end"
+          x="-10"
+        >
+          value
+        </text>
+        <circle
+          fill="transparent"
+          r="8"
+          stroke="none"
+        />
+      </g>
+      <circle
+        class="view-only"
+        fill="#333"
+        r="5"
+        stroke="none"
+      />
+    </g>
+    
+  </g>
+  <g
+    class="view-only"
+  >
+    
+    
+  </g>
+  <g>
+    
+    <g
+      transform="translate(1, 2)"
+    >
+      <g>
+        <rect
+          fill="transparent"
+          height="20"
+          stroke="none"
+          width="30"
+          y="-10"
+        />
+        <text
+          dominant-baseline="middle"
+          fill="#000"
+          font-size="14"
+          x="10"
+        >
+          x
+        </text>
+        <circle
+          fill="transparent"
+          r="8"
+          stroke="none"
+        />
+      </g>
+      <circle
+        class="view-only"
+        fill="#333"
+        r="5"
+        stroke="none"
+      />
+    </g>
+    
+  </g>
+</g>
+`;
+
+exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
+<g
+  title="make_vector2"
+  transform="translate(0, 0)"
+>
+  <g>
+    <path
+      d="M0,30 L0,98 A8,8 0 0 0 8,106 L132,106 A8,8 0 0 0 140,98 L140,30"
+      fill="#fafafa"
+      stroke="orange"
+      stroke-width="2"
+    />
+    <path
+      d="M0,30 L0,14 A14,14 0 0 1 14,0 L126,0 A14,14 0 0 1 140,14 L140,30"
+      fill="#f0e68c"
+      stroke="orange"
+      stroke-width="2"
+    />
+  </g>
+  <g>
+    <text
+      class="view-only"
+      dominant-baseline="text-before-edge"
+      fill="#000"
+      font-size="16"
+      x="8"
+      y="3"
+    >
+      make_vector2
+    </text>
+  </g>
+  <g>
+    
+    
+  </g>
+  <g
+    class="view-only"
+  >
+    
+    
+  </g>
+  <g>
+    
+    
+  </g>
+</g>
+`;
+
+exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
+<g
+  title="scaler"
+  transform="translate(0, 0)"
+>
+  <g>
+    <path
+      d="M0,30 L0,100 A8,8 0 0 0 8,108 L112,108 A8,8 0 0 0 120,100 L120,30"
+      fill="#fafafa"
+      stroke="orange"
+      stroke-width="2"
+    />
+    <path
+      d="M0,30 L0,14 A14,14 0 0 1 14,0 L106,0 A14,14 0 0 1 120,14 L120,30"
+      fill="#f0e68c"
+      stroke="orange"
+      stroke-width="2"
+    />
+  </g>
+  <g>
+    <text
+      class="view-only"
+      dominant-baseline="text-before-edge"
+      fill="#000"
+      font-size="16"
+      x="8"
+      y="3"
+    >
+      scaler
+    </text>
+  </g>
+  <g>
+    
+    
+  </g>
+  <g
+    class="view-only"
+  >
+    
+    <g
+      transform="translate(8, 60)"
+    >
+      <foreignobject
+        height="40"
+        width="100"
+      >
+        <!-- FIXME: forms are readonly because those in foreignObject do not work well -->
+        <div
+          class="field"
+          xmlns="http://www.w3.org/1999/xhtml"
+        >
+          <h5>
+            value
+          </h5>
+          <p>
+            0
+          </p>
+        </div>
+      </foreignobject>
+    </g>
+    
+  </g>
+  <g>
+    
+    
+  </g>
+</g>
+`;

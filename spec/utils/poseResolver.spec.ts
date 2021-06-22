@@ -25,7 +25,14 @@ import {
   multiAffine,
   multiAffines,
 } from 'okageo'
-import { getBElement, getBone, getElementNode, getTransform } from '/@/models'
+import {
+  ElementNode,
+  getBElement,
+  getBone,
+  getElementNode,
+  getGraphObject,
+  getTransform,
+} from '/@/models'
 import {
   getKeyframeBone,
   getKeyframeConstraint,
@@ -41,6 +48,8 @@ import { getConstraint } from '/@/utils/constraints'
 import {
   bakeKeyframe,
   bakeKeyframes,
+  getClonedElementsTree,
+  getGraphResolvedElementTree,
   getInterpolatedBoneMap,
   getNativeDeformMatrix,
   getPoseDeformMatrix,
@@ -311,6 +320,93 @@ describe('utils/poseResolver.ts', () => {
             ' '
           )
         ).toMatchSnapshot()
+      })
+    })
+  })
+
+  describe('getGraphResolvedElementTree', () => {
+    it('should resolve transformations of graph objects', () => {
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({
+            elementId: 'a',
+            transform: getTransform({ translate: { x: 1, y: 2 } }),
+          }),
+        },
+        getElementNode({ id: 'a' })
+      )
+      expect(ret.attributes).toEqual({
+        transform: 'matrix(1,0,0,1,1,2)',
+      })
+    })
+    it('should resolve recursively', () => {
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({
+            elementId: 'a',
+            transform: getTransform({ translate: { x: 1, y: 2 } }),
+          }),
+          b: getGraphObject({
+            elementId: 'b',
+            transform: getTransform({ translate: { x: 10, y: 20 } }),
+          }),
+        },
+        getElementNode({ id: 'a', children: [getElementNode({ id: 'b' })] })
+      )
+      expect(ret.attributes.transform).toBe('matrix(1,0,0,1,1,2)')
+      expect((ret.children[0] as ElementNode).attributes.transform).toBe(
+        'matrix(1,0,0,1,10,20)'
+      )
+    })
+  })
+
+  describe('getClonedElementsTree', () => {
+    it('should clone target elements', () => {
+      const ret = getClonedElementsTree(
+        {
+          a: getGraphObject({
+            id: 'a',
+            elementId: 'a',
+          }),
+          b: getGraphObject({
+            id: 'b',
+            elementId: 'a',
+            clone: true,
+          }),
+        },
+        getElementNode({ id: 'a', tag: 'rect' })
+      )
+      expect(ret).toEqual({
+        id: 'blendic_group_a',
+        tag: 'g',
+        attributes: { 'data-blendic-use-id': 'a' },
+        children: [
+          {
+            id: '',
+            tag: 'template',
+            attributes: {},
+            children: [
+              {
+                id: 'a',
+                tag: 'rect',
+                attributes: {},
+                children: [],
+              },
+            ],
+          },
+          {
+            id: 'clone_a',
+            tag: 'use',
+            attributes: { href: '#a' },
+            children: [],
+          },
+          {
+            id: 'clone_b',
+            tag: 'use',
+            attributes: { href: '#a' },
+            children: [],
+          },
+        ],
       })
     })
   })

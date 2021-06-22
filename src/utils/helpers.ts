@@ -17,9 +17,13 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IVec2, IRectangle, isZero } from 'okageo'
+import { IVec2, IRectangle, isZero, add } from 'okageo'
+import { Size } from 'okanvas'
 import { IdMap, Bone, ElementNodeAttributes, Transform } from '../models/index'
+import { GraphNode, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { BoneConstraint } from '/@/utils/constraints'
+import { getGraphNodeModule } from '/@/utils/graphNodes'
+import { NodeStruct } from '/@/utils/graphNodes/core'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
   if (scale.x === 1 && scale.y === 1) return ''
@@ -201,4 +205,118 @@ export function getTargetTopMap(
           : 1)
     return p
   }, {})
+}
+
+export const GRAPH_NODE_HEAD_HEIGHT = 30
+export const GRAPH_NODE_ROW_HEIGHT = 20
+
+export function getGraphNodeSize(node: GraphNode): Size {
+  const dataHeight = getGraphNodeDataHeight(node)
+  const inputsHeight = getGraphNodeInputsHeight(node)
+  const outputsHeight = getGraphNodeOutputsHeight(node)
+
+  return {
+    width: getGraphNodeWidth(node),
+    height: GRAPH_NODE_HEAD_HEIGHT + outputsHeight + dataHeight + inputsHeight,
+  }
+}
+
+function getGraphNodeDataHeight(node: GraphNode): number {
+  const module = getGraphNodeModule(node.type)
+  const values = Object.values(module.struct.data)
+  return values.length === 0
+    ? 0
+    : values.reduce<number>((p, d) => {
+        return p + getGraphNodeDataUnitHeight((d as any).type)
+      }, 0)
+}
+
+function getGraphNodeWidth(node: GraphNode): number {
+  const module = getGraphNodeModule(node.type)
+  return module.struct.width
+}
+
+function getGraphNodeInputsHeight(node: GraphNode): number {
+  const module = getGraphNodeModule(node.type)
+  const length = Object.keys(module.struct.inputs).length
+  return length === 0
+    ? 0
+    : GRAPH_NODE_ROW_HEIGHT * (0.3 + Object.keys(module.struct.inputs).length)
+}
+
+function getGraphNodeOutputsHeight(node: GraphNode): number {
+  const module = getGraphNodeModule(node.type)
+  const length = Object.keys(module.struct.outputs).length
+  return length === 0
+    ? 0
+    : GRAPH_NODE_ROW_HEIGHT * (0.5 + Object.keys(module.struct.outputs).length)
+}
+
+export function getGraphNodeDataPosition(node: GraphNode): {
+  [key in keyof NodeStruct<GraphNode>['data']]?: IVec2
+} {
+  const outputsHeight = getGraphNodeOutputsHeight(node)
+  const module = getGraphNodeModule(node.type)
+  let current = GRAPH_NODE_HEAD_HEIGHT + outputsHeight
+
+  return Object.entries(module.struct.data).reduce<{
+    [key: string]: IVec2
+  }>((p, [key, d]) => {
+    p[key] = { x: 8, y: current }
+    current = current + getGraphNodeDataUnitHeight((d as any).type)
+    return p
+  }, {})
+}
+
+export function getGraphNodeInputsPosition(node: GraphNode): {
+  [key: string]: IVec2
+} {
+  const dataHeight = getGraphNodeDataHeight(node)
+  const outputsHeight = getGraphNodeOutputsHeight(node)
+  const module = getGraphNodeModule(node.type)
+  return getGraphNodeRowsPosition(Object.keys(module.struct.inputs), {
+    x: 0,
+    y:
+      GRAPH_NODE_HEAD_HEIGHT +
+      outputsHeight +
+      dataHeight +
+      GRAPH_NODE_ROW_HEIGHT / 2,
+  })
+}
+
+export function getGraphNodeOutputsPosition(node: GraphNode): {
+  [key: string]: IVec2
+} {
+  const module = getGraphNodeModule(node.type)
+  const { width } = getGraphNodeSize(node)
+  return getGraphNodeRowsPosition(Object.keys(module.struct.outputs), {
+    x: width,
+    y: GRAPH_NODE_HEAD_HEIGHT + (GRAPH_NODE_ROW_HEIGHT * 2) / 3,
+  })
+}
+
+function getGraphNodeRowsPosition(
+  keys: string[],
+  margin: IVec2 = { x: 0, y: 0 }
+): {
+  [key: string]: IVec2
+} {
+  return keys.reduce<{ [key: string]: IVec2 }>((p, key, i) => {
+    p[key] = add(margin, {
+      x: 0,
+      y: GRAPH_NODE_ROW_HEIGHT * i,
+    })
+    return p
+  }, {})
+}
+
+function getGraphNodeDataUnitHeight(
+  type: keyof typeof GRAPH_VALUE_TYPE
+): number {
+  switch (type) {
+    case 'SCALER':
+      return 48
+    default:
+      return 48
+  }
 }

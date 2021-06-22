@@ -82,6 +82,7 @@ export function boneToAffine(bone: Bone): AffineMatrix {
     [1, 0, 0, 1, origin.x, origin.y],
     [cos, sin, -sin, cos, 0, 0],
     [boneCos, boneSin, -boneSin, boneCos, 0, 0],
+    // this rotation is correct for bone's posing space
     [bone.transform.scale.y, 0, 0, bone.transform.scale.x, 0, 0],
     [boneCos, -boneSin, boneSin, boneCos, 0, 0],
     [1, 0, 0, 1, -origin.x, -origin.y],

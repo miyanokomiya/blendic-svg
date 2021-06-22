@@ -10,22 +10,28 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot default 1`] = `
       <button
         data-test-id="item1"
       >
-        item1
+        item1 
+        <!--v-if-->
       </button>
+      <!--v-if-->
     </li>
     <li>
       <button
         data-test-id="item2"
       >
-        item2
+        item2 
+        <!--v-if-->
       </button>
+      <!--v-if-->
     </li>
     <li>
       <button
         data-test-id="item3"
       >
-        item3
+        item3 
+        <!--v-if-->
       </button>
+      <!--v-if-->
     </li>
     
   </ul>
@@ -43,22 +49,110 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot focused item 1`] = 
       <button
         data-test-id="item1"
       >
-        item1
+        item1 
+        <!--v-if-->
       </button>
+      <!--v-if-->
     </li>
     <li>
       <button
         data-test-id="item2"
       >
-        item2
+        item2 
+        <!--v-if-->
       </button>
+      <!--v-if-->
     </li>
     <li>
       <button
         data-test-id="item3"
       >
-        item3
+        item3 
+        <!--v-if-->
       </button>
+      <!--v-if-->
+    </li>
+    
+  </ul>
+</div>
+`;
+
+exports[`src/components/molecules/PopupMenuList.vue snapshot with children 1`] = `
+<div
+  class="popup-menu-list-wrapper"
+>
+  <ul>
+    
+    <li>
+      <button
+        data-test-id="item1"
+      >
+        item1 
+        <!--v-if-->
+      </button>
+      <!--v-if-->
+    </li>
+    <li>
+      <button
+        data-test-id="item2"
+      >
+        item2 
+        <!--v-if-->
+      </button>
+      <!--v-if-->
+    </li>
+    <li>
+      <button
+        data-test-id="item3"
+      >
+        item3 
+        <svg
+          class="right-arrow"
+          transform="rotate(90) scale(1, 1)"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="#888"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2 7L8 7L5 2z"
+            fill="#fff"
+            stroke="none"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <div
+        class="popup-menu-list-wrapper children"
+        style="top: 51px;"
+      >
+        <ul>
+          
+          <li>
+            <button
+              data-test-id="child1"
+            >
+              child1 
+              <!--v-if-->
+            </button>
+            <!--v-if-->
+          </li>
+          <li>
+            <button
+              data-test-id="child2"
+            >
+              child2 
+              <!--v-if-->
+            </button>
+            <!--v-if-->
+          </li>
+          
+        </ul>
+      </div>
     </li>
     
   </ul>

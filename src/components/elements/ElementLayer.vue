@@ -44,10 +44,17 @@ import { computed, defineComponent, PropType, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
 import { Bone, ElementNode, IdMap, toMap } from '/@/models'
-import { getPosedElementTree } from '/@/utils/poseResolver'
-import { parseViewBoxFromStr } from '/@/utils/elements'
+import {
+  getGraphResolvedElementTree,
+  getPosedElementTree,
+} from '/@/utils/poseResolver'
+import { parseViewBoxFromStr, resolveAnimationGraph } from '/@/utils/elements'
 import { useSettings } from '/@/composables/settings'
 import type { CanvasMode, SelectOptions } from '/@/composables/modes/types'
+import { useAnimationStore } from '/@/store/animation'
+import { useAnimationGraphStore } from '/@/store/animationGraph'
+import { useCanvasStore } from '/@/store/canvas'
+import { useStore } from '/@/store'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -67,7 +74,11 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const store = useStore()
+    const animationStore = useAnimationStore()
+    const graphStore = useAnimationGraphStore()
     const elementStore = useElementStore()
+    const canvasStore = useCanvasStore()
     const { settings } = useSettings()
 
     const selectedMap = computed(() => {
@@ -82,6 +93,19 @@ export default defineComponent({
       return props.boneMap
     })
 
+    const graphEnabled = computed(() => {
+      if (!store.lastSelectedArmature.value) return false
+      if (!elementStore.lastSelectedActor.value) return false
+      if (!graphStore.lastSelectedGraph.value) return false
+      if (canvasStore.state.canvasMode === 'edit') return false
+
+      const id = store.lastSelectedArmature.value.id
+      return (
+        id === elementStore.lastSelectedActor.value.armatureId &&
+        id === graphStore.lastSelectedGraph.value.armatureId
+      )
+    })
+
     const posedElementRoot = computed(() => {
       if (!elementStore.lastSelectedActor.value) return
       return getPosedElementTree(
@@ -91,10 +115,31 @@ export default defineComponent({
       )
     })
 
-    const viewBox = computed(() => {
+    const graphResolvedElement = computed(() => {
       if (!posedElementRoot.value) return
+      if (!graphEnabled.value) return posedElementRoot.value
 
-      return parseViewBoxFromStr(posedElementRoot.value.attributes.viewBox)
+      // TODO: for develop try-catch
+      try {
+        const graphObjectMap = resolveAnimationGraph(
+          elementStore.elementMap.value,
+          animationStore.currentFrame.value,
+          graphStore.nodeMap.value
+        )
+        return getGraphResolvedElementTree(
+          graphObjectMap,
+          posedElementRoot.value
+        )
+      } catch (e) {
+        console.warn(e)
+        return posedElementRoot.value
+      }
+    })
+
+    const viewBox = computed(() => {
+      if (!graphResolvedElement.value) return
+
+      return parseViewBoxFromStr(graphResolvedElement.value.attributes.viewBox)
     })
 
     function clickElement(id: string, options?: SelectOptions) {
@@ -104,7 +149,7 @@ export default defineComponent({
     provide('onClickElement', clickElement)
 
     return {
-      elementRoot: posedElementRoot,
+      elementRoot: graphResolvedElement,
       getId,
       viewBox,
       settings,

@@ -28,9 +28,15 @@ import {
   getKeyframeMapByTargetId,
   getLastFrame,
 } from '../utils/animations'
-import { cleanActors, inheritWeight, parseFromSvg } from '../utils/elements'
+import {
+  cleanActors,
+  cleanGraphs,
+  inheritWeight,
+  parseFromSvg,
+} from '../utils/elements'
 import { bakeKeyframes, getPosedElementTree } from '../utils/poseResolver'
 import { initialize, StorageRoot } from '/@/models/storage'
+import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { makeSvg } from '/@/utils/svgMaker'
 
 interface BakedData {
@@ -54,12 +60,14 @@ export function useStorage() {
   const historyStore = useHistoryStore()
   const canvasStore = useCanvasStore()
   const elementStore = useElementStore()
+  const graphStore = useAnimationGraphStore()
 
   function serialize(): string {
     const armatures = store.state.armatures
     const actions = cleanActions(animationStore.actions.value, armatures)
     const actors = cleanActors(elementStore.actors.value, armatures)
-    const root: StorageRoot = { armatures, actions, actors }
+    const graphs = cleanGraphs(graphStore.graphList.value)
+    const root: StorageRoot = { armatures, actions, actors, graphs }
     return JSON.stringify(root)
   }
   function deserialize(src: string) {
@@ -70,6 +78,7 @@ export function useStorage() {
       store.initState(root.armatures)
       animationStore.initState(root.actions)
       elementStore.initState(root.actors)
+      graphStore.initState(root.graphs)
     } catch (e) {
       alert('Failed to load: Invalid file.')
     }

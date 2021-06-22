@@ -33,6 +33,29 @@ Copyright (C) 2021, Tomoya Komiyama.
           />
         </InlineField>
       </template>
+      <template v-if="hasInput">
+        <h5>Inputs</h5>
+        <template v-for="(input, key) in inputsMap" :key="key">
+          <InlineField :label-width="labelWidth">
+            <GraphNodeDataField
+              v-if="input.disabled"
+              :label="key"
+              :type="input.type"
+              model-value="connected"
+              disabled
+            />
+            <GraphNodeDataField
+              v-else
+              :label="key"
+              :type="input.type"
+              :model-value="input.value"
+              @update:modelValue="
+                (val, seriesKey) => updateInput(key, val, seriesKey)
+              "
+            />
+          </InlineField>
+        </template>
+      </template>
     </form>
   </div>
   <div v-else>
@@ -48,6 +71,12 @@ import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { mapReduce } from '/@/utils/commons'
 import GraphNodeDataField from '/@/components/atoms/GraphNodeDataField.vue'
 
+interface DataInfo {
+  type: string
+  value: unknown
+  disabled?: boolean
+}
+
 export default defineComponent({
   components: {
     InlineField,
@@ -57,7 +86,9 @@ export default defineComponent({
     const graphStore = useAnimationGraphStore()
     const targetNode = graphStore.lastSelectedNode
 
-    const dataMap = computed(() => {
+    const dataMap = computed<{
+      [key: string]: DataInfo
+    }>(() => {
       if (!targetNode.value) return {}
 
       const dataStruct = getGraphNodeModule(targetNode.value.type).struct.data
@@ -78,11 +109,41 @@ export default defineComponent({
       )
     }
 
+    const inputsMap = computed<{
+      [key: string]: DataInfo
+    }>(() => {
+      if (!targetNode.value) return {}
+
+      const inputsStruct = getGraphNodeModule(targetNode.value.type).struct
+        .inputs
+      const inputs = targetNode.value.inputs
+      return mapReduce(inputs, (value, key) => {
+        return {
+          type: (inputsStruct as any)[key].type as string,
+          value: value.value,
+          disabled: !!value.from,
+        }
+      })
+    })
+    function updateInput(key: string, value: any, seriesKey?: string) {
+      if (!targetNode.value) return
+
+      graphStore.updateNode(
+        targetNode.value.id,
+        { inputs: { ...targetNode.value.inputs, [key]: { value } } },
+        seriesKey
+      )
+    }
+    const hasInput = computed(() => Object.keys(inputsMap.value).length > 0)
+
     return {
       labelWidth: '20px',
       targetNode,
       dataMap,
       updateData,
+      inputsMap,
+      updateInput,
+      hasInput,
     }
   },
 })

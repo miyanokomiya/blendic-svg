@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/atoms/GraphNodeDataField.vue'
+import { getTransform } from '/@/models'
 import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 
 describe('src/components/atoms/GraphNodeDataField.vue', () => {
@@ -39,6 +40,37 @@ describe('src/components/atoms/GraphNodeDataField.vue', () => {
           modelValue: 123,
           label: 'value',
           type: GRAPH_VALUE_TYPE.OBJECT,
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('VECTOR2', () => {
+      const wrapper = mount(Target, {
+        props: {
+          modelValue: { x: 1, y: 2 },
+          label: 'value',
+          type: GRAPH_VALUE_TYPE.VECTOR2,
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('incompatible types', () => {
+      const wrapper = mount(Target, {
+        props: {
+          modelValue: getTransform(),
+          label: 'value',
+          type: GRAPH_VALUE_TYPE.TRANSFORM,
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('disabled', () => {
+      const wrapper = mount(Target, {
+        props: {
+          modelValue: 'connected',
+          label: 'value',
+          type: GRAPH_VALUE_TYPE.VECTOR2,
+          disabled: true,
         },
       })
       expect(wrapper.element).toMatchSnapshot()

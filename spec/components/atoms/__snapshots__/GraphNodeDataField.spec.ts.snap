@@ -5,6 +5,7 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot OBJECT 1`] = `
   <h5>
     value
   </h5>
+  
   <span
     class="select-root"
   >
@@ -18,6 +19,7 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot OBJECT 1`] = `
       
     </select>
   </span>
+  
 </div>
 `;
 
@@ -26,6 +28,7 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER 1`] = `
   <h5>
     value
   </h5>
+  
   <div
     class="slider-wrapper"
   >
@@ -40,5 +43,99 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER 1`] = `
       class="slider-forward"
     />
   </div>
+  
 </div>
 `;
+
+exports[`src/components/atoms/GraphNodeDataField.vue snapshot VECTOR2 1`] = `
+<div>
+  <h5>
+    value
+  </h5>
+  
+  
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 20px;"
+    >
+      x
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 20px;"
+    >
+      y
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  
+  
+</div>
+`;
+
+exports[`src/components/atoms/GraphNodeDataField.vue snapshot disabled 1`] = `
+<div>
+  <h5>
+    value
+  </h5>
+  <div
+    class="input-wrapper"
+  >
+    <input
+      disabled=""
+      type="text"
+    />
+    <!--v-if-->
+  </div>
+</div>
+`;
+
+exports[`src/components/atoms/GraphNodeDataField.vue snapshot incompatible types 1`] = `<!--v-if-->`;

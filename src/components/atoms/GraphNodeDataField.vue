@@ -18,32 +18,63 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div>
+  <div v-if="editableTypes[type]">
     <h5>{{ label }}</h5>
-    <SliderInput
-      v-if="type === 'SCALER'"
-      :model-value="modelValue"
-      @update:modelValue="update"
-    />
-    <SelectField
-      v-else-if="type === 'OBJECT'"
-      :model-value="modelValue"
-      :options="objectOptions"
-      @update:modelValue="update"
-    />
+    <TextInput v-if="disabled" :model-value="modelValue" disabled />
+    <template v-else>
+      <SliderInput
+        v-if="type === 'SCALER'"
+        :model-value="modelValue"
+        @update:modelValue="update"
+      />
+      <SelectField
+        v-else-if="type === 'OBJECT'"
+        :model-value="modelValue"
+        :options="objectOptions"
+        @update:modelValue="update"
+      />
+      <template v-else-if="type === 'VECTOR2'">
+        <InlineField label="x" label-width="20px">
+          <SliderInput
+            :model-value="modelValue.x"
+            @update:modelValue="
+              (val, seriesKey) => update({ x: val, y: modelValue.y }, seriesKey)
+            "
+          />
+        </InlineField>
+        <InlineField label="y" label-width="20px">
+          <SliderInput
+            :model-value="modelValue.y"
+            @update:modelValue="
+              (val, seriesKey) => update({ x: modelValue.x, y: val }, seriesKey)
+            "
+          />
+        </InlineField>
+      </template>
+    </template>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType, computed, inject } from 'vue'
 import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import TextInput from '/@/components/atoms/TextInput.vue'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
+
+const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
+  [GRAPH_VALUE_TYPE.SCALER]: true,
+  [GRAPH_VALUE_TYPE.VECTOR2]: true,
+  [GRAPH_VALUE_TYPE.OBJECT]: true,
+}
 
 export default defineComponent({
   components: {
+    TextInput,
     SliderInput,
     SelectField,
+    InlineField,
   },
   props: {
     modelValue: { type: null, required: true },
@@ -52,6 +83,7 @@ export default defineComponent({
       type: String as PropType<keyof typeof GRAPH_VALUE_TYPE>,
       required: true,
     },
+    disabled: { type: Boolean, default: false },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
@@ -62,6 +94,7 @@ export default defineComponent({
     const objectOptions = computed(inject('getObjectOptions', () => []))
 
     return {
+      editableTypes,
       update,
       objectOptions,
     }

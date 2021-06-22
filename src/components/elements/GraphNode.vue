@@ -251,8 +251,9 @@ export default defineComponent({
           from: { nodeId: props.node.id, key },
           to: add(props.node.position, props.edgePositions.outputs[key]),
         }),
-      upFromEdge: (key: string) =>
-        emit('up-edge', { nodeId: props.node.id, type: 'input', key }),
+      upFromEdge: (key: string) => {
+        emit('up-edge', { nodeId: props.node.id, type: 'input', key })
+      },
       upToEdge: (key: string) =>
         emit('up-edge', { nodeId: props.node.id, type: 'output', key }),
       updateData,

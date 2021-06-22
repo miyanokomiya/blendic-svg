@@ -83,7 +83,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { defineComponent, watchEffect, computed, ref, provide } from 'vue'
 import { useCanvas } from '/@/composables/canvas'
-import { useAnimationGraphMode } from '/@/composables/modes/animationGraphMode'
+import {
+  ClosestEdgeInfo,
+  DraftGraphEdge,
+  useAnimationGraphMode,
+} from '/@/composables/modes/animationGraphMode'
 import { useStore } from '/@/store'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import AnimationGraphCanvas from '/@/components/AnimationGraphCanvas.vue'
@@ -265,6 +269,14 @@ export default defineComponent({
       graphStore.updateNode(id, { ...node, data }, seriesKey)
     }
 
+    function downNodeEdge(draftGraphEdge: DraftGraphEdge) {
+      mode.downNodeEdge(draftGraphEdge)
+    }
+
+    function upNodeEdge(closestEdgeInfo: ClosestEdgeInfo) {
+      mode.upNodeEdge(closestEdgeInfo)
+    }
+
     provide('getObjectOptions', () => {
       if (!currentGraph.value) return []
 
@@ -302,8 +314,8 @@ export default defineComponent({
       selectedNodes,
       selectNode,
       downNodeBody,
-      downNodeEdge: mode.downNodeEdge,
-      upNodeEdge: mode.upNodeEdge,
+      downNodeEdge,
+      upNodeEdge,
       updateNodeData,
     }
   },

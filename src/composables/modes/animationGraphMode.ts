@@ -43,7 +43,7 @@ import {
 
 export type EditMode = '' | 'grab' | 'add' | 'drag-node' | 'drag-edge'
 
-type DraftGraphEdge =
+export type DraftGraphEdge =
   | {
       type: 'draft-to'
       from: GraphEdgeConnection
@@ -54,6 +54,12 @@ type DraftGraphEdge =
       from: IVec2
       to: GraphEdgeConnection
     }
+
+export interface ClosestEdgeInfo {
+  nodeId: string
+  type: 'input' | 'output'
+  key: string
+}
 
 interface EdgeInfo {
   nodeId: string
@@ -449,11 +455,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     state.command = 'drag-edge'
   }
 
-  function upNodeEdge(closestEdgeInfo: {
-    nodeId: string
-    type: 'input' | 'output'
-    key: string
-  }) {
+  function upNodeEdge(closestEdgeInfo: ClosestEdgeInfo) {
     if (state.command === 'drag-edge') {
       state.closestEdgeInfo = closestEdgeInfo
     }

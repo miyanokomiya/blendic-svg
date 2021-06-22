@@ -114,21 +114,21 @@ function selectAllNode() {
 }
 
 function updateArmatureId(id: string) {
-  if (!lastSelectedNode.value) return
+  if (!lastSelectedGraph.value) return
 
   const item = getUpdateArmatureIdItem(id)
   historyStore.push(item, true)
 }
 
 function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
-  if (!lastSelectedNode.value) return
+  if (!lastSelectedGraph.value) return
 
   const item = getUpdateNodesItem({ [id]: val }, seriesKey)
   historyStore.push(item, true)
 }
 
 function updateNodes(val: IdMap<Partial<GraphNode>>) {
-  if (!lastSelectedNode.value) return
+  if (!lastSelectedGraph.value) return
 
   const item = getUpdateNodesItem(val)
   historyStore.push(item, true)

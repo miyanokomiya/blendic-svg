@@ -334,39 +334,47 @@ export function getClonedElementsTree(
 ): ElementNode {
   const clonedObjects = Object.values(graphObjectMap).filter((o) => o.clone)
   const attributesMap: IdMap<ElementNodeAttributes> = {}
-  const useTree = convertUseTree(clonedObjects, svgTree, attributesMap)
-  return insertClonedElementTree(clonedObjects, useTree, attributesMap)
+  const { tree, clonedElementIds } = convertUseTree(
+    clonedObjects,
+    svgTree,
+    attributesMap
+  )
+  // gather all nodes having refs to cloned elements
+  const useObjects = Object.keys(clonedElementIds)
+    .map((id) => graphObjectMap[id])
+    .concat(clonedObjects)
+  return insertClonedElementTree(useObjects, tree, attributesMap)
 }
 
 function insertClonedElementTree(
-  clonedObjects: GraphObject[],
+  useObjects: GraphObject[],
   svgTree: ElementNode,
   attributesMap: IdMap<ElementNodeAttributes>
 ): ElementNode {
-  const clonedObjectMapByElementId = clonedObjects.reduce<IdMap<GraphObject[]>>(
+  const useObjectMapByElementId = useObjects.reduce<IdMap<GraphObject[]>>(
     (p, o) => {
       p[o.elementId] = p[o.elementId] ? [...p[o.elementId], o] : [o]
       return p
     },
     {}
   )
-  return insertClonedElement(clonedObjectMapByElementId, svgTree, attributesMap)
+  return insertClonedElement(useObjectMapByElementId, svgTree, attributesMap)
 }
 
 const DATA_CLONE_ID_KEY = 'data-blendic-use-id'
 
 function insertClonedElement(
-  clonedObjectMapByElementId: IdMap<GraphObject[]>,
+  useObjectMapByElementId: IdMap<GraphObject[]>,
   node: ElementNode,
   attributesMap: IdMap<ElementNodeAttributes>
 ): ElementNode {
   const children = node.children.map((c) => {
     if (typeof c === 'string') return c
-    return insertClonedElement(clonedObjectMapByElementId, c, attributesMap)
+    return insertClonedElement(useObjectMapByElementId, c, attributesMap)
   })
 
   const srcId = node.attributes[DATA_CLONE_ID_KEY]
-  const objs = clonedObjectMapByElementId[srcId]
+  const objs = useObjectMapByElementId[srcId]
   if (objs) {
     return {
       ...node,
@@ -394,14 +402,17 @@ function convertUseTree(
   clonedObjects: GraphObject[],
   svgTree: ElementNode,
   attributesMap: IdMap<ElementNodeAttributes>
-): ElementNode {
+): { tree: ElementNode; clonedElementIds: IdMap<boolean> } {
   const clonedElementIds = clonedObjects
     .map((o) => o.elementId)
     .reduce<IdMap<boolean>>((p, id) => {
       p[id] = true
       return p
     }, {})
-  return convertUseElement(clonedElementIds, svgTree, attributesMap)
+  return {
+    tree: convertUseElement(clonedElementIds, svgTree, attributesMap),
+    clonedElementIds,
+  }
 }
 
 function convertUseElement(
@@ -416,10 +427,12 @@ function convertUseElement(
 
   if (clonedElementIds[node.id]) {
     attributesMap[node.id] = node.attributes
+    // drop some attributes to override
     const attributes = { ...node.attributes }
     delete attributes.transform
     delete attributes.fill
     delete attributes.stroke
+    // insert a template node to be cloned
     return {
       id: `blendic_group_${node.id}`,
       tag: 'g',
@@ -437,15 +450,6 @@ function convertUseElement(
               children,
             },
           ],
-        },
-        {
-          id: `origin_${node.id}`,
-          tag: 'use',
-          attributes: {
-            href: `#${node.id}`,
-            ...attributes,
-          },
-          children: [],
         },
       ],
     }

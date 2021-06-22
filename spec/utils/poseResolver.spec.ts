@@ -364,6 +364,10 @@ describe('utils/poseResolver.ts', () => {
     it('should clone target elements', () => {
       const ret = getClonedElementsTree(
         {
+          a: getGraphObject({
+            id: 'a',
+            elementId: 'a',
+          }),
           b: getGraphObject({
             id: 'b',
             elementId: 'a',
@@ -391,7 +395,7 @@ describe('utils/poseResolver.ts', () => {
             ],
           },
           {
-            id: 'origin_a',
+            id: 'clone_a',
             tag: 'use',
             attributes: { href: '#a' },
             children: [],

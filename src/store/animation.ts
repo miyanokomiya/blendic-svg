@@ -152,6 +152,7 @@ const targetPropsState = useTargetProps(() => ({}))
 const keyframeState = useKeyframeStates(() => visibledKeyframeMap.value)
 
 function initState(initActions: Action[] = []) {
+  actions.initState()
   actions.state.list = initActions
   editTransforms.value = {}
   editConstraints.value = {}

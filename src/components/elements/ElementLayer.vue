@@ -53,6 +53,8 @@ import { useSettings } from '/@/composables/settings'
 import type { CanvasMode, SelectOptions } from '/@/composables/modes/types'
 import { useAnimationStore } from '/@/store/animation'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
+import { useCanvasStore } from '/@/store/canvas'
+import { useStore } from '/@/store'
 
 function getId(elm: ElementNode | string): string {
   if (typeof elm === 'string') return elm
@@ -72,9 +74,11 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const store = useStore()
     const animationStore = useAnimationStore()
     const graphStore = useAnimationGraphStore()
     const elementStore = useElementStore()
+    const canvasStore = useCanvasStore()
     const { settings } = useSettings()
 
     const selectedMap = computed(() => {
@@ -89,6 +93,19 @@ export default defineComponent({
       return props.boneMap
     })
 
+    const graphEnabled = computed(() => {
+      if (!store.lastSelectedArmature.value) return false
+      if (!elementStore.lastSelectedActor.value) return false
+      if (!graphStore.lastSelectedGraph.value) return false
+      if (canvasStore.state.canvasMode === 'edit') return false
+
+      const id = store.lastSelectedArmature.value.id
+      return (
+        id === elementStore.lastSelectedActor.value.armatureId &&
+        id === graphStore.lastSelectedGraph.value.armatureId
+      )
+    })
+
     const posedElementRoot = computed(() => {
       if (!elementStore.lastSelectedActor.value) return
       return getPosedElementTree(
@@ -99,13 +116,13 @@ export default defineComponent({
     })
 
     const graphResolvedElement = computed(() => {
-      if (!elementStore.lastSelectedActor.value) return
       if (!posedElementRoot.value) return
+      if (!graphEnabled.value) return posedElementRoot.value
 
       // TODO: for develop try-catch
       try {
         const graphObjectMap = resolveAnimationGraph(
-          toMap(elementStore.lastSelectedActor.value.elements),
+          elementStore.elementMap.value,
           animationStore.currentFrame.value,
           graphStore.nodeMap.value
         )

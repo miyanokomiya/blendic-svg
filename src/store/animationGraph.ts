@@ -40,7 +40,14 @@ const historyStore = useHistoryStore()
 
 const graphState = useListState<AnimationGraph>('Graph')
 const selectedNodes = ref<IdMap<boolean>>({})
-const lastSelectedNodeId = ref<string>()
+const lastSelectedNodeId = ref<string>('')
+
+function initState(graph: AnimationGraph[]) {
+  graphState.initState()
+  graphState.state.list = graph
+  selectedNodes.value = {}
+  lastSelectedNodeId.value = ''
+}
 
 const lastSelectedGraph = computed(() => {
   return graphState.lastSelectedItem.value
@@ -56,10 +63,6 @@ const lastSelectedNode = computed(() => {
 const selectedNodeCount = computed(() => {
   return Object.keys(selectedNodes.value).length
 })
-
-function initState(graph: AnimationGraph[]) {
-  graphState.state.list = graph
-}
 
 const nodesAccessor: ListItemAccessor<GraphNode> = {
   get: () => lastSelectedGraph.value?.nodes ?? [],

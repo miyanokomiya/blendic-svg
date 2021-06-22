@@ -60,6 +60,7 @@ const selectedElementCount = computed(() => {
 })
 
 function initState(actors: Actor[]) {
+  actorsState.initState()
   actorsState.state.list = actors
   if (actors.length > 0) {
     actorsState.state.lastSelectedId = actors[0].id
@@ -121,6 +122,7 @@ export function useElementStore() {
     initState,
     importActor,
     actors: computed(() => actorsState.state.list),
+    elementMap,
     lastSelectedActor,
     lastSelectedElement,
     lastSelectedNativeElement,

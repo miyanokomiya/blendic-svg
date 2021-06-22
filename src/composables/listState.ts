@@ -40,6 +40,12 @@ export function useListState<T extends { id: string }>(label: string) {
     selectedMap: {} as IdMap<boolean>,
   })
 
+  function initState() {
+    state.list = []
+    state.lastSelectedId = ''
+    state.selectedMap = {}
+  }
+
   const lastSelectedIndex = computed(() =>
     state.list.findIndex(
       (a) =>
@@ -67,7 +73,7 @@ export function useListState<T extends { id: string }>(label: string) {
   watch(
     () => itemMap.value,
     () => {
-      // unselect unexisted armatures
+      // unselect unexisted items
       state.selectedMap = Object.keys(state.selectedMap).reduce<IdMap<boolean>>(
         (m, id) => {
           return itemMap.value[id]
@@ -113,6 +119,7 @@ export function useListState<T extends { id: string }>(label: string) {
 
   return {
     state,
+    initState,
     itemMap,
     lastSelectedIndex,
     lastSelectedItem,

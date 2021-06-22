@@ -50,6 +50,7 @@ export const GRAPH_VALUE_TYPE = {
   OBJECT: 'OBJECT',
   TRANSFORM: 'TRANSFORM',
 } as const
+export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 
 export interface GraphNodeInput<T> {
   from?: { id: string; key: string }
@@ -69,9 +70,14 @@ export interface GraphNodeOutputMap {
   [id: string]: GraphNodeOutputValues
 }
 
+export interface GraphNodeEdgeInfo {
+  p: IVec2
+  type: GRAPH_VALUE_TYPE_KEY
+}
+
 export interface GraphNodeEdgePositions {
-  inputs: { [key: string]: IVec2 }
-  outputs: { [key: string]: IVec2 }
+  inputs: { [key: string]: GraphNodeEdgeInfo }
+  outputs: { [key: string]: GraphNodeEdgeInfo }
 }
 
 ////

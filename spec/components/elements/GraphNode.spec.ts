@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/elements/GraphNode.vue'
+import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { createGraphNode } from '/@/utils/graphNodes'
 
 describe('src/components/elements/GraphNode.vue', () => {
@@ -28,8 +29,12 @@ describe('src/components/elements/GraphNode.vue', () => {
         props: {
           node: createGraphNode('make_vector2'),
           edgePositions: {
-            inputs: { x: { x: 1, y: 2 } },
-            outputs: { value: { x: 1, y: 2 } },
+            inputs: {
+              x: { p: { x: 1, y: 2 }, type: GRAPH_VALUE_TYPE.VECTOR2 },
+            },
+            outputs: {
+              value: { p: { x: 1, y: 2 }, type: GRAPH_VALUE_TYPE.VECTOR2 },
+            },
           },
         },
       })

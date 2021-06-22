@@ -63,7 +63,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
       </g>
       <circle
         class="view-only"
-        fill="#333"
+        fill="#daa520"
         r="5"
         stroke="none"
       />
@@ -105,7 +105,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
       </g>
       <circle
         class="view-only"
-        fill="#333"
+        fill="#daa520"
         r="5"
         stroke="none"
       />

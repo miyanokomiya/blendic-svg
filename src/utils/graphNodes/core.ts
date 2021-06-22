@@ -29,6 +29,7 @@ export interface NodeStruct<T extends GraphNodeBase> {
   width: number
   color?: string
   textColor?: string
+  label?: string
 }
 
 export interface NodeContext<T> {

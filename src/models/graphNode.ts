@@ -44,6 +44,7 @@ export interface GraphNodeBase {
 }
 
 export const GRAPH_VALUE_TYPE = {
+  BOOLEAN: 'BOOLEAN',
   SCALER: 'SCALER',
   VECTOR2: 'VECTOR2',
   OBJECT: 'OBJECT',
@@ -92,6 +93,8 @@ export interface GraphNodes {
   sub_scaler: GraphNodeSubScaler
   multi_scaler: GraphNodeMultiScaler
   divide_scaler: GraphNodeDivideScaler
+
+  greater_than: GraphNodeGreaterThan
 }
 export type GraphNodeType = keyof GraphNodes
 export type GraphNode = GraphNodes[GraphNodeType]
@@ -162,5 +165,10 @@ export interface GraphNodeMultiScaler extends GraphNodeBase {
 
 export interface GraphNodeDivideScaler extends GraphNodeBase {
   type: 'divide_scaler'
+  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeGreaterThan extends GraphNodeBase {
+  type: 'greater_than'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
 }

@@ -8,7 +8,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
   <g>
     <path
       d="M0,30 L0,98 A8,8 0 0 0 8,106 L132,106 A8,8 0 0 0 140,98 L140,30"
-      fill="#eee"
+      fill="#fafafa"
       stroke="#555"
       stroke-width="1"
     />
@@ -123,7 +123,7 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
   <g>
     <path
       d="M0,30 L0,98 A8,8 0 0 0 8,106 L132,106 A8,8 0 0 0 140,98 L140,30"
-      fill="#eee"
+      fill="#fafafa"
       stroke="orange"
       stroke-width="2"
     />
@@ -171,7 +171,7 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
   <g>
     <path
       d="M0,30 L0,100 A8,8 0 0 0 8,108 L112,108 A8,8 0 0 0 120,100 L120,30"
-      fill="#eee"
+      fill="#fafafa"
       stroke="orange"
       stroke-width="2"
     />

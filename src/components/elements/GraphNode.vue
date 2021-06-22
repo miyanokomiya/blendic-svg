@@ -27,7 +27,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :d="outline"
         :stroke="outlineStroke"
         :stroke-width="outlineStrokeWidth"
-        fill="#eee"
+        fill="#fafafa"
       />
       <path
         :d="headOutline"
@@ -189,7 +189,7 @@ export default defineComponent({
     })
 
     const color = computed(
-      () => getGraphNodeModule(props.node.type).struct.color ?? '#eee'
+      () => getGraphNodeModule(props.node.type).struct.color ?? '#fafafa'
     )
     const textColor = computed(
       () => getGraphNodeModule(props.node.type).struct.textColor ?? '#000'

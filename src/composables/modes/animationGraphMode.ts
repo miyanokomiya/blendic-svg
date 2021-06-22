@@ -26,7 +26,6 @@ import type {
   SelectOptions,
 } from '/@/composables/modes/types'
 import { snapGrid } from '/@/utils/geometry'
-import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { useMenuList } from '/@/composables/menuList'
 import { AnimationGraphStore } from '/@/store/animationGraph'
 import {
@@ -400,25 +399,10 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   }
 
   const availableCommandList = computed(() => {
-    const ctrl = { command: getCtrlOrMetaStr(), title: 'Snap' }
-    const selects = [
-      { command: 'a', title: 'All Select' },
-      { command: 'A', title: 'Add' },
-    ]
+    const selects = [{ command: 'A', title: 'Add' }]
 
-    if (state.command === 'grab') {
-      return [
-        { command: 'x', title: 'On Axis X' },
-        { command: 'y', title: 'On Axis Y' },
-        ctrl,
-      ]
-    } else if (isAnySelected.value) {
-      return [
-        { command: 'g', title: 'Grab' },
-        ...selects,
-        { command: 'x', title: 'Delete' },
-        { command: 'D', title: 'Duplicate' },
-      ]
+    if (isAnySelected.value) {
+      return [...selects, { command: 'x', title: 'Delete' }]
     } else {
       return [...selects]
     }

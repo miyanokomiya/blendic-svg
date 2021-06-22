@@ -41,6 +41,10 @@ Copyright (C) 2021, Tomoya Komiyama.
     >
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
     </svg>
+    <CommandExamPanel
+      class="command-exam-panel"
+      :available-command-list="availableCommandList"
+    />
     <PopupMenuList
       v-if="popupMenuList.length > 0 && popupMenuListPosition"
       class="popup-menu-list"
@@ -61,14 +65,18 @@ import {
   useWindow,
 } from '../composables/window'
 import { provideScale, useCanvas } from '../composables/canvas'
-import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import { add, sub } from 'okageo'
 import { useThrottle } from '/@/composables/throttle'
 import { isCtrlOrMeta } from '/@/utils/devices'
 import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
+import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
+import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 
 export default defineComponent({
-  components: { PopupMenuList },
+  components: {
+    PopupMenuList,
+    CommandExamPanel,
+  },
   props: {
     canvas: {
       type: Object as PropType<ReturnType<typeof useCanvas>>,
@@ -216,6 +224,9 @@ export default defineComponent({
 
       wrapper,
       svg,
+      availableCommandList: computed(
+        () => props.mode.availableCommandList.value
+      ),
       popupMenuListPosition,
       focus: () => svg.value?.focus(),
     }
@@ -233,6 +244,11 @@ svg {
   user-select: none;
   outline: none;
   overflow-anchor: none;
+}
+.command-exam-panel {
+  position: absolute;
+  top: 0;
+  left: 4px;
 }
 .popup-menu-list {
   position: fixed;

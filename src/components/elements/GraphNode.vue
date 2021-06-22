@@ -44,7 +44,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         font-size="16"
         :fill="textColor"
         class="view-only"
-        >{{ node.type }}</text
+        >{{ label }}</text
       >
     </g>
     <g>
@@ -188,18 +188,19 @@ export default defineComponent({
       return getOutline(size.value)
     })
 
-    const color = computed(
-      () => getGraphNodeModule(props.node.type).struct.color ?? '#fafafa'
+    const nodeStruct = computed(
+      () => getGraphNodeModule(props.node.type).struct
     )
-    const textColor = computed(
-      () => getGraphNodeModule(props.node.type).struct.textColor ?? '#000'
-    )
+
+    const label = computed(() => nodeStruct.value.label ?? props.node.type)
+    const color = computed(() => nodeStruct.value.color ?? '#fafafa')
+    const textColor = computed(() => nodeStruct.value.textColor ?? '#000')
 
     const dataPositions = computed(() =>
       helpers.getGraphNodeDataPosition(props.node)
     )
     const dataMap = computed(() => {
-      const dataStruct = getGraphNodeModule(props.node.type).struct.data
+      const dataStruct = nodeStruct.value.data
       return mapReduce(dataPositions.value, (position, key) => {
         return {
           position,
@@ -220,6 +221,7 @@ export default defineComponent({
 
     return {
       GRAPH_NODE_ROW_HEIGHT: helpers.GRAPH_NODE_ROW_HEIGHT,
+      label,
       color,
       textColor,
       size,

@@ -33,6 +33,11 @@ Copyright (C) 2021, Tomoya Komiyama.
         :options="objectOptions"
         @update:modelValue="update"
       />
+      <CheckboxInput
+        v-else-if="type === 'BOOLEAN'"
+        :model-value="modelValue"
+        @update:modelValue="update"
+      />
       <template v-else-if="type === 'VECTOR2'">
         <InlineField label="x" label-width="20px">
           <SliderInput
@@ -61,9 +66,11 @@ import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import TextInput from '/@/components/atoms/TextInput.vue'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 
 const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
+  [GRAPH_VALUE_TYPE.BOOLEAN]: true,
   [GRAPH_VALUE_TYPE.SCALER]: true,
   [GRAPH_VALUE_TYPE.VECTOR2]: true,
   [GRAPH_VALUE_TYPE.OBJECT]: true,
@@ -74,6 +81,7 @@ export default defineComponent({
     TextInput,
     SliderInput,
     SelectField,
+    CheckboxInput,
     InlineField,
   },
   props: {

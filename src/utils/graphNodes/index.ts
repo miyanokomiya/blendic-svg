@@ -41,6 +41,7 @@ import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
 import * as clone_object from './nodes/cloneObject'
 import * as greater_than from './nodes/greaterThan'
+import * as switch_scaler from './nodes/switchScaler'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -59,6 +60,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   clone_object,
 
   greater_than,
+  switch_scaler,
 } as const
 
 export const NODE_MENU_OPTIONS_SRC: {
@@ -82,7 +84,13 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: '(-) Scaler', type: 'sub_scaler' },
       { label: '(x) Scaler', type: 'multi_scaler' },
       { label: '(/) Scaler', type: 'divide_scaler' },
+    ],
+  },
+  {
+    label: 'Boolean',
+    children: [
       { label: '(>) Scaler', type: 'greater_than' },
+      { label: 'Switch Scaler', type: 'switch_scaler' },
     ],
   },
   {

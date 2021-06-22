@@ -95,6 +95,7 @@ export interface GraphNodes {
   divide_scaler: GraphNodeDivideScaler
 
   greater_than: GraphNodeGreaterThan
+  switch_scaler: GraphNodeSwitchScaler
 }
 export type GraphNodeType = keyof GraphNodes
 export type GraphNode = GraphNodes[GraphNodeType]
@@ -171,4 +172,13 @@ export interface GraphNodeDivideScaler extends GraphNodeBase {
 export interface GraphNodeGreaterThan extends GraphNodeBase {
   type: 'greater_than'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeSwitchScaler extends GraphNodeBase {
+  type: 'switch_scaler'
+  inputs: {
+    condition: GraphNodeInput<boolean>
+    if_true: GraphNodeInput<number>
+    if_false: GraphNodeInput<number>
+  }
 }

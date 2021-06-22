@@ -3,6 +3,9 @@ import type {
   GraphNodeMakeVector2,
   GraphNodeScaler,
   GraphNodeOutputMap,
+  GraphNodeGetObject,
+  GraphNodeCloneObject,
+  GraphNodeSetTransform,
 } from '/@/models/graphNode'
 import {
   compute,
@@ -69,6 +72,49 @@ describe('src/utils/graphNodes/index.ts', () => {
         make_vector2: { vector2: { x: 1, y: 10 } },
         break_vector2: { x: 1, y: 10 },
       })
+    })
+    it('clone_object', () => {
+      const context = {
+        setTransform() {},
+        cloneObject: jest.fn().mockReturnValue('b'),
+      } as any
+      const nodes = {
+        get_object: {
+          id: 'get_object',
+          type: 'get_object',
+          data: { object: 'a' },
+          inputs: {},
+          position: { x: 0, y: 0 },
+        } as GraphNodeGetObject,
+        clone_object: {
+          id: 'clone_object',
+          type: 'clone_object',
+          data: {},
+          inputs: {
+            object: {
+              from: { id: 'get_object', key: 'object' },
+            },
+          },
+          position: { x: 0, y: 0 },
+        } as GraphNodeCloneObject,
+        set_transform: {
+          id: 'set_transform',
+          type: 'set_transform',
+          data: {},
+          inputs: {
+            object: { from: { id: 'clone_object', key: 'clone' } },
+            transform: { value: getTransform() },
+          },
+          position: { x: 0, y: 0 },
+        } as GraphNodeSetTransform,
+      } as const
+      expect(resolveAllNodes(context, nodes)).toEqual({
+        get_object: { object: 'a' },
+        clone_object: { origin: 'a', clone: 'b' },
+        set_transform: { object: 'b' },
+      })
+      // should avoid duplicated calculations to use hash of outputs
+      expect(context.cloneObject).toHaveReturnedTimes(1)
     })
   })
 

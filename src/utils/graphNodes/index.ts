@@ -114,6 +114,7 @@ export function resolveNode<T>(
   targetId: string,
   currentPathMap: { [id: string]: true } = {}
 ): GraphNodeOutputMap {
+  if (outputMap[targetId]) return outputMap
   if (currentPathMap[targetId]) {
     throw new Error('Failed to resolve: circular references are founded')
   }

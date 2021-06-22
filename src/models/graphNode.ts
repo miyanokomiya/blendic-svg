@@ -102,6 +102,7 @@ export interface GraphNodes {
 
   not: GraphNodeNot
   greater_than: GraphNodeGreaterThan
+  greater_than_or_equal: GraphNodeBase
   switch_scaler: GraphNodeSwitchScaler
 }
 export type GraphNodeType = keyof GraphNodes
@@ -183,6 +184,11 @@ export interface GraphNodeNot extends GraphNodeBase {
 
 export interface GraphNodeGreaterThan extends GraphNodeBase {
   type: 'greater_than'
+  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeGreaterThanOrEqual extends GraphNodeBase {
+  type: 'greater_than_or_equal'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
 }
 

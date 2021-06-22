@@ -94,6 +94,7 @@ export interface GraphNodes {
   multi_scaler: GraphNodeMultiScaler
   divide_scaler: GraphNodeDivideScaler
 
+  not: GraphNodeNot
   greater_than: GraphNodeGreaterThan
   switch_scaler: GraphNodeSwitchScaler
 }
@@ -167,6 +168,11 @@ export interface GraphNodeMultiScaler extends GraphNodeBase {
 export interface GraphNodeDivideScaler extends GraphNodeBase {
   type: 'divide_scaler'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeNot extends GraphNodeBase {
+  type: 'not'
+  inputs: { condition: GraphNodeInput<boolean> }
 }
 
 export interface GraphNodeGreaterThan extends GraphNodeBase {

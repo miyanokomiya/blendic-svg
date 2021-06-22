@@ -17,37 +17,31 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeSwitchScaler, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { GraphNodeNot, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeSwitchScaler> = {
+export const struct: NodeStruct<GraphNodeNot> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: {
-          condition: { value: true },
-          if_true: { value: 0 },
-          if_false: { value: 0 },
-        },
+        inputs: { condition: { value: true } },
         ...arg,
       }),
-      type: 'switch_scaler',
-    } as GraphNodeSwitchScaler
+      type: 'not',
+    } as GraphNodeNot
   },
   data: {},
   inputs: {
     condition: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: true },
-    if_true: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    if_false: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.SCALER,
+    value: GRAPH_VALUE_TYPE.BOOLEAN,
   },
   computation(inputs) {
-    return { value: inputs.condition ? inputs.if_true : inputs.if_false }
+    return { value: !inputs.condition }
   },
-  width: 130,
-  color: '#afeeee',
+  width: 120,
+  color: '#b0c4de',
   textColor: '#000',
-  label: 'Switch Scaler',
+  label: 'Not',
 }

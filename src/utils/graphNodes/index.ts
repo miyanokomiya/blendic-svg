@@ -46,6 +46,7 @@ import * as less_than from './nodes/lessThan'
 import * as less_than_or_equal from './nodes/lessThanOrEqual'
 import * as switch_scaler from './nodes/switchScaler'
 import * as not from './nodes/not'
+import * as equal from './nodes/equal'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -64,6 +65,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   clone_object,
 
   not,
+  equal,
   greater_than,
   greater_than_or_equal,
   less_than,
@@ -98,6 +100,7 @@ export const NODE_MENU_OPTIONS_SRC: {
     label: 'Boolean',
     children: [
       { label: 'Not', type: 'not' },
+      { label: '(=) Scaler', type: 'equal' },
       { label: '(>) Scaler', type: 'greater_than' },
       { label: '(>=) Scaler', type: 'greater_than_or_equal' },
       { label: '(<) Scaler', type: 'less_than' },

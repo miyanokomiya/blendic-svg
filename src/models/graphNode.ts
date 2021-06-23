@@ -101,6 +101,7 @@ export interface GraphNodes {
   divide_scaler: GraphNodeDivideScaler
 
   not: GraphNodeNot
+  equal: GraphNodeEqual
   greater_than: GraphNodeGreaterThan
   greater_than_or_equal: GraphNodeBase
   less_than: GraphNodeLessThan
@@ -184,9 +185,21 @@ export interface GraphNodeNot extends GraphNodeBase {
   inputs: { condition: GraphNodeInput<boolean> }
 }
 
+export interface GraphNodeEqual extends GraphNodeBase {
+  type: 'equal'
+  inputs: {
+    a: GraphNodeInput<number>
+    b: GraphNodeInput<number>
+    threshold: GraphNodeInput<number>
+  }
+}
+
 export interface GraphNodeGreaterThan extends GraphNodeBase {
   type: 'greater_than'
-  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+  inputs: {
+    a: GraphNodeInput<number>
+    b: GraphNodeInput<number>
+  }
 }
 
 export interface GraphNodeGreaterThanOrEqual extends GraphNodeBase {

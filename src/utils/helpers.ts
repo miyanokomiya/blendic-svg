@@ -20,7 +20,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { IVec2, IRectangle, isZero, add } from 'okageo'
 import { Size } from 'okanvas'
 import { IdMap, Bone, ElementNodeAttributes, Transform } from '../models/index'
-import { GraphNode, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import {
+  GraphNode,
+  GraphNodeEdgeInfo,
+  GRAPH_VALUE_TYPE,
+  GRAPH_VALUE_TYPE_KEY,
+} from '/@/models/graphNode'
 import { BoneConstraint } from '/@/utils/constraints'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { NodeStruct } from '/@/utils/graphNodes/core'
@@ -269,45 +274,57 @@ export function getGraphNodeDataPosition(node: GraphNode): {
 }
 
 export function getGraphNodeInputsPosition(node: GraphNode): {
-  [key: string]: IVec2
+  [key: string]: GraphNodeEdgeInfo
 } {
   const dataHeight = getGraphNodeDataHeight(node)
   const outputsHeight = getGraphNodeOutputsHeight(node)
   const module = getGraphNodeModule(node.type)
-  return getGraphNodeRowsPosition(Object.keys(module.struct.inputs), {
-    x: 0,
-    y:
-      GRAPH_NODE_HEAD_HEIGHT +
-      outputsHeight +
-      dataHeight +
-      GRAPH_NODE_ROW_HEIGHT / 2,
-  })
+  return getGraphNodeRowsPosition(
+    Object.entries(module.struct.inputs).map(([key, i]) => ({
+      key,
+      type: (i as any).type,
+    })),
+    {
+      x: 0,
+      y:
+        GRAPH_NODE_HEAD_HEIGHT +
+        outputsHeight +
+        dataHeight +
+        GRAPH_NODE_ROW_HEIGHT / 2,
+    }
+  )
 }
 
 export function getGraphNodeOutputsPosition(node: GraphNode): {
-  [key: string]: IVec2
+  [key: string]: GraphNodeEdgeInfo
 } {
   const module = getGraphNodeModule(node.type)
   const { width } = getGraphNodeSize(node)
-  return getGraphNodeRowsPosition(Object.keys(module.struct.outputs), {
-    x: width,
-    y: GRAPH_NODE_HEAD_HEIGHT + (GRAPH_NODE_ROW_HEIGHT * 2) / 3,
-  })
+  return getGraphNodeRowsPosition(
+    Object.entries(module.struct.outputs).map(([key, type]) => ({ key, type })),
+    {
+      x: width,
+      y: GRAPH_NODE_HEAD_HEIGHT + (GRAPH_NODE_ROW_HEIGHT * 2) / 3,
+    }
+  )
 }
 
 function getGraphNodeRowsPosition(
-  keys: string[],
+  rows: { key: string; type: GRAPH_VALUE_TYPE_KEY }[],
   margin: IVec2 = { x: 0, y: 0 }
 ): {
-  [key: string]: IVec2
+  [key: string]: GraphNodeEdgeInfo
 } {
-  return keys.reduce<{ [key: string]: IVec2 }>((p, key, i) => {
-    p[key] = add(margin, {
-      x: 0,
-      y: GRAPH_NODE_ROW_HEIGHT * i,
-    })
-    return p
-  }, {})
+  return rows.reduce<{ [key: string]: GraphNodeEdgeInfo }>(
+    (p, { key, type }, i) => {
+      p[key] = {
+        p: add(margin, { x: 0, y: GRAPH_NODE_ROW_HEIGHT * i }),
+        type,
+      }
+      return p
+    },
+    {}
+  )
 }
 
 function getGraphNodeDataUnitHeight(
@@ -320,3 +337,12 @@ function getGraphNodeDataUnitHeight(
       return 48
   }
 }
+
+export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
+  {
+    BOOLEAN: '#b22222',
+    SCALER: '#555',
+    VECTOR2: '#daa520',
+    TRANSFORM: '#a0522d',
+    OBJECT: '#ee82ee',
+  } as const

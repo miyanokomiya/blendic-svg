@@ -44,14 +44,14 @@ Copyright (C) 2021, Tomoya Komiyama.
         font-size="16"
         :fill="textColor"
         class="view-only"
-        >{{ node.type }}</text
+        >{{ label }}</text
       >
     </g>
     <g>
       <g
-        v-for="(p, key) in edgePositions.outputs"
+        v-for="(edge, key) in edgePositions.outputs"
         :key="key"
-        :transform="`translate(${p.x}, ${p.y})`"
+        :transform="`translate(${edge.p.x}, ${edge.p.y})`"
       >
         <g
           @mouseup.left.exact="upToEdge(key)"
@@ -76,7 +76,12 @@ Copyright (C) 2021, Tomoya Komiyama.
           >
           <circle r="8" fill="transparent" stroke="none" />
         </g>
-        <circle r="5" fill="#333" stroke="none" class="view-only" />
+        <circle
+          r="5"
+          :fill="GRAPH_NODE_TYPE_COLOR[edge.type]"
+          stroke="none"
+          class="view-only"
+        />
       </g>
     </g>
     <g class="view-only">
@@ -97,9 +102,9 @@ Copyright (C) 2021, Tomoya Komiyama.
     </g>
     <g>
       <g
-        v-for="(p, key) in edgePositions.inputs"
+        v-for="(edge, key) in edgePositions.inputs"
         :key="key"
-        :transform="`translate(${p.x}, ${p.y})`"
+        :transform="`translate(${edge.p.x}, ${edge.p.y})`"
       >
         <g
           @mouseup.left.exact="upFromEdge(key)"
@@ -117,7 +122,12 @@ Copyright (C) 2021, Tomoya Komiyama.
           }}</text>
           <circle r="8" fill="transparent" stroke="none" />
         </g>
-        <circle r="5" fill="#333" stroke="none" class="view-only" />
+        <circle
+          r="5"
+          :fill="GRAPH_NODE_TYPE_COLOR[edge.type]"
+          stroke="none"
+          class="view-only"
+        />
       </g>
     </g>
   </g>
@@ -188,18 +198,19 @@ export default defineComponent({
       return getOutline(size.value)
     })
 
-    const color = computed(
-      () => getGraphNodeModule(props.node.type).struct.color ?? '#fafafa'
+    const nodeStruct = computed(
+      () => getGraphNodeModule(props.node.type).struct
     )
-    const textColor = computed(
-      () => getGraphNodeModule(props.node.type).struct.textColor ?? '#000'
-    )
+
+    const label = computed(() => nodeStruct.value.label ?? props.node.type)
+    const color = computed(() => nodeStruct.value.color ?? '#fafafa')
+    const textColor = computed(() => nodeStruct.value.textColor ?? '#000')
 
     const dataPositions = computed(() =>
       helpers.getGraphNodeDataPosition(props.node)
     )
     const dataMap = computed(() => {
-      const dataStruct = getGraphNodeModule(props.node.type).struct.data
+      const dataStruct = nodeStruct.value.data
       return mapReduce(dataPositions.value, (position, key) => {
         return {
           position,
@@ -219,7 +230,9 @@ export default defineComponent({
     }
 
     return {
+      GRAPH_NODE_TYPE_COLOR: helpers.GRAPH_NODE_TYPE_COLOR,
       GRAPH_NODE_ROW_HEIGHT: helpers.GRAPH_NODE_ROW_HEIGHT,
+      label,
       color,
       textColor,
       size,
@@ -242,14 +255,14 @@ export default defineComponent({
       downFromEdge: (key: string) =>
         emit('down-edge', {
           type: 'draft-from',
-          from: add(props.node.position, props.edgePositions.inputs[key]),
+          from: add(props.node.position, props.edgePositions.inputs[key].p),
           to: { nodeId: props.node.id, key },
         }),
       downToEdge: (key: string) =>
         emit('down-edge', {
           type: 'draft-to',
           from: { nodeId: props.node.id, key },
-          to: add(props.node.position, props.edgePositions.outputs[key]),
+          to: add(props.node.position, props.edgePositions.outputs[key].p),
         }),
       upFromEdge: (key: string) => {
         emit('up-edge', { nodeId: props.node.id, type: 'input', key })

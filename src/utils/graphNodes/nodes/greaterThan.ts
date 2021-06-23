@@ -17,30 +17,32 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeBreakVector2, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { GraphNodeGreaterThan, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeBreakVector2> = {
+export const struct: NodeStruct<GraphNodeGreaterThan> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: { vector2: { value: { x: 0, y: 0 } } },
+        inputs: { a: { value: 0 }, b: { value: 0 } },
         ...arg,
       }),
-      type: 'break_vector2',
-    } as GraphNodeBreakVector2
+      type: 'greater_than',
+    } as GraphNodeGreaterThan
   },
   data: {},
   inputs: {
-    vector2: { type: GRAPH_VALUE_TYPE.VECTOR2, required: true },
+    a: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    b: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
   },
   outputs: {
-    x: GRAPH_VALUE_TYPE.SCALER,
-    y: GRAPH_VALUE_TYPE.SCALER,
+    value: GRAPH_VALUE_TYPE.BOOLEAN,
   },
   computation(inputs) {
-    return { x: inputs.vector2.x, y: inputs.vector2.y }
+    return { value: inputs.a > inputs.b }
   },
-  width: 140,
-  color: '#f0e68c',
+  width: 120,
+  color: '#b0c4de',
+  textColor: '#000',
+  label: 'a > b',
 }

@@ -17,26 +17,17 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeScaler, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import * as target from '/@/utils/graphNodes/nodes/not'
 
-export const struct: NodeStruct<GraphNodeScaler> = {
-  create(arg = {}) {
-    return {
-      ...createBaseNode({
-        data: { value: 0 },
-        inputs: {},
-        ...arg,
-      }),
-      type: 'scaler',
-    } as GraphNodeScaler
-  },
-  data: { value: { type: GRAPH_VALUE_TYPE.SCALER } },
-  inputs: {},
-  outputs: { value: GRAPH_VALUE_TYPE.SCALER },
-  computation(_inputs, self) {
-    return { value: self.data.value }
-  },
-  width: 120,
-  color: '#f0e68c',
-}
+describe('src/utils/graphNodes/nodes/not.ts', () => {
+  describe('computation', () => {
+    it('should return not condition', () => {
+      expect(
+        target.struct.computation({ condition: true }, {} as any, {} as any)
+      ).toEqual({ value: false })
+      expect(
+        target.struct.computation({ condition: false }, {} as any, {} as any)
+      ).toEqual({ value: true })
+    })
+  })
+})

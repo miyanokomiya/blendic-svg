@@ -17,30 +17,38 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeBreakVector2, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { getTransform } from '/@/models'
+import { GraphNodeSwitchTransform, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeBreakVector2> = {
+export const struct: NodeStruct<GraphNodeSwitchTransform> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: { vector2: { value: { x: 0, y: 0 } } },
+        inputs: {
+          condition: { value: true },
+          if_true: { value: getTransform() },
+          if_false: { value: getTransform() },
+        },
         ...arg,
       }),
-      type: 'break_vector2',
-    } as GraphNodeBreakVector2
+      type: 'switch_transform',
+    } as GraphNodeSwitchTransform
   },
   data: {},
   inputs: {
-    vector2: { type: GRAPH_VALUE_TYPE.VECTOR2, required: true },
+    condition: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: true },
+    if_true: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
+    if_false: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
   },
   outputs: {
-    x: GRAPH_VALUE_TYPE.SCALER,
-    y: GRAPH_VALUE_TYPE.SCALER,
+    value: GRAPH_VALUE_TYPE.TRANSFORM,
   },
   computation(inputs) {
-    return { x: inputs.vector2.x, y: inputs.vector2.y }
+    return { value: inputs.condition ? inputs.if_true : inputs.if_false }
   },
-  width: 140,
-  color: '#f0e68c',
+  width: 130,
+  color: '#afeeee',
+  textColor: '#000',
+  label: 'Switch Transform',
 }

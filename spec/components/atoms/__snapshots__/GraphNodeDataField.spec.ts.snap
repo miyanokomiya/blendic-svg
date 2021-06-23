@@ -1,5 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`src/components/atoms/GraphNodeDataField.vue snapshot BOOLEAN 1`] = `
+<div>
+  <h5>
+    value
+  </h5>
+  
+  <label
+    class=""
+  >
+    <input
+      type="checkbox"
+    />
+    <!--v-if-->
+  </label>
+  
+</div>
+`;
+
 exports[`src/components/atoms/GraphNodeDataField.vue snapshot OBJECT 1`] = `
 <div>
   <h5>

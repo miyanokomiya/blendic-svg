@@ -44,11 +44,13 @@ export interface GraphNodeBase {
 }
 
 export const GRAPH_VALUE_TYPE = {
+  BOOLEAN: 'BOOLEAN',
   SCALER: 'SCALER',
   VECTOR2: 'VECTOR2',
   OBJECT: 'OBJECT',
   TRANSFORM: 'TRANSFORM',
 } as const
+export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 
 export interface GraphNodeInput<T> {
   from?: { id: string; key: string }
@@ -68,9 +70,14 @@ export interface GraphNodeOutputMap {
   [id: string]: GraphNodeOutputValues
 }
 
+export interface GraphNodeEdgeInfo {
+  p: IVec2
+  type: GRAPH_VALUE_TYPE_KEY
+}
+
 export interface GraphNodeEdgePositions {
-  inputs: { [key: string]: IVec2 }
-  outputs: { [key: string]: IVec2 }
+  inputs: { [key: string]: GraphNodeEdgeInfo }
+  outputs: { [key: string]: GraphNodeEdgeInfo }
 }
 
 ////
@@ -92,6 +99,17 @@ export interface GraphNodes {
   sub_scaler: GraphNodeSubScaler
   multi_scaler: GraphNodeMultiScaler
   divide_scaler: GraphNodeDivideScaler
+
+  not: GraphNodeNot
+  equal: GraphNodeEqual
+  greater_than: GraphNodeGreaterThan
+  greater_than_or_equal: GraphNodeBase
+  less_than: GraphNodeLessThan
+  less_than_or_equal: GraphNodeLessThanOrEqual
+  switch_scaler: GraphNodeSwitchScaler
+  switch_vector2: GraphNodeSwitchVector2
+  switch_transform: GraphNodeSwitchTransform
+  switch_object: GraphNodeSwitchObject
 }
 export type GraphNodeType = keyof GraphNodes
 export type GraphNode = GraphNodes[GraphNodeType]
@@ -163,4 +181,77 @@ export interface GraphNodeMultiScaler extends GraphNodeBase {
 export interface GraphNodeDivideScaler extends GraphNodeBase {
   type: 'divide_scaler'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeNot extends GraphNodeBase {
+  type: 'not'
+  inputs: { condition: GraphNodeInput<boolean> }
+}
+
+export interface GraphNodeEqual extends GraphNodeBase {
+  type: 'equal'
+  inputs: {
+    a: GraphNodeInput<number>
+    b: GraphNodeInput<number>
+    threshold: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeGreaterThan extends GraphNodeBase {
+  type: 'greater_than'
+  inputs: {
+    a: GraphNodeInput<number>
+    b: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeGreaterThanOrEqual extends GraphNodeBase {
+  type: 'greater_than_or_equal'
+  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeLessThan extends GraphNodeBase {
+  type: 'less_than'
+  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeLessThanOrEqual extends GraphNodeBase {
+  type: 'less_than_or_equal'
+  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeSwitchScaler extends GraphNodeBase {
+  type: 'switch_scaler'
+  inputs: {
+    condition: GraphNodeInput<boolean>
+    if_true: GraphNodeInput<number>
+    if_false: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeSwitchVector2 extends GraphNodeBase {
+  type: 'switch_vector2'
+  inputs: {
+    condition: GraphNodeInput<boolean>
+    if_true: GraphNodeInput<IVec2>
+    if_false: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeSwitchTransform extends GraphNodeBase {
+  type: 'switch_transform'
+  inputs: {
+    condition: GraphNodeInput<boolean>
+    if_true: GraphNodeInput<Transform>
+    if_false: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeSwitchObject extends GraphNodeBase {
+  type: 'switch_object'
+  inputs: {
+    condition: GraphNodeInput<boolean>
+    if_true: GraphNodeInput<string>
+    if_false: GraphNodeInput<string>
+  }
 }

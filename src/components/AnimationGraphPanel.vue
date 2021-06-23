@@ -229,9 +229,9 @@ export default defineComponent({
           p[key] = {
             from: add(
               allNodes[input.from.id].position,
-              edgePositionMap.value[input.from.id].outputs[input.from.key]
+              edgePositionMap.value[input.from.id].outputs[input.from.key].p
             ),
-            to: add(node.position, inputsPositions[key]),
+            to: add(node.position, inputsPositions[key].p),
           }
           return p
         }, {})
@@ -247,7 +247,7 @@ export default defineComponent({
             editedNodeMap.value[mode.draftEdgeInfo.value.from.nodeId].position,
             edgePositionMap.value[mode.draftEdgeInfo.value.from.nodeId].outputs[
               mode.draftEdgeInfo.value.from.key
-            ]
+            ].p
           ),
           to: mode.draftEdgeInfo.value.to,
         }
@@ -258,7 +258,7 @@ export default defineComponent({
             editedNodeMap.value[mode.draftEdgeInfo.value.to.nodeId].position,
             edgePositionMap.value[mode.draftEdgeInfo.value.to.nodeId].inputs[
               mode.draftEdgeInfo.value.to.key
-            ]
+            ].p
           ),
         }
       }

@@ -24,6 +24,16 @@ import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 
 describe('src/components/atoms/GraphNodeDataField.vue', () => {
   describe('snapshot', () => {
+    it('BOOLEAN', () => {
+      const wrapper = mount(Target, {
+        props: {
+          modelValue: true,
+          label: 'value',
+          type: GRAPH_VALUE_TYPE.BOOLEAN,
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
     it('SCALER', () => {
       const wrapper = mount(Target, {
         props: {

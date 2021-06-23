@@ -99,6 +99,8 @@ export interface GraphNodes {
   sub_scaler: GraphNodeSubScaler
   multi_scaler: GraphNodeMultiScaler
   divide_scaler: GraphNodeDivideScaler
+  sin: GraphNodeSin
+  cos: GraphNodeCos
 
   not: GraphNodeNot
   equal: GraphNodeEqual
@@ -181,6 +183,16 @@ export interface GraphNodeMultiScaler extends GraphNodeBase {
 export interface GraphNodeDivideScaler extends GraphNodeBase {
   type: 'divide_scaler'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeSin extends GraphNodeBase {
+  type: 'sin'
+  inputs: { t: GraphNodeInput<number> }
+}
+
+export interface GraphNodeCos extends GraphNodeBase {
+  type: 'cos'
+  inputs: { t: GraphNodeInput<number> }
 }
 
 export interface GraphNodeNot extends GraphNodeBase {

@@ -28,7 +28,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
       x="8"
       y="3"
     >
-      make_vector2
+      Make Vector2
     </text>
   </g>
   <g>
@@ -143,7 +143,7 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
       x="8"
       y="3"
     >
-      make_vector2
+      Make Vector2
     </text>
   </g>
   <g>
@@ -191,7 +191,7 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
       x="8"
       y="3"
     >
-      scaler
+      Number
     </text>
   </g>
   <g>

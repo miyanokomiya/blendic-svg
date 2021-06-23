@@ -40,7 +40,7 @@ export const struct: NodeStruct<GraphNodeSin> = {
   computation(inputs) {
     return { value: Math.sin(inputs.t) }
   },
-  width: 120,
+  width: 100,
   color: '#4169e1',
   textColor: '#fff',
   label: 'Sin',

@@ -43,4 +43,5 @@ export const struct: NodeStruct<GraphNodeBreakVector2> = {
   },
   width: 140,
   color: '#f0e68c',
+  label: 'Break Vector2',
 }

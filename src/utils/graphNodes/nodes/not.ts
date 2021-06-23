@@ -40,7 +40,7 @@ export const struct: NodeStruct<GraphNodeNot> = {
   computation(inputs) {
     return { value: !inputs.condition }
   },
-  width: 120,
+  width: 100,
   color: '#b0c4de',
   textColor: '#000',
   label: 'Not',

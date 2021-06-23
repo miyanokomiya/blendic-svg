@@ -40,7 +40,7 @@ export const struct: NodeStruct<GraphNodeCos> = {
   computation(inputs) {
     return { value: Math.cos(inputs.t) }
   },
-  width: 120,
+  width: 100,
   color: '#4169e1',
   textColor: '#fff',
   label: 'Cos',

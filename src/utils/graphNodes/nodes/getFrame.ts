@@ -38,4 +38,5 @@ export const struct: NodeStruct<GraphNodeGetFrame> = {
   },
   width: 120,
   color: '#f0e68c',
+  label: 'Get Frame',
 }

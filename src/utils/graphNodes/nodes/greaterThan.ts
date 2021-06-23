@@ -41,7 +41,7 @@ export const struct: NodeStruct<GraphNodeGreaterThan> = {
   computation(inputs) {
     return { value: inputs.a > inputs.b }
   },
-  width: 120,
+  width: 100,
   color: '#b0c4de',
   textColor: '#000',
   label: 'a > b',

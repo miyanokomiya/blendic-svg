@@ -42,7 +42,7 @@ export const struct: NodeStruct<GraphNodeEqual> = {
   computation(inputs) {
     return { value: Math.abs(inputs.a - inputs.b) <= inputs.threshold }
   },
-  width: 120,
+  width: 100,
   color: '#b0c4de',
   textColor: '#000',
   label: 'a = b',

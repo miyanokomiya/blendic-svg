@@ -39,4 +39,5 @@ export const struct: NodeStruct<GraphNodeScaler> = {
   },
   width: 120,
   color: '#f0e68c',
+  label: 'Number',
 }

@@ -43,4 +43,5 @@ export const struct: NodeStruct<GraphNodeMakeVector2> = {
   },
   width: 140,
   color: '#f0e68c',
+  label: 'Make Vector2',
 }

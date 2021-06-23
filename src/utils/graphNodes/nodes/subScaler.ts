@@ -41,7 +41,8 @@ export const struct: NodeStruct<GraphNodeSubScaler> = {
   computation(inputs) {
     return { value: inputs.a - inputs.b }
   },
-  width: 120,
+  width: 100,
   color: '#4169e1',
   textColor: '#fff',
+  label: 'a - b',
 }

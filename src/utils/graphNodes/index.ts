@@ -44,9 +44,12 @@ import * as greater_than from './nodes/greaterThan'
 import * as greater_than_or_equal from './nodes/greaterThanOrEqual'
 import * as less_than from './nodes/lessThan'
 import * as less_than_or_equal from './nodes/lessThanOrEqual'
-import * as switch_scaler from './nodes/switchScaler'
 import * as not from './nodes/not'
 import * as equal from './nodes/equal'
+import * as switch_scaler from './nodes/switchScaler'
+import * as switch_vector2 from './nodes/switchVector2'
+import * as switch_transform from './nodes/switchTransform'
+import * as switch_object from './nodes/switchObject'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -71,6 +74,9 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   less_than,
   less_than_or_equal,
   switch_scaler,
+  switch_vector2,
+  switch_transform,
+  switch_object,
 } as const
 
 export const NODE_MENU_OPTIONS_SRC: {
@@ -106,6 +112,9 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: '(<) Scaler', type: 'less_than' },
       { label: '(<=) Scaler', type: 'less_than_or_equal' },
       { label: 'Switch Scaler', type: 'switch_scaler' },
+      { label: 'Switch Vector2', type: 'switch_vector2' },
+      { label: 'Switch Transform', type: 'switch_transform' },
+      { label: 'Switch Object', type: 'switch_object' },
     ],
   },
   {

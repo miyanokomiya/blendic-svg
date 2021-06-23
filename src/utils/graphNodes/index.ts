@@ -42,6 +42,8 @@ import * as divide_scaler from './nodes/divideScaler'
 import * as clone_object from './nodes/cloneObject'
 import * as greater_than from './nodes/greaterThan'
 import * as greater_than_or_equal from './nodes/greaterThanOrEqual'
+import * as less_than from './nodes/lessThan'
+import * as less_than_or_equal from './nodes/lessThanOrEqual'
 import * as switch_scaler from './nodes/switchScaler'
 import * as not from './nodes/not'
 
@@ -64,6 +66,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   not,
   greater_than,
   greater_than_or_equal,
+  less_than,
+  less_than_or_equal,
   switch_scaler,
 } as const
 
@@ -96,6 +100,8 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Not', type: 'not' },
       { label: '(>) Scaler', type: 'greater_than' },
       { label: '(>=) Scaler', type: 'greater_than_or_equal' },
+      { label: '(<) Scaler', type: 'less_than' },
+      { label: '(<=) Scaler', type: 'less_than_or_equal' },
       { label: 'Switch Scaler', type: 'switch_scaler' },
     ],
   },

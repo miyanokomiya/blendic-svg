@@ -744,6 +744,15 @@ describe('utils/armatures', () => {
       expect(ret.translate.x).toBeCloseTo(1.2)
       expect(ret.translate.y).toBeCloseTo(2.4)
     })
+    it('interpolate origin', () => {
+      const ret = target.interpolateTransform(
+        getTransform({ origin: { x: 1, y: 2 } }),
+        getTransform({ origin: { x: 2, y: 4 } }),
+        0.2
+      )
+      expect(ret.origin.x).toBeCloseTo(1.2)
+      expect(ret.origin.y).toBeCloseTo(2.4)
+    })
     it('interpolate rotate', () => {
       const ret = target.interpolateTransform(
         getTransform({ rotate: 20 }),

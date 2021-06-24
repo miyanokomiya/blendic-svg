@@ -476,6 +476,7 @@ export function interpolateTransform(
   return getTransform({
     scale: interpolateVector(a.scale, b.scale, rate),
     rotate: interpolateScaler(a.rotate, b.rotate, rate),
+    origin: interpolateVector(a.origin, b.origin, rate),
     translate: interpolateVector(a.translate, b.translate, rate),
   })
 }

@@ -41,6 +41,9 @@ import * as divide_scaler from './nodes/divideScaler'
 import * as sin from './nodes/sin'
 import * as cos from './nodes/cos'
 import * as pow from './nodes/pow'
+import * as lerp_scaler from './nodes/lerpScaler'
+import * as lerp_vector2 from './nodes/lerpVector2'
+import * as lerp_transform from './nodes/lerpTransform'
 
 import * as get_object from './nodes/getObject'
 import * as set_transform from './nodes/setTransform'
@@ -71,6 +74,9 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   sin,
   cos,
   pow,
+  lerp_scaler,
+  lerp_vector2,
+  lerp_transform,
 
   get_object,
   set_transform,
@@ -112,6 +118,9 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Sin', type: 'sin' },
       { label: 'Cos', type: 'cos' },
       { label: 'Pow', type: 'pow' },
+      { label: 'Lerp Number', type: 'lerp_scaler' },
+      { label: 'Lerp Vector2', type: 'lerp_vector2' },
+      { label: 'Lerp Transform', type: 'lerp_transform' },
     ],
   },
   {

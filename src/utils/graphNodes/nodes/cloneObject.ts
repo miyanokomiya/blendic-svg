@@ -45,4 +45,5 @@ export const struct: NodeStruct<GraphNodeCloneObject> = {
   width: 140,
   color: '#dc143c',
   textColor: '#fff',
+  label: 'Clone Object',
 }

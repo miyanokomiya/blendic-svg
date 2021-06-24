@@ -44,4 +44,5 @@ export const struct: NodeStruct<GraphNodeGetObject> = {
   width: 120,
   color: '#dc143c',
   textColor: '#fff',
+  label: 'Get Object',
 }

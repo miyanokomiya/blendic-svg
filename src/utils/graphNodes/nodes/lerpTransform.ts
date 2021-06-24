@@ -17,32 +17,46 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeMultiScaler, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { getTransform } from '/@/models'
+import { GraphNodeLerpTransform, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { interpolateTransform } from '/@/utils/armatures'
+import { clamp } from '/@/utils/geometry'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeMultiScaler> = {
+export const struct: NodeStruct<GraphNodeLerpTransform> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: { a: { value: 0 }, b: { value: 1 } },
+        inputs: {
+          a: { value: getTransform() },
+          b: { value: getTransform() },
+          alpha: { value: 0 },
+        },
         ...arg,
       }),
-      type: 'multi_scaler',
-    } as GraphNodeMultiScaler
+      type: 'lerp_transform',
+    } as GraphNodeLerpTransform
   },
   data: {},
   inputs: {
-    a: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    b: { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
+    a: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
+    b: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
+    alpha: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.SCALER,
+    value: GRAPH_VALUE_TYPE.TRANSFORM,
   },
   computation(inputs) {
-    return { value: inputs.a * inputs.b }
+    return {
+      value: interpolateTransform(
+        inputs.a,
+        inputs.b,
+        clamp(0, 1, inputs.alpha)
+      ),
+    }
   },
-  width: 100,
+  width: 160,
   color: '#4169e1',
   textColor: '#fff',
-  label: 'a x b',
+  label: 'Lerp Transform',
 }

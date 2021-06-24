@@ -58,4 +58,5 @@ export const struct: NodeStruct<GraphNodeMakeTransform> = {
   },
   width: 160,
   color: '#f0e68c',
+  label: 'Make Transform',
 }

@@ -99,6 +99,12 @@ export interface GraphNodes {
   sub_scaler: GraphNodeSubScaler
   multi_scaler: GraphNodeMultiScaler
   divide_scaler: GraphNodeDivideScaler
+  sin: GraphNodeSin
+  cos: GraphNodeCos
+  pow: GraphNodePow
+  lerp_scaler: GraphNodeLerpScaler
+  lerp_vector2: GraphNodeLerpVector2
+  lerp_transform: GraphNodeLerpTransform
 
   not: GraphNodeNot
   equal: GraphNodeEqual
@@ -181,6 +187,48 @@ export interface GraphNodeMultiScaler extends GraphNodeBase {
 export interface GraphNodeDivideScaler extends GraphNodeBase {
   type: 'divide_scaler'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeSin extends GraphNodeBase {
+  type: 'sin'
+  inputs: { t: GraphNodeInput<number> }
+}
+
+export interface GraphNodeCos extends GraphNodeBase {
+  type: 'cos'
+  inputs: { t: GraphNodeInput<number> }
+}
+
+export interface GraphNodePow extends GraphNodeBase {
+  type: 'pow'
+  inputs: { x: GraphNodeInput<number>; t: GraphNodeInput<number> }
+}
+
+export interface GraphNodeLerpScaler extends GraphNodeBase {
+  type: 'lerp_scaler'
+  inputs: {
+    a: GraphNodeInput<number>
+    b: GraphNodeInput<number>
+    alpha: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeLerpVector2 extends GraphNodeBase {
+  type: 'lerp_vector2'
+  inputs: {
+    a: GraphNodeInput<IVec2>
+    b: GraphNodeInput<IVec2>
+    alpha: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeLerpTransform extends GraphNodeBase {
+  type: 'lerp_transform'
+  inputs: {
+    a: GraphNodeInput<Transform>
+    b: GraphNodeInput<Transform>
+    alpha: GraphNodeInput<number>
+  }
 }
 
 export interface GraphNodeNot extends GraphNodeBase {

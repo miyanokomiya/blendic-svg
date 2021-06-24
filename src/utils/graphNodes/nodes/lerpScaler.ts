@@ -17,32 +17,37 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeLessThan, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { interpolateScaler } from 'okageo'
+import { GraphNodeLerpScaler, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { clamp } from '/@/utils/geometry'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeLessThan> = {
+export const struct: NodeStruct<GraphNodeLerpScaler> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: { a: { value: 0 }, b: { value: 0 } },
+        inputs: { a: { value: 0 }, b: { value: 1 }, alpha: { value: 0 } },
         ...arg,
       }),
-      type: 'less_than',
-    } as GraphNodeLessThan
+      type: 'lerp_scaler',
+    } as GraphNodeLerpScaler
   },
   data: {},
   inputs: {
     a: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    b: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    b: { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
+    alpha: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.BOOLEAN,
+    value: GRAPH_VALUE_TYPE.SCALER,
   },
   computation(inputs) {
-    return { value: inputs.a < inputs.b }
+    return {
+      value: interpolateScaler(inputs.a, inputs.b, clamp(0, 1, inputs.alpha)),
+    }
   },
-  width: 100,
-  color: '#b0c4de',
-  textColor: '#000',
-  label: 'a < b',
+  width: 140,
+  color: '#4169e1',
+  textColor: '#fff',
+  label: 'Lerp Number',
 }

@@ -32,14 +32,23 @@ import * as scaler from './nodes/scaler'
 import * as make_vector2 from './nodes/makeVector2'
 import * as break_vector2 from './nodes/breakVector2'
 import * as make_transform from './nodes/makeTransform'
-import * as set_transform from './nodes/setTransform'
 import * as get_frame from './nodes/getFrame'
-import * as get_object from './nodes/getObject'
+
 import * as add_scaler from './nodes/addScaler'
 import * as sub_scaler from './nodes/subScaler'
 import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
+import * as sin from './nodes/sin'
+import * as cos from './nodes/cos'
+import * as pow from './nodes/pow'
+import * as lerp_scaler from './nodes/lerpScaler'
+import * as lerp_vector2 from './nodes/lerpVector2'
+import * as lerp_transform from './nodes/lerpTransform'
+
+import * as get_object from './nodes/getObject'
+import * as set_transform from './nodes/setTransform'
 import * as clone_object from './nodes/cloneObject'
+
 import * as greater_than from './nodes/greaterThan'
 import * as greater_than_or_equal from './nodes/greaterThanOrEqual'
 import * as less_than from './nodes/lessThan'
@@ -62,6 +71,12 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   sub_scaler,
   multi_scaler,
   divide_scaler,
+  sin,
+  cos,
+  pow,
+  lerp_scaler,
+  lerp_vector2,
+  lerp_transform,
 
   get_object,
   set_transform,
@@ -96,22 +111,28 @@ export const NODE_MENU_OPTIONS_SRC: {
   {
     label: 'Math',
     children: [
-      { label: '(+) Scaler', type: 'add_scaler' },
-      { label: '(-) Scaler', type: 'sub_scaler' },
-      { label: '(x) Scaler', type: 'multi_scaler' },
-      { label: '(/) Scaler', type: 'divide_scaler' },
+      { label: '(+) Number', type: 'add_scaler' },
+      { label: '(-) Number', type: 'sub_scaler' },
+      { label: '(x) Number', type: 'multi_scaler' },
+      { label: '(/) Number', type: 'divide_scaler' },
+      { label: 'Sin', type: 'sin' },
+      { label: 'Cos', type: 'cos' },
+      { label: 'Pow', type: 'pow' },
+      { label: 'Lerp Number', type: 'lerp_scaler' },
+      { label: 'Lerp Vector2', type: 'lerp_vector2' },
+      { label: 'Lerp Transform', type: 'lerp_transform' },
     ],
   },
   {
     label: 'Boolean',
     children: [
       { label: 'Not', type: 'not' },
-      { label: '(=) Scaler', type: 'equal' },
-      { label: '(>) Scaler', type: 'greater_than' },
-      { label: '(>=) Scaler', type: 'greater_than_or_equal' },
-      { label: '(<) Scaler', type: 'less_than' },
-      { label: '(<=) Scaler', type: 'less_than_or_equal' },
-      { label: 'Switch Scaler', type: 'switch_scaler' },
+      { label: '(=) Number', type: 'equal' },
+      { label: '(>) Number', type: 'greater_than' },
+      { label: '(>=) Number', type: 'greater_than_or_equal' },
+      { label: '(<) Number', type: 'less_than' },
+      { label: '(<=) Number', type: 'less_than_or_equal' },
+      { label: 'Switch Number', type: 'switch_scaler' },
       { label: 'Switch Vector2', type: 'switch_vector2' },
       { label: 'Switch Transform', type: 'switch_transform' },
       { label: 'Switch Object', type: 'switch_object' },

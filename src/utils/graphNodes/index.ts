@@ -40,6 +40,7 @@ import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
 import * as sin from './nodes/sin'
 import * as cos from './nodes/cos'
+import * as pow from './nodes/pow'
 
 import * as get_object from './nodes/getObject'
 import * as set_transform from './nodes/setTransform'
@@ -69,6 +70,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   divide_scaler,
   sin,
   cos,
+  pow,
 
   get_object,
   set_transform,
@@ -109,6 +111,7 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: '(/) Number', type: 'divide_scaler' },
       { label: 'Sin', type: 'sin' },
       { label: 'Cos', type: 'cos' },
+      { label: 'Pow', type: 'pow' },
     ],
   },
   {

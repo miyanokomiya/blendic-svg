@@ -101,6 +101,7 @@ export interface GraphNodes {
   divide_scaler: GraphNodeDivideScaler
   sin: GraphNodeSin
   cos: GraphNodeCos
+  pow: GraphNodePow
 
   not: GraphNodeNot
   equal: GraphNodeEqual
@@ -193,6 +194,11 @@ export interface GraphNodeSin extends GraphNodeBase {
 export interface GraphNodeCos extends GraphNodeBase {
   type: 'cos'
   inputs: { t: GraphNodeInput<number> }
+}
+
+export interface GraphNodePow extends GraphNodeBase {
+  type: 'pow'
+  inputs: { x: GraphNodeInput<number>; t: GraphNodeInput<number> }
 }
 
 export interface GraphNodeNot extends GraphNodeBase {

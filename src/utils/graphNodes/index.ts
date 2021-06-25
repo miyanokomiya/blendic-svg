@@ -46,6 +46,7 @@ import * as pow from './nodes/pow'
 import * as lerp_scaler from './nodes/lerpScaler'
 import * as lerp_vector2 from './nodes/lerpVector2'
 import * as lerp_transform from './nodes/lerpTransform'
+import * as lerp_color from './nodes/lerpColor'
 
 import * as get_object from './nodes/getObject'
 import * as set_transform from './nodes/setTransform'
@@ -83,6 +84,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   lerp_scaler,
   lerp_vector2,
   lerp_transform,
+  lerp_color,
 
   get_object,
   set_transform,
@@ -131,6 +133,7 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Lerp Number', type: 'lerp_scaler' },
       { label: 'Lerp Vector2', type: 'lerp_vector2' },
       { label: 'Lerp Transform', type: 'lerp_transform' },
+      { label: 'Lerp Color', type: 'lerp_color' },
     ],
   },
   {

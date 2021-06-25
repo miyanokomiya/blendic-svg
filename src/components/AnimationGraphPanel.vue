@@ -219,13 +219,20 @@ export default defineComponent({
         return Object.entries(node.inputs).reduce<{
           [key: string]: { from: IVec2; to: IVec2 }
         }>((p, [key, input]) => {
-          if (!input.from || !edgePositionMap.value[input.from.id]) return p
+          if (
+            !input.from ||
+            !edgePositionMap.value[input.from.id] ||
+            !edgePositionMap.value[input.from.id].outputs[input.from.key]
+          )
+            return p
+
           if (
             draftToInfo &&
             draftToInfo.id === node.id &&
             draftToInfo.key === key
           )
             return p
+
           p[key] = {
             from: add(
               allNodes[input.from.id].position,

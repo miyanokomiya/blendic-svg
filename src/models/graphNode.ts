@@ -110,6 +110,7 @@ export interface GraphNodes {
   lerp_scaler: GraphNodeLerpScaler
   lerp_vector2: GraphNodeLerpVector2
   lerp_transform: GraphNodeLerpTransform
+  lerp_color: GraphNodeLerpColor
 
   not: GraphNodeNot
   equal: GraphNodeEqual
@@ -267,6 +268,15 @@ export interface GraphNodeLerpVector2 extends GraphNodeBase {
 
 export interface GraphNodeLerpTransform extends GraphNodeBase {
   type: 'lerp_transform'
+  inputs: {
+    a: GraphNodeInput<Transform>
+    b: GraphNodeInput<Transform>
+    alpha: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeLerpColor extends GraphNodeBase {
+  type: 'lerp_color'
   inputs: {
     a: GraphNodeInput<Transform>
     b: GraphNodeInput<Transform>

@@ -56,13 +56,14 @@ Copyright (C) 2021, Tomoya Komiyama.
           />
         </InlineField>
       </template>
-      <template v-else-if="type === 'COLOR'">
+      <div v-else-if="type === 'COLOR'" class="color-block">
         <button
           type="button"
-          class="color-block"
-          :style="{ 'background-color': color }"
+          class="color-button"
           @click="toggleShowColorPicker"
-        />
+        >
+          <ColorRect :hsva="hsva" />
+        </button>
         <div v-if="showColorPicker" class="color-popup">
           <ColorPicker
             class="color-picker"
@@ -71,7 +72,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             @update:modelValue="updateByColor"
           />
         </div>
-      </template>
+      </div>
     </template>
   </div>
 </template>
@@ -85,8 +86,9 @@ import SelectField from '/@/components/atoms/SelectField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
+import ColorRect from '/@/components/atoms/ColorRect.vue'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
-import { posedColor, posedHsva } from '/@/utils/attributesResolver'
+import { posedHsva } from '/@/utils/attributesResolver'
 
 const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
   [GRAPH_VALUE_TYPE.BOOLEAN]: true,
@@ -104,6 +106,7 @@ export default defineComponent({
     CheckboxInput,
     InlineField,
     ColorPicker,
+    ColorRect,
   },
   props: {
     modelValue: { type: null, required: true },
@@ -129,9 +132,6 @@ export default defineComponent({
     function updateByColor(hsva: HSVA, seriesKey?: string) {
       update(hsvaToTransform(hsva), seriesKey)
     }
-    const color = computed(() => {
-      return posedColor(props.modelValue)
-    })
     const hsva = computed(() => {
       return posedHsva(props.modelValue)
     })
@@ -144,7 +144,6 @@ export default defineComponent({
       showColorPicker,
       toggleShowColorPicker,
       updateByColor,
-      color,
       hsva,
     }
   },
@@ -156,10 +155,14 @@ h5 {
   margin-bottom: 8px;
 }
 .color-block {
-  display: block;
+  display: flex;
+  align-items: center;
+}
+.color-button {
   width: 100%;
-  height: 20px;
-  border: solid 1px #aaa;
+  > * {
+    width: 100%;
+  }
 }
 .color-popup {
   position: relative;
@@ -168,6 +171,7 @@ h5 {
   z-index: 1;
   .color-picker {
     position: fixed;
+    transform: translateX(-50%);
     border: solid 1px #aaa;
   }
 }

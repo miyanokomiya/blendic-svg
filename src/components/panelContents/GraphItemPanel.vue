@@ -86,12 +86,17 @@ export default defineComponent({
     const graphStore = useAnimationGraphStore()
     const targetNode = graphStore.lastSelectedNode
 
+    const struct = computed(() => {
+      if (!targetNode.value) return
+      return getGraphNodeModule(targetNode.value.type).struct
+    })
+
     const dataMap = computed<{
       [key: string]: DataInfo
     }>(() => {
-      if (!targetNode.value) return {}
+      if (!targetNode.value || !struct.value) return {}
 
-      const dataStruct = getGraphNodeModule(targetNode.value.type).struct.data
+      const dataStruct = struct.value.data
       return mapReduce(targetNode.value.data, (value, key) => {
         return {
           type: (dataStruct as any)[key].type as string,
@@ -112,10 +117,9 @@ export default defineComponent({
     const inputsMap = computed<{
       [key: string]: DataInfo
     }>(() => {
-      if (!targetNode.value) return {}
+      if (!targetNode.value || !struct.value) return {}
 
-      const inputsStruct = getGraphNodeModule(targetNode.value.type).struct
-        .inputs
+      const inputsStruct = struct.value.inputs
       const inputs = targetNode.value.inputs
       return mapReduce(inputs, (value, key) => {
         return {

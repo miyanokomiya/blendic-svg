@@ -93,10 +93,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       <InlineField>
         <button
           type="button"
-          class="color-block"
-          :style="{ 'background-color': color }"
+          class="color-button"
           @click="toggleShowColorPicker"
-        />
+        >
+          <ColorRect :hsva="hsva" />
+        </button>
         <div v-if="showColorPicker" class="color-popup">
           <ColorPicker
             class="color-picker"
@@ -161,8 +162,9 @@ import SliderInput from '/@/components/atoms/SliderInput.vue'
 import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
+import ColorRect from '/@/components/atoms/ColorRect.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
-import { posedColor, posedHsva } from '/@/utils/attributesResolver'
+import { posedHsva } from '/@/utils/attributesResolver'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
 import { mapReduce } from '/@/utils/commons'
@@ -174,6 +176,7 @@ export default defineComponent({
     WeightPanel,
     InlineField,
     ColorPicker,
+    ColorRect,
     KeyDot,
   },
   setup() {
@@ -234,10 +237,6 @@ export default defineComponent({
       showColorPicker.value = !showColorPicker.value
     }
 
-    const color = computed(() => {
-      if (!targetTransform.value) return ''
-      return posedColor(targetTransform.value)
-    })
     const hsva = computed(() => {
       if (!targetTransform.value) return ''
       return posedHsva(targetTransform.value)
@@ -382,7 +381,6 @@ export default defineComponent({
       labelWidth: '20px',
       canvasMode: computed(() => canvasStore.state.canvasMode),
       targetBone,
-      color,
       hsva,
       draftBone,
       changeBoneHeadX,
@@ -421,11 +419,14 @@ h5 {
 * + h5 {
   margin-top: 8px;
 }
-.color-block {
+.color-button {
   display: block;
   width: 100%;
   height: 20px;
   border: solid 1px #aaa;
+  > * {
+    width: 100%;
+  }
 }
 .color-popup {
   position: relative;

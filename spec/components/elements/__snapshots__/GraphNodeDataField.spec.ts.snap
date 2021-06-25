@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/GraphNodeDataField.vue snapshot COLOR 1`] = `
+<foreignobject
+  height="40"
+  width="100"
+>
+  <!-- FIXME: forms are readonly because those in foreignObject do not work well -->
+  <div
+    class="field"
+    xmlns="http://www.w3.org/1999/xhtml"
+  >
+    <h5>
+      value
+    </h5>
+    <div
+      class="color-rect color"
+      style="background-color: rgb(0, 0, 0);"
+    />
+  </div>
+</foreignobject>
+`;
+
+exports[`src/components/elements/GraphNodeDataField.vue snapshot SCALER 1`] = `
+<foreignobject
+  height="40"
+  width="100"
+>
+  <!-- FIXME: forms are readonly because those in foreignObject do not work well -->
+  <div
+    class="field"
+    xmlns="http://www.w3.org/1999/xhtml"
+  >
+    <h5>
+      value
+    </h5>
+    <p>
+      123
+    </p>
+  </div>
+</foreignobject>
+`;

@@ -18,24 +18,24 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import * as target from '/@/utils/graphNodes/nodes/makeColor'
+import * as target from '/@/utils/graphNodes/nodes/breakColor'
 
-describe('src/utils/graphNodes/nodes/makeColor.ts', () => {
+describe('src/utils/graphNodes/nodes/breakColor.ts', () => {
   describe('computation', () => {
-    it('should return a color as transform', () => {
+    it('should break a color as hsva', () => {
       expect(
         target.struct.computation(
-          { h: 1, s: 0.2, v: 0.3, a: 0.1 },
+          {
+            color: getTransform({
+              translate: { x: 20, y: 30 },
+              rotate: 1,
+              scale: { x: 0.1, y: 1 },
+            }),
+          },
           {} as any,
           {} as any
         )
-      ).toEqual({
-        color: getTransform({
-          translate: { x: 20, y: 30 },
-          rotate: 1,
-          scale: { x: 0.1, y: 1 },
-        }),
-      })
+      ).toEqual({ h: 1, s: 0.2, v: 0.3, a: 0.1 })
     })
   })
 })

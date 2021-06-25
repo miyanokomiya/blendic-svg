@@ -93,6 +93,7 @@ export interface GraphNodes {
   make_transform: GraphNodeMakeTransform
   color: GraphNodeColor
   make_color: GraphNodeMakeColor
+  break_color: GraphNodeBreakColor
 
   get_object: GraphNodeGetObject
   set_transform: GraphNodeSetTransform
@@ -164,6 +165,11 @@ export interface GraphNodeMakeColor extends GraphNodeBase {
     v: GraphNodeInput<number>
     a: GraphNodeInput<number>
   }
+}
+
+export interface GraphNodeBreakColor extends GraphNodeBase {
+  type: 'break_color'
+  inputs: { color: GraphNodeInput<Transform> }
 }
 
 export interface GraphNodeGetFrame extends GraphNodeBase {

@@ -40,7 +40,10 @@ import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce } from './commons'
 import { getTnansformStr } from './helpers'
 import { KeyframeBase } from '/@/models/keyframe'
-import { getPosedAttributesWithoutTransform } from '/@/utils/attributesResolver'
+import {
+  getPosedAttributesWithoutTransform,
+  posedColorAttributes,
+} from '/@/utils/attributesResolver'
 import { flatElementTree } from '/@/utils/elements'
 import { isIdentityAffine, transformToAffine } from '/@/utils/geometry'
 import { splitKeyframeMapByName } from '/@/utils/keyframes'
@@ -294,7 +297,7 @@ export function getGraphResolvedElementTree(
   )
 }
 
-export function getGraphResolvedElement(
+function getGraphResolvedElement(
   graphObjectMap: IdMap<GraphObject>,
   node: ElementNode
 ): ElementNode {
@@ -314,18 +317,27 @@ function getGraphResolvedAttributes(
   graphObject: GraphObject,
   nodeAttributes: ElementNodeAttributes
 ): ElementNodeAttributes {
-  const graphTransform = graphObject.transform
+  const ret: ElementNodeAttributes = { ...nodeAttributes }
 
-  const matrix = graphTransform
-    ? transformToAffine(graphTransform)
-    : nodeAttributes.transform
-    ? parseTransform(nodeAttributes.transform)
-    : undefined
-
-  return {
-    ...nodeAttributes,
-    ...(matrix ? { transform: affineToTransform(matrix) } : {}),
+  if (graphObject.transform) {
+    ret.transform = affineToTransform(transformToAffine(graphObject.transform))
+  } else if (nodeAttributes.transform) {
+    ret.transform = nodeAttributes.transform
   }
+
+  if (graphObject.fill) {
+    const attrs = posedColorAttributes(graphObject.fill)
+    ret.fill = attrs.color
+    ret['fill-opacity'] = attrs.opacity
+  }
+
+  if (graphObject.stroke) {
+    const attrs = posedColorAttributes(graphObject.stroke)
+    ret.stroke = attrs.color
+    ret['stroke-opacity'] = attrs.opacity
+  }
+
+  return ret
 }
 
 export function getClonedElementsTree(

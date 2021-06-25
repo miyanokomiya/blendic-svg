@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/ColorRect.vue snapshot props: hsva 1`] = `
+<div
+  class="color-rect"
+/>
+`;
+
+exports[`src/components/atoms/ColorRect.vue snapshot props: transform 1`] = `
+<div
+  class="color-rect"
+/>
+`;

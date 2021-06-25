@@ -28,11 +28,14 @@ import {
 } from '/@/models/graphNode'
 import { NodeModule, NodeContext } from '/@/utils/graphNodes/core'
 import { v4 } from 'uuid'
+import * as get_frame from './nodes/getFrame'
 import * as scaler from './nodes/scaler'
 import * as make_vector2 from './nodes/makeVector2'
 import * as break_vector2 from './nodes/breakVector2'
 import * as make_transform from './nodes/makeTransform'
-import * as get_frame from './nodes/getFrame'
+import * as color from './nodes/color'
+import * as make_color from './nodes/makeColor'
+import * as break_color from './nodes/breakColor'
 
 import * as add_scaler from './nodes/addScaler'
 import * as sub_scaler from './nodes/subScaler'
@@ -44,9 +47,12 @@ import * as pow from './nodes/pow'
 import * as lerp_scaler from './nodes/lerpScaler'
 import * as lerp_vector2 from './nodes/lerpVector2'
 import * as lerp_transform from './nodes/lerpTransform'
+import * as lerp_color from './nodes/lerpColor'
 
 import * as get_object from './nodes/getObject'
 import * as set_transform from './nodes/setTransform'
+import * as set_fill from './nodes/setFill'
+import * as set_stroke from './nodes/setStroke'
 import * as clone_object from './nodes/cloneObject'
 
 import * as greater_than from './nodes/greaterThan'
@@ -66,6 +72,9 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   make_vector2,
   break_vector2,
   make_transform,
+  color,
+  make_color,
+  break_color,
 
   add_scaler,
   sub_scaler,
@@ -77,9 +86,12 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   lerp_scaler,
   lerp_vector2,
   lerp_transform,
+  lerp_color,
 
   get_object,
   set_transform,
+  set_fill,
+  set_stroke,
   clone_object,
 
   not,
@@ -106,6 +118,9 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Make Vector2', type: 'make_vector2' },
       { label: 'Break Vector2', type: 'break_vector2' },
       { label: 'Make Transform', type: 'make_transform' },
+      { label: 'Color', type: 'color' },
+      { label: 'Make Color', type: 'make_color' },
+      { label: 'Break Color', type: 'break_color' },
     ],
   },
   {
@@ -121,6 +136,7 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Lerp Number', type: 'lerp_scaler' },
       { label: 'Lerp Vector2', type: 'lerp_vector2' },
       { label: 'Lerp Transform', type: 'lerp_transform' },
+      { label: 'Lerp Color', type: 'lerp_color' },
     ],
   },
   {
@@ -143,6 +159,8 @@ export const NODE_MENU_OPTIONS_SRC: {
     children: [
       { label: 'Get Object', type: 'get_object' },
       { label: 'Set Transform', type: 'set_transform' },
+      { label: 'Set Fill', type: 'set_fill' },
+      { label: 'Set Stroke', type: 'set_stroke' },
       { label: 'Clone Object', type: 'clone_object' },
     ],
   },

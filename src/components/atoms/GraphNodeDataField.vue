@@ -56,24 +56,46 @@ Copyright (C) 2021, Tomoya Komiyama.
           />
         </InlineField>
       </template>
+      <div v-else-if="type === 'COLOR'" class="color-block">
+        <button
+          type="button"
+          class="color-button"
+          @click="toggleShowColorPicker"
+        >
+          <ColorRect :hsva="hsva" />
+        </button>
+        <div v-if="showColorPicker" class="color-popup">
+          <ColorPicker
+            class="color-picker"
+            :model-value="hsva"
+            extra-hue
+            @update:modelValue="updateByColor"
+          />
+        </div>
+      </div>
     </template>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, inject } from 'vue'
+import { defineComponent, PropType, ref, computed, inject } from 'vue'
 import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import TextInput from '/@/components/atoms/TextInput.vue'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import ColorPicker from '/@/components/molecules/ColorPicker.vue'
+import ColorRect from '/@/components/atoms/ColorRect.vue'
+import { HSVA, hsvaToTransform } from '/@/utils/color'
+import { posedHsva } from '/@/utils/attributesResolver'
 
 const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
   [GRAPH_VALUE_TYPE.BOOLEAN]: true,
   [GRAPH_VALUE_TYPE.SCALER]: true,
   [GRAPH_VALUE_TYPE.VECTOR2]: true,
   [GRAPH_VALUE_TYPE.OBJECT]: true,
+  [GRAPH_VALUE_TYPE.COLOR]: true,
 }
 
 export default defineComponent({
@@ -83,6 +105,8 @@ export default defineComponent({
     SelectField,
     CheckboxInput,
     InlineField,
+    ColorPicker,
+    ColorRect,
   },
   props: {
     modelValue: { type: null, required: true },
@@ -101,10 +125,26 @@ export default defineComponent({
 
     const objectOptions = computed(inject('getObjectOptions', () => []))
 
+    const showColorPicker = ref(false)
+    function toggleShowColorPicker() {
+      showColorPicker.value = !showColorPicker.value
+    }
+    function updateByColor(hsva: HSVA, seriesKey?: string) {
+      update(hsvaToTransform(hsva), seriesKey)
+    }
+    const hsva = computed(() => {
+      return posedHsva(props.modelValue)
+    })
+
     return {
       editableTypes,
       update,
       objectOptions,
+
+      showColorPicker,
+      toggleShowColorPicker,
+      updateByColor,
+      hsva,
     }
   },
 })
@@ -113,5 +153,26 @@ export default defineComponent({
 <style lang="scss" scoped>
 h5 {
   margin-bottom: 8px;
+}
+.color-block {
+  display: flex;
+  align-items: center;
+}
+.color-button {
+  width: 100%;
+  > * {
+    width: 100%;
+  }
+}
+.color-popup {
+  position: relative;
+  top: 10px;
+  left: -50%;
+  z-index: 1;
+  .color-picker {
+    position: fixed;
+    transform: translateX(-50%);
+    border: solid 1px #aaa;
+  }
 }
 </style>

@@ -22,7 +22,12 @@ Copyright (C) 2021, Tomoya Komiyama.
     <!-- FIXME: forms are readonly because those in foreignObject do not work well -->
     <div xmlns="http://www.w3.org/1999/xhtml" class="field">
       <h5>{{ label }}</h5>
-      <p>{{ modelValue }}</p>
+      <ColorRect
+        v-if="type === 'COLOR'"
+        :transform="modelValue"
+        class="color"
+      />
+      <p v-else>{{ modelValue }}</p>
     </div>
   </foreignObject>
 </template>
@@ -30,8 +35,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { defineComponent, PropType, computed, inject } from 'vue'
 import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import ColorRect from '/@/components/atoms/ColorRect.vue'
 
 export default defineComponent({
+  components: {
+    ColorRect,
+  },
   props: {
     modelValue: { type: null, required: true },
     label: { type: String, required: true },
@@ -59,5 +68,8 @@ export default defineComponent({
 <style lang="scss" scoped>
 .field {
   text-align: left;
+}
+.color {
+  width: 60px;
 }
 </style>

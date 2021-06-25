@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <form @submit.prevent>
       <h5>Data</h5>
       <template v-for="(data, key) in dataMap" :key="key">
-        <InlineField :label-width="labelWidth">
+        <BlockField>
           <GraphNodeDataField
             :label="key"
             :type="data.type"
@@ -31,12 +31,12 @@ Copyright (C) 2021, Tomoya Komiyama.
               (val, seriesKey) => updateData(key, val, seriesKey)
             "
           />
-        </InlineField>
+        </BlockField>
       </template>
       <template v-if="hasInput">
         <h5>Inputs</h5>
         <template v-for="(input, key) in inputsMap" :key="key">
-          <InlineField :label-width="labelWidth">
+          <BlockField>
             <GraphNodeDataField
               v-if="input.disabled"
               :label="key"
@@ -53,7 +53,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                 (val, seriesKey) => updateInput(key, val, seriesKey)
               "
             />
-          </InlineField>
+          </BlockField>
         </template>
       </template>
     </form>
@@ -65,7 +65,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
-import InlineField from '/@/components/atoms/InlineField.vue'
+import BlockField from '/@/components/atoms/BlockField.vue'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { mapReduce } from '/@/utils/commons'
@@ -79,19 +79,24 @@ interface DataInfo {
 
 export default defineComponent({
   components: {
-    InlineField,
+    BlockField,
     GraphNodeDataField,
   },
   setup() {
     const graphStore = useAnimationGraphStore()
     const targetNode = graphStore.lastSelectedNode
 
+    const struct = computed(() => {
+      if (!targetNode.value) return
+      return getGraphNodeModule(targetNode.value.type).struct
+    })
+
     const dataMap = computed<{
       [key: string]: DataInfo
     }>(() => {
-      if (!targetNode.value) return {}
+      if (!targetNode.value || !struct.value) return {}
 
-      const dataStruct = getGraphNodeModule(targetNode.value.type).struct.data
+      const dataStruct = struct.value.data
       return mapReduce(targetNode.value.data, (value, key) => {
         return {
           type: (dataStruct as any)[key].type as string,
@@ -112,10 +117,9 @@ export default defineComponent({
     const inputsMap = computed<{
       [key: string]: DataInfo
     }>(() => {
-      if (!targetNode.value) return {}
+      if (!targetNode.value || !struct.value) return {}
 
-      const inputsStruct = getGraphNodeModule(targetNode.value.type).struct
-        .inputs
+      const inputsStruct = struct.value.inputs
       const inputs = targetNode.value.inputs
       return mapReduce(inputs, (value, key) => {
         return {

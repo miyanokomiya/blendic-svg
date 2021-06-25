@@ -359,12 +359,55 @@ describe('utils/elements.ts', () => {
         },
       })
     })
+    it('should return a context to setFill', () => {
+      const context = createGraphNodeContext(
+        { a: getBElement({ id: 'a' }) },
+        10
+      )
+      context.setFill('a', getTransform({ rotate: 20 }))
+      expect(context.getObjectMap()).toEqual({
+        a: {
+          id: expect.anything(),
+          elementId: 'a',
+          fill: getTransform({ rotate: 20 }),
+        },
+      })
+      context.setFill('a', getTransform({ rotate: 50 }))
+      expect(context.getObjectMap()).toEqual({
+        a: {
+          id: expect.anything(),
+          elementId: 'a',
+          fill: getTransform({ rotate: 50 }),
+        },
+      })
+    })
+    it('should return a context to setStroke', () => {
+      const context = createGraphNodeContext(
+        { a: getBElement({ id: 'a' }) },
+        10
+      )
+      context.setStroke('a', getTransform({ rotate: 20 }))
+      expect(context.getObjectMap()).toEqual({
+        a: {
+          id: expect.anything(),
+          elementId: 'a',
+          stroke: getTransform({ rotate: 20 }),
+        },
+      })
+      context.setStroke('a', getTransform({ rotate: 50 }))
+      expect(context.getObjectMap()).toEqual({
+        a: {
+          id: expect.anything(),
+          elementId: 'a',
+          stroke: getTransform({ rotate: 50 }),
+        },
+      })
+    })
     it('should return a context to getFrame', () => {
       const context = createGraphNodeContext(
         { a: getBElement({ id: 'a' }) },
         10
       )
-      context.setTransform('a', getTransform({ rotate: 20 }))
       expect(context.getFrame()).toBe(10)
     })
     it('should return a context to cloneObject', () => {

@@ -49,6 +49,7 @@ export const GRAPH_VALUE_TYPE = {
   VECTOR2: 'VECTOR2',
   OBJECT: 'OBJECT',
   TRANSFORM: 'TRANSFORM',
+  COLOR: 'COLOR',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 
@@ -90,9 +91,14 @@ export interface GraphNodes {
   make_vector2: GraphNodeMakeVector2
   break_vector2: GraphNodeBreakVector2
   make_transform: GraphNodeMakeTransform
+  color: GraphNodeColor
+  make_color: GraphNodeMakeColor
+  break_color: GraphNodeBreakColor
 
   get_object: GraphNodeGetObject
   set_transform: GraphNodeSetTransform
+  set_fill: GraphNodeSetFill
+  set_stroke: GraphNodeSetStroke
   clone_object: GraphNodeCloneObject
 
   add_scaler: GraphNodeAddScaler
@@ -105,6 +111,7 @@ export interface GraphNodes {
   lerp_scaler: GraphNodeLerpScaler
   lerp_vector2: GraphNodeLerpVector2
   lerp_transform: GraphNodeLerpTransform
+  lerp_color: GraphNodeLerpColor
 
   not: GraphNodeNot
   equal: GraphNodeEqual
@@ -145,6 +152,26 @@ export interface GraphNodeMakeTransform extends GraphNodeBase {
   }
 }
 
+export interface GraphNodeColor extends GraphNodeBase {
+  type: 'color'
+  data: { color: Transform }
+}
+
+export interface GraphNodeMakeColor extends GraphNodeBase {
+  type: 'make_color'
+  inputs: {
+    h: GraphNodeInput<number>
+    s: GraphNodeInput<number>
+    v: GraphNodeInput<number>
+    a: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeBreakColor extends GraphNodeBase {
+  type: 'break_color'
+  inputs: { color: GraphNodeInput<Transform> }
+}
+
 export interface GraphNodeGetFrame extends GraphNodeBase {
   type: 'get_frame'
 }
@@ -159,6 +186,29 @@ export interface GraphNodeSetTransform extends GraphNodeBase {
   inputs: {
     object: GraphNodeInput<string>
     transform: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeSetFill extends GraphNodeBase {
+  type: 'set_fill'
+  inputs: {
+    object: GraphNodeInput<string>
+    color: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeSetStroke extends GraphNodeBase {
+  type: 'set_stroke'
+  inputs: {
+    object: GraphNodeInput<string>
+    color: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeCloneObject extends GraphNodeBase {
+  type: 'clone_object'
+  inputs: {
+    object: GraphNodeInput<string>
   }
 }
 
@@ -224,6 +274,15 @@ export interface GraphNodeLerpVector2 extends GraphNodeBase {
 
 export interface GraphNodeLerpTransform extends GraphNodeBase {
   type: 'lerp_transform'
+  inputs: {
+    a: GraphNodeInput<Transform>
+    b: GraphNodeInput<Transform>
+    alpha: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeLerpColor extends GraphNodeBase {
+  type: 'lerp_color'
   inputs: {
     a: GraphNodeInput<Transform>
     b: GraphNodeInput<Transform>

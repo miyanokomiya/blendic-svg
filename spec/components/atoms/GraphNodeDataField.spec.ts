@@ -64,6 +64,16 @@ describe('src/components/atoms/GraphNodeDataField.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
+    it('COLOR', () => {
+      const wrapper = mount(Target, {
+        props: {
+          modelValue: getTransform({ rotate: 20 }),
+          label: 'value',
+          type: GRAPH_VALUE_TYPE.COLOR,
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
     it('incompatible types', () => {
       const wrapper = mount(Target, {
         props: {

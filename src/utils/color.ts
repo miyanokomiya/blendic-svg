@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { getTransform, Transform } from '/@/models'
 import { clamp } from '/@/utils/geometry'
 
 export interface RGBA {
@@ -160,4 +161,12 @@ function slToSv(s: number, l: number): { s: number; v: number } {
   const v = l + s * Math.min(l, 1 - l)
   const ss = v === 0 ? 0 : 2 * (1 - l / v)
   return { s: ss, v }
+}
+
+export function hsvaToTransform(hsva: HSVA): Transform {
+  return getTransform({
+    translate: { x: hsva.s * 100, y: hsva.v * 100 },
+    rotate: hsva.h,
+    scale: { x: hsva.a, y: 1 },
+  })
 }

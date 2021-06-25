@@ -181,6 +181,14 @@ export function createGraphNodeContext(
       if (!graphElementMap[objectId]) return
       graphElementMap[objectId].transform = transform
     },
+    setFill(objectId, transform) {
+      if (!graphElementMap[objectId]) return
+      graphElementMap[objectId].fill = transform
+    },
+    setStroke(objectId, transform) {
+      if (!graphElementMap[objectId]) return
+      graphElementMap[objectId].stroke = transform
+    },
     getFrame() {
       return currentFrame
     },

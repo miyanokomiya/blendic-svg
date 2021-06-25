@@ -47,6 +47,8 @@ import * as lerp_transform from './nodes/lerpTransform'
 
 import * as get_object from './nodes/getObject'
 import * as set_transform from './nodes/setTransform'
+import * as set_fill from './nodes/setFill'
+import * as set_stroke from './nodes/setStroke'
 import * as clone_object from './nodes/cloneObject'
 
 import * as greater_than from './nodes/greaterThan'
@@ -80,6 +82,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
 
   get_object,
   set_transform,
+  set_fill,
+  set_stroke,
   clone_object,
 
   not,
@@ -143,6 +147,8 @@ export const NODE_MENU_OPTIONS_SRC: {
     children: [
       { label: 'Get Object', type: 'get_object' },
       { label: 'Set Transform', type: 'set_transform' },
+      { label: 'Set Fill', type: 'set_fill' },
+      { label: 'Set Stroke', type: 'set_stroke' },
       { label: 'Clone Object', type: 'clone_object' },
     ],
   },

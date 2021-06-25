@@ -17,10 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { getTransform } from '/@/models'
 import {
   hslaToHsva,
   hsvaToHsla,
   hsvaToRgba,
+  hsvaToTransform,
   parseHSLA,
   parseHSVA,
   parseRGBA,
@@ -194,6 +196,25 @@ describe('src/utils/color.ts', () => {
         l: 0.5,
         a: 0.9,
       })
+    })
+  })
+
+  describe('hsvaToTransform', () => {
+    it('to transform', () => {
+      expect(
+        hsvaToTransform({
+          h: 20,
+          s: 1,
+          v: 1,
+          a: 0.9,
+        })
+      ).toEqual(
+        getTransform({
+          translate: { x: 100, y: 100 },
+          rotate: 20,
+          scale: { x: 0.9, y: 1 },
+        })
+      )
     })
   })
 })

@@ -18,6 +18,24 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot BOOLEAN 1`] = `
 </div>
 `;
 
+exports[`src/components/atoms/GraphNodeDataField.vue snapshot COLOR 1`] = `
+<div>
+  <h5>
+    value
+  </h5>
+  
+  
+  <button
+    class="color-block"
+    style="background-color: rgb(0, 0, 0);"
+    type="button"
+  />
+  <!--v-if-->
+  
+  
+</div>
+`;
+
 exports[`src/components/atoms/GraphNodeDataField.vue snapshot OBJECT 1`] = `
 <div>
   <h5>

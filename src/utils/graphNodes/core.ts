@@ -53,6 +53,8 @@ export interface NodeStruct<T extends GraphNodeBase> {
 
 export interface NodeContext<T> {
   setTransform: (objectId: string, transform: Transform) => void
+  setFill: (objectId: string, transform: Transform) => void
+  setStroke: (objectId: string, transform: Transform) => void
   getFrame: () => number
   getObjectMap: () => { [id: string]: T }
   cloneObject: (objectId: string) => string

@@ -49,6 +49,7 @@ export const GRAPH_VALUE_TYPE = {
   VECTOR2: 'VECTOR2',
   OBJECT: 'OBJECT',
   TRANSFORM: 'TRANSFORM',
+  COLOR: 'COLOR',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 
@@ -93,6 +94,8 @@ export interface GraphNodes {
 
   get_object: GraphNodeGetObject
   set_transform: GraphNodeSetTransform
+  set_fill: GraphNodeSetFill
+  set_stroke: GraphNodeSetStroke
   clone_object: GraphNodeCloneObject
 
   add_scaler: GraphNodeAddScaler
@@ -159,6 +162,29 @@ export interface GraphNodeSetTransform extends GraphNodeBase {
   inputs: {
     object: GraphNodeInput<string>
     transform: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeSetFill extends GraphNodeBase {
+  type: 'set_fill'
+  inputs: {
+    object: GraphNodeInput<string>
+    color: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeSetStroke extends GraphNodeBase {
+  type: 'set_stroke'
+  inputs: {
+    object: GraphNodeInput<string>
+    color: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeCloneObject extends GraphNodeBase {
+  type: 'clone_object'
+  inputs: {
+    object: GraphNodeInput<string>
   }
 }
 

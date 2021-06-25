@@ -56,24 +56,44 @@ Copyright (C) 2021, Tomoya Komiyama.
           />
         </InlineField>
       </template>
+      <template v-else-if="type === 'COLOR'">
+        <button
+          type="button"
+          class="color-block"
+          :style="{ 'background-color': color }"
+          @click="toggleShowColorPicker"
+        />
+        <div v-if="showColorPicker" class="color-popup">
+          <ColorPicker
+            class="color-picker"
+            :model-value="hsva"
+            extra-hue
+            @update:modelValue="updateByColor"
+          />
+        </div>
+      </template>
     </template>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, inject } from 'vue'
+import { defineComponent, PropType, ref, computed, inject } from 'vue'
 import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import TextInput from '/@/components/atoms/TextInput.vue'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import ColorPicker from '/@/components/molecules/ColorPicker.vue'
+import { HSVA, hsvaToTransform } from '/@/utils/color'
+import { posedColor, posedHsva } from '/@/utils/attributesResolver'
 
 const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
   [GRAPH_VALUE_TYPE.BOOLEAN]: true,
   [GRAPH_VALUE_TYPE.SCALER]: true,
   [GRAPH_VALUE_TYPE.VECTOR2]: true,
   [GRAPH_VALUE_TYPE.OBJECT]: true,
+  [GRAPH_VALUE_TYPE.COLOR]: true,
 }
 
 export default defineComponent({
@@ -83,6 +103,7 @@ export default defineComponent({
     SelectField,
     CheckboxInput,
     InlineField,
+    ColorPicker,
   },
   props: {
     modelValue: { type: null, required: true },
@@ -101,10 +122,30 @@ export default defineComponent({
 
     const objectOptions = computed(inject('getObjectOptions', () => []))
 
+    const showColorPicker = ref(false)
+    function toggleShowColorPicker() {
+      showColorPicker.value = !showColorPicker.value
+    }
+    function updateByColor(hsva: HSVA, seriesKey?: string) {
+      update(hsvaToTransform(hsva), seriesKey)
+    }
+    const color = computed(() => {
+      return posedColor(props.modelValue)
+    })
+    const hsva = computed(() => {
+      return posedHsva(props.modelValue)
+    })
+
     return {
       editableTypes,
       update,
       objectOptions,
+
+      showColorPicker,
+      toggleShowColorPicker,
+      updateByColor,
+      color,
+      hsva,
     }
   },
 })
@@ -113,5 +154,21 @@ export default defineComponent({
 <style lang="scss" scoped>
 h5 {
   margin-bottom: 8px;
+}
+.color-block {
+  display: block;
+  width: 100%;
+  height: 20px;
+  border: solid 1px #aaa;
+}
+.color-popup {
+  position: relative;
+  top: 10px;
+  left: -50%;
+  z-index: 1;
+  .color-picker {
+    position: fixed;
+    border: solid 1px #aaa;
+  }
 }
 </style>

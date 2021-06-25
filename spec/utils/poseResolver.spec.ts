@@ -43,6 +43,7 @@ import {
   boneToAffine,
   subPoseTransform,
 } from '/@/utils/armatures'
+import { posedColorAttributes } from '/@/utils/attributesResolver'
 import { mapReduce } from '/@/utils/commons'
 import { getConstraint } from '/@/utils/constraints'
 import {
@@ -337,6 +338,23 @@ describe('utils/poseResolver.ts', () => {
       )
       expect(ret.attributes).toEqual({
         transform: 'matrix(1,0,0,1,1,2)',
+      })
+    })
+    it('should resolve fill and stroke of graph objects', () => {
+      const fill = getTransform({ rotate: 10 })
+      const stroke = getTransform({ rotate: 20 })
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({ elementId: 'a', fill, stroke }),
+        },
+        getElementNode({ id: 'a', attributes: { fill: 'red', id: 'a' } })
+      )
+      expect(ret.attributes).toEqual({
+        id: 'a',
+        fill: posedColorAttributes(fill).color,
+        'fill-opacity': posedColorAttributes(fill).opacity,
+        stroke: posedColorAttributes(stroke).color,
+        'stroke-opacity': posedColorAttributes(stroke).opacity,
       })
     })
     it('should resolve recursively', () => {

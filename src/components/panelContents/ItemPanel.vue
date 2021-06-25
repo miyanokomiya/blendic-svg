@@ -163,7 +163,7 @@ import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
 import { posedColor, posedHsva } from '/@/utils/attributesResolver'
-import { HSVA } from '/@/utils/color'
+import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
 import { mapReduce } from '/@/utils/commons'
 import { KeyframeBonePropKey, KeyframeStatus } from '/@/models/keyframe'
@@ -245,10 +245,11 @@ export default defineComponent({
     function updatePoseByColor(hsva: HSVA, seriesKey?: string) {
       if (!targetTransform.value) return
 
-      draftTransform.translateX = hsva.s * 100
-      draftTransform.translateY = hsva.v * 100
-      draftTransform.rotate = hsva.h
-      draftTransform.scaleX = hsva.a
+      const t = hsvaToTransform(hsva)
+      draftTransform.translateX = t.translate.x
+      draftTransform.translateY = t.translate.y
+      draftTransform.rotate = t.rotate
+      draftTransform.scaleX = t.scale.x
       changeTransform(seriesKey)
     }
 

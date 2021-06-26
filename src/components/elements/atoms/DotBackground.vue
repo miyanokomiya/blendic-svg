@@ -55,7 +55,6 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 div {
-  pointer-events: none;
   width: 100%;
   height: 100%;
   background-size: 20px 20px;

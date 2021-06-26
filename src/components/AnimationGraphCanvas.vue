@@ -44,6 +44,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :y="viewCanvasRect.y"
         :width="viewCanvasRect.width"
         :height="viewCanvasRect.height"
+        class="view-only"
       />
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
       <rect

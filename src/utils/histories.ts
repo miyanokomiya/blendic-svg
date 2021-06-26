@@ -118,8 +118,8 @@ export function getSelectItemHistory(
       if (shift) {
         const current = !!selectedNodesAccessor.get()[id]
         selectedNodesAccessor.set({
-          ...selectedNodesAccessor.get(),
-          [id]: !current,
+          ...dropMap(selectedNodesAccessor.get(), { [id]: true }),
+          ...(current ? {} : { [id]: true }),
         })
         lastSelectedNodeAccessor.set(current ? '' : id)
       } else if (id) {

@@ -184,11 +184,14 @@ describe('src/utils/histories.ts', () => {
       ret.redo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ a: true })
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+
+      selectedNodesAccessor.set.mockClear()
+      lastSelectedNodeAccessor.set.mockClear()
       ret.undo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
     })
-    it('should return a history item to toggle selected item if shift = true', () => {
+    it('should return a history item to select an item if shift = true and it is not selected', () => {
       const selectedNodesAccessor = {
         get: jest.fn().mockReturnValue({ c: true }),
         set: jest.fn(),
@@ -210,18 +213,34 @@ describe('src/utils/histories.ts', () => {
       })
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
 
+      selectedNodesAccessor.set.mockClear()
+      lastSelectedNodeAccessor.set.mockClear()
       ret.undo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ c: true })
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('c')
-
-      // set false if the target has been selected already
-      ret.redo()
-      getSelectItemHistory(
+    })
+    it('should return a history item to unselect an item if shift = true and it is selected', () => {
+      const selectedNodesAccessor = {
+        get: jest.fn().mockReturnValue({ c: true }),
+        set: jest.fn(),
+      }
+      const lastSelectedNodeAccessor = {
+        get: jest.fn().mockReturnValue('c'),
+        set: jest.fn(),
+      }
+      const ret = getSelectItemHistory(
         selectedNodesAccessor,
         lastSelectedNodeAccessor,
-        'a',
+        'c',
         true
-      ).redo()
+      )
+      ret.redo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
+
+      selectedNodesAccessor.set.mockClear()
+      lastSelectedNodeAccessor.set.mockClear()
+      ret.undo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ c: true })
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('c')
     })
@@ -248,6 +267,9 @@ describe('src/utils/histories.ts', () => {
         b: true,
       })
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+
+      selectedNodesAccessor.set.mockClear()
+      lastSelectedNodeAccessor.set.mockClear()
       ret.undo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
@@ -274,6 +296,9 @@ describe('src/utils/histories.ts', () => {
         c: true,
       })
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+
+      selectedNodesAccessor.set.mockClear()
+      lastSelectedNodeAccessor.set.mockClear()
       ret.undo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ c: true })
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('c')

@@ -354,6 +354,10 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         state.keyDownPosition = arg.position
         state.command = 'add'
         return notNeedLock
+      case 'a':
+        cancel()
+        selectAll()
+        return notNeedLock
       case 'x':
         cancel()
         execDelete()
@@ -416,16 +420,19 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   }
 
   const availableCommandList = computed(() => {
-    const selects = [{ command: 'A', title: 'Add' }]
+    const allways = [
+      { command: 'A', title: 'Add' },
+      { command: 'a', title: 'All Select' },
+    ]
 
     if (isAnySelected.value) {
       return [
-        ...selects,
+        ...allways,
         { command: 'x', title: 'Delete' },
         { command: 'g', title: 'Grab' },
       ]
     } else {
-      return [...selects]
+      return [...allways]
     }
   })
 
@@ -477,7 +484,6 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     cancel,
     setEditMode,
     select,
-    selectAll,
     rectSelect,
 
     downNodeBody,

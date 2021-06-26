@@ -278,3 +278,29 @@ export function transformToAffine(transform: Transform): AffineMatrix {
     [1, 0, 0, 1, -transform.origin.x, -transform.origin.y],
   ])
 }
+
+export function getIsRectInRectFn(
+  range: IRectangle
+): (target: IRectangle) => boolean {
+  const r = range.x + range.width
+  const b = range.y + range.height
+  return (target) =>
+    range.x <= target.x &&
+    range.y <= target.y &&
+    target.x + target.width <= r &&
+    target.y + target.height <= b
+}
+
+export function getIsRectHitRectFn(
+  range: IRectangle
+): (target: IRectangle) => boolean {
+  const r = range.x + range.width
+  const b = range.y + range.height
+  return (target) =>
+    !(
+      r < target.x ||
+      b < target.y ||
+      target.x + target.width < range.x ||
+      target.y + target.height < range.y
+    )
+}

@@ -23,6 +23,7 @@ import {
   getDeleteItemHistory,
   getReplaceItem,
   getSelectItemHistory,
+  getSelectItemsHistory,
   hasSameSeriesKey,
 } from '/@/utils/histories'
 
@@ -166,7 +167,7 @@ describe('src/utils/histories.ts', () => {
   })
 
   describe('getSelectItemHistory', () => {
-    it('should return a history item to select an item', () => {
+    it('should return a history item to replace selected item', () => {
       const selectedNodesAccessor = {
         get: jest.fn().mockReturnValue({}),
         set: jest.fn(),
@@ -183,14 +184,129 @@ describe('src/utils/histories.ts', () => {
       ret.redo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ a: true })
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+
+      selectedNodesAccessor.set.mockClear()
+      lastSelectedNodeAccessor.set.mockClear()
       ret.undo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
     })
+    it('should return a history item to select an item if shift = true and it is not selected', () => {
+      const selectedNodesAccessor = {
+        get: jest.fn().mockReturnValue({ c: true }),
+        set: jest.fn(),
+      }
+      const lastSelectedNodeAccessor = {
+        get: jest.fn().mockReturnValue('c'),
+        set: jest.fn(),
+      }
+      const ret = getSelectItemHistory(
+        selectedNodesAccessor,
+        lastSelectedNodeAccessor,
+        'a',
+        true
+      )
+      ret.redo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({
+        a: true,
+        c: true,
+      })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+
+      selectedNodesAccessor.set.mockClear()
+      lastSelectedNodeAccessor.set.mockClear()
+      ret.undo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ c: true })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('c')
+    })
+    it('should return a history item to unselect an item if shift = true and it is selected', () => {
+      const selectedNodesAccessor = {
+        get: jest.fn().mockReturnValue({ c: true }),
+        set: jest.fn(),
+      }
+      const lastSelectedNodeAccessor = {
+        get: jest.fn().mockReturnValue('c'),
+        set: jest.fn(),
+      }
+      const ret = getSelectItemHistory(
+        selectedNodesAccessor,
+        lastSelectedNodeAccessor,
+        'c',
+        true
+      )
+      ret.redo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
+
+      selectedNodesAccessor.set.mockClear()
+      lastSelectedNodeAccessor.set.mockClear()
+      ret.undo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ c: true })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('c')
+    })
+  })
+
+  describe('getSelectItemsHistory', () => {
+    it('should return a history item to replace selected items', () => {
+      const selectedNodesAccessor = {
+        get: jest.fn().mockReturnValue({}),
+        set: jest.fn(),
+      }
+      const lastSelectedNodeAccessor = {
+        get: jest.fn().mockReturnValue(''),
+        set: jest.fn(),
+      }
+      const ret = getSelectItemsHistory(
+        selectedNodesAccessor,
+        lastSelectedNodeAccessor,
+        { a: true, b: true }
+      )
+      ret.redo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({
+        a: true,
+        b: true,
+      })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+
+      selectedNodesAccessor.set.mockClear()
+      lastSelectedNodeAccessor.set.mockClear()
+      ret.undo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
+    })
+    it('should return a history item to add selected items if shift = true', () => {
+      const selectedNodesAccessor = {
+        get: jest.fn().mockReturnValue({ c: true }),
+        set: jest.fn(),
+      }
+      const lastSelectedNodeAccessor = {
+        get: jest.fn().mockReturnValue('c'),
+        set: jest.fn(),
+      }
+      const ret = getSelectItemsHistory(
+        selectedNodesAccessor,
+        lastSelectedNodeAccessor,
+        { a: true, b: true },
+        true
+      )
+      ret.redo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({
+        a: true,
+        b: true,
+        c: true,
+      })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+
+      selectedNodesAccessor.set.mockClear()
+      lastSelectedNodeAccessor.set.mockClear()
+      ret.undo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ c: true })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('c')
+    })
   })
 
   describe('getDeleteItemHistory', () => {
-    it('should return a history item to delete an items', () => {
+    it('should return a history item to delete items', () => {
       const accessor = {
         get: jest.fn().mockReturnValue([{ id: 'a' }, { id: 'b' }]),
         set: jest.fn(),

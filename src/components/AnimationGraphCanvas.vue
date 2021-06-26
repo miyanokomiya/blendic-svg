@@ -39,7 +39,22 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mouseup.middle.prevent="upMiddle"
       @keydown.prevent="editKeyDown"
     >
+      <DotBackground
+        :x="viewCanvasRect.x"
+        :y="viewCanvasRect.y"
+        :width="viewCanvasRect.width"
+        :height="viewCanvasRect.height"
+        class="view-only"
+      />
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
+      <SelectRectangle
+        v-if="dragRectangle"
+        :x="dragRectangle.x"
+        :y="dragRectangle.y"
+        :width="dragRectangle.width"
+        :height="dragRectangle.height"
+        class="view-only"
+      />
     </svg>
     <CommandExamPanel
       class="command-exam-panel"
@@ -67,15 +82,19 @@ import {
 import { provideScale, useCanvas } from '../composables/canvas'
 import { add, sub } from 'okageo'
 import { useThrottle } from '/@/composables/throttle'
-import { isCtrlOrMeta } from '/@/utils/devices'
+import { getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
+import DotBackground from '/@/components/elements/atoms/DotBackground.vue'
+import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
 
 export default defineComponent({
   components: {
     PopupMenuList,
     CommandExamPanel,
+    DotBackground,
+    SelectRectangle,
   },
   props: {
     canvas: {
@@ -173,13 +192,19 @@ export default defineComponent({
       viewOrigin: computed(() => props.canvas.viewOrigin.value),
       viewSize: computed(() => props.canvas.viewSize.value),
       viewBox: computed(() => props.canvas.viewBox.value),
+      viewCanvasRect: computed(() => props.canvas.viewCanvasRect.value),
       popupMenuList,
 
       mousemoveNative,
       wheel: props.canvas.wheel,
       downLeft: (e: MouseEvent) => {
         isDownEmpty.value = e.target === svg.value
-        props.canvas.downLeft()
+        if (isDownEmpty.value) {
+          props.canvas.downLeft('rect-select')
+        } else {
+          props.canvas.downLeft()
+        }
+
         const current = props.canvas.viewToCanvas(props.canvas.mousePoint.value)
         props.mode.drag({
           current,
@@ -189,7 +214,15 @@ export default defineComponent({
         })
       },
       upLeft: (e: MouseEvent) => {
-        if (e.target === svg.value && isDownEmpty.value) {
+        if (
+          props.canvas.dragRectangle.value &&
+          props.canvas.isValidDragRectangle.value
+        ) {
+          props.mode.rectSelect(
+            props.canvas.dragRectangle.value,
+            getMouseOptions(e)
+          )
+        } else if (e.target === svg.value && isDownEmpty.value) {
           props.mode.clickEmpty()
         } else {
           props.mode.clickAny()
@@ -229,6 +262,7 @@ export default defineComponent({
       ),
       popupMenuListPosition,
       focus: () => svg.value?.focus(),
+      dragRectangle: computed(() => props.canvas.dragRectangle.value),
     }
   },
 })

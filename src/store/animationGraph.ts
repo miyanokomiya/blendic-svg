@@ -31,6 +31,7 @@ import {
   getAddItemHistory,
   getDeleteItemHistory,
   getSelectItemHistory,
+  getSelectItemsHistory,
   LastSelectedItemIdAccessor,
   ListItemAccessor,
   SelectedItemAccessor,
@@ -100,7 +101,24 @@ function selectNode(id = '', options?: SelectOptions) {
   const item = getSelectItemHistory(
     selectedNodesAccessor,
     lastSelectedNodeIdAccessor,
-    id
+    id,
+    options?.shift
+  )
+  historyStore.push(item, true)
+}
+
+function selectNodes(ids: IdMap<boolean>, options?: SelectOptions) {
+  if (
+    Object.keys(ids).sort().join(',') ===
+    Object.keys(selectedNodes.value).sort().join(',')
+  )
+    return
+
+  const item = getSelectItemsHistory(
+    selectedNodesAccessor,
+    lastSelectedNodeIdAccessor,
+    ids,
+    options?.shift
   )
   historyStore.push(item, true)
 }
@@ -195,6 +213,7 @@ export function useAnimationGraphStore() {
 
     selectedNodes,
     selectNode,
+    selectNodes,
     selectAllNode,
   }
 }

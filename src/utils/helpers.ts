@@ -215,6 +215,14 @@ export function getTargetTopMap(
 export const GRAPH_NODE_HEAD_HEIGHT = 30
 export const GRAPH_NODE_ROW_HEIGHT = 20
 
+export function getGraphNodeRect(node: GraphNode): IRectangle {
+  return {
+    x: node.position.x,
+    y: node.position.y,
+    ...getGraphNodeSize(node),
+  }
+}
+
 export function getGraphNodeSize(node: GraphNode): Size {
   const dataHeight = getGraphNodeDataHeight(node)
   const inputsHeight = getGraphNodeInputsHeight(node)

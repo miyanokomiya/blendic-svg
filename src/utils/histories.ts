@@ -102,7 +102,8 @@ export function getAddItemHistory<T extends { id: string }>(
 export function getSelectItemHistory(
   selectedNodesAccessor: SelectedItemAccessor,
   lastSelectedNodeAccessor: LastSelectedItemIdAccessor,
-  id: string
+  id: string,
+  shift = false
 ): HistoryItem {
   const currentSelected = selectedNodesAccessor.get()
   const currentLast = lastSelectedNodeAccessor.get()
@@ -114,12 +115,48 @@ export function getSelectItemHistory(
       lastSelectedNodeAccessor.set(currentLast)
     },
     redo: () => {
-      if (id) {
+      if (shift) {
+        const current = !!selectedNodesAccessor.get()[id]
+        selectedNodesAccessor.set({
+          ...dropMap(selectedNodesAccessor.get(), { [id]: true }),
+          ...(current ? {} : { [id]: true }),
+        })
+        lastSelectedNodeAccessor.set(current ? '' : id)
+      } else if (id) {
         selectedNodesAccessor.set({ [id]: true })
         lastSelectedNodeAccessor.set(id)
       } else {
         selectedNodesAccessor.set({})
         lastSelectedNodeAccessor.set('')
+      }
+    },
+  }
+}
+
+export function getSelectItemsHistory(
+  selectedNodesAccessor: SelectedItemAccessor,
+  lastSelectedNodeAccessor: LastSelectedItemIdAccessor,
+  ids: IdMap<boolean>,
+  shift = false
+): HistoryItem {
+  const currentSelected = selectedNodesAccessor.get()
+  const currentLast = lastSelectedNodeAccessor.get()
+
+  return {
+    name: 'Select Items',
+    undo: () => {
+      selectedNodesAccessor.set(currentSelected)
+      lastSelectedNodeAccessor.set(currentLast)
+    },
+    redo: () => {
+      if (shift) {
+        selectedNodesAccessor.set({ ...selectedNodesAccessor.get(), ...ids })
+        lastSelectedNodeAccessor.set(
+          Object.keys(ids)[0] || lastSelectedNodeAccessor.get() || ''
+        )
+      } else {
+        selectedNodesAccessor.set(ids)
+        lastSelectedNodeAccessor.set(Object.keys(ids)[0])
       }
     },
   }

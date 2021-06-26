@@ -44,6 +44,11 @@ import * as divide_scaler from './nodes/divideScaler'
 import * as sin from './nodes/sin'
 import * as cos from './nodes/cos'
 import * as pow from './nodes/pow'
+import * as add_vector2 from './nodes/addVector2'
+import * as sub_vector2 from './nodes/subVector2'
+import * as scale_vector2 from './nodes/scaleVector2'
+import * as distance from './nodes/distance'
+import * as rotate_vector2 from './nodes/rotateVector2'
 import * as lerp_scaler from './nodes/lerpScaler'
 import * as lerp_vector2 from './nodes/lerpVector2'
 import * as lerp_transform from './nodes/lerpTransform'
@@ -83,6 +88,11 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   sin,
   cos,
   pow,
+  add_vector2,
+  sub_vector2,
+  scale_vector2,
+  distance,
+  rotate_vector2,
   lerp_scaler,
   lerp_vector2,
   lerp_transform,
@@ -133,6 +143,11 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Sin', type: 'sin' },
       { label: 'Cos', type: 'cos' },
       { label: 'Pow', type: 'pow' },
+      { label: '(+) Vector2', type: 'add_vector2' },
+      { label: '(-) Vector2', type: 'sub_vector2' },
+      { label: 'Scale Vector2', type: 'scale_vector2' },
+      { label: 'Distance', type: 'distance' },
+      { label: 'Rotate Vector2', type: 'rotate_vector2' },
       { label: 'Lerp Number', type: 'lerp_scaler' },
       { label: 'Lerp Vector2', type: 'lerp_vector2' },
       { label: 'Lerp Transform', type: 'lerp_transform' },

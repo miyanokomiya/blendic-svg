@@ -45,6 +45,8 @@ import {
   isIdentityTransform,
   getBoneSquaredSize,
   transformToAffine,
+  getIsRectInRectFn,
+  getIsRectHitRectFn,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -542,6 +544,43 @@ describe('src/utils/geometry.ts', () => {
       expect(ret[3]).toBeCloseTo(0)
       expect(ret[4]).toBeCloseTo(0)
       expect(ret[5]).toBeCloseTo(0)
+    })
+  })
+
+  describe('getIsRectInRectFn', () => {
+    const isRectInRect = getIsRectInRectFn({
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 20,
+    })
+    it('should return true if target is in the range', () => {
+      expect(isRectInRect({ x: 0, y: 0, width: 10, height: 20 })).toBe(true)
+    })
+    it('should return false if target is not in the range', () => {
+      expect(isRectInRect({ x: -1, y: 0, width: 10, height: 20 })).toBe(false)
+      expect(isRectInRect({ x: 0, y: -1, width: 10, height: 20 })).toBe(false)
+      expect(isRectInRect({ x: 0, y: 0, width: 11, height: 20 })).toBe(false)
+      expect(isRectInRect({ x: 0, y: 0, width: 10, height: 21 })).toBe(false)
+    })
+  })
+
+  describe('getIsRectHitRectFn', () => {
+    const isRectHitRect = getIsRectHitRectFn({
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 20,
+    })
+    it('should return true if target hits the range', () => {
+      expect(isRectHitRect({ x: -1, y: -1, width: 2, height: 40 })).toBe(true)
+      expect(isRectHitRect({ x: 1, y: -1, width: 40, height: 40 })).toBe(true)
+    })
+    it('should return false if target does not hit the range', () => {
+      expect(isRectHitRect({ x: -2, y: 1, width: 1, height: 20 })).toBe(false)
+      expect(isRectHitRect({ x: 11, y: 1, width: 1, height: 20 })).toBe(false)
+      expect(isRectHitRect({ x: 1, y: -2, width: 20, height: 1 })).toBe(false)
+      expect(isRectHitRect({ x: 1, y: 21, width: 20, height: 1 })).toBe(false)
     })
   })
 })

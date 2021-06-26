@@ -108,6 +108,11 @@ export interface GraphNodes {
   sin: GraphNodeSin
   cos: GraphNodeCos
   pow: GraphNodePow
+  rotate_vector2: GraphNodeRotateVector2
+  add_vector2: GraphNodeAddVector2
+  sub_vector2: GraphNodeSubVector2
+  scale_vector2: GraphNodeScaleVector2
+  distance: GraphNodeDistance
   lerp_scaler: GraphNodeLerpScaler
   lerp_vector2: GraphNodeLerpVector2
   lerp_transform: GraphNodeLerpTransform
@@ -252,6 +257,35 @@ export interface GraphNodeCos extends GraphNodeBase {
 export interface GraphNodePow extends GraphNodeBase {
   type: 'pow'
   inputs: { x: GraphNodeInput<number>; t: GraphNodeInput<number> }
+}
+
+export interface GraphNodeAddVector2 extends GraphNodeBase {
+  type: 'add_vector2'
+  inputs: { a: GraphNodeInput<IVec2>; b: GraphNodeInput<IVec2> }
+}
+
+export interface GraphNodeSubVector2 extends GraphNodeBase {
+  type: 'sub_vector2'
+  inputs: { a: GraphNodeInput<IVec2>; b: GraphNodeInput<IVec2> }
+}
+
+export interface GraphNodeScaleVector2 extends GraphNodeBase {
+  type: 'scale_vector2'
+  inputs: { vector2: GraphNodeInput<IVec2>; scale: GraphNodeInput<number> }
+}
+
+export interface GraphNodeDistance extends GraphNodeBase {
+  type: 'distance'
+  inputs: { a: GraphNodeInput<IVec2>; b: GraphNodeInput<IVec2> }
+}
+
+export interface GraphNodeRotateVector2 extends GraphNodeBase {
+  type: 'rotate_vector2'
+  inputs: {
+    vector2: GraphNodeInput<IVec2>
+    rotate: GraphNodeInput<number>
+    origin: GraphNodeInput<IVec2>
+  }
 }
 
 export interface GraphNodeLerpScaler extends GraphNodeBase {

@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/atoms/SelectRectangle.vue snapshot defalut 1`] = `
+<rect
+  fill="#1e90ff"
+  fill-opacity="0.2"
+  height="4"
+  stroke="none"
+  width="3"
+  x="1"
+  y="2"
+/>
+`;

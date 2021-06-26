@@ -25,7 +25,7 @@ import type {
   PopupMenuItem,
   SelectOptions,
 } from '/@/composables/modes/types'
-import { snapGrid } from '/@/utils/geometry'
+import { getIsRectHitRectFn, snapGrid } from '/@/utils/geometry'
 import { useMenuList } from '/@/composables/menuList'
 import { AnimationGraphStore } from '/@/store/animationGraph'
 import {
@@ -39,6 +39,8 @@ import {
   resetInput,
   validateConnection,
 } from '/@/utils/graphNodes'
+import { mapFilter, mapReduce } from '/@/utils/commons'
+import { getGraphNodeRect } from '/@/utils/helpers'
 
 export type EditMode = '' | 'grab' | 'add' | 'drag-node' | 'drag-edge'
 
@@ -78,6 +80,7 @@ interface State {
 }
 
 const notNeedLock = { needLock: false }
+const needLock = { needLock: true }
 
 export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   const state = reactive<State>({
@@ -87,7 +90,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     dragTarget: undefined,
     closestEdgeInfo: undefined,
   })
-  const selectedNodes = computed(() => graphStore.selectedNodes)
+  const selectedNodes = computed(() => graphStore.selectedNodes.value)
   const lastSelectedNodeId = computed(
     () => graphStore.lastSelectedNode.value?.id
   )
@@ -311,8 +314,17 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     graphStore.selectNode(id, options)
   }
 
-  function rectSelect(_rect: IRectangle, _options?: SelectOptions) {
-    // TODO
+  function rectSelect(rect: IRectangle, options?: SelectOptions) {
+    const checkFn = getIsRectHitRectFn(rect)
+    graphStore.selectNodes(
+      mapReduce(
+        mapFilter(graphStore.nodeMap.value, (node) =>
+          checkFn(getGraphNodeRect(node))
+        ),
+        () => true
+      ),
+      options
+    )
   }
 
   function selectAll() {
@@ -342,10 +354,19 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         state.keyDownPosition = arg.position
         state.command = 'add'
         return notNeedLock
+      case 'a':
+        cancel()
+        selectAll()
+        return notNeedLock
       case 'x':
         cancel()
         execDelete()
         return notNeedLock
+      case 'g':
+        cancel()
+        state.keyDownPosition = arg.position
+        state.command = 'grab'
+        return needLock
       default:
         return notNeedLock
     }
@@ -399,12 +420,19 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   }
 
   const availableCommandList = computed(() => {
-    const selects = [{ command: 'A', title: 'Add' }]
+    const allways = [
+      { command: 'A', title: 'Add' },
+      { command: 'a', title: 'All Select' },
+    ]
 
     if (isAnySelected.value) {
-      return [...selects, { command: 'x', title: 'Delete' }]
+      return [
+        ...allways,
+        { command: 'x', title: 'Delete' },
+        { command: 'g', title: 'Grab' },
+      ]
     } else {
-      return [...selects]
+      return [...allways]
     }
   })
 
@@ -456,7 +484,6 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     cancel,
     setEditMode,
     select,
-    selectAll,
     rectSelect,
 
     downNodeBody,

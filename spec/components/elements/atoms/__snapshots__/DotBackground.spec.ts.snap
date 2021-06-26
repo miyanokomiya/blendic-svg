@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/atoms/DotBackground.vue snapshot defalut 1`] = `
+<foreignobject
+  height="4"
+  width="3"
+  x="1"
+  y="2"
+>
+  <div
+    style="background-position: -1px -2px;"
+    xmlns="http://www.w3.org/1999/xhtml"
+  />
+</foreignobject>
+`;

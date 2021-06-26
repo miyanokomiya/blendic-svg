@@ -39,6 +39,12 @@ Copyright (C) 2021, Tomoya Komiyama.
       @mouseup.middle.prevent="upMiddle"
       @keydown.prevent="editKeyDown"
     >
+      <DotBackground
+        :x="viewCanvasRect.x"
+        :y="viewCanvasRect.y"
+        :width="viewCanvasRect.width"
+        :height="viewCanvasRect.height"
+      />
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
       <rect
         v-if="dragRectangle"
@@ -83,11 +89,13 @@ import { getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
+import DotBackground from '/@/components/elements/atoms/DotBackground.vue'
 
 export default defineComponent({
   components: {
     PopupMenuList,
     CommandExamPanel,
+    DotBackground,
   },
   props: {
     canvas: {
@@ -185,6 +193,7 @@ export default defineComponent({
       viewOrigin: computed(() => props.canvas.viewOrigin.value),
       viewSize: computed(() => props.canvas.viewSize.value),
       viewBox: computed(() => props.canvas.viewBox.value),
+      viewCanvasRect: computed(() => props.canvas.viewCanvasRect.value),
       popupMenuList,
 
       mousemoveNative,

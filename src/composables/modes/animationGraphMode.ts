@@ -25,7 +25,7 @@ import type {
   PopupMenuItem,
   SelectOptions,
 } from '/@/composables/modes/types'
-import { snapGrid } from '/@/utils/geometry'
+import { getIsRectHitRectFn, snapGrid } from '/@/utils/geometry'
 import { useMenuList } from '/@/composables/menuList'
 import { AnimationGraphStore } from '/@/store/animationGraph'
 import {
@@ -39,6 +39,8 @@ import {
   resetInput,
   validateConnection,
 } from '/@/utils/graphNodes'
+import { mapFilter, mapReduce } from '/@/utils/commons'
+import { getGraphNodeRect } from '/@/utils/helpers'
 
 export type EditMode = '' | 'grab' | 'add' | 'drag-node' | 'drag-edge'
 
@@ -87,7 +89,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     dragTarget: undefined,
     closestEdgeInfo: undefined,
   })
-  const selectedNodes = computed(() => graphStore.selectedNodes)
+  const selectedNodes = computed(() => graphStore.selectedNodes.value)
   const lastSelectedNodeId = computed(
     () => graphStore.lastSelectedNode.value?.id
   )
@@ -311,8 +313,17 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     graphStore.selectNode(id, options)
   }
 
-  function rectSelect(_rect: IRectangle, _options?: SelectOptions) {
-    // TODO
+  function rectSelect(rect: IRectangle, options?: SelectOptions) {
+    const checkFn = getIsRectHitRectFn(rect)
+    graphStore.selectNodes(
+      mapReduce(
+        mapFilter(graphStore.nodeMap.value, (node) =>
+          checkFn(getGraphNodeRect(node))
+        ),
+        () => true
+      ),
+      options
+    )
   }
 
   function selectAll() {

@@ -40,6 +40,18 @@ Copyright (C) 2021, Tomoya Komiyama.
       @keydown.prevent="editKeyDown"
     >
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
+      <rect
+        v-if="dragRectangle"
+        :x="dragRectangle.x"
+        :y="dragRectangle.y"
+        :width="dragRectangle.width"
+        :height="dragRectangle.height"
+        fill="none"
+        stroke="green"
+        :stroke-width="2 * scale"
+        :stroke-dasharray="`${4 * scale} ${4 * scale}`"
+        class="view-only"
+      />
     </svg>
     <CommandExamPanel
       class="command-exam-panel"
@@ -67,7 +79,7 @@ import {
 import { provideScale, useCanvas } from '../composables/canvas'
 import { add, sub } from 'okageo'
 import { useThrottle } from '/@/composables/throttle'
-import { isCtrlOrMeta } from '/@/utils/devices'
+import { getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
@@ -179,7 +191,12 @@ export default defineComponent({
       wheel: props.canvas.wheel,
       downLeft: (e: MouseEvent) => {
         isDownEmpty.value = e.target === svg.value
-        props.canvas.downLeft()
+        if (isDownEmpty.value) {
+          props.canvas.downLeft('rect-select')
+        } else {
+          props.canvas.downLeft()
+        }
+
         const current = props.canvas.viewToCanvas(props.canvas.mousePoint.value)
         props.mode.drag({
           current,
@@ -189,7 +206,15 @@ export default defineComponent({
         })
       },
       upLeft: (e: MouseEvent) => {
-        if (e.target === svg.value && isDownEmpty.value) {
+        if (
+          props.canvas.dragRectangle.value &&
+          props.canvas.isValidDragRectangle.value
+        ) {
+          props.mode.rectSelect(
+            props.canvas.dragRectangle.value,
+            getMouseOptions(e)
+          )
+        } else if (e.target === svg.value && isDownEmpty.value) {
           props.mode.clickEmpty()
         } else {
           props.mode.clickAny()
@@ -229,6 +254,7 @@ export default defineComponent({
       ),
       popupMenuListPosition,
       focus: () => svg.value?.focus(),
+      dragRectangle: computed(() => props.canvas.dragRectangle.value),
     }
   },
 })

@@ -23,6 +23,7 @@ import {
   getDeleteItemHistory,
   getReplaceItem,
   getSelectItemHistory,
+  getSelectItemsHistory,
   hasSameSeriesKey,
 } from '/@/utils/histories'
 
@@ -186,6 +187,59 @@ describe('src/utils/histories.ts', () => {
       ret.undo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
+    })
+  })
+
+  describe('getSelectItemsHistory', () => {
+    it('should return a history item to replace selected items', () => {
+      const selectedNodesAccessor = {
+        get: jest.fn().mockReturnValue({}),
+        set: jest.fn(),
+      }
+      const lastSelectedNodeAccessor = {
+        get: jest.fn().mockReturnValue(''),
+        set: jest.fn(),
+      }
+      const ret = getSelectItemsHistory(
+        selectedNodesAccessor,
+        lastSelectedNodeAccessor,
+        { a: true, b: true }
+      )
+      ret.redo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({
+        a: true,
+        b: true,
+      })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+      ret.undo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
+    })
+    it('should return a history item to add selected items if shift = true', () => {
+      const selectedNodesAccessor = {
+        get: jest.fn().mockReturnValue({ c: true }),
+        set: jest.fn(),
+      }
+      const lastSelectedNodeAccessor = {
+        get: jest.fn().mockReturnValue('c'),
+        set: jest.fn(),
+      }
+      const ret = getSelectItemsHistory(
+        selectedNodesAccessor,
+        lastSelectedNodeAccessor,
+        { a: true, b: true },
+        true
+      )
+      ret.redo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({
+        a: true,
+        b: true,
+        c: true,
+      })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+      ret.undo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ c: true })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('c')
     })
   })
 

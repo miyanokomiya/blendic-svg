@@ -125,6 +125,35 @@ export function getSelectItemHistory(
   }
 }
 
+export function getSelectItemsHistory(
+  selectedNodesAccessor: SelectedItemAccessor,
+  lastSelectedNodeAccessor: LastSelectedItemIdAccessor,
+  ids: IdMap<boolean>,
+  shift = false
+): HistoryItem {
+  const currentSelected = selectedNodesAccessor.get()
+  const currentLast = lastSelectedNodeAccessor.get()
+
+  return {
+    name: 'Select Items',
+    undo: () => {
+      selectedNodesAccessor.set(currentSelected)
+      lastSelectedNodeAccessor.set(currentLast)
+    },
+    redo: () => {
+      if (shift) {
+        selectedNodesAccessor.set({ ...selectedNodesAccessor.get(), ...ids })
+        lastSelectedNodeAccessor.set(
+          Object.keys(ids)[0] || lastSelectedNodeAccessor.get() || ''
+        )
+      } else {
+        selectedNodesAccessor.set(ids)
+        lastSelectedNodeAccessor.set(Object.keys(ids)[0])
+      }
+    },
+  }
+}
+
 export function getDeleteItemHistory<T extends { id: string }>(
   nodeAccessor: ListItemAccessor<T>,
   targetIds: IdMap<unknown>

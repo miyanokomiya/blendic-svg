@@ -274,6 +274,7 @@ export default defineComponent({
   height: 100%;
 }
 svg {
+  background-color: #aaa;
   border: solid 1px black;
   user-select: none;
   outline: none;

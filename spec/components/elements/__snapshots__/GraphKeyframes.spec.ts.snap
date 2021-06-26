@@ -8,9 +8,10 @@ exports[`src/components/elements/GraphKeyframes.vue snapshot default 1`] = `
       
       <graph-key-points-stub
         color="green"
+        focused="false"
         keyframes="[object Object],[object Object]"
-        point-key="translateX"
-        selected-state-map="[object Object]"
+        pointkey="translateX"
+        selectedstatemap="[object Object]"
       />
       
     </g>

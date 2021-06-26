@@ -47,16 +47,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         class="view-only"
       />
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
-      <rect
+      <SelectRectangle
         v-if="dragRectangle"
         :x="dragRectangle.x"
         :y="dragRectangle.y"
         :width="dragRectangle.width"
         :height="dragRectangle.height"
-        fill="none"
-        stroke="green"
-        :stroke-width="2 * scale"
-        :stroke-dasharray="`${4 * scale} ${4 * scale}`"
         class="view-only"
       />
     </svg>
@@ -91,12 +87,14 @@ import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import DotBackground from '/@/components/elements/atoms/DotBackground.vue'
+import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
 
 export default defineComponent({
   components: {
     PopupMenuList,
     CommandExamPanel,
     DotBackground,
+    SelectRectangle,
   },
   props: {
     canvas: {

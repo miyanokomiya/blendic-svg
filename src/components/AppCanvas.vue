@@ -52,16 +52,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         :stroke-width="gridLineElm.strokeWidth"
       />
       <slot :scale="scale" />
-      <rect
+      <SelectRectangle
         v-if="dragRectangle"
         :x="dragRectangle.x"
         :y="dragRectangle.y"
         :width="dragRectangle.width"
         :height="dragRectangle.height"
-        fill="none"
-        stroke="green"
-        :stroke-width="2 * scale"
-        :stroke-dasharray="`${4 * scale} ${4 * scale}`"
         class="view-only"
       />
       <CursorLine
@@ -109,6 +105,7 @@ import CanvasToolMenuGroups from '/@/components/molecules/CanvasToolMenuGroups.v
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import GlobalCursor from '/@/components/atoms/GlobalCursor.vue'
 import CursorLine from '/@/components/elements/atoms/CursorLine.vue'
+import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import {
   PointerMovement,
@@ -129,6 +126,7 @@ export default defineComponent({
     PopupMenuList,
     GlobalCursor,
     CursorLine,
+    SelectRectangle,
   },
   props: {
     originalViewBox: {

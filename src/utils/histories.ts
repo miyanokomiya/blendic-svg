@@ -102,7 +102,8 @@ export function getAddItemHistory<T extends { id: string }>(
 export function getSelectItemHistory(
   selectedNodesAccessor: SelectedItemAccessor,
   lastSelectedNodeAccessor: LastSelectedItemIdAccessor,
-  id: string
+  id: string,
+  shift = false
 ): HistoryItem {
   const currentSelected = selectedNodesAccessor.get()
   const currentLast = lastSelectedNodeAccessor.get()
@@ -114,7 +115,14 @@ export function getSelectItemHistory(
       lastSelectedNodeAccessor.set(currentLast)
     },
     redo: () => {
-      if (id) {
+      if (shift) {
+        const current = !!selectedNodesAccessor.get()[id]
+        selectedNodesAccessor.set({
+          ...selectedNodesAccessor.get(),
+          [id]: !current,
+        })
+        lastSelectedNodeAccessor.set(current ? '' : id)
+      } else if (id) {
         selectedNodesAccessor.set({ [id]: true })
         lastSelectedNodeAccessor.set(id)
       } else {

@@ -167,7 +167,7 @@ describe('src/utils/histories.ts', () => {
   })
 
   describe('getSelectItemHistory', () => {
-    it('should return a history item to select an item', () => {
+    it('should return a history item to replace selected item', () => {
       const selectedNodesAccessor = {
         get: jest.fn().mockReturnValue({}),
         set: jest.fn(),
@@ -187,6 +187,43 @@ describe('src/utils/histories.ts', () => {
       ret.undo()
       expect(selectedNodesAccessor.set).toHaveBeenCalledWith({})
       expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('')
+    })
+    it('should return a history item to toggle selected item if shift = true', () => {
+      const selectedNodesAccessor = {
+        get: jest.fn().mockReturnValue({ c: true }),
+        set: jest.fn(),
+      }
+      const lastSelectedNodeAccessor = {
+        get: jest.fn().mockReturnValue('c'),
+        set: jest.fn(),
+      }
+      const ret = getSelectItemHistory(
+        selectedNodesAccessor,
+        lastSelectedNodeAccessor,
+        'a',
+        true
+      )
+      ret.redo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({
+        a: true,
+        c: true,
+      })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('a')
+
+      ret.undo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ c: true })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('c')
+
+      // set false if the target has been selected already
+      ret.redo()
+      getSelectItemHistory(
+        selectedNodesAccessor,
+        lastSelectedNodeAccessor,
+        'a',
+        true
+      ).redo()
+      expect(selectedNodesAccessor.set).toHaveBeenCalledWith({ c: true })
+      expect(lastSelectedNodeAccessor.set).toHaveBeenCalledWith('c')
     })
   })
 
@@ -244,7 +281,7 @@ describe('src/utils/histories.ts', () => {
   })
 
   describe('getDeleteItemHistory', () => {
-    it('should return a history item to delete an items', () => {
+    it('should return a history item to delete items', () => {
       const accessor = {
         get: jest.fn().mockReturnValue([{ id: 'a' }, { id: 'b' }]),
         set: jest.fn(),

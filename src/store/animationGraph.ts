@@ -101,7 +101,8 @@ function selectNode(id = '', options?: SelectOptions) {
   const item = getSelectItemHistory(
     selectedNodesAccessor,
     lastSelectedNodeIdAccessor,
-    id
+    id,
+    options?.shift
   )
   historyStore.push(item, true)
 }

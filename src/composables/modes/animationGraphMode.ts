@@ -80,6 +80,7 @@ interface State {
 }
 
 const notNeedLock = { needLock: false }
+const needLock = { needLock: true }
 
 export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   const state = reactive<State>({
@@ -357,6 +358,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         cancel()
         execDelete()
         return notNeedLock
+      case 'g':
+        cancel()
+        state.keyDownPosition = arg.position
+        state.command = 'grab'
+        return needLock
       default:
         return notNeedLock
     }
@@ -413,7 +419,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     const selects = [{ command: 'A', title: 'Add' }]
 
     if (isAnySelected.value) {
-      return [...selects, { command: 'x', title: 'Delete' }]
+      return [
+        ...selects,
+        { command: 'x', title: 'Delete' },
+        { command: 'g', title: 'Grab' },
+      ]
     } else {
       return [...selects]
     }

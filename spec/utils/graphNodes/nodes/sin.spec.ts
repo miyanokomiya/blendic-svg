@@ -25,7 +25,7 @@ describe('src/utils/graphNodes/nodes/sin.ts', () => {
       expect(
         target.struct.computation(
           {
-            t: Math.PI / 2,
+            t: 90,
           },
           {} as any,
           {} as any

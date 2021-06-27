@@ -38,7 +38,7 @@ export const struct: NodeStruct<GraphNodeSin> = {
     value: GRAPH_VALUE_TYPE.SCALER,
   },
   computation(inputs) {
-    return { value: Math.sin(inputs.t) }
+    return { value: Math.sin((inputs.t * Math.PI) / 180) }
   },
   width: 100,
   color: '#4169e1',

@@ -135,6 +135,10 @@ export interface GraphObjectAttributes {
   width?: number
   height?: number
   viewBox?: IRectangle
+  cx?: number
+  cy?: number
+  rx?: number
+  ry?: number
 }
 
 export function getGraphObject(

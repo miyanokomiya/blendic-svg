@@ -101,6 +101,7 @@ export interface GraphNodes {
   set_stroke: GraphNodeSetStroke
   clone_object: GraphNodeCloneObject
   create_object_rect: GraphNodeCreateObjectRect
+  create_object_ellipse: GraphNodeCreateObjectEllipse
   set_viewbox: GraphNodeSetViewbox
 
   add_scaler: GraphNodeAddScaler
@@ -230,19 +231,36 @@ export interface GraphNodeSetViewbox extends GraphNodeBase {
   }
 }
 
+export interface GraphNodeCreateObjectInputsBase {
+  disabled: GraphNodeInput<boolean>
+  parent: GraphNodeInput<string>
+  transform: GraphNodeInput<Transform>
+  fill: GraphNodeInput<Transform>
+  stroke: GraphNodeInput<Transform>
+  'stroke-width': GraphNodeInput<number>
+}
+
 export interface GraphNodeCreateObjectRect extends GraphNodeBase {
   type: 'create_object_rect'
   inputs: {
-    disabled: GraphNodeInput<boolean>
-    parent: GraphNodeInput<string>
-    transform: GraphNodeInput<Transform>
-    fill: GraphNodeInput<Transform>
-    stroke: GraphNodeInput<Transform>
-    'stroke-width': GraphNodeInput<number>
     x: GraphNodeInput<number>
     y: GraphNodeInput<number>
     width: GraphNodeInput<number>
     height: GraphNodeInput<number>
+  } & {
+    [key in keyof GraphNodeCreateObjectInputsBase]: GraphNodeCreateObjectInputsBase[key]
+  }
+}
+
+export interface GraphNodeCreateObjectEllipse extends GraphNodeBase {
+  type: 'create_object_ellipse'
+  inputs: {
+    cx: GraphNodeInput<number>
+    cy: GraphNodeInput<number>
+    rx: GraphNodeInput<number>
+    ry: GraphNodeInput<number>
+  } & {
+    [key in keyof GraphNodeCreateObjectInputsBase]: GraphNodeCreateObjectInputsBase[key]
   }
 }
 

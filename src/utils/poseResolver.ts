@@ -317,6 +317,17 @@ function getGraphResolvedElement(
   }
 }
 
+const NUMBER_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
+  x: true,
+  y: true,
+  width: true,
+  height: true,
+  cx: true,
+  cy: true,
+  rx: true,
+  ry: true,
+}
+
 function getGraphResolvedAttributes(
   graphObject: GraphObject,
   nodeAttributes: ElementNodeAttributes
@@ -346,12 +357,12 @@ function getGraphResolvedAttributes(
   }
 
   if (graphObject.attributes) {
-    if (graphObject.attributes.x) ret.x = graphObject.attributes.x.toString()
-    if (graphObject.attributes.y) ret.y = graphObject.attributes.y.toString()
-    if (graphObject.attributes.width)
-      ret.width = graphObject.attributes.width.toString()
-    if (graphObject.attributes.height)
-      ret.height = graphObject.attributes.height.toString()
+    const attrs = graphObject.attributes
+
+    Object.entries(attrs).forEach(([key, val]) => {
+      if (NUMBER_ATTRIBUTES_KEYS[key] && val) ret[key] = val.toString()
+    })
+
     if (graphObject.attributes.viewBox)
       ret.viewBox = viewbox(graphObject.attributes.viewBox)
   }

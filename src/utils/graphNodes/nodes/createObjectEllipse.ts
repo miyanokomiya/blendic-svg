@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import {
-  GraphNodeCreateObjectRect,
+  GraphNodeCreateObjectEllipse,
   GRAPH_VALUE_TYPE,
 } from '/@/models/graphNode'
 import {
@@ -27,30 +27,30 @@ import {
   nodeToCreateObjectProps,
 } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeCreateObjectRect> = {
+export const struct: NodeStruct<GraphNodeCreateObjectEllipse> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
         data: {},
         inputs: {
           ...nodeToCreateObjectProps.createdInputs,
-          x: { value: 0 },
-          y: { value: 0 },
-          width: { value: 100 },
-          height: { value: 100 },
+          cx: { value: 0 },
+          cy: { value: 0 },
+          rx: { value: 10 },
+          ry: { value: 10 },
         },
         ...arg,
       }),
-      type: 'create_object_rect',
-    } as GraphNodeCreateObjectRect
+      type: 'create_object_ellipse',
+    } as GraphNodeCreateObjectEllipse
   },
   data: {},
   inputs: {
     ...nodeToCreateObjectProps.inputs,
-    x: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    y: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    width: { type: GRAPH_VALUE_TYPE.SCALER, default: 100 },
-    height: { type: GRAPH_VALUE_TYPE.SCALER, default: 100 },
+    cx: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    cy: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    rx: { type: GRAPH_VALUE_TYPE.SCALER, default: 10 },
+    ry: { type: GRAPH_VALUE_TYPE.SCALER, default: 10 },
   },
   outputs: nodeToCreateObjectProps.outputs,
   computation(inputs, _self, context): { object: string } {
@@ -58,13 +58,13 @@ export const struct: NodeStruct<GraphNodeCreateObjectRect> = {
     if (!base) return { object: '' }
 
     return {
-      object: context.createObject('rect', {
+      object: context.createObject('ellipse', {
         ...base,
         attributes: {
-          x: inputs.x,
-          y: inputs.y,
-          width: inputs.width,
-          height: inputs.height,
+          cx: inputs.cx,
+          cy: inputs.cy,
+          rx: inputs.rx,
+          ry: inputs.ry,
         },
       }),
     }
@@ -72,5 +72,5 @@ export const struct: NodeStruct<GraphNodeCreateObjectRect> = {
   width: 140,
   color: '#dc143c',
   textColor: '#fff',
-  label: 'Create Rect',
+  label: 'Create Ellipse',
 }

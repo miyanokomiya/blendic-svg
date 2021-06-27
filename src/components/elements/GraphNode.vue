@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     :title="node.type"
     :transform="`translate(${node.position.x}, ${node.position.y})`"
   >
-    <g @click="select" @mousedown.exact="downBody">
+    <g @click.left="select" @mousedown.left.exact="downBody">
       <path
         :d="outline"
         :stroke="outlineStroke"

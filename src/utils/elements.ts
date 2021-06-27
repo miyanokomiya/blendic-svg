@@ -199,6 +199,12 @@ export function createGraphNodeContext(
       if (!graphElementMap[objectId]) return
       graphElementMap[objectId].stroke = transform
     },
+    setAttributes(objectId, attributes, replace = false) {
+      if (!graphElementMap[objectId]) return
+      graphElementMap[objectId].attributes = replace
+        ? attributes
+        : { ...graphElementMap[objectId].attributes, ...attributes }
+    },
     getFrame() {
       return currentFrame
     },

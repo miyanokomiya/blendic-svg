@@ -364,6 +364,21 @@ describe('utils/poseResolver.ts', () => {
         'stroke-width': '3',
       })
     })
+    it('should resolve viewBox of graph objects', () => {
+      const viewBox = { x: 1, y: 2, width: 3, height: 4 }
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({
+            elementId: 'a',
+            attributes: { viewBox },
+          }),
+        },
+        getElementNode({ id: 'a', attributes: { viewBox: '' } })
+      )
+      expect(ret.attributes).toEqual({
+        viewBox: '1 2 3 4',
+      })
+    })
     it('should resolve recursively', () => {
       const ret = getGraphResolvedElementTree(
         {

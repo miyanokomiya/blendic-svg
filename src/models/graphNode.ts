@@ -101,6 +101,7 @@ export interface GraphNodes {
   set_stroke: GraphNodeSetStroke
   clone_object: GraphNodeCloneObject
   create_object_rect: GraphNodeCreateObjectRect
+  set_viewbox: GraphNodeSetViewbox
 
   add_scaler: GraphNodeAddScaler
   sub_scaler: GraphNodeSubScaler
@@ -215,6 +216,17 @@ export interface GraphNodeCloneObject extends GraphNodeBase {
   type: 'clone_object'
   inputs: {
     object: GraphNodeInput<string>
+  }
+}
+
+export interface GraphNodeSetViewbox extends GraphNodeBase {
+  type: 'set_viewbox'
+  inputs: {
+    object: GraphNodeInput<string>
+    x: GraphNodeInput<number>
+    y: GraphNodeInput<number>
+    width: GraphNodeInput<number>
+    height: GraphNodeInput<number>
   }
 }
 

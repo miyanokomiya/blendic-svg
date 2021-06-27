@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { Transform } from '/@/models'
+import { GraphObjectAttributes, Transform } from '/@/models'
 import { GraphNodeBase, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 
 export interface NodeModule<T extends GraphNodeBase> {
@@ -55,6 +55,11 @@ export interface NodeContext<T> {
   setTransform: (objectId: string, transform: Transform) => void
   setFill: (objectId: string, transform: Transform) => void
   setStroke: (objectId: string, transform: Transform) => void
+  setAttributes: (
+    objectId: string,
+    attributes: GraphObjectAttributes,
+    replace?: boolean
+  ) => void
   getFrame: () => number
   getObjectMap: () => { [id: string]: T }
   cloneObject: (objectId: string) => string

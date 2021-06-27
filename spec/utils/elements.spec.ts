@@ -420,6 +420,38 @@ describe('utils/elements.ts', () => {
         },
       })
     })
+    describe('setAttributes', () => {
+      it('should add attributes', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a' }) },
+          10
+        )
+        context.setAttributes('a', { x: 10 })
+        context.setAttributes('a', { y: 20 })
+        expect(context.getObjectMap()).toEqual({
+          a: {
+            id: 'a',
+            elementId: 'a',
+            attributes: { x: 10, y: 20 },
+          },
+        })
+      })
+      it('should replace attributes if replace = true', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a' }) },
+          10
+        )
+        context.setAttributes('a', { x: 10 })
+        context.setAttributes('a', { y: 20 }, true)
+        expect(context.getObjectMap()).toEqual({
+          a: {
+            id: 'a',
+            elementId: 'a',
+            attributes: { y: 20 },
+          },
+        })
+      })
+    })
     it('should return a context to getFrame', () => {
       const context = createGraphNodeContext(
         { a: getBElement({ id: 'a' }) },

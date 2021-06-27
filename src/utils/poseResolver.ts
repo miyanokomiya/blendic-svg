@@ -39,7 +39,7 @@ import {
 } from '../models'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapReduce, toKeyListMap } from './commons'
-import { getTnansformStr } from './helpers'
+import { getTnansformStr, viewbox } from './helpers'
 import { KeyframeBase } from '/@/models/keyframe'
 import {
   getPosedAttributesWithoutTransform,
@@ -345,6 +345,17 @@ function getGraphResolvedAttributes(
     ret['stroke-width'] = graphObject['stroke-width'].toString()
   }
 
+  if (graphObject.attributes) {
+    if (graphObject.attributes.x) ret.x = graphObject.attributes.x.toString()
+    if (graphObject.attributes.y) ret.y = graphObject.attributes.y.toString()
+    if (graphObject.attributes.width)
+      ret.width = graphObject.attributes.width.toString()
+    if (graphObject.attributes.height)
+      ret.height = graphObject.attributes.height.toString()
+    if (graphObject.attributes.viewBox)
+      ret.viewBox = viewbox(graphObject.attributes.viewBox)
+  }
+
   return ret
 }
 
@@ -500,19 +511,10 @@ export function getCreatedElementsTree(
 }
 
 function createElementByGraphObject(obj: GraphObject): ElementNode {
-  const attributes: ElementNodeAttributes = getGraphResolvedAttributes(obj, {})
-  if (obj.attributes) {
-    if (obj.attributes.x) attributes.x = obj.attributes.x.toString()
-    if (obj.attributes.y) attributes.y = obj.attributes.y.toString()
-    if (obj.attributes.width) attributes.width = obj.attributes.width.toString()
-    if (obj.attributes.height)
-      attributes.height = obj.attributes.height.toString()
-  }
-
   return getElementNode({
     id: obj.id,
     tag: obj.tag ?? 'rect',
-    attributes,
+    attributes: getGraphResolvedAttributes(obj, {}),
   })
 }
 

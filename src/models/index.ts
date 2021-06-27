@@ -126,12 +126,15 @@ export interface GraphObject {
   create?: boolean
   tag?: string
   parent?: string
-  attributes?: {
-    x?: number
-    y?: number
-    width?: number
-    height?: number
-  }
+  attributes?: GraphObjectAttributes
+}
+
+export interface GraphObjectAttributes {
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  viewBox?: IRectangle
 }
 
 export function getGraphObject(

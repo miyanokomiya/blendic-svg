@@ -58,6 +58,7 @@ import * as get_object from './nodes/getObject'
 import * as set_transform from './nodes/setTransform'
 import * as set_fill from './nodes/setFill'
 import * as set_stroke from './nodes/setStroke'
+import * as set_viewbox from './nodes/setViewbox'
 import * as clone_object from './nodes/cloneObject'
 import * as create_object_rect from './nodes/createObjectRect'
 
@@ -103,6 +104,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   set_transform,
   set_fill,
   set_stroke,
+  set_viewbox,
   clone_object,
   create_object_rect,
 
@@ -178,6 +180,7 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Set Transform', type: 'set_transform' },
       { label: 'Set Fill', type: 'set_fill' },
       { label: 'Set Stroke', type: 'set_stroke' },
+      { label: 'Set Viewbox', type: 'set_viewbox' },
       { label: 'Clone Object', type: 'clone_object' },
       { label: 'Create Rect', type: 'create_object_rect' },
     ],

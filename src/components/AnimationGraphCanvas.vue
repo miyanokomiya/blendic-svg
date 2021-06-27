@@ -199,6 +199,9 @@ export default defineComponent({
       wheel: props.canvas.wheel,
       downLeft: (e: MouseEvent) => {
         isDownEmpty.value = e.target === svg.value
+
+        if (isDownEmpty.value && props.mode.command.value) return
+
         if (isDownEmpty.value) {
           props.canvas.downLeft('rect-select')
         } else {

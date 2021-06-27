@@ -545,5 +545,51 @@ describe('utils/poseResolver.ts', () => {
         ],
       })
     })
+    it('should create and insert new parent and children', () => {
+      const ret = getCreatedElementsTree(
+        {
+          a: getGraphObject({
+            id: 'a',
+            elementId: 'a',
+          }),
+          b: getGraphObject({
+            id: 'b',
+            parent: 'a',
+            tag: 'g',
+            create: true,
+          }),
+          c: getGraphObject({
+            id: 'c',
+            parent: 'b',
+            tag: 'circle',
+            create: true,
+          }),
+        },
+        getElementNode({
+          id: 'a',
+          tag: 'g',
+        })
+      )
+      expect(ret).toEqual({
+        id: 'a',
+        tag: 'g',
+        attributes: {},
+        children: [
+          {
+            id: 'b',
+            tag: 'g',
+            attributes: {},
+            children: [
+              {
+                id: 'c',
+                tag: 'circle',
+                attributes: {},
+                children: [],
+              },
+            ],
+          },
+        ],
+      })
+    })
   })
 })

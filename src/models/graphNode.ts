@@ -100,6 +100,7 @@ export interface GraphNodes {
   set_fill: GraphNodeSetFill
   set_stroke: GraphNodeSetStroke
   clone_object: GraphNodeCloneObject
+  create_object_group: GraphNodeCreateObjectGroup
   create_object_rect: GraphNodeCreateObjectRect
   create_object_ellipse: GraphNodeCreateObjectEllipse
   set_viewbox: GraphNodeSetViewbox
@@ -238,6 +239,15 @@ export interface GraphNodeCreateObjectInputsBase {
   fill: GraphNodeInput<Transform>
   stroke: GraphNodeInput<Transform>
   'stroke-width': GraphNodeInput<number>
+}
+
+export interface GraphNodeCreateObjectGroup extends GraphNodeBase {
+  type: 'create_object_group'
+  inputs: {
+    disabled: GraphNodeInput<boolean>
+    parent: GraphNodeInput<string>
+    transform: GraphNodeInput<Transform>
+  }
 }
 
 export interface GraphNodeCreateObjectRect extends GraphNodeBase {

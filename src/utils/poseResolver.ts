@@ -533,14 +533,16 @@ function insertCreatedElements(
   elm: ElementNode,
   createdElementMapByParent: IdMap<ElementNode[]>
 ): ElementNode {
+  const srcChildren = createdElementMapByParent[elm.id]
+    ? [...elm.children, ...createdElementMapByParent[elm.id]]
+    : elm.children
   return {
     ...elm,
     children: [
-      ...elm.children.map((c) => {
+      ...srcChildren.map((c) => {
         if (isPlainText(c)) return c
         return insertCreatedElements(c, createdElementMapByParent)
       }),
-      ...(createdElementMapByParent[elm.id] ?? []),
     ],
   }
 }

@@ -74,6 +74,8 @@ import * as switch_scaler from './nodes/switchScaler'
 import * as switch_vector2 from './nodes/switchVector2'
 import * as switch_transform from './nodes/switchTransform'
 import * as switch_object from './nodes/switchObject'
+import { IdMap } from '/@/models'
+import { mapReduce } from '/@/utils/commons'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -367,4 +369,42 @@ export function resetInput<T extends GraphNodeType>(
 ): { value: unknown } {
   const struct = getGraphNodeModule(type).struct
   return { value: (struct.inputs as any)[key].default }
+}
+
+export function duplicateNodes(
+  targetNodeMap: IdMap<GraphNode>,
+  getId: (src: { id: string }) => string = (src) => src.id
+): IdMap<GraphNode> {
+  return immigrateNodes(mapReduce(targetNodeMap, getId), targetNodeMap)
+}
+
+function immigrateNodes(
+  duplicatedIdMap: IdMap<string>,
+  nodeMap: IdMap<GraphNode>
+): IdMap<GraphNode> {
+  return Object.entries(nodeMap).reduce<IdMap<GraphNode>>((p, [id, node]) => {
+    p[duplicatedIdMap[id]] = {
+      ...node,
+      id: duplicatedIdMap[id],
+      inputs: immigrateInputs(duplicatedIdMap, node.inputs),
+    }
+    return p
+  }, {})
+}
+
+function immigrateInputs(
+  duplicatedIdMap: IdMap<string>,
+  inputs: GraphNodeInputs
+): GraphNodeInputs {
+  return mapReduce(inputs, (input) => {
+    if (!input.from) return input
+    if (!duplicatedIdMap[input.from.id]) return input
+    return {
+      ...input,
+      from: {
+        id: duplicatedIdMap[input.from.id],
+        key: input.from.key,
+      },
+    }
+  })
 }

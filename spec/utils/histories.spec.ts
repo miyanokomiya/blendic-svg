@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import {
   convolute,
   getAddItemHistory,
+  getAddItemsHistory,
   getDeleteItemHistory,
   getReplaceItem,
   getSelectItemHistory,
@@ -163,6 +164,20 @@ describe('src/utils/histories.ts', () => {
       expect(accessor.set).toHaveBeenCalledWith([val])
       ret.undo()
       expect(accessor.set).toHaveBeenCalledWith([])
+    })
+  })
+
+  describe('getAddItemsHistory', () => {
+    it('should return a history item to add items', () => {
+      const accessor = {
+        get: jest.fn().mockReturnValue([{ id: 'a' }]),
+        set: jest.fn(),
+      }
+      const ret = getAddItemsHistory(accessor, [{ id: 'b' }])
+      ret.redo()
+      expect(accessor.set).toHaveBeenCalledWith([{ id: 'a' }, { id: 'b' }])
+      ret.undo()
+      expect(accessor.set).toHaveBeenCalledWith([{ id: 'a' }])
     })
   })
 

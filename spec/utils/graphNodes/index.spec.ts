@@ -17,6 +17,8 @@ import {
   validateAllNodes,
   validateConnection,
   resetInput,
+  duplicateNodes,
+  createGraphNode,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 
@@ -311,6 +313,51 @@ describe('src/utils/graphNodes/index.ts', () => {
       expect(resetInput('make_vector2', 'x')).toEqual({ value: 0 })
       expect(resetInput('set_transform', 'transform')).toEqual({
         value: getTransform(),
+      })
+    })
+  })
+
+  describe('duplicateNodes', () => {
+    it('should duplicate and immigrate target nodes', () => {
+      expect(
+        duplicateNodes(
+          {
+            a: createGraphNode('make_vector2', {
+              id: 'a',
+              inputs: {
+                x: { from: { id: 'b', key: 'x' } },
+                y: { from: { id: 'b', key: 'y' } },
+              },
+            }),
+            b: createGraphNode('break_vector2', { id: 'b' }),
+            c: createGraphNode('make_vector2', {
+              id: 'c',
+              inputs: {
+                x: { from: { id: 'd', key: 'x' } },
+                y: { from: { id: 'd', key: 'y' } },
+              },
+            }),
+          },
+          (n) => `d_${n.id}`
+        )
+      ).toEqual({
+        d_a: createGraphNode('make_vector2', {
+          id: 'd_a',
+          // should immigrate ids of duplicate nodes
+          inputs: {
+            x: { from: { id: 'd_b', key: 'x' } },
+            y: { from: { id: 'd_b', key: 'y' } },
+          },
+        }),
+        d_b: createGraphNode('break_vector2', { id: 'd_b' }),
+        d_c: createGraphNode('make_vector2', {
+          id: 'd_c',
+          // should not immigrate ids of unduplicate nodes
+          inputs: {
+            x: { from: { id: 'd', key: 'x' } },
+            y: { from: { id: 'd', key: 'y' } },
+          },
+        }),
       })
     })
   })

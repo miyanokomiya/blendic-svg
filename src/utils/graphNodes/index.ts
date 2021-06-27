@@ -58,7 +58,11 @@ import * as get_object from './nodes/getObject'
 import * as set_transform from './nodes/setTransform'
 import * as set_fill from './nodes/setFill'
 import * as set_stroke from './nodes/setStroke'
+import * as set_viewbox from './nodes/setViewbox'
 import * as clone_object from './nodes/cloneObject'
+import * as create_object_group from './nodes/createObjectGroup'
+import * as create_object_rect from './nodes/createObjectRect'
+import * as create_object_ellipse from './nodes/createObjectEllipse'
 
 import * as greater_than from './nodes/greaterThan'
 import * as greater_than_or_equal from './nodes/greaterThanOrEqual'
@@ -102,7 +106,12 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   set_transform,
   set_fill,
   set_stroke,
+  set_viewbox,
   clone_object,
+
+  create_object_group,
+  create_object_rect,
+  create_object_ellipse,
 
   not,
   equal,
@@ -176,7 +185,16 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Set Transform', type: 'set_transform' },
       { label: 'Set Fill', type: 'set_fill' },
       { label: 'Set Stroke', type: 'set_stroke' },
+      { label: 'Set Viewbox', type: 'set_viewbox' },
       { label: 'Clone Object', type: 'clone_object' },
+    ],
+  },
+  {
+    label: 'Create',
+    children: [
+      { label: 'Group', type: 'create_object_group' },
+      { label: 'Rect', type: 'create_object_rect' },
+      { label: 'Ellipse', type: 'create_object_ellipse' },
     ],
   },
 ]

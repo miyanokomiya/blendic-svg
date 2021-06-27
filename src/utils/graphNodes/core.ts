@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { Transform } from '/@/models'
-import { GraphNodeBase, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { getTransform, GraphObjectAttributes, Transform } from '/@/models'
+import {
+  GraphNodeBase,
+  GraphNodeCreateObjectInputsBase,
+  GRAPH_VALUE_TYPE,
+} from '/@/models/graphNode'
 
 export interface NodeModule<T extends GraphNodeBase> {
   struct: NodeStruct<T>
@@ -55,9 +59,15 @@ export interface NodeContext<T> {
   setTransform: (objectId: string, transform: Transform) => void
   setFill: (objectId: string, transform: Transform) => void
   setStroke: (objectId: string, transform: Transform) => void
+  setAttributes: (
+    objectId: string,
+    attributes: GraphObjectAttributes,
+    replace?: boolean
+  ) => void
   getFrame: () => number
   getObjectMap: () => { [id: string]: T }
   cloneObject: (objectId: string) => string
+  createObject: (tag: string, arg: Partial<T>) => string
 }
 
 export function createBaseNode(
@@ -72,3 +82,46 @@ export function createBaseNode(
     ...arg,
   }
 }
+
+export const nodeToCreateObjectProps = {
+  createdInputs: {
+    disabled: { value: false },
+    parent: { value: '' },
+    transform: { value: getTransform() },
+    fill: { value: getTransform() },
+    stroke: { value: getTransform() },
+    'stroke-width': { value: 1 },
+  },
+  inputs: {
+    disabled: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
+    parent: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
+    transform: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
+    fill: { type: GRAPH_VALUE_TYPE.COLOR, default: getTransform() },
+    stroke: { type: GRAPH_VALUE_TYPE.COLOR, default: getTransform() },
+    'stroke-width': { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
+  } as {
+    [key in keyof GraphNodeCreateObjectInputsBase]: {
+      type: keyof typeof GRAPH_VALUE_TYPE
+    } & { default: Required<GraphNodeCreateObjectInputsBase[key]>['value'] }
+  },
+  outputs: {
+    object: GRAPH_VALUE_TYPE.OBJECT,
+  },
+  computation(
+    inputs: {
+      [key in keyof GraphNodeCreateObjectInputsBase]: Required<
+        GraphNodeCreateObjectInputsBase[key]
+      >['value']
+    }
+  ): Omit<typeof inputs, 'disabled'> | undefined {
+    return inputs.disabled
+      ? undefined
+      : {
+          parent: inputs.parent,
+          transform: inputs.transform,
+          fill: inputs.fill,
+          stroke: inputs.stroke,
+          'stroke-width': inputs['stroke-width'],
+        }
+  },
+} as const

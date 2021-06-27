@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ElementNode } from '../models'
+import { isPlainText } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
 export function makeSvg(svgNode: ElementNode): SVGElement {
@@ -25,7 +26,7 @@ export function makeSvg(svgNode: ElementNode): SVGElement {
 }
 
 function makeNode(svgNode: ElementNode | string): SVGElement | string {
-  if (typeof svgNode === 'string') return svgNode
+  if (isPlainText(svgNode)) return svgNode
   return createSVGElement(
     svgNode.tag,
     normalizeAttributes(svgNode.attributes),
@@ -66,7 +67,7 @@ function appendChildren($el: SVGElement, children: (SVGElement | string)[]) {
   const $fragment = document.createDocumentFragment()
   for (let i = 0; i < children.length; i++) {
     const item = children[i]
-    if (typeof item === 'string') {
+    if (isPlainText(item)) {
       $fragment.appendChild(new Text(item))
     } else {
       $fragment.appendChild(item)

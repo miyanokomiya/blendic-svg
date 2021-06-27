@@ -35,16 +35,17 @@ import {
   ElementNodeAttributes,
   toMap,
   GraphObject,
+  getElementNode,
 } from '../models'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
-import { mapReduce } from './commons'
-import { getTnansformStr } from './helpers'
+import { mapReduce, toKeyListMap } from './commons'
+import { getTnansformStr, viewbox } from './helpers'
 import { KeyframeBase } from '/@/models/keyframe'
 import {
   getPosedAttributesWithoutTransform,
   posedColorAttributes,
 } from '/@/utils/attributesResolver'
-import { flatElementTree } from '/@/utils/elements'
+import { flatElementTree, isPlainText } from '/@/utils/elements'
 import { isIdentityAffine, transformToAffine } from '/@/utils/geometry'
 import { splitKeyframeMapByName } from '/@/utils/keyframes'
 import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
@@ -136,7 +137,7 @@ export function getPosedElementMatrixMap(
   return {
     [node.id]: transform,
     ...node.children.reduce<IdMap<AffineMatrix>>((p, c) => {
-      if (typeof c === 'string') return p
+      if (isPlainText(c)) return p
       p = {
         ...p,
         ...getPosedElementMatrixMap(
@@ -190,7 +191,7 @@ function getPosedElementNode(
       ...attributes,
     },
     children: node.children.map((c) => {
-      if (typeof c === 'string') return c
+      if (isPlainText(c)) return c
       return getPosedElementNode(boneMap, matrixMap, elementMap, c)
     }),
   }
@@ -293,7 +294,10 @@ export function getGraphResolvedElementTree(
 ): ElementNode {
   return getClonedElementsTree(
     graphObjectMap,
-    getGraphResolvedElement(graphObjectMap, svgTree)
+    getCreatedElementsTree(
+      graphObjectMap,
+      getGraphResolvedElement(graphObjectMap, svgTree)
+    )
   )
 }
 
@@ -307,10 +311,21 @@ function getGraphResolvedElement(
     ...node,
     attributes: getGraphResolvedAttributes(graphObject, node.attributes),
     children: node.children.map((c) => {
-      if (typeof c === 'string') return c
+      if (isPlainText(c)) return c
       return getGraphResolvedElement(graphObjectMap, c)
     }),
   }
+}
+
+const NUMBER_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
+  x: true,
+  y: true,
+  width: true,
+  height: true,
+  cx: true,
+  cy: true,
+  rx: true,
+  ry: true,
 }
 
 function getGraphResolvedAttributes(
@@ -335,6 +350,21 @@ function getGraphResolvedAttributes(
     const attrs = posedColorAttributes(graphObject.stroke)
     ret.stroke = attrs.color
     ret['stroke-opacity'] = attrs.opacity
+  }
+
+  if (graphObject['stroke-width']) {
+    ret['stroke-width'] = graphObject['stroke-width'].toString()
+  }
+
+  if (graphObject.attributes) {
+    const attrs = graphObject.attributes
+
+    Object.entries(attrs).forEach(([key, val]) => {
+      if (NUMBER_ATTRIBUTES_KEYS[key] && val) ret[key] = val.toString()
+    })
+
+    if (graphObject.attributes.viewBox)
+      ret.viewBox = viewbox(graphObject.attributes.viewBox)
   }
 
   return ret
@@ -365,6 +395,7 @@ function insertClonedElementTree(
 ): ElementNode {
   const useObjectMapByElementId = useObjects.reduce<IdMap<GraphObject[]>>(
     (p, o) => {
+      if (!o.elementId) return p
       p[o.elementId] = p[o.elementId] ? [...p[o.elementId], o] : [o]
       return p
     },
@@ -381,7 +412,7 @@ function insertClonedElement(
   attributesMap: IdMap<ElementNodeAttributes>
 ): ElementNode {
   const children = node.children.map((c) => {
-    if (typeof c === 'string') return c
+    if (isPlainText(c)) return c
     return insertClonedElement(useObjectMapByElementId, c, attributesMap)
   })
 
@@ -418,6 +449,7 @@ function convertUseTree(
   const clonedElementIds = clonedObjects
     .map((o) => o.elementId)
     .reduce<IdMap<boolean>>((p, id) => {
+      if (!id) return p
       p[id] = true
       return p
     }, {})
@@ -433,7 +465,7 @@ function convertUseElement(
   attributesMap: IdMap<ElementNodeAttributes>
 ): ElementNode {
   const children = node.children.map((c) => {
-    if (typeof c === 'string') return c
+    if (isPlainText(c)) return c
     return convertUseElement(clonedElementIds, c, attributesMap)
   })
 
@@ -467,5 +499,50 @@ function convertUseElement(
     }
   } else {
     return { ...node, children }
+  }
+}
+
+export function getCreatedElementsTree(
+  graphObjectMap: IdMap<GraphObject>,
+  svgTree: ElementNode
+): ElementNode {
+  const createdObjects = Object.values(graphObjectMap)
+    .filter((o) => o.create && o.tag)
+    // if parent is empty, let them be svg's children
+    .map((o) => {
+      return o.parent ? o : { ...o, parent: svgTree.id }
+    })
+
+  const graphObjectMapByParent = toKeyListMap(createdObjects, 'parent')
+  const createdElementMapByParent = mapReduce(graphObjectMapByParent, (list) =>
+    list.map(createElementByGraphObject)
+  )
+
+  return insertCreatedElements(svgTree, createdElementMapByParent)
+}
+
+function createElementByGraphObject(obj: GraphObject): ElementNode {
+  return getElementNode({
+    id: obj.id,
+    tag: obj.tag ?? 'rect',
+    attributes: getGraphResolvedAttributes(obj, {}),
+  })
+}
+
+function insertCreatedElements(
+  elm: ElementNode,
+  createdElementMapByParent: IdMap<ElementNode[]>
+): ElementNode {
+  const srcChildren = createdElementMapByParent[elm.id]
+    ? [...elm.children, ...createdElementMapByParent[elm.id]]
+    : elm.children
+  return {
+    ...elm,
+    children: [
+      ...srcChildren.map((c) => {
+        if (isPlainText(c)) return c
+        return insertCreatedElements(c, createdElementMapByParent)
+      }),
+    ],
   }
 }

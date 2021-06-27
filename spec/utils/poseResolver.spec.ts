@@ -50,6 +50,7 @@ import {
   bakeKeyframe,
   bakeKeyframes,
   getClonedElementsTree,
+  getCreatedElementsTree,
   getGraphResolvedElementTree,
   getInterpolatedBoneMap,
   getNativeDeformMatrix,
@@ -340,12 +341,17 @@ describe('utils/poseResolver.ts', () => {
         transform: 'matrix(1,0,0,1,1,2)',
       })
     })
-    it('should resolve fill and stroke of graph objects', () => {
+    it('should resolve fill, stroke and stroke-width of graph objects', () => {
       const fill = getTransform({ rotate: 10 })
       const stroke = getTransform({ rotate: 20 })
       const ret = getGraphResolvedElementTree(
         {
-          a: getGraphObject({ elementId: 'a', fill, stroke }),
+          a: getGraphObject({
+            elementId: 'a',
+            fill,
+            stroke,
+            'stroke-width': 3,
+          }),
         },
         getElementNode({ id: 'a', attributes: { fill: 'red', id: 'a' } })
       )
@@ -355,6 +361,22 @@ describe('utils/poseResolver.ts', () => {
         'fill-opacity': posedColorAttributes(fill).opacity,
         stroke: posedColorAttributes(stroke).color,
         'stroke-opacity': posedColorAttributes(stroke).opacity,
+        'stroke-width': '3',
+      })
+    })
+    it('should resolve viewBox of graph objects', () => {
+      const viewBox = { x: 1, y: 2, width: 3, height: 4 }
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({
+            elementId: 'a',
+            attributes: { viewBox },
+          }),
+        },
+        getElementNode({ id: 'a', attributes: { viewBox: '' } })
+      )
+      expect(ret.attributes).toEqual({
+        viewBox: '1 2 3 4',
       })
     })
     it('should resolve recursively', () => {
@@ -379,7 +401,7 @@ describe('utils/poseResolver.ts', () => {
   })
 
   describe('getClonedElementsTree', () => {
-    it('should clone target elements', () => {
+    it('should clone and insert target elements', () => {
       const ret = getClonedElementsTree(
         {
           a: getGraphObject({
@@ -423,6 +445,148 @@ describe('utils/poseResolver.ts', () => {
             tag: 'use',
             attributes: { href: '#a' },
             children: [],
+          },
+        ],
+      })
+    })
+  })
+
+  describe('getCreatedElementsTree', () => {
+    it('should create and insert elements by graph objects', () => {
+      const ret = getCreatedElementsTree(
+        {
+          a: getGraphObject({
+            id: 'a',
+            elementId: 'a',
+          }),
+          aa: getGraphObject({
+            id: 'aa',
+            elementId: 'aa',
+          }),
+          b: getGraphObject({
+            id: 'b',
+            parent: 'a',
+            tag: 'circle',
+            create: true,
+            attributes: { x: 10 },
+          }),
+          bb: getGraphObject({
+            id: 'bb',
+            parent: 'aa',
+            tag: 'circle',
+            create: true,
+            attributes: { x: 20 },
+          }),
+        },
+        getElementNode({
+          id: 'a',
+          tag: 'rect',
+          children: [getElementNode({ id: 'aa', tag: 'rect' })],
+        })
+      )
+      expect(ret).toEqual({
+        id: 'a',
+        tag: 'rect',
+        attributes: {},
+        children: [
+          {
+            id: 'aa',
+            tag: 'rect',
+            attributes: {},
+            children: [
+              {
+                id: 'bb',
+                tag: 'circle',
+                attributes: { x: '20' },
+                children: [],
+              },
+            ],
+          },
+          {
+            id: 'b',
+            tag: 'circle',
+            attributes: { x: '10' },
+            children: [],
+          },
+        ],
+      })
+    })
+    it('should create and insert elements in the root svg if parent is empty', () => {
+      const ret = getCreatedElementsTree(
+        {
+          svg: getGraphObject({
+            id: 'a',
+            elementId: 'a',
+          }),
+          b: getGraphObject({
+            id: 'b',
+            tag: 'circle',
+            create: true,
+            attributes: { x: 10 },
+          }),
+        },
+        getElementNode({
+          id: 'a',
+          tag: 'svg',
+          children: [],
+        })
+      )
+      expect(ret).toEqual({
+        id: 'a',
+        tag: 'svg',
+        attributes: {},
+        children: [
+          {
+            id: 'b',
+            tag: 'circle',
+            attributes: { x: '10' },
+            children: [],
+          },
+        ],
+      })
+    })
+    it('should create and insert new parent and children', () => {
+      const ret = getCreatedElementsTree(
+        {
+          a: getGraphObject({
+            id: 'a',
+            elementId: 'a',
+          }),
+          b: getGraphObject({
+            id: 'b',
+            parent: 'a',
+            tag: 'g',
+            create: true,
+          }),
+          c: getGraphObject({
+            id: 'c',
+            parent: 'b',
+            tag: 'circle',
+            create: true,
+          }),
+        },
+        getElementNode({
+          id: 'a',
+          tag: 'g',
+        })
+      )
+      expect(ret).toEqual({
+        id: 'a',
+        tag: 'g',
+        attributes: {},
+        children: [
+          {
+            id: 'b',
+            tag: 'g',
+            attributes: {},
+            children: [
+              {
+                id: 'c',
+                tag: 'circle',
+                attributes: {},
+                children: [],
+              },
+            ],
           },
         ],
       })

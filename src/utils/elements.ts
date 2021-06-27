@@ -38,6 +38,18 @@ import { resolveAllNodes } from '/@/utils/graphNodes'
 import { NodeContext } from '/@/utils/graphNodes/core'
 import { TreeNode } from '/@/utils/relations'
 
+export function getPlainSvgTree(): ElementNode {
+  return getElementNode({
+    id: 'svg',
+    tag: 'svg',
+    attributes: {
+      xmlns: 'http://www.w3.org/2000/svg',
+      viewBox: '0 0 400 400',
+      'font-family': 'sans-serif',
+    },
+  })
+}
+
 export function parseFromSvg(svgText: string): Actor {
   const domParser = new DOMParser()
   const svgDom = domParser.parseFromString(svgText, 'image/svg+xml')
@@ -52,7 +64,7 @@ export function parseFromSvg(svgText: string): Actor {
 }
 
 function toBElements(tree: ElementNode | string): BElement[] {
-  if (typeof tree === 'string') return []
+  if (isPlainText(tree)) return []
   return [toBElement(tree), ...tree.children.flatMap(toBElements)]
 }
 
@@ -143,9 +155,7 @@ export function inheritWeight(old: Actor, next: Actor): Actor {
 export function flatElementTree(
   children: (ElementNode | string)[]
 ): ElementNode[] {
-  const filtered = children.filter(
-    (n): n is ElementNode => typeof n !== 'string'
-  )
+  const filtered = children.filter((n): n is ElementNode => !isPlainText(n))
   return filtered.concat(filtered.flatMap((c) => flatElementTree(c.children)))
 }
 
@@ -162,7 +172,7 @@ export function getTreeFromElementNode(svg: ElementNode): TreeNode {
     id: svg.id,
     name: getElementLabel(svg),
     children: svg.children
-      .filter((c): c is ElementNode => typeof c !== 'string')
+      .filter((c): c is ElementNode => !isPlainText(c))
       .filter((c) => testEditableTag(c.tag))
       .map(getTreeFromElementNode),
   }
@@ -189,6 +199,12 @@ export function createGraphNodeContext(
       if (!graphElementMap[objectId]) return
       graphElementMap[objectId].stroke = transform
     },
+    setAttributes(objectId, attributes, replace = false) {
+      if (!graphElementMap[objectId]) return
+      graphElementMap[objectId].attributes = replace
+        ? attributes
+        : { ...graphElementMap[objectId].attributes, ...attributes }
+    },
     getFrame() {
       return currentFrame
     },
@@ -199,9 +215,19 @@ export function createGraphNodeContext(
       const src = graphElementMap[objectId]
       if (!src) return ''
 
-      const cloned = getGraphObject({ ...src, clone: true }, true)
+      // set 'create: true' if the target is created object
+      // set 'clone: true' if the target has native element
+      const cloned = getGraphObject(
+        src.create ? src : { ...src, clone: true },
+        true
+      )
       graphElementMap[cloned.id] = cloned
       return cloned.id
+    },
+    createObject(tag, arg) {
+      const created = getGraphObject({ ...arg, tag, create: true }, true)
+      graphElementMap[created.id] = created
+      return created.id
     },
   }
 }
@@ -214,4 +240,8 @@ export function resolveAnimationGraph(
   const context = createGraphNodeContext(elementMap, currentFrame)
   resolveAllNodes(context, graphNodes)
   return context.getObjectMap()
+}
+
+export function isPlainText(elm: unknown): elm is string {
+  return typeof elm === 'string'
 }

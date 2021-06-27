@@ -48,7 +48,11 @@ import {
   getGraphResolvedElementTree,
   getPosedElementTree,
 } from '/@/utils/poseResolver'
-import { parseViewBoxFromStr, resolveAnimationGraph } from '/@/utils/elements'
+import {
+  isPlainText,
+  parseViewBoxFromStr,
+  resolveAnimationGraph,
+} from '/@/utils/elements'
 import { useSettings } from '/@/composables/settings'
 import type { CanvasMode, SelectOptions } from '/@/composables/modes/types'
 import { useAnimationStore } from '/@/store/animation'
@@ -57,7 +61,7 @@ import { useCanvasStore } from '/@/store/canvas'
 import { useStore } from '/@/store'
 
 function getId(elm: ElementNode | string): string {
-  if (typeof elm === 'string') return elm
+  if (isPlainText(elm)) return elm
   return elm.id
 }
 

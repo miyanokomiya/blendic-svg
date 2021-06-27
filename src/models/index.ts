@@ -113,11 +113,32 @@ export function getAnimationGraph(
 
 export interface GraphObject {
   id: string
-  elementId: string
+
+  elementId?: string
+
   transform?: Transform
   fill?: Transform
   stroke?: Transform
+  'stroke-width'?: number
+
   clone?: boolean
+
+  create?: boolean
+  tag?: string
+  parent?: string
+  attributes?: GraphObjectAttributes
+}
+
+export interface GraphObjectAttributes {
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  viewBox?: IRectangle
+  cx?: number
+  cy?: number
+  rx?: number
+  ry?: number
 }
 
 export function getGraphObject(
@@ -126,7 +147,6 @@ export function getGraphObject(
 ): GraphObject {
   const id = generateId ? v4() : arg.id ?? ''
   return {
-    elementId: '',
     ...arg,
     id,
   }

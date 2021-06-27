@@ -94,5 +94,7 @@ export default defineComponent({
   background-color: #fff;
   min-width: 140px;
   max-width: 140px;
+  max-height: 100%;
+  overflow: auto;
 }
 </style>

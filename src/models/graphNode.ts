@@ -100,6 +100,10 @@ export interface GraphNodes {
   set_fill: GraphNodeSetFill
   set_stroke: GraphNodeSetStroke
   clone_object: GraphNodeCloneObject
+  create_object_group: GraphNodeCreateObjectGroup
+  create_object_rect: GraphNodeCreateObjectRect
+  create_object_ellipse: GraphNodeCreateObjectEllipse
+  set_viewbox: GraphNodeSetViewbox
 
   add_scaler: GraphNodeAddScaler
   sub_scaler: GraphNodeSubScaler
@@ -217,10 +221,56 @@ export interface GraphNodeCloneObject extends GraphNodeBase {
   }
 }
 
-export interface GraphNodeCloneObject extends GraphNodeBase {
-  type: 'clone_object'
+export interface GraphNodeSetViewbox extends GraphNodeBase {
+  type: 'set_viewbox'
   inputs: {
     object: GraphNodeInput<string>
+    x: GraphNodeInput<number>
+    y: GraphNodeInput<number>
+    width: GraphNodeInput<number>
+    height: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeCreateObjectInputsBase {
+  disabled: GraphNodeInput<boolean>
+  parent: GraphNodeInput<string>
+  transform: GraphNodeInput<Transform>
+  fill: GraphNodeInput<Transform>
+  stroke: GraphNodeInput<Transform>
+  'stroke-width': GraphNodeInput<number>
+}
+
+export interface GraphNodeCreateObjectGroup extends GraphNodeBase {
+  type: 'create_object_group'
+  inputs: {
+    disabled: GraphNodeInput<boolean>
+    parent: GraphNodeInput<string>
+    transform: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeCreateObjectRect extends GraphNodeBase {
+  type: 'create_object_rect'
+  inputs: {
+    x: GraphNodeInput<number>
+    y: GraphNodeInput<number>
+    width: GraphNodeInput<number>
+    height: GraphNodeInput<number>
+  } & {
+    [key in keyof GraphNodeCreateObjectInputsBase]: GraphNodeCreateObjectInputsBase[key]
+  }
+}
+
+export interface GraphNodeCreateObjectEllipse extends GraphNodeBase {
+  type: 'create_object_ellipse'
+  inputs: {
+    cx: GraphNodeInput<number>
+    cy: GraphNodeInput<number>
+    rx: GraphNodeInput<number>
+    ry: GraphNodeInput<number>
+  } & {
+    [key in keyof GraphNodeCreateObjectInputsBase]: GraphNodeCreateObjectInputsBase[key]
   }
 }
 

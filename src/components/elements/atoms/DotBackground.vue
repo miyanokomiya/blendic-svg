@@ -57,8 +57,8 @@ export default defineComponent({
 div {
   width: 100%;
   height: 100%;
-  background-size: 20px 20px;
+  background-size: 40px 40px;
   background-repeat: repeat repeat;
-  background-image: radial-gradient(circle, #000 1px, rgba(#fff, 0) 1px);
+  background-image: radial-gradient(circle, #000 2px, rgba(#fff, 0) 2px);
 }
 </style>

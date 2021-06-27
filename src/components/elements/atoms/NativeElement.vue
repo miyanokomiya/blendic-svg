@@ -30,7 +30,7 @@ import { SelectOptions } from '/@/composables/modes/types'
 import { useSettings } from '/@/composables/settings'
 import { ElementNode } from '/@/models'
 import { getMouseOptions } from '/@/utils/devices'
-import { testEditableTag } from '/@/utils/elements'
+import { isPlainText, testEditableTag } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
 const NativeElement: any = defineComponent({
@@ -54,7 +54,7 @@ const NativeElement: any = defineComponent({
     )
 
     const overrideAttrs = computed((): { [name: string]: string } => {
-      if (typeof props.element === 'string') {
+      if (isPlainText(props.element)) {
         return {}
       } else if (selectedMap.value[props.element.id] || props.groupSelected) {
         return {
@@ -66,7 +66,7 @@ const NativeElement: any = defineComponent({
       }
     })
 
-    const isElement = computed(() => typeof props.element !== 'string')
+    const isElement = computed(() => !isPlainText(props.element))
     const element = computed(() => props.element as ElementNode)
 
     const onClickElement = inject<

@@ -59,6 +59,7 @@ import * as set_transform from './nodes/setTransform'
 import * as set_fill from './nodes/setFill'
 import * as set_stroke from './nodes/setStroke'
 import * as clone_object from './nodes/cloneObject'
+import * as create_object_rect from './nodes/createObjectRect'
 
 import * as greater_than from './nodes/greaterThan'
 import * as greater_than_or_equal from './nodes/greaterThanOrEqual'
@@ -103,6 +104,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   set_fill,
   set_stroke,
   clone_object,
+  create_object_rect,
 
   not,
   equal,
@@ -177,6 +179,7 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Set Fill', type: 'set_fill' },
       { label: 'Set Stroke', type: 'set_stroke' },
       { label: 'Clone Object', type: 'clone_object' },
+      { label: 'Create Rect', type: 'create_object_rect' },
     ],
   },
 ]

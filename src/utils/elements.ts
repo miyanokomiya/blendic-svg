@@ -52,7 +52,7 @@ export function parseFromSvg(svgText: string): Actor {
 }
 
 function toBElements(tree: ElementNode | string): BElement[] {
-  if (typeof tree === 'string') return []
+  if (isPlainText(tree)) return []
   return [toBElement(tree), ...tree.children.flatMap(toBElements)]
 }
 
@@ -143,9 +143,7 @@ export function inheritWeight(old: Actor, next: Actor): Actor {
 export function flatElementTree(
   children: (ElementNode | string)[]
 ): ElementNode[] {
-  const filtered = children.filter(
-    (n): n is ElementNode => typeof n !== 'string'
-  )
+  const filtered = children.filter((n): n is ElementNode => !isPlainText(n))
   return filtered.concat(filtered.flatMap((c) => flatElementTree(c.children)))
 }
 
@@ -162,7 +160,7 @@ export function getTreeFromElementNode(svg: ElementNode): TreeNode {
     id: svg.id,
     name: getElementLabel(svg),
     children: svg.children
-      .filter((c): c is ElementNode => typeof c !== 'string')
+      .filter((c): c is ElementNode => !isPlainText(c))
       .filter((c) => testEditableTag(c.tag))
       .map(getTreeFromElementNode),
   }
@@ -203,6 +201,11 @@ export function createGraphNodeContext(
       graphElementMap[cloned.id] = cloned
       return cloned.id
     },
+    createObject(tag, arg) {
+      const created = getGraphObject({ ...arg, tag, create: true }, true)
+      graphElementMap[created.id] = created
+      return created.id
+    },
   }
 }
 
@@ -214,4 +217,8 @@ export function resolveAnimationGraph(
   const context = createGraphNodeContext(elementMap, currentFrame)
   resolveAllNodes(context, graphNodes)
   return context.getObjectMap()
+}
+
+export function isPlainText(elm: unknown): elm is string {
+  return typeof elm === 'string'
 }

@@ -58,6 +58,7 @@ export interface NodeContext<T> {
   getFrame: () => number
   getObjectMap: () => { [id: string]: T }
   cloneObject: (objectId: string) => string
+  createObject: (tag: string, arg: Partial<T>) => string
 }
 
 export function createBaseNode(

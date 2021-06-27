@@ -100,6 +100,7 @@ export interface GraphNodes {
   set_fill: GraphNodeSetFill
   set_stroke: GraphNodeSetStroke
   clone_object: GraphNodeCloneObject
+  create_object_rect: GraphNodeCreateObjectRect
 
   add_scaler: GraphNodeAddScaler
   sub_scaler: GraphNodeSubScaler
@@ -217,10 +218,19 @@ export interface GraphNodeCloneObject extends GraphNodeBase {
   }
 }
 
-export interface GraphNodeCloneObject extends GraphNodeBase {
-  type: 'clone_object'
+export interface GraphNodeCreateObjectRect extends GraphNodeBase {
+  type: 'create_object_rect'
   inputs: {
-    object: GraphNodeInput<string>
+    disabled: GraphNodeInput<boolean>
+    parent: GraphNodeInput<string>
+    transform: GraphNodeInput<Transform>
+    fill: GraphNodeInput<Transform>
+    stroke: GraphNodeInput<Transform>
+    'stroke-width': GraphNodeInput<number>
+    x: GraphNodeInput<number>
+    y: GraphNodeInput<number>
+    width: GraphNodeInput<number>
+    height: GraphNodeInput<number>
   }
 }
 

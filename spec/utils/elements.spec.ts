@@ -31,6 +31,7 @@ import {
   flatElementTree,
   getTreeFromElementNode,
   inheritWeight,
+  isPlainText,
   parseFromSvg,
 } from '/@/utils/elements'
 
@@ -432,6 +433,25 @@ describe('utils/elements.ts', () => {
         transform: getTransform({ rotate: 20 }),
         clone: true,
       })
+    })
+    it('should return a context to createObject', () => {
+      const context = createGraphNodeContext({}, 10)
+      context.createObject('rect', { attributes: { x: 10 } })
+      const ret = context.getObjectMap()
+
+      expect(Object.values(ret)[0]).toEqual({
+        id: expect.anything(),
+        create: true,
+        tag: 'rect',
+        attributes: { x: 10 },
+      })
+    })
+  })
+
+  describe('isPlainText', () => {
+    it('should return true if elm is string', () => {
+      expect(isPlainText('a')).toBe(true)
+      expect(isPlainText({} as any)).toBe(false)
     })
   })
 })

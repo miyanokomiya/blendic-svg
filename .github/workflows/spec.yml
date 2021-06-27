@@ -29,7 +29,7 @@ jobs:
       - run: yarn lint-json
       - run: yarn lint
       - run: yarn type
-      - run: yarn test:unit --runInBand --clear-cache
+      - run: yarn test:unit --runInBand
       - run: yarn test:e2e
       - name: Archive E2E screenshots
         uses: actions/upload-artifact@v2

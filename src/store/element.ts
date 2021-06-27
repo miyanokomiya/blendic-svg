@@ -19,18 +19,31 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { computed, ref } from 'vue'
 import { useListState } from '../composables/listState'
-import { Actor, BElement, IdMap, toMap } from '../models'
+import { Actor, BElement, getActor, getBElement, IdMap, toMap } from '../models'
 import { extractMap, mapReduce, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { SelectOptions } from '/@/composables/modes/types'
 import { HistoryItem } from '/@/composables/stores/history'
-import { flatElementTree } from '/@/utils/elements'
+import { flatElementTree, getPlainSvgTree } from '/@/utils/elements'
 
 const historyStore = useHistoryStore()
 
 const actorsState = useListState<Actor>('Actor')
 const selectedElements = ref<IdMap<boolean>>({})
 const lastSelectedElementId = ref<string>()
+
+function createInitialActor(): Actor {
+  const svgTree = getPlainSvgTree()
+  return getActor({
+    id: 'initial-actor',
+    armatureId: 'initial-armature',
+    svgTree,
+    elements: [getBElement({ id: svgTree.id })],
+  })
+}
+actorsState.state.list = [createInitialActor()]
+actorsState.state.selectedMap = { [actorsState.state.list[0].id]: true }
+actorsState.state.lastSelectedId = actorsState.state.list[0].id
 
 const lastSelectedActor = computed(() => {
   return actorsState.lastSelectedItem.value

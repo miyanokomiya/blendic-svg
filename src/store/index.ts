@@ -43,22 +43,20 @@ import { SelectOptions } from '/@/composables/modes/types'
 const historyStore = useHistoryStore()
 
 const armature = reactive<Armature>(
-  getArmature(
-    {
-      name: 'armature',
-      bones: [
-        getBone(
-          {
-            name: 'bone',
-            head: { x: 20, y: 200 },
-            tail: { x: 220, y: 200 },
-          },
-          true
-        ),
-      ],
-    },
-    true
-  )
+  getArmature({
+    id: 'initial-armature',
+    name: 'armature',
+    bones: [
+      getBone(
+        {
+          name: 'bone',
+          head: { x: 20, y: 200 },
+          tail: { x: 220, y: 200 },
+        },
+        true
+      ),
+    ],
+  })
 )
 
 const state = reactive({

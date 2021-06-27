@@ -38,6 +38,18 @@ import { resolveAllNodes } from '/@/utils/graphNodes'
 import { NodeContext } from '/@/utils/graphNodes/core'
 import { TreeNode } from '/@/utils/relations'
 
+export function getPlainSvgTree(): ElementNode {
+  return getElementNode({
+    id: 'svg',
+    tag: 'svg',
+    attributes: {
+      xmlns: 'http://www.w3.org/2000/svg',
+      viewBox: '0 0 400 400',
+      'font-family': 'sans-serif',
+    },
+  })
+}
+
 export function parseFromSvg(svgText: string): Actor {
   const domParser = new DOMParser()
   const svgDom = domParser.parseFromString(svgText, 'image/svg+xml')

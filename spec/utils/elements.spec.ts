@@ -30,6 +30,7 @@ import {
   cleanActors,
   createGraphNodeContext,
   flatElementTree,
+  getPlainSvgTree,
   getTreeFromElementNode,
   inheritWeight,
   isPlainText,
@@ -53,6 +54,20 @@ const svgText_2 = `
 `
 
 describe('utils/elements.ts', () => {
+  describe('getPlainSvgTree', () => {
+    it('should return svg element with empty children', () => {
+      const svg = getPlainSvgTree()
+      expect(svg.id).toBe('svg')
+      expect(svg.tag).toBe('svg')
+      expect(svg.attributes).toEqual({
+        xmlns: 'http://www.w3.org/2000/svg',
+        viewBox: '0 0 400 400',
+        'font-family': 'sans-serif',
+      })
+      expect(svg.children).toEqual([])
+    })
+  })
+
   describe('parseFromSvg', () => {
     it('parse SVG to a actor', () => {
       const ret = parseFromSvg(svgText_1)

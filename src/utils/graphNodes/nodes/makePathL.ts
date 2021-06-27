@@ -17,31 +17,41 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeCos, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { GraphNodeMakePathL, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeCos> = {
+export const struct: NodeStruct<GraphNodeMakePathL> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: { t: { value: 0 } },
+        data: {},
+        inputs: {
+          d: { value: [] },
+          relative: { value: false },
+          p: { value: { x: 0, y: 0 } },
+        },
         ...arg,
       }),
-      type: 'cos',
-    } as GraphNodeCos
+      type: 'make_path_l',
+    } as GraphNodeMakePathL
   },
   data: {},
   inputs: {
-    t: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    d: { type: GRAPH_VALUE_TYPE.D, default: [] },
+    relative: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
+    p: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
   },
-  outputs: {
-    value: GRAPH_VALUE_TYPE.SCALER,
+  outputs: { d: GRAPH_VALUE_TYPE.D },
+  computation(inputs): { d: string[] } {
+    return {
+      d: [
+        ...inputs.d,
+        `${inputs.relative ? 'l' : 'L'}${inputs.p.x},${inputs.p.y}`,
+      ],
+    }
   },
-  computation(inputs) {
-    return { value: Math.cos((inputs.t * Math.PI) / 180) }
-  },
-  width: 100,
-  color: '#4169e1',
-  textColor: '#fff',
-  label: 'Cos',
+  width: 140,
+  color: '#fff5ee',
+  textColor: '#000',
+  label: 'Make Path L',
 }

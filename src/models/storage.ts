@@ -30,8 +30,8 @@ import {
   getBElement,
   AnimationGraph,
   getAnimationGraph,
-} from '../models'
-import { GraphNode } from '/@/models/graphNode'
+} from '/@/models'
+import { GraphNodeBase } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
 import { getConstraint } from '/@/utils/constraints'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
@@ -108,7 +108,7 @@ function initializeGraph(graph: AnimationGraph): AnimationGraph {
   }
 }
 
-export function initializeGraphNode(node: GraphNode): GraphNode {
+export function initializeGraphNode(node: GraphNodeBase): GraphNodeBase {
   const module = getGraphNodeModule(node.type)
   const model = module.struct.create()
   return {
@@ -116,5 +116,5 @@ export function initializeGraphNode(node: GraphNode): GraphNode {
     ...node,
     inputs: { ...model.inputs, ...node.inputs },
     data: { ...model.data, ...node.data },
-  } as GraphNode
+  } as GraphNodeBase
 }

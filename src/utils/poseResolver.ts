@@ -365,6 +365,12 @@ function getGraphResolvedAttributes(
 
     if (graphObject.attributes.viewBox)
       ret.viewBox = viewbox(graphObject.attributes.viewBox)
+
+    if (graphObject.attributes.d) {
+      // top command must be L, l, M or m
+      const top = graphObject.attributes.d[0].trim().toLowerCase()[0]
+      if (top === 'm' || top === 'l') ret.d = graphObject.attributes.d.join(' ')
+    }
   }
 
   return ret

@@ -17,20 +17,38 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import * as target from '/@/utils/graphNodes/nodes/sin'
+import * as target from '/@/utils/graphNodes/nodes/makePathL'
 
-describe('src/utils/graphNodes/nodes/sin.ts', () => {
+describe('src/utils/graphNodes/nodes/makePathL.ts', () => {
   describe('computation', () => {
-    it('should return Math.sin(t)', () => {
+    it('should return a created object', () => {
+      const createObject = jest.fn().mockReturnValue('a')
       expect(
         target.struct.computation(
           {
-            t: 90,
+            d: ['M1,2'],
+            relative: false,
+            p: { x: 10, y: 20 },
           },
           {} as any,
-          {} as any
+          { createObject } as any
         )
-      ).toEqual({ value: 1 })
+      ).toEqual({
+        d: ['M1,2', 'L10,20'],
+      })
+      expect(
+        target.struct.computation(
+          {
+            d: ['M1,2'],
+            relative: true,
+            p: { x: 10, y: 20 },
+          },
+          {} as any,
+          { createObject } as any
+        )
+      ).toEqual({
+        d: ['M1,2', 'l10,20'],
+      })
     })
   })
 })

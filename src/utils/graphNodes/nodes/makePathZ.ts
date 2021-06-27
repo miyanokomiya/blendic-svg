@@ -17,31 +17,34 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeCos, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { GraphNodeMakePathZ, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeCos> = {
+export const struct: NodeStruct<GraphNodeMakePathZ> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: { t: { value: 0 } },
+        data: {},
+        inputs: {
+          d: { value: [] },
+        },
         ...arg,
       }),
-      type: 'cos',
-    } as GraphNodeCos
+      type: 'make_path_z',
+    } as GraphNodeMakePathZ
   },
   data: {},
   inputs: {
-    t: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    d: { type: GRAPH_VALUE_TYPE.D, default: [] },
   },
-  outputs: {
-    value: GRAPH_VALUE_TYPE.SCALER,
+  outputs: { d: GRAPH_VALUE_TYPE.D },
+  computation(inputs): { d: string[] } {
+    return {
+      d: [...inputs.d, 'Z'],
+    }
   },
-  computation(inputs) {
-    return { value: Math.cos((inputs.t * Math.PI) / 180) }
-  },
-  width: 100,
-  color: '#4169e1',
-  textColor: '#fff',
-  label: 'Cos',
+  width: 140,
+  color: '#fff5ee',
+  textColor: '#000',
+  label: 'Make Path Z',
 }

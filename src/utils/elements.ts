@@ -197,7 +197,12 @@ export function createGraphNodeContext(
       const src = graphElementMap[objectId]
       if (!src) return ''
 
-      const cloned = getGraphObject({ ...src, clone: true }, true)
+      // set 'create: true' if the target is created object
+      // set 'clone: true' if the target has native element
+      const cloned = getGraphObject(
+        src.create ? src : { ...src, clone: true },
+        true
+      )
       graphElementMap[cloned.id] = cloned
       return cloned.id
     },

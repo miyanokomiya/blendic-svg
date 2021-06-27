@@ -23,6 +23,7 @@ import {
   getBElement,
   getBone,
   getElementNode,
+  getGraphObject,
   getTransform,
 } from '/@/models'
 import {
@@ -346,7 +347,7 @@ describe('utils/elements.ts', () => {
       context.setTransform('a', getTransform({ rotate: 20 }))
       expect(context.getObjectMap()).toEqual({
         a: {
-          id: expect.anything(),
+          id: 'a',
           elementId: 'a',
           transform: getTransform({ rotate: 20 }),
         },
@@ -354,7 +355,7 @@ describe('utils/elements.ts', () => {
       context.setTransform('a', getTransform({ rotate: 50 }))
       expect(context.getObjectMap()).toEqual({
         a: {
-          id: expect.anything(),
+          id: 'a',
           elementId: 'a',
           transform: getTransform({ rotate: 50 }),
         },
@@ -368,7 +369,7 @@ describe('utils/elements.ts', () => {
       context.setFill('a', getTransform({ rotate: 20 }))
       expect(context.getObjectMap()).toEqual({
         a: {
-          id: expect.anything(),
+          id: 'a',
           elementId: 'a',
           fill: getTransform({ rotate: 20 }),
         },
@@ -376,7 +377,7 @@ describe('utils/elements.ts', () => {
       context.setFill('a', getTransform({ rotate: 50 }))
       expect(context.getObjectMap()).toEqual({
         a: {
-          id: expect.anything(),
+          id: 'a',
           elementId: 'a',
           fill: getTransform({ rotate: 50 }),
         },
@@ -390,7 +391,7 @@ describe('utils/elements.ts', () => {
       context.setStroke('a', getTransform({ rotate: 20 }))
       expect(context.getObjectMap()).toEqual({
         a: {
-          id: expect.anything(),
+          id: 'a',
           elementId: 'a',
           stroke: getTransform({ rotate: 20 }),
         },
@@ -398,7 +399,7 @@ describe('utils/elements.ts', () => {
       context.setStroke('a', getTransform({ rotate: 50 }))
       expect(context.getObjectMap()).toEqual({
         a: {
-          id: expect.anything(),
+          id: 'a',
           elementId: 'a',
           stroke: getTransform({ rotate: 50 }),
         },
@@ -411,36 +412,61 @@ describe('utils/elements.ts', () => {
       )
       expect(context.getFrame()).toBe(10)
     })
-    it('should return a context to cloneObject', () => {
-      const context = createGraphNodeContext(
-        { a: getBElement({ id: 'a' }) },
-        10
-      )
-      context.setTransform('a', getTransform({ rotate: 20 }))
-      context.cloneObject('a')
-      const ret = context.getObjectMap()
+    describe('cloneObject', () => {
+      it('should return a context to cloneObject', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a' }) },
+          10
+        )
+        context.setTransform('a', getTransform({ rotate: 20 }))
+        const clonedId = context.cloneObject('a')
+        const ret = context.getObjectMap()
 
-      expect(ret['a']).toEqual({
-        id: expect.anything(),
-        elementId: 'a',
-        transform: getTransform({ rotate: 20 }),
+        expect(ret).toEqual({
+          a: {
+            id: 'a',
+            elementId: 'a',
+            transform: getTransform({ rotate: 20 }),
+          },
+          [clonedId]: {
+            id: clonedId,
+            elementId: 'a',
+            transform: getTransform({ rotate: 20 }),
+            clone: true,
+          },
+        })
       })
+      it('should clone a target with create = true if the target has create = true', () => {
+        const context = createGraphNodeContext({}, 10)
+        const createdId = context.createObject('rect', {
+          attributes: { x: 10 },
+        })
+        const clonedId = context.cloneObject(createdId)
+        const ret = context.getObjectMap()
 
-      delete ret['a']
-      expect(Object.values(ret)[0]).toEqual({
-        id: expect.anything(),
-        elementId: 'a',
-        transform: getTransform({ rotate: 20 }),
-        clone: true,
+        expect(ret).toEqual({
+          [createdId]: getGraphObject({
+            id: createdId,
+            tag: 'rect',
+            create: true,
+            attributes: { x: 10 },
+          }),
+          [clonedId]: getGraphObject({
+            id: clonedId,
+            tag: 'rect',
+            create: true,
+            attributes: { x: 10 },
+          }),
+        })
       })
     })
     it('should return a context to createObject', () => {
       const context = createGraphNodeContext({}, 10)
-      context.createObject('rect', { attributes: { x: 10 } })
+      const id = context.createObject('rect', { attributes: { x: 10 } })
       const ret = context.getObjectMap()
 
       expect(Object.values(ret)[0]).toEqual({
-        id: expect.anything(),
+        id,
         create: true,
         tag: 'rect',
         attributes: { x: 10 },

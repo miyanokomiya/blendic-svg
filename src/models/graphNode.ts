@@ -58,7 +58,7 @@ export interface GraphNodeInput<T> {
   from?: { id: string; key: string }
   value?: T
 }
-export type GraphNodeInputs = { [key: string]: GraphNodeInput<unknown> }
+export type GraphNodeInputs = { [key: string]: GraphNodeInput<any> }
 
 export interface GraphNodeMap {
   [id: string]: GraphNode
@@ -142,7 +142,9 @@ export interface GraphNodes {
   switch_object: GraphNodeSwitchObject
 }
 export type GraphNodeType = keyof GraphNodes
-export type GraphNode = GraphNodes[GraphNodeType]
+// Note: this union decrease performance too much of type checking and unit test
+// export type GraphNode = GraphNodes[GraphNodeType]
+export type GraphNode = GraphNodeBase
 
 export interface GraphNodeScaler extends GraphNodeBase {
   type: 'scaler'

@@ -354,4 +354,5 @@ export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
     TRANSFORM: '#a0522d',
     OBJECT: '#ee82ee',
     COLOR: '#32cd32',
+    D: '#00bfff',
   } as const

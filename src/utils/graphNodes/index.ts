@@ -63,6 +63,12 @@ import * as clone_object from './nodes/cloneObject'
 import * as create_object_group from './nodes/createObjectGroup'
 import * as create_object_rect from './nodes/createObjectRect'
 import * as create_object_ellipse from './nodes/createObjectEllipse'
+import * as create_object_path from './nodes/createObjectPath'
+import * as make_path_m from './nodes/makePathM'
+import * as make_path_l from './nodes/makePathL'
+import * as make_path_q from './nodes/makePathQ'
+import * as make_path_c from './nodes/makePathC'
+import * as make_path_z from './nodes/makePathZ'
 
 import * as greater_than from './nodes/greaterThan'
 import * as greater_than_or_equal from './nodes/greaterThanOrEqual'
@@ -114,6 +120,13 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   create_object_group,
   create_object_rect,
   create_object_ellipse,
+  create_object_path,
+
+  make_path_m,
+  make_path_l,
+  make_path_q,
+  make_path_c,
+  make_path_z,
 
   not,
   equal,
@@ -197,6 +210,17 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Group', type: 'create_object_group' },
       { label: 'Rect', type: 'create_object_rect' },
       { label: 'Ellipse', type: 'create_object_ellipse' },
+      { label: 'Path', type: 'create_object_path' },
+    ],
+  },
+  {
+    label: 'Make Path',
+    children: [
+      { label: 'M (Move)', type: 'make_path_m' },
+      { label: 'L (Line)', type: 'make_path_l' },
+      { label: 'Q (Bezier2)', type: 'make_path_q' },
+      { label: 'C (Bezier3)', type: 'make_path_c' },
+      { label: 'Z (Close)', type: 'make_path_z' },
     ],
   },
 ]

@@ -379,6 +379,33 @@ describe('utils/poseResolver.ts', () => {
         viewBox: '1 2 3 4',
       })
     })
+    it('should resolve d of graph objects', () => {
+      expect(
+        getGraphResolvedElementTree(
+          {
+            a: getGraphObject({
+              elementId: 'a',
+              attributes: { d: ['M1,2', 'L3,4'] },
+            }),
+          },
+          getElementNode({ id: 'a', attributes: {} })
+        ).attributes
+      ).toEqual({
+        d: 'M1,2 L3,4',
+      })
+      // drop d if the top item of it does not have any of M, m, L, l
+      expect(
+        getGraphResolvedElementTree(
+          {
+            a: getGraphObject({
+              elementId: 'a',
+              attributes: { d: ['Q3,4'] },
+            }),
+          },
+          getElementNode({ id: 'a', attributes: {} })
+        ).attributes
+      ).toEqual({})
+    })
     it('should resolve recursively', () => {
       const ret = getGraphResolvedElementTree(
         {

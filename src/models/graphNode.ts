@@ -50,6 +50,7 @@ export const GRAPH_VALUE_TYPE = {
   OBJECT: 'OBJECT',
   TRANSFORM: 'TRANSFORM',
   COLOR: 'COLOR',
+  D: 'D',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 
@@ -103,7 +104,14 @@ export interface GraphNodes {
   create_object_group: GraphNodeCreateObjectGroup
   create_object_rect: GraphNodeCreateObjectRect
   create_object_ellipse: GraphNodeCreateObjectEllipse
+  create_object_path: GraphNodeCreateObjectPath
   set_viewbox: GraphNodeSetViewbox
+
+  make_path_m: GraphNodeMakePathM
+  make_path_l: GraphNodeMakePathL
+  make_path_q: GraphNodeMakePathQ
+  make_path_c: GraphNodeMakePathC
+  make_path_z: GraphNodeMakePathZ
 
   add_scaler: GraphNodeAddScaler
   sub_scaler: GraphNodeSubScaler
@@ -271,6 +279,61 @@ export interface GraphNodeCreateObjectEllipse extends GraphNodeBase {
     ry: GraphNodeInput<number>
   } & {
     [key in keyof GraphNodeCreateObjectInputsBase]: GraphNodeCreateObjectInputsBase[key]
+  }
+}
+
+export interface GraphNodeCreateObjectPath extends GraphNodeBase {
+  type: 'create_object_path'
+  inputs: {
+    d: GraphNodeInput<string>
+  } & {
+    [key in keyof GraphNodeCreateObjectInputsBase]: GraphNodeCreateObjectInputsBase[key]
+  }
+}
+
+export interface GraphNodeMakePathM extends GraphNodeBase {
+  type: 'make_path_m'
+  inputs: {
+    d: GraphNodeInput<string[]>
+    relative: GraphNodeInput<boolean>
+    p: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeMakePathL extends GraphNodeBase {
+  type: 'make_path_l'
+  inputs: {
+    d: GraphNodeInput<string[]>
+    relative: GraphNodeInput<boolean>
+    p: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeMakePathQ extends GraphNodeBase {
+  type: 'make_path_q'
+  inputs: {
+    d: GraphNodeInput<string[]>
+    relative: GraphNodeInput<boolean>
+    c1: GraphNodeInput<IVec2>
+    p: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeMakePathC extends GraphNodeBase {
+  type: 'make_path_c'
+  inputs: {
+    d: GraphNodeInput<string[]>
+    relative: GraphNodeInput<boolean>
+    c1: GraphNodeInput<IVec2>
+    c2: GraphNodeInput<IVec2>
+    p: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeMakePathZ extends GraphNodeBase {
+  type: 'make_path_z'
+  inputs: {
+    d: GraphNodeInput<string[]>
   }
 }
 

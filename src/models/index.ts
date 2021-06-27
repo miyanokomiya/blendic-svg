@@ -139,6 +139,7 @@ export interface GraphObjectAttributes {
   cy?: number
   rx?: number
   ry?: number
+  d?: string[]
 }
 
 export function getGraphObject(

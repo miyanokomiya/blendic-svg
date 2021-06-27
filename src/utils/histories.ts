@@ -99,6 +99,22 @@ export function getAddItemHistory<T extends { id: string }>(
   }
 }
 
+export function getAddItemsHistory<T extends { id: string }>(
+  nodeAccessor: ListItemAccessor<T>,
+  items: T[]
+): HistoryItem {
+  return {
+    name: 'Add Items',
+    undo: () => {
+      const ids = toMap(items)
+      nodeAccessor.set(nodeAccessor.get().filter((n) => !ids[n.id]))
+    },
+    redo: () => {
+      nodeAccessor.set([...nodeAccessor.get(), ...items])
+    },
+  }
+}
+
 export function getSelectItemHistory(
   selectedNodesAccessor: SelectedItemAccessor,
   lastSelectedNodeAccessor: LastSelectedItemIdAccessor,

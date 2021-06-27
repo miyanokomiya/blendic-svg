@@ -35,12 +35,15 @@ import {
   GraphNodeInput,
 } from '/@/models/graphNode'
 import {
+  duplicateNodes,
   NODE_MENU_OPTIONS_SRC,
   resetInput,
   validateConnection,
 } from '/@/utils/graphNodes'
-import { mapFilter, mapReduce } from '/@/utils/commons'
+import { mapFilter, mapReduce, toList } from '/@/utils/commons'
 import { getGraphNodeRect } from '/@/utils/helpers'
+import { v4 } from 'uuid'
+import { getCtrlOrMetaStr } from '/@/utils/devices'
 
 export type EditMode = '' | 'grab' | 'add' | 'drag-node' | 'drag-edge'
 
@@ -71,6 +74,7 @@ interface EdgeInfo {
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
+  clipboard: IdMap<GraphNode> | undefined
   keyDownPosition: IVec2
   dragTarget:
     | { type: 'node'; id: string }
@@ -86,6 +90,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
+    clipboard: undefined,
     keyDownPosition: { x: 0, y: 0 },
     dragTarget: undefined,
     closestEdgeInfo: undefined,
@@ -96,6 +101,10 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   )
   const target = computed(() => graphStore.lastSelectedGraph.value)
   const isAnySelected = computed(() => !!lastSelectedNodeId.value)
+
+  const selectedNodeMap = computed(() =>
+    mapReduce(selectedNodes.value, (_, id) => graphStore.nodeMap.value[id])
+  )
 
   function cancel() {
     state.command = ''
@@ -367,6 +376,24 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         state.keyDownPosition = arg.position
         state.command = 'grab'
         return needLock
+      case 'D':
+        if (duplicate()) {
+          return needLock
+        } else {
+          return notNeedLock
+        }
+      case 'c':
+        if (arg.ctrl) {
+          cancel()
+          clip()
+        }
+        return notNeedLock
+      case 'v':
+        if (arg.ctrl) {
+          cancel()
+          paste()
+        }
+        return notNeedLock
       default:
         return notNeedLock
     }
@@ -406,16 +433,13 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
       return false
     }
 
-    // TODO
-    // const srcNodes = graphStore.allSelectedNodes.value
-    // const duplicated = duplicateNodes(srcNodes, names)
-    // if (duplicated.length === 0) return false
-
-    // graphStore.addNodes(duplicated, {
-    //   head: true,
-    //   tail: true,
-    // })
-    // setEditMode('grab')
+    graphStore.pasteNodes(
+      toList(duplicateNodes(selectedNodeMap.value, () => v4())).map((n) => ({
+        ...n,
+        position: add(n.position, { x: 20, y: 20 }),
+      }))
+    )
+    setEditMode('grab')
     return true
   }
 
@@ -430,9 +454,15 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         ...allways,
         { command: 'x', title: 'Delete' },
         { command: 'g', title: 'Grab' },
+        { command: 'D', title: 'Duplicate' },
+        { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
+        { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
       ]
     } else {
-      return [...allways]
+      return [
+        ...allways,
+        { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
+      ]
     }
   })
 
@@ -473,6 +503,20 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
   }
 
+  function clip() {
+    state.clipboard = { ...selectedNodeMap.value }
+  }
+
+  function paste() {
+    if (!state.clipboard) return
+    graphStore.pasteNodes(
+      toList(duplicateNodes(state.clipboard, () => v4())).map((n) => ({
+        ...n,
+        position: add(n.position, { x: 20, y: 20 }),
+      }))
+    )
+  }
+
   return {
     command: computed(() => state.command),
     keyDownPosition: computed(() => state.keyDownPosition),
@@ -501,9 +545,8 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     execDelete,
     execAddNode,
     insert: () => {},
-    clip: () => {},
-    paste: () => {},
-    duplicate,
+    clip,
+    paste,
     availableCommandList,
     popupMenuList,
   }

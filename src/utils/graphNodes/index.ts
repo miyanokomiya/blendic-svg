@@ -70,6 +70,7 @@ import * as make_path_q from './nodes/makePathQ'
 import * as make_path_t from './nodes/makePathT'
 import * as make_path_c from './nodes/makePathC'
 import * as make_path_s from './nodes/makePathS'
+import * as make_path_a from './nodes/makePathA'
 import * as make_path_z from './nodes/makePathZ'
 
 import * as greater_than from './nodes/greaterThan'
@@ -130,6 +131,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   make_path_t,
   make_path_c,
   make_path_s,
+  make_path_a,
   make_path_z,
 
   not,
@@ -226,6 +228,7 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'T (Bezier2)', type: 'make_path_t' },
       { label: 'C (Bezier3)', type: 'make_path_c' },
       { label: 'S (Bezier3)', type: 'make_path_s' },
+      { label: 'A (Arc)', type: 'make_path_a' },
       { label: 'Z (Close)', type: 'make_path_z' },
     ],
   },

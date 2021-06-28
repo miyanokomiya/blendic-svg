@@ -117,9 +117,13 @@ Copyright (C) 2021, Tomoya Komiyama.
             fill="transparent"
             stroke="none"
           />
-          <text x="10" dominant-baseline="middle" font-size="14" fill="#000">{{
-            key
-          }}</text>
+          <g transform="translate(10, 0)">
+            <GraphNodeInputLabel
+              :input-key="key"
+              :type="getInputType(key)"
+              :input="node.inputs[key]"
+            />
+          </g>
           <circle r="8" fill="transparent" stroke="none" />
         </g>
         <circle
@@ -141,6 +145,7 @@ import { GraphNode, GraphNodeEdgePositions } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
 import { add } from 'okageo'
 import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
+import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
 import { mapReduce } from '/@/utils/commons'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { Size } from 'okanvas'
@@ -170,6 +175,7 @@ function getOutline(s: Size) {
 export default defineComponent({
   components: {
     GraphNodeDataField,
+    GraphNodeInputLabel,
   },
   props: {
     node: {
@@ -229,6 +235,10 @@ export default defineComponent({
       )
     }
 
+    function getInputType(key: string) {
+      return (nodeStruct.value.inputs as any)[key].type
+    }
+
     return {
       GRAPH_NODE_TYPE_COLOR: helpers.GRAPH_NODE_TYPE_COLOR,
       GRAPH_NODE_ROW_HEIGHT: helpers.GRAPH_NODE_ROW_HEIGHT,
@@ -241,6 +251,7 @@ export default defineComponent({
       outlineStroke: computed(() =>
         props.selected ? settings.selectedColor : '#555'
       ),
+      getInputType,
       edgeAnchorWidth: computed(() => 30),
       outlineStrokeWidth: computed(() => (props.selected ? 2 : 1)),
       dataMap,

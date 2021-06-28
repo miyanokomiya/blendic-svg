@@ -26,6 +26,8 @@ import {
   GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
 } from '/@/models/graphNode'
+import { posedHsva } from '/@/utils/attributesResolver'
+import { hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { BoneConstraint } from '/@/utils/constraints'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { NodeStruct } from '/@/utils/graphNodes/core'
@@ -356,3 +358,29 @@ export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
     COLOR: '#32cd32',
     D: '#00bfff',
   } as const
+
+export function getInputValuePreviewText(
+  type: GRAPH_VALUE_TYPE_KEY,
+  value: any
+): string {
+  switch (type) {
+    case GRAPH_VALUE_TYPE.OBJECT:
+    case GRAPH_VALUE_TYPE.SCALER:
+      return trancate(value, 6)
+    case GRAPH_VALUE_TYPE.VECTOR2:
+      return `${trancate(value.x, 4)}, ${trancate(value.y, 4)}`
+    case GRAPH_VALUE_TYPE.BOOLEAN:
+      return value ? 'true' : 'false'
+    case GRAPH_VALUE_TYPE.COLOR:
+      return rednerRGBA(hsvaToRgba(posedHsva(value)))
+    case GRAPH_VALUE_TYPE.D:
+      return trancate(value.join(' '), 6)
+    default:
+      return ''
+  }
+}
+
+function trancate(val: number | string, count: number): string {
+  const str = val.toString()
+  return str.length <= count ? str : str.slice(0, count) + '..'
+}

@@ -34,7 +34,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, PropType, computed } from 'vue'
+import {
+  defineComponent,
+  nextTick,
+  onMounted,
+  ref,
+  PropType,
+  computed,
+} from 'vue'
+import { injectScale } from '/@/composables/canvas'
 import {
   GraphNodeInput,
   GRAPH_VALUE_TYPE,
@@ -59,6 +67,15 @@ export default defineComponent({
   },
   setup(props) {
     const textRef = ref<SVGTextElement>()
+    const width = ref(0)
+
+    const getScale = injectScale()
+
+    onMounted(async () => {
+      await nextTick()
+      if (!textRef.value) return 0
+      width.value = textRef.value.getBoundingClientRect().width * getScale()
+    })
 
     const valueLabel = computed<string>(() => {
       if (props.input.from) return ''
@@ -68,11 +85,6 @@ export default defineComponent({
 
     const isColor = computed(() => {
       return props.type === GRAPH_VALUE_TYPE.COLOR
-    })
-
-    const width = computed(() => {
-      if (!textRef.value) return 0
-      return textRef.value.getBoundingClientRect().width
     })
 
     return {

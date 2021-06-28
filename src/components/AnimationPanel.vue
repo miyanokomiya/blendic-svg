@@ -67,7 +67,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         </InlineField>
       </div>
     </div>
-    <ResizableH class="middle" :initial-rate="0.15" dense>
+    <ResizableH
+      class="middle"
+      :initial-rate="0.15"
+      storage-key="animation-label"
+      dense
+    >
       <template #left="{ size }">
         <TimelineCanvas class="label-canvas" :canvas="labelCanvas" :mode="mode">
           <template #default="{ scale, viewOrigin }">
@@ -90,7 +95,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         </TimelineCanvas>
       </template>
       <template #right>
-        <ResizableH class="timeline-canvas-space" :initial-rate="0.8" dense>
+        <ResizableH
+          class="timeline-canvas-space"
+          :initial-rate="0.8"
+          storage-key="animation-timeline"
+          dense
+        >
           <template #left>
             <div class="timeline-canvas-inner">
               <TimelineCanvas :canvas="currentCanvas" :mode="mode">

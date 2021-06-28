@@ -109,6 +109,8 @@ export interface GraphNodes {
 
   make_path_m: GraphNodeMakePathM
   make_path_l: GraphNodeMakePathL
+  make_path_h: GraphNodeMakePathH
+  make_path_v: GraphNodeMakePathV
   make_path_q: GraphNodeMakePathQ
   make_path_t: GraphNodeMakePathT
   make_path_c: GraphNodeMakePathC
@@ -311,6 +313,24 @@ export interface GraphNodeMakePathL extends GraphNodeBase {
     d: GraphNodeInput<string[]>
     relative: GraphNodeInput<boolean>
     p: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeMakePathH extends GraphNodeBase {
+  type: 'make_path_h'
+  inputs: {
+    d: GraphNodeInput<string[]>
+    relative: GraphNodeInput<boolean>
+    x: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeMakePathV extends GraphNodeBase {
+  type: 'make_path_v'
+  inputs: {
+    d: GraphNodeInput<string[]>
+    relative: GraphNodeInput<boolean>
+    y: GraphNodeInput<number>
   }
 }
 

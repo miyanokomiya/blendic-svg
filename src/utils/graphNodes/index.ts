@@ -66,6 +66,8 @@ import * as create_object_ellipse from './nodes/createObjectEllipse'
 import * as create_object_path from './nodes/createObjectPath'
 import * as make_path_m from './nodes/makePathM'
 import * as make_path_l from './nodes/makePathL'
+import * as make_path_h from './nodes/makePathH'
+import * as make_path_v from './nodes/makePathV'
 import * as make_path_q from './nodes/makePathQ'
 import * as make_path_t from './nodes/makePathT'
 import * as make_path_c from './nodes/makePathC'
@@ -127,6 +129,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
 
   make_path_m,
   make_path_l,
+  make_path_h,
+  make_path_v,
   make_path_q,
   make_path_t,
   make_path_c,
@@ -224,6 +228,8 @@ export const NODE_MENU_OPTIONS_SRC: {
     children: [
       { label: 'M (Move)', type: 'make_path_m' },
       { label: 'L (Line)', type: 'make_path_l' },
+      { label: 'H (Horizon)', type: 'make_path_h' },
+      { label: 'V (Vertical)', type: 'make_path_v' },
       { label: 'Q (Bezier2)', type: 'make_path_q' },
       { label: 'T (Bezier2)', type: 'make_path_t' },
       { label: 'C (Bezier3)', type: 'make_path_c' },

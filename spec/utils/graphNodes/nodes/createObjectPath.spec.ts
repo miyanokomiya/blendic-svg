@@ -33,7 +33,7 @@ describe('src/utils/graphNodes/nodes/createObjectPath.ts', () => {
             fill: getTransform({ rotate: 11 }),
             stroke: getTransform({ rotate: 12 }),
             'stroke-width': 2,
-            d: 'M1,2',
+            d: ['M1,2'],
           },
           {} as any,
           { createObject } as any
@@ -48,7 +48,7 @@ describe('src/utils/graphNodes/nodes/createObjectPath.ts', () => {
         'stroke-width': 2,
         parent: 'p',
         attributes: {
-          d: 'M1,2',
+          d: ['M1,2'],
         },
       })
     })
@@ -63,7 +63,7 @@ describe('src/utils/graphNodes/nodes/createObjectPath.ts', () => {
             fill: getTransform({ rotate: 11 }),
             stroke: getTransform({ rotate: 12 }),
             'stroke-width': 2,
-            d: '',
+            d: [''],
           },
           {} as any,
           { createObject } as any

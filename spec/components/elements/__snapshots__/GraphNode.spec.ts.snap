@@ -89,14 +89,20 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
           width="30"
           y="-10"
         />
-        <text
-          dominant-baseline="middle"
-          fill="#000"
-          font-size="14"
-          x="10"
+        <g
+          transform="translate(10, 0)"
         >
-          x
-        </text>
+          <g>
+            <text
+              dominant-baseline="middle"
+              fill="#000"
+              font-size="14"
+            >
+              x (0)
+            </text>
+            <!--v-if-->
+          </g>
+        </g>
         <circle
           fill="transparent"
           r="8"

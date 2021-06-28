@@ -17,51 +17,41 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import {
-  GraphNodeCreateObjectPath,
-  GRAPH_VALUE_TYPE,
-} from '/@/models/graphNode'
-import {
-  createBaseNode,
-  NodeStruct,
-  nodeToCreateObjectProps,
-} from '/@/utils/graphNodes/core'
+import { GraphNodeMakePathT, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeCreateObjectPath> = {
+export const struct: NodeStruct<GraphNodeMakePathT> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
         data: {},
         inputs: {
-          ...nodeToCreateObjectProps.createdInputs,
           d: { value: [] },
+          relative: { value: false },
+          p: { value: { x: 0, y: 0 } },
         },
         ...arg,
       }),
-      type: 'create_object_path',
-    } as GraphNodeCreateObjectPath
+      type: 'make_path_t',
+    } as GraphNodeMakePathT
   },
   data: {},
   inputs: {
-    ...nodeToCreateObjectProps.inputs,
     d: { type: GRAPH_VALUE_TYPE.D, default: [] },
+    relative: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
+    p: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
   },
-  outputs: nodeToCreateObjectProps.outputs,
-  computation(inputs, _self, context): { object: string } {
-    const base = nodeToCreateObjectProps.computation(inputs)
-    if (!base) return { object: '' }
-
+  outputs: { d: GRAPH_VALUE_TYPE.D },
+  computation(inputs): { d: string[] } {
     return {
-      object: context.createObject('path', {
-        ...base,
-        attributes: {
-          d: inputs.d,
-        },
-      }),
+      d: [
+        ...inputs.d,
+        `${inputs.relative ? 't' : 'T'}${inputs.p.x},${inputs.p.y}`,
+      ],
     }
   },
   width: 140,
-  color: '#dc143c',
-  textColor: '#fff',
-  label: 'Create Path',
+  color: '#fff5ee',
+  textColor: '#000',
+  label: 'Make Path T',
 }

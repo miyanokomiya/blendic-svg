@@ -110,7 +110,9 @@ export interface GraphNodes {
   make_path_m: GraphNodeMakePathM
   make_path_l: GraphNodeMakePathL
   make_path_q: GraphNodeMakePathQ
+  make_path_t: GraphNodeMakePathT
   make_path_c: GraphNodeMakePathC
+  make_path_s: GraphNodeMakePathS
   make_path_z: GraphNodeMakePathZ
 
   add_scaler: GraphNodeAddScaler
@@ -287,7 +289,7 @@ export interface GraphNodeCreateObjectEllipse extends GraphNodeBase {
 export interface GraphNodeCreateObjectPath extends GraphNodeBase {
   type: 'create_object_path'
   inputs: {
-    d: GraphNodeInput<string>
+    d: GraphNodeInput<string[]>
   } & {
     [key in keyof GraphNodeCreateObjectInputsBase]: GraphNodeCreateObjectInputsBase[key]
   }
@@ -321,6 +323,15 @@ export interface GraphNodeMakePathQ extends GraphNodeBase {
   }
 }
 
+export interface GraphNodeMakePathT extends GraphNodeBase {
+  type: 'make_path_t'
+  inputs: {
+    d: GraphNodeInput<string[]>
+    relative: GraphNodeInput<boolean>
+    p: GraphNodeInput<IVec2>
+  }
+}
+
 export interface GraphNodeMakePathC extends GraphNodeBase {
   type: 'make_path_c'
   inputs: {
@@ -328,6 +339,16 @@ export interface GraphNodeMakePathC extends GraphNodeBase {
     relative: GraphNodeInput<boolean>
     c1: GraphNodeInput<IVec2>
     c2: GraphNodeInput<IVec2>
+    p: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeMakePathS extends GraphNodeBase {
+  type: 'make_path_s'
+  inputs: {
+    d: GraphNodeInput<string[]>
+    relative: GraphNodeInput<boolean>
+    c1: GraphNodeInput<IVec2>
     p: GraphNodeInput<IVec2>
   }
 }

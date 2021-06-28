@@ -34,6 +34,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { DragArgs, useDrag } from 'okanvas'
 import { computed, defineComponent, ref, nextTick } from 'vue'
+import { useResizableStorage } from '/@/composables/stateStorage'
 import { useThrottle } from '/@/composables/throttle'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import { clamp, logRound } from '/@/utils/geometry'
@@ -54,10 +55,19 @@ export default defineComponent({
       type: Number,
       default: 0.9,
     },
+    storageKey: {
+      type: String,
+      default: '',
+    },
   },
   setup(props) {
+    const resizableStorage = useResizableStorage(
+      props.storageKey,
+      props.initialRate
+    )
+
     const root = ref<Element>()
-    const rate = ref(props.initialRate)
+    const rate = ref(resizableStorage.restoredRate)
 
     const topSize = computed(() => {
       return `calc((100% - ${anchorHeight}px) * ${rate.value})`
@@ -78,6 +88,7 @@ export default defineComponent({
           (arg.p.y - rootRect.top) / rootRect.height
         )
       )
+      resizableStorage.setDirty(true)
       await nextTick()
       window.dispatchEvent(new Event('resize'))
     }
@@ -88,7 +99,10 @@ export default defineComponent({
       e.preventDefault()
       drag.onMove(e)
     })
-    useGlobalMouseup(drag.onUp)
+    useGlobalMouseup(() => {
+      resizableStorage.save(rate.value)
+      drag.onUp()
+    })
 
     return {
       root,

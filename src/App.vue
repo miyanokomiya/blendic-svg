@@ -18,11 +18,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <ResizableV :initial-rate="0.7" class="app-root">
+  <ResizableV :initial-rate="0.7" storage-key="app-v" class="app-root">
     <template #top>
-      <ResizableH :initial-rate="0.8" class="top">
+      <ResizableH :initial-rate="0.8" storage-key="app-panel-h" class="top">
         <template #left>
-          <ResizableH :initial-rate="0.1" class="main-wrapper">
+          <ResizableH
+            :initial-rate="0.1"
+            storage-key="app-canvas-h"
+            class="main-wrapper"
+          >
             <template #left>
               <AnimationGraphPanel class="animation-graph" />
             </template>

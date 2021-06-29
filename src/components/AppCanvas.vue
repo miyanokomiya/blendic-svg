@@ -97,7 +97,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
-import { add, getRadian, IRectangle, IVec2, sub } from 'okageo'
+import { getRadian, IRectangle, IVec2 } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
@@ -117,6 +117,7 @@ import { useSettings } from '/@/composables/settings'
 import { centerizeView, provideScale, useCanvas } from '../composables/canvas'
 import { useThrottle } from '/@/composables/throttle'
 import { getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
+import { useCanvasElement } from '/@/composables/canvasElement'
 
 export default defineComponent({
   components: {
@@ -135,25 +136,12 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const svg = ref<SVGElement>()
-    const wrapper = ref<SVGElement>()
-
     const canvasStore = useCanvasStore()
     const { settings } = useSettings()
+    const canvas = useCanvas()
 
-    function removeRootPosition(p: IVec2): IVec2 | undefined {
-      if (!svg.value) return
-      // adjust in the canvas
-      const svgRect = svg.value.getBoundingClientRect()
-      return sub(p, { x: svgRect.left, y: svgRect.top })
-    }
-
-    function addRootPosition(p: IVec2): IVec2 | undefined {
-      if (!svg.value) return
-      // adjust in the canvas
-      const svgRect = svg.value.getBoundingClientRect()
-      return add(p, { x: svgRect.left, y: svgRect.top })
-    }
+    const { wrapper, svg, addRootPosition, removeRootPosition } =
+      useCanvasElement(() => canvas)
 
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
     const pointerLock = usePointerLock({
@@ -165,7 +153,6 @@ export default defineComponent({
       },
       onEscape: escape,
     })
-    const canvas = useCanvas()
 
     function initView() {
       const ret = centerizeView(
@@ -214,7 +201,7 @@ export default defineComponent({
     const popupMenuListPosition = ref<IVec2>()
     const popupMenuList = computed(() => canvasStore.popupMenuList.value)
     watch(popupMenuList, () => {
-      popupMenuListPosition.value = canvas.mousePoint.value
+      popupMenuListPosition.value = addRootPosition(canvas.mousePoint.value)
     })
 
     function mousemove(arg: PointerMovement) {

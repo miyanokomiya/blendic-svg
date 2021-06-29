@@ -54,18 +54,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch, computed, PropType } from 'vue'
-import {
-  PointerMovement,
-  usePointerLock,
-  useWindow,
-} from '../composables/window'
+import { defineComponent, ref, watch, computed, PropType } from 'vue'
+import { PointerMovement, usePointerLock } from '../composables/window'
 import { provideScale, useCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
-import { add, IVec2, sub } from 'okageo'
+import { IVec2 } from 'okageo'
 import { KeyframeEditModeBase } from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
 import { isCtrlOrMeta } from '/@/utils/devices'
+import { useCanvasElement } from '/@/composables/canvasElement'
 
 export default defineComponent({
   components: { PopupMenuList },
@@ -80,30 +77,17 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const svg = ref<SVGElement>()
-    const wrapper = ref<SVGElement>()
+    const { wrapper, svg, addRootPosition, removeRootPosition } =
+      useCanvasElement(() => props.canvas)
 
     provideScale(() => props.canvas.scale.value)
-
-    function adjustSvgSize() {
-      if (!wrapper.value) return
-      const rect = wrapper.value.getBoundingClientRect()
-      props.canvas.setViewSize({ width: rect.width, height: rect.height })
-    }
-
-    const windowState = useWindow()
-    onMounted(adjustSvgSize)
-    watch(() => windowState.state.size, adjustSvgSize)
 
     const popupMenuList = computed(() => props.mode.popupMenuList.value)
     const popupMenuListPosition = ref<IVec2>()
     watch(popupMenuList, () => {
-      if (!wrapper.value || !props.canvas.mousePoint.value) return
-      const rect = wrapper.value.getBoundingClientRect()
-      popupMenuListPosition.value = add(props.canvas.mousePoint.value, {
-        x: rect.left,
-        y: rect.top,
-      })
+      popupMenuListPosition.value = addRootPosition(
+        props.canvas.mousePoint.value
+      )
     })
 
     const isDownEmpty = ref(false)
@@ -138,12 +122,9 @@ export default defineComponent({
     const pointerLock = usePointerLock({
       onMove: throttleMousemove,
       onGlobalMove: (arg) => {
-        if (!svg.value) return
-        // adjust in the canvas
-        const svgRect = svg.value.getBoundingClientRect()
-        props.canvas.setMousePoint(
-          sub(arg.p, { x: svgRect.left, y: svgRect.top })
-        )
+        const p = removeRootPosition(arg.p)
+        if (!p) return
+        props.canvas.setMousePoint(p)
       },
       onEscape: escape,
     })

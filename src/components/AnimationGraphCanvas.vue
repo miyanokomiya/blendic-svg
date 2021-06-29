@@ -73,14 +73,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch, computed, PropType } from 'vue'
-import {
-  PointerMovement,
-  usePointerLock,
-  useWindow,
-} from '../composables/window'
+import { defineComponent, ref, watch, computed, PropType } from 'vue'
+import { PointerMovement, usePointerLock } from '../composables/window'
 import { provideScale, useCanvas } from '../composables/canvas'
-import { add, IVec2, sub } from 'okageo'
 import { useThrottle } from '/@/composables/throttle'
 import { getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
@@ -88,6 +83,7 @@ import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import DotBackground from '/@/components/elements/atoms/DotBackground.vue'
 import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
+import { useCanvasElement } from '/@/composables/canvasElement'
 
 export default defineComponent({
   components: {
@@ -107,34 +103,10 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const svg = ref<SVGElement>()
-    const wrapper = ref<SVGElement>()
+    const { wrapper, svg, addRootPosition, removeRootPosition } =
+      useCanvasElement(() => props.canvas)
 
     provideScale(() => props.canvas.scale.value)
-
-    function adjustSvgSize() {
-      if (!wrapper.value) return
-      const rect = wrapper.value.getBoundingClientRect()
-      props.canvas.setViewSize({ width: rect.width, height: rect.height })
-    }
-
-    function removeRootPosition(p: IVec2): IVec2 | undefined {
-      if (!svg.value) return
-      // adjust in the canvas
-      const svgRect = svg.value.getBoundingClientRect()
-      return sub(p, { x: svgRect.left, y: svgRect.top })
-    }
-
-    function addRootPosition(p: IVec2): IVec2 | undefined {
-      if (!svg.value) return
-      // adjust in the canvas
-      const svgRect = svg.value.getBoundingClientRect()
-      return add(p, { x: svgRect.left, y: svgRect.top })
-    }
-
-    const windowState = useWindow()
-    onMounted(adjustSvgSize)
-    watch(() => windowState.state.size, adjustSvgSize)
 
     const popupMenuList = computed(() => props.mode.popupMenuList.value)
     const popupMenuListPosition = computed(() => {

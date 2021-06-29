@@ -95,15 +95,26 @@ export default defineComponent({
     onMounted(adjustSvgSize)
     watch(() => windowState.state.size, adjustSvgSize)
 
+    function removeRootPosition(p: IVec2): IVec2 | undefined {
+      if (!svg.value) return
+      // adjust in the canvas
+      const svgRect = svg.value.getBoundingClientRect()
+      return sub(p, { x: svgRect.left, y: svgRect.top })
+    }
+
+    function addRootPosition(p: IVec2): IVec2 | undefined {
+      if (!svg.value) return
+      // adjust in the canvas
+      const svgRect = svg.value.getBoundingClientRect()
+      return add(p, { x: svgRect.left, y: svgRect.top })
+    }
+
     const popupMenuList = computed(() => props.mode.popupMenuList.value)
     const popupMenuListPosition = ref<IVec2>()
     watch(popupMenuList, () => {
-      if (!wrapper.value || !props.canvas.mousePoint.value) return
-      const rect = wrapper.value.getBoundingClientRect()
-      popupMenuListPosition.value = add(props.canvas.mousePoint.value, {
-        x: rect.left,
-        y: rect.top,
-      })
+      popupMenuListPosition.value = addRootPosition(
+        props.canvas.mousePoint.value
+      )
     })
 
     const isDownEmpty = ref(false)
@@ -138,12 +149,9 @@ export default defineComponent({
     const pointerLock = usePointerLock({
       onMove: throttleMousemove,
       onGlobalMove: (arg) => {
-        if (!svg.value) return
-        // adjust in the canvas
-        const svgRect = svg.value.getBoundingClientRect()
-        props.canvas.setMousePoint(
-          sub(arg.p, { x: svgRect.left, y: svgRect.top })
-        )
+        const p = removeRootPosition(arg.p)
+        if (!p) return
+        props.canvas.setMousePoint(p)
       },
       onEscape: escape,
     })

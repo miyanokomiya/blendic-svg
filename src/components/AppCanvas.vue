@@ -214,7 +214,7 @@ export default defineComponent({
     const popupMenuListPosition = ref<IVec2>()
     const popupMenuList = computed(() => canvasStore.popupMenuList.value)
     watch(popupMenuList, () => {
-      popupMenuListPosition.value = canvas.mousePoint.value
+      popupMenuListPosition.value = addRootPosition(canvas.mousePoint.value)
     })
 
     function mousemove(arg: PointerMovement) {

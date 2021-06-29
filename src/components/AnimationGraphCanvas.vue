@@ -80,7 +80,7 @@ import {
   useWindow,
 } from '../composables/window'
 import { provideScale, useCanvas } from '../composables/canvas'
-import { add, sub } from 'okageo'
+import { add, IVec2, sub } from 'okageo'
 import { useThrottle } from '/@/composables/throttle'
 import { getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
@@ -118,18 +118,29 @@ export default defineComponent({
       props.canvas.setViewSize({ width: rect.width, height: rect.height })
     }
 
+    function removeRootPosition(p: IVec2): IVec2 | undefined {
+      if (!svg.value) return
+      // adjust in the canvas
+      const svgRect = svg.value.getBoundingClientRect()
+      return sub(p, { x: svgRect.left, y: svgRect.top })
+    }
+
+    function addRootPosition(p: IVec2): IVec2 | undefined {
+      if (!svg.value) return
+      // adjust in the canvas
+      const svgRect = svg.value.getBoundingClientRect()
+      return add(p, { x: svgRect.left, y: svgRect.top })
+    }
+
     const windowState = useWindow()
     onMounted(adjustSvgSize)
     watch(() => windowState.state.size, adjustSvgSize)
 
     const popupMenuList = computed(() => props.mode.popupMenuList.value)
     const popupMenuListPosition = computed(() => {
-      if (!wrapper.value) return
-      const rect = wrapper.value.getBoundingClientRect()
-      return add(props.canvas.canvasToView(props.mode.keyDownPosition.value), {
-        x: rect.left,
-        y: rect.top,
-      })
+      return addRootPosition(
+        props.canvas.canvasToView(props.mode.keyDownPosition.value)
+      )
     })
 
     const isDownEmpty = ref(false)
@@ -164,12 +175,9 @@ export default defineComponent({
     const pointerLock = usePointerLock({
       onMove: throttleMousemove,
       onGlobalMove: (arg) => {
-        if (!svg.value) return
-        // adjust in the canvas
-        const svgRect = svg.value.getBoundingClientRect()
-        props.canvas.setMousePoint(
-          sub(arg.p, { x: svgRect.left, y: svgRect.top })
-        )
+        const p = removeRootPosition(arg.p)
+        if (!p) return
+        props.canvas.setMousePoint(p)
       },
       onEscape: escape,
     })

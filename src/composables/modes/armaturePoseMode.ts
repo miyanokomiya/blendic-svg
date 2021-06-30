@@ -166,14 +166,14 @@ export function useBonePoseMode(
         editMovement.start,
         editMovement.current
       )
-      const scale = multi(
+      const scaleDiff = multi(
         multi({ x: 1, y: 1 }, isOppositeSide ? -1 : 1),
         getDistance(editMovement.current, origin) /
           getDistance(editMovement.start, origin) -
           1
       )
-      const gridScale = editMovement.ctrl ? snapScale(scale) : scale
-      const snappedScale = canvasStore.snapScale(gridScale)
+      const gridScale = editMovement.ctrl ? snapScale(scaleDiff) : scaleDiff
+      const snappedScale = canvasStore.snapScaleDiff(gridScale)
 
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>

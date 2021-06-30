@@ -65,7 +65,6 @@ Copyright (C) 2021, Tomoya Komiyama.
           :node="node"
           :edge-positions="edgePositionMap[node.id]"
           :selected="selectedNodes[node.id]"
-          @select="selectNode"
           @down-body="downNodeBody"
           @down-edge="downNodeEdge"
           @up-edge="upNodeEdge"
@@ -178,12 +177,8 @@ export default defineComponent({
 
     const selectedNodes = graphStore.selectedNodes
 
-    function selectNode(id: string, options: SelectOptions) {
-      graphStore.selectNode(id, options)
-    }
-
-    function downNodeBody(id: string) {
-      mode.downNodeBody(id)
+    function downNodeBody(id: string, options?: SelectOptions) {
+      mode.downNodeBody(id, options)
     }
 
     const editedNodeMap = computed(() => {
@@ -319,7 +314,6 @@ export default defineComponent({
       deleteGraph: graphStore.deleteGraph,
 
       selectedNodes,
-      selectNode,
       downNodeBody,
       downNodeEdge,
       upNodeEdge,

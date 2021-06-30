@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     :title="node.type"
     :transform="`translate(${node.position.x}, ${node.position.y})`"
   >
-    <g @click.left="select" @mousedown.left.exact="downBody">
+    <g @mousedown.left="downBody">
       <path
         :d="outline"
         :stroke="outlineStroke"
@@ -188,7 +188,7 @@ export default defineComponent({
     },
     selected: { type: Boolean, default: false },
   },
-  emits: ['select', 'down-body', 'down-edge', 'up-edge', 'update:data'],
+  emits: ['down-body', 'down-edge', 'up-edge', 'update:data'],
   setup(props, { emit }) {
     const { settings } = useSettings()
 
@@ -255,14 +255,13 @@ export default defineComponent({
       edgeAnchorWidth: computed(() => 30),
       outlineStrokeWidth: computed(() => (props.selected ? 2 : 1)),
       dataMap,
-      select: (e: MouseEvent) => {
+      downBody(e: MouseEvent) {
         switchClick(e, {
-          plain: () => emit('select', props.node.id),
-          shift: () => emit('select', props.node.id, { shift: true }),
-          ctrl: () => emit('select', props.node.id),
+          plain: () => emit('down-body', props.node.id),
+          shift: () => emit('down-body', props.node.id, { shift: true }),
+          ctrl: () => emit('down-body', props.node.id),
         })
       },
-      downBody: () => emit('down-body', props.node.id),
       downFromEdge: (key: string) =>
         emit('down-edge', {
           type: 'draft-from',

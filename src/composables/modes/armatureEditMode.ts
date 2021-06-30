@@ -161,7 +161,7 @@ export function useBoneEditMode(
           getDistance(editMovement.start, origin)
       )
       const gridScale = editMovement.ctrl ? snapScale(scale) : scale
-      const snappedScale = canvasStore.snapScale(gridScale)
+      const snappedScale = canvasStore.snapScaleDiff(gridScale)
 
       return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
         (map, id) => {

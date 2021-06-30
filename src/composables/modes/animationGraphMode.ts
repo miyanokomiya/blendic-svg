@@ -244,6 +244,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   const editTransforms = computed(() => {
     const editMovement = state.editMovement
     if (!editMovement) return {}
+    if (state.dragTarget?.type === 'edge') return {}
 
     const translate = sub(editMovement.current, editMovement.start)
     const gridTranslate = editMovement.ctrl
@@ -251,23 +252,13 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
       : translate
     const transform = getTransform({ translate: gridTranslate })
 
-    if (state.dragTarget) {
-      if (state.dragTarget.type === 'node') {
-        return {
-          [state.dragTarget.id]: transform,
-        }
-      } else {
-        return {}
-      }
-    } else {
-      return Object.keys(selectedNodes.value).reduce<IdMap<Transform>>(
-        (map, id) => {
-          map[id] = transform
-          return map
-        },
-        {}
-      )
-    }
+    return Object.keys(selectedNodes.value).reduce<IdMap<Transform>>(
+      (map, id) => {
+        map[id] = transform
+        return map
+      },
+      {}
+    )
   })
 
   const draftEdgeInfo = computed<DraftGraphEdge | undefined>(() => {
@@ -486,8 +477,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
   })
 
-  function downNodeBody(id: string) {
-    select(id)
+  function downNodeBody(id: string, options?: SelectOptions) {
+    // select the target if it has not been selected yet
+    if (!selectedNodes.value[id]) {
+      select(id, options)
+    }
     state.dragTarget = { type: 'node', id }
     state.command = 'drag-node'
   }

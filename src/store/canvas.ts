@@ -139,10 +139,10 @@ watch(
 function switchAxisGrid(val: AxisGrid) {
   state.axisGrid = state.axisGrid === val ? '' : val
 }
-function snapScale(scale: IVec2): IVec2 {
+function snapScaleDiff(scaleDiff: IVec2): IVec2 {
   return {
-    x: state.axisGrid === 'y' ? 1 : scale.x,
-    y: state.axisGrid === 'x' ? 1 : scale.y,
+    x: state.axisGrid === 'y' ? 0 : scaleDiff.x,
+    y: state.axisGrid === 'x' ? 0 : scaleDiff.y,
   }
 }
 function snapTranslate(translate: IVec2): IVec2 {
@@ -281,7 +281,7 @@ export function useCanvasStore() {
     command,
     selectedBonesOrigin,
     changeCanvasMode,
-    snapScale,
+    snapScaleDiff,
     snapTranslate,
     isOppositeSide,
     getEditTransforms,

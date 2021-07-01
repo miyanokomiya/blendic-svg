@@ -361,4 +361,20 @@ describe('src/utils/graphNodes/index.ts', () => {
       })
     })
   })
+
+  describe('createGraphNode', () => {
+    it('should override partial inputs', () => {
+      expect(
+        createGraphNode('make_vector2', {
+          inputs: { x: { from: { id: 'a', key: 'b' } } },
+        })
+      ).toEqual({
+        ...createGraphNode('make_vector2'),
+        inputs: {
+          x: { from: { id: 'a', key: 'b' } },
+          y: { value: 0 },
+        },
+      })
+    })
+  })
 })

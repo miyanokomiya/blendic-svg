@@ -25,7 +25,7 @@ describe('src/utils/graphNodes/nodes/sin.ts', () => {
       expect(
         target.struct.computation(
           {
-            t: 90,
+            rotate: 90,
           },
           {} as any,
           {} as any

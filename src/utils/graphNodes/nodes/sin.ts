@@ -24,7 +24,7 @@ export const struct: NodeStruct<GraphNodeSin> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: { t: { value: 0 } },
+        inputs: { rotate: { value: 0 } },
         ...arg,
       }),
       type: 'sin',
@@ -32,13 +32,13 @@ export const struct: NodeStruct<GraphNodeSin> = {
   },
   data: {},
   inputs: {
-    t: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
   },
   outputs: {
     value: GRAPH_VALUE_TYPE.SCALER,
   },
   computation(inputs) {
-    return { value: Math.sin((inputs.t * Math.PI) / 180) }
+    return { value: Math.sin((inputs.rotate * Math.PI) / 180) }
   },
   width: 100,
   color: '#4169e1',

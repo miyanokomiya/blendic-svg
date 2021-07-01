@@ -417,12 +417,12 @@ export interface GraphNodeDivideScaler extends GraphNodeBase {
 
 export interface GraphNodeSin extends GraphNodeBase {
   type: 'sin'
-  inputs: { t: GraphNodeInput<number> }
+  inputs: { rotate: GraphNodeInput<number> }
 }
 
 export interface GraphNodeCos extends GraphNodeBase {
   type: 'cos'
-  inputs: { t: GraphNodeInput<number> }
+  inputs: { rotate: GraphNodeInput<number> }
 }
 
 export interface GraphNodePow extends GraphNodeBase {

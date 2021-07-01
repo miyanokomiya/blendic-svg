@@ -124,6 +124,7 @@ export interface GraphNodes {
   divide_scaler: GraphNodeDivideScaler
   sin: GraphNodeSin
   cos: GraphNodeCos
+  polar_coord: GraphNodePolarCoord
   pow: GraphNodePow
   rotate_vector2: GraphNodeRotateVector2
   add_vector2: GraphNodeAddVector2
@@ -423,6 +424,11 @@ export interface GraphNodeSin extends GraphNodeBase {
 export interface GraphNodeCos extends GraphNodeBase {
   type: 'cos'
   inputs: { rotate: GraphNodeInput<number> }
+}
+
+export interface GraphNodePolarCoord extends GraphNodeBase {
+  type: 'polar_coord'
+  inputs: { rotate: GraphNodeInput<number>; radius: GraphNodeInput<number> }
 }
 
 export interface GraphNodePow extends GraphNodeBase {

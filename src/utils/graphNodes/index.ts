@@ -43,6 +43,7 @@ import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
 import * as sin from './nodes/sin'
 import * as cos from './nodes/cos'
+import * as polar_coord from './nodes/polarCoord'
 import * as pow from './nodes/pow'
 import * as add_vector2 from './nodes/addVector2'
 import * as sub_vector2 from './nodes/subVector2'
@@ -104,6 +105,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   divide_scaler,
   sin,
   cos,
+  polar_coord,
   pow,
   add_vector2,
   sub_vector2,
@@ -176,6 +178,7 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: '(/) Number', type: 'divide_scaler' },
       { label: 'Sin', type: 'sin' },
       { label: 'Cos', type: 'cos' },
+      { label: 'Polar Coord', type: 'polar_coord' },
       { label: 'Pow', type: 'pow' },
       { label: '(+) Vector2', type: 'add_vector2' },
       { label: '(-) Vector2', type: 'sub_vector2' },

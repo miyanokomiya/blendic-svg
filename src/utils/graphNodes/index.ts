@@ -361,8 +361,14 @@ export function compute<T>(
   outputMap: GraphNodeOutputMap,
   target: GraphNode
 ): GraphNodeOutputValues {
-  return NODE_MODULES[target.type].struct.computation(
-    getInputs(outputMap, target.inputs),
+  const struct = getGraphNodeModule(target.type).struct
+  const inputs = getInputs(outputMap, target.inputs)
+  return struct.computation(
+    mapReduce(inputs, (val, key) => {
+      if (val !== undefined) return val
+      // use default value if the input may have an invalid connection
+      return (struct.inputs as any)[key].default
+    }),
     target,
     context
   )
@@ -384,9 +390,15 @@ export function getInput<T extends GraphNodeInputs, K extends keyof T>(
   key: K
 ): T[K]['value'] {
   const from = inputs[key].from
-  if (from && outputMap[from.id]) return getOutput(outputMap, from.id, from.key)
-  if (inputs[key].value !== undefined) return inputs[key].value
-  return undefined
+  if (
+    from &&
+    outputMap[from.id] &&
+    outputMap[from.id][from.key] !== undefined
+  ) {
+    return getOutput(outputMap, from.id, from.key)
+  }
+
+  return inputs[key].value
 }
 
 export function getOutput(

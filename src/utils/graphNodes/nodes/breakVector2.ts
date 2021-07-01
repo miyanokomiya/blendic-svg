@@ -32,7 +32,7 @@ export const struct: NodeStruct<GraphNodeBreakVector2> = {
   },
   data: {},
   inputs: {
-    vector2: { type: GRAPH_VALUE_TYPE.VECTOR2, required: true },
+    vector2: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
   },
   outputs: {
     x: GRAPH_VALUE_TYPE.SCALER,

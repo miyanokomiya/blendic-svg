@@ -19,6 +19,7 @@ import {
   resetInput,
   duplicateNodes,
   createGraphNode,
+  getInput,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 
@@ -207,6 +208,53 @@ describe('src/utils/graphNodes/index.ts', () => {
         y: 10,
       })
     })
+    it('should use default input value if the connection is invalid', () => {
+      expect(
+        compute(
+          context,
+          {},
+          {
+            id: 'break_vector2',
+            type: 'break_vector2',
+            data: {},
+            inputs: {
+              vector2: {
+                from: { id: 'make_vector2', key: 'vector2' },
+              },
+            },
+            position: { x: 0, y: 0 },
+          }
+        )
+      ).toEqual({ x: 0, y: 0 })
+    })
+  })
+
+  describe('getInput', () => {
+    it('should return default input value if it is not connected', () => {
+      expect(getInput({}, { a: { value: 1 } }, 'a')).toEqual(1)
+    })
+    it('should return connected output value if it is connected', () => {
+      expect(
+        getInput({ b: { c: 1 } }, { a: { from: { id: 'b', key: 'c' } } }, 'a')
+      ).toEqual(1)
+    })
+    it('should return default input value if connected node are not found', () => {
+      expect(
+        getInput({}, { a: { value: 1, from: { id: 'b', key: 'c' } } }, 'a')
+      ).toEqual(1)
+      expect(getInput({}, { a: { from: { id: 'b', key: 'c' } } }, 'a')).toEqual(
+        undefined
+      )
+    })
+    it('should return default input value if the key of connected node are not found', () => {
+      expect(
+        getInput(
+          { b: {} },
+          { a: { value: 1, from: { id: 'b', key: 'c' } } },
+          'a'
+        )
+      ).toEqual(1)
+    })
   })
 
   describe('getInputFromIds', () => {
@@ -366,7 +414,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should override partial inputs', () => {
       expect(
         createGraphNode('make_vector2', {
-          inputs: { x: { from: { id: 'a', key: 'b' } } },
+          inputs: { x: { from: { id: 'a', key: 'b' } } } as any,
         })
       ).toEqual({
         ...createGraphNode('make_vector2'),

@@ -45,6 +45,7 @@ import * as divide_scaler from './nodes/divideScaler'
 import * as sin from './nodes/sin'
 import * as cos from './nodes/cos'
 import * as polar_coord from './nodes/polarCoord'
+import * as invert_polar_coord from './nodes/invertPolarCoord'
 import * as pow from './nodes/pow'
 import * as add_vector2 from './nodes/addVector2'
 import * as sub_vector2 from './nodes/subVector2'
@@ -107,6 +108,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   sin,
   cos,
   polar_coord,
+  invert_polar_coord,
   pow,
   add_vector2,
   sub_vector2,
@@ -203,6 +205,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Sin', type: 'sin' },
       { label: 'Cos', type: 'cos' },
       { label: 'Polar Coord', type: 'polar_coord' },
+      { label: 'Invert Polar Coord', type: 'invert_polar_coord' },
       { label: 'Pow', type: 'pow' },
       { label: '(+) Vector2', type: 'add_vector2' },
       { label: '(-) Vector2', type: 'sub_vector2' },
@@ -277,6 +280,8 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: '(<) Number', type: 'less_than', key: 'a' },
     { label: '(<=) Number', type: 'less_than_or_equal', key: 'a' },
     { label: 'Make Vector2', type: 'make_vector2', key: 'x' },
+    { label: 'Make Transform', type: 'make_transform', key: 'rotate' },
+    { label: 'Polar Coord', type: 'polar_coord', key: 'rotate' },
     { label: 'Lerp Number', type: 'lerp_scaler', key: 'a' },
   ],
   VECTOR2: [
@@ -285,6 +290,8 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Scale Vector2', type: 'scale_vector2', key: 'vector2' },
     { label: 'Distance', type: 'distance', key: 'a' },
     { label: 'Rotate Vector2', type: 'rotate_vector2', key: 'vector2' },
+    { label: 'Break Vector2', type: 'break_vector2', key: 'vector2' },
+    { label: 'Invert Polar Coord', type: 'invert_polar_coord', key: 'vector2' },
     { label: 'Make Transform', type: 'make_transform', key: 'translate' },
     { label: 'Lerp Vector2', type: 'lerp_vector2', key: 'a' },
   ],

@@ -54,6 +54,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :transform="`translate(${edge.p.x}, ${edge.p.y})`"
       >
         <g
+          class="edge-anchor"
           @mouseup.left.exact="upToEdge(key)"
           @mousedown.left.exact.prevent="downToEdge(key)"
         >
@@ -71,10 +72,9 @@ Copyright (C) 2021, Tomoya Komiyama.
             text-anchor="end"
             font-size="14"
             fill="#000"
-            class="view-only"
             >{{ key }}</text
           >
-          <circle r="8" fill="transparent" stroke="none" />
+          <circle r="10" fill="transparent" stroke="none" />
         </g>
         <circle
           r="5"
@@ -107,6 +107,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :transform="`translate(${edge.p.x}, ${edge.p.y})`"
       >
         <g
+          class="edge-anchor"
           @mouseup.left.exact="upFromEdge(key)"
           @mousedown.left.exact.prevent="downFromEdge(key)"
         >
@@ -124,7 +125,7 @@ Copyright (C) 2021, Tomoya Komiyama.
               :input="node.inputs[key]"
             />
           </g>
-          <circle r="8" fill="transparent" stroke="none" />
+          <circle r="10" fill="transparent" stroke="none" />
         </g>
         <circle
           r="5"
@@ -252,7 +253,7 @@ export default defineComponent({
         props.selected ? settings.selectedColor : '#555'
       ),
       getInputType,
-      edgeAnchorWidth: computed(() => 30),
+      edgeAnchorWidth: computed(() => 60),
       outlineStrokeWidth: computed(() => (props.selected ? 2 : 1)),
       dataMap,
       downBody(e: MouseEvent) {
@@ -288,5 +289,11 @@ export default defineComponent({
 <style lang="scss" scoped>
 .view-only {
   pointer-events: none;
+}
+.edge-anchor:hover {
+  circle {
+    transition: fill 0.2s;
+    fill: #ffa07a;
+  }
 }
 </style>

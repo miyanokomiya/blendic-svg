@@ -36,17 +36,18 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
     <g
       transform="translate(1, 2)"
     >
-      <g>
+      <g
+        class="edge-anchor"
+      >
         <rect
           fill="transparent"
           height="20"
           stroke="none"
-          width="30"
-          x="-30"
+          width="60"
+          x="-60"
           y="-10"
         />
         <text
-          class="view-only"
           dominant-baseline="middle"
           fill="#000"
           font-size="14"
@@ -57,7 +58,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
         </text>
         <circle
           fill="transparent"
-          r="8"
+          r="10"
           stroke="none"
         />
       </g>
@@ -81,12 +82,14 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
     <g
       transform="translate(1, 2)"
     >
-      <g>
+      <g
+        class="edge-anchor"
+      >
         <rect
           fill="transparent"
           height="20"
           stroke="none"
-          width="30"
+          width="60"
           y="-10"
         />
         <g
@@ -105,7 +108,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
         </g>
         <circle
           fill="transparent"
-          r="8"
+          r="10"
           stroke="none"
         />
       </g>

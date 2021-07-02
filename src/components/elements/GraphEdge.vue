@@ -20,8 +20,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <g class="view-only">
     <path :d="pathD" :stroke="stroke" :stroke-width="2.5 * scale" fill="none" />
-    <circle :cx="from.x" :cy="from.y" r="5" :fill="fill" stroke="none" />
-    <circle :cx="to.x" :cy="to.y" r="5" :fill="fill" stroke="none" />
+    <g v-if="selected" fill="none" :stroke="selectedColor" stroke-width="5">
+      <circle :cx="from.x" :cy="from.y" r="7" />
+      <circle :cx="to.x" :cy="to.y" r="7" />
+    </g>
   </g>
 </template>
 
@@ -42,9 +44,9 @@ export default defineComponent({
 
     const pathD = computed(() => {
       const xD = Math.sqrt(Math.abs(props.from.x - props.to.x)) * 8
-      return `M${props.from.x},${props.from.y} C${props.from.x + xD},${
+      return `M${props.from.x + 5},${props.from.y} C${props.from.x + xD},${
         props.from.y
-      } ${props.to.x - xD},${props.to.y} ${props.to.x},${props.to.y}`
+      } ${props.to.x - xD},${props.to.y} ${props.to.x - 5},${props.to.y}`
     })
 
     const scale = computed(injectScale())
@@ -52,9 +54,7 @@ export default defineComponent({
     return {
       scale,
       pathD,
-      fill: computed(() =>
-        props.selected ? settings.selectedColor : '#dda0dd'
-      ),
+      selectedColor: computed(() => settings.selectedColor),
       stroke: computed(() =>
         props.selected ? settings.selectedColor : '#888'
       ),

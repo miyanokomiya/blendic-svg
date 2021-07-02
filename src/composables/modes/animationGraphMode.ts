@@ -190,7 +190,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     })
   }
 
-  function upLeft() {
+  function upLeft(options?: { empty: boolean }) {
     if (state.command === 'drag-edge' && state.dragTarget?.type === 'edge') {
       if (state.closestEdgeInfo && isValidDraftConnection.value) {
         if (state.dragTarget.draftGraphEdge.type === 'draft-to') {
@@ -231,13 +231,17 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
           }
           cancel()
         } else {
-          // save the edge type and suggest relational nodes
-          const from = state.dragTarget.draftGraphEdge.from
-          const node = graphStore.nodeMap.value[from.nodeId]
-          const struct = getGraphNodeModule(node.type).struct
-          state.nodeSuggestion = struct.outputs[from.key]
-          state.keyDownPosition = state.editMovement!.current
-          state.command = 'add'
+          if (options?.empty) {
+            // save the edge type and suggest relational nodes
+            const from = state.dragTarget.draftGraphEdge.from
+            const node = graphStore.nodeMap.value[from.nodeId]
+            const struct = getGraphNodeModule(node.type).struct
+            state.nodeSuggestion = struct.outputs[from.key]
+            state.keyDownPosition = state.editMovement!.current
+            state.command = 'add'
+          } else {
+            cancel()
+          }
         }
       }
     } else if (state.command) {

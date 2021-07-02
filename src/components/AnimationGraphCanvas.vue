@@ -212,7 +212,7 @@ export default defineComponent({
         }
 
         props.canvas.upLeft()
-        props.mode.upLeft()
+        props.mode.upLeft({ empty: e.target === svg.value })
         isDownEmpty.value = false
       },
       downMiddle: (e: MouseEvent) => {

@@ -515,6 +515,63 @@ describe('utils/elements.ts', () => {
           }),
         })
       })
+      describe('when the target has children', () => {
+        it('should clone nested created children', () => {
+          const context = createGraphNodeContext({}, 10)
+          const created1 = context.createObject('g', { tag: 'g' })
+          const created2 = context.createObject('g', {
+            tag: 'g',
+            parent: created1,
+          })
+          const clonedId = context.cloneObject(created1)
+          const ret = context.getObjectMap()
+
+          delete ret[created1]
+          delete ret[created2]
+          expect(ret[clonedId]).toEqual({
+            id: clonedId,
+            tag: 'g',
+            create: true,
+          })
+          delete ret[clonedId]
+          const id = Object.keys(ret)[0]
+          expect(ret[id]).toEqual({
+            id,
+            tag: 'g',
+            create: true,
+            parent: clonedId,
+          })
+        })
+        it('should clone nested cloned children', () => {
+          const context = createGraphNodeContext(
+            { a: getBElement({ id: 'a' }) },
+            10
+          )
+          const group = context.createCloneGroupObject('a')
+          const created = context.cloneObject('a', { parent: group })
+          const clonedId = context.cloneObject(group)
+          const ret = context.getObjectMap()
+
+          delete ret['a']
+          delete ret[group]
+          delete ret[created]
+          expect(ret[clonedId]).toEqual({
+            id: clonedId,
+            tag: 'g',
+            create: true,
+            clone: false,
+            elementId: 'a',
+          })
+          delete ret[clonedId]
+          const id = Object.keys(ret)[0]
+          expect(ret[id]).toEqual({
+            id,
+            clone: true,
+            elementId: 'a',
+            parent: clonedId,
+          })
+        })
+      })
     })
     it('should return a context to createObject', () => {
       const context = createGraphNodeContext({}, 10)

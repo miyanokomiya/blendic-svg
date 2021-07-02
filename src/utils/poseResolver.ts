@@ -373,6 +373,10 @@ function getGraphResolvedAttributes(
     }
   }
 
+  if (isGroupCloneRootObject(graphObject)) {
+    ret[DATA_CLONE_ID_KEY_FOR_G] = graphObject.elementId!
+  }
+
   return ret
 }
 
@@ -414,6 +418,7 @@ function insertClonedElementTree(
 }
 
 const DATA_CLONE_ID_KEY = 'data-blendic-use-id'
+const DATA_CLONE_ID_KEY_FOR_G = 'data-blendic-use-id-for-g'
 
 function createUseObject(
   obj: GraphObject,
@@ -436,8 +441,13 @@ function insertClonedElement(
   node: ElementNode,
   attributesMap: IdMap<ElementNodeAttributes>
 ): ElementNode {
-  const srcId = node.attributes[DATA_CLONE_ID_KEY]
-  const objs = useObjectMapByElementId[srcId] ?? []
+  const srcId =
+    node.attributes[DATA_CLONE_ID_KEY] ||
+    node.attributes[DATA_CLONE_ID_KEY_FOR_G]
+  const isRootG = !!node.attributes[DATA_CLONE_ID_KEY]
+  const _objs = useObjectMapByElementId[srcId] ?? []
+  // drop origin if the current node is not a root of using
+  const objs = isRootG ? _objs : _objs.filter((o) => o.id !== srcId)
 
   const rootObjs = objs.filter((o) => !o.parent)
   // cloned nodes with a parent must be group used nodes
@@ -448,6 +458,13 @@ function insertClonedElement(
   //   - g: group for used nodes
   //     - use: group cloned node 1
   //     - use: group cloned node 2
+  //   - g: group for cloned group (recursive)
+  //     - g: cloned group for used nodes
+  //       - use: group cloned node 3
+  //       - use: group cloned node 4
+  //     - g: cloned group for used nodes
+  //       - use: group cloned node 5
+  //       - use: group cloned node 6
   //   - use: cloned node of origin
   const objMapByParent = toKeyListMap(objs, 'parent')
 

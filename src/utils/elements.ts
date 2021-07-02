@@ -227,6 +227,14 @@ export function createGraphNodeContext(
         true
       )
       graphElementMap[cloned.id] = cloned
+
+      // clone children recursively
+      toList(graphElementMap)
+        .filter((elm) => elm.parent === src.id)
+        .forEach((elm) => {
+          this.cloneObject(elm.id, { parent: cloned.id })
+        })
+
       return cloned.id
     },
     createCloneGroupObject(objectId, arg = {}) {

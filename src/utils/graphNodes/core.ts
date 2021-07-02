@@ -55,7 +55,8 @@ export interface NodeStruct<T extends GraphNodeBase> {
 }
 
 export interface NodeContext<T> {
-  setTransform: (objectId: string, transform: Transform) => void
+  setTransform: (objectId: string, transform: Transform | undefined) => void
+  getTransform: (objectId: string) => Transform | undefined
   setFill: (objectId: string, transform: Transform) => void
   setStroke: (objectId: string, transform: Transform) => void
   setAttributes: (
@@ -65,8 +66,9 @@ export interface NodeContext<T> {
   ) => void
   getFrame: () => number
   getObjectMap: () => { [id: string]: T }
-  cloneObject: (objectId: string) => string
-  createObject: (tag: string, arg: Partial<T>) => string
+  cloneObject: (objectId: string, arg?: Partial<T>) => string
+  createCloneGroupObject: (objectId: string, arg?: Partial<T>) => string
+  createObject: (tag: string, arg?: Partial<T>) => string
 }
 
 export function createBaseNode(

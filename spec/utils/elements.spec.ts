@@ -376,6 +376,14 @@ describe('utils/elements.ts', () => {
         },
       })
     })
+    it('should return a context to getTransform', () => {
+      const context = createGraphNodeContext(
+        { a: getBElement({ id: 'a' }) },
+        10
+      )
+      context.setTransform('a', getTransform({ rotate: 20 }))
+      expect(context.getTransform('a')).toEqual(getTransform({ rotate: 20 }))
+    })
     it('should return a context to setFill', () => {
       const context = createGraphNodeContext(
         { a: getBElement({ id: 'a' }) },
@@ -466,7 +474,7 @@ describe('utils/elements.ts', () => {
           10
         )
         context.setTransform('a', getTransform({ rotate: 20 }))
-        const clonedId = context.cloneObject('a')
+        const clonedId = context.cloneObject('a', { parent: 'p' })
         const ret = context.getObjectMap()
 
         expect(ret).toEqual({
@@ -479,6 +487,7 @@ describe('utils/elements.ts', () => {
             id: clonedId,
             elementId: 'a',
             transform: getTransform({ rotate: 20 }),
+            parent: 'p',
             clone: true,
           },
         })

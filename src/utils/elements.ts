@@ -31,6 +31,7 @@ import {
   IdMap,
   toMap,
   AnimationGraph,
+  Transform,
 } from '../models'
 import { extractMap, mapReduce, toList } from './commons'
 import { GraphNodeMap } from '/@/models/graphNode'
@@ -191,6 +192,10 @@ export function createGraphNodeContext(
       if (!graphElementMap[objectId]) return
       graphElementMap[objectId].transform = transform
     },
+    getTransform(objectId): Transform | undefined {
+      if (!graphElementMap[objectId]) return
+      return graphElementMap[objectId].transform
+    },
     setFill(objectId, transform) {
       if (!graphElementMap[objectId]) return
       graphElementMap[objectId].fill = transform
@@ -211,20 +216,38 @@ export function createGraphNodeContext(
     getObjectMap() {
       return graphElementMap
     },
-    cloneObject(objectId) {
+    cloneObject(objectId, arg = {}) {
       const src = graphElementMap[objectId]
       if (!src) return ''
 
       // set 'create: true' if the target is created object
       // set 'clone: true' if the target has native element
       const cloned = getGraphObject(
-        src.create ? src : { ...src, clone: true },
+        src.create ? { ...src, ...arg } : { ...src, ...arg, clone: true },
         true
       )
       graphElementMap[cloned.id] = cloned
       return cloned.id
     },
-    createObject(tag, arg) {
+    createCloneGroupObject(objectId, arg = {}) {
+      const src = graphElementMap[objectId]
+      if (!src) return ''
+
+      const group = getGraphObject(
+        {
+          ...src,
+          ...arg,
+          tag: 'g',
+          elementId: src.elementId,
+          clone: false,
+          create: true,
+        },
+        true
+      )
+      graphElementMap[group.id] = group
+      return group.id
+    },
+    createObject(tag, arg = {}) {
       const created = getGraphObject({ ...arg, tag, create: true }, true)
       graphElementMap[created.id] = created
       return created.id

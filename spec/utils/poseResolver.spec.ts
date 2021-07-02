@@ -49,6 +49,7 @@ import { getConstraint } from '/@/utils/constraints'
 import {
   bakeKeyframe,
   bakeKeyframes,
+  convertGroupUseTree,
   getClonedElementsTree,
   getCreatedElementsTree,
   getGraphResolvedElementTree,
@@ -425,6 +426,37 @@ describe('utils/poseResolver.ts', () => {
         'matrix(1,0,0,1,10,20)'
       )
     })
+    it('should resolve group clone', () => {
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({
+            id: 'a',
+            tag: 'rect',
+            elementId: 'a',
+          }),
+          b: getGraphObject({
+            id: 'b',
+            tag: 'g',
+            elementId: 'a',
+            create: true,
+          }),
+          c: getGraphObject({
+            id: 'c',
+            elementId: 'a',
+            parent: 'b',
+            clone: true,
+          }),
+        },
+        getElementNode({ id: 'a' })
+      )
+      expect(ret.id).toBe('blendic_group_a')
+      expect((ret.children[0] as any).id).toBe('')
+      expect((ret.children[1] as any).id).toBe('b')
+      expect((ret.children[2] as any).id).toBe('clone_a')
+      expect(ret.children.length).toBe(3)
+      expect((ret as any).children[1].children[0].id).toBe('clone_c')
+      expect((ret as any).children[1].children.length).toBe(1)
+    })
   })
 
   describe('getClonedElementsTree', () => {
@@ -475,6 +507,68 @@ describe('utils/poseResolver.ts', () => {
           },
         ],
       })
+    })
+  })
+
+  describe('convertGroupUseTree', () => {
+    it('should replace group use elements to target use group', () => {
+      const ret = convertGroupUseTree(
+        {
+          a: getGraphObject({
+            id: 'a',
+            tag: 'g',
+            elementId: 'a',
+          }),
+          aa: getGraphObject({
+            id: 'aa',
+            elementId: 'aa',
+          }),
+          b: getGraphObject({
+            id: 'b',
+            tag: 'g',
+            create: true,
+            elementId: 'c',
+          }),
+        },
+        getElementNode({
+          id: 'a',
+          tag: 'g',
+          children: [
+            getElementNode({
+              id: 'aa',
+              tag: 'g',
+              attributes: {
+                'data-blendic-use-id': 'c',
+              },
+            }),
+            getElementNode({
+              id: 'b',
+              tag: 'g',
+            }),
+          ],
+        })
+      )
+      expect(ret).toEqual(
+        getElementNode({
+          id: 'a',
+          tag: 'g',
+          children: [
+            getElementNode({
+              id: 'aa',
+              tag: 'g',
+              attributes: {
+                'data-blendic-use-id': 'c',
+              },
+              children: [
+                getElementNode({
+                  id: 'b',
+                  tag: 'g',
+                }),
+              ],
+            }),
+          ],
+        })
+      )
     })
   })
 

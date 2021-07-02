@@ -38,7 +38,7 @@ import {
   getElementNode,
 } from '../models'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
-import { mapReduce, toKeyListMap } from './commons'
+import { mapFilter, mapReduce, toKeyListMap } from './commons'
 import { getTnansformStr, viewbox } from './helpers'
 import { KeyframeBase } from '/@/models/keyframe'
 import {
@@ -387,11 +387,14 @@ export function getClonedElementsTree(
     svgTree,
     attributesMap
   )
+
+  const convertedTree = convertGroupUseTree(graphObjectMap, tree)
+
   // gather all nodes having refs to cloned elements
   const useObjects = Object.keys(clonedElementIds)
     .map((id) => graphObjectMap[id])
     .concat(clonedObjects)
-  return insertClonedElementTree(useObjects, tree, attributesMap)
+  return insertClonedElementTree(useObjects, convertedTree, attributesMap)
 }
 
 function insertClonedElementTree(
@@ -412,33 +415,66 @@ function insertClonedElementTree(
 
 const DATA_CLONE_ID_KEY = 'data-blendic-use-id'
 
+function createUseObject(
+  obj: GraphObject,
+  srcId: string,
+  attributes: ElementNodeAttributes
+): ElementNode {
+  return {
+    id: `clone_${obj.id}`,
+    tag: 'use',
+    attributes: {
+      href: `#${srcId}`,
+      ...getGraphResolvedAttributes(obj, attributes),
+    },
+    children: [],
+  }
+}
+
 function insertClonedElement(
   useObjectMapByElementId: IdMap<GraphObject[]>,
   node: ElementNode,
   attributesMap: IdMap<ElementNodeAttributes>
 ): ElementNode {
+  const srcId = node.attributes[DATA_CLONE_ID_KEY]
+  const objs = useObjectMapByElementId[srcId] ?? []
+
+  const rootObjs = objs.filter((o) => !o.parent)
+  // cloned nodes with a parent must be group used nodes
+  // => 'convertGroupUseTree' guarantees inserting their parents in the used location
+  // - g
+  //   - template
+  //     - origin node
+  //   - g: group for used nodes
+  //     - use: group cloned node 1
+  //     - use: group cloned node 2
+  //   - use: cloned node of origin
+  const objMapByParent = toKeyListMap(objs, 'parent')
+
   const children = node.children.map((c) => {
     if (isPlainText(c)) return c
-    return insertClonedElement(useObjectMapByElementId, c, attributesMap)
+
+    const n = insertClonedElement(useObjectMapByElementId, c, attributesMap)
+    if (isPlainText(n)) return n
+
+    return {
+      ...n,
+      children: [
+        ...n.children,
+        ...(objMapByParent[n.id] ?? []).map((o) =>
+          createUseObject(o, srcId, attributesMap[srcId])
+        ),
+      ],
+    }
   })
 
-  const srcId = node.attributes[DATA_CLONE_ID_KEY]
-  const objs = useObjectMapByElementId[srcId]
-  if (objs) {
+  if (rootObjs.length > 0) {
     return {
       ...node,
       children: [
         ...children,
-        ...objs.map((o) => {
-          return {
-            id: `clone_${o.id}`,
-            tag: 'use',
-            attributes: {
-              href: `#${srcId}`,
-              ...getGraphResolvedAttributes(o, attributesMap[srcId]),
-            },
-            children: [],
-          }
+        ...rootObjs.map((o) => {
+          return createUseObject(o, srcId, attributesMap[srcId])
         }),
       ],
     }
@@ -465,6 +501,8 @@ function convertUseTree(
   }
 }
 
+const DROP_ATTRUBTES = ['transform', 'fill', 'stroke', 'x', 'y']
+
 function convertUseElement(
   clonedElementIds: IdMap<boolean>,
   node: ElementNode,
@@ -477,11 +515,13 @@ function convertUseElement(
 
   if (clonedElementIds[node.id]) {
     attributesMap[node.id] = node.attributes
+
     // drop some attributes to override
     const attributes = { ...node.attributes }
-    delete attributes.transform
-    delete attributes.fill
-    delete attributes.stroke
+    DROP_ATTRUBTES.forEach((key) => {
+      delete attributes[key]
+    })
+
     // insert a template node to be cloned
     return {
       id: `blendic_group_${node.id}`,
@@ -502,6 +542,68 @@ function convertUseElement(
           ],
         },
       ],
+    }
+  } else {
+    return { ...node, children }
+  }
+}
+
+function isGroupCloneRootObject(obj: GraphObject): boolean {
+  return !!obj.create && !!obj.elementId
+}
+
+export function convertGroupUseTree(
+  graphObjectMap: IdMap<GraphObject>,
+  svgTree: ElementNode
+): ElementNode {
+  const cloneGroups = mapFilter(graphObjectMap, isGroupCloneRootObject)
+
+  // drop the group nodes and insert them to neighborhood locations of the origin nodes
+  const droppedMap: IdMap<ElementNode[]> = {}
+  const dropped = dropGroupUseElement(cloneGroups, svgTree, (node) => {
+    const elementId = graphObjectMap[node.id].elementId!
+    if (!droppedMap[elementId]) {
+      droppedMap[elementId] = []
+    }
+    droppedMap[elementId].push(node)
+  })!
+  return insertGroupUseElement(droppedMap, dropped)
+}
+
+function dropGroupUseElement(
+  cloneGroups: IdMap<GraphObject>,
+  node: ElementNode,
+  saveDroppedElement: (node: ElementNode) => void
+): ElementNode | undefined {
+  if (cloneGroups[node.id]) {
+    saveDroppedElement(node)
+    return undefined
+  } else {
+    const children = node.children
+      .map((c) => {
+        if (isPlainText(c)) return c
+        return dropGroupUseElement(cloneGroups, c, saveDroppedElement)
+      })
+      .filter((c): c is ElementNode => !!c)
+
+    return { ...node, children }
+  }
+}
+
+function insertGroupUseElement(
+  droppedMap: IdMap<ElementNode[]>,
+  node: ElementNode
+): ElementNode {
+  const children = node.children.map((c) => {
+    if (isPlainText(c)) return c
+    return insertGroupUseElement(droppedMap, c)
+  })
+
+  if (node.attributes[DATA_CLONE_ID_KEY]) {
+    const list = droppedMap[node.attributes[DATA_CLONE_ID_KEY]] ?? []
+    return {
+      ...node,
+      children: [...children, ...list],
     }
   } else {
     return { ...node, children }

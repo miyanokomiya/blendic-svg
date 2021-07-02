@@ -25,6 +25,7 @@ import {
   GraphNodeOutputValues,
   GraphNodes,
   GraphNodeType,
+  GRAPH_VALUE_TYPE_KEY,
 } from '/@/models/graphNode'
 import { NodeModule, NodeContext } from '/@/utils/graphNodes/core'
 import { v4 } from 'uuid'
@@ -43,6 +44,8 @@ import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
 import * as sin from './nodes/sin'
 import * as cos from './nodes/cos'
+import * as polar_coord from './nodes/polarCoord'
+import * as invert_polar_coord from './nodes/invertPolarCoord'
 import * as pow from './nodes/pow'
 import * as add_vector2 from './nodes/addVector2'
 import * as sub_vector2 from './nodes/subVector2'
@@ -104,6 +107,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   divide_scaler,
   sin,
   cos,
+  polar_coord,
+  invert_polar_coord,
   pow,
   add_vector2,
   sub_vector2,
@@ -150,10 +155,33 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   switch_object,
 } as const
 
-export const NODE_MENU_OPTIONS_SRC: {
+interface NodeMenuOption {
   label: string
-  children: { label: string; type: GraphNodeType }[]
-}[] = [
+  type: GraphNodeType
+}
+
+interface NODE_MENU_OPTION {
+  label: string
+  children: NodeMenuOption[]
+}
+
+const MAKE_PATH_SRC: NODE_MENU_OPTION = {
+  label: 'Make Path',
+  children: [
+    { label: 'M (Move)', type: 'make_path_m' },
+    { label: 'L (Line)', type: 'make_path_l' },
+    { label: 'H (Horizon)', type: 'make_path_h' },
+    { label: 'V (Vertical)', type: 'make_path_v' },
+    { label: 'Q (Bezier2)', type: 'make_path_q' },
+    { label: 'T (Bezier2)', type: 'make_path_t' },
+    { label: 'C (Bezier3)', type: 'make_path_c' },
+    { label: 'S (Bezier3)', type: 'make_path_s' },
+    { label: 'A (Arc)', type: 'make_path_a' },
+    { label: 'Z (Close)', type: 'make_path_z' },
+  ],
+}
+
+export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
   {
     label: 'Primitive',
     children: [
@@ -176,6 +204,8 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: '(/) Number', type: 'divide_scaler' },
       { label: 'Sin', type: 'sin' },
       { label: 'Cos', type: 'cos' },
+      { label: 'Polar Coord', type: 'polar_coord' },
+      { label: 'Invert Polar Coord', type: 'invert_polar_coord' },
       { label: 'Pow', type: 'pow' },
       { label: '(+) Vector2', type: 'add_vector2' },
       { label: '(-) Vector2', type: 'sub_vector2' },
@@ -223,22 +253,65 @@ export const NODE_MENU_OPTIONS_SRC: {
       { label: 'Path', type: 'create_object_path' },
     ],
   },
-  {
-    label: 'Make Path',
-    children: [
-      { label: 'M (Move)', type: 'make_path_m' },
-      { label: 'L (Line)', type: 'make_path_l' },
-      { label: 'H (Horizon)', type: 'make_path_h' },
-      { label: 'V (Vertical)', type: 'make_path_v' },
-      { label: 'Q (Bezier2)', type: 'make_path_q' },
-      { label: 'T (Bezier2)', type: 'make_path_t' },
-      { label: 'C (Bezier3)', type: 'make_path_c' },
-      { label: 'S (Bezier3)', type: 'make_path_s' },
-      { label: 'A (Arc)', type: 'make_path_a' },
-      { label: 'Z (Close)', type: 'make_path_z' },
-    ],
-  },
+  MAKE_PATH_SRC,
 ]
+
+export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
+  [key in GRAPH_VALUE_TYPE_KEY]: ({ key: string } & NodeMenuOption)[]
+} = {
+  BOOLEAN: [
+    { label: 'Not', type: 'not', key: 'condition' },
+    { label: 'Switch Number', type: 'switch_scaler', key: 'condition' },
+    { label: 'Switch Vector2', type: 'switch_vector2', key: 'condition' },
+    { label: 'Switch Transform', type: 'switch_transform', key: 'condition' },
+    { label: 'Switch Object', type: 'switch_object', key: 'condition' },
+  ],
+  SCALER: [
+    { label: '(+) Number', type: 'add_scaler', key: 'a' },
+    { label: '(-) Number', type: 'sub_scaler', key: 'a' },
+    { label: '(x) Number', type: 'multi_scaler', key: 'a' },
+    { label: '(/) Number', type: 'divide_scaler', key: 'a' },
+    { label: 'Sin', type: 'sin', key: 'rotate' },
+    { label: 'Cos', type: 'cos', key: 'rotate' },
+    { label: 'Pow', type: 'pow', key: 'x' },
+    { label: '(=) Number', type: 'equal', key: 'a' },
+    { label: '(>) Number', type: 'greater_than', key: 'a' },
+    { label: '(>=) Number', type: 'greater_than_or_equal', key: 'a' },
+    { label: '(<) Number', type: 'less_than', key: 'a' },
+    { label: '(<=) Number', type: 'less_than_or_equal', key: 'a' },
+    { label: 'Make Vector2', type: 'make_vector2', key: 'x' },
+    { label: 'Make Transform', type: 'make_transform', key: 'rotate' },
+    { label: 'Polar Coord', type: 'polar_coord', key: 'rotate' },
+    { label: 'Lerp Number', type: 'lerp_scaler', key: 'a' },
+  ],
+  VECTOR2: [
+    { label: '(+) Vector2', type: 'add_vector2', key: 'a' },
+    { label: '(-) Vector2', type: 'sub_vector2', key: 'a' },
+    { label: 'Scale Vector2', type: 'scale_vector2', key: 'vector2' },
+    { label: 'Distance', type: 'distance', key: 'a' },
+    { label: 'Rotate Vector2', type: 'rotate_vector2', key: 'vector2' },
+    { label: 'Break Vector2', type: 'break_vector2', key: 'vector2' },
+    { label: 'Invert Polar Coord', type: 'invert_polar_coord', key: 'vector2' },
+    { label: 'Make Transform', type: 'make_transform', key: 'translate' },
+    { label: 'Lerp Vector2', type: 'lerp_vector2', key: 'a' },
+  ],
+  OBJECT: [
+    { label: 'Set Transform', type: 'set_transform', key: 'object' },
+    { label: 'Set Fill', type: 'set_fill', key: 'object' },
+    { label: 'Set Stroke', type: 'set_stroke', key: 'object' },
+    { label: 'Set Viewbox', type: 'set_viewbox', key: 'object' },
+    { label: 'Clone Object', type: 'clone_object', key: 'object' },
+  ],
+  TRANSFORM: [{ label: 'Lerp Transform', type: 'lerp_transform', key: 'a' }],
+  COLOR: [
+    { label: 'Break Color', type: 'break_color', key: 'color' },
+    { label: 'Lerp Color', type: 'lerp_color', key: 'a' },
+  ],
+  D: [
+    ...MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
+    { label: 'Create Path', type: 'create_object_path', key: 'd' },
+  ],
+}
 
 export function getGraphNodeModule<T extends GraphNodeType>(
   type: T
@@ -291,8 +364,14 @@ export function compute<T>(
   outputMap: GraphNodeOutputMap,
   target: GraphNode
 ): GraphNodeOutputValues {
-  return NODE_MODULES[target.type].struct.computation(
-    getInputs(outputMap, target.inputs),
+  const struct = getGraphNodeModule(target.type).struct
+  const inputs = getInputs(outputMap, target.inputs)
+  return struct.computation(
+    mapReduce(inputs, (val, key) => {
+      if (val !== undefined) return val
+      // use default value if the input may have an invalid connection
+      return (struct.inputs as any)[key].default
+    }),
     target,
     context
   )
@@ -314,9 +393,15 @@ export function getInput<T extends GraphNodeInputs, K extends keyof T>(
   key: K
 ): T[K]['value'] {
   const from = inputs[key].from
-  if (from && outputMap[from.id]) return getOutput(outputMap, from.id, from.key)
-  if (inputs[key].value !== undefined) return inputs[key].value
-  return undefined
+  if (
+    from &&
+    outputMap[from.id] &&
+    outputMap[from.id][from.key] !== undefined
+  ) {
+    return getOutput(outputMap, from.id, from.key)
+  }
+
+  return inputs[key].value
 }
 
 export function getOutput(
@@ -377,10 +462,17 @@ export function validateInput<T extends GraphNodeInputs>(
 
 export function createGraphNode<T extends GraphNodeType>(
   type: T,
-  arg: Partial<GraphNodes[T]> = {},
+  arg: Partial<Omit<GraphNodes[T], 'inputs'>> & {
+    inputs?: Partial<GraphNodes[T]['inputs']>
+  } = {},
   generateId = false
 ): GraphNodes[T] {
-  const node = NODE_MODULES[type].struct.create(arg)
+  // enable to override partial inputs
+  const { inputs, ...others } = arg
+  const node = NODE_MODULES[type].struct.create(others)
+  if (inputs) {
+    node.inputs = { ...node.inputs, ...arg.inputs }
+  }
   if (generateId) {
     node.id = v4()
   }

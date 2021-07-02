@@ -33,10 +33,13 @@ import {
   GraphNode,
   GraphNodeType,
   GraphNodeInput,
+  GRAPH_VALUE_TYPE_KEY,
 } from '/@/models/graphNode'
 import {
   duplicateNodes,
+  getGraphNodeModule,
   NODE_MENU_OPTIONS_SRC,
+  NODE_SUGGESTION_MENU_OPTIONS_SRC,
   resetInput,
   validateConnection,
 } from '/@/utils/graphNodes'
@@ -81,6 +84,7 @@ interface State {
     | { type: 'edge'; draftGraphEdge: DraftGraphEdge }
     | undefined
   closestEdgeInfo: EdgeInfo | undefined
+  nodeSuggestion: GRAPH_VALUE_TYPE_KEY | undefined
 }
 
 const notNeedLock = { needLock: false }
@@ -94,6 +98,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     keyDownPosition: { x: 0, y: 0 },
     dragTarget: undefined,
     closestEdgeInfo: undefined,
+    nodeSuggestion: undefined,
   })
   const selectedNodes = computed(() => graphStore.selectedNodes.value)
   const lastSelectedNodeId = computed(
@@ -111,6 +116,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     state.editMovement = undefined
     state.dragTarget = undefined
     state.closestEdgeInfo = undefined
+    state.nodeSuggestion = undefined
   }
 
   function clickAny() {
@@ -184,7 +190,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     })
   }
 
-  function upLeft() {
+  function upLeft(options?: { empty: boolean }) {
     if (state.command === 'drag-edge' && state.dragTarget?.type === 'edge') {
       if (state.closestEdgeInfo && isValidDraftConnection.value) {
         if (state.dragTarget.draftGraphEdge.type === 'draft-to') {
@@ -206,6 +212,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
             state.closestEdgeInfo.key
           )
         }
+        cancel()
       } else {
         if (state.dragTarget.draftGraphEdge.type === 'draft-from') {
           const to = state.dragTarget.draftGraphEdge.to
@@ -222,9 +229,21 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
               } as any,
             })
           }
+          cancel()
+        } else {
+          if (options?.empty) {
+            // save the edge type and suggest relational nodes
+            const from = state.dragTarget.draftGraphEdge.from
+            const node = graphStore.nodeMap.value[from.nodeId]
+            const struct = getGraphNodeModule(node.type).struct
+            state.nodeSuggestion = struct.outputs[from.key]
+            state.keyDownPosition = state.editMovement!.current
+            state.command = 'add'
+          } else {
+            cancel()
+          }
         }
       }
-      cancel()
     } else if (state.command) {
       completeEdit()
     }
@@ -468,10 +487,52 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   )
   watch(() => state.command, addMenuList.clearOpened)
 
+  const addAndConnectMenuList = mapReduce(
+    NODE_SUGGESTION_MENU_OPTIONS_SRC,
+    (src) => {
+      return useMenuList(() =>
+        src.map(({ label, type, key }) => ({
+          label,
+          exec: () => addAndConnectNode(type, key),
+        }))
+      )
+    }
+  )
+
+  const draftEdgeFrom = computed(() => {
+    if (
+      state.dragTarget?.type !== 'edge' ||
+      state.dragTarget.draftGraphEdge.type === 'draft-from'
+    )
+      return
+
+    return state.dragTarget.draftGraphEdge.from
+  })
+
+  // add new node and connect draft edge to it
+  function addAndConnectNode(type: GraphNodeType, key: string) {
+    const from = draftEdgeFrom.value
+    if (!from) return
+
+    graphStore.addNode(type, {
+      position: state.keyDownPosition,
+      inputs: {
+        [key]: { from: { id: from.nodeId, key: from.key } },
+      },
+    })
+    cancel()
+  }
+
+  const popupToAddMenuList = computed<PopupMenuItem[]>(() => {
+    if (state.nodeSuggestion)
+      return addAndConnectMenuList[state.nodeSuggestion].list.value
+    return addMenuList.list.value
+  })
+
   const popupMenuList = computed<PopupMenuItem[]>(() => {
     switch (state.command) {
       case 'add':
-        return addMenuList.list.value
+        return popupToAddMenuList.value
       default:
         return []
     }

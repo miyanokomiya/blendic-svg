@@ -34,10 +34,9 @@ export interface NodeStruct<T extends GraphNodeBase> {
     [key in keyof T['data']]: { type: keyof typeof GRAPH_VALUE_TYPE }
   }
   inputs: {
-    [key in keyof T['inputs']]: { type: keyof typeof GRAPH_VALUE_TYPE } & (
-      | { default: Required<T['inputs'][key]>['value'] }
-      | { required: true }
-    )
+    [key in keyof T['inputs']]: { type: keyof typeof GRAPH_VALUE_TYPE } & {
+      default: Required<T['inputs'][key]>['value']
+    }
   }
   outputs: {
     [key: string]: keyof typeof GRAPH_VALUE_TYPE

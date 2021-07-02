@@ -17,31 +17,39 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeCos, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { IVec2 } from 'okageo'
+import { GraphNodePolarCoord, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeCos> = {
+export const struct: NodeStruct<GraphNodePolarCoord> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: { rotate: { value: 0 } },
+        inputs: { rotate: { value: 0 }, radius: { value: 1 } },
         ...arg,
       }),
-      type: 'cos',
-    } as GraphNodeCos
+      type: 'polar_coord',
+    } as GraphNodePolarCoord
   },
   data: {},
   inputs: {
     rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    radius: { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.SCALER,
+    vector2: GRAPH_VALUE_TYPE.VECTOR2,
   },
-  computation(inputs) {
-    return { value: Math.cos((inputs.rotate * Math.PI) / 180) }
+  computation(inputs): { vector2: IVec2 } {
+    const r = (inputs.rotate * Math.PI) / 180
+    return {
+      vector2: {
+        x: inputs.radius * Math.cos(r),
+        y: inputs.radius * Math.sin(r),
+      },
+    }
   },
-  width: 100,
+  width: 140,
   color: '#4169e1',
   textColor: '#fff',
-  label: 'Cos',
+  label: 'Polar Coord',
 }

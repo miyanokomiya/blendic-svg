@@ -17,20 +17,21 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import * as target from '/@/utils/graphNodes/nodes/sin'
+import * as target from '/@/utils/graphNodes/nodes/invertPolarCoord'
 
-describe('src/utils/graphNodes/nodes/sin.ts', () => {
+describe('src/utils/graphNodes/nodes/invertPolarCoord.ts', () => {
   describe('computation', () => {
-    it('should return Math.sin(t)', () => {
-      expect(
-        target.struct.computation(
-          {
-            rotate: 90,
-          },
-          {} as any,
-          {} as any
-        )
-      ).toEqual({ value: 1 })
+    it('should return invert polar coord of the input parameters', () => {
+      const ret = target.struct.computation(
+        {
+          vector2: { x: 0, y: 3 },
+        },
+        {} as any,
+        {} as any
+      ) as any
+
+      expect(ret.rotate).toBeCloseTo(90)
+      expect(ret.radius).toBeCloseTo(3)
     })
   })
 })

@@ -17,31 +17,38 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeCos, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { getNorm, getRadian } from 'okageo'
+import {
+  GraphNodeInvertPolarCoord,
+  GRAPH_VALUE_TYPE,
+} from '/@/models/graphNode'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeCos> = {
+export const struct: NodeStruct<GraphNodeInvertPolarCoord> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: { rotate: { value: 0 } },
+        inputs: { vector2: { value: { x: 1, y: 0 } } },
         ...arg,
       }),
-      type: 'cos',
-    } as GraphNodeCos
+      type: 'invert_polar_coord',
+    } as GraphNodeInvertPolarCoord
   },
   data: {},
   inputs: {
-    rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    vector2: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 1, y: 0 } },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.SCALER,
+    rotate: GRAPH_VALUE_TYPE.SCALER,
+    radius: GRAPH_VALUE_TYPE.SCALER,
   },
-  computation(inputs) {
-    return { value: Math.cos((inputs.rotate * Math.PI) / 180) }
+  computation(inputs): { rotate: number; radius: number } {
+    const radius = getNorm(inputs.vector2)
+    const rotate = (getRadian(inputs.vector2) * 180) / Math.PI
+    return { rotate, radius }
   },
-  width: 100,
+  width: 160,
   color: '#4169e1',
   textColor: '#fff',
-  label: 'Cos',
+  label: 'Invert Polar Coord',
 }

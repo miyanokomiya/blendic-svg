@@ -25,7 +25,7 @@ describe('src/utils/graphNodes/nodes/cos.ts', () => {
       expect(
         target.struct.computation(
           {
-            t: 0,
+            rotate: 0,
           },
           {} as any,
           {} as any

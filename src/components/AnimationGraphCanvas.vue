@@ -151,7 +151,12 @@ export default defineComponent({
         if (!p) return
         props.canvas.setMousePoint(p)
       },
-      onEscape: escape,
+      onEscape: () => {
+        // continue displaying the popup menu even if the canvas is scrolled by middle dragging
+        // FIXME: want to improve this branch
+        if (props.mode.command.value === 'add') return
+        escape()
+      },
     })
 
     watch(
@@ -164,9 +169,6 @@ export default defineComponent({
     )
 
     function escape() {
-      // continue displaying the popup menu even if the canvas is scrolled by middle dragging
-      // FIXME: want to improve this branch
-      if (props.mode.command.value === 'add') return
       props.mode.cancel()
     }
 

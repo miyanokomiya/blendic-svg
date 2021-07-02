@@ -53,6 +53,7 @@ export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
   },
   computation(inputs, _self, context): { origin: string; group: string } {
     if (!inputs.object) return { origin: '', group: '' }
+    if (inputs.count <= 0) return { origin: inputs.object, group: '' }
 
     const rotations = [...Array(inputs.count)].map(
       (_, i) => (i * 360) / inputs.count

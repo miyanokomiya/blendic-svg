@@ -88,5 +88,34 @@ describe('src/utils/graphNodes/nodes/circleCloneObject.ts', () => {
         })
       )
     })
+    it('should not clone any objects if count is zero', () => {
+      let count = 0
+      const getTransform = jest
+        .fn()
+        .mockReturnValue(models.getTransform({ rotate: 10 }))
+      const setTransform = jest.fn()
+      const createCloneGroupObject = jest.fn().mockReturnValue('b')
+      const cloneObject = jest.fn().mockImplementation(() => {
+        count++
+        return count.toString()
+      })
+      expect(
+        target.struct.computation(
+          {
+            object: 'a',
+            count: 0,
+            radius: 0,
+            fix_rotate: false,
+          },
+          {} as any,
+          {
+            cloneObject,
+            getTransform,
+            setTransform,
+            createCloneGroupObject,
+          } as any
+        )
+      ).toEqual({ origin: 'a', group: '' })
+    })
   })
 })

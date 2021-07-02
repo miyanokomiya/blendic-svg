@@ -307,7 +307,10 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Break Color', type: 'break_color', key: 'color' },
     { label: 'Lerp Color', type: 'lerp_color', key: 'a' },
   ],
-  D: MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
+  D: [
+    ...MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
+    { label: 'Create Path', type: 'create_object_path', key: 'd' },
+  ],
 }
 
 export function getGraphNodeModule<T extends GraphNodeType>(

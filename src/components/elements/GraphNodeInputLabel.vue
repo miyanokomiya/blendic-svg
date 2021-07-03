@@ -23,7 +23,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       inputKey + (valueLabel && !isColor ? ` (${valueLabel})` : '')
     }}</text>
     <rect
-      v-if="isColor"
+      v-if="valueLabel && isColor"
       :x="width + 6"
       y="-6"
       width="12"

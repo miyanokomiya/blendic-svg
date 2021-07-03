@@ -287,6 +287,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: '(<=) Number', type: 'less_than_or_equal', key: 'a' },
     { label: 'Make Vector2', type: 'make_vector2', key: 'x' },
     { label: 'Make Transform', type: 'make_transform', key: 'rotate' },
+    { label: 'Make Color', type: 'make_color', key: 'h' },
     { label: 'Polar Coord', type: 'polar_coord', key: 'rotate' },
     { label: 'Lerp Number', type: 'lerp_scaler', key: 'a' },
   ],

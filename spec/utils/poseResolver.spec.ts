@@ -457,6 +457,55 @@ describe('utils/poseResolver.ts', () => {
       expect((ret as any).children[1].children[0].id).toBe('clone_c')
       expect((ret as any).children[1].children.length).toBe(1)
     })
+    it('should resolve group clone recursively', () => {
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({
+            id: 'a',
+            tag: 'rect',
+            elementId: 'a',
+          }),
+          b: getGraphObject({
+            id: 'b',
+            tag: 'g',
+            elementId: 'a',
+            create: true,
+          }),
+          c: getGraphObject({
+            id: 'c',
+            elementId: 'a',
+            parent: 'b',
+            clone: true,
+          }),
+          d: getGraphObject({
+            id: 'd',
+            tag: 'g',
+            elementId: 'a',
+            create: true,
+          }),
+          e: getGraphObject({
+            id: 'e',
+            tag: 'g',
+            parent: 'd',
+            create: true,
+          }),
+          f: getGraphObject({
+            id: 'f',
+            elementId: 'a',
+            parent: 'e',
+            clone: true,
+          }),
+        },
+        getElementNode({ id: 'a' })
+      )
+      expect(ret.children.length).toBe(4)
+      const d = ret.children.find(
+        (c) => typeof c !== 'string' && c.id === 'd'
+      ) as any
+      expect(d.children[0].id).toBe('e')
+      expect(d.children[0].children.length).toBe(1)
+      expect(d.children[0].children[0].id).toBe('clone_f')
+    })
     it('cloned elements should not extends origin graph attributes', () => {
       const ret = getGraphResolvedElementTree(
         {

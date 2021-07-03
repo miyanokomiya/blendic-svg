@@ -36,6 +36,7 @@ import {
   resolveAnimationGraph,
 } from '../utils/elements'
 import {
+  addEssentialSvgAttributes,
   bakeKeyframes,
   getGraphResolvedElementTree,
   getPosedElementTree,
@@ -153,6 +154,7 @@ export function useStorage() {
     const actor = elementStore.lastSelectedActor.value
     if (!armature || !actor) return
 
+    const svgTree = addEssentialSvgAttributes(actor.svgTree)
     const actionMap = animationStore.actionMap.value
     const actions = actionIds
       .filter((id) => actionMap[id])
@@ -162,7 +164,7 @@ export function useStorage() {
           getKeyframeMapByTargetId(action.keyframes),
           store.boneMap.value,
           toMap(actor.elements),
-          actor.svgTree,
+          svgTree,
           getLastFrame(action.keyframes)
         )
         return {
@@ -175,7 +177,7 @@ export function useStorage() {
       version: '1.0.0',
       appVersion: process.env.APP_VERSION ?? 'dev',
       actions,
-      svgTree: actor.svgTree,
+      svgTree,
     }
 
     saveJson(
@@ -193,10 +195,12 @@ export function useStorage() {
 
     const name = [action?.name, graph?.name].filter((n) => !!n).join('_')
 
-    const svgNode = getPosedElementTree(
-      animationStore.currentPosedBones.value,
-      toMap(actor.elements ?? []),
-      actor.svgTree
+    const svgNode = addEssentialSvgAttributes(
+      getPosedElementTree(
+        animationStore.currentPosedBones.value,
+        toMap(actor.elements ?? []),
+        actor.svgTree
+      )
     )
 
     let svg = svgNode

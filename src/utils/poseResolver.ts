@@ -711,3 +711,14 @@ function insertCreatedElements(
     ],
   }
 }
+
+export function addEssentialSvgAttributes(svg: ElementNode): ElementNode {
+  return {
+    ...svg,
+    attributes: {
+      ...svg.attributes,
+      // for <use xlink:href="#abc" />
+      'xmlns:xlink': 'http://www.w3.org/1999/xlink',
+    },
+  }
+}

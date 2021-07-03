@@ -39,7 +39,7 @@ import {
 } from '../models'
 import { boneToAffine, getTransformedBoneMap } from './armatures'
 import { mapFilter, mapReduce, toKeyListMap } from './commons'
-import { getTnansformStr, viewbox } from './helpers'
+import { getTnansformStr, parseStyle, toStyle, viewbox } from './helpers'
 import { KeyframeBase } from '/@/models/keyframe'
 import {
   getPosedAttributesWithoutTransform,
@@ -292,24 +292,30 @@ export function getGraphResolvedElementTree(
   graphObjectMap: IdMap<GraphObject>,
   svgTree: ElementNode
 ): ElementNode {
-  return getClonedElementsTree(
+  return getGraphResolvedElement(
     graphObjectMap,
-    getCreatedElementsTree(
+    getClonedElementsTree(
       graphObjectMap,
-      getGraphResolvedElement(graphObjectMap, svgTree)
+      getCreatedElementsTree(graphObjectMap, svgTree)
     )
   )
 }
 
+// resolve graph attributes of native elements
 function getGraphResolvedElement(
   graphObjectMap: IdMap<GraphObject>,
   node: ElementNode
 ): ElementNode {
   const graphObject = graphObjectMap[node.id]
+  // cloned origin should ignore graphObject's attributes
+  const ignoreAttributes =
+    !graphObject || node.attributes[DATA_CLONE_ORIGIN_KEY]
 
   return {
     ...node,
-    attributes: getGraphResolvedAttributes(graphObject, node.attributes),
+    attributes: ignoreAttributes
+      ? node.attributes
+      : getGraphResolvedAttributes(graphObject, node.attributes),
     children: node.children.map((c) => {
       if (isPlainText(c)) return c
       return getGraphResolvedElement(graphObjectMap, c)
@@ -417,6 +423,7 @@ function insertClonedElementTree(
   return insertClonedElement(useObjectMapByElementId, svgTree, attributesMap)
 }
 
+const DATA_CLONE_ORIGIN_KEY = 'data-blendic-use-origin-id'
 const DATA_CLONE_ID_KEY = 'data-blendic-use-id'
 const DATA_CLONE_ID_KEY_FOR_G = 'data-blendic-use-id-for-g'
 
@@ -518,7 +525,42 @@ function convertUseTree(
   }
 }
 
-const DROP_ATTRUBTES = ['transform', 'fill', 'stroke', 'x', 'y']
+const DROP_ATTRUBTES = [
+  'transform',
+  'fill',
+  'stroke',
+  'fill-opacity',
+  'stroke-opacity',
+  'x',
+  'y',
+]
+
+function dropOriginAttributes(
+  attributes: ElementNodeAttributes
+): ElementNodeAttributes {
+  const ret = { ...attributes }
+  DROP_ATTRUBTES.forEach((key) => {
+    delete ret[key]
+  })
+
+  // drop some style properties
+  const style = attributes.style
+  if (style) {
+    const parsed = parseStyle(style)
+    delete parsed.fill
+    delete parsed.stroke
+    delete parsed['fill-opacity']
+    delete parsed['stroke-opacity']
+    const styleStr = toStyle(parsed)
+    if (styleStr) {
+      ret.style = styleStr
+    } else {
+      delete ret.style
+    }
+  }
+
+  return ret
+}
 
 function convertUseElement(
   clonedElementIds: IdMap<boolean>,
@@ -534,10 +576,7 @@ function convertUseElement(
     attributesMap[node.id] = node.attributes
 
     // drop some attributes to override
-    const attributes = { ...node.attributes }
-    DROP_ATTRUBTES.forEach((key) => {
-      delete attributes[key]
-    })
+    const attributes = dropOriginAttributes(node.attributes)
 
     // insert a template node to be cloned
     return {
@@ -553,7 +592,7 @@ function convertUseElement(
             {
               id: node.id,
               tag: node.tag,
-              attributes,
+              attributes: { ...attributes, [DATA_CLONE_ORIGIN_KEY]: node.id },
               children,
             },
           ],

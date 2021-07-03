@@ -457,6 +457,55 @@ describe('utils/poseResolver.ts', () => {
       expect((ret as any).children[1].children[0].id).toBe('clone_c')
       expect((ret as any).children[1].children.length).toBe(1)
     })
+    it('cloned elements should not extends origin graph attributes', () => {
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({
+            id: 'a',
+            elementId: 'a',
+            fill: getTransform({ scale: { x: 0, y: 1 } }),
+          }),
+          c: getGraphObject({
+            id: 'c',
+            elementId: 'a',
+            clone: true,
+          }),
+        },
+        getElementNode({ id: 'a', children: [] })
+      )
+      expect(ret).toEqual({
+        id: 'blendic_group_a',
+        tag: 'g',
+        attributes: { 'data-blendic-use-id': 'a' },
+        children: [
+          {
+            id: '',
+            tag: 'template',
+            attributes: {},
+            children: [
+              {
+                id: 'a',
+                tag: '',
+                attributes: { 'data-blendic-use-origin-id': 'a' },
+                children: [],
+              },
+            ],
+          },
+          {
+            id: 'clone_a',
+            tag: 'use',
+            attributes: { href: '#a', fill: 'rgb(0,0,0)', 'fill-opacity': '0' },
+            children: [],
+          },
+          {
+            id: 'clone_c',
+            tag: 'use',
+            attributes: { href: '#a' },
+            children: [],
+          },
+        ],
+      })
+    })
   })
 
   describe('getClonedElementsTree', () => {
@@ -488,7 +537,7 @@ describe('utils/poseResolver.ts', () => {
               {
                 id: 'a',
                 tag: 'rect',
-                attributes: {},
+                attributes: { 'data-blendic-use-origin-id': 'a' },
                 children: [],
               },
             ],
@@ -506,6 +555,42 @@ describe('utils/poseResolver.ts', () => {
             children: [],
           },
         ],
+      })
+    })
+    it('should drop some attributes from origin nodes', () => {
+      const ret = getClonedElementsTree(
+        {
+          a: getGraphObject({
+            id: 'a',
+            elementId: 'a',
+          }),
+          b: getGraphObject({
+            id: 'b',
+            elementId: 'a',
+            clone: true,
+          }),
+        },
+        getElementNode({
+          id: 'a',
+          tag: 'rect',
+          attributes: {
+            fill: 'red',
+            stroke: 'green',
+            style: 'fill:red;stroke:blue;',
+            x: '1',
+            y: '2',
+            class: 'foo',
+          },
+        })
+      )
+      expect((ret as any).children[0].children[0]).toEqual({
+        id: 'a',
+        tag: 'rect',
+        attributes: {
+          'data-blendic-use-origin-id': 'a',
+          class: 'foo',
+        },
+        children: [],
       })
     })
   })

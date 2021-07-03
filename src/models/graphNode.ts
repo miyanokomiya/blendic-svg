@@ -100,6 +100,7 @@ export interface GraphNodes {
   set_transform: GraphNodeSetTransform
   set_fill: GraphNodeSetFill
   set_stroke: GraphNodeSetStroke
+  hide_object: GraphNodeHideObject
   clone_object: GraphNodeCloneObject
   circle_clone_object: GraphNodeCircleCloneObject
   create_object_group: GraphNodeCreateObjectGroup
@@ -229,6 +230,14 @@ export interface GraphNodeSetStroke extends GraphNodeBase {
   inputs: {
     object: GraphNodeInput<string>
     color: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeHideObject extends GraphNodeBase {
+  type: 'hide_object'
+  inputs: {
+    disabled: GraphNodeInput<boolean>
+    object: GraphNodeInput<string>
   }
 }
 

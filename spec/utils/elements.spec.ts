@@ -384,48 +384,96 @@ describe('utils/elements.ts', () => {
       context.setTransform('a', getTransform({ rotate: 20 }))
       expect(context.getTransform('a')).toEqual(getTransform({ rotate: 20 }))
     })
-    it('should return a context to setFill', () => {
-      const context = createGraphNodeContext(
-        { a: getBElement({ id: 'a' }) },
-        10
-      )
-      context.setFill('a', getTransform({ rotate: 20 }))
-      expect(context.getObjectMap()).toEqual({
-        a: {
-          id: 'a',
-          elementId: 'a',
-          fill: getTransform({ rotate: 20 }),
-        },
+    describe('should return a context to setFill', () => {
+      it('to set fill', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a' }) },
+          10
+        )
+        context.setFill('a', getTransform({ rotate: 20 }))
+        expect(context.getObjectMap()).toEqual({
+          a: {
+            id: 'a',
+            elementId: 'a',
+            fill: getTransform({ rotate: 20 }),
+          },
+        })
+        context.setFill('a', getTransform({ rotate: 50 }))
+        expect(context.getObjectMap()).toEqual({
+          a: {
+            id: 'a',
+            elementId: 'a',
+            fill: getTransform({ rotate: 50 }),
+          },
+        })
       })
-      context.setFill('a', getTransform({ rotate: 50 }))
-      expect(context.getObjectMap()).toEqual({
-        a: {
-          id: 'a',
-          elementId: 'a',
-          fill: getTransform({ rotate: 50 }),
-        },
+      it('to set fill recursively', () => {
+        const context = createGraphNodeContext({}, 10)
+        const g1 = context.createObject('g')
+        const rect1 = context.createObject('rect', { parent: g1 })
+        context.setFill(g1, getTransform({ rotate: 20 }))
+
+        expect(context.getObjectMap()).toEqual({
+          [g1]: {
+            id: g1,
+            tag: 'g',
+            fill: getTransform({ rotate: 20 }),
+            create: true,
+          },
+          [rect1]: {
+            id: rect1,
+            tag: 'rect',
+            parent: g1,
+            fill: getTransform({ rotate: 20 }),
+            create: true,
+          },
+        })
       })
     })
-    it('should return a context to setStroke', () => {
-      const context = createGraphNodeContext(
-        { a: getBElement({ id: 'a' }) },
-        10
-      )
-      context.setStroke('a', getTransform({ rotate: 20 }))
-      expect(context.getObjectMap()).toEqual({
-        a: {
-          id: 'a',
-          elementId: 'a',
-          stroke: getTransform({ rotate: 20 }),
-        },
+    describe('should return a context to setStroke', () => {
+      it('to set stroke', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a' }) },
+          10
+        )
+        context.setStroke('a', getTransform({ rotate: 20 }))
+        expect(context.getObjectMap()).toEqual({
+          a: {
+            id: 'a',
+            elementId: 'a',
+            stroke: getTransform({ rotate: 20 }),
+          },
+        })
+        context.setStroke('a', getTransform({ rotate: 50 }))
+        expect(context.getObjectMap()).toEqual({
+          a: {
+            id: 'a',
+            elementId: 'a',
+            stroke: getTransform({ rotate: 50 }),
+          },
+        })
       })
-      context.setStroke('a', getTransform({ rotate: 50 }))
-      expect(context.getObjectMap()).toEqual({
-        a: {
-          id: 'a',
-          elementId: 'a',
-          stroke: getTransform({ rotate: 50 }),
-        },
+      it('to set fill recursively', () => {
+        const context = createGraphNodeContext({}, 10)
+        const g1 = context.createObject('g')
+        const rect1 = context.createObject('rect', { parent: g1 })
+        context.setStroke(g1, getTransform({ rotate: 20 }))
+
+        expect(context.getObjectMap()).toEqual({
+          [g1]: {
+            id: g1,
+            tag: 'g',
+            stroke: getTransform({ rotate: 20 }),
+            create: true,
+          },
+          [rect1]: {
+            id: rect1,
+            tag: 'rect',
+            parent: g1,
+            stroke: getTransform({ rotate: 20 }),
+            create: true,
+          },
+        })
       })
     })
     describe('setAttributes', () => {

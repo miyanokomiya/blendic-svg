@@ -187,6 +187,15 @@ export function createGraphNodeContext(
     getGraphObject({ id: e.id, elementId: e.id })
   )
 
+  function execRecursively(parent: string, fn: (elm: GraphObject) => void) {
+    toList(graphElementMap)
+      .filter((elm) => elm.parent === parent)
+      .forEach((elm) => {
+        fn(elm)
+        execRecursively(elm.id, fn)
+      })
+  }
+
   return {
     setTransform(objectId, transform) {
       if (!graphElementMap[objectId]) return
@@ -199,10 +208,16 @@ export function createGraphNodeContext(
     setFill(objectId, transform) {
       if (!graphElementMap[objectId]) return
       graphElementMap[objectId].fill = transform
+      execRecursively(objectId, (elm) => {
+        this.setFill(elm.id, transform)
+      })
     },
     setStroke(objectId, transform) {
       if (!graphElementMap[objectId]) return
       graphElementMap[objectId].stroke = transform
+      execRecursively(objectId, (elm) => {
+        this.setStroke(elm.id, transform)
+      })
     },
     setAttributes(objectId, attributes, replace = false) {
       if (!graphElementMap[objectId]) return
@@ -229,11 +244,9 @@ export function createGraphNodeContext(
       graphElementMap[cloned.id] = cloned
 
       // clone children recursively
-      toList(graphElementMap)
-        .filter((elm) => elm.parent === src.id)
-        .forEach((elm) => {
-          this.cloneObject(elm.id, { parent: cloned.id })
-        })
+      execRecursively(objectId, (elm) => {
+        this.cloneObject(elm.id, { parent: cloned.id })
+      })
 
       return cloned.id
     },

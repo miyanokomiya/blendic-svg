@@ -33,8 +33,13 @@ import {
   cleanGraphs,
   inheritWeight,
   parseFromSvg,
+  resolveAnimationGraph,
 } from '../utils/elements'
-import { bakeKeyframes, getPosedElementTree } from '../utils/poseResolver'
+import {
+  bakeKeyframes,
+  getGraphResolvedElementTree,
+  getPosedElementTree,
+} from '../utils/poseResolver'
 import { initialize, StorageRoot } from '/@/models/storage'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { makeSvg } from '/@/utils/svgMaker'
@@ -180,9 +185,13 @@ export function useStorage() {
   }
 
   function bakeSvg() {
-    const action = animationStore.selectedAction.value
     const actor = elementStore.lastSelectedActor.value
-    if (!action || !actor) return
+    if (!actor) return
+
+    const action = animationStore.selectedAction.value
+    const graph = graphStore.lastSelectedGraph.value
+
+    const name = [action?.name, graph?.name].filter((n) => !!n).join('_')
 
     const svgNode = getPosedElementTree(
       animationStore.currentPosedBones.value,
@@ -190,8 +199,22 @@ export function useStorage() {
       actor.svgTree
     )
 
-    const svg = makeSvg(svgNode)
-    saveSvg(svg.outerHTML, action.name + '.svg')
+    let svg = svgNode
+
+    // TODO: for develop try-catch
+    try {
+      const graphObjectMap = resolveAnimationGraph(
+        elementStore.elementMap.value,
+        animationStore.currentFrame.value,
+        graphStore.nodeMap.value
+      )
+
+      svg = getGraphResolvedElementTree(graphObjectMap, svgNode)
+    } catch (e) {
+      console.warn(e)
+    }
+
+    saveSvg(makeSvg(svg).outerHTML, `${name}.svg`)
   }
 
   return {

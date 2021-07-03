@@ -437,6 +437,7 @@ function createUseObject(
     tag: 'use',
     attributes: {
       href: `#${srcId}`,
+      'xlink:href': `#${srcId}`,
       ...getGraphResolvedAttributes(obj, attributes),
     },
     children: [],
@@ -460,7 +461,7 @@ function insertClonedElement(
   // cloned nodes with a parent must be group used nodes
   // => 'convertGroupUseTree' guarantees inserting their parents in the used location
   // - g
-  //   - template
+  //   - defs
   //     - origin node
   //   - g: group for used nodes
   //     - use: group cloned node 1
@@ -578,7 +579,7 @@ function convertUseElement(
     // drop some attributes to override
     const attributes = dropOriginAttributes(node.attributes)
 
-    // insert a template node to be cloned
+    // insert a defs node to be cloned
     return {
       id: `blendic_group_${node.id}`,
       tag: 'g',
@@ -586,7 +587,7 @@ function convertUseElement(
       children: [
         {
           id: '',
-          tag: 'template',
+          tag: 'defs',
           attributes: {},
           children: [
             {

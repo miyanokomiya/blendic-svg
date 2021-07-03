@@ -591,32 +591,43 @@ describe('utils/elements.ts', () => {
           })
         })
         it('should clone nested cloned children', () => {
-          const context = createGraphNodeContext(
-            { a: getBElement({ id: 'a' }) },
-            10
-          )
-          const group = context.createCloneGroupObject('a')
-          const created = context.cloneObject('a', { parent: group })
-          const clonedId = context.cloneObject(group)
+          const context = createGraphNodeContext({}, 10)
+
+          const parent = context.createObject('g')
+          const child1 = context.createObject('g', { parent })
+          const child2 = context.createObject('g', { parent: child1 })
+
+          const clonedId = context.cloneObject(parent)
           const ret = context.getObjectMap()
 
-          delete ret['a']
-          delete ret[group]
-          delete ret[created]
+          delete ret[parent]
+          delete ret[child1]
+          delete ret[child2]
+
           expect(ret[clonedId]).toEqual({
             id: clonedId,
             tag: 'g',
             create: true,
-            clone: false,
-            elementId: 'a',
           })
           delete ret[clonedId]
-          const id = Object.keys(ret)[0]
-          expect(ret[id]).toEqual({
-            id,
-            clone: true,
-            elementId: 'a',
+
+          expect(Object.keys(ret)).toHaveLength(2)
+
+          const nested1 = Object.values(ret).find((v) => v.parent === clonedId)!
+          expect(nested1).toEqual({
+            id: nested1.id,
+            create: true,
+            tag: 'g',
             parent: clonedId,
+          })
+          const nested2 = Object.values(ret).find(
+            (v) => v.parent === nested1.id
+          )!
+          expect(nested2).toEqual({
+            id: nested2.id,
+            create: true,
+            tag: 'g',
+            parent: nested1.id,
           })
         })
       })

@@ -529,7 +529,7 @@ describe('utils/poseResolver.ts', () => {
         children: [
           {
             id: '',
-            tag: 'template',
+            tag: 'defs',
             attributes: {},
             children: [
               {
@@ -543,13 +543,18 @@ describe('utils/poseResolver.ts', () => {
           {
             id: 'clone_a',
             tag: 'use',
-            attributes: { href: '#a', fill: 'rgb(0,0,0)', 'fill-opacity': '0' },
+            attributes: {
+              href: '#a',
+              'xlink:href': '#a',
+              fill: 'rgb(0,0,0)',
+              'fill-opacity': '0',
+            },
             children: [],
           },
           {
             id: 'clone_c',
             tag: 'use',
-            attributes: { href: '#a' },
+            attributes: { href: '#a', 'xlink:href': '#a' },
             children: [],
           },
         ],
@@ -580,7 +585,7 @@ describe('utils/poseResolver.ts', () => {
         children: [
           {
             id: '',
-            tag: 'template',
+            tag: 'defs',
             attributes: {},
             children: [
               {
@@ -594,13 +599,13 @@ describe('utils/poseResolver.ts', () => {
           {
             id: 'clone_a',
             tag: 'use',
-            attributes: { href: '#a' },
+            attributes: { href: '#a', 'xlink:href': '#a' },
             children: [],
           },
           {
             id: 'clone_b',
             tag: 'use',
-            attributes: { href: '#a' },
+            attributes: { href: '#a', 'xlink:href': '#a' },
             children: [],
           },
         ],

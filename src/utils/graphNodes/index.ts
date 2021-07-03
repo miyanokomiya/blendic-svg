@@ -61,6 +61,7 @@ import * as get_object from './nodes/getObject'
 import * as set_transform from './nodes/setTransform'
 import * as set_fill from './nodes/setFill'
 import * as set_stroke from './nodes/setStroke'
+import * as hide_object from './nodes/hideObject'
 import * as set_viewbox from './nodes/setViewbox'
 import * as clone_object from './nodes/cloneObject'
 import * as circle_clone_object from './nodes/circleCloneObject'
@@ -125,6 +126,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   set_transform,
   set_fill,
   set_stroke,
+  hide_object,
   set_viewbox,
   clone_object,
   circle_clone_object,
@@ -242,6 +244,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Set Transform', type: 'set_transform' },
       { label: 'Set Fill', type: 'set_fill' },
       { label: 'Set Stroke', type: 'set_stroke' },
+      { label: 'Hide Object', type: 'hide_object' },
       { label: 'Set Viewbox', type: 'set_viewbox' },
       { label: 'Clone Object', type: 'clone_object' },
       { label: 'Circle Clone Object', type: 'circle_clone_object' },
@@ -284,6 +287,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: '(<=) Number', type: 'less_than_or_equal', key: 'a' },
     { label: 'Make Vector2', type: 'make_vector2', key: 'x' },
     { label: 'Make Transform', type: 'make_transform', key: 'rotate' },
+    { label: 'Make Color', type: 'make_color', key: 'h' },
     { label: 'Polar Coord', type: 'polar_coord', key: 'rotate' },
     { label: 'Lerp Number', type: 'lerp_scaler', key: 'a' },
   ],
@@ -302,6 +306,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Set Transform', type: 'set_transform', key: 'object' },
     { label: 'Set Fill', type: 'set_fill', key: 'object' },
     { label: 'Set Stroke', type: 'set_stroke', key: 'object' },
+    { label: 'Hide Object', type: 'hide_object', key: 'object' },
     { label: 'Set Viewbox', type: 'set_viewbox', key: 'object' },
     { label: 'Clone Object', type: 'clone_object', key: 'object' },
     {

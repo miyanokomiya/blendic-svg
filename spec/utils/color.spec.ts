@@ -161,6 +161,20 @@ describe('src/utils/color.ts', () => {
         a: 0.9,
       })
     })
+    it('should clump hue circulary', () => {
+      expect(hsvaToRgba({ h: -360, s: 1, v: 1, a: 1 })).toEqual({
+        r: 255,
+        g: 0,
+        b: 0,
+        a: 1,
+      })
+      expect(hsvaToRgba({ h: 720, s: 1, v: 1, a: 1 })).toEqual({
+        r: 255,
+        g: 0,
+        b: 0,
+        a: 1,
+      })
+    })
   })
 
   describe('hslaToHsva', () => {

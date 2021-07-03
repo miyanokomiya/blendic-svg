@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform, Transform } from '/@/models'
-import { clamp } from '/@/utils/geometry'
+import { circleClamp, clamp } from '/@/utils/geometry'
 
 export interface RGBA {
   r: number // 0 ~ 255
@@ -115,10 +115,11 @@ function getHsvToRgbParam(h: number, s: number, v: number, n: number) {
 }
 
 export function hsvaToRgba(hsva: HSVA): RGBA {
+  const h = circleClamp(0, 360, hsva.h)
   return {
-    r: clamp(0, 1, getHsvToRgbParam(hsva.h, hsva.s, hsva.v, 5)) * 255,
-    g: clamp(0, 1, getHsvToRgbParam(hsva.h, hsva.s, hsva.v, 3)) * 255,
-    b: clamp(0, 1, getHsvToRgbParam(hsva.h, hsva.s, hsva.v, 1)) * 255,
+    r: clamp(0, 1, getHsvToRgbParam(h, hsva.s, hsva.v, 5)) * 255,
+    g: clamp(0, 1, getHsvToRgbParam(h, hsva.s, hsva.v, 3)) * 255,
+    b: clamp(0, 1, getHsvToRgbParam(h, hsva.s, hsva.v, 1)) * 255,
     a: hsva.a,
   }
 }

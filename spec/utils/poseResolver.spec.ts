@@ -47,6 +47,7 @@ import { posedColorAttributes } from '/@/utils/attributesResolver'
 import { mapReduce } from '/@/utils/commons'
 import { getConstraint } from '/@/utils/constraints'
 import {
+  addEssentialSvgAttributes,
   bakeKeyframe,
   bakeKeyframes,
   convertGroupUseTree,
@@ -850,6 +851,25 @@ describe('utils/poseResolver.ts', () => {
           },
         ],
       })
+    })
+  })
+
+  describe('addEssentialSvgAttributes', () => {
+    it('should add essential attributes of <svg>', () => {
+      expect(
+        addEssentialSvgAttributes(
+          getElementNode({ attributes: { fill: 'red' } })
+        )
+      ).toEqual(
+        addEssentialSvgAttributes(
+          getElementNode({
+            attributes: {
+              fill: 'red',
+              'xmlns:xlink': 'http://www.w3.org/1999/xlink',
+            },
+          })
+        )
+      )
     })
   })
 })

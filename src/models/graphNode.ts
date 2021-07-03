@@ -101,6 +101,7 @@ export interface GraphNodes {
   set_fill: GraphNodeSetFill
   set_stroke: GraphNodeSetStroke
   clone_object: GraphNodeCloneObject
+  circle_clone_object: GraphNodeCircleCloneObject
   create_object_group: GraphNodeCreateObjectGroup
   create_object_rect: GraphNodeCreateObjectRect
   create_object_ellipse: GraphNodeCreateObjectEllipse
@@ -235,6 +236,16 @@ export interface GraphNodeCloneObject extends GraphNodeBase {
   type: 'clone_object'
   inputs: {
     object: GraphNodeInput<string>
+  }
+}
+
+export interface GraphNodeCircleCloneObject extends GraphNodeBase {
+  type: 'circle_clone_object'
+  inputs: {
+    object: GraphNodeInput<string>
+    count: GraphNodeInput<number>
+    radius: GraphNodeInput<number>
+    fix_rotate: GraphNodeInput<boolean>
   }
 }
 

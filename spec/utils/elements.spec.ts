@@ -376,6 +376,14 @@ describe('utils/elements.ts', () => {
         },
       })
     })
+    it('should return a context to getTransform', () => {
+      const context = createGraphNodeContext(
+        { a: getBElement({ id: 'a' }) },
+        10
+      )
+      context.setTransform('a', getTransform({ rotate: 20 }))
+      expect(context.getTransform('a')).toEqual(getTransform({ rotate: 20 }))
+    })
     it('should return a context to setFill', () => {
       const context = createGraphNodeContext(
         { a: getBElement({ id: 'a' }) },
@@ -466,7 +474,7 @@ describe('utils/elements.ts', () => {
           10
         )
         context.setTransform('a', getTransform({ rotate: 20 }))
-        const clonedId = context.cloneObject('a')
+        const clonedId = context.cloneObject('a', { parent: 'p' })
         const ret = context.getObjectMap()
 
         expect(ret).toEqual({
@@ -479,6 +487,7 @@ describe('utils/elements.ts', () => {
             id: clonedId,
             elementId: 'a',
             transform: getTransform({ rotate: 20 }),
+            parent: 'p',
             clone: true,
           },
         })
@@ -504,6 +513,63 @@ describe('utils/elements.ts', () => {
             create: true,
             attributes: { x: 10 },
           }),
+        })
+      })
+      describe('when the target has children', () => {
+        it('should clone nested created children', () => {
+          const context = createGraphNodeContext({}, 10)
+          const created1 = context.createObject('g', { tag: 'g' })
+          const created2 = context.createObject('g', {
+            tag: 'g',
+            parent: created1,
+          })
+          const clonedId = context.cloneObject(created1)
+          const ret = context.getObjectMap()
+
+          delete ret[created1]
+          delete ret[created2]
+          expect(ret[clonedId]).toEqual({
+            id: clonedId,
+            tag: 'g',
+            create: true,
+          })
+          delete ret[clonedId]
+          const id = Object.keys(ret)[0]
+          expect(ret[id]).toEqual({
+            id,
+            tag: 'g',
+            create: true,
+            parent: clonedId,
+          })
+        })
+        it('should clone nested cloned children', () => {
+          const context = createGraphNodeContext(
+            { a: getBElement({ id: 'a' }) },
+            10
+          )
+          const group = context.createCloneGroupObject('a')
+          const created = context.cloneObject('a', { parent: group })
+          const clonedId = context.cloneObject(group)
+          const ret = context.getObjectMap()
+
+          delete ret['a']
+          delete ret[group]
+          delete ret[created]
+          expect(ret[clonedId]).toEqual({
+            id: clonedId,
+            tag: 'g',
+            create: true,
+            clone: false,
+            elementId: 'a',
+          })
+          delete ret[clonedId]
+          const id = Object.keys(ret)[0]
+          expect(ret[id]).toEqual({
+            id,
+            clone: true,
+            elementId: 'a',
+            parent: clonedId,
+          })
         })
       })
     })

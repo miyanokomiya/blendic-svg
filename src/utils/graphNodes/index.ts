@@ -63,6 +63,7 @@ import * as set_fill from './nodes/setFill'
 import * as set_stroke from './nodes/setStroke'
 import * as set_viewbox from './nodes/setViewbox'
 import * as clone_object from './nodes/cloneObject'
+import * as circle_clone_object from './nodes/circleCloneObject'
 import * as create_object_group from './nodes/createObjectGroup'
 import * as create_object_rect from './nodes/createObjectRect'
 import * as create_object_ellipse from './nodes/createObjectEllipse'
@@ -126,6 +127,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   set_stroke,
   set_viewbox,
   clone_object,
+  circle_clone_object,
 
   create_object_group,
   create_object_rect,
@@ -242,6 +244,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Set Stroke', type: 'set_stroke' },
       { label: 'Set Viewbox', type: 'set_viewbox' },
       { label: 'Clone Object', type: 'clone_object' },
+      { label: 'Circle Clone Object', type: 'circle_clone_object' },
     ],
   },
   {
@@ -301,6 +304,11 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Set Stroke', type: 'set_stroke', key: 'object' },
     { label: 'Set Viewbox', type: 'set_viewbox', key: 'object' },
     { label: 'Clone Object', type: 'clone_object', key: 'object' },
+    {
+      label: 'Circle Clone Object',
+      type: 'circle_clone_object',
+      key: 'object',
+    },
   ],
   TRANSFORM: [{ label: 'Lerp Transform', type: 'lerp_transform', key: 'a' }],
   COLOR: [

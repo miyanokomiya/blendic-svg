@@ -55,7 +55,11 @@ export interface NodeStruct<T extends GraphNodeBase> {
 }
 
 export interface NodeContext<T> {
-  setTransform: (objectId: string, transform: Transform | undefined) => void
+  setTransform: (
+    objectId: string,
+    transform: Transform | undefined,
+    inherit?: boolean
+  ) => void
   getTransform: (objectId: string) => Transform | undefined
   setFill: (objectId: string, transform: Transform) => void
   setStroke: (objectId: string, transform: Transform) => void

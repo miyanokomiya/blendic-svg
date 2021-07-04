@@ -23,6 +23,7 @@ import {
   GraphNodeCircleCloneObject,
   GRAPH_VALUE_TYPE,
 } from '/@/models/graphNode'
+import { multiPoseTransform } from '/@/utils/armatures'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
@@ -53,32 +54,31 @@ export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
   },
   computation(inputs, _self, context): { origin: string; group: string } {
     if (!inputs.object) return { origin: '', group: '' }
-    if (inputs.count <= 0) return { origin: inputs.object, group: '' }
+    const count = Math.floor(inputs.count)
+    if (count <= 0) return { origin: inputs.object, group: '' }
 
-    const rotations = [...Array(inputs.count)].map(
-      (_, i) => (i * 360) / inputs.count
-    )
-
+    const group = context.createCloneGroupObject(inputs.object)
     const originTransform = context.getTransform(inputs.object)
-    const group = context.createCloneGroupObject(inputs.object, {
-      transform: originTransform,
-    })
 
-    rotations.map((angle) => {
-      const clone = context.cloneObject(inputs.object, {
-        parent: group,
-      })
-      context.setTransform(
-        clone,
-        getTransform({
+    ;[...Array(count)]
+      .map((_, i) => (i * 360) / count)
+      .map((angle) => {
+        const clone = context.cloneObject(inputs.object, {
+          parent: group,
+        })
+        const t = getTransform({
           translate: rotate(
             { x: inputs.radius, y: 0 },
             (angle * Math.PI) / 180
           ),
           rotate: inputs.fix_rotate ? 0 : angle,
         })
-      )
-    })
+        context.setTransform(
+          clone,
+          // inherits original transform
+          originTransform ? multiPoseTransform(originTransform, t) : t
+        )
+      })
     return { origin: inputs.object, group }
   },
   width: 180,

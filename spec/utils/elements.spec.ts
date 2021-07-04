@@ -354,26 +354,43 @@ describe('utils/elements.ts', () => {
   })
 
   describe('createGraphNodeContext', () => {
-    it('should return a context to setTransform', () => {
-      const context = createGraphNodeContext(
-        { a: getBElement({ id: 'a' }) },
-        10
-      )
-      context.setTransform('a', getTransform({ rotate: 20 }))
-      expect(context.getObjectMap()).toEqual({
-        a: {
-          id: 'a',
-          elementId: 'a',
-          transform: getTransform({ rotate: 20 }),
-        },
+    describe('should return a context to setTransform', () => {
+      it('to replace transform', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a' }) },
+          10
+        )
+        context.setTransform('a', getTransform({ rotate: 20 }))
+        expect(context.getObjectMap()).toEqual({
+          a: {
+            id: 'a',
+            elementId: 'a',
+            transform: getTransform({ rotate: 20 }),
+          },
+        })
+        context.setTransform('a', getTransform({ rotate: 50 }))
+        expect(context.getObjectMap()).toEqual({
+          a: {
+            id: 'a',
+            elementId: 'a',
+            transform: getTransform({ rotate: 50 }),
+          },
+        })
       })
-      context.setTransform('a', getTransform({ rotate: 50 }))
-      expect(context.getObjectMap()).toEqual({
-        a: {
-          id: 'a',
-          elementId: 'a',
-          transform: getTransform({ rotate: 50 }),
-        },
+      it('to fodl transform if inhefit is true', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a' }) },
+          10
+        )
+        context.setTransform('a', getTransform({ rotate: 20 }))
+        context.setTransform('a', getTransform({ rotate: 50 }), true)
+        expect(context.getObjectMap()).toEqual({
+          a: {
+            id: 'a',
+            elementId: 'a',
+            transform: getTransform({ rotate: 70 }),
+          },
+        })
       })
     })
     it('should return a context to getTransform', () => {

@@ -33,7 +33,8 @@ import {
   AnimationGraph,
   Transform,
 } from '../models'
-import { extractMap, mapReduce, toList } from './commons'
+import { extractMap, mapReduce, toKeyListMap, toList } from './commons'
+import { useCache } from '/@/composables/cache'
 import { GraphNodeMap } from '/@/models/graphNode'
 import { multiPoseTransform } from '/@/utils/armatures'
 import { resolveAllNodes } from '/@/utils/graphNodes'
@@ -188,13 +189,57 @@ export function createGraphNodeContext(
     getGraphObject({ id: e.id, elementId: e.id })
   )
 
+  const mapByParentCache = useCache(() => {
+    return toKeyListMap(toList(graphElementMap), 'parent')
+  })
+
+  function addElement(elm: GraphObject) {
+    graphElementMap[elm.id] = elm
+    mapByParentCache.update()
+  }
+
   function execRecursively(parent: string, fn: (elm: GraphObject) => void) {
-    toList(graphElementMap)
-      .filter((elm) => elm.parent === parent)
-      .forEach((elm) => {
-        fn(elm)
-        execRecursively(elm.id, fn)
-      })
+    const children = mapByParentCache.getValue()[parent]
+    if (!children) return
+    children.forEach((elm) => {
+      fn(elm)
+      execRecursively(elm.id, fn)
+    })
+  }
+
+  function getAllNestedChildren(parent: string): GraphObject[] {
+    const children = mapByParentCache.getValue()[parent]
+    if (!children) return []
+
+    return [...children, ...children.flatMap((c) => getAllNestedChildren(c.id))]
+  }
+
+  function createClone(objectId: string, arg = {}): GraphObject | undefined {
+    const src = graphElementMap[objectId]
+    if (!src) return
+
+    // set 'create: true' if the target is created object
+    // set 'clone: true' if the target has native element
+    const cloned = getGraphObject(
+      src.create ? { ...src, ...arg } : { ...src, ...arg, clone: true },
+      true
+    )
+    return cloned
+  }
+
+  function createCloneList(elements: GraphObject[]): GraphObject[] {
+    const clonedMapBySrcId = elements.reduce<IdMap<GraphObject>>((p, elm) => {
+      const cloned = createClone(elm.id)
+      if (cloned) {
+        p[elm.id] = cloned
+      }
+      return p
+    }, {})
+    return toList(clonedMapBySrcId).map((c) => {
+      if (!c.parent || !clonedMapBySrcId[c.parent]) return c
+      // immigrate cloned parent
+      return { ...c, parent: clonedMapBySrcId[c.parent].id }
+    })
   }
 
   return {
@@ -216,14 +261,14 @@ export function createGraphNodeContext(
       if (!graphElementMap[objectId]) return
       graphElementMap[objectId].fill = transform
       execRecursively(objectId, (elm) => {
-        this.setFill(elm.id, transform)
+        elm.fill = transform
       })
     },
     setStroke(objectId, transform) {
       if (!graphElementMap[objectId]) return
       graphElementMap[objectId].stroke = transform
       execRecursively(objectId, (elm) => {
-        this.setStroke(elm.id, transform)
+        elm.stroke = transform
       })
     },
     setAttributes(objectId, attributes, replace = false) {
@@ -242,21 +287,15 @@ export function createGraphNodeContext(
       const src = graphElementMap[objectId]
       if (!src) return ''
 
-      // set 'create: true' if the target is created object
-      // set 'clone: true' if the target has native element
-      const cloned = getGraphObject(
-        src.create ? { ...src, ...arg } : { ...src, ...arg, clone: true },
-        true
-      )
-      graphElementMap[cloned.id] = cloned
+      // clone the target and its children recursively
+      const clonedList = createCloneList([
+        src,
+        ...getAllNestedChildren(objectId),
+      ])
+      clonedList.forEach(addElement)
 
-      // clone children recursively
-      toList(graphElementMap)
-        .filter((elm) => elm.parent === objectId)
-        .forEach((elm) => {
-          this.cloneObject(elm.id, { parent: cloned.id })
-        })
-
+      const cloned = graphElementMap[clonedList[0].id]
+      graphElementMap[cloned.id] = { ...cloned, ...arg }
       return cloned.id
     },
     createCloneGroupObject(objectId, arg = {}) {
@@ -274,12 +313,12 @@ export function createGraphNodeContext(
         },
         true
       )
-      graphElementMap[group.id] = group
+      addElement(group)
       return group.id
     },
     createObject(tag, arg = {}) {
       const created = getGraphObject({ ...arg, tag, create: true }, true)
-      graphElementMap[created.id] = created
+      addElement(created)
       return created.id
     },
   }

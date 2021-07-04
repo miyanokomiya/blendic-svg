@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { ref } from '@vue/reactivity'
 import { nextTick } from '@vue/runtime-core'
 import { shallowMount } from '@vue/test-utils'
-import { useKeysCache } from '/@/composables/cache'
+import { useCache, useKeysCache } from '/@/composables/cache'
 
 describe('src/composables/cache.ts', () => {
   describe('useKeysCache', () => {
@@ -77,6 +77,18 @@ describe('src/composables/cache.ts', () => {
       wrapper.vm.setData({ x: 1, y: 2 })
       wrapper.vm.updateCache()
       expect(wrapper.vm.cache).toEqual({ x: 1, y: 2 })
+    })
+  })
+
+  describe('useCache', () => {
+    it('should return cached value and reset it if update func is called', () => {
+      let count = 0
+      const cache = useCache(() => count)
+      expect(cache.getValue()).toBe(0)
+      count++
+      expect(cache.getValue()).toBe(0)
+      cache.update()
+      expect(cache.getValue()).toBe(1)
     })
   })
 })

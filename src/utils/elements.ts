@@ -35,6 +35,7 @@ import {
 } from '../models'
 import { extractMap, mapReduce, toList } from './commons'
 import { GraphNodeMap } from '/@/models/graphNode'
+import { multiPoseTransform } from '/@/utils/armatures'
 import { resolveAllNodes } from '/@/utils/graphNodes'
 import { NodeContext } from '/@/utils/graphNodes/core'
 import { TreeNode } from '/@/utils/relations'
@@ -197,9 +198,15 @@ export function createGraphNodeContext(
   }
 
   return {
-    setTransform(objectId, transform) {
-      if (!graphElementMap[objectId]) return
-      graphElementMap[objectId].transform = transform
+    setTransform(objectId, transform, inherit = false) {
+      const target = graphElementMap[objectId]
+      if (!target) return
+
+      if (inherit && target.transform && transform) {
+        target.transform = multiPoseTransform(target.transform, transform)
+      } else {
+        target.transform = transform
+      }
     },
     getTransform(objectId): Transform | undefined {
       if (!graphElementMap[objectId]) return

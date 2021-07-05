@@ -17,31 +17,32 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeNot, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { GraphNodeOr, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeNot> = {
+export const struct: NodeStruct<GraphNodeOr> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        inputs: { condition: { value: true } },
+        inputs: { a: { value: false }, b: { value: false } },
         ...arg,
       }),
-      type: 'not',
-    } as GraphNodeNot
+      type: 'or',
+    } as GraphNodeOr
   },
   data: {},
   inputs: {
-    condition: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: true },
+    a: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: true },
+    b: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: true },
   },
   outputs: {
     value: GRAPH_VALUE_TYPE.BOOLEAN,
   },
   computation(inputs) {
-    return { value: !inputs.condition }
+    return { value: inputs.a || inputs.b }
   },
-  width: 130,
+  width: 100,
   color: '#b0c4de',
   textColor: '#000',
-  label: 'Not',
+  label: 'Or',
 }

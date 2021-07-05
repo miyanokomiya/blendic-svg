@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { HistoryItem } from '/@/composables/stores/history'
 import { IdMap, toMap } from '/@/models'
-import { dropMap, extractMap, toList } from '/@/utils/commons'
+import { dropMap, extractMap, mapReduce, toList } from '/@/utils/commons'
 
 export function convolute(
   head: HistoryItem,
@@ -196,5 +196,72 @@ export function getDeleteItemHistory<T extends { id: string }>(
     redo: () => {
       nodeAccessor.set(toList(dropMap(toMap(nodeAccessor.get()), targetIds)))
     },
+  }
+}
+
+export function getDeleteAndUpdateItemHistory<T extends { id: string }>(
+  nodeAccessor: ListItemAccessor<T>,
+  deleteTargetIds: IdMap<unknown>,
+  updatedMap: IdMap<Partial<T>> = {}
+): HistoryItem {
+  const deletedMap = extractMap(toMap(nodeAccessor.get()), deleteTargetIds)
+  const beforeUpdatedMap = extractMap(toMap(nodeAccessor.get()), updatedMap)
+  const updatedFullMap = mapReduce(beforeUpdatedMap, (n, id) => ({
+    ...n,
+    ...updatedMap[id],
+  }))
+
+  return {
+    name: 'Delete Item',
+    undo: () => {
+      nodeAccessor.set(
+        toList({
+          ...toMap(nodeAccessor.get()),
+          ...deletedMap,
+          ...beforeUpdatedMap,
+        })
+      )
+    },
+    redo: () => {
+      nodeAccessor.set(
+        toList({
+          ...dropMap(toMap(nodeAccessor.get()), deleteTargetIds),
+          ...updatedFullMap,
+        })
+      )
+    },
+  }
+}
+
+export function getUpdateItemHistory<T extends { id: string }>(
+  nodeAccessor: ListItemAccessor<T>,
+  updatedMap: IdMap<Partial<T>>,
+  seriesKey?: string
+): HistoryItem {
+  const beforeUpdatedMap = extractMap(toMap(nodeAccessor.get()), updatedMap)
+  const updatedFullMap = mapReduce(beforeUpdatedMap, (n, id) => ({
+    ...n,
+    ...updatedMap[id],
+  }))
+
+  return {
+    name: 'Update Item',
+    undo: () => {
+      nodeAccessor.set(
+        toList({
+          ...toMap(nodeAccessor.get()),
+          ...beforeUpdatedMap,
+        })
+      )
+    },
+    redo: () => {
+      nodeAccessor.set(
+        toList({
+          ...toMap(nodeAccessor.get()),
+          ...updatedFullMap,
+        })
+      )
+    },
+    seriesKey,
   }
 }

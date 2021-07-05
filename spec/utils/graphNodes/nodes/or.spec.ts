@@ -17,31 +17,20 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeNot, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import * as target from '/@/utils/graphNodes/nodes/or'
 
-export const struct: NodeStruct<GraphNodeNot> = {
-  create(arg = {}) {
-    return {
-      ...createBaseNode({
-        inputs: { condition: { value: true } },
-        ...arg,
-      }),
-      type: 'not',
-    } as GraphNodeNot
-  },
-  data: {},
-  inputs: {
-    condition: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: true },
-  },
-  outputs: {
-    value: GRAPH_VALUE_TYPE.BOOLEAN,
-  },
-  computation(inputs) {
-    return { value: !inputs.condition }
-  },
-  width: 130,
-  color: '#b0c4de',
-  textColor: '#000',
-  label: 'Not',
-}
+describe('src/utils/graphNodes/nodes/or.ts', () => {
+  describe('computation', () => {
+    it('should return or condition', () => {
+      expect(
+        target.struct.computation({ a: true, b: true }, {} as any, {} as any)
+      ).toEqual({ value: true })
+      expect(
+        target.struct.computation({ a: false, b: true }, {} as any, {} as any)
+      ).toEqual({ value: true })
+      expect(
+        target.struct.computation({ a: false, b: false }, {} as any, {} as any)
+      ).toEqual({ value: false })
+    })
+  })
+})

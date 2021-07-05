@@ -140,6 +140,8 @@ export interface GraphNodes {
   lerp_color: GraphNodeLerpColor
 
   not: GraphNodeNot
+  and: GraphNodeAnd
+  or: GraphNodeOr
   equal: GraphNodeEqual
   greater_than: GraphNodeGreaterThan
   greater_than_or_equal: GraphNodeBase
@@ -530,6 +532,16 @@ export interface GraphNodeLerpColor extends GraphNodeBase {
 export interface GraphNodeNot extends GraphNodeBase {
   type: 'not'
   inputs: { condition: GraphNodeInput<boolean> }
+}
+
+export interface GraphNodeAnd extends GraphNodeBase {
+  type: 'and'
+  inputs: { a: GraphNodeInput<boolean>; b: GraphNodeInput<boolean> }
+}
+
+export interface GraphNodeOr extends GraphNodeBase {
+  type: 'or'
+  inputs: { a: GraphNodeInput<boolean>; b: GraphNodeInput<boolean> }
 }
 
 export interface GraphNodeEqual extends GraphNodeBase {

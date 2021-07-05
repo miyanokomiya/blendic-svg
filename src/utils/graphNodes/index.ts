@@ -85,6 +85,8 @@ import * as greater_than_or_equal from './nodes/greaterThanOrEqual'
 import * as less_than from './nodes/lessThan'
 import * as less_than_or_equal from './nodes/lessThanOrEqual'
 import * as not from './nodes/not'
+import * as and from './nodes/and'
+import * as or from './nodes/or'
 import * as equal from './nodes/equal'
 import * as switch_scaler from './nodes/switchScaler'
 import * as switch_vector2 from './nodes/switchVector2'
@@ -148,6 +150,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   make_path_z,
 
   not,
+  and,
+  or,
   equal,
   greater_than,
   greater_than_or_equal,
@@ -226,6 +230,8 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
     label: 'Boolean',
     children: [
       { label: 'Not', type: 'not' },
+      { label: 'And', type: 'and' },
+      { label: 'Or', type: 'or' },
       { label: '(=) Number', type: 'equal' },
       { label: '(>) Number', type: 'greater_than' },
       { label: '(>=) Number', type: 'greater_than_or_equal' },
@@ -267,6 +273,8 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
 } = {
   BOOLEAN: [
     { label: 'Not', type: 'not', key: 'condition' },
+    { label: 'And', type: 'and', key: 'a' },
+    { label: 'Or', type: 'or', key: 'a' },
     { label: 'Switch Number', type: 'switch_scaler', key: 'condition' },
     { label: 'Switch Vector2', type: 'switch_vector2', key: 'condition' },
     { label: 'Switch Transform', type: 'switch_transform', key: 'condition' },
@@ -551,4 +559,34 @@ function immigrateInputs(
       },
     }
   })
+}
+
+function getInputDefaultValue(type: GraphNodeType, key: string): unknown {
+  return (getGraphNodeModule(type).struct.inputs as any)[key].default
+}
+
+export function deleteAndDisconnectNodes(
+  nodes: GraphNode[],
+  targetIds: IdMap<boolean>
+): { nodes: GraphNode[]; updatedIds: IdMap<boolean> } {
+  const updatedIds: IdMap<boolean> = {}
+
+  const nextNodes = nodes
+    .filter((n) => !targetIds[n.id])
+    .map((n) => {
+      return {
+        ...n,
+        inputs: mapReduce(n.inputs, (input, key) => {
+          // check a node is connected with deleted nodes
+          if (!input.from) return input
+          if (!targetIds[input.from.id]) return input
+
+          // delete this connection
+          updatedIds[n.id] = true
+          return { value: getInputDefaultValue(n.type, key) }
+        }),
+      }
+    })
+
+  return { nodes: nextNodes, updatedIds }
 }

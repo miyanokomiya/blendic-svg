@@ -21,10 +21,12 @@ import {
   convolute,
   getAddItemHistory,
   getAddItemsHistory,
+  getDeleteAndUpdateItemHistory,
   getDeleteItemHistory,
   getReplaceItem,
   getSelectItemHistory,
   getSelectItemsHistory,
+  getUpdateItemHistory,
   hasSameSeriesKey,
 } from '/@/utils/histories'
 
@@ -332,6 +334,52 @@ describe('src/utils/histories.ts', () => {
       expect(accessor.set).toHaveBeenCalledWith([{ id: 'b' }])
       ret.undo()
       expect(accessor.set).toHaveBeenCalledWith([{ id: 'a' }, { id: 'b' }])
+    })
+  })
+
+  describe('getDeleteAndUpdateItemHistory', () => {
+    it('should return a history item to delete and update items', () => {
+      const accessor = {
+        get: jest.fn().mockReturnValue([{ id: 'a' }, { id: 'b' }]),
+        set: jest.fn(),
+      }
+      const targetIds = { a: true }
+      const ret = getDeleteAndUpdateItemHistory<{ id: string; val: number }>(
+        accessor,
+        targetIds,
+        { b: { val: 1 } }
+      )
+      ret.redo()
+      expect(accessor.set).toHaveBeenCalledWith([{ id: 'b', val: 1 }])
+      ret.undo()
+      expect(accessor.set).toHaveBeenCalledWith([{ id: 'a' }, { id: 'b' }])
+    })
+  })
+
+  describe('getUpdateItemHistory', () => {
+    it('should return a history item to update items', () => {
+      const accessor = {
+        get: jest.fn().mockReturnValue([
+          { id: 'a', val: 0 },
+          { id: 'b', val: 0 },
+        ]),
+        set: jest.fn(),
+      }
+      const updatedMap = { a: { val: 2 } }
+      const ret = getUpdateItemHistory<{ id: string; val: number }>(
+        accessor,
+        updatedMap
+      )
+      ret.redo()
+      expect(accessor.set).toHaveBeenCalledWith([
+        { id: 'a', val: 2 },
+        { id: 'b', val: 0 },
+      ])
+      ret.undo()
+      expect(accessor.set).toHaveBeenCalledWith([
+        { id: 'a', val: 0 },
+        { id: 'b', val: 0 },
+      ])
     })
   })
 })

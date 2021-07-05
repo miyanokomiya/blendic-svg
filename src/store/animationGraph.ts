@@ -20,19 +20,19 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, ref } from 'vue'
 import { useListState } from '../composables/listState'
 import { AnimationGraph, IdMap, toMap } from '../models'
-import { extractMap, mapReduce, toList } from '../utils/commons'
+import { extractMap, mapReduce } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { SelectOptions } from '/@/composables/modes/types'
-import { HistoryItem } from '/@/composables/stores/history'
 import { GraphNode, GraphNodes, GraphNodeType } from '/@/models/graphNode'
-import { createGraphNode } from '/@/utils/graphNodes'
+import { createGraphNode, deleteAndDisconnectNodes } from '/@/utils/graphNodes'
 import {
   convolute,
   getAddItemHistory,
   getAddItemsHistory,
-  getDeleteItemHistory,
+  getDeleteAndUpdateItemHistory,
   getSelectItemHistory,
   getSelectItemsHistory,
+  getUpdateItemHistory,
   LastSelectedItemIdAccessor,
   ListItemAccessor,
   SelectedItemAccessor,
@@ -130,29 +130,26 @@ function selectAllNode() {
   if (selectedNodeCount.value === Object.keys(nodeMap.value).length) {
     selectNode('')
   } else {
-    const item = getSelectAllItem()
+    const item = getSelectItemsHistory(
+      selectedNodesAccessor,
+      lastSelectedNodeIdAccessor,
+      mapReduce(nodeMap.value, () => true)
+    )
     historyStore.push(item, true)
   }
-}
-
-function updateArmatureId(id: string) {
-  if (!lastSelectedGraph.value) return
-
-  const item = getUpdateArmatureIdItem(id)
-  historyStore.push(item, true)
 }
 
 function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
   if (!lastSelectedGraph.value) return
 
-  const item = getUpdateNodesItem({ [id]: val }, seriesKey)
+  const item = getUpdateItemHistory(nodesAccessor, { [id]: val }, seriesKey)
   historyStore.push(item, true)
 }
 
 function updateNodes(val: IdMap<Partial<GraphNode>>) {
   if (!lastSelectedGraph.value) return
 
-  const item = getUpdateNodesItem(val)
+  const item = getUpdateItemHistory(nodesAccessor, val)
   historyStore.push(item, true)
 }
 
@@ -189,8 +186,19 @@ function pasteNodes(nodes: GraphNode[]) {
 function deleteNodes() {
   if (!lastSelectedGraph.value) return
 
+  const deleteIds = selectedNodes.value
+
+  const deletedInfo = deleteAndDisconnectNodes(
+    lastSelectedGraph.value.nodes,
+    deleteIds
+  )
+
   const item = convolute(
-    getDeleteItemHistory(nodesAccessor, selectedNodes.value),
+    getDeleteAndUpdateItemHistory(
+      nodesAccessor,
+      deleteIds,
+      extractMap(toMap(deletedInfo.nodes), deletedInfo.updatedIds)
+    ),
     [
       getSelectItemHistory(
         selectedNodesAccessor,
@@ -219,7 +227,6 @@ export function useAnimationGraphStore() {
       graphState.deleteItem()
     },
 
-    updateArmatureId,
     updateNode,
     updateNodes,
     addNode,
@@ -233,69 +240,3 @@ export function useAnimationGraphStore() {
   }
 }
 export type AnimationGraphStore = ReturnType<typeof useAnimationGraphStore>
-
-export function getSelectAllItem(): HistoryItem {
-  const current = { ...selectedNodes.value }
-  const currentLast = lastSelectedNodeId.value
-
-  const redo = () => {
-    selectedNodes.value = mapReduce(nodeMap.value, () => true)
-    lastSelectedNodeId.value = Object.keys(nodeMap)[0] ?? ''
-  }
-  return {
-    name: 'Select All Node',
-    undo: () => {
-      selectedNodes.value = { ...current }
-      lastSelectedNodeId.value = currentLast
-    },
-    redo,
-  }
-}
-
-export function getUpdateArmatureIdItem(id: string): HistoryItem {
-  const current = lastSelectedGraph.value!.armatureId
-  const currentNodes = nodeMap.value
-
-  const redo = () => {
-    lastSelectedGraph.value!.armatureId = id
-    lastSelectedGraph.value!.nodes = lastSelectedGraph.value!.nodes.map(
-      (e) => ({
-        ...e,
-        boneId: '',
-      })
-    )
-  }
-  return {
-    name: 'Update Parent',
-    undo: () => {
-      lastSelectedGraph.value!.armatureId = current
-      lastSelectedGraph.value!.nodes = toList(currentNodes)
-    },
-    redo,
-  }
-}
-
-export function getUpdateNodesItem(
-  val: IdMap<Partial<GraphNode>>,
-  seriesKey?: string
-): HistoryItem {
-  const current = extractMap(nodeMap.value, val)
-
-  const redo = () => {
-    lastSelectedGraph.value!.nodes = toList({
-      ...nodeMap.value,
-      ...mapReduce(current, (n, id) => ({ ...n, ...val[id] } as GraphNode)),
-    })
-  }
-  return {
-    name: 'Update Node',
-    undo: () => {
-      lastSelectedGraph.value!.nodes = toList({
-        ...nodeMap.value,
-        ...current,
-      })
-    },
-    redo,
-    seriesKey,
-  }
-}

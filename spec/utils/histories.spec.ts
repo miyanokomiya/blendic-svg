@@ -344,9 +344,11 @@ describe('src/utils/histories.ts', () => {
         set: jest.fn(),
       }
       const targetIds = { a: true }
-      const ret = getDeleteAndUpdateItemHistory(accessor, targetIds, {
-        b: { id: 'b', val: 1 },
-      })
+      const ret = getDeleteAndUpdateItemHistory<{ id: string; val: number }>(
+        accessor,
+        targetIds,
+        { b: { val: 1 } }
+      )
       ret.redo()
       expect(accessor.set).toHaveBeenCalledWith([{ id: 'b', val: 1 }])
       ret.undo()
@@ -357,18 +359,27 @@ describe('src/utils/histories.ts', () => {
   describe('getUpdateItemHistory', () => {
     it('should return a history item to update items', () => {
       const accessor = {
-        get: jest.fn().mockReturnValue([{ id: 'a' }, { id: 'b' }]),
+        get: jest.fn().mockReturnValue([
+          { id: 'a', val: 0 },
+          { id: 'b', val: 0 },
+        ]),
         set: jest.fn(),
       }
-      const updatedMap = { a: { id: 'a', val: 2 } }
-      const ret = getUpdateItemHistory(accessor, updatedMap)
+      const updatedMap = { a: { val: 2 } }
+      const ret = getUpdateItemHistory<{ id: string; val: number }>(
+        accessor,
+        updatedMap
+      )
       ret.redo()
       expect(accessor.set).toHaveBeenCalledWith([
         { id: 'a', val: 2 },
-        { id: 'b' },
+        { id: 'b', val: 0 },
       ])
       ret.undo()
-      expect(accessor.set).toHaveBeenCalledWith([{ id: 'a' }, { id: 'b' }])
+      expect(accessor.set).toHaveBeenCalledWith([
+        { id: 'a', val: 0 },
+        { id: 'b', val: 0 },
+      ])
     })
   })
 })

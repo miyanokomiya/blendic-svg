@@ -23,7 +23,6 @@ import { AnimationGraph, IdMap, toMap } from '../models'
 import { extractMap, mapReduce } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { SelectOptions } from '/@/composables/modes/types'
-import { HistoryItem } from '/@/composables/stores/history'
 import { GraphNode, GraphNodes, GraphNodeType } from '/@/models/graphNode'
 import { createGraphNode, deleteAndDisconnectNodes } from '/@/utils/graphNodes'
 import {
@@ -143,14 +142,14 @@ function selectAllNode() {
 function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
   if (!lastSelectedGraph.value) return
 
-  const item = getUpdateNodesItem({ [id]: val }, seriesKey)
+  const item = getUpdateItemHistory(nodesAccessor, { [id]: val }, seriesKey)
   historyStore.push(item, true)
 }
 
 function updateNodes(val: IdMap<Partial<GraphNode>>) {
   if (!lastSelectedGraph.value) return
 
-  const item = getUpdateNodesItem(val)
+  const item = getUpdateItemHistory(nodesAccessor, val)
   historyStore.push(item, true)
 }
 
@@ -241,16 +240,3 @@ export function useAnimationGraphStore() {
   }
 }
 export type AnimationGraphStore = ReturnType<typeof useAnimationGraphStore>
-
-export function getUpdateNodesItem(
-  val: IdMap<Partial<GraphNode>>,
-  seriesKey?: string
-): HistoryItem {
-  const current = extractMap(nodeMap.value, val)
-  const updatedMap = mapReduce(
-    current,
-    (n, id) => ({ ...n, ...val[id] } as GraphNode)
-  )
-
-  return getUpdateItemHistory(nodesAccessor, updatedMap, seriesKey)
-}

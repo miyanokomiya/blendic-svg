@@ -560,3 +560,33 @@ function immigrateInputs(
     }
   })
 }
+
+function getInputDefaultValue(type: GraphNodeType, key: string): unknown {
+  return (getGraphNodeModule(type).struct.inputs as any)[key].default
+}
+
+export function deleteAndDisconnectNodes(
+  nodes: GraphNode[],
+  targetIds: IdMap<boolean>
+): { nodes: GraphNode[]; updatedIds: IdMap<boolean> } {
+  const updatedIds: IdMap<boolean> = {}
+
+  const nextNodes = nodes
+    .filter((n) => !targetIds[n.id])
+    .map((n) => {
+      return {
+        ...n,
+        inputs: mapReduce(n.inputs, (input, key) => {
+          // check a node is connected with deleted nodes
+          if (!input.from) return input
+          if (!targetIds[input.from.id]) return input
+
+          // delete this connection
+          updatedIds[n.id] = true
+          return { value: getInputDefaultValue(n.type, key) }
+        }),
+      }
+    })
+
+  return { nodes: nextNodes, updatedIds }
+}

@@ -21,6 +21,7 @@ import {
   convolute,
   getAddItemHistory,
   getAddItemsHistory,
+  getDeleteAndUpdateItemHistory,
   getDeleteItemHistory,
   getReplaceItem,
   getSelectItemHistory,
@@ -330,6 +331,23 @@ describe('src/utils/histories.ts', () => {
       const ret = getDeleteItemHistory(accessor, targetIds)
       ret.redo()
       expect(accessor.set).toHaveBeenCalledWith([{ id: 'b' }])
+      ret.undo()
+      expect(accessor.set).toHaveBeenCalledWith([{ id: 'a' }, { id: 'b' }])
+    })
+  })
+
+  describe('getDeleteAndUpdateItemHistory', () => {
+    it('should return a history item to delete and update items', () => {
+      const accessor = {
+        get: jest.fn().mockReturnValue([{ id: 'a' }, { id: 'b' }]),
+        set: jest.fn(),
+      }
+      const targetIds = { a: true }
+      const ret = getDeleteAndUpdateItemHistory(accessor, targetIds, {
+        b: { id: 'b', val: 1 },
+      })
+      ret.redo()
+      expect(accessor.set).toHaveBeenCalledWith([{ id: 'b', val: 1 }])
       ret.undo()
       expect(accessor.set).toHaveBeenCalledWith([{ id: 'a' }, { id: 'b' }])
     })

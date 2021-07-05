@@ -25,12 +25,12 @@ import { useHistoryStore } from './history'
 import { SelectOptions } from '/@/composables/modes/types'
 import { HistoryItem } from '/@/composables/stores/history'
 import { GraphNode, GraphNodes, GraphNodeType } from '/@/models/graphNode'
-import { createGraphNode } from '/@/utils/graphNodes'
+import { createGraphNode, deleteAndDisconnectNodes } from '/@/utils/graphNodes'
 import {
   convolute,
   getAddItemHistory,
   getAddItemsHistory,
-  getDeleteItemHistory,
+  getDeleteAndUpdateItemHistory,
   getSelectItemHistory,
   getSelectItemsHistory,
   LastSelectedItemIdAccessor,
@@ -189,8 +189,19 @@ function pasteNodes(nodes: GraphNode[]) {
 function deleteNodes() {
   if (!lastSelectedGraph.value) return
 
+  const deleteIds = selectedNodes.value
+
+  const deletedInfo = deleteAndDisconnectNodes(
+    lastSelectedGraph.value.nodes,
+    deleteIds
+  )
+
   const item = convolute(
-    getDeleteItemHistory(nodesAccessor, selectedNodes.value),
+    getDeleteAndUpdateItemHistory(
+      nodesAccessor,
+      deleteIds,
+      extractMap(toMap(deletedInfo.nodes), deletedInfo.updatedIds)
+    ),
     [
       getSelectItemHistory(
         selectedNodesAccessor,

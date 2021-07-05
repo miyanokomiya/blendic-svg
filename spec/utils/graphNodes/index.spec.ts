@@ -20,6 +20,7 @@ import {
   duplicateNodes,
   createGraphNode,
   getInput,
+  deleteAndDisconnectNodes,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 
@@ -423,6 +424,37 @@ describe('src/utils/graphNodes/index.ts', () => {
           y: { value: 0 },
         },
       })
+    })
+  })
+
+  describe('deleteAndDisconnectNodes', () => {
+    it('should delete nodes and their connections', () => {
+      const ret = deleteAndDisconnectNodes(
+        [
+          createGraphNode('scaler', { id: 'a' }),
+          createGraphNode('scaler', { id: 'b' }),
+          createGraphNode('make_vector2', {
+            id: 'c',
+            inputs: {
+              x: { from: { id: 'a', key: 'value' } },
+              y: { from: { id: 'b', key: 'value' } },
+            },
+          }),
+        ],
+        { a: true }
+      )
+
+      expect(ret.nodes).toEqual([
+        createGraphNode('scaler', { id: 'b' }),
+        createGraphNode('make_vector2', {
+          id: 'c',
+          inputs: {
+            x: { value: 0 },
+            y: { from: { id: 'b', key: 'value' } },
+          },
+        }),
+      ])
+      expect(ret.updatedIds).toEqual({ c: true })
     })
   })
 })

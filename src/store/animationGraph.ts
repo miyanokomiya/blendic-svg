@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, ref } from 'vue'
 import { useListState } from '../composables/listState'
 import { AnimationGraph, IdMap, toMap } from '../models'
-import { extractMap, mapReduce, toList } from '../utils/commons'
+import { extractMap, mapReduce } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { SelectOptions } from '/@/composables/modes/types'
 import { HistoryItem } from '/@/composables/stores/history'
@@ -131,16 +131,13 @@ function selectAllNode() {
   if (selectedNodeCount.value === Object.keys(nodeMap.value).length) {
     selectNode('')
   } else {
-    const item = getSelectAllItem()
+    const item = getSelectItemsHistory(
+      selectedNodesAccessor,
+      lastSelectedNodeIdAccessor,
+      mapReduce(nodeMap.value, () => true)
+    )
     historyStore.push(item, true)
   }
-}
-
-function updateArmatureId(id: string) {
-  if (!lastSelectedGraph.value) return
-
-  const item = getUpdateArmatureIdItem(id)
-  historyStore.push(item, true)
 }
 
 function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
@@ -231,7 +228,6 @@ export function useAnimationGraphStore() {
       graphState.deleteItem()
     },
 
-    updateArmatureId,
     updateNode,
     updateNodes,
     addNode,
@@ -245,47 +241,6 @@ export function useAnimationGraphStore() {
   }
 }
 export type AnimationGraphStore = ReturnType<typeof useAnimationGraphStore>
-
-export function getSelectAllItem(): HistoryItem {
-  const current = { ...selectedNodes.value }
-  const currentLast = lastSelectedNodeId.value
-
-  const redo = () => {
-    selectedNodes.value = mapReduce(nodeMap.value, () => true)
-    lastSelectedNodeId.value = Object.keys(nodeMap)[0] ?? ''
-  }
-  return {
-    name: 'Select All Node',
-    undo: () => {
-      selectedNodes.value = { ...current }
-      lastSelectedNodeId.value = currentLast
-    },
-    redo,
-  }
-}
-
-export function getUpdateArmatureIdItem(id: string): HistoryItem {
-  const current = lastSelectedGraph.value!.armatureId
-  const currentNodes = nodeMap.value
-
-  const redo = () => {
-    lastSelectedGraph.value!.armatureId = id
-    lastSelectedGraph.value!.nodes = lastSelectedGraph.value!.nodes.map(
-      (e) => ({
-        ...e,
-        boneId: '',
-      })
-    )
-  }
-  return {
-    name: 'Update Parent',
-    undo: () => {
-      lastSelectedGraph.value!.armatureId = current
-      lastSelectedGraph.value!.nodes = toList(currentNodes)
-    },
-    redo,
-  }
-}
 
 export function getUpdateNodesItem(
   val: IdMap<Partial<GraphNode>>,

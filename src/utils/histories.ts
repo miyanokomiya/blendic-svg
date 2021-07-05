@@ -228,3 +228,32 @@ export function getDeleteAndUpdateItemHistory<T extends { id: string }>(
     },
   }
 }
+
+export function getUpdateItemHistory<T extends { id: string }>(
+  nodeAccessor: ListItemAccessor<T>,
+  updatedMap: IdMap<T>,
+  seriesKey?: string
+): HistoryItem {
+  const beforeUpdatedMap = extractMap(toMap(nodeAccessor.get()), updatedMap)
+
+  return {
+    name: 'Update Item',
+    undo: () => {
+      nodeAccessor.set(
+        toList({
+          ...toMap(nodeAccessor.get()),
+          ...beforeUpdatedMap,
+        })
+      )
+    },
+    redo: () => {
+      nodeAccessor.set(
+        toList({
+          ...toMap(nodeAccessor.get()),
+          ...updatedMap,
+        })
+      )
+    },
+    seriesKey,
+  }
+}

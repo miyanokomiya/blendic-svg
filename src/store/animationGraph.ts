@@ -33,6 +33,7 @@ import {
   getDeleteAndUpdateItemHistory,
   getSelectItemHistory,
   getSelectItemsHistory,
+  getUpdateItemHistory,
   LastSelectedItemIdAccessor,
   ListItemAccessor,
   SelectedItemAccessor,
@@ -291,22 +292,10 @@ export function getUpdateNodesItem(
   seriesKey?: string
 ): HistoryItem {
   const current = extractMap(nodeMap.value, val)
+  const updatedMap = mapReduce(
+    current,
+    (n, id) => ({ ...n, ...val[id] } as GraphNode)
+  )
 
-  const redo = () => {
-    lastSelectedGraph.value!.nodes = toList({
-      ...nodeMap.value,
-      ...mapReduce(current, (n, id) => ({ ...n, ...val[id] } as GraphNode)),
-    })
-  }
-  return {
-    name: 'Update Node',
-    undo: () => {
-      lastSelectedGraph.value!.nodes = toList({
-        ...nodeMap.value,
-        ...current,
-      })
-    },
-    redo,
-    seriesKey,
-  }
+  return getUpdateItemHistory(nodesAccessor, updatedMap, seriesKey)
 }

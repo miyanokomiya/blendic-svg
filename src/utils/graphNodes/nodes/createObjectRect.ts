@@ -34,6 +34,7 @@ export const struct: NodeStruct<GraphNodeCreateObjectRect> = {
         data: {},
         inputs: {
           ...nodeToCreateObjectProps.createdInputs,
+          centered: { value: false },
           x: { value: 0 },
           y: { value: 0 },
           width: { value: 100 },
@@ -47,6 +48,7 @@ export const struct: NodeStruct<GraphNodeCreateObjectRect> = {
   data: {},
   inputs: {
     ...nodeToCreateObjectProps.inputs,
+    centered: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
     x: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
     y: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
     width: { type: GRAPH_VALUE_TYPE.SCALER, default: 100 },
@@ -61,8 +63,8 @@ export const struct: NodeStruct<GraphNodeCreateObjectRect> = {
       object: context.createObject('rect', {
         ...base,
         attributes: {
-          x: inputs.x,
-          y: inputs.y,
+          x: inputs.centered ? inputs.x - inputs.width / 2 : inputs.x,
+          y: inputs.centered ? inputs.y - inputs.height / 2 : inputs.y,
           width: inputs.width,
           height: inputs.height,
         },

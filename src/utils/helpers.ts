@@ -124,6 +124,8 @@ export function toStyle(obj: { [name: string]: string | undefined }): string {
 export function normalizeAttributes(
   attributes: ElementNodeAttributes
 ): ElementNodeAttributes {
+  if (!attributes.fill && !attributes.stroke) return attributes
+
   return {
     ...attributes,
     style: toStyle({

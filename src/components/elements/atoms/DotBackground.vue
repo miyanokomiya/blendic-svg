@@ -22,7 +22,8 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div
       xmlns="http://www.w3.org/1999/xhtml"
       :style="{
-        'background-position': `${-x}px ${-y}px`,
+        'background-position': `${size / 2 - x}px ${size / 2 - y}px`,
+        'background-size': `${size}px ${size}px`,
       }"
     />
   </foreignObject>
@@ -49,6 +50,10 @@ export default defineComponent({
       type: Number,
       default: 100,
     },
+    size: {
+      type: Number,
+      default: 100,
+    },
   },
 })
 </script>
@@ -57,7 +62,6 @@ export default defineComponent({
 div {
   width: 100%;
   height: 100%;
-  background-size: 40px 40px;
   background-repeat: repeat repeat;
   background-image: radial-gradient(circle, #000 2px, rgba(#fff, 0) 2px);
 }

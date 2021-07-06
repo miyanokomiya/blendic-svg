@@ -44,8 +44,13 @@ Copyright (C) 2021, Tomoya Komiyama.
         :y="viewCanvasRect.y"
         :width="viewCanvasRect.width"
         :height="viewCanvasRect.height"
+        :size="40"
         class="view-only"
       />
+      <g :stroke-width="2 * scale" stroke="#000">
+        <line x1="-20" x2="20" />
+        <line y1="-20" y2="20" />
+      </g>
       <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
       <SelectRectangle
         v-if="dragRectangle"
@@ -73,7 +78,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, computed, PropType } from 'vue'
+import { defineComponent, ref, watch, onMounted, computed, PropType } from 'vue'
 import { PointerMovement, usePointerLock } from '../composables/window'
 import { provideScale, useCanvas } from '../composables/canvas'
 import { useThrottle } from '/@/composables/throttle'
@@ -107,6 +112,10 @@ export default defineComponent({
       useCanvasElement(() => props.canvas)
 
     provideScale(() => props.canvas.scale.value)
+
+    onMounted(() => {
+      props.canvas.adjustToCenter()
+    })
 
     const popupMenuList = computed(() => props.mode.popupMenuList.value)
     const popupMenuListPosition = computed(() => {

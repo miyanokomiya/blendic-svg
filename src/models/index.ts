@@ -187,7 +187,7 @@ export function getActor(arg: Partial<Actor> = {}, generateId = false): Actor {
     armatureId: '',
     svgTree: getElementNode(),
     elements: [],
-    viewBox: { x: 0, y: 0, width: 100, height: 100 },
+    viewBox: { x: 0, y: 0, width: 400, height: 400 },
     ...arg,
     id,
   }

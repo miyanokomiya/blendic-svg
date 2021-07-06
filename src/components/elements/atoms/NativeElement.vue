@@ -36,7 +36,7 @@ import { normalizeAttributes } from '/@/utils/helpers'
 const NativeElement: any = defineComponent({
   props: {
     element: {
-      type: [Object, String] as PropType<ElementNode | string>,
+      type: Object as PropType<ElementNode>,
       required: true,
     },
     groupSelected: {
@@ -53,20 +53,19 @@ const NativeElement: any = defineComponent({
       computed(() => ({}))
     )
 
-    const overrideAttrs = computed((): { [name: string]: string } => {
-      if (isPlainText(props.element)) {
-        return {}
-      } else if (selectedMap.value[props.element.id] || props.groupSelected) {
-        return {
-          fill: settings.selectedColor,
-          stroke: settings.selectedColor,
+    const overrideAttrs = computed<{ [name: string]: string } | undefined>(
+      () => {
+        if (selectedMap.value[props.element.id] || props.groupSelected) {
+          return {
+            fill: settings.selectedColor,
+            stroke: settings.selectedColor,
+          }
+        } else {
+          return undefined
         }
-      } else {
-        return {}
       }
-    })
+    )
 
-    const isElement = computed(() => !isPlainText(props.element))
     const element = computed(() => props.element as ElementNode)
 
     const onClickElement = inject<
@@ -80,7 +79,6 @@ const NativeElement: any = defineComponent({
     }
 
     const groupSelected = computed(() => {
-      if (!isElement.value) return props.groupSelected
       return props.groupSelected || selectedMap.value[element.value.id]
     })
 
@@ -88,25 +86,24 @@ const NativeElement: any = defineComponent({
       return {
         ...normalizeAttributes({
           ...element.value.attributes,
-          ...overrideAttrs.value,
+          ...(overrideAttrs.value ?? {}),
         }),
         onClick,
       }
     })
 
     const children = computed(() => {
-      return Array.isArray(element.value.children)
-        ? element.value.children.map((c) =>
-            h(NativeElement, {
-              element: c,
-              groupSelected: groupSelected.value,
-            })
-          )
-        : element.value.children
+      return element.value.children.map((c) => {
+        if (isPlainText(c)) return c
+        return h(NativeElement, {
+          element: c,
+          groupSelected: groupSelected.value,
+          key: c.id,
+        })
+      })
     })
 
     return () => {
-      if (!isElement.value) return props.element
       return h(element.value.tag, attributes.value, children.value)
     }
   },

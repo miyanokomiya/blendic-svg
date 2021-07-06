@@ -264,6 +264,7 @@ export interface GraphNodeSetViewbox extends GraphNodeBase {
   type: 'set_viewbox'
   inputs: {
     object: GraphNodeInput<string>
+    centered: GraphNodeInput<boolean>
     x: GraphNodeInput<number>
     y: GraphNodeInput<number>
     width: GraphNodeInput<number>

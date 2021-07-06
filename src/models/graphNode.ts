@@ -264,6 +264,7 @@ export interface GraphNodeSetViewbox extends GraphNodeBase {
   type: 'set_viewbox'
   inputs: {
     object: GraphNodeInput<string>
+    centered: GraphNodeInput<boolean>
     x: GraphNodeInput<number>
     y: GraphNodeInput<number>
     width: GraphNodeInput<number>
@@ -292,6 +293,7 @@ export interface GraphNodeCreateObjectGroup extends GraphNodeBase {
 export interface GraphNodeCreateObjectRect extends GraphNodeBase {
   type: 'create_object_rect'
   inputs: {
+    centered: GraphNodeInput<boolean>
     x: GraphNodeInput<number>
     y: GraphNodeInput<number>
     width: GraphNodeInput<number>

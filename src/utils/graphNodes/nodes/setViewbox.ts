@@ -26,6 +26,7 @@ export const struct: NodeStruct<GraphNodeSetViewbox> = {
       ...createBaseNode({
         inputs: {
           object: { value: '' },
+          centered: { value: false },
           x: { value: 0 },
           y: { value: 0 },
           width: { value: 400 },
@@ -39,6 +40,7 @@ export const struct: NodeStruct<GraphNodeSetViewbox> = {
   data: {},
   inputs: {
     object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
+    centered: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
     x: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
     y: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
     width: { type: GRAPH_VALUE_TYPE.SCALER, default: 400 },
@@ -48,8 +50,8 @@ export const struct: NodeStruct<GraphNodeSetViewbox> = {
   computation(inputs, _self, context): {} {
     context.setAttributes(inputs.object, {
       viewBox: {
-        x: inputs.x,
-        y: inputs.y,
+        x: inputs.centered ? inputs.x - inputs.width / 2 : inputs.x,
+        y: inputs.centered ? inputs.y - inputs.height / 2 : inputs.y,
         width: inputs.width,
         height: inputs.height,
       },

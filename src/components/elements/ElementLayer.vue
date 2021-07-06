@@ -27,7 +27,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       :height="viewBox.height"
       fill="none"
       stroke="#777"
-      stroke-dasharray="2 2"
+      :stroke-width="viewboxStrokeWidth"
+      :stroke-dasharray="viewboxStrokeDasharray"
     ></rect>
     <g :id="elementRoot.id">
       <NativeElement
@@ -59,6 +60,7 @@ import { useAnimationStore } from '/@/store/animation'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { useCanvasStore } from '/@/store/canvas'
 import { useStore } from '/@/store'
+import { injectScale } from '/@/composables/canvas'
 
 function getId(elm: ElementNode | string): string {
   if (isPlainText(elm)) return elm
@@ -152,11 +154,19 @@ export default defineComponent({
     }
     provide('onClickElement', clickElement)
 
+    const scale = computed(injectScale())
+    const viewboxStrokeWidth = computed(() => scale.value)
+    const viewboxStrokeDasharray = computed(() =>
+      [2, 2].map((n) => n * scale.value).join(' ')
+    )
+
     return {
       elementRoot: graphResolvedElement,
       getId,
       viewBox,
       settings,
+      viewboxStrokeWidth,
+      viewboxStrokeDasharray,
     }
   },
 })

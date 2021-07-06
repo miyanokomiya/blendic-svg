@@ -8,7 +8,7 @@ exports[`src/components/elements/atoms/DotBackground.vue snapshot defalut 1`] = 
   y="2"
 >
   <div
-    style="background-position: -1px -2px;"
+    style="background-position: 49px 48px; background-size: 100px 100px;"
     xmlns="http://www.w3.org/1999/xhtml"
   />
 </foreignobject>

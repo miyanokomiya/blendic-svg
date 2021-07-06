@@ -200,6 +200,15 @@ export function useCanvas(
         )
       )
     },
+    adjustToCenter() {
+      const size = viewSize.value
+      const ret = centerizeView(size, size)
+      viewOrigin.value = sub(
+        ret.viewOrigin,
+        multi({ x: size.width, y: size.height }, 1 / 2)
+      )
+      scale.value = ret.scale
+    },
   }
 }
 

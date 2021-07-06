@@ -131,8 +131,8 @@ export default defineComponent({
   },
   props: {
     originalViewBox: {
-      type: Object as PropType<IRectangle>,
-      required: true,
+      type: Object as PropType<IRectangle | undefined>,
+      default: undefined,
     },
   },
   setup(props) {
@@ -155,6 +155,8 @@ export default defineComponent({
     })
 
     function initView() {
+      if (!props.originalViewBox) return
+
       const ret = centerizeView(
         props.originalViewBox,
         canvas.viewSize.value,
@@ -164,6 +166,7 @@ export default defineComponent({
       canvas.scale.value = ret.scale
     }
     watch(() => props.originalViewBox, initView)
+    onMounted(initView)
 
     const isDownEmpty = ref(false)
 
@@ -261,6 +264,7 @@ export default defineComponent({
     provideScale(() => canvas.scale.value)
 
     return {
+      viewCanvasRect: computed(() => canvas.viewCanvasRect.value),
       showAxis: computed(() => settings.showAxis),
       scale: canvas.scale,
       viewSize: canvas.viewSize,

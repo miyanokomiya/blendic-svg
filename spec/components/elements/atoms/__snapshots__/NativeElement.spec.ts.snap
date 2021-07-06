@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/atoms/NativeElement.vue snapshot nested svg tree 1`] = `
+<g
+  fill="red"
+  style="fill: red;"
+>
+  <text>
+    text1
+  </text>
+  <text>
+    text1
+    text2
+  </text>
+</g>
+`;
+
+exports[`src/components/elements/atoms/NativeElement.vue snapshot selected 1`] = `
+<g
+  fill="orange"
+  stroke="orange"
+  style="fill: orange; stroke: orange;"
+>
+  <text
+    fill="orange"
+    stroke="orange"
+    style="fill: orange; stroke: orange;"
+  >
+    text1
+  </text>
+  <text
+    fill="orange"
+    stroke="orange"
+    style="fill: orange; stroke: orange;"
+  >
+    text1
+    text2
+  </text>
+</g>
+`;

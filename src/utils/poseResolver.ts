@@ -326,12 +326,20 @@ function getGraphResolvedElement(
 const NUMBER_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
   x: true,
   y: true,
+  dx: true,
+  dy: true,
   width: true,
   height: true,
   cx: true,
   cy: true,
   rx: true,
   ry: true,
+  'font-size': true,
+}
+
+const STRING_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
+  'text-anchor': true,
+  'dominant-baseline': true,
 }
 
 function getGraphResolvedAttributes(
@@ -366,7 +374,12 @@ function getGraphResolvedAttributes(
     const attrs = graphObject.attributes
 
     Object.entries(attrs).forEach(([key, val]) => {
-      if (NUMBER_ATTRIBUTES_KEYS[key] && val) ret[key] = val.toString()
+      if (!val) return
+      if (NUMBER_ATTRIBUTES_KEYS[key]) {
+        ret[key] = val.toString()
+      } else if (STRING_ATTRIBUTES_KEYS[key]) {
+        ret[key] = val
+      }
     })
 
     if (graphObject.attributes.viewBox)
@@ -691,6 +704,7 @@ function createElementByGraphObject(obj: GraphObject): ElementNode {
     id: obj.id,
     tag: obj.tag ?? 'rect',
     attributes: getGraphResolvedAttributes(obj, {}),
+    children: obj.text ? [obj.text] : [],
   })
 }
 

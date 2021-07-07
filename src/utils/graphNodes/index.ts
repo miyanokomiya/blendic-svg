@@ -68,6 +68,7 @@ import * as circle_clone_object from './nodes/circleCloneObject'
 import * as create_object_group from './nodes/createObjectGroup'
 import * as create_object_rect from './nodes/createObjectRect'
 import * as create_object_ellipse from './nodes/createObjectEllipse'
+import * as create_object_text from './nodes/createObjectText'
 import * as create_object_path from './nodes/createObjectPath'
 import * as make_path_m from './nodes/makePathM'
 import * as make_path_l from './nodes/makePathL'
@@ -136,6 +137,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   create_object_group,
   create_object_rect,
   create_object_ellipse,
+  create_object_text,
   create_object_path,
 
   make_path_m,
@@ -262,6 +264,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Group', type: 'create_object_group' },
       { label: 'Rect', type: 'create_object_rect' },
       { label: 'Ellipse', type: 'create_object_ellipse' },
+      { label: 'Text', type: 'create_object_text' },
       { label: 'Path', type: 'create_object_path' },
     ],
   },
@@ -328,6 +331,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Break Color', type: 'break_color', key: 'color' },
     { label: 'Lerp Color', type: 'lerp_color', key: 'a' },
   ],
+  TEXT: [{ label: 'Text', type: 'create_object_text', key: 'text' }],
   D: [
     ...MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
     { label: 'Create Path', type: 'create_object_path', key: 'd' },

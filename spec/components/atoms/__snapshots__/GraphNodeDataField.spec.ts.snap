@@ -89,6 +89,27 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER 1`] = `
 </div>
 `;
 
+exports[`src/components/atoms/GraphNodeDataField.vue snapshot TEXT 1`] = `
+<div>
+  <h5>
+    value
+  </h5>
+  
+  <div
+    class="input-wrapper"
+    options=""
+  >
+    <input
+      type="text"
+    />
+    <div
+      class="input-forward"
+    />
+  </div>
+  
+</div>
+`;
+
 exports[`src/components/atoms/GraphNodeDataField.vue snapshot VECTOR2 1`] = `
 <div>
   <h5>

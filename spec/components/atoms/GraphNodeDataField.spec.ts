@@ -74,6 +74,16 @@ describe('src/components/atoms/GraphNodeDataField.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
+    it('TEXT', () => {
+      const wrapper = mount(Target, {
+        props: {
+          modelValue: 'abc',
+          label: 'value',
+          type: GRAPH_VALUE_TYPE.TEXT,
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
     it('incompatible types', () => {
       const wrapper = mount(Target, {
         props: {

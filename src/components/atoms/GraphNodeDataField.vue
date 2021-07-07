@@ -33,6 +33,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         :options="objectOptions"
         @update:modelValue="update"
       />
+      <TextInput
+        v-else-if="type === 'TEXT'"
+        :model-value="modelValue"
+        :options="objectOptions"
+        @update:modelValue="update"
+      />
       <CheckboxInput
         v-else-if="type === 'BOOLEAN'"
         :model-value="modelValue"
@@ -96,6 +102,7 @@ const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
   [GRAPH_VALUE_TYPE.VECTOR2]: true,
   [GRAPH_VALUE_TYPE.OBJECT]: true,
   [GRAPH_VALUE_TYPE.COLOR]: true,
+  [GRAPH_VALUE_TYPE.TEXT]: true,
 }
 
 export default defineComponent({

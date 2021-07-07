@@ -304,7 +304,6 @@ export function createGraphNodeContext(
 
       const group = getGraphObject(
         {
-          ...src,
           ...arg,
           tag: 'g',
           elementId: src.elementId,

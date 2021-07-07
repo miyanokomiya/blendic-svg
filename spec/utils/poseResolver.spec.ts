@@ -738,6 +738,19 @@ describe('utils/poseResolver.ts', () => {
             create: true,
             attributes: { x: 20 },
           }),
+          c: getGraphObject({
+            id: 'c',
+            parent: 'a',
+            tag: 'text',
+            create: true,
+            text: 'abc',
+            attributes: {
+              dx: 1,
+              dy: 1,
+              'font-size': 12,
+              'text-anchor': 'middle',
+            },
+          }),
         },
         getElementNode({
           id: 'a',
@@ -768,6 +781,17 @@ describe('utils/poseResolver.ts', () => {
             tag: 'circle',
             attributes: { x: '10' },
             children: [],
+          },
+          {
+            id: 'c',
+            tag: 'text',
+            attributes: {
+              dx: '1',
+              dy: '1',
+              'font-size': '12',
+              'text-anchor': 'middle',
+            },
+            children: ['abc'],
           },
         ],
       })

@@ -50,6 +50,7 @@ export const GRAPH_VALUE_TYPE = {
   OBJECT: 'OBJECT',
   TRANSFORM: 'TRANSFORM',
   COLOR: 'COLOR',
+  TEXT: 'TEXT',
   D: 'D',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
@@ -106,6 +107,7 @@ export interface GraphNodes {
   create_object_group: GraphNodeCreateObjectGroup
   create_object_rect: GraphNodeCreateObjectRect
   create_object_ellipse: GraphNodeCreateObjectEllipse
+  create_object_text: GraphNodeCreateObjectText
   create_object_path: GraphNodeCreateObjectPath
   set_viewbox: GraphNodeSetViewbox
 
@@ -310,6 +312,21 @@ export interface GraphNodeCreateObjectEllipse extends GraphNodeBase {
     cy: GraphNodeInput<number>
     rx: GraphNodeInput<number>
     ry: GraphNodeInput<number>
+  } & {
+    [key in keyof GraphNodeCreateObjectInputsBase]: GraphNodeCreateObjectInputsBase[key]
+  }
+}
+
+export interface GraphNodeCreateObjectText extends GraphNodeBase {
+  type: 'create_object_text'
+  inputs: {
+    centered: GraphNodeInput<boolean>
+    x: GraphNodeInput<number>
+    y: GraphNodeInput<number>
+    dx: GraphNodeInput<number>
+    dy: GraphNodeInput<number>
+    text: GraphNodeInput<string>
+    'font-size': GraphNodeInput<number>
   } & {
     [key in keyof GraphNodeCreateObjectInputsBase]: GraphNodeCreateObjectInputsBase[key]
   }

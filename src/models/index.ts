@@ -120,18 +120,21 @@ export interface GraphObject {
   fill?: Transform
   stroke?: Transform
   'stroke-width'?: number
-
-  clone?: boolean
-
-  create?: boolean
-  tag?: string
-  parent?: string
   attributes?: GraphObjectAttributes
+
+  text?: string
+
+  tag?: string
+  clone?: boolean
+  create?: boolean
+  parent?: string
 }
 
 export interface GraphObjectAttributes {
   x?: number
   y?: number
+  dx?: number
+  dy?: number
   width?: number
   height?: number
   viewBox?: IRectangle
@@ -140,6 +143,9 @@ export interface GraphObjectAttributes {
   rx?: number
   ry?: number
   d?: string[]
+  'font-size'?: number
+  'text-anchor'?: string
+  'dominant-baseline'?: string
 }
 
 export function getGraphObject(

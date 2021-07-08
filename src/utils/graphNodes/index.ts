@@ -86,6 +86,7 @@ import * as greater_than from './nodes/greaterThan'
 import * as greater_than_or_equal from './nodes/greaterThanOrEqual'
 import * as less_than from './nodes/lessThan'
 import * as less_than_or_equal from './nodes/lessThanOrEqual'
+import * as between from './nodes/between'
 import * as not from './nodes/not'
 import * as and from './nodes/and'
 import * as or from './nodes/or'
@@ -161,6 +162,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   greater_than_or_equal,
   less_than,
   less_than_or_equal,
+  between,
   switch_scaler,
   switch_vector2,
   switch_transform,
@@ -241,6 +243,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: '(>=) Number', type: 'greater_than_or_equal' },
       { label: '(<) Number', type: 'less_than' },
       { label: '(<=) Number', type: 'less_than_or_equal' },
+      { label: 'Between', type: 'between' },
       { label: 'Switch Number', type: 'switch_scaler' },
       { label: 'Switch Vector2', type: 'switch_vector2' },
       { label: 'Switch Transform', type: 'switch_transform' },
@@ -299,6 +302,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: '(>=) Number', type: 'greater_than_or_equal', key: 'a' },
     { label: '(<) Number', type: 'less_than', key: 'a' },
     { label: '(<=) Number', type: 'less_than_or_equal', key: 'a' },
+    { label: 'Between', type: 'between', key: 'number' },
     { label: 'Make Vector2', type: 'make_vector2', key: 'x' },
     { label: 'Make Transform', type: 'make_transform', key: 'rotate' },
     { label: 'Make Color', type: 'make_color', key: 'h' },

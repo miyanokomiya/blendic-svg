@@ -152,6 +152,7 @@ export interface GraphNodes {
   greater_than_or_equal: GraphNodeBase
   less_than: GraphNodeLessThan
   less_than_or_equal: GraphNodeLessThanOrEqual
+  between: GraphNodeBetween
   switch_scaler: GraphNodeSwitchScaler
   switch_vector2: GraphNodeSwitchVector2
   switch_transform: GraphNodeSwitchTransform
@@ -610,6 +611,15 @@ export interface GraphNodeLessThan extends GraphNodeBase {
 export interface GraphNodeLessThanOrEqual extends GraphNodeBase {
   type: 'less_than_or_equal'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeBetween extends GraphNodeBase {
+  type: 'between'
+  inputs: {
+    number: GraphNodeInput<number>
+    from: GraphNodeInput<number>
+    to: GraphNodeInput<number>
+  }
 }
 
 export interface GraphNodeSwitchScaler extends GraphNodeBase {

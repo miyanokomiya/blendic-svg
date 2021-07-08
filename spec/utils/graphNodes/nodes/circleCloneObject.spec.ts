@@ -19,6 +19,7 @@ describe('src/utils/graphNodes/nodes/circleCloneObject.ts', () => {
         target.struct.computation(
           {
             object: 'a',
+            rotate: 90,
             count: 2.9,
             radius: 10,
             fix_rotate: false,
@@ -40,7 +41,7 @@ describe('src/utils/graphNodes/nodes/circleCloneObject.ts', () => {
         1,
         '1',
         models.getTransform({
-          translate: rotate({ x: 10, y: 0 }, 0),
+          translate: rotate({ x: 10, y: 0 }, Math.PI / 2),
           rotate: 10,
         })
       )
@@ -48,7 +49,7 @@ describe('src/utils/graphNodes/nodes/circleCloneObject.ts', () => {
         2,
         '2',
         models.getTransform({
-          translate: rotate({ x: 10, y: 0 }, Math.PI),
+          translate: rotate({ x: 10, y: 0 }, Math.PI * 1.5),
           rotate: 190,
         })
       )
@@ -68,6 +69,7 @@ describe('src/utils/graphNodes/nodes/circleCloneObject.ts', () => {
         target.struct.computation(
           {
             object: 'a',
+            rotate: 0,
             count: 2,
             radius: 10,
             fix_rotate: true,
@@ -93,21 +95,21 @@ describe('src/utils/graphNodes/nodes/circleCloneObject.ts', () => {
     it('should not clone any objects if count is not positive integer', () => {
       expect(
         target.struct.computation(
-          { object: 'a', count: 0, radius: 0, fix_rotate: false },
+          { object: 'a', rotate: 0, count: 0, radius: 0, fix_rotate: false },
           {} as any,
           {} as any
         )
       ).toEqual({ origin: 'a', group: '' })
       expect(
         target.struct.computation(
-          { object: 'a', count: 0.9, radius: 0, fix_rotate: false },
+          { object: 'a', rotate: 0, count: 0.9, radius: 0, fix_rotate: false },
           {} as any,
           {} as any
         )
       ).toEqual({ origin: 'a', group: '' })
       expect(
         target.struct.computation(
-          { object: 'a', count: -2, radius: 0, fix_rotate: false },
+          { object: 'a', rotate: 0, count: -2, radius: 0, fix_rotate: false },
           {} as any,
           {} as any
         )

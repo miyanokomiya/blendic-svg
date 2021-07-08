@@ -102,14 +102,17 @@ export interface GraphNodes {
   set_fill: GraphNodeSetFill
   set_stroke: GraphNodeSetStroke
   hide_object: GraphNodeHideObject
+  set_viewbox: GraphNodeSetViewbox
+
   clone_object: GraphNodeCloneObject
   circle_clone_object: GraphNodeCircleCloneObject
+  grid_clone_object: GraphNodeGridCloneObject
+
   create_object_group: GraphNodeCreateObjectGroup
   create_object_rect: GraphNodeCreateObjectRect
   create_object_ellipse: GraphNodeCreateObjectEllipse
   create_object_text: GraphNodeCreateObjectText
   create_object_path: GraphNodeCreateObjectPath
-  set_viewbox: GraphNodeSetViewbox
 
   make_path_m: GraphNodeMakePathM
   make_path_l: GraphNodeMakePathL
@@ -256,9 +259,23 @@ export interface GraphNodeCircleCloneObject extends GraphNodeBase {
   type: 'circle_clone_object'
   inputs: {
     object: GraphNodeInput<string>
+    rotate: GraphNodeInput<number>
     count: GraphNodeInput<number>
     radius: GraphNodeInput<number>
     fix_rotate: GraphNodeInput<boolean>
+  }
+}
+
+export interface GraphNodeGridCloneObject extends GraphNodeBase {
+  type: 'grid_clone_object'
+  inputs: {
+    object: GraphNodeInput<string>
+    centered: GraphNodeInput<boolean>
+    rotate: GraphNodeInput<number>
+    row: GraphNodeInput<number>
+    column: GraphNodeInput<number>
+    width: GraphNodeInput<number>
+    height: GraphNodeInput<number>
   }
 }
 

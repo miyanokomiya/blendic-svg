@@ -17,38 +17,39 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { rotate } from 'okageo'
+import { rotate, sub } from 'okageo'
 import { getTransform } from '/@/models'
-import {
-  GraphNodeCircleCloneObject,
-  GRAPH_VALUE_TYPE,
-} from '/@/models/graphNode'
+import { GraphNodeGridCloneObject, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { multiPoseTransform } from '/@/utils/armatures'
 import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
+export const struct: NodeStruct<GraphNodeGridCloneObject> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
         inputs: {
           object: { value: '' },
+          centered: { value: false },
           rotate: { value: 0 },
-          count: { value: 4 },
-          radius: { value: 100 },
-          fix_rotate: { value: false },
+          row: { value: 3 },
+          column: { value: 3 },
+          width: { value: 50 },
+          height: { value: 50 },
         },
         ...arg,
       }),
-      type: 'circle_clone_object',
-    } as GraphNodeCircleCloneObject
+      type: 'grid_clone_object',
+    } as GraphNodeGridCloneObject
   },
   data: {},
   inputs: {
     object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
+    centered: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
     rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    count: { type: GRAPH_VALUE_TYPE.SCALER, default: 4 },
-    radius: { type: GRAPH_VALUE_TYPE.SCALER, default: 100 },
-    fix_rotate: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
+    row: { type: GRAPH_VALUE_TYPE.SCALER, default: 3 },
+    column: { type: GRAPH_VALUE_TYPE.SCALER, default: 3 },
+    width: { type: GRAPH_VALUE_TYPE.SCALER, default: 50 },
+    height: { type: GRAPH_VALUE_TYPE.SCALER, default: 50 },
   },
   outputs: {
     origin: GRAPH_VALUE_TYPE.OBJECT,
@@ -56,31 +57,42 @@ export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
   },
   computation(inputs, _self, context): { origin: string; group: string } {
     if (!inputs.object) return { origin: '', group: '' }
-    const count = Math.floor(inputs.count)
-    if (count <= 0) return { origin: inputs.object, group: '' }
+
+    const row = Math.floor(inputs.row)
+    const column = Math.floor(inputs.column)
+    if (row <= 0 || column <= 0) return { origin: 'a', group: '' }
 
     const group = context.createCloneGroupObject(inputs.object)
     const originTransform = context.getTransform(inputs.object)
 
-    const angles = [...Array(count)].map((_, i) => (i * 360) / count)
-    const baseV = { x: inputs.radius, y: 0 }
+    const diff = inputs.centered
+      ? {
+          x: ((column - 1) * inputs.width) / 2,
+          y: ((row - 1) * inputs.height) / 2,
+        }
+      : undefined
 
-    angles.forEach((angle) => {
-      const clone = context.cloneObject(inputs.object, { parent: group })
-      const t = getTransform({
-        translate: rotate(baseV, ((angle + inputs.rotate) * Math.PI) / 180),
-        rotate: inputs.fix_rotate ? 0 : angle,
+    const rows = [...Array(row)].map((_, i) => i * inputs.height)
+    const columns = [...Array(column)].map((_, i) => i * inputs.width)
+    const rad = (inputs.rotate * Math.PI) / 180
+
+    rows.forEach((y) => {
+      columns.forEach((x) => {
+        const clone = context.cloneObject(inputs.object, { parent: group })
+        const t = getTransform({
+          translate: rotate(diff ? sub({ x, y }, diff) : { x, y }, rad),
+        })
+        context.setTransform(
+          clone,
+          // inherits original transform
+          originTransform ? multiPoseTransform(originTransform, t) : t
+        )
       })
-      context.setTransform(
-        clone,
-        // inherits original transform
-        originTransform ? multiPoseTransform(originTransform, t) : t
-      )
     })
     return { origin: inputs.object, group }
   },
   width: 180,
   color: '#dc143c',
   textColor: '#fff',
-  label: 'Circle Clone Object',
+  label: 'Grid Clone Object',
 }

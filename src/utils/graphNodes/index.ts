@@ -65,6 +65,7 @@ import * as hide_object from './nodes/hideObject'
 import * as set_viewbox from './nodes/setViewbox'
 import * as clone_object from './nodes/cloneObject'
 import * as circle_clone_object from './nodes/circleCloneObject'
+import * as grid_clone_object from './nodes/gridCloneObject'
 import * as create_object_group from './nodes/createObjectGroup'
 import * as create_object_rect from './nodes/createObjectRect'
 import * as create_object_ellipse from './nodes/createObjectEllipse'
@@ -133,6 +134,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   set_viewbox,
   clone_object,
   circle_clone_object,
+  grid_clone_object,
 
   create_object_group,
   create_object_rect,
@@ -256,6 +258,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Set Viewbox', type: 'set_viewbox' },
       { label: 'Clone Object', type: 'clone_object' },
       { label: 'Circle Clone Object', type: 'circle_clone_object' },
+      { label: 'Grid Clone Object', type: 'grid_clone_object' },
     ],
   },
   {
@@ -325,6 +328,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
       type: 'circle_clone_object',
       key: 'object',
     },
+    { label: 'Grid Clone Object', type: 'grid_clone_object', key: 'object' },
   ],
   TRANSFORM: [{ label: 'Lerp Transform', type: 'lerp_transform', key: 'a' }],
   COLOR: [

@@ -47,6 +47,7 @@ import {
   transformToAffine,
   getIsRectInRectFn,
   getIsRectHitRectFn,
+  roundTrip,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -77,6 +78,19 @@ describe('src/utils/geometry.ts', () => {
       [-1, 3, 3.5, -0.5],
     ])('circleClamp(%s, %s, %s) => %s', (min, max, val, expected) => {
       expect(circleClamp(min, max, val)).toBeCloseTo(expected)
+    })
+  })
+
+  describe('roundTrip', () => {
+    it.each([
+      [0, 0, 1.2, 0],
+      [1, 11, 0, 2],
+      [1, 11, 1, 1],
+      [1, 11, 2, 2],
+      [1, 11, 11, 11],
+      [1, 11, 12, 10],
+    ])('roundTrip(%s, %s, %s) => %s', (min, max, val, expected) => {
+      expect(roundTrip(min, max, val)).toBeCloseTo(expected)
     })
   })
 

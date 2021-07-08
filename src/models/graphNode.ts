@@ -143,6 +143,8 @@ export interface GraphNodes {
   lerp_vector2: GraphNodeLerpVector2
   lerp_transform: GraphNodeLerpTransform
   lerp_color: GraphNodeLerpColor
+  clamp: GraphNodeClamp
+  round_trip: GraphNodeRoundTrip
 
   not: GraphNodeNot
   and: GraphNodeAnd
@@ -563,6 +565,25 @@ export interface GraphNodeLerpColor extends GraphNodeBase {
     a: GraphNodeInput<Transform>
     b: GraphNodeInput<Transform>
     alpha: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeClamp extends GraphNodeBase {
+  type: 'clamp'
+  inputs: {
+    number: GraphNodeInput<number>
+    from: GraphNodeInput<number>
+    to: GraphNodeInput<number>
+    loop: GraphNodeInput<boolean>
+  }
+}
+
+export interface GraphNodeRoundTrip extends GraphNodeBase {
+  type: 'round_trip'
+  inputs: {
+    number: GraphNodeInput<number>
+    from: GraphNodeInput<number>
+    to: GraphNodeInput<number>
   }
 }
 

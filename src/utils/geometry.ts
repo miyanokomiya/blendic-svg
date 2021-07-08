@@ -49,6 +49,19 @@ export function circleClamp(min: number, max: number, val: number) {
   }
 }
 
+export function roundTrip(min: number, max: number, val: number) {
+  const harf = max - min
+  const length = 2 * harf
+  if (length === 0) return min
+
+  const d = Math.abs(val - min) % length
+  if (d < harf) {
+    return d + min
+  } else {
+    return length - d + min
+  }
+}
+
 export function logRound(log: number, val: number) {
   const pow = Math.pow(10, -log)
   return Math.round(val * pow) / pow

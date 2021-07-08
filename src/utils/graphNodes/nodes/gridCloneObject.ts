@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { sub } from 'okageo'
+import { rotate, sub } from 'okageo'
 import { getTransform } from '/@/models'
 import { GraphNodeGridCloneObject, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import { multiPoseTransform } from '/@/utils/armatures'
@@ -30,6 +30,7 @@ export const struct: NodeStruct<GraphNodeGridCloneObject> = {
         inputs: {
           object: { value: '' },
           centered: { value: false },
+          rotate: { value: 0 },
           row: { value: 3 },
           column: { value: 3 },
           width: { value: 50 },
@@ -44,6 +45,7 @@ export const struct: NodeStruct<GraphNodeGridCloneObject> = {
   inputs: {
     object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
     centered: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
+    rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
     row: { type: GRAPH_VALUE_TYPE.SCALER, default: 3 },
     column: { type: GRAPH_VALUE_TYPE.SCALER, default: 3 },
     width: { type: GRAPH_VALUE_TYPE.SCALER, default: 50 },
@@ -55,35 +57,38 @@ export const struct: NodeStruct<GraphNodeGridCloneObject> = {
   },
   computation(inputs, _self, context): { origin: string; group: string } {
     if (!inputs.object) return { origin: '', group: '' }
-    if (inputs.row <= 0 || inputs.column <= 0) return { origin: 'a', group: '' }
+
+    const row = Math.floor(inputs.row)
+    const column = Math.floor(inputs.column)
+    if (row <= 0 || column <= 0) return { origin: 'a', group: '' }
 
     const group = context.createCloneGroupObject(inputs.object)
     const originTransform = context.getTransform(inputs.object)
 
     const diff = inputs.centered
       ? {
-          x: ((inputs.column - 1) * inputs.width) / 2,
-          y: ((inputs.row - 1) * inputs.height) / 2,
+          x: ((column - 1) * inputs.width) / 2,
+          y: ((row - 1) * inputs.height) / 2,
         }
       : undefined
 
-    ;[...Array(inputs.row)]
-      .map((_, i) => i * inputs.height)
-      .forEach((y) => {
-        ;[...Array(inputs.column)]
-          .map((_, j) => j * inputs.width)
-          .forEach((x) => {
-            const clone = context.cloneObject(inputs.object, { parent: group })
-            const t = getTransform({
-              translate: diff ? sub({ x, y }, diff) : { x, y },
-            })
-            context.setTransform(
-              clone,
-              // inherits original transform
-              originTransform ? multiPoseTransform(originTransform, t) : t
-            )
-          })
+    const rows = [...Array(row)].map((_, i) => i * inputs.height)
+    const columns = [...Array(column)].map((_, i) => i * inputs.width)
+    const rad = (inputs.rotate * Math.PI) / 180
+
+    rows.forEach((y) => {
+      columns.forEach((x) => {
+        const clone = context.cloneObject(inputs.object, { parent: group })
+        const t = getTransform({
+          translate: rotate(diff ? sub({ x, y }, diff) : { x, y }, rad),
+        })
+        context.setTransform(
+          clone,
+          // inherits original transform
+          originTransform ? multiPoseTransform(originTransform, t) : t
+        )
       })
+    })
     return { origin: inputs.object, group }
   },
   width: 180,

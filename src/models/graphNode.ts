@@ -259,6 +259,7 @@ export interface GraphNodeCircleCloneObject extends GraphNodeBase {
   type: 'circle_clone_object'
   inputs: {
     object: GraphNodeInput<string>
+    rotate: GraphNodeInput<number>
     count: GraphNodeInput<number>
     radius: GraphNodeInput<number>
     fix_rotate: GraphNodeInput<boolean>
@@ -270,6 +271,7 @@ export interface GraphNodeGridCloneObject extends GraphNodeBase {
   inputs: {
     object: GraphNodeInput<string>
     centered: GraphNodeInput<boolean>
+    rotate: GraphNodeInput<number>
     row: GraphNodeInput<number>
     column: GraphNodeInput<number>
     width: GraphNodeInput<number>

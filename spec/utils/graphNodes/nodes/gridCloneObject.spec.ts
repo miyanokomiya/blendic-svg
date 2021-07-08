@@ -19,6 +19,7 @@ describe('src/utils/graphNodes/nodes/gridCloneObject.ts', () => {
           {
             object: 'a',
             centered: false,
+            rotate: 0,
             row: 2,
             column: 3,
             width: 10,
@@ -84,6 +85,7 @@ describe('src/utils/graphNodes/nodes/gridCloneObject.ts', () => {
           {
             object: 'a',
             centered: true,
+            rotate: 0,
             row: 2,
             column: 2,
             width: 10,
@@ -119,10 +121,52 @@ describe('src/utils/graphNodes/nodes/gridCloneObject.ts', () => {
         models.getTransform({ translate: { x: 5, y: 10 }, rotate: 10 })
       )
     })
+    it('should rotate the positions of the members', () => {
+      let count = 0
+      const getTransform = jest
+        .fn()
+        .mockReturnValue(models.getTransform({ rotate: 10 }))
+      const setTransform = jest
+        .fn()
+        .mockImplementation((id: string, transform: models.Transform) => {
+          if (id === '1') {
+            expect(transform.translate.x).toBeCloseTo(0)
+            expect(transform.translate.y).toBeCloseTo(-5)
+          } else if (id === '2') {
+            expect(transform.translate.x).toBeCloseTo(0)
+            expect(transform.translate.y).toBeCloseTo(5)
+          }
+        })
+      const createCloneGroupObject = jest.fn().mockReturnValue('b')
+      const cloneObject = jest.fn().mockImplementation(() => {
+        count++
+        return count.toString()
+      })
+      target.struct.computation(
+        {
+          object: 'a',
+          centered: true,
+          rotate: 90,
+          row: 1,
+          column: 2,
+          width: 10,
+          height: 10,
+        },
+        {} as any,
+        {
+          cloneObject,
+          getTransform,
+          setTransform,
+          createCloneGroupObject,
+        } as any
+      )
+      expect.assertions(4)
+    })
     it('should not clone any objects if count is not positive integer', () => {
       const inputs = {
         object: 'a',
         centered: false,
+        rotate: 0,
         row: 2,
         column: 3,
         width: 10,

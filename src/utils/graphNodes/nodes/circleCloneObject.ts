@@ -32,6 +32,7 @@ export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
       ...createBaseNode({
         inputs: {
           object: { value: '' },
+          rotate: { value: 0 },
           count: { value: 4 },
           radius: { value: 100 },
           fix_rotate: { value: false },
@@ -44,6 +45,7 @@ export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
   data: {},
   inputs: {
     object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
+    rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
     count: { type: GRAPH_VALUE_TYPE.SCALER, default: 4 },
     radius: { type: GRAPH_VALUE_TYPE.SCALER, default: 100 },
     fix_rotate: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
@@ -60,25 +62,21 @@ export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
     const group = context.createCloneGroupObject(inputs.object)
     const originTransform = context.getTransform(inputs.object)
 
-    ;[...Array(count)]
-      .map((_, i) => (i * 360) / count)
-      .map((angle) => {
-        const clone = context.cloneObject(inputs.object, {
-          parent: group,
-        })
-        const t = getTransform({
-          translate: rotate(
-            { x: inputs.radius, y: 0 },
-            (angle * Math.PI) / 180
-          ),
-          rotate: inputs.fix_rotate ? 0 : angle,
-        })
-        context.setTransform(
-          clone,
-          // inherits original transform
-          originTransform ? multiPoseTransform(originTransform, t) : t
-        )
+    const angles = [...Array(count)].map((_, i) => (i * 360) / count)
+    const baseV = { x: inputs.radius, y: 0 }
+
+    angles.forEach((angle) => {
+      const clone = context.cloneObject(inputs.object, { parent: group })
+      const t = getTransform({
+        translate: rotate(baseV, ((angle + inputs.rotate) * Math.PI) / 180),
+        rotate: inputs.fix_rotate ? 0 : angle,
       })
+      context.setTransform(
+        clone,
+        // inherits original transform
+        originTransform ? multiPoseTransform(originTransform, t) : t
+      )
+    })
     return { origin: inputs.object, group }
   },
   width: 180,

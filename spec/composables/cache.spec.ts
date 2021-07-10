@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { ref } from '@vue/reactivity'
 import { nextTick } from '@vue/runtime-core'
 import { shallowMount } from '@vue/test-utils'
-import { useCache, useKeysCache } from '/@/composables/cache'
+import { useCache, useKeysCache, useMapCache } from '/@/composables/cache'
 
 describe('src/composables/cache.ts', () => {
   describe('useKeysCache', () => {
@@ -89,6 +89,37 @@ describe('src/composables/cache.ts', () => {
       expect(cache.getValue()).toBe(0)
       cache.update()
       expect(cache.getValue()).toBe(1)
+    })
+  })
+
+  describe('useMapCache', () => {
+    it('should return cached value if getValue is called with same argument', () => {
+      let sideEffect = 1
+      const cache = useMapCache(
+        (src) => src,
+        (n: number) => n * 10 * sideEffect,
+        10
+      )
+      expect(cache.getValue(1)).toBe(10)
+      sideEffect++
+      expect(cache.getValue(1)).toBe(10)
+    })
+    it('should delete the oldest used history if saved history becoms larger than the max', () => {
+      let sideEffect = 1
+      const cache = useMapCache(
+        (src) => src + 11,
+        (n: number) => n * 10 * sideEffect,
+        2
+      )
+      expect(cache.getValue(1)).toBe(10)
+      expect(cache.getValue(2)).toBe(20)
+      expect(cache.getValue(3)).toBe(30)
+      sideEffect++
+      expect(cache.getValue(3)).toBe(30)
+      expect(cache.getValue(2)).toBe(20)
+      expect(cache.getValue(1)).toBe(20)
+      expect(cache.getValue(2)).toBe(20)
+      expect(cache.getValue(3)).toBe(60)
     })
   })
 })

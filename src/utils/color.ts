@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { useMapCache } from '/@/composables/cache'
 import { getTransform, Transform } from '/@/models'
 import { circleClamp, clamp } from '/@/utils/geometry'
 
@@ -84,6 +85,18 @@ export function rednerHSVA(hsva: HSVA): string {
 
 export function rednerRGBA(rgba: RGBA): string {
   return `rgba(${rgba.r},${rgba.g},${rgba.b},${rgba.a})`
+}
+
+const rednerRGBByHSVCache = useMapCache<HSVA, string>(
+  (hsva) => `${hsva.h},${hsva.s}${hsva.v}`,
+  (hsva) => {
+    const rgba = hsvaToRgba(hsva)
+    return `rgb(${rgba.r},${rgba.g},${rgba.b})`
+  }
+)
+
+export function rednerRGBByHSV(hsva: HSVA): string {
+  return rednerRGBByHSVCache.getValue(hsva)
 }
 
 export function rgbaToHsva(rgba: RGBA): HSVA {

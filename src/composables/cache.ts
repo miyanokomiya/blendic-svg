@@ -80,3 +80,29 @@ export function useCache<T>(resetValue: () => T) {
     getValue,
   }
 }
+
+export function useMapCache<K, T>(
+  createKye: (src: K) => any,
+  createValue: (src: K) => T,
+  maxHistory = 100
+) {
+  const map = new Map<K, T>()
+
+  function getValue(src: K) {
+    const key = createKye(src)
+    const value = map.get(key) ?? createValue(src)
+    map.delete(key)
+    map.set(key, value)
+    if (map.size > maxHistory) {
+      map.delete(map.keys().next().value)
+    }
+
+    return value
+  }
+
+  function clear() {
+    map.clear()
+  }
+
+  return { getValue, clear }
+}

@@ -26,7 +26,7 @@ import {
   Transform,
 } from '../models'
 import { viewbox } from './helpers'
-import { HSVA, hsvaToRgba, rednerRGBA } from '/@/utils/color'
+import { HSVA, hsvaToRgba, rednerRGBA, rednerRGBByHSV } from '/@/utils/color'
 import { parseViewBoxFromStr } from '/@/utils/elements'
 import { circleClamp, clamp, transformRect } from '/@/utils/geometry'
 
@@ -85,9 +85,9 @@ export function posedColorAttributes(transform: Transform): {
   color: string
   opacity: string
 } {
-  const hsva = hsvaToRgba(posedHsva(transform))
+  const hsva = posedHsva(transform)
   return {
-    color: `rgb(${hsva.r},${hsva.g},${hsva.b})`,
+    color: rednerRGBByHSV(hsva),
     opacity: hsva.a.toString(),
   }
 }

@@ -335,11 +335,13 @@ const NUMBER_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
   rx: true,
   ry: true,
   'font-size': true,
+  'stroke-dashoffset': true,
 }
 
 const STRING_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
   'text-anchor': true,
   'dominant-baseline': true,
+  'stroke-dasharray': true,
 }
 
 function getGraphResolvedAttributes(

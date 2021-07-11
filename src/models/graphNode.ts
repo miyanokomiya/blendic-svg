@@ -101,6 +101,7 @@ export interface GraphNodes {
   set_transform: GraphNodeSetTransform
   set_fill: GraphNodeSetFill
   set_stroke: GraphNodeSetStroke
+  set_stroke_length: GraphNodeSetStrokeLength
   hide_object: GraphNodeHideObject
   set_viewbox: GraphNodeSetViewbox
 
@@ -240,6 +241,15 @@ export interface GraphNodeSetStroke extends GraphNodeBase {
   inputs: {
     object: GraphNodeInput<string>
     color: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeSetStrokeLength extends GraphNodeBase {
+  type: 'set_stroke_length'
+  inputs: {
+    object: GraphNodeInput<string>
+    length: GraphNodeInput<number>
+    max_length: GraphNodeInput<number>
   }
 }
 

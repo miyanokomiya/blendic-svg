@@ -460,17 +460,21 @@ function createUseObject(
 function insertClonedElement(
   useObjectMapByElementId: IdMap<GraphObject[]>,
   node: ElementNode,
-  attributesMap: IdMap<ElementNodeAttributes>
+  attributesMap: IdMap<ElementNodeAttributes>,
+  // cache for performance and has sideeffect
+  objsPerParentByElementId: IdMap<IdMap<GraphObject[]>> = {}
 ): ElementNode {
   const srcId =
     node.attributes[DATA_CLONE_ID_KEY] ||
     node.attributes[DATA_CLONE_ID_KEY_FOR_G]
-  const isRootG = !!node.attributes[DATA_CLONE_ID_KEY]
-  const _objs = useObjectMapByElementId[srcId] ?? []
-  // drop origin if the current node is not a root of using
-  const objs = isRootG ? _objs : _objs.filter((o) => o.id !== srcId)
+  const isClonedRootG = !!node.attributes[DATA_CLONE_ID_KEY]
+  const objs = useObjectMapByElementId[srcId] ?? []
 
-  const rootObjs = objs.filter((o) => !o.parent)
+  if (!objsPerParentByElementId[srcId]) {
+    objsPerParentByElementId[srcId] = toKeyListMap(objs, 'parent')
+  }
+  const objMapByParent = objsPerParentByElementId[srcId]
+
   // cloned nodes with a parent must be group used nodes
   // => 'convertGroupUseTree' guarantees inserting their parents in the used location
   // - g
@@ -487,33 +491,43 @@ function insertClonedElement(
   //       - use: group cloned node 5
   //       - use: group cloned node 6
   //   - use: cloned node of origin
-  const objMapByParent = toKeyListMap(objs, 'parent')
 
   const children = node.children.map((c) => {
     if (isPlainText(c)) return c
 
-    const n = insertClonedElement(useObjectMapByElementId, c, attributesMap)
-    if (isPlainText(n)) return n
+    const n = insertClonedElement(
+      useObjectMapByElementId,
+      c,
+      attributesMap,
+      objsPerParentByElementId
+    )
 
+    // drop origin if the current node is not a cloned root group
+    const targetObjs =
+      (isClonedRootG
+        ? objMapByParent[n.id]
+        : objMapByParent[n.id]?.filter((o) => o.id !== srcId)) ?? []
     return {
       ...n,
       children: [
         ...n.children,
-        ...(objMapByParent[n.id] ?? []).map((o) =>
+        ...targetObjs.map((o) =>
           createUseObject(o, srcId, attributesMap[srcId])
         ),
       ],
     }
   })
 
-  if (rootObjs.length > 0) {
+  if (isClonedRootG) {
     return {
       ...node,
       children: [
         ...children,
-        ...rootObjs.map((o) => {
-          return createUseObject(o, srcId, attributesMap[srcId])
-        }),
+        ...objs
+          .filter((o) => !o.parent)
+          .map((o) => {
+            return createUseObject(o, srcId, attributesMap[srcId])
+          }),
       ],
     }
   } else {

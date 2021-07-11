@@ -146,6 +146,8 @@ export interface GraphObjectAttributes {
   'font-size'?: number
   'text-anchor'?: string
   'dominant-baseline'?: string
+  'stroke-dasharray'?: string
+  'stroke-dashoffset'?: number
 }
 
 export function getGraphObject(

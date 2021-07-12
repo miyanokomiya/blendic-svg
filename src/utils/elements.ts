@@ -214,7 +214,10 @@ export function createGraphNodeContext(
     return [...children, ...children.flatMap((c) => getAllNestedChildren(c.id))]
   }
 
-  function createClone(objectId: string, arg = {}): GraphObject | undefined {
+  function createClone(
+    objectId: string,
+    arg: Partial<GraphObject> = {}
+  ): GraphObject | undefined {
     const src = graphElementMap[objectId]
     if (!src) return
 
@@ -222,19 +225,28 @@ export function createGraphNodeContext(
     // set 'clone: true' if the target has native element
     const cloned = getGraphObject(
       src.create ? { ...src, ...arg } : { ...src, ...arg, clone: true },
-      true
+      !arg.id
     )
     return cloned
   }
 
-  function createCloneList(elements: GraphObject[]): GraphObject[] {
-    const clonedMapBySrcId = elements.reduce<IdMap<GraphObject>>((p, elm) => {
-      const cloned = createClone(elm.id)
-      if (cloned) {
-        p[elm.id] = cloned
-      }
-      return p
-    }, {})
+  function createCloneList(
+    elements: GraphObject[],
+    idPrefx?: string
+  ): GraphObject[] {
+    const clonedMapBySrcId = elements.reduce<IdMap<GraphObject>>(
+      (p, elm, i) => {
+        const cloned = createClone(
+          elm.id,
+          idPrefx ? { id: `${idPrefx}_clone_${i}` } : undefined
+        )
+        if (cloned) {
+          p[elm.id] = cloned
+        }
+        return p
+      },
+      {}
+    )
     return toList(clonedMapBySrcId).map((c) => {
       if (!c.parent || !clonedMapBySrcId[c.parent]) return c
       // immigrate cloned parent
@@ -283,15 +295,15 @@ export function createGraphNodeContext(
     getObjectMap() {
       return graphElementMap
     },
-    cloneObject(objectId, arg = {}) {
+    cloneObject(objectId, arg = {}, idPref?: string) {
       const src = graphElementMap[objectId]
       if (!src) return ''
 
       // clone the target and its children recursively
-      const clonedList = createCloneList([
-        src,
-        ...getAllNestedChildren(objectId),
-      ])
+      const clonedList = createCloneList(
+        [src, ...getAllNestedChildren(objectId)],
+        idPref
+      )
       clonedList.forEach(addElement)
 
       const cloned = graphElementMap[clonedList[0].id]
@@ -310,7 +322,7 @@ export function createGraphNodeContext(
           clone: false,
           create: true,
         },
-        true
+        !arg.id
       )
       addElement(group)
       return group.id

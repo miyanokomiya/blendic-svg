@@ -55,14 +55,14 @@ export const struct: NodeStruct<GraphNodeGridCloneObject> = {
     origin: GRAPH_VALUE_TYPE.OBJECT,
     group: GRAPH_VALUE_TYPE.OBJECT,
   },
-  computation(inputs, _self, context): { origin: string; group: string } {
+  computation(inputs, self, context): { origin: string; group: string } {
     if (!inputs.object) return { origin: '', group: '' }
 
     const row = Math.floor(inputs.row)
     const column = Math.floor(inputs.column)
     if (row <= 0 || column <= 0) return { origin: 'a', group: '' }
 
-    const group = context.createCloneGroupObject(inputs.object)
+    const group = context.createCloneGroupObject(inputs.object, { id: self.id })
     const originTransform = context.getTransform(inputs.object)
 
     const diff = inputs.centered
@@ -76,9 +76,13 @@ export const struct: NodeStruct<GraphNodeGridCloneObject> = {
     const columns = [...Array(column)].map((_, i) => i * inputs.width)
     const rad = (inputs.rotate * Math.PI) / 180
 
-    rows.forEach((y) => {
-      columns.forEach((x) => {
-        const clone = context.cloneObject(inputs.object, { parent: group })
+    rows.forEach((y, i) => {
+      columns.forEach((x, j) => {
+        const clone = context.cloneObject(
+          inputs.object,
+          { parent: group },
+          `${self.id}_${i}_${j}`
+        )
         const t = getTransform({
           translate: rotate(diff ? sub({ x, y }, diff) : { x, y }, rad),
         })

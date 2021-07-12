@@ -580,6 +580,23 @@ describe('utils/elements.ts', () => {
           }),
         })
       })
+      it('should set id pref', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a' }) },
+          10
+        )
+        context.cloneObject('a', {}, 'pre')
+        const ret = context.getObjectMap()
+
+        expect(ret).toEqual({
+          a: { id: 'a', elementId: 'a' },
+          pre_clone_0: {
+            id: 'pre_clone_0',
+            elementId: 'a',
+            clone: true,
+          },
+        })
+      })
       describe('when the target has children', () => {
         it('should clone nested created children', () => {
           const context = createGraphNodeContext({}, 10)
@@ -647,8 +664,66 @@ describe('utils/elements.ts', () => {
             parent: nested1.id,
           })
         })
+        it('should set id pref', () => {
+          const context = createGraphNodeContext({}, 10)
+
+          const parent = context.createObject('g')
+          const child1 = context.createObject('g', { parent })
+          const child2 = context.createObject('g', { parent: child1 })
+
+          context.cloneObject(parent, {}, 'pre')
+          const ret = context.getObjectMap()
+
+          delete ret[parent]
+          delete ret[child1]
+          delete ret[child2]
+
+          expect(ret).toEqual({
+            pre_clone_0: {
+              id: 'pre_clone_0',
+              tag: 'g',
+              create: true,
+            },
+            pre_clone_1: {
+              id: 'pre_clone_1',
+              tag: 'g',
+              create: true,
+              parent: 'pre_clone_0',
+            },
+            pre_clone_2: {
+              id: 'pre_clone_2',
+              tag: 'g',
+              create: true,
+              parent: 'pre_clone_1',
+            },
+          })
+        })
       })
     })
+
+    describe('should return a context to createCloneGroupObject', () => {
+      it('to create group object for cloning', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a' }) },
+          10
+        )
+        const id = context.createCloneGroupObject('a', { id: 'b' })
+        const ret = context.getObjectMap()
+
+        expect(id).toBe('b')
+        expect(ret).toEqual({
+          a: { id: 'a', elementId: 'a' },
+          b: {
+            id: 'b',
+            clone: false,
+            create: true,
+            elementId: 'a',
+            tag: 'g',
+          },
+        })
+      })
+    })
+
     describe('should return a context to createObject', () => {
       it('to create new object', () => {
         const context = createGraphNodeContext({}, 10)

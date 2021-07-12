@@ -70,7 +70,7 @@ export interface NodeContext<T> {
   ) => void
   getFrame: () => number
   getObjectMap: () => { [id: string]: T }
-  cloneObject: (objectId: string, arg?: Partial<T>) => string
+  cloneObject: (objectId: string, arg?: Partial<T>, idPref?: string) => string
   createCloneGroupObject: (objectId: string, arg?: Partial<T>) => string
   createObject: (tag: string, arg?: Partial<T>) => string
 }

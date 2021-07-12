@@ -47,8 +47,8 @@ export const struct: NodeStruct<GraphNodeCreateObjectPath> = {
     d: { type: GRAPH_VALUE_TYPE.D, default: [] },
   },
   outputs: nodeToCreateObjectProps.outputs,
-  computation(inputs, _self, context): { object: string } {
-    const base = nodeToCreateObjectProps.computation(inputs)
+  computation(inputs, self, context): { object: string } {
+    const base = nodeToCreateObjectProps.computation(inputs, self)
     if (!base) return { object: '' }
 
     return {

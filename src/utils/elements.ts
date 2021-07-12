@@ -316,7 +316,8 @@ export function createGraphNodeContext(
       return group.id
     },
     createObject(tag, arg = {}) {
-      const created = getGraphObject({ ...arg, tag, create: true }, true)
+      // genereate new id if it has not been set
+      const created = getGraphObject({ ...arg, tag, create: true }, !arg.id)
       addElement(created)
       return created.id
     },

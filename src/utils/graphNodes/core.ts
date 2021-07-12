@@ -117,11 +117,13 @@ export const nodeToCreateObjectProps = {
       [key in keyof GraphNodeCreateObjectInputsBase]: Required<
         GraphNodeCreateObjectInputsBase[key]
       >['value']
-    }
-  ): Omit<typeof inputs, 'disabled'> | undefined {
+    },
+    self: { id: string }
+  ): (Omit<typeof inputs, 'disabled'> & { id: string }) | undefined {
     return inputs.disabled
       ? undefined
       : {
+          id: self.id,
           parent: inputs.parent,
           transform: inputs.transform,
           fill: inputs.fill,

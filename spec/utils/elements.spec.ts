@@ -649,16 +649,29 @@ describe('utils/elements.ts', () => {
         })
       })
     })
-    it('should return a context to createObject', () => {
-      const context = createGraphNodeContext({}, 10)
-      const id = context.createObject('rect', { attributes: { x: 10 } })
-      const ret = context.getObjectMap()
+    describe('should return a context to createObject', () => {
+      it('to create new object', () => {
+        const context = createGraphNodeContext({}, 10)
+        const id = context.createObject('rect', { attributes: { x: 10 } })
+        const ret = context.getObjectMap()
 
-      expect(Object.values(ret)[0]).toEqual({
-        id,
-        create: true,
-        tag: 'rect',
-        attributes: { x: 10 },
+        expect(Object.values(ret)[0]).toEqual({
+          id,
+          create: true,
+          tag: 'rect',
+          attributes: { x: 10 },
+        })
+      })
+      it('extends id if it has been set', () => {
+        const context = createGraphNodeContext({}, 10)
+        context.createObject('rect', { id: 'a' })
+        const ret = context.getObjectMap()
+
+        expect(Object.values(ret)[0]).toEqual({
+          id: 'a',
+          create: true,
+          tag: 'rect',
+        })
       })
     })
   })

@@ -183,7 +183,7 @@ export function getTreeFromElementNode(svg: ElementNode): TreeNode {
 
 export function createGraphNodeContext(
   elementMap: IdMap<BElement>,
-  currentFrame: number
+  frameInfo: { currentFrame: number; endFrame: number }
 ): NodeContext<GraphObject> {
   const graphElementMap: IdMap<GraphObject> = mapReduce(elementMap, (e) =>
     getGraphObject({ id: e.id, elementId: e.id })
@@ -289,8 +289,8 @@ export function createGraphNodeContext(
         ? attributes
         : { ...graphElementMap[objectId].attributes, ...attributes }
     },
-    getFrame() {
-      return currentFrame
+    getFrameInfo() {
+      return frameInfo
     },
     getObjectMap() {
       return graphElementMap
@@ -338,10 +338,10 @@ export function createGraphNodeContext(
 
 export function resolveAnimationGraph(
   elementMap: IdMap<BElement>,
-  currentFrame: number,
+  frameInfo: { currentFrame: number; endFrame: number },
   graphNodes: GraphNodeMap
 ): IdMap<GraphObject> {
-  const context = createGraphNodeContext(elementMap, currentFrame)
+  const context = createGraphNodeContext(elementMap, frameInfo)
   resolveAllNodes(context, graphNodes)
   return context.getObjectMap()
 }

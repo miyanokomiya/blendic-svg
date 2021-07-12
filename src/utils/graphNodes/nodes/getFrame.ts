@@ -32,9 +32,13 @@ export const struct: NodeStruct<GraphNodeGetFrame> = {
   },
   data: {},
   inputs: {},
-  outputs: { frame: GRAPH_VALUE_TYPE.SCALER },
+  outputs: {
+    frame: GRAPH_VALUE_TYPE.SCALER,
+    end_frame: GRAPH_VALUE_TYPE.SCALER,
+  },
   computation(_inputs, _self, context) {
-    return { frame: context.getFrame() }
+    const info = context.getFrameInfo()
+    return { frame: info.currentFrame, end_frame: info.endFrame }
   },
   width: 120,
   color: '#f0e68c',

@@ -129,7 +129,10 @@ export default defineComponent({
       try {
         const graphObjectMap = resolveAnimationGraph(
           elementStore.elementMap.value,
-          animationStore.currentFrame.value,
+          {
+            currentFrame: animationStore.currentFrame.value,
+            endFrame: animationStore.endFrame.value,
+          },
           graphStore.nodeMap.value
         )
         return getGraphResolvedElementTree(

@@ -68,7 +68,7 @@ export interface NodeContext<T> {
     attributes: GraphObjectAttributes,
     replace?: boolean
   ) => void
-  getFrame: () => number
+  getFrameInfo: () => { currentFrame: number; endFrame: number }
   getObjectMap: () => { [id: string]: T }
   cloneObject: (objectId: string, arg?: Partial<T>, idPref?: string) => string
   createCloneGroupObject: (objectId: string, arg?: Partial<T>) => string

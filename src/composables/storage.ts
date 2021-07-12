@@ -209,7 +209,10 @@ export function useStorage() {
     try {
       const graphObjectMap = resolveAnimationGraph(
         elementStore.elementMap.value,
-        animationStore.currentFrame.value,
+        {
+          currentFrame: animationStore.currentFrame.value,
+          endFrame: animationStore.endFrame.value,
+        },
         graphStore.nodeMap.value
       )
 

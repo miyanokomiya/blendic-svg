@@ -89,6 +89,7 @@ const NativeElement: any = defineComponent({
           ...(overrideAttrs.value ?? {}),
         }),
         onClick,
+        key: props.element.id,
       }
     })
 

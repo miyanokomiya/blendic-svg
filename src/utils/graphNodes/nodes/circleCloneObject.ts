@@ -54,19 +54,23 @@ export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
     origin: GRAPH_VALUE_TYPE.OBJECT,
     group: GRAPH_VALUE_TYPE.OBJECT,
   },
-  computation(inputs, _self, context): { origin: string; group: string } {
+  computation(inputs, self, context): { origin: string; group: string } {
     if (!inputs.object) return { origin: '', group: '' }
     const count = Math.floor(inputs.count)
     if (count <= 0) return { origin: inputs.object, group: '' }
 
-    const group = context.createCloneGroupObject(inputs.object)
+    const group = context.createCloneGroupObject(inputs.object, { id: self.id })
     const originTransform = context.getTransform(inputs.object)
 
     const angles = [...Array(count)].map((_, i) => (i * 360) / count)
     const baseV = { x: inputs.radius, y: 0 }
 
-    angles.forEach((angle) => {
-      const clone = context.cloneObject(inputs.object, { parent: group })
+    angles.forEach((angle, i) => {
+      const clone = context.cloneObject(
+        inputs.object,
+        { parent: group },
+        `${self.id}_${i}`
+      )
       const t = getTransform({
         translate: rotate(baseV, ((angle + inputs.rotate) * Math.PI) / 180),
         rotate: inputs.fix_rotate ? 0 : angle,

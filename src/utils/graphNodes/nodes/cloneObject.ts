@@ -38,8 +38,8 @@ export const struct: NodeStruct<GraphNodeCloneObject> = {
     origin: GRAPH_VALUE_TYPE.OBJECT,
     clone: GRAPH_VALUE_TYPE.OBJECT,
   },
-  computation(inputs, _self, context): { origin: string; clone: string } {
-    const clone = context.cloneObject(inputs.object)
+  computation(inputs, self, context): { origin: string; clone: string } {
+    const clone = context.cloneObject(inputs.object, {}, self.id)
     return { origin: inputs.object, clone }
   },
   width: 140,

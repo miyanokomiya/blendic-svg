@@ -70,7 +70,7 @@ export interface NodeContext<T> {
   ) => void
   getFrame: () => number
   getObjectMap: () => { [id: string]: T }
-  cloneObject: (objectId: string, arg?: Partial<T>) => string
+  cloneObject: (objectId: string, arg?: Partial<T>, idPref?: string) => string
   createCloneGroupObject: (objectId: string, arg?: Partial<T>) => string
   createObject: (tag: string, arg?: Partial<T>) => string
 }
@@ -117,11 +117,13 @@ export const nodeToCreateObjectProps = {
       [key in keyof GraphNodeCreateObjectInputsBase]: Required<
         GraphNodeCreateObjectInputsBase[key]
       >['value']
-    }
-  ): Omit<typeof inputs, 'disabled'> | undefined {
+    },
+    self: { id: string }
+  ): (Omit<typeof inputs, 'disabled'> & { id: string }) | undefined {
     return inputs.disabled
       ? undefined
       : {
+          id: self.id,
           parent: inputs.parent,
           transform: inputs.transform,
           fill: inputs.fill,

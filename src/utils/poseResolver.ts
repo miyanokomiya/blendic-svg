@@ -622,7 +622,12 @@ function convertUseElement(
             {
               id: node.id,
               tag: node.tag,
-              attributes: { ...attributes, [DATA_CLONE_ORIGIN_KEY]: node.id },
+              attributes: {
+                ...attributes,
+                [DATA_CLONE_ORIGIN_KEY]: node.id,
+                // must have id attribute to be referred by <use> tags
+                id: node.id,
+              },
               children,
             },
           ],

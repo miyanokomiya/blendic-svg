@@ -24,7 +24,7 @@ describe('src/utils/graphNodes/nodes/circleCloneObject.ts', () => {
             radius: 10,
             fix_rotate: false,
           },
-          {} as any,
+          { id: 'b' } as any,
           {
             cloneObject,
             getTransform,
@@ -34,9 +34,21 @@ describe('src/utils/graphNodes/nodes/circleCloneObject.ts', () => {
         )
       ).toEqual({ origin: 'a', group: 'b' })
       expect(getTransform).toHaveBeenNthCalledWith(1, 'a')
-      expect(createCloneGroupObject).toHaveBeenNthCalledWith(1, 'a')
-      expect(cloneObject).toHaveBeenNthCalledWith(1, 'a', { parent: 'b' })
-      expect(cloneObject).toHaveBeenNthCalledWith(2, 'a', { parent: 'b' })
+      expect(createCloneGroupObject).toHaveBeenNthCalledWith(1, 'a', {
+        id: 'b',
+      })
+      expect(cloneObject).toHaveBeenNthCalledWith(
+        1,
+        'a',
+        { parent: 'b' },
+        'b_0'
+      )
+      expect(cloneObject).toHaveBeenNthCalledWith(
+        2,
+        'a',
+        { parent: 'b' },
+        'b_1'
+      )
       expect(setTransform).toHaveBeenNthCalledWith(
         1,
         '1',

@@ -9,11 +9,11 @@ describe('src/utils/graphNodes/nodes/cloneObject.ts', () => {
           {
             object: 'a',
           },
-          {} as any,
+          { id: 'b' } as any,
           { cloneObject } as any
         )
       ).toEqual({ origin: 'a', clone: 'b' })
-      expect(cloneObject).toHaveBeenCalledWith('a')
+      expect(cloneObject).toHaveBeenCalledWith('a', {}, 'b')
     })
   })
 })

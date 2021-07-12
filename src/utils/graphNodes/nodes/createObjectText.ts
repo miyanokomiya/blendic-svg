@@ -59,8 +59,8 @@ export const struct: NodeStruct<GraphNodeCreateObjectText> = {
     'font-size': { type: GRAPH_VALUE_TYPE.SCALER, default: 100 },
   },
   outputs: nodeToCreateObjectProps.outputs,
-  computation(inputs, _self, context): { object: string } {
-    const base = nodeToCreateObjectProps.computation(inputs)
+  computation(inputs, self, context): { object: string } {
+    const base = nodeToCreateObjectProps.computation(inputs, self)
     if (!base) return { object: '' }
 
     return {

@@ -39,13 +39,14 @@ describe('src/utils/graphNodes/nodes/createObjectRect.ts', () => {
             width: 4,
             height: 5,
           },
-          {} as any,
+          { id: 'a' } as any,
           { createObject } as any
         )
       ).toEqual({
         object: 'a',
       })
       expect(createObject).toHaveBeenCalledWith('rect', {
+        id: 'a',
         transform: getTransform({ rotate: 10 }),
         fill: getTransform({ rotate: 11 }),
         stroke: getTransform({ rotate: 12 }),

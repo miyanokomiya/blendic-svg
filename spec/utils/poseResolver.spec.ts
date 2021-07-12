@@ -536,7 +536,7 @@ describe('utils/poseResolver.ts', () => {
               {
                 id: 'a',
                 tag: '',
-                attributes: { 'data-blendic-use-origin-id': 'a' },
+                attributes: { 'data-blendic-use-origin-id': 'a', id: 'a' },
                 children: [],
               },
             ],
@@ -592,7 +592,7 @@ describe('utils/poseResolver.ts', () => {
               {
                 id: 'a',
                 tag: 'rect',
-                attributes: { 'data-blendic-use-origin-id': 'a' },
+                attributes: { 'data-blendic-use-origin-id': 'a', id: 'a' },
                 children: [],
               },
             ],
@@ -642,6 +642,7 @@ describe('utils/poseResolver.ts', () => {
         id: 'a',
         tag: 'rect',
         attributes: {
+          id: 'a',
           'data-blendic-use-origin-id': 'a',
           class: 'foo',
         },

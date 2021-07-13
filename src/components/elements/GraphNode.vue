@@ -78,7 +78,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         </g>
         <circle
           r="5"
-          :fill="GRAPH_NODE_TYPE_COLOR[edge.type]"
+          :fill="GRAPH_NODE_TYPE_COLOR[edge.type.type]"
           stroke="none"
           class="view-only"
         />
@@ -129,7 +129,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         </g>
         <circle
           r="5"
-          :fill="GRAPH_NODE_TYPE_COLOR[edge.type]"
+          :fill="GRAPH_NODE_TYPE_COLOR[edge.type.type]"
           stroke="none"
           class="view-only"
         />
@@ -142,7 +142,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { defineComponent, PropType, computed } from 'vue'
 import { useSettings } from '../../composables/settings'
 import { switchClick } from '/@/utils/devices'
-import { GraphNode, GraphNodeEdgePositions } from '/@/models/graphNode'
+import {
+  GraphNode,
+  GraphNodeEdgePositions,
+  ValueType,
+} from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
 import { add } from 'okageo'
 import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
@@ -221,7 +225,7 @@ export default defineComponent({
       return mapReduce(dataPositions.value, (position, key) => {
         return {
           position,
-          type: (dataStruct as any)[key].type as string,
+          type: (dataStruct as any)[key].type as ValueType,
           value: props.node.data[key],
         }
       })
@@ -236,7 +240,7 @@ export default defineComponent({
       )
     }
 
-    function getInputType(key: string) {
+    function getInputType(key: string): ValueType {
       return (nodeStruct.value.inputs as any)[key].type
     }
 

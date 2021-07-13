@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeEqual, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeEqual } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeEqual> = {
   create(arg = {}) {
@@ -32,12 +36,21 @@ export const struct: NodeStruct<GraphNodeEqual> = {
   },
   data: {},
   inputs: {
-    a: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    b: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    threshold: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    a: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    b: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    threshold: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.BOOLEAN,
+    value: UNIT_VALUE_TYPES.BOOLEAN,
   },
   computation(inputs) {
     return { value: Math.abs(inputs.a - inputs.b) <= inputs.threshold }

@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeSwitchVector2, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeSwitchVector2 } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeSwitchVector2> = {
   create(arg = {}) {
@@ -36,12 +40,12 @@ export const struct: NodeStruct<GraphNodeSwitchVector2> = {
   },
   data: {},
   inputs: {
-    condition: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: true },
-    if_true: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
-    if_false: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
+    condition: { type: UNIT_VALUE_TYPES.BOOLEAN, default: true },
+    if_true: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
+    if_false: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.VECTOR2,
+    value: UNIT_VALUE_TYPES.VECTOR2,
   },
   computation(inputs) {
     return { value: inputs.condition ? inputs.if_true : inputs.if_false }

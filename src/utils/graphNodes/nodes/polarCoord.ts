@@ -18,8 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { IVec2 } from 'okageo'
-import { GraphNodePolarCoord, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodePolarCoord } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodePolarCoord> = {
   create(arg = {}) {
@@ -33,11 +37,11 @@ export const struct: NodeStruct<GraphNodePolarCoord> = {
   },
   data: {},
   inputs: {
-    rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    radius: { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
+    rotate: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
+    radius: { type: UNIT_VALUE_TYPES.SCALER, default: 1 },
   },
   outputs: {
-    vector2: GRAPH_VALUE_TYPE.VECTOR2,
+    vector2: UNIT_VALUE_TYPES.VECTOR2,
   },
   computation(inputs): { vector2: IVec2 } {
     const r = (inputs.rotate * Math.PI) / 180

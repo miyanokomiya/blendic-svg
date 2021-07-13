@@ -536,7 +536,7 @@ export function validateConnection(
 ): boolean {
   const inputType = NODE_MODULES[to.type].struct.inputs[to.key].type
   const outputType = NODE_MODULES[from.type].struct.outputs[from.key]
-  return inputType === outputType
+  return inputType.type === outputType.type
 }
 
 export function resetInput<T extends GraphNodeType>(

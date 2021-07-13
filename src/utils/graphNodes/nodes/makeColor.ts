@@ -18,9 +18,17 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { Transform } from '/@/models'
-import { GraphNodeMakeColor, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import {
+  GraphNodeMakeColor,
+  GRAPH_VALUE_STRUCT,
+  GRAPH_VALUE_TYPE,
+} from '/@/models/graphNode'
 import { hsvaToTransform } from '/@/utils/color'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeMakeColor> = {
   create(arg = {}) {
@@ -39,13 +47,29 @@ export const struct: NodeStruct<GraphNodeMakeColor> = {
   },
   data: {},
   inputs: {
-    h: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    s: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    v: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    a: { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
+    h: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    s: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    v: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    a: {
+      type: {
+        type: GRAPH_VALUE_TYPE.SCALER,
+        struct: GRAPH_VALUE_STRUCT.UNIT,
+        scale: 0.1,
+      },
+      default: 1,
+    },
   },
   outputs: {
-    color: GRAPH_VALUE_TYPE.COLOR,
+    color: UNIT_VALUE_TYPES.COLOR,
   },
   computation(inputs): { color: Transform } {
     return {

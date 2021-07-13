@@ -23,7 +23,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div xmlns="http://www.w3.org/1999/xhtml" class="field">
       <h5>{{ label }}</h5>
       <ColorRect
-        v-if="type === 'COLOR'"
+        v-if="inputType === 'COLOR'"
         :transform="modelValue"
         class="color"
       />
@@ -34,7 +34,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType, computed, inject } from 'vue'
-import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { ValueType } from '/@/models/graphNode'
 import ColorRect from '/@/components/atoms/ColorRect.vue'
 
 export default defineComponent({
@@ -45,7 +45,7 @@ export default defineComponent({
     modelValue: { type: null, required: true },
     label: { type: String, required: true },
     type: {
-      type: String as PropType<keyof typeof GRAPH_VALUE_TYPE>,
+      type: Object as PropType<ValueType>,
       required: true,
     },
   },
@@ -55,10 +55,13 @@ export default defineComponent({
       emit('update:modelValue', val, seriesKey)
     }
 
+    const inputType = computed(() => props.type.type)
+
     const objectOptions = computed(inject('getObjectOptions', () => []))
 
     return {
       update,
+      inputType,
       objectOptions,
     }
   },

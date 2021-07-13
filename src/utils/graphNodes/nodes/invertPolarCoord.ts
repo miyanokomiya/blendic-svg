@@ -18,11 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getNorm, getRadian } from 'okageo'
+import { GraphNodeInvertPolarCoord } from '/@/models/graphNode'
 import {
-  GraphNodeInvertPolarCoord,
-  GRAPH_VALUE_TYPE,
-} from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeInvertPolarCoord> = {
   create(arg = {}) {
@@ -36,11 +37,14 @@ export const struct: NodeStruct<GraphNodeInvertPolarCoord> = {
   },
   data: {},
   inputs: {
-    vector2: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 1, y: 0 } },
+    vector2: {
+      type: UNIT_VALUE_TYPES.VECTOR2,
+      default: { x: 1, y: 0 },
+    },
   },
   outputs: {
-    rotate: GRAPH_VALUE_TYPE.SCALER,
-    radius: GRAPH_VALUE_TYPE.SCALER,
+    rotate: UNIT_VALUE_TYPES.SCALER,
+    radius: UNIT_VALUE_TYPES.SCALER,
   },
   computation(inputs): { rotate: number; radius: number } {
     const radius = getNorm(inputs.vector2)

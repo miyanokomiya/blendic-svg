@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/elements/GraphNodeDataField.vue'
 import { getTransform } from '/@/models'
-import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { GRAPH_VALUE_STRUCT, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 
 describe('src/components/elements/GraphNodeDataField.vue', () => {
   describe('snapshot', () => {
@@ -29,7 +29,10 @@ describe('src/components/elements/GraphNodeDataField.vue', () => {
         props: {
           modelValue: 123,
           label: 'value',
-          type: GRAPH_VALUE_TYPE.SCALER,
+          type: {
+            type: GRAPH_VALUE_TYPE.SCALER,
+            struct: GRAPH_VALUE_STRUCT.UNIT,
+          },
         },
       })
       expect(wrapper.element).toMatchSnapshot()
@@ -39,7 +42,10 @@ describe('src/components/elements/GraphNodeDataField.vue', () => {
         props: {
           modelValue: getTransform({ rotate: 20 }),
           label: 'value',
-          type: GRAPH_VALUE_TYPE.COLOR,
+          type: {
+            type: GRAPH_VALUE_TYPE.COLOR,
+            struct: GRAPH_VALUE_STRUCT.UNIT,
+          },
         },
       })
       expect(wrapper.element).toMatchSnapshot()

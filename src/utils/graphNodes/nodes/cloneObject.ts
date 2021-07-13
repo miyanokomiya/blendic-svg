@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeCloneObject, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeCloneObject } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeCloneObject> = {
   create(arg = {}) {
@@ -32,11 +36,14 @@ export const struct: NodeStruct<GraphNodeCloneObject> = {
   },
   data: {},
   inputs: {
-    object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
+    object: {
+      type: UNIT_VALUE_TYPES.OBJECT,
+      default: '',
+    },
   },
   outputs: {
-    origin: GRAPH_VALUE_TYPE.OBJECT,
-    clone: GRAPH_VALUE_TYPE.OBJECT,
+    origin: UNIT_VALUE_TYPES.OBJECT,
+    clone: UNIT_VALUE_TYPES.OBJECT,
   },
   computation(inputs, self, context): { origin: string; clone: string } {
     const clone = context.cloneObject(inputs.object, {}, self.id)

@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeMakeVector2, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeMakeVector2 } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeMakeVector2> = {
   create(arg = {}) {
@@ -32,11 +36,17 @@ export const struct: NodeStruct<GraphNodeMakeVector2> = {
   },
   data: {},
   inputs: {
-    x: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    y: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    x: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    y: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
   },
   outputs: {
-    vector2: GRAPH_VALUE_TYPE.VECTOR2,
+    vector2: UNIT_VALUE_TYPES.VECTOR2,
   },
   computation(inputs) {
     return { vector2: inputs }

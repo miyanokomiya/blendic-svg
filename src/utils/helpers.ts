@@ -25,6 +25,7 @@ import {
   GraphNodeEdgeInfo,
   GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
+  ValueType,
 } from '/@/models/graphNode'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { hsvaToRgba, rednerRGBA } from '/@/utils/color'
@@ -322,7 +323,7 @@ export function getGraphNodeOutputsPosition(node: GraphNode): {
 }
 
 function getGraphNodeRowsPosition(
-  rows: { key: string; type: GRAPH_VALUE_TYPE_KEY }[],
+  rows: { key: string; type: ValueType }[],
   margin: IVec2 = { x: 0, y: 0 }
 ): {
   [key: string]: GraphNodeEdgeInfo

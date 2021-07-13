@@ -55,6 +55,24 @@ export const GRAPH_VALUE_TYPE = {
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 
+export type ValueType = ValueTypeBase<GRAPH_VALUE_TYPE_KEY> | ValueTypeScaler
+
+export const GRAPH_VALUE_STRUCT = {
+  UNIT: 'UNIT',
+  ARRAY: 'ARRAY',
+  UNIT_OR_ARRAY: 'UNIT_OR_ARRAY',
+} as const
+export type GRAPH_VALUE_STRUCT_KEY = keyof typeof GRAPH_VALUE_STRUCT
+
+interface ValueTypeBase<T extends GRAPH_VALUE_TYPE_KEY> {
+  type: T
+  struct: GRAPH_VALUE_STRUCT_KEY
+}
+
+interface ValueTypeScaler extends ValueTypeBase<'SCALER'> {
+  scale: number
+}
+
 export interface GraphNodeInput<T> {
   from?: { id: string; key: string }
   value?: T
@@ -75,7 +93,7 @@ export interface GraphNodeOutputMap {
 
 export interface GraphNodeEdgeInfo {
   p: IVec2
-  type: GRAPH_VALUE_TYPE_KEY
+  type: ValueType
 }
 
 export interface GraphNodeEdgePositions {

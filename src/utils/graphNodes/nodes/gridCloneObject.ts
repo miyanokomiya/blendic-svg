@@ -19,9 +19,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { rotate, sub } from 'okageo'
 import { getTransform } from '/@/models'
-import { GraphNodeGridCloneObject, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { GraphNodeGridCloneObject } from '/@/models/graphNode'
 import { multiPoseTransform } from '/@/utils/armatures'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeGridCloneObject> = {
   create(arg = {}) {
@@ -43,17 +47,38 @@ export const struct: NodeStruct<GraphNodeGridCloneObject> = {
   },
   data: {},
   inputs: {
-    object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
-    centered: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
-    rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    row: { type: GRAPH_VALUE_TYPE.SCALER, default: 3 },
-    column: { type: GRAPH_VALUE_TYPE.SCALER, default: 3 },
-    width: { type: GRAPH_VALUE_TYPE.SCALER, default: 50 },
-    height: { type: GRAPH_VALUE_TYPE.SCALER, default: 50 },
+    object: {
+      type: UNIT_VALUE_TYPES.OBJECT,
+      default: '',
+    },
+    centered: {
+      type: UNIT_VALUE_TYPES.BOOLEAN,
+      default: false,
+    },
+    rotate: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    row: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 3,
+    },
+    column: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 3,
+    },
+    width: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 50,
+    },
+    height: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 50,
+    },
   },
   outputs: {
-    origin: GRAPH_VALUE_TYPE.OBJECT,
-    group: GRAPH_VALUE_TYPE.OBJECT,
+    origin: UNIT_VALUE_TYPES.OBJECT,
+    group: UNIT_VALUE_TYPES.OBJECT,
   },
   computation(inputs, self, context): { origin: string; group: string } {
     if (!inputs.object) return { origin: '', group: '' }

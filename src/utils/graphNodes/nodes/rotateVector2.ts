@@ -18,8 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { rotate } from 'okageo'
-import { GraphNodeRotateVector2, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeRotateVector2 } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeRotateVector2> = {
   create(arg = {}) {
@@ -37,12 +41,12 @@ export const struct: NodeStruct<GraphNodeRotateVector2> = {
   },
   data: {},
   inputs: {
-    vector2: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
-    rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    origin: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
+    vector2: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
+    rotate: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
+    origin: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
   },
   outputs: {
-    vector2: GRAPH_VALUE_TYPE.VECTOR2,
+    vector2: UNIT_VALUE_TYPES.VECTOR2,
   },
   computation(inputs) {
     return {

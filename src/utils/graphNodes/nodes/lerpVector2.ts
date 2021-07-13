@@ -18,9 +18,17 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { interpolateVector } from 'okageo'
-import { GraphNodeLerpVector2, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import {
+  GraphNodeLerpVector2,
+  GRAPH_VALUE_STRUCT,
+  GRAPH_VALUE_TYPE,
+} from '/@/models/graphNode'
 import { clamp } from '/@/utils/geometry'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeLerpVector2> = {
   create(arg = {}) {
@@ -38,12 +46,25 @@ export const struct: NodeStruct<GraphNodeLerpVector2> = {
   },
   data: {},
   inputs: {
-    a: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
-    b: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 1, y: 1 } },
-    alpha: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    a: {
+      type: UNIT_VALUE_TYPES.VECTOR2,
+      default: { x: 0, y: 0 },
+    },
+    b: {
+      type: UNIT_VALUE_TYPES.VECTOR2,
+      default: { x: 1, y: 1 },
+    },
+    alpha: {
+      type: {
+        type: GRAPH_VALUE_TYPE.SCALER,
+        struct: GRAPH_VALUE_STRUCT.UNIT,
+        scale: 0.1,
+      },
+      default: 0,
+    },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.VECTOR2,
+    value: UNIT_VALUE_TYPES.VECTOR2,
   },
   computation(inputs) {
     return {

@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeSetViewbox, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeSetViewbox } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeSetViewbox> = {
   create(arg = {}) {
@@ -39,14 +43,14 @@ export const struct: NodeStruct<GraphNodeSetViewbox> = {
   },
   data: {},
   inputs: {
-    object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
-    centered: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
-    x: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    y: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    width: { type: GRAPH_VALUE_TYPE.SCALER, default: 400 },
-    height: { type: GRAPH_VALUE_TYPE.SCALER, default: 400 },
+    object: { type: UNIT_VALUE_TYPES.OBJECT, default: '' },
+    centered: { type: UNIT_VALUE_TYPES.BOOLEAN, default: false },
+    x: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
+    y: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
+    width: { type: UNIT_VALUE_TYPES.SCALER, default: 400 },
+    height: { type: UNIT_VALUE_TYPES.SCALER, default: 400 },
   },
-  outputs: { object: GRAPH_VALUE_TYPE.OBJECT },
+  outputs: { object: UNIT_VALUE_TYPES.OBJECT },
   computation(inputs, _self, context): {} {
     context.setAttributes(inputs.object, {
       viewBox: {

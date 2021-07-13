@@ -18,10 +18,18 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { GraphNodeLerpTransform, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import {
+  GraphNodeLerpTransform,
+  GRAPH_VALUE_STRUCT,
+  GRAPH_VALUE_TYPE,
+} from '/@/models/graphNode'
 import { interpolateTransform } from '/@/utils/armatures'
 import { clamp } from '/@/utils/geometry'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeLerpTransform> = {
   create(arg = {}) {
@@ -39,12 +47,25 @@ export const struct: NodeStruct<GraphNodeLerpTransform> = {
   },
   data: {},
   inputs: {
-    a: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
-    b: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
-    alpha: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    a: {
+      type: UNIT_VALUE_TYPES.TRANSFORM,
+      default: getTransform(),
+    },
+    b: {
+      type: UNIT_VALUE_TYPES.TRANSFORM,
+      default: getTransform(),
+    },
+    alpha: {
+      type: {
+        type: GRAPH_VALUE_TYPE.SCALER,
+        struct: GRAPH_VALUE_STRUCT.UNIT,
+        scale: 0.1,
+      },
+      default: 0,
+    },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.TRANSFORM,
+    value: UNIT_VALUE_TYPES.TRANSFORM,
   },
   computation(inputs) {
     return {

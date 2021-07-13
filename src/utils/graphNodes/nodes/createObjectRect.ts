@@ -17,14 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import {
-  GraphNodeCreateObjectRect,
-  GRAPH_VALUE_TYPE,
-} from '/@/models/graphNode'
+import { GraphNodeCreateObjectRect } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
   nodeToCreateObjectProps,
+  UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeCreateObjectRect> = {
@@ -48,11 +46,26 @@ export const struct: NodeStruct<GraphNodeCreateObjectRect> = {
   data: {},
   inputs: {
     ...nodeToCreateObjectProps.inputs,
-    centered: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
-    x: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    y: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    width: { type: GRAPH_VALUE_TYPE.SCALER, default: 100 },
-    height: { type: GRAPH_VALUE_TYPE.SCALER, default: 100 },
+    centered: {
+      type: UNIT_VALUE_TYPES.BOOLEAN,
+      default: false,
+    },
+    x: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    y: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    width: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 100,
+    },
+    height: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 100,
+    },
   },
   outputs: nodeToCreateObjectProps.outputs,
   computation(inputs, self, context): { object: string } {

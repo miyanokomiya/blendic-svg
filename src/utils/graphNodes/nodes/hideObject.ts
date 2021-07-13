@@ -18,8 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { GraphNodeHideObject, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeHideObject } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeHideObject> = {
   create(arg = {}) {
@@ -33,11 +37,17 @@ export const struct: NodeStruct<GraphNodeHideObject> = {
   },
   data: {},
   inputs: {
-    disabled: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
-    object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
+    disabled: {
+      type: UNIT_VALUE_TYPES.BOOLEAN,
+      default: false,
+    },
+    object: {
+      type: UNIT_VALUE_TYPES.OBJECT,
+      default: '',
+    },
   },
   outputs: {
-    object: GRAPH_VALUE_TYPE.OBJECT,
+    object: UNIT_VALUE_TYPES.OBJECT,
   },
   computation(inputs, _self, context): { object: string } {
     if (!inputs.disabled) {

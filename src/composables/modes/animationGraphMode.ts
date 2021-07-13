@@ -236,7 +236,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
             const from = state.dragTarget.draftGraphEdge.from
             const node = graphStore.nodeMap.value[from.nodeId]
             const struct = getGraphNodeModule(node.type).struct
-            state.nodeSuggestion = struct.outputs[from.key]
+            state.nodeSuggestion = struct.outputs[from.key].type
             state.keyDownPosition = state.editMovement!.current
             state.command = 'add'
           } else {

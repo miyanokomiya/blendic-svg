@@ -45,10 +45,12 @@ describe('src/components/atoms/GraphNodeDataField.vue', () => {
           type: {
             type: GRAPH_VALUE_TYPE.SCALER,
             struct: GRAPH_VALUE_STRUCT.UNIT,
+            scale: 0.2,
           },
         },
       })
       expect(wrapper.element).toMatchSnapshot()
+      expect(wrapper.vm.valueScale).toBe(0.2)
     })
     it('OBJECT', () => {
       const wrapper = mount(Target, {

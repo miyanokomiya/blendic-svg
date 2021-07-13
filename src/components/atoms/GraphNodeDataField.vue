@@ -18,33 +18,34 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div v-if="editableTypes[inputType]">
+  <div v-if="editableTypes[valueTypeKey]">
     <h5>{{ label }}</h5>
     <TextInput v-if="disabled" :model-value="modelValue" disabled />
     <template v-else>
       <SliderInput
-        v-if="inputType === 'SCALER'"
+        v-if="valueTypeKey === 'SCALER'"
+        :step="valueScale"
         :model-value="modelValue"
         @update:modelValue="update"
       />
       <SelectField
-        v-else-if="inputType === 'OBJECT'"
+        v-else-if="valueTypeKey === 'OBJECT'"
         :model-value="modelValue"
         :options="objectOptions"
         @update:modelValue="update"
       />
       <TextInput
-        v-else-if="inputType === 'TEXT'"
+        v-else-if="valueTypeKey === 'TEXT'"
         :model-value="modelValue"
         :options="objectOptions"
         @update:modelValue="update"
       />
       <CheckboxInput
-        v-else-if="inputType === 'BOOLEAN'"
+        v-else-if="valueTypeKey === 'BOOLEAN'"
         :model-value="modelValue"
         @update:modelValue="update"
       />
-      <template v-else-if="inputType === 'VECTOR2'">
+      <template v-else-if="valueTypeKey === 'VECTOR2'">
         <InlineField label="x" label-width="20px">
           <SliderInput
             :model-value="modelValue.x"
@@ -62,7 +63,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           />
         </InlineField>
       </template>
-      <div v-else-if="inputType === 'COLOR'" class="color-block">
+      <div v-else-if="valueTypeKey === 'COLOR'" class="color-block">
         <button
           type="button"
           class="color-button"
@@ -143,13 +144,15 @@ export default defineComponent({
       return posedHsva(props.modelValue)
     })
 
-    const inputType = computed(() => props.type.type)
+    const valueTypeKey = computed(() => props.type.type)
+    const valueScale = computed(() => (props.type as any).scale ?? 1)
 
     return {
       editableTypes,
       update,
       objectOptions,
-      inputType,
+      valueTypeKey,
+      valueScale,
 
       showColorPicker,
       toggleShowColorPicker,

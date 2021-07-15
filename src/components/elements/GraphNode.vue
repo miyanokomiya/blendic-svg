@@ -135,6 +135,9 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
       </g>
     </g>
+    <g v-if="errors" :transform="`translate(0, ${size.height})`">
+      <ErrorText :errors="errors" />
+    </g>
   </g>
 </template>
 
@@ -151,6 +154,7 @@ import * as helpers from '/@/utils/helpers'
 import { add } from 'okageo'
 import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
 import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
+import ErrorText from '/@/components/elements/atoms/ErrorText.vue'
 import { mapReduce } from '/@/utils/commons'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { Size } from 'okanvas'
@@ -181,6 +185,7 @@ export default defineComponent({
   components: {
     GraphNodeDataField,
     GraphNodeInputLabel,
+    ErrorText,
   },
   props: {
     node: {
@@ -192,6 +197,10 @@ export default defineComponent({
       default: () => ({}),
     },
     selected: { type: Boolean, default: false },
+    errors: {
+      type: Array as PropType<string[] | undefined>,
+      default: undefined,
+    },
   },
   emits: ['down-body', 'down-edge', 'up-edge', 'update:data'],
   setup(props, { emit }) {
@@ -254,11 +263,13 @@ export default defineComponent({
       headOutline,
       outline,
       outlineStroke: computed(() =>
-        props.selected ? settings.selectedColor : '#555'
+        props.errors ? 'red' : props.selected ? settings.selectedColor : '#555'
+      ),
+      outlineStrokeWidth: computed(() =>
+        props.errors ? 6 : props.selected ? 2 : 1
       ),
       getInputType,
       edgeAnchorWidth: computed(() => 60),
-      outlineStrokeWidth: computed(() => (props.selected ? 2 : 1)),
       dataMap,
       downBody(e: MouseEvent) {
         switchClick(e, {
@@ -299,5 +310,9 @@ export default defineComponent({
     transition: fill 0.2s;
     fill: #ffa07a;
   }
+}
+.error-message {
+  background-color: #fff;
+  color: #000;
 }
 </style>

@@ -70,5 +70,14 @@ describe('src/components/elements/GraphNode.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
+    it('has errors', () => {
+      const wrapper = mount(Target, {
+        props: {
+          node: createGraphNode('scaler'),
+          errors: ['aaaaaa', 'bbbbbbbbbbbbb', 'ccccc'],
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 })

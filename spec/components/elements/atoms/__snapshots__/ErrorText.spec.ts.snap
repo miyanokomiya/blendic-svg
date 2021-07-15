@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/atoms/ErrorText.vue snapshot default 1`] = `
+<g>
+  
+  <rect
+    fill="#fff"
+    height="0"
+    stroke="red"
+    stroke-width="2"
+    width="0"
+  />
+  
+  <g
+    transform="translate(10, 4)"
+  >
+    
+    <text
+      dominant-baseline="text-before-edge"
+      fill="red"
+      font-size="16"
+      font-weight="600"
+    >
+      
+      <tspan
+        dy="0"
+        x="0"
+      >
+        aaaaaa
+      </tspan>
+      <tspan
+        dy="1.2em"
+        x="0"
+      >
+        bbbbbbbbbbbbb
+      </tspan>
+      <tspan
+        dy="1.2em"
+        x="0"
+      >
+        ccccc
+      </tspan>
+      
+    </text>
+    
+  </g>
+</g>
+`;

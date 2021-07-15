@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/atoms/OutlineRect.vue snapshot default 1`] = `
+<g>
+  
+  
+  <g
+    transform="translate(1, 20)"
+  >
+    
+    
+    <text>
+      abc
+    </text>
+    
+    
+  </g>
+</g>
+`;

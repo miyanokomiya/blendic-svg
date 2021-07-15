@@ -203,25 +203,19 @@ export function useStorage() {
       )
     )
 
-    let svg = svgNode
+    const graphObjectMap = resolveAnimationGraph(
+      elementStore.elementMap.value,
+      {
+        currentFrame: animationStore.currentFrame.value,
+        endFrame: animationStore.endFrame.value,
+      },
+      graphStore.nodeMap.value
+    )
 
-    // TODO: for develop try-catch
-    try {
-      const graphObjectMap = resolveAnimationGraph(
-        elementStore.elementMap.value,
-        {
-          currentFrame: animationStore.currentFrame.value,
-          endFrame: animationStore.endFrame.value,
-        },
-        graphStore.nodeMap.value
-      )
-
-      svg = getGraphResolvedElementTree(graphObjectMap, svgNode)
-    } catch (e) {
-      console.warn(e)
-    }
-
-    saveSvg(makeSvg(svg).outerHTML, `${name}.svg`)
+    saveSvg(
+      makeSvg(getGraphResolvedElementTree(graphObjectMap, svgNode)).outerHTML,
+      `${name}.svg`
+    )
   }
 
   return {

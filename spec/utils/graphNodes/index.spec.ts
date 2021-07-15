@@ -23,6 +23,7 @@ import {
   deleteAndDisconnectNodes,
   getNodeEdgeTypes,
   updateInputConnection,
+  getAllCircularRefIds,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -133,8 +134,8 @@ describe('src/utils/graphNodes/index.ts', () => {
         make_vector2: { vector2: { x: 1, y: 10 } },
       })
     })
-    it('should throw an error if circular references are founded', () => {
-      expect(() =>
+    it('should ignore the circular connections', () => {
+      expect(
         resolveNode(
           context,
           {
@@ -164,7 +165,10 @@ describe('src/utils/graphNodes/index.ts', () => {
           {},
           'make_vector2'
         )
-      ).toThrow('Failed to resolve: circular references are founded')
+      ).toEqual({
+        make_vector2: { vector2: { x: 0, y: 0 } },
+        break_vector2: { x: 0, y: 0 },
+      })
     })
     it('should use the value if input references is invalid', () => {
       expect(
@@ -188,6 +192,37 @@ describe('src/utils/graphNodes/index.ts', () => {
       ).toEqual({
         make_vector2: { vector2: { x: 2, y: 4 } },
       })
+    })
+  })
+
+  describe('getAllCircularRefIds', () => {
+    it('should be able to get circular ref ids', () => {
+      const map = getAllCircularRefIds({
+        ...nodes,
+        cir_a: {
+          id: 'cir_a',
+          type: 'make_vector2',
+          data: {},
+          inputs: {
+            x: { from: { id: 'cir_b', key: 'value' }, value: 0 },
+            y: { from: { id: 'cir_b', key: 'value' }, value: 0 },
+          },
+          position: { x: 0, y: 0 },
+        },
+        cir_b: {
+          id: 'cir_b',
+          type: 'break_vector2',
+          data: {},
+          inputs: {
+            vector2: {
+              from: { id: 'cir_a', key: 'vector2' },
+              value: { x: 0, y: 0 },
+            },
+          },
+          position: { x: 0, y: 0 },
+        },
+      })
+      expect(map).toEqual({ cir_a: true, cir_b: true })
     })
   })
 

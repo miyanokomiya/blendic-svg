@@ -380,7 +380,10 @@ export function resolveAllNodes<T>(
 ): GraphNodeOutputMap {
   return Object.keys(nodeMap).reduce<GraphNodeOutputMap>((p, id) => {
     if (p[id]) return p
-    return { ...p, ...resolveNode<T>(context, nodeMap, p, id) }
+    return {
+      ...p,
+      ...resolveNode<T>(context, nodeMap, p, id, {}),
+    }
   }, {})
 }
 
@@ -393,7 +396,7 @@ export function resolveNode<T>(
 ): GraphNodeOutputMap {
   if (outputMap[targetId]) return outputMap
   if (currentPathMap[targetId]) {
-    throw new Error('Failed to resolve: circular references are founded')
+    return outputMap
   }
 
   const target = nodeMap[targetId]
@@ -412,6 +415,52 @@ export function resolveNode<T>(
     ...fromOutputMap,
     [targetId]: compute<T>(context, fromOutputMap, target),
   }
+}
+
+export function getAllCircularRefIds(nodeMap: GraphNodeMap): IdMap<true> {
+  const map: IdMap<true> = {}
+  const setCircularRefIds = (ids: string[]) => {
+    ids.forEach((id) => {
+      map[id] = true
+    })
+  }
+  Object.keys(nodeMap).reduce<IdMap<true>>((p, id) => {
+    if (p[id]) return p
+    return {
+      ...p,
+      ...getCircularRefIds(nodeMap, p, id, {}, setCircularRefIds),
+    }
+  }, {})
+
+  return map
+}
+
+function getCircularRefIds(
+  nodeMap: GraphNodeMap,
+  doneMap: IdMap<true>,
+  targetId: string,
+  currentPathMap: { [id: string]: true } = {},
+  setCircularRefIds?: (ids: string[]) => void
+): IdMap<true> {
+  if (doneMap[targetId]) return doneMap
+  if (currentPathMap[targetId]) {
+    setCircularRefIds?.(Object.keys(currentPathMap))
+    return doneMap
+  }
+
+  const target = nodeMap[targetId]
+  if (!target) return doneMap
+
+  const nextPathMap: { [id: string]: true } = {
+    ...currentPathMap,
+    [targetId]: true,
+  }
+
+  const fromOutputMap = getInputFromIds(target.inputs ?? {}).reduce((p, id) => {
+    return getCircularRefIds(nodeMap, p, id, nextPathMap, setCircularRefIds)
+  }, doneMap)
+
+  return { ...fromOutputMap, [targetId]: true }
 }
 
 export function compute<T>(

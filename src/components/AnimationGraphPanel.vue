@@ -65,6 +65,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :node="node"
           :edge-positions="edgePositionMap[node.id]"
           :selected="selectedNodes[node.id]"
+          :errors="nodeErrorMessagesMap[node.id]"
           @down-body="downNodeBody"
           @down-edge="downNodeEdge"
           @up-edge="upNodeEdge"
@@ -108,6 +109,7 @@ import { GraphNodeEdgePositions } from '/@/models/graphNode'
 import { useElementStore } from '/@/store/element'
 import GraphSideBar from '/@/components/GraphSideBar.vue'
 import { getElementLabel } from '/@/utils/elements'
+import { getAllCircularRefIds } from '/@/utils/graphNodes'
 
 export default defineComponent({
   components: {
@@ -266,6 +268,12 @@ export default defineComponent({
       }
     })
 
+    const nodeErrorMessagesMap = computed<IdMap<string[]>>(() => {
+      return mapReduce(getAllCircularRefIds(graphStore.nodeMap.value), () => [
+        'circular connection is found',
+      ])
+    })
+
     function updateNodeData(id: string, data: any, seriesKey?: string) {
       const node = graphStore.nodeMap.value[id]
       graphStore.updateNode(id, { ...node, data }, seriesKey)
@@ -303,6 +311,7 @@ export default defineComponent({
       edgePositionMap,
       edgeMap,
       draftEdge,
+      nodeErrorMessagesMap,
 
       draftName,
       changeGraphName,

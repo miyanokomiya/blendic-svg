@@ -26,7 +26,6 @@ import {
   GraphNodeOutputValues,
   GraphNodes,
   GraphNodeType,
-  GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
   ValueType,
 } from '/@/models/graphNode'
@@ -657,16 +656,12 @@ export function getNodeEdgeTypes(target: GraphNode): {
 } {
   const struct = getGraphNodeModule<any>(target.type).struct
 
-  const inputs = mapReduce(target.inputs, (input, key) => {
-    const type = struct.inputs[key].type
-    if (type.type === GRAPH_VALUE_TYPE.GENERICS && input.genericsType) {
-      return input.genericsType
-    }
-    return type
+  const inputs = mapReduce(struct.inputs, (inputStruct, key) => {
+    return target.inputs[key].genericsType ?? inputStruct.type
   })
 
-  const outputs = mapReduce(struct.outputs, (_, key) => {
-    return struct.getOutputType?.(target, key) ?? UNIT_VALUE_TYPES.GENERICS
+  const outputs = mapReduce(struct.outputs, (output, key) => {
+    return struct.getOutputType?.(target, key) ?? output
   })
 
   return { inputs, outputs }
@@ -682,6 +677,9 @@ export function updateInputConnection(
     key: string
   }
 ): GraphNode | undefined {
+  // ignore if the two node are the same
+  if (fromInfo.node.id === toInfo.node.id) return
+
   // ignore if the node is not updated
   const currentInput = toInfo.node.inputs[toInfo.key]
   if (

@@ -30,7 +30,7 @@ import {
 import { posedHsva } from '/@/utils/attributesResolver'
 import { hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { BoneConstraint } from '/@/utils/constraints'
-import { getGraphNodeModule } from '/@/utils/graphNodes'
+import { getGraphNodeModule, getNodeEdgeTypes } from '/@/utils/graphNodes'
 import { NodeStruct } from '/@/utils/graphNodes/core'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
@@ -291,11 +291,11 @@ export function getGraphNodeInputsPosition(node: GraphNode): {
 } {
   const dataHeight = getGraphNodeDataHeight(node)
   const outputsHeight = getGraphNodeOutputsHeight(node)
-  const struct = getGraphNodeModule<any>(node.type).struct
+
   return getGraphNodeRowsPosition(
-    Object.entries(struct.inputs).map(([key, input]) => ({
+    Object.entries(getNodeEdgeTypes(node).inputs).map(([key, type]) => ({
       key,
-      type: node.inputs[key].genericsType ?? input.type,
+      type,
     })),
     {
       x: 0,
@@ -311,12 +311,12 @@ export function getGraphNodeInputsPosition(node: GraphNode): {
 export function getGraphNodeOutputsPosition(node: GraphNode): {
   [key: string]: GraphNodeEdgeInfo
 } {
-  const struct = getGraphNodeModule(node.type).struct
   const { width } = getGraphNodeSize(node)
   return getGraphNodeRowsPosition(
-    Object.entries(struct.outputs).map(([key, type]) => {
-      return { key, type: struct.getOutputType?.(node, key) ?? type }
-    }),
+    Object.entries(getNodeEdgeTypes(node).outputs).map(([key, type]) => ({
+      key,
+      type,
+    })),
     {
       x: width,
       y: GRAPH_NODE_HEAD_HEIGHT + (GRAPH_NODE_ROW_HEIGHT * 2) / 3,

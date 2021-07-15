@@ -580,6 +580,16 @@ describe('src/utils/graphNodes/index.ts', () => {
 
   describe('getNodeEdgeTypes', () => {
     it('should return the edge types of the target node', () => {
+      expect(getNodeEdgeTypes(createGraphNode('make_vector2', {}))).toEqual({
+        inputs: {
+          x: UNIT_VALUE_TYPES.SCALER,
+          y: UNIT_VALUE_TYPES.SCALER,
+        },
+        outputs: {
+          vector2: UNIT_VALUE_TYPES.VECTOR2,
+        },
+      })
+
       expect(
         getNodeEdgeTypes(
           createGraphNode('switch_generics', {
@@ -639,6 +649,17 @@ describe('src/utils/graphNodes/index.ts', () => {
             }),
             key: 'y',
           }
+        )
+      ).toEqual(undefined)
+    })
+    it('should return undefined if the connection is recursive', () => {
+      const node = createGraphNode('add_scaler', {
+        id: 'a',
+      })
+      expect(
+        updateInputConnection(
+          { node: node, key: 'value' },
+          { node: node, key: 'a' }
         )
       ).toEqual(undefined)
     })

@@ -291,11 +291,11 @@ export function getGraphNodeInputsPosition(node: GraphNode): {
 } {
   const dataHeight = getGraphNodeDataHeight(node)
   const outputsHeight = getGraphNodeOutputsHeight(node)
-  const module = getGraphNodeModule(node.type)
+  const struct = getGraphNodeModule<any>(node.type).struct
   return getGraphNodeRowsPosition(
-    Object.entries(module.struct.inputs).map(([key, i]) => ({
+    Object.entries(struct.inputs).map(([key, input]) => ({
       key,
-      type: (i as any).type,
+      type: node.inputs[key].genericsType ?? input.type,
     })),
     {
       x: 0,
@@ -311,10 +311,12 @@ export function getGraphNodeInputsPosition(node: GraphNode): {
 export function getGraphNodeOutputsPosition(node: GraphNode): {
   [key: string]: GraphNodeEdgeInfo
 } {
-  const module = getGraphNodeModule(node.type)
+  const struct = getGraphNodeModule(node.type).struct
   const { width } = getGraphNodeSize(node)
   return getGraphNodeRowsPosition(
-    Object.entries(module.struct.outputs).map(([key, type]) => ({ key, type })),
+    Object.entries(struct.outputs).map(([key, type]) => {
+      return { key, type: struct.getOutputType?.(node, key) ?? type }
+    }),
     {
       x: width,
       y: GRAPH_NODE_HEAD_HEIGHT + (GRAPH_NODE_ROW_HEIGHT * 2) / 3,
@@ -361,6 +363,7 @@ export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
     COLOR: '#32cd32',
     TEXT: '#808000',
     D: '#00bfff',
+    GENERICS: '#b0c4de',
   } as const
 
 export function getInputValuePreviewText(

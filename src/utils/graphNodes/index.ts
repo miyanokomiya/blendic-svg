@@ -19,15 +19,22 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import {
   GraphNode,
+  GraphNodeInput,
   GraphNodeInputs,
   GraphNodeMap,
   GraphNodeOutputMap,
   GraphNodeOutputValues,
   GraphNodes,
   GraphNodeType,
+  GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
+  ValueType,
 } from '/@/models/graphNode'
-import { NodeModule, NodeContext } from '/@/utils/graphNodes/core'
+import {
+  NodeModule,
+  NodeContext,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 import { v4 } from 'uuid'
 import * as get_frame from './nodes/getFrame'
 import * as scaler from './nodes/scaler'
@@ -94,6 +101,7 @@ import * as not from './nodes/not'
 import * as and from './nodes/and'
 import * as or from './nodes/or'
 import * as equal from './nodes/equal'
+import * as switch_generics from './nodes/switch'
 import * as switch_scaler from './nodes/switchScaler'
 import * as switch_vector2 from './nodes/switchVector2'
 import * as switch_transform from './nodes/switchTransform'
@@ -169,6 +177,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   less_than,
   less_than_or_equal,
   between,
+  switch_generics,
   switch_scaler,
   switch_vector2,
   switch_transform,
@@ -252,6 +261,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: '(<) Number', type: 'less_than' },
       { label: '(<=) Number', type: 'less_than_or_equal' },
       { label: 'Between', type: 'between' },
+      { label: 'Switch', type: 'switch_generics' },
       { label: 'Switch Number', type: 'switch_scaler' },
       { label: 'Switch Vector2', type: 'switch_vector2' },
       { label: 'Switch Transform', type: 'switch_transform' },
@@ -356,6 +366,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
     { label: 'Create Path', type: 'create_object_path', key: 'd' },
   ],
+  GENERICS: [],
 }
 
 export function getGraphNodeModule<T extends GraphNodeType>(
@@ -526,25 +537,50 @@ export function createGraphNode<T extends GraphNodeType>(
 
 export function validateConnection(
   from: {
-    type: GraphNodeType
+    node: GraphNode
     key: string
   },
   to: {
-    type: GraphNodeType
+    node: GraphNode
     key: string
   }
 ): boolean {
-  const inputType = NODE_MODULES[to.type].struct.inputs[to.key].type
-  const outputType = NODE_MODULES[from.type].struct.outputs[from.key]
-  return inputType.type === outputType.type
+  const inputType =
+    to.node.inputs[to.key].genericsType ??
+    NODE_MODULES[to.node.type].struct.inputs[to.key].type
+  const outputType =
+    NODE_MODULES[from.node.type].struct.getOutputType?.(from.node, from.key) ??
+    NODE_MODULES[from.node.type].struct.outputs[from.key]
+
+  return canConnectValueType(inputType, outputType)
 }
 
-export function resetInput<T extends GraphNodeType>(
-  type: T,
-  key: string
-): { value: unknown } {
-  const struct = getGraphNodeModule(type).struct
-  return { value: (struct.inputs as any)[key].default }
+function canConnectValueType(a: ValueType, b: ValueType): boolean {
+  if (a.type === 'GENERICS' || b.type === 'GENERICS') return true
+  return isSameValueType(a, b)
+}
+
+function isSameValueType(a: ValueType, b: ValueType): boolean {
+  return a.type === b.type && a.struct === b.struct
+}
+
+export function resetInput(node: GraphNode, key: string): GraphNode {
+  const current = node.inputs[key]
+  const struct = getGraphNodeModule<any>(node.type).struct
+
+  const nextInput: GraphNodeInput<any> = { value: struct.inputs[key].default }
+
+  // keep generics if it is confirmed
+  if (current.genericsType) {
+    nextInput.genericsType = current.genericsType
+  }
+
+  const updated: GraphNode = {
+    ...node,
+    inputs: { ...node.inputs, [key]: nextInput },
+  }
+
+  return struct.cleanGenerics?.(updated) ?? updated
 }
 
 export function duplicateNodes(
@@ -613,4 +649,77 @@ export function deleteAndDisconnectNodes(
     })
 
   return { nodes: nextNodes, updatedIds }
+}
+
+export function getNodeEdgeTypes(target: GraphNode): {
+  inputs: { [key: string]: ValueType }
+  outputs: { [key: string]: ValueType }
+} {
+  const struct = getGraphNodeModule<any>(target.type).struct
+
+  const inputs = mapReduce(target.inputs, (input, key) => {
+    const type = struct.inputs[key].type
+    if (type.type === GRAPH_VALUE_TYPE.GENERICS && input.genericsType) {
+      return input.genericsType
+    }
+    return type
+  })
+
+  const outputs = mapReduce(struct.outputs, (_, key) => {
+    return struct.getOutputType?.(target, key) ?? UNIT_VALUE_TYPES.GENERICS
+  })
+
+  return { inputs, outputs }
+}
+
+export function updateInputConnection(
+  fromInfo: {
+    node: GraphNode
+    key: string
+  },
+  toInfo: {
+    node: GraphNode
+    key: string
+  }
+): GraphNode | undefined {
+  // ignore if the node is not updated
+  const currentInput = toInfo.node.inputs[toInfo.key]
+  if (
+    currentInput.from?.id === fromInfo.node.id &&
+    currentInput.from?.key === fromInfo.key
+  )
+    return
+
+  const fromStruct = getGraphNodeModule(fromInfo.node.type).struct
+  const toStruct = getGraphNodeModule<any>(toInfo.node.type).struct
+
+  const fromType = fromStruct.getOutputType?.(fromInfo.node, fromInfo.key)
+
+  const input: GraphNodeInput<any> = {
+    from: { id: fromInfo.node.id, key: fromInfo.key },
+  }
+
+  if (
+    isSameValueType(toStruct.inputs[toInfo.key].type, UNIT_VALUE_TYPES.GENERICS)
+  ) {
+    if (!fromType) {
+      // inherit the output type
+      input.genericsType = fromStruct.outputs[fromInfo.key]
+    } else {
+      if (!isSameValueType(fromType, UNIT_VALUE_TYPES.GENERICS)) {
+        // inherit the output generics type
+        input.genericsType = fromType
+      }
+    }
+  }
+
+  const updated: GraphNode = {
+    ...toInfo.node,
+    inputs: {
+      ...toInfo.node.inputs,
+      [toInfo.key]: input,
+    },
+  }
+
+  return toStruct.cleanGenerics?.(updated) ?? updated
 }

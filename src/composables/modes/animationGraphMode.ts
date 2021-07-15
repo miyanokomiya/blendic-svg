@@ -41,6 +41,7 @@ import {
   NODE_MENU_OPTIONS_SRC,
   NODE_SUGGESTION_MENU_OPTIONS_SRC,
   resetInput,
+  updateInputConnection,
   validateConnection,
 } from '/@/utils/graphNodes'
 import { mapFilter, mapReduce, toList } from '/@/utils/commons'
@@ -149,8 +150,8 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         const toNode = graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
         const toKey = state.closestEdgeInfo.key
         return validateConnection(
-          { type: fromNode.type, key: fromKey },
-          { type: toNode.type, key: toKey }
+          { node: fromNode, key: fromKey },
+          { node: toNode, key: toKey }
         )
       } else {
         if (state.closestEdgeInfo.type === 'input') return false
@@ -162,8 +163,8 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         const toNode = graphStore.nodeMap.value[to.nodeId]
         const toKey = to.key
         return validateConnection(
-          { type: fromNode.type, key: fromKey },
-          { type: toNode.type, key: toKey }
+          { node: fromNode, key: fromKey },
+          { node: toNode, key: toKey }
         )
       }
     }
@@ -177,17 +178,13 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     targetId: string,
     targetKey: string
   ) {
-    const input = (node.inputs as any)[inputKey] as GraphNodeInput<unknown>
-    // ignore if the input is not updated
-    if (input.from?.id === targetId && input.from?.key === targetKey) return
+    const updated = updateInputConnection(
+      { node: graphStore.nodeMap.value[targetId], key: targetKey },
+      { node, key: inputKey }
+    )
+    if (!updated) return
 
-    graphStore.updateNode(node.id, {
-      ...node,
-      inputs: {
-        ...node.inputs,
-        [inputKey]: { from: { id: targetId, key: targetKey } },
-      } as any,
-    })
+    graphStore.updateNode(updated.id, updated)
   }
 
   function upLeft(options?: { empty: boolean }) {
@@ -221,13 +218,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
           const input = (toNode.inputs as any)[toKey] as GraphNodeInput<unknown>
           if (input.from) {
             // delete current edge
-            graphStore.updateNode(toNode.id, {
-              ...toNode,
-              inputs: {
-                ...toNode.inputs,
-                [toKey]: resetInput(toNode.type, toKey),
-              } as any,
-            })
+            graphStore.updateNode(toNode.id, resetInput(toNode, toKey))
           }
           cancel()
         } else {

@@ -54,6 +54,8 @@ export interface NodeStruct<T extends GraphNodeBase> {
   color?: string
   textColor?: string
   label?: string
+  getOutputType?: (self: T, key: string) => ValueType
+  cleanGenerics?: (self: T) => T
 }
 
 export interface NodeContext<T> {

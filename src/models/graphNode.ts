@@ -52,6 +52,7 @@ export const GRAPH_VALUE_TYPE = {
   COLOR: 'COLOR',
   TEXT: 'TEXT',
   D: 'D',
+  GENERICS: 'GENERICS',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 
@@ -76,6 +77,8 @@ interface ValueTypeScaler extends ValueTypeBase<'SCALER'> {
 export interface GraphNodeInput<T> {
   from?: { id: string; key: string }
   value?: T
+  // an input having a generics type may have this property if the type is decided
+  genericsType?: ValueType
 }
 export type GraphNodeInputs = { [key: string]: GraphNodeInput<any> }
 
@@ -174,6 +177,7 @@ export interface GraphNodes {
   less_than: GraphNodeLessThan
   less_than_or_equal: GraphNodeLessThanOrEqual
   between: GraphNodeBetween
+  switch_generics: GraphNodeSwitch
   switch_scaler: GraphNodeSwitchScaler
   switch_vector2: GraphNodeSwitchVector2
   switch_transform: GraphNodeSwitchTransform
@@ -668,6 +672,15 @@ export interface GraphNodeBetween extends GraphNodeBase {
     number: GraphNodeInput<number>
     from: GraphNodeInput<number>
     to: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeSwitch extends GraphNodeBase {
+  type: 'switch_generics'
+  inputs: {
+    condition: GraphNodeInput<boolean>
+    if_true: GraphNodeInput<unknown>
+    if_false: GraphNodeInput<unknown>
   }
 }
 

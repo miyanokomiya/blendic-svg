@@ -268,3 +268,18 @@ export function provideScale(getScale: () => number) {
 export function injectScale(): () => number {
   return inject<() => number>('getScale', () => 1)
 }
+
+export function useGetBBox() {
+  const scale = computed(injectScale())
+
+  return (dom: SVGGraphicsElement) => {
+    // getBBox does not exist in some environments e.g. jsdom
+    if (dom.getBBox) return dom.getBBox()
+
+    const size = dom.getBoundingClientRect()
+    return {
+      width: size.width * scale.value,
+      height: size.height * scale.value,
+    }
+  }
+}

@@ -32,6 +32,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { Size } from 'okanvas'
 import { defineComponent, PropType, ref, watch, onMounted } from 'vue'
+import { useGetBBox } from '/@/composables/canvas'
 
 export default defineComponent({
   props: {
@@ -45,12 +46,14 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const target = ref<SVGElement>()
+    const target = ref<SVGGraphicsElement>()
     const size = ref({ width: 0, height: 0 })
+
+    const getBBox = useGetBBox()
 
     function calcSize() {
       if (!target.value) return
-      const rect = target.value.getBoundingClientRect()
+      const rect = getBBox(target.value)
       size.value = {
         width: rect.width + props.marginSize.width * 2,
         height: rect.height + props.marginSize.height * 2,

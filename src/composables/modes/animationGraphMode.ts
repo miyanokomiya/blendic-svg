@@ -38,7 +38,7 @@ import {
 import {
   cleanEdgeGenericsGroupAt,
   duplicateNodes,
-  getGraphNodeModule,
+  getOutputType,
   NODE_MENU_OPTIONS_SRC,
   NODE_SUGGESTION_MENU_OPTIONS_SRC,
   resetInput,
@@ -194,7 +194,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     })
   }
 
-  function disConnectNodeInput(node: GraphNode, inputKey: string) {
+  function disconnectNodeInput(node: GraphNode, inputKey: string) {
     const updated = resetInput(node, inputKey)
     graphStore.updateNodes({
       [node.id]: updated,
@@ -236,7 +236,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
           const input = (toNode.inputs as any)[toKey] as GraphNodeInput<unknown>
           if (input.from) {
             // delete current edge
-            disConnectNodeInput(toNode, toKey)
+            disconnectNodeInput(toNode, toKey)
           }
           cancel()
         } else {
@@ -244,8 +244,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
             // save the edge type and suggest relational nodes
             const from = state.dragTarget.draftGraphEdge.from
             const node = graphStore.nodeMap.value[from.nodeId]
-            const struct = getGraphNodeModule(node.type).struct
-            state.nodeSuggestion = struct.outputs[from.key].type
+            state.nodeSuggestion = getOutputType(node, from.key).type
             state.keyDownPosition = state.editMovement!.current
             state.command = 'add'
           } else {
@@ -519,16 +518,17 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   })
 
   // add new node and connect draft edge to it
+  // FIXME: two histories are created by this operation
   function addAndConnectNode(type: GraphNodeType, key: string) {
     const from = draftEdgeFrom.value
     if (!from) return
 
-    graphStore.addNode(type, {
+    const newNode = graphStore.addNode(type, {
       position: state.keyDownPosition,
-      inputs: {
-        [key]: { from: { id: from.nodeId, key: from.key } },
-      },
     })
+    if (newNode) {
+      updateNodeInput(newNode, key, from.nodeId, from.key)
+    }
     cancel()
   }
 

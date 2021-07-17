@@ -594,14 +594,10 @@ export function validateConnection(
     key: string
   }
 ): boolean {
-  const inputType =
-    to.node.inputs[to.key].genericsType ??
-    NODE_MODULES[to.node.type].struct.inputs[to.key].type
-  const outputType =
-    NODE_MODULES[from.node.type].struct.getOutputType?.(from.node, from.key) ??
-    NODE_MODULES[from.node.type].struct.outputs[from.key]
-
-  return canConnectValueType(inputType, outputType)
+  return canConnectValueType(
+    getInputType(to.node, to.key),
+    getOutputType(from.node, from.key)
+  )
 }
 
 function canConnectValueType(a: ValueType, b: ValueType): boolean {
@@ -632,7 +628,7 @@ export function resetInput(node: GraphNode, key: string): GraphNode {
     inputs: { ...node.inputs, [key]: nextInput },
   }
 
-  return struct.cleanGenerics?.(updated) ?? updated
+  return updated
 }
 
 export function duplicateNodes(
@@ -707,17 +703,7 @@ export function getNodeEdgeTypes(target: GraphNode): {
   inputs: { [key: string]: ValueType }
   outputs: { [key: string]: ValueType }
 } {
-  const struct = getGraphNodeModule<any>(target.type).struct
-
-  const inputs = mapReduce(struct.inputs, (inputStruct, key) => {
-    return target.inputs[key].genericsType ?? inputStruct.type
-  })
-
-  const outputs = mapReduce(struct.outputs, (output, key) => {
-    return struct.getOutputType?.(target, key) ?? output
-  })
-
-  return { inputs, outputs }
+  return { inputs: getInputTypes(target), outputs: getOutputTypes(target) }
 }
 
 // this function do connect only and does not resolve generics
@@ -801,6 +787,12 @@ function getInputType(target: GraphNode, key: string): ValueType {
     getGraphNodeModule<any>(target.type).struct.inputs[key].type
   )
 }
+function getInputTypes(target: GraphNode): { [key: string]: ValueType } {
+  const struct = getGraphNodeModule<any>(target.type).struct
+  return mapReduce(target.inputs, (_, key) => {
+    return target.inputs[key].genericsType ?? struct.inputs[key].type
+  })
+}
 
 function getInputOriginalType(type: GraphNodeType, key: string): ValueType {
   const struct = getGraphNodeModule<any>(type).struct
@@ -810,6 +802,12 @@ function getInputOriginalType(type: GraphNodeType, key: string): ValueType {
 function getOutputType(target: GraphNode, key: string): ValueType {
   const struct = getGraphNodeModule(target.type).struct
   return struct.getOutputType?.(target, key) ?? struct.outputs[key]
+}
+function getOutputTypes(target: GraphNode): { [key: string]: ValueType } {
+  const struct = getGraphNodeModule(target.type).struct
+  return mapReduce(struct.outputs, (_, key) => {
+    return struct.getOutputType?.(target, key) ?? struct.outputs[key]
+  })
 }
 
 export function getEdgeChainGroupAt(

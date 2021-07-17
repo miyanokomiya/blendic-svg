@@ -68,24 +68,6 @@ export const struct: NodeStruct<GraphNodeSwitch> = {
         return UNIT_VALUE_TYPES.GENERICS
     }
   },
-  cleanGenerics(self, outputTypes) {
-    const genericsType = pickNotGenericsType([
-      self.inputs.if_true.genericsType,
-      self.inputs.if_false.genericsType,
-      outputTypes?.value,
-    ])
-
-    return genericsType
-      ? {
-          ...self,
-          inputs: {
-            ...self.inputs,
-            if_true: { ...self.inputs.if_true, genericsType },
-            if_false: { ...self.inputs.if_false, genericsType },
-          },
-        }
-      : self
-  },
   getGenericsChainAt(self, key, output) {
     if (
       (output && key === 'value') ||

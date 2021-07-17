@@ -98,40 +98,4 @@ describe('src/utils/graphNodes/nodes/switch.ts', () => {
       ).toEqual(UNIT_VALUE_TYPES.SCALER)
     })
   })
-
-  describe('cleanGenerics', () => {
-    it('should clean generics', () => {
-      expect(
-        target.struct.cleanGenerics!(
-          target.struct.create({
-            inputs: {
-              condition: { value: true },
-              if_true: {
-                value: undefined,
-                genericsType: UNIT_VALUE_TYPES.GENERICS,
-              },
-              if_false: {
-                value: undefined,
-                genericsType: UNIT_VALUE_TYPES.SCALER,
-              },
-            },
-          })
-        )
-      ).toEqual(
-        target.struct.create({
-          inputs: {
-            condition: { value: true },
-            if_true: {
-              value: undefined,
-              genericsType: UNIT_VALUE_TYPES.SCALER,
-            },
-            if_false: {
-              value: undefined,
-              genericsType: UNIT_VALUE_TYPES.SCALER,
-            },
-          },
-        })
-      )
-    })
-  })
 })

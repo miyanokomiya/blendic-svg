@@ -55,7 +55,6 @@ export interface NodeStruct<T extends GraphNodeBase> {
   textColor?: string
   label?: string
   getOutputType?: (self: T, key: string) => ValueType
-  cleanGenerics?: (self: T, outputTypes?: { [key: string]: ValueType }) => T
   getGenericsChainAt?: (
     self: T,
     key: string,

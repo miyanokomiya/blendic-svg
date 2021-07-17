@@ -36,7 +36,7 @@ import {
   GRAPH_VALUE_TYPE_KEY,
 } from '/@/models/graphNode'
 import {
-  cleanAllGenericsAt,
+  cleanEdgeGenericsGroupAt,
   duplicateNodes,
   getGraphNodeModule,
   NODE_MENU_OPTIONS_SRC,
@@ -187,9 +187,20 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
 
     graphStore.updateNodes({
       [updated.id]: updated,
-      ...cleanAllGenericsAt(
+      ...cleanEdgeGenericsGroupAt(
         { ...graphStore.nodeMap.value, [updated.id]: updated },
-        updated.id
+        { id: updated.id, key: inputKey }
+      ),
+    })
+  }
+
+  function disConnectNodeInput(node: GraphNode, inputKey: string) {
+    const updated = resetInput(node, inputKey)
+    graphStore.updateNodes({
+      [node.id]: updated,
+      ...cleanEdgeGenericsGroupAt(
+        { ...graphStore.nodeMap.value, [updated.id]: updated },
+        { id: updated.id, key: inputKey }
       ),
     })
   }
@@ -225,7 +236,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
           const input = (toNode.inputs as any)[toKey] as GraphNodeInput<unknown>
           if (input.from) {
             // delete current edge
-            graphStore.updateNode(toNode.id, resetInput(toNode, toKey))
+            disConnectNodeInput(toNode, toKey)
           }
           cancel()
         } else {

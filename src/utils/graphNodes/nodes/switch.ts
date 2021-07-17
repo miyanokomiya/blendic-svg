@@ -86,4 +86,19 @@ export const struct: NodeStruct<GraphNodeSwitch> = {
         }
       : self
   },
+  getGenericsChainAt(self, key, output) {
+    if (
+      (output && key === 'value') ||
+      key === 'if_true' ||
+      key === 'if_false'
+    ) {
+      return [
+        { id: self.id, key: 'if_true' },
+        { id: self.id, key: 'if_false' },
+        { id: self.id, key: 'value', output: true },
+      ]
+    }
+
+    return []
+  },
 }

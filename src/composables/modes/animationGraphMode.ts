@@ -36,6 +36,7 @@ import {
   GRAPH_VALUE_TYPE_KEY,
 } from '/@/models/graphNode'
 import {
+  cleanAllGenericsAt,
   duplicateNodes,
   getGraphNodeModule,
   NODE_MENU_OPTIONS_SRC,
@@ -184,7 +185,13 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     )
     if (!updated) return
 
-    graphStore.updateNode(updated.id, updated)
+    graphStore.updateNodes({
+      [updated.id]: updated,
+      ...cleanAllGenericsAt(
+        { ...graphStore.nodeMap.value, [updated.id]: updated },
+        updated.id
+      ),
+    })
   }
 
   function upLeft(options?: { empty: boolean }) {

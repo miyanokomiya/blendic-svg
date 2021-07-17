@@ -26,14 +26,11 @@ import {
   GraphNodeOutputValues,
   GraphNodes,
   GraphNodeType,
+  GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
   ValueType,
 } from '/@/models/graphNode'
-import {
-  NodeModule,
-  NodeContext,
-  UNIT_VALUE_TYPES,
-} from '/@/utils/graphNodes/core'
+import { NodeModule, NodeContext } from '/@/utils/graphNodes/core'
 import { v4 } from 'uuid'
 import * as get_frame from './nodes/getFrame'
 import * as scaler from './nodes/scaler'
@@ -106,7 +103,7 @@ import * as switch_vector2 from './nodes/switchVector2'
 import * as switch_transform from './nodes/switchTransform'
 import * as switch_object from './nodes/switchObject'
 import { IdMap } from '/@/models'
-import { mapReduce } from '/@/utils/commons'
+import { extractMap, mapReduce } from '/@/utils/commons'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -716,6 +713,8 @@ export function getNodeEdgeTypes(target: GraphNode): {
   return { inputs, outputs }
 }
 
+// this function do connect only and does not resolve generics
+// => use getAllEdgeConnectionInfo to resolve its
 export function updateInputConnection(
   fromInfo: {
     node: GraphNode
@@ -737,27 +736,8 @@ export function updateInputConnection(
   )
     return
 
-  const fromStruct = getGraphNodeModule(fromInfo.node.type).struct
-  const toStruct = getGraphNodeModule<any>(toInfo.node.type).struct
-
-  const fromType = fromStruct.getOutputType?.(fromInfo.node, fromInfo.key)
-
   const input: GraphNodeInput<any> = {
     from: { id: fromInfo.node.id, key: fromInfo.key },
-  }
-
-  if (
-    isSameValueType(toStruct.inputs[toInfo.key].type, UNIT_VALUE_TYPES.GENERICS)
-  ) {
-    if (!fromType) {
-      // inherit the output type
-      input.genericsType = fromStruct.outputs[fromInfo.key]
-    } else {
-      if (!isSameValueType(fromType, UNIT_VALUE_TYPES.GENERICS)) {
-        // inherit the output generics type
-        input.genericsType = fromType
-      }
-    }
   }
 
   const updated: GraphNode = {
@@ -768,5 +748,191 @@ export function updateInputConnection(
     },
   }
 
-  return toStruct.cleanGenerics?.(updated) ?? updated
+  return updated
+}
+
+interface EdgeConnectionInfo {
+  inputs: {
+    [key: string]: { id: string; key: string }
+  }
+  outputs: {
+    [key: string]: { id: string; key: string }[]
+  }
+}
+type AllEdgeConnectionInfo = IdMap<EdgeConnectionInfo>
+
+export function getAllEdgeConnectionInfo(
+  nodeMap: GraphNodeMap
+): AllEdgeConnectionInfo {
+  const ret: AllEdgeConnectionInfo = {}
+
+  Object.entries(nodeMap).forEach(([id, node]) => {
+    ret[id] ??= { inputs: {}, outputs: {} }
+    Object.entries(node.inputs).forEach(([key, input]) => {
+      if (!input.from) return
+
+      // save input info
+      ret[id].inputs[key] = input.from
+
+      // save output info
+      ret[input.from.id] ??= { inputs: {}, outputs: {} }
+      ret[input.from.id].outputs[input.from.key] ??= []
+      ret[input.from.id].outputs[input.from.key].push({ id, key })
+    })
+  })
+
+  return ret
+}
+
+export function cleanAllGenericsAt(
+  nodeMap: GraphNodeMap,
+  targetId: string
+): GraphNodeMap {
+  const allEdgeConnectionInfo = getAllEdgeConnectionInfo(nodeMap)
+
+  const updatedIds: IdMap<true> = {}
+  const doneIds: IdMap<true> = {}
+
+  const saveUpdatedId = (id: string) => {
+    updatedIds[id] = true
+  }
+  const isUpdatedId = (id: string) => !!updatedIds[id]
+  const saveDoneId = (id: string) => {
+    doneIds[id] = true
+  }
+  const isDoneId = (id: string) => !!doneIds[id]
+
+  const cleaned = walkToCleanGenerics(
+    nodeMap,
+    allEdgeConnectionInfo,
+    targetId,
+    { saveUpdatedId, isUpdatedId, saveDoneId, isDoneId }
+  )
+
+  return extractMap(cleaned, updatedIds)
+}
+
+function walkToCleanGenerics(
+  nodeMap: GraphNodeMap,
+  allEdgeConnectionInfo: AllEdgeConnectionInfo,
+  targetId: string,
+  context: {
+    saveUpdatedId: (id: string) => void
+    isUpdatedId: (id: string) => boolean
+    saveDoneId: (id: string) => void
+    isDoneId: (id: string) => boolean
+  }
+): GraphNodeMap {
+  if (context.isDoneId(targetId)) return nodeMap
+  const target = nodeMap[targetId]
+  if (!target) return nodeMap
+
+  context.saveDoneId(targetId)
+
+  // clean inputs
+  const inputs = mapReduce(target.inputs, (input) => {
+    if (!input.from) return input
+    if (isGenericsResolved(input.genericsType)) return input
+
+    const outputTarget = nodeMap[input.from.id]
+    if (!outputTarget) return input
+
+    const outputType = getOutputType(outputTarget, input.from.key)
+    if (!isGenericsResolved(outputType)) return input
+
+    context.saveUpdatedId(targetId)
+    return {
+      ...input,
+      genericsType: outputType,
+    }
+  })
+
+  const struct = getGraphNodeModule<any>(target.type).struct
+  const nextTarget: GraphNode = context.isUpdatedId(targetId)
+    ? (struct.cleanGenerics ?? ((n: GraphNode) => n))({ ...target, inputs })
+    : target
+  const nextMap = context.isUpdatedId(targetId)
+    ? { ...nodeMap, [targetId]: nextTarget }
+    : nodeMap
+
+  const outputTypes = getOutputTypes(nextTarget)
+
+  // walk to outputs
+  const nextMap2 = Object.entries(
+    allEdgeConnectionInfo[targetId].outputs
+  ).reduce((p, [key, outputInfoList]) => {
+    return outputInfoList.reduce((q, outputInfo) => {
+      // ignore if the output is not a generics type
+      const orgType = struct.outputs[key]
+      if (orgType?.type !== GRAPH_VALUE_TYPE.GENERICS) return q
+
+      // ignore if the output's generics type does not resolved
+      const type = outputTypes[key]
+      if (!isGenericsResolved(type)) return q
+
+      return walkToCleanGenerics(
+        q,
+        allEdgeConnectionInfo,
+        outputInfo.id,
+        context
+      )
+    }, p)
+  }, nextMap)
+
+  // walk to inputs
+  const nextMap3 = Object.entries(
+    allEdgeConnectionInfo[targetId].inputs
+  ).reduce((p, [key, inputFrom]) => {
+    const inputTarget = nextMap[inputFrom.id]
+    if (!inputTarget) return p
+
+    const inputTargetStruct = getGraphNodeModule(inputTarget.type).struct
+    if (!inputTargetStruct.cleanGenerics) return p
+
+    // ignore the type has been resolved already
+    const currentType = inputTargetStruct.getOutputType?.(
+      inputTarget,
+      inputFrom.key
+    )
+    if (!currentType || isGenericsResolved(currentType)) return p
+
+    // resolve generics
+    const resolved = inputTargetStruct.cleanGenerics(inputTarget, {
+      [inputFrom.key]: getInputType(nextTarget, key),
+    })
+    context.saveUpdatedId(inputFrom.id)
+
+    // walk to the resolved node
+    return walkToCleanGenerics(
+      { ...p, [inputFrom.id]: resolved },
+      allEdgeConnectionInfo,
+      inputFrom.id,
+      context
+    )
+  }, nextMap2)
+
+  return nextMap3
+}
+
+function isGenericsResolved(genericsType?: ValueType): boolean {
+  return !!genericsType && genericsType.type !== GRAPH_VALUE_TYPE.GENERICS
+}
+
+function getInputType(target: GraphNode, key: string): ValueType {
+  return (
+    target.inputs[key].genericsType ??
+    getGraphNodeModule<any>(target.type).struct.inputs[key].type
+  )
+}
+
+function getOutputType(target: GraphNode, key: string): ValueType {
+  const struct = getGraphNodeModule(target.type).struct
+  return struct.getOutputType?.(target, key) ?? struct.outputs[key]
+}
+
+function getOutputTypes(target: GraphNode): { [key: string]: ValueType } {
+  const struct = getGraphNodeModule<any>(target.type).struct
+  return mapReduce(struct.outputs, (_, key) => {
+    return struct.getOutputType?.(target, key) ?? struct.outputs[key]
+  })
 }

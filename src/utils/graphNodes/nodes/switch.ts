@@ -21,6 +21,7 @@ import { GraphNodeSwitch } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
+  pickNotGenericsType,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
@@ -58,24 +59,31 @@ export const struct: NodeStruct<GraphNodeSwitch> = {
     switch (key) {
       case 'value':
         return (
-          self.inputs.if_true.genericsType ??
-          self.inputs.if_false.genericsType ??
-          UNIT_VALUE_TYPES.GENERICS
+          pickNotGenericsType([
+            self.inputs.if_true.genericsType,
+            self.inputs.if_false.genericsType,
+          ]) ?? UNIT_VALUE_TYPES.GENERICS
         )
       default:
         return UNIT_VALUE_TYPES.GENERICS
     }
   },
-  cleanGenerics(self) {
-    const genericsType =
-      self.inputs.if_true.genericsType ?? self.inputs.if_false.genericsType
-    return {
-      ...self,
-      inputs: {
-        ...self.inputs,
-        if_true: { ...self.inputs.if_true, genericsType },
-        if_false: { ...self.inputs.if_false, genericsType },
-      },
-    }
+  cleanGenerics(self, outputTypes) {
+    const genericsType = pickNotGenericsType([
+      self.inputs.if_true.genericsType,
+      self.inputs.if_false.genericsType,
+      outputTypes?.value,
+    ])
+
+    return genericsType
+      ? {
+          ...self,
+          inputs: {
+            ...self.inputs,
+            if_true: { ...self.inputs.if_true, genericsType },
+            if_false: { ...self.inputs.if_false, genericsType },
+          },
+        }
+      : self
   },
 }

@@ -55,7 +55,7 @@ export interface NodeStruct<T extends GraphNodeBase> {
   textColor?: string
   label?: string
   getOutputType?: (self: T, key: string) => ValueType
-  cleanGenerics?: (self: T) => T
+  cleanGenerics?: (self: T, outputTypes?: { [key: string]: ValueType }) => T
 }
 
 export interface NodeContext<T> {
@@ -160,3 +160,9 @@ export const nodeToCreateObjectProps = {
         }
   },
 } as const
+
+export function pickNotGenericsType(
+  types: (ValueType | undefined)[]
+): ValueType | undefined {
+  return types.find((t) => !!t && t.type !== GRAPH_VALUE_TYPE.GENERICS)
+}

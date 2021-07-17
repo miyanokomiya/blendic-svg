@@ -1,3 +1,22 @@
+/*
+This file is part of Blendic SVG.
+
+Blendic SVG is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Blendic SVG is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
+
+Copyright (C) 2021, Tomoya Komiyama.
+*/
+
 import type {
   GraphNodeBreakVector2,
   GraphNodeMakeVector2,
@@ -24,6 +43,8 @@ import {
   getNodeEdgeTypes,
   updateInputConnection,
   getAllCircularRefIds,
+  getAllEdgeConnectionInfo,
+  cleanAllGenericsAt,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -698,76 +719,263 @@ describe('src/utils/graphNodes/index.ts', () => {
         )
       ).toEqual(undefined)
     })
-    describe('generics', () => {
-      it('should confirm generics type if the output type is not generics', () => {
-        expect(
-          updateInputConnection(
-            {
-              node: createGraphNode('scaler', { id: 'a' }),
-              key: 'value',
-            },
-            { node: createGraphNode('switch_generics'), key: 'if_true' }
-          )
-        ).toEqual(
-          createGraphNode('switch_generics', {
+  })
+
+  describe('getAllEdgeConnectionInfo', () => {
+    it('should return all edge connection info', () => {
+      expect(
+        getAllEdgeConnectionInfo({
+          a: createGraphNode('make_vector2', {
+            id: 'a',
             inputs: {
-              if_true: {
-                from: { id: 'a', key: 'value' },
-                genericsType: UNIT_VALUE_TYPES.SCALER,
-              },
-              if_false: {
-                genericsType: UNIT_VALUE_TYPES.SCALER,
-              },
+              y: { from: { id: 'b', key: 'x' } },
             },
-          })
-        )
+          }),
+          b: createGraphNode('break_vector2', {
+            id: 'b',
+            inputs: {
+              vector2: { from: { id: 'c', key: 'vector2' } },
+            },
+          }),
+          c: createGraphNode('make_vector2', {
+            id: 'c',
+          }),
+          e: createGraphNode('break_vector2', {
+            id: 'e',
+            inputs: {
+              vector2: { from: { id: 'c', key: 'vector2' } },
+            },
+          }),
+        })
+      ).toEqual({
+        a: {
+          inputs: {
+            y: { id: 'b', key: 'x' },
+          },
+          outputs: {},
+        },
+        b: {
+          inputs: {
+            vector2: { id: 'c', key: 'vector2' },
+          },
+          outputs: {
+            x: [{ id: 'a', key: 'y' }],
+          },
+        },
+        c: {
+          inputs: {},
+          outputs: {
+            vector2: [
+              { id: 'b', key: 'vector2' },
+              { id: 'e', key: 'vector2' },
+            ],
+          },
+        },
+        e: {
+          inputs: {
+            vector2: { id: 'c', key: 'vector2' },
+          },
+          outputs: {},
+        },
       })
-      it('should confirm generics type if the output type is confirmed', () => {
-        expect(
-          updateInputConnection(
-            {
-              node: createGraphNode('switch_generics', {
-                id: 'a',
-                inputs: {
-                  if_true: { genericsType: UNIT_VALUE_TYPES.SCALER },
-                },
-              }),
-              key: 'value',
-            },
-            { node: createGraphNode('switch_generics'), key: 'if_true' }
-          )
-        ).toEqual(
-          createGraphNode('switch_generics', {
-            inputs: {
-              if_true: {
-                from: { id: 'a', key: 'value' },
-                genericsType: UNIT_VALUE_TYPES.SCALER,
+    })
+  })
+
+  describe('cleanAllGenericsAt', () => {
+    it('should clean the target', () => {
+      expect(
+        cleanAllGenericsAt(
+          {
+            a: createGraphNode('switch_generics', {
+              id: 'a',
+              inputs: {
+                if_true: { from: { id: 'b', key: 'x' } },
               },
-              if_false: {
-                genericsType: UNIT_VALUE_TYPES.SCALER,
-              },
-            },
-          })
+            }),
+            b: createGraphNode('break_vector2', { id: 'b' }),
+            c: createGraphNode('make_vector2', { id: 'c' }),
+          },
+          'a'
         )
+      ).toEqual({
+        a: createGraphNode('switch_generics', {
+          id: 'a',
+          inputs: {
+            if_true: {
+              from: { id: 'b', key: 'x' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+            if_false: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        }),
       })
-      it('should not confirm generics type if the output type is not confirmed', () => {
-        expect(
-          updateInputConnection(
-            {
-              node: createGraphNode('switch_generics', { id: 'a' }),
-              key: 'value',
-            },
-            { node: createGraphNode('switch_generics'), key: 'if_true' }
-          )
-        ).toEqual(
-          createGraphNode('switch_generics', {
-            inputs: {
-              if_true: {
-                from: { id: 'a', key: 'value' },
+    })
+    it('should clean the input nodes connected with the target', () => {
+      expect(
+        cleanAllGenericsAt(
+          {
+            a: createGraphNode('switch_generics', {
+              id: 'a',
+              inputs: {
+                if_true: { from: { id: 'b', key: 'x' } },
+                if_false: { from: { id: 'd', key: 'value' } },
               },
-            },
-          })
+            }),
+            b: createGraphNode('break_vector2', { id: 'b' }),
+            d: createGraphNode('switch_generics', { id: 'd' }),
+          },
+          'a'
         )
+      ).toEqual({
+        a: createGraphNode('switch_generics', {
+          id: 'a',
+          inputs: {
+            if_true: {
+              from: { id: 'b', key: 'x' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+            if_false: {
+              from: { id: 'd', key: 'value' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        }),
+        d: createGraphNode('switch_generics', {
+          id: 'd',
+          inputs: {
+            if_true: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+            if_false: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        }),
+      })
+    })
+    it('should clean the other nodes connected with the target', () => {
+      expect(
+        cleanAllGenericsAt(
+          {
+            a: createGraphNode('switch_generics', {
+              id: 'a',
+              inputs: {
+                if_true: { from: { id: 'b', key: 'x' } },
+                if_false: { from: { id: 'd', key: 'value' } },
+              },
+            }),
+            b: createGraphNode('break_vector2', { id: 'b' }),
+            c: createGraphNode('switch_generics', {
+              id: 'c',
+              inputs: {
+                if_true: { from: { id: 'a', key: 'value' } },
+              },
+            }),
+            d: createGraphNode('switch_generics', {
+              id: 'd',
+              inputs: {
+                if_true: { from: { id: 'e', key: 'value' } },
+              },
+            }),
+            e: createGraphNode('switch_generics', { id: 'e' }),
+            f: createGraphNode('switch_generics', {
+              id: 'f',
+              inputs: {
+                if_true: { from: { id: 'e', key: 'value' } },
+              },
+            }),
+          },
+          'a'
+        )
+      ).toEqual({
+        a: createGraphNode('switch_generics', {
+          id: 'a',
+          inputs: {
+            if_true: {
+              from: { id: 'b', key: 'x' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+            if_false: {
+              from: { id: 'd', key: 'value' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        }),
+        c: createGraphNode('switch_generics', {
+          id: 'c',
+          inputs: {
+            if_true: {
+              from: { id: 'a', key: 'value' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+            if_false: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        }),
+        d: createGraphNode('switch_generics', {
+          id: 'd',
+          inputs: {
+            if_true: {
+              from: { id: 'e', key: 'value' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+            if_false: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        }),
+        e: createGraphNode('switch_generics', {
+          id: 'e',
+          inputs: {
+            if_true: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+            if_false: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        }),
+        f: createGraphNode('switch_generics', {
+          id: 'f',
+          inputs: {
+            if_true: {
+              from: { id: 'e', key: 'value' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+            if_false: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        }),
+      })
+    })
+    it('should clean the input nodes connected with the target without generics', () => {
+      expect(
+        cleanAllGenericsAt(
+          {
+            a: createGraphNode('switch_generics', { id: 'a' }),
+            b: createGraphNode('make_vector2', {
+              id: 'b',
+              inputs: { x: { from: { id: 'a', key: 'value' } } },
+            }),
+          },
+          'b'
+        )
+      ).toEqual({
+        a: createGraphNode('switch_generics', {
+          id: 'a',
+          inputs: {
+            if_true: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+            if_false: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        }),
       })
     })
   })

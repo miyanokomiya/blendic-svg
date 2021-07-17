@@ -18,9 +18,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
-import * as target from '/@/utils/graphNodes/nodes/switch'
+import * as target from '/@/utils/graphNodes/nodes/switch_generics'
 
-describe('src/utils/graphNodes/nodes/switch.ts', () => {
+describe('src/utils/graphNodes/nodes/switch_generics.ts', () => {
   describe('computation', () => {
     it('should return result if_true if condition is true', () => {
       expect(

@@ -27,7 +27,11 @@ import {
   getElementNode,
 } from '/@/models'
 import { getKeyframeBone } from '/@/models/keyframe'
-import { initialize, initializeGraphNode } from '/@/models/storage'
+import {
+  initialize,
+  initializeGraph,
+  initializeGraphNode,
+} from '/@/models/storage'
 import { getConstraint } from '/@/utils/constraints'
 import { createGraphNode } from '/@/utils/graphNodes'
 
@@ -126,6 +130,24 @@ describe('src/models/storage.ts', () => {
         ],
         graphs: [],
       })
+    })
+  })
+
+  describe('initializeGraph', () => {
+    it('should drop invalid nodes', () => {
+      const valid = createGraphNode('scaler')
+      const invalid = { ...createGraphNode('scaler'), type: 'invalid' }
+      expect(
+        initializeGraph(
+          getAnimationGraph({
+            nodes: [valid, invalid as any],
+          })
+        )
+      ).toEqual(
+        getAnimationGraph({
+          nodes: [valid],
+        })
+      )
     })
   })
 

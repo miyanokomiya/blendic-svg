@@ -101,11 +101,7 @@ import * as not from './nodes/not'
 import * as and from './nodes/and'
 import * as or from './nodes/or'
 import * as equal from './nodes/equal'
-import * as switch_generics from './nodes/switch'
-import * as switch_scaler from './nodes/switchScaler'
-import * as switch_vector2 from './nodes/switchVector2'
-import * as switch_transform from './nodes/switchTransform'
-import * as switch_object from './nodes/switchObject'
+import * as switch_generics from './nodes/switch_generics'
 import { IdMap } from '/@/models'
 import { mapReduce } from '/@/utils/commons'
 
@@ -178,10 +174,6 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   less_than_or_equal,
   between,
   switch_generics,
-  switch_scaler,
-  switch_vector2,
-  switch_transform,
-  switch_object,
 } as const
 
 interface NodeMenuOption {
@@ -262,10 +254,6 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: '(<=) Number', type: 'less_than_or_equal' },
       { label: 'Between', type: 'between' },
       { label: 'Switch', type: 'switch_generics' },
-      { label: 'Switch Number', type: 'switch_scaler' },
-      { label: 'Switch Vector2', type: 'switch_vector2' },
-      { label: 'Switch Transform', type: 'switch_transform' },
-      { label: 'Switch Object', type: 'switch_object' },
     ],
   },
   {
@@ -303,10 +291,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Not', type: 'not', key: 'condition' },
     { label: 'And', type: 'and', key: 'a' },
     { label: 'Or', type: 'or', key: 'a' },
-    { label: 'Switch Number', type: 'switch_scaler', key: 'condition' },
-    { label: 'Switch Vector2', type: 'switch_vector2', key: 'condition' },
-    { label: 'Switch Transform', type: 'switch_transform', key: 'condition' },
-    { label: 'Switch Object', type: 'switch_object', key: 'condition' },
+    { label: 'Switch', type: 'switch_generics', key: 'condition' },
   ],
   SCALER: [
     { label: '(+) Number', type: 'add_scaler', key: 'a' },

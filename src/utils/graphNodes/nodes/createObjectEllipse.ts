@@ -17,14 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import {
-  GraphNodeCreateObjectEllipse,
-  GRAPH_VALUE_TYPE,
-} from '/@/models/graphNode'
+import { GraphNodeCreateObjectEllipse } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
   nodeToCreateObjectProps,
+  UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeCreateObjectEllipse> = {
@@ -47,10 +45,22 @@ export const struct: NodeStruct<GraphNodeCreateObjectEllipse> = {
   data: {},
   inputs: {
     ...nodeToCreateObjectProps.inputs,
-    cx: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    cy: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    rx: { type: GRAPH_VALUE_TYPE.SCALER, default: 10 },
-    ry: { type: GRAPH_VALUE_TYPE.SCALER, default: 10 },
+    cx: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    cy: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    rx: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 10,
+    },
+    ry: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 10,
+    },
   },
   outputs: nodeToCreateObjectProps.outputs,
   computation(inputs, self, context): { object: string } {

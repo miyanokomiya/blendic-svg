@@ -18,8 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { GraphNodeSetStroke, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeSetStroke } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeSetStroke> = {
   create(arg = {}) {
@@ -33,11 +37,11 @@ export const struct: NodeStruct<GraphNodeSetStroke> = {
   },
   data: {},
   inputs: {
-    object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
-    color: { type: GRAPH_VALUE_TYPE.COLOR, default: getTransform() },
+    object: { type: UNIT_VALUE_TYPES.OBJECT, default: '' },
+    color: { type: UNIT_VALUE_TYPES.COLOR, default: getTransform() },
   },
   outputs: {
-    object: GRAPH_VALUE_TYPE.OBJECT,
+    object: UNIT_VALUE_TYPES.OBJECT,
   },
   computation(inputs, _self, context): { object: string } {
     context.setStroke(inputs.object, inputs.color)

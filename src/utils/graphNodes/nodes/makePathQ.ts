@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeMakePathQ, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeMakePathQ } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeMakePathQ> = {
   create(arg = {}) {
@@ -38,12 +42,12 @@ export const struct: NodeStruct<GraphNodeMakePathQ> = {
   },
   data: {},
   inputs: {
-    d: { type: GRAPH_VALUE_TYPE.D, default: [] },
-    relative: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
-    c1: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
-    p: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
+    d: { type: UNIT_VALUE_TYPES.D, default: [] },
+    relative: { type: UNIT_VALUE_TYPES.BOOLEAN, default: false },
+    c1: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
+    p: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
   },
-  outputs: { d: GRAPH_VALUE_TYPE.D },
+  outputs: { d: UNIT_VALUE_TYPES.D },
   computation(inputs): { d: string[] } {
     return {
       d: [

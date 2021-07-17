@@ -18,34 +18,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { mount } from '@vue/test-utils'
-import Target from '/@/components/elements/GraphNodeDataField.vue'
-import { getTransform } from '/@/models'
-import { GRAPH_VALUE_STRUCT, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import Target from '/@/components/elements/atoms/ErrorText.vue'
 
-describe('src/components/elements/GraphNodeDataField.vue', () => {
+describe('src/components/elements/atoms/ErrorText.vue', () => {
   describe('snapshot', () => {
-    it('SCALER', () => {
+    it('default', () => {
       const wrapper = mount(Target, {
         props: {
-          modelValue: 123,
-          label: 'value',
-          type: {
-            type: GRAPH_VALUE_TYPE.SCALER,
-            struct: GRAPH_VALUE_STRUCT.UNIT,
-          },
-        },
-      })
-      expect(wrapper.element).toMatchSnapshot()
-    })
-    it('COLOR', () => {
-      const wrapper = mount(Target, {
-        props: {
-          modelValue: getTransform({ rotate: 20 }),
-          label: 'value',
-          type: {
-            type: GRAPH_VALUE_TYPE.COLOR,
-            struct: GRAPH_VALUE_STRUCT.UNIT,
-          },
+          errors: ['aaaaaa', 'bbbbbbbbbbbbb', 'ccccc'],
         },
       })
       expect(wrapper.element).toMatchSnapshot()

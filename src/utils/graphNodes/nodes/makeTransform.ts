@@ -18,8 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform, Transform } from '/@/models'
-import { GraphNodeMakeTransform, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeMakeTransform } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeMakeTransform> = {
   create(arg = {}) {
@@ -38,13 +42,13 @@ export const struct: NodeStruct<GraphNodeMakeTransform> = {
   },
   data: {},
   inputs: {
-    translate: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
-    rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    scale: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 1, y: 1 } },
-    origin: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
+    translate: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
+    rotate: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
+    scale: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 1, y: 1 } },
+    origin: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
   },
   outputs: {
-    transform: GRAPH_VALUE_TYPE.TRANSFORM,
+    transform: UNIT_VALUE_TYPES.TRANSFORM,
   },
   computation(inputs): { transform: Transform } {
     return {

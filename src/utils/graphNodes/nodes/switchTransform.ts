@@ -18,8 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { GraphNodeSwitchTransform, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeSwitchTransform } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeSwitchTransform> = {
   create(arg = {}) {
@@ -37,12 +41,12 @@ export const struct: NodeStruct<GraphNodeSwitchTransform> = {
   },
   data: {},
   inputs: {
-    condition: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: true },
-    if_true: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
-    if_false: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
+    condition: { type: UNIT_VALUE_TYPES.BOOLEAN, default: true },
+    if_true: { type: UNIT_VALUE_TYPES.TRANSFORM, default: getTransform() },
+    if_false: { type: UNIT_VALUE_TYPES.TRANSFORM, default: getTransform() },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.TRANSFORM,
+    value: UNIT_VALUE_TYPES.TRANSFORM,
   },
   computation(inputs) {
     return { value: inputs.condition ? inputs.if_true : inputs.if_false }

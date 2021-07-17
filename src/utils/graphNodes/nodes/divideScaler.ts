@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeDivideScaler, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeDivideScaler } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeDivideScaler> = {
   create(arg = {}) {
@@ -32,11 +36,17 @@ export const struct: NodeStruct<GraphNodeDivideScaler> = {
   },
   data: {},
   inputs: {
-    a: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    b: { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
+    a: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    b: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 1,
+    },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.SCALER,
+    value: UNIT_VALUE_TYPES.SCALER,
   },
   computation(inputs) {
     return { value: inputs.a / inputs.b }

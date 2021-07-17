@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeGetObject, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeGetObject } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeGetObject> = {
   create(arg = {}) {
@@ -31,10 +35,14 @@ export const struct: NodeStruct<GraphNodeGetObject> = {
       type: 'get_object',
     } as GraphNodeGetObject
   },
-  data: { object: { type: GRAPH_VALUE_TYPE.OBJECT } },
+  data: {
+    object: {
+      type: UNIT_VALUE_TYPES.OBJECT,
+    },
+  },
   inputs: {},
   outputs: {
-    object: GRAPH_VALUE_TYPE.OBJECT,
+    object: UNIT_VALUE_TYPES.OBJECT,
   },
   computation(_inputs, self, _context): { object: string } {
     return {

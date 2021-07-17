@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeBetween, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeBetween } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeBetween> = {
   create(arg = {}) {
@@ -36,12 +40,21 @@ export const struct: NodeStruct<GraphNodeBetween> = {
   },
   data: {},
   inputs: {
-    number: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    from: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    to: { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
+    number: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    from: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    to: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 1,
+    },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.BOOLEAN,
+    value: UNIT_VALUE_TYPES.BOOLEAN,
   },
   computation(inputs) {
     return { value: inputs.from <= inputs.number && inputs.number <= inputs.to }

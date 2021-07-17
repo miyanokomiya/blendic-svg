@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeSetStrokeLength, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeSetStrokeLength } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeSetStrokeLength> = {
   create(arg = {}) {
@@ -36,12 +40,12 @@ export const struct: NodeStruct<GraphNodeSetStrokeLength> = {
   },
   data: {},
   inputs: {
-    object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
-    length: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    max_length: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    object: { type: UNIT_VALUE_TYPES.OBJECT, default: '' },
+    length: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
+    max_length: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
   },
   outputs: {
-    object: GRAPH_VALUE_TYPE.OBJECT,
+    object: UNIT_VALUE_TYPES.OBJECT,
   },
   computation(inputs, _self, context): { object: string } {
     if (!inputs.object) return { object: '' }

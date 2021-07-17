@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeMakePathV, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeMakePathV } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeMakePathV> = {
   create(arg = {}) {
@@ -37,11 +41,11 @@ export const struct: NodeStruct<GraphNodeMakePathV> = {
   },
   data: {},
   inputs: {
-    d: { type: GRAPH_VALUE_TYPE.D, default: [] },
-    relative: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
-    y: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    d: { type: UNIT_VALUE_TYPES.D, default: [] },
+    relative: { type: UNIT_VALUE_TYPES.BOOLEAN, default: false },
+    y: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
   },
-  outputs: { d: GRAPH_VALUE_TYPE.D },
+  outputs: { d: UNIT_VALUE_TYPES.D },
   computation(inputs): { d: string[] } {
     return {
       d: [...inputs.d, `${inputs.relative ? 'v' : 'V'}${inputs.y}`],

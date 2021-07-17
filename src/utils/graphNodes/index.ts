@@ -19,15 +19,22 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import {
   GraphNode,
+  GraphNodeInput,
   GraphNodeInputs,
   GraphNodeMap,
   GraphNodeOutputMap,
   GraphNodeOutputValues,
   GraphNodes,
   GraphNodeType,
+  GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
+  ValueType,
 } from '/@/models/graphNode'
-import { NodeModule, NodeContext } from '/@/utils/graphNodes/core'
+import {
+  NodeModule,
+  NodeContext,
+  EdgeChainGroupItem,
+} from '/@/utils/graphNodes/core'
 import { v4 } from 'uuid'
 import * as get_frame from './nodes/getFrame'
 import * as scaler from './nodes/scaler'
@@ -94,6 +101,7 @@ import * as not from './nodes/not'
 import * as and from './nodes/and'
 import * as or from './nodes/or'
 import * as equal from './nodes/equal'
+import * as switch_generics from './nodes/switch'
 import * as switch_scaler from './nodes/switchScaler'
 import * as switch_vector2 from './nodes/switchVector2'
 import * as switch_transform from './nodes/switchTransform'
@@ -169,6 +177,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   less_than,
   less_than_or_equal,
   between,
+  switch_generics,
   switch_scaler,
   switch_vector2,
   switch_transform,
@@ -252,6 +261,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: '(<) Number', type: 'less_than' },
       { label: '(<=) Number', type: 'less_than_or_equal' },
       { label: 'Between', type: 'between' },
+      { label: 'Switch', type: 'switch_generics' },
       { label: 'Switch Number', type: 'switch_scaler' },
       { label: 'Switch Vector2', type: 'switch_vector2' },
       { label: 'Switch Transform', type: 'switch_transform' },
@@ -356,6 +366,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
     { label: 'Create Path', type: 'create_object_path', key: 'd' },
   ],
+  GENERICS: [],
 }
 
 export function getGraphNodeModule<T extends GraphNodeType>(
@@ -370,7 +381,10 @@ export function resolveAllNodes<T>(
 ): GraphNodeOutputMap {
   return Object.keys(nodeMap).reduce<GraphNodeOutputMap>((p, id) => {
     if (p[id]) return p
-    return { ...p, ...resolveNode<T>(context, nodeMap, p, id) }
+    return {
+      ...p,
+      ...resolveNode<T>(context, nodeMap, p, id, {}),
+    }
   }, {})
 }
 
@@ -383,7 +397,7 @@ export function resolveNode<T>(
 ): GraphNodeOutputMap {
   if (outputMap[targetId]) return outputMap
   if (currentPathMap[targetId]) {
-    throw new Error('Failed to resolve: circular references are founded')
+    return outputMap
   }
 
   const target = nodeMap[targetId]
@@ -402,6 +416,52 @@ export function resolveNode<T>(
     ...fromOutputMap,
     [targetId]: compute<T>(context, fromOutputMap, target),
   }
+}
+
+export function getAllCircularRefIds(nodeMap: GraphNodeMap): IdMap<true> {
+  const map: IdMap<true> = {}
+  const setCircularRefIds = (ids: string[]) => {
+    ids.forEach((id) => {
+      map[id] = true
+    })
+  }
+  Object.keys(nodeMap).reduce<IdMap<true>>((p, id) => {
+    if (p[id]) return p
+    return {
+      ...p,
+      ...getCircularRefIds(nodeMap, p, id, {}, setCircularRefIds),
+    }
+  }, {})
+
+  return map
+}
+
+function getCircularRefIds(
+  nodeMap: GraphNodeMap,
+  doneMap: IdMap<true>,
+  targetId: string,
+  currentPathMap: { [id: string]: true } = {},
+  setCircularRefIds?: (ids: string[]) => void
+): IdMap<true> {
+  if (doneMap[targetId]) return doneMap
+  if (currentPathMap[targetId]) {
+    setCircularRefIds?.(Object.keys(currentPathMap))
+    return doneMap
+  }
+
+  const target = nodeMap[targetId]
+  if (!target) return doneMap
+
+  const nextPathMap: { [id: string]: true } = {
+    ...currentPathMap,
+    [targetId]: true,
+  }
+
+  const fromOutputMap = getInputFromIds(target.inputs ?? {}).reduce((p, id) => {
+    return getCircularRefIds(nodeMap, p, id, nextPathMap, setCircularRefIds)
+  }, doneMap)
+
+  return { ...fromOutputMap, [targetId]: true }
 }
 
 export function compute<T>(
@@ -526,25 +586,49 @@ export function createGraphNode<T extends GraphNodeType>(
 
 export function validateConnection(
   from: {
-    type: GraphNodeType
+    node: GraphNode
     key: string
   },
   to: {
-    type: GraphNodeType
+    node: GraphNode
     key: string
   }
 ): boolean {
-  const inputType = NODE_MODULES[to.type].struct.inputs[to.key].type
-  const outputType = NODE_MODULES[from.type].struct.outputs[from.key]
-  return inputType === outputType
+  return canConnectValueType(
+    getInputType(to.node, to.key),
+    getOutputType(from.node, from.key)
+  )
 }
 
-export function resetInput<T extends GraphNodeType>(
-  type: T,
-  key: string
-): { value: unknown } {
-  const struct = getGraphNodeModule(type).struct
-  return { value: (struct.inputs as any)[key].default }
+function canConnectValueType(a: ValueType, b: ValueType): boolean {
+  if (a.type === 'GENERICS' || b.type === 'GENERICS') return true
+  return isSameValueType(a, b)
+}
+
+function isSameValueType(a?: ValueType, b?: ValueType): boolean {
+  return (
+    (a === undefined && b === undefined) ||
+    (a?.type === b?.type && a?.struct === b?.struct)
+  )
+}
+
+export function resetInput(node: GraphNode, key: string): GraphNode {
+  const current = node.inputs[key]
+  const struct = getGraphNodeModule<any>(node.type).struct
+
+  const nextInput: GraphNodeInput<any> = { value: struct.inputs[key].default }
+
+  // keep generics if it is confirmed
+  if (current.genericsType) {
+    nextInput.genericsType = current.genericsType
+  }
+
+  const updated: GraphNode = {
+    ...node,
+    inputs: { ...node.inputs, [key]: nextInput },
+  }
+
+  return updated
 }
 
 export function duplicateNodes(
@@ -613,4 +697,253 @@ export function deleteAndDisconnectNodes(
     })
 
   return { nodes: nextNodes, updatedIds }
+}
+
+export function getNodeEdgeTypes(target: GraphNode): {
+  inputs: { [key: string]: ValueType }
+  outputs: { [key: string]: ValueType }
+} {
+  return { inputs: getInputTypes(target), outputs: getOutputTypes(target) }
+}
+
+// this function do connect only and does not resolve generics
+// => use getAllEdgeConnectionInfo to resolve its
+export function updateInputConnection(
+  fromInfo: {
+    node: GraphNode
+    key: string
+  },
+  toInfo: {
+    node: GraphNode
+    key: string
+  }
+): GraphNode | undefined {
+  // ignore if the two node are the same
+  if (fromInfo.node.id === toInfo.node.id) return
+
+  // ignore if the node is not updated
+  const currentInput = toInfo.node.inputs[toInfo.key]
+  if (
+    currentInput.from?.id === fromInfo.node.id &&
+    currentInput.from?.key === fromInfo.key
+  )
+    return
+
+  const input: GraphNodeInput<any> = {
+    from: { id: fromInfo.node.id, key: fromInfo.key },
+  }
+
+  const updated: GraphNode = {
+    ...toInfo.node,
+    inputs: {
+      ...toInfo.node.inputs,
+      [toInfo.key]: input,
+    },
+  }
+
+  return updated
+}
+
+interface EdgeConnectionInfo {
+  inputs: {
+    [key: string]: { id: string; key: string }
+  }
+  outputs: {
+    [key: string]: { id: string; key: string }[]
+  }
+}
+type AllEdgeConnectionInfo = IdMap<EdgeConnectionInfo>
+
+export function getAllEdgeConnectionInfo(
+  nodeMap: GraphNodeMap
+): AllEdgeConnectionInfo {
+  const ret: AllEdgeConnectionInfo = {}
+
+  Object.entries(nodeMap).forEach(([id, node]) => {
+    ret[id] ??= { inputs: {}, outputs: {} }
+    Object.entries(node.inputs).forEach(([key, input]) => {
+      if (!input.from) return
+
+      // save input info
+      ret[id].inputs[key] = input.from
+
+      // save output info
+      ret[input.from.id] ??= { inputs: {}, outputs: {} }
+      ret[input.from.id].outputs[input.from.key] ??= []
+      ret[input.from.id].outputs[input.from.key].push({ id, key })
+    })
+  })
+
+  return ret
+}
+
+function isGenericsResolved(genericsType?: ValueType): boolean {
+  return !!genericsType && genericsType.type !== GRAPH_VALUE_TYPE.GENERICS
+}
+
+function getInputType(target: GraphNode, key: string): ValueType {
+  return (
+    target.inputs[key].genericsType ??
+    getGraphNodeModule<any>(target.type).struct.inputs[key].type
+  )
+}
+function getInputTypes(target: GraphNode): { [key: string]: ValueType } {
+  const struct = getGraphNodeModule<any>(target.type).struct
+  return mapReduce(target.inputs, (_, key) => {
+    return target.inputs[key].genericsType ?? struct.inputs[key].type
+  })
+}
+
+function getInputOriginalType(type: GraphNodeType, key: string): ValueType {
+  const struct = getGraphNodeModule<any>(type).struct
+  return struct.inputs[key].type
+}
+
+function getOutputType(target: GraphNode, key: string): ValueType {
+  const struct = getGraphNodeModule(target.type).struct
+  return struct.getOutputType?.(target, key) ?? struct.outputs[key]
+}
+function getOutputTypes(target: GraphNode): { [key: string]: ValueType } {
+  const struct = getGraphNodeModule(target.type).struct
+  return mapReduce(struct.outputs, (_, key) => {
+    return struct.getOutputType?.(target, key) ?? struct.outputs[key]
+  })
+}
+
+export function getEdgeChainGroupAt(
+  nodeMap: GraphNodeMap,
+  allEdgeConnectionInfo: AllEdgeConnectionInfo,
+  item: EdgeChainGroupItem
+): EdgeChainGroupItem[] {
+  const doneItemMap: IdMap<{
+    inputs: { [key: string]: true }
+    outputs: { [key: string]: true }
+  }> = {}
+
+  const saveDoneItem = (item: EdgeChainGroupItem) => {
+    doneItemMap[item.id] ??= { inputs: {}, outputs: {} }
+    if (item.output) {
+      doneItemMap[item.id].outputs[item.key] = true
+    } else {
+      doneItemMap[item.id].inputs[item.key] = true
+    }
+  }
+
+  const isDoneItem = (item: EdgeChainGroupItem) => {
+    if (item.output) {
+      return !!doneItemMap[item.id]?.outputs[item.key]
+    } else {
+      return !!doneItemMap[item.id]?.inputs[item.key]
+    }
+  }
+
+  return _getEdgeChainGroupAt(nodeMap, allEdgeConnectionInfo, item, {
+    saveDoneItem,
+    isDoneItem,
+  })
+}
+
+function _getEdgeChainGroupAt(
+  nodeMap: GraphNodeMap,
+  allEdgeConnectionInfo: AllEdgeConnectionInfo,
+  item: EdgeChainGroupItem,
+  context: {
+    saveDoneItem: (item: EdgeChainGroupItem) => void
+    isDoneItem: (item: EdgeChainGroupItem) => boolean
+  }
+): EdgeChainGroupItem[] {
+  const target = nodeMap[item.id]
+  if (!target) return []
+
+  if (context.isDoneItem(item)) return []
+
+  const struct = getGraphNodeModule(target.type).struct
+  const group = struct.getGenericsChainAt?.(target, item.key, item.output) ?? [
+    // this edge has fixed type
+    {
+      ...item,
+      type: item.output
+        ? getOutputType(target, item.key)
+        : getInputType(target, item.key),
+    },
+  ]
+  group.forEach(context.saveDoneItem)
+
+  const inputsInfo = allEdgeConnectionInfo[target.id].inputs
+  const outputsInfo = allEdgeConnectionInfo[target.id].outputs
+
+  return [
+    ...group,
+    ...group.flatMap((i) => {
+      const nextItems: EdgeChainGroupItem[] = []
+
+      if (i.output) {
+        const info = outputsInfo[i.key]
+        if (info) {
+          info.forEach((info) => {
+            nextItems.push({ id: info.id, key: info.key })
+          })
+        }
+      } else {
+        const info = inputsInfo[i.key]
+        if (info) {
+          nextItems.push({ id: info.id, key: info.key, output: true })
+        }
+      }
+
+      return nextItems
+        .filter((nextItem) => !context.isDoneItem(nextItem))
+        .flatMap((nextItem) => {
+          return _getEdgeChainGroupAt(
+            nodeMap,
+            allEdgeConnectionInfo,
+            nextItem,
+            context
+          )
+        })
+    }),
+  ]
+}
+
+function findNotResolvedGenericsType(
+  group: EdgeChainGroupItem[]
+): ValueType | undefined {
+  return group.find((item) => isGenericsResolved(item.type))?.type
+}
+
+export function cleanEdgeGenericsGroupAt(
+  nodeMap: GraphNodeMap,
+  item: EdgeChainGroupItem
+): GraphNodeMap {
+  const allEdgeConnectionInfo = getAllEdgeConnectionInfo(nodeMap)
+  const group = getEdgeChainGroupAt(nodeMap, allEdgeConnectionInfo, item)
+  const type = findNotResolvedGenericsType(group)
+
+  const ret: GraphNodeMap = {}
+
+  group
+    .filter((item) => !item.output)
+    .forEach((item) => {
+      const node = ret[item.id] ?? nodeMap[item.id]
+      if (!node) return
+
+      if (
+        getInputOriginalType(node.type, item.key).type !==
+        GRAPH_VALUE_TYPE.GENERICS
+      )
+        return
+
+      const input = node.inputs[item.key]
+      if (isSameValueType(input.genericsType, type)) return
+
+      ret[item.id] = {
+        ...node,
+        inputs: {
+          ...node.inputs,
+          [item.key]: { ...input, genericsType: type },
+        },
+      }
+    })
+
+  return ret
 }

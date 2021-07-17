@@ -18,9 +18,17 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { GraphNodeBreakColor, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import {
+  GraphNodeBreakColor,
+  GRAPH_VALUE_STRUCT,
+  GRAPH_VALUE_TYPE,
+} from '/@/models/graphNode'
 import { posedHsva } from '/@/utils/attributesResolver'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeBreakColor> = {
   create(arg = {}) {
@@ -36,13 +44,20 @@ export const struct: NodeStruct<GraphNodeBreakColor> = {
   },
   data: {},
   inputs: {
-    color: { type: GRAPH_VALUE_TYPE.COLOR, default: getTransform() },
+    color: {
+      type: UNIT_VALUE_TYPES.COLOR,
+      default: getTransform(),
+    },
   },
   outputs: {
-    h: GRAPH_VALUE_TYPE.SCALER,
-    s: GRAPH_VALUE_TYPE.SCALER,
-    v: GRAPH_VALUE_TYPE.SCALER,
-    a: GRAPH_VALUE_TYPE.SCALER,
+    h: UNIT_VALUE_TYPES.SCALER,
+    s: UNIT_VALUE_TYPES.SCALER,
+    v: UNIT_VALUE_TYPES.SCALER,
+    a: {
+      type: GRAPH_VALUE_TYPE.SCALER,
+      struct: GRAPH_VALUE_STRUCT.UNIT,
+      scale: 0.1,
+    },
   },
   computation(inputs): { h: number; s: number; v: number; a: number } {
     return { ...posedHsva(inputs.color) }

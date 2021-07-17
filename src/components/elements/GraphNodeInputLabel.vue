@@ -46,7 +46,7 @@ import { injectScale } from '/@/composables/canvas'
 import {
   GraphNodeInput,
   GRAPH_VALUE_TYPE,
-  GRAPH_VALUE_TYPE_KEY,
+  ValueType,
 } from '/@/models/graphNode'
 import { getInputValuePreviewText } from '/@/utils/helpers'
 
@@ -61,7 +61,7 @@ export default defineComponent({
       required: true,
     },
     type: {
-      type: String as PropType<GRAPH_VALUE_TYPE_KEY>,
+      type: Object as PropType<ValueType>,
       required: true,
     },
   },
@@ -80,11 +80,11 @@ export default defineComponent({
     const valueLabel = computed<string>(() => {
       if (props.input.from) return ''
 
-      return getInputValuePreviewText(props.type, props.input.value)
+      return getInputValuePreviewText(props.type.type, props.input.value)
     })
 
     const isColor = computed(() => {
-      return props.type === GRAPH_VALUE_TYPE.COLOR
+      return props.type.type === GRAPH_VALUE_TYPE.COLOR
     })
 
     return {

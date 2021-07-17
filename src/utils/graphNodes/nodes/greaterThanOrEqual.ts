@@ -17,11 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { GraphNodeGreaterThanOrEqual } from '/@/models/graphNode'
 import {
-  GraphNodeGreaterThanOrEqual,
-  GRAPH_VALUE_TYPE,
-} from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeGreaterThanOrEqual> = {
   create(arg = {}) {
@@ -35,11 +36,17 @@ export const struct: NodeStruct<GraphNodeGreaterThanOrEqual> = {
   },
   data: {},
   inputs: {
-    a: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    b: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    a: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    b: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.BOOLEAN,
+    value: UNIT_VALUE_TYPES.BOOLEAN,
   },
   computation(inputs) {
     return { value: inputs.a >= inputs.b }

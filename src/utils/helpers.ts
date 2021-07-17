@@ -25,11 +25,12 @@ import {
   GraphNodeEdgeInfo,
   GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
+  ValueType,
 } from '/@/models/graphNode'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { BoneConstraint } from '/@/utils/constraints'
-import { getGraphNodeModule } from '/@/utils/graphNodes'
+import { getGraphNodeModule, getNodeEdgeTypes } from '/@/utils/graphNodes'
 import { NodeStruct } from '/@/utils/graphNodes/core'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
@@ -290,11 +291,11 @@ export function getGraphNodeInputsPosition(node: GraphNode): {
 } {
   const dataHeight = getGraphNodeDataHeight(node)
   const outputsHeight = getGraphNodeOutputsHeight(node)
-  const module = getGraphNodeModule(node.type)
+
   return getGraphNodeRowsPosition(
-    Object.entries(module.struct.inputs).map(([key, i]) => ({
+    Object.entries(getNodeEdgeTypes(node).inputs).map(([key, type]) => ({
       key,
-      type: (i as any).type,
+      type,
     })),
     {
       x: 0,
@@ -310,10 +311,12 @@ export function getGraphNodeInputsPosition(node: GraphNode): {
 export function getGraphNodeOutputsPosition(node: GraphNode): {
   [key: string]: GraphNodeEdgeInfo
 } {
-  const module = getGraphNodeModule(node.type)
   const { width } = getGraphNodeSize(node)
   return getGraphNodeRowsPosition(
-    Object.entries(module.struct.outputs).map(([key, type]) => ({ key, type })),
+    Object.entries(getNodeEdgeTypes(node).outputs).map(([key, type]) => ({
+      key,
+      type,
+    })),
     {
       x: width,
       y: GRAPH_NODE_HEAD_HEIGHT + (GRAPH_NODE_ROW_HEIGHT * 2) / 3,
@@ -322,7 +325,7 @@ export function getGraphNodeOutputsPosition(node: GraphNode): {
 }
 
 function getGraphNodeRowsPosition(
-  rows: { key: string; type: GRAPH_VALUE_TYPE_KEY }[],
+  rows: { key: string; type: ValueType }[],
   margin: IVec2 = { x: 0, y: 0 }
 ): {
   [key: string]: GraphNodeEdgeInfo
@@ -360,6 +363,7 @@ export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
     COLOR: '#32cd32',
     TEXT: '#808000',
     D: '#00bfff',
+    GENERICS: '#b0c4de',
   } as const
 
 export function getInputValuePreviewText(

@@ -1,5 +1,122 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`src/components/elements/GraphNode.vue snapshot has errors 1`] = `
+<g
+  title="scaler"
+  transform="translate(0, 0)"
+>
+  <g>
+    <path
+      d="M0,30 L0,100 A8,8 0 0 0 8,108 L112,108 A8,8 0 0 0 120,100 L120,30"
+      fill="#fafafa"
+      stroke="red"
+      stroke-width="6"
+    />
+    <path
+      d="M0,30 L0,14 A14,14 0 0 1 14,0 L106,0 A14,14 0 0 1 120,14 L120,30"
+      fill="#f0e68c"
+      stroke="red"
+      stroke-width="6"
+    />
+  </g>
+  <g>
+    <text
+      class="view-only"
+      dominant-baseline="text-before-edge"
+      fill="#000"
+      font-size="16"
+      x="8"
+      y="3"
+    >
+      Number
+    </text>
+  </g>
+  <g>
+    
+    
+  </g>
+  <g
+    class="view-only"
+  >
+    
+    <g
+      transform="translate(8, 60)"
+    >
+      <foreignobject
+        height="40"
+        width="100"
+      >
+        <!-- FIXME: forms are readonly because those in foreignObject do not work well -->
+        <div
+          class="field"
+          xmlns="http://www.w3.org/1999/xhtml"
+        >
+          <h5>
+            value
+          </h5>
+          <p>
+            0
+          </p>
+        </div>
+      </foreignobject>
+    </g>
+    
+  </g>
+  <g>
+    
+    
+  </g>
+  <g
+    transform="translate(0, 108)"
+  >
+    <g>
+      
+      <rect
+        fill="#fff"
+        height="0"
+        stroke="red"
+        stroke-width="2"
+        width="0"
+      />
+      
+      <g
+        transform="translate(10, 4)"
+      >
+        
+        <text
+          dominant-baseline="text-before-edge"
+          fill="red"
+          font-size="16"
+          font-weight="600"
+        >
+          
+          <tspan
+            dy="0"
+            x="0"
+          >
+            aaaaaa
+          </tspan>
+          <tspan
+            dy="1.2em"
+            x="0"
+          >
+            bbbbbbbbbbbbb
+          </tspan>
+          <tspan
+            dy="1.2em"
+            x="0"
+          >
+            ccccc
+          </tspan>
+          
+        </text>
+        
+      </g>
+    </g>
+  </g>
+</g>
+`;
+
 exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
 <g
   title="make_vector2"
@@ -121,6 +238,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
     </g>
     
   </g>
+  <!--v-if-->
 </g>
 `;
 
@@ -169,6 +287,7 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
     
     
   </g>
+  <!--v-if-->
 </g>
 `;
 
@@ -238,5 +357,6 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
     
     
   </g>
+  <!--v-if-->
 </g>
 `;

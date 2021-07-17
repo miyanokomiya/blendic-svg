@@ -18,14 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import {
-  GraphNodeCreateObjectGroup,
-  GRAPH_VALUE_TYPE,
-} from '/@/models/graphNode'
+import { GraphNodeCreateObjectGroup } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
   nodeToCreateObjectProps,
+  UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeCreateObjectGroup> = {
@@ -45,9 +43,18 @@ export const struct: NodeStruct<GraphNodeCreateObjectGroup> = {
   },
   data: {},
   inputs: {
-    disabled: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
-    parent: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
-    transform: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
+    disabled: {
+      type: UNIT_VALUE_TYPES.BOOLEAN,
+      default: false,
+    },
+    parent: {
+      type: UNIT_VALUE_TYPES.OBJECT,
+      default: '',
+    },
+    transform: {
+      type: UNIT_VALUE_TYPES.TRANSFORM,
+      default: getTransform(),
+    },
   },
   outputs: nodeToCreateObjectProps.outputs,
   computation(inputs, _self, context): { object: string } {

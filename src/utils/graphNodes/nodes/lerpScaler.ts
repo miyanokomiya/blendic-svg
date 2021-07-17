@@ -18,9 +18,17 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { interpolateScaler } from 'okageo'
-import { GraphNodeLerpScaler, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import {
+  GraphNodeLerpScaler,
+  GRAPH_VALUE_STRUCT,
+  GRAPH_VALUE_TYPE,
+} from '/@/models/graphNode'
 import { clamp } from '/@/utils/geometry'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeLerpScaler> = {
   create(arg = {}) {
@@ -34,12 +42,25 @@ export const struct: NodeStruct<GraphNodeLerpScaler> = {
   },
   data: {},
   inputs: {
-    a: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    b: { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
-    alpha: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    a: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    b: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 1,
+    },
+    alpha: {
+      type: {
+        type: GRAPH_VALUE_TYPE.SCALER,
+        struct: GRAPH_VALUE_STRUCT.UNIT,
+        scale: 0.1,
+      },
+      default: 0,
+    },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.SCALER,
+    value: UNIT_VALUE_TYPES.SCALER,
   },
   computation(inputs) {
     return {

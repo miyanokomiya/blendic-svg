@@ -78,7 +78,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         </g>
         <circle
           r="5"
-          :fill="GRAPH_NODE_TYPE_COLOR[edge.type]"
+          :fill="GRAPH_NODE_TYPE_COLOR[edge.type.type]"
           stroke="none"
           class="view-only"
         />
@@ -129,11 +129,14 @@ Copyright (C) 2021, Tomoya Komiyama.
         </g>
         <circle
           r="5"
-          :fill="GRAPH_NODE_TYPE_COLOR[edge.type]"
+          :fill="GRAPH_NODE_TYPE_COLOR[edge.type.type]"
           stroke="none"
           class="view-only"
         />
       </g>
+    </g>
+    <g v-if="errors" :transform="`translate(0, ${size.height})`">
+      <ErrorText :errors="errors" />
     </g>
   </g>
 </template>
@@ -142,11 +145,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { defineComponent, PropType, computed } from 'vue'
 import { useSettings } from '../../composables/settings'
 import { switchClick } from '/@/utils/devices'
-import { GraphNode, GraphNodeEdgePositions } from '/@/models/graphNode'
+import {
+  GraphNode,
+  GraphNodeEdgePositions,
+  ValueType,
+} from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
 import { add } from 'okageo'
 import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
 import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
+import ErrorText from '/@/components/elements/atoms/ErrorText.vue'
 import { mapReduce } from '/@/utils/commons'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { Size } from 'okanvas'
@@ -177,6 +185,7 @@ export default defineComponent({
   components: {
     GraphNodeDataField,
     GraphNodeInputLabel,
+    ErrorText,
   },
   props: {
     node: {
@@ -188,6 +197,10 @@ export default defineComponent({
       default: () => ({}),
     },
     selected: { type: Boolean, default: false },
+    errors: {
+      type: Array as PropType<string[] | undefined>,
+      default: undefined,
+    },
   },
   emits: ['down-body', 'down-edge', 'up-edge', 'update:data'],
   setup(props, { emit }) {
@@ -221,7 +234,7 @@ export default defineComponent({
       return mapReduce(dataPositions.value, (position, key) => {
         return {
           position,
-          type: (dataStruct as any)[key].type as string,
+          type: (dataStruct as any)[key].type as ValueType,
           value: props.node.data[key],
         }
       })
@@ -236,7 +249,7 @@ export default defineComponent({
       )
     }
 
-    function getInputType(key: string) {
+    function getInputType(key: string): ValueType {
       return (nodeStruct.value.inputs as any)[key].type
     }
 
@@ -250,11 +263,13 @@ export default defineComponent({
       headOutline,
       outline,
       outlineStroke: computed(() =>
-        props.selected ? settings.selectedColor : '#555'
+        props.errors ? 'red' : props.selected ? settings.selectedColor : '#555'
+      ),
+      outlineStrokeWidth: computed(() =>
+        props.errors ? 6 : props.selected ? 2 : 1
       ),
       getInputType,
       edgeAnchorWidth: computed(() => 60),
-      outlineStrokeWidth: computed(() => (props.selected ? 2 : 1)),
       dataMap,
       downBody(e: MouseEvent) {
         switchClick(e, {
@@ -295,5 +310,9 @@ export default defineComponent({
     transition: fill 0.2s;
     fill: #ffa07a;
   }
+}
+.error-message {
+  background-color: #fff;
+  color: #000;
 }
 </style>

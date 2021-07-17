@@ -19,12 +19,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { rotate } from 'okageo'
 import { getTransform } from '/@/models'
-import {
-  GraphNodeCircleCloneObject,
-  GRAPH_VALUE_TYPE,
-} from '/@/models/graphNode'
+import { GraphNodeCircleCloneObject } from '/@/models/graphNode'
 import { multiPoseTransform } from '/@/utils/armatures'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
   create(arg = {}) {
@@ -44,15 +45,30 @@ export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
   },
   data: {},
   inputs: {
-    object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
-    rotate: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    count: { type: GRAPH_VALUE_TYPE.SCALER, default: 4 },
-    radius: { type: GRAPH_VALUE_TYPE.SCALER, default: 100 },
-    fix_rotate: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
+    object: {
+      type: UNIT_VALUE_TYPES.OBJECT,
+      default: '',
+    },
+    rotate: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    count: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 4,
+    },
+    radius: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 100,
+    },
+    fix_rotate: {
+      type: UNIT_VALUE_TYPES.BOOLEAN,
+      default: false,
+    },
   },
   outputs: {
-    origin: GRAPH_VALUE_TYPE.OBJECT,
-    group: GRAPH_VALUE_TYPE.OBJECT,
+    origin: UNIT_VALUE_TYPES.OBJECT,
+    group: UNIT_VALUE_TYPES.OBJECT,
   },
   computation(inputs, self, context): { origin: string; group: string } {
     if (!inputs.object) return { origin: '', group: '' }

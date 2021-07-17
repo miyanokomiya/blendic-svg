@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodePow, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodePow } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodePow> = {
   create(arg = {}) {
@@ -32,11 +36,11 @@ export const struct: NodeStruct<GraphNodePow> = {
   },
   data: {},
   inputs: {
-    x: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    t: { type: GRAPH_VALUE_TYPE.SCALER, default: 2 },
+    x: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
+    t: { type: UNIT_VALUE_TYPES.SCALER, default: 2 },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.SCALER,
+    value: UNIT_VALUE_TYPES.SCALER,
   },
   computation(inputs) {
     return { value: Math.pow(inputs.x, inputs.t) }

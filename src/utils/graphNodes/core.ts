@@ -21,8 +21,12 @@ import { getTransform, GraphObjectAttributes, Transform } from '/@/models'
 import {
   GraphNodeBase,
   GraphNodeCreateObjectInputsBase,
+  GRAPH_VALUE_STRUCT,
   GRAPH_VALUE_TYPE,
+  GRAPH_VALUE_TYPE_KEY,
+  ValueType,
 } from '/@/models/graphNode'
+import { mapReduce } from '/@/utils/commons'
 
 export interface NodeModule<T extends GraphNodeBase> {
   struct: NodeStruct<T>
@@ -31,16 +35,14 @@ export interface NodeModule<T extends GraphNodeBase> {
 export interface NodeStruct<T extends GraphNodeBase> {
   create: (arg?: Partial<T>) => T
   data: {
-    [key in keyof T['data']]: { type: keyof typeof GRAPH_VALUE_TYPE }
+    [key in keyof T['data']]: { type: ValueType }
   }
   inputs: {
-    [key in keyof T['inputs']]: { type: keyof typeof GRAPH_VALUE_TYPE } & {
+    [key in keyof T['inputs']]: { type: ValueType } & {
       default: Required<T['inputs'][key]>['value']
     }
   }
-  outputs: {
-    [key: string]: keyof typeof GRAPH_VALUE_TYPE
-  }
+  outputs: { [key: string]: ValueType }
   computation: (
     inputs: {
       [key in keyof T['inputs']]: Required<T['inputs'][key]>['value']
@@ -52,6 +54,12 @@ export interface NodeStruct<T extends GraphNodeBase> {
   color?: string
   textColor?: string
   label?: string
+  getOutputType?: (self: T, key: string) => ValueType
+  getGenericsChainAt?: (
+    self: T,
+    key: string,
+    output?: boolean
+  ) => EdgeChainGroupItem[]
 }
 
 export interface NodeContext<T> {
@@ -88,6 +96,12 @@ export function createBaseNode(
   }
 }
 
+export const UNIT_VALUE_TYPES: { [type in GRAPH_VALUE_TYPE_KEY]: ValueType } =
+  mapReduce(GRAPH_VALUE_TYPE, (type) => ({
+    type,
+    struct: GRAPH_VALUE_STRUCT.UNIT,
+  }))
+
 export const nodeToCreateObjectProps = {
   createdInputs: {
     disabled: { value: false },
@@ -98,19 +112,37 @@ export const nodeToCreateObjectProps = {
     'stroke-width': { value: 1 },
   },
   inputs: {
-    disabled: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
-    parent: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
-    transform: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
-    fill: { type: GRAPH_VALUE_TYPE.COLOR, default: getTransform() },
-    stroke: { type: GRAPH_VALUE_TYPE.COLOR, default: getTransform() },
-    'stroke-width': { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
+    disabled: {
+      type: UNIT_VALUE_TYPES.BOOLEAN,
+      default: false,
+    },
+    parent: {
+      type: UNIT_VALUE_TYPES.OBJECT,
+      default: '',
+    },
+    transform: {
+      type: UNIT_VALUE_TYPES.TRANSFORM,
+      default: getTransform(),
+    },
+    fill: {
+      type: UNIT_VALUE_TYPES.COLOR,
+      default: getTransform(),
+    },
+    stroke: {
+      type: UNIT_VALUE_TYPES.COLOR,
+      default: getTransform(),
+    },
+    'stroke-width': {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 1,
+    },
   } as {
     [key in keyof GraphNodeCreateObjectInputsBase]: {
-      type: keyof typeof GRAPH_VALUE_TYPE
+      type: ValueType
     } & { default: Required<GraphNodeCreateObjectInputsBase[key]>['value'] }
   },
   outputs: {
-    object: GRAPH_VALUE_TYPE.OBJECT,
+    object: UNIT_VALUE_TYPES.OBJECT,
   },
   computation(
     inputs: {
@@ -132,3 +164,16 @@ export const nodeToCreateObjectProps = {
         }
   },
 } as const
+
+export function pickNotGenericsType(
+  types: (ValueType | undefined)[]
+): ValueType | undefined {
+  return types.find((t) => !!t && t.type !== GRAPH_VALUE_TYPE.GENERICS)
+}
+
+export interface EdgeChainGroupItem {
+  id: string
+  key: string
+  output?: true
+  type?: ValueType
+}

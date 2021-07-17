@@ -18,33 +18,34 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div v-if="editableTypes[type]">
+  <div v-if="editableTypes[valueTypeKey]">
     <h5>{{ label }}</h5>
     <TextInput v-if="disabled" :model-value="modelValue" disabled />
     <template v-else>
       <SliderInput
-        v-if="type === 'SCALER'"
+        v-if="valueTypeKey === 'SCALER'"
+        :step="valueScale"
         :model-value="modelValue"
         @update:modelValue="update"
       />
       <SelectField
-        v-else-if="type === 'OBJECT'"
+        v-else-if="valueTypeKey === 'OBJECT'"
         :model-value="modelValue"
         :options="objectOptions"
         @update:modelValue="update"
       />
       <TextInput
-        v-else-if="type === 'TEXT'"
+        v-else-if="valueTypeKey === 'TEXT'"
         :model-value="modelValue"
         :options="objectOptions"
         @update:modelValue="update"
       />
       <CheckboxInput
-        v-else-if="type === 'BOOLEAN'"
+        v-else-if="valueTypeKey === 'BOOLEAN'"
         :model-value="modelValue"
         @update:modelValue="update"
       />
-      <template v-else-if="type === 'VECTOR2'">
+      <template v-else-if="valueTypeKey === 'VECTOR2'">
         <InlineField label="x" label-width="20px">
           <SliderInput
             :model-value="modelValue.x"
@@ -62,7 +63,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           />
         </InlineField>
       </template>
-      <div v-else-if="type === 'COLOR'" class="color-block">
+      <div v-else-if="valueTypeKey === 'COLOR'" class="color-block">
         <button
           type="button"
           class="color-button"
@@ -85,7 +86,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType, ref, computed, inject } from 'vue'
-import { GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { GRAPH_VALUE_TYPE, ValueType } from '/@/models/graphNode'
 import TextInput from '/@/components/atoms/TextInput.vue'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
@@ -119,7 +120,7 @@ export default defineComponent({
     modelValue: { type: null, required: true },
     label: { type: String, required: true },
     type: {
-      type: String as PropType<keyof typeof GRAPH_VALUE_TYPE>,
+      type: Object as PropType<ValueType>,
       required: true,
     },
     disabled: { type: Boolean, default: false },
@@ -143,10 +144,15 @@ export default defineComponent({
       return posedHsva(props.modelValue)
     })
 
+    const valueTypeKey = computed(() => props.type.type)
+    const valueScale = computed(() => (props.type as any).scale ?? 1)
+
     return {
       editableTypes,
       update,
       objectOptions,
+      valueTypeKey,
+      valueScale,
 
       showColorPicker,
       toggleShowColorPicker,

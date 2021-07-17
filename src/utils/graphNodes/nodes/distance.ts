@@ -18,8 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getDistance } from 'okageo'
-import { GraphNodeDistance, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeDistance } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeDistance> = {
   create(arg = {}) {
@@ -33,11 +37,17 @@ export const struct: NodeStruct<GraphNodeDistance> = {
   },
   data: {},
   inputs: {
-    a: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
-    b: { type: GRAPH_VALUE_TYPE.VECTOR2, default: { x: 0, y: 0 } },
+    a: {
+      type: UNIT_VALUE_TYPES.VECTOR2,
+      default: { x: 0, y: 0 },
+    },
+    b: {
+      type: UNIT_VALUE_TYPES.VECTOR2,
+      default: { x: 0, y: 0 },
+    },
   },
   outputs: {
-    distance: GRAPH_VALUE_TYPE.SCALER,
+    distance: UNIT_VALUE_TYPES.SCALER,
   },
   computation(inputs) {
     return { distance: getDistance(inputs.a, inputs.b) }

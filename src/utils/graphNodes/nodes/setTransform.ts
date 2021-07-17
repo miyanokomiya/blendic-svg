@@ -18,8 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { GraphNodeSetTransform, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeSetTransform } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeSetTransform> = {
   create(arg = {}) {
@@ -33,11 +37,11 @@ export const struct: NodeStruct<GraphNodeSetTransform> = {
   },
   data: {},
   inputs: {
-    object: { type: GRAPH_VALUE_TYPE.OBJECT, default: '' },
-    transform: { type: GRAPH_VALUE_TYPE.TRANSFORM, default: getTransform() },
+    object: { type: UNIT_VALUE_TYPES.OBJECT, default: '' },
+    transform: { type: UNIT_VALUE_TYPES.TRANSFORM, default: getTransform() },
   },
   outputs: {
-    object: GRAPH_VALUE_TYPE.OBJECT,
+    object: UNIT_VALUE_TYPES.OBJECT,
   },
   computation(inputs, _self, context): { object: string } {
     context.setTransform(inputs.object, inputs.transform)

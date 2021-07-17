@@ -17,35 +17,36 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeSwitchObject } from '/@/models/graphNode'
+import { GraphNodeSwitch } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
+  pickNotGenericsType,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeSwitchObject> = {
+export const struct: NodeStruct<GraphNodeSwitch> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
         inputs: {
           condition: { value: true },
-          if_true: { value: '' },
-          if_false: { value: '' },
+          if_true: { value: undefined },
+          if_false: { value: undefined },
         },
         ...arg,
       }),
-      type: 'switch_object',
-    } as GraphNodeSwitchObject
+      type: 'switch_generics',
+    } as GraphNodeSwitch
   },
   data: {},
   inputs: {
     condition: { type: UNIT_VALUE_TYPES.BOOLEAN, default: true },
-    if_true: { type: UNIT_VALUE_TYPES.OBJECT, default: '' },
-    if_false: { type: UNIT_VALUE_TYPES.OBJECT, default: '' },
+    if_true: { type: UNIT_VALUE_TYPES.GENERICS, default: undefined },
+    if_false: { type: UNIT_VALUE_TYPES.GENERICS, default: undefined },
   },
   outputs: {
-    value: UNIT_VALUE_TYPES.OBJECT,
+    value: UNIT_VALUE_TYPES.GENERICS,
   },
   computation(inputs) {
     return { value: inputs.condition ? inputs.if_true : inputs.if_false }
@@ -53,5 +54,33 @@ export const struct: NodeStruct<GraphNodeSwitchObject> = {
   width: 130,
   color: '#afeeee',
   textColor: '#000',
-  label: 'Switch Object',
+  label: 'Switch',
+  getOutputType(self, key) {
+    switch (key) {
+      case 'value':
+        return (
+          pickNotGenericsType([
+            self.inputs.if_true.genericsType,
+            self.inputs.if_false.genericsType,
+          ]) ?? UNIT_VALUE_TYPES.GENERICS
+        )
+      default:
+        return UNIT_VALUE_TYPES.GENERICS
+    }
+  },
+  getGenericsChainAt(self, key, output) {
+    if (
+      (output && key === 'value') ||
+      key === 'if_true' ||
+      key === 'if_false'
+    ) {
+      return [
+        { id: self.id, key: 'if_true' },
+        { id: self.id, key: 'if_false' },
+        { id: self.id, key: 'value', output: true },
+      ]
+    }
+
+    return []
+  },
 }

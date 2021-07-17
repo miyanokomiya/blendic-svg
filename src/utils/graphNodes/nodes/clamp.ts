@@ -17,9 +17,13 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeClamp, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import { GraphNodeClamp } from '/@/models/graphNode'
 import { circleClamp, clamp } from '/@/utils/geometry'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeClamp> = {
   create(arg = {}) {
@@ -38,13 +42,25 @@ export const struct: NodeStruct<GraphNodeClamp> = {
   },
   data: {},
   inputs: {
-    number: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    from: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    to: { type: GRAPH_VALUE_TYPE.SCALER, default: 1 },
-    loop: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
+    number: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    from: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    to: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 1,
+    },
+    loop: {
+      type: UNIT_VALUE_TYPES.BOOLEAN,
+      default: false,
+    },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.SCALER,
+    value: UNIT_VALUE_TYPES.SCALER,
   },
   computation(inputs) {
     return {

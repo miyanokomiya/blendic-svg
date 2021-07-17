@@ -36,11 +36,13 @@ import {
   GRAPH_VALUE_TYPE_KEY,
 } from '/@/models/graphNode'
 import {
+  cleanEdgeGenericsGroupAt,
   duplicateNodes,
   getGraphNodeModule,
   NODE_MENU_OPTIONS_SRC,
   NODE_SUGGESTION_MENU_OPTIONS_SRC,
   resetInput,
+  updateInputConnection,
   validateConnection,
 } from '/@/utils/graphNodes'
 import { mapFilter, mapReduce, toList } from '/@/utils/commons'
@@ -149,8 +151,8 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         const toNode = graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
         const toKey = state.closestEdgeInfo.key
         return validateConnection(
-          { type: fromNode.type, key: fromKey },
-          { type: toNode.type, key: toKey }
+          { node: fromNode, key: fromKey },
+          { node: toNode, key: toKey }
         )
       } else {
         if (state.closestEdgeInfo.type === 'input') return false
@@ -162,8 +164,8 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         const toNode = graphStore.nodeMap.value[to.nodeId]
         const toKey = to.key
         return validateConnection(
-          { type: fromNode.type, key: fromKey },
-          { type: toNode.type, key: toKey }
+          { node: fromNode, key: fromKey },
+          { node: toNode, key: toKey }
         )
       }
     }
@@ -177,16 +179,29 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     targetId: string,
     targetKey: string
   ) {
-    const input = (node.inputs as any)[inputKey] as GraphNodeInput<unknown>
-    // ignore if the input is not updated
-    if (input.from?.id === targetId && input.from?.key === targetKey) return
+    const updated = updateInputConnection(
+      { node: graphStore.nodeMap.value[targetId], key: targetKey },
+      { node, key: inputKey }
+    )
+    if (!updated) return
 
-    graphStore.updateNode(node.id, {
-      ...node,
-      inputs: {
-        ...node.inputs,
-        [inputKey]: { from: { id: targetId, key: targetKey } },
-      } as any,
+    graphStore.updateNodes({
+      [updated.id]: updated,
+      ...cleanEdgeGenericsGroupAt(
+        { ...graphStore.nodeMap.value, [updated.id]: updated },
+        { id: updated.id, key: inputKey }
+      ),
+    })
+  }
+
+  function disConnectNodeInput(node: GraphNode, inputKey: string) {
+    const updated = resetInput(node, inputKey)
+    graphStore.updateNodes({
+      [node.id]: updated,
+      ...cleanEdgeGenericsGroupAt(
+        { ...graphStore.nodeMap.value, [updated.id]: updated },
+        { id: updated.id, key: inputKey }
+      ),
     })
   }
 
@@ -221,13 +236,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
           const input = (toNode.inputs as any)[toKey] as GraphNodeInput<unknown>
           if (input.from) {
             // delete current edge
-            graphStore.updateNode(toNode.id, {
-              ...toNode,
-              inputs: {
-                ...toNode.inputs,
-                [toKey]: resetInput(toNode.type, toKey),
-              } as any,
-            })
+            disConnectNodeInput(toNode, toKey)
           }
           cancel()
         } else {
@@ -236,7 +245,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
             const from = state.dragTarget.draftGraphEdge.from
             const node = graphStore.nodeMap.value[from.nodeId]
             const struct = getGraphNodeModule(node.type).struct
-            state.nodeSuggestion = struct.outputs[from.key]
+            state.nodeSuggestion = struct.outputs[from.key].type
             state.keyDownPosition = state.editMovement!.current
             state.command = 'add'
           } else {

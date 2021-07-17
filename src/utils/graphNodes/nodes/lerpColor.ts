@@ -18,10 +18,18 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { GraphNodeLerpColor, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
+import {
+  GraphNodeLerpColor,
+  GRAPH_VALUE_STRUCT,
+  GRAPH_VALUE_TYPE,
+} from '/@/models/graphNode'
 import { interpolateTransform } from '/@/utils/armatures'
 import { clamp } from '/@/utils/geometry'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeLerpColor> = {
   create(arg = {}) {
@@ -39,12 +47,25 @@ export const struct: NodeStruct<GraphNodeLerpColor> = {
   },
   data: {},
   inputs: {
-    a: { type: GRAPH_VALUE_TYPE.COLOR, default: getTransform() },
-    b: { type: GRAPH_VALUE_TYPE.COLOR, default: getTransform() },
-    alpha: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
+    a: {
+      type: UNIT_VALUE_TYPES.COLOR,
+      default: getTransform(),
+    },
+    b: {
+      type: UNIT_VALUE_TYPES.COLOR,
+      default: getTransform(),
+    },
+    alpha: {
+      type: {
+        type: GRAPH_VALUE_TYPE.SCALER,
+        struct: GRAPH_VALUE_STRUCT.UNIT,
+        scale: 0.1,
+      },
+      default: 0,
+    },
   },
   outputs: {
-    color: GRAPH_VALUE_TYPE.COLOR,
+    color: UNIT_VALUE_TYPES.COLOR,
   },
   computation(inputs) {
     return {

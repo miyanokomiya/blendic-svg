@@ -17,14 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import {
-  GraphNodeCreateObjectText,
-  GRAPH_VALUE_TYPE,
-} from '/@/models/graphNode'
+import { GraphNodeCreateObjectText } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
   nodeToCreateObjectProps,
+  UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeCreateObjectText> = {
@@ -50,13 +48,34 @@ export const struct: NodeStruct<GraphNodeCreateObjectText> = {
   data: {},
   inputs: {
     ...nodeToCreateObjectProps.inputs,
-    centered: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: false },
-    x: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    y: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    dx: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    dy: { type: GRAPH_VALUE_TYPE.SCALER, default: 0 },
-    text: { type: GRAPH_VALUE_TYPE.TEXT, default: 'TEXT' },
-    'font-size': { type: GRAPH_VALUE_TYPE.SCALER, default: 100 },
+    centered: {
+      type: UNIT_VALUE_TYPES.BOOLEAN,
+      default: false,
+    },
+    x: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    y: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    dx: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    dy: {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
+    },
+    text: {
+      type: UNIT_VALUE_TYPES.TEXT,
+      default: 'TEXT',
+    },
+    'font-size': {
+      type: UNIT_VALUE_TYPES.SCALER,
+      default: 100,
+    },
   },
   outputs: nodeToCreateObjectProps.outputs,
   computation(inputs, self, context): { object: string } {

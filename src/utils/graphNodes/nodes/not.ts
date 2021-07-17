@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeNot, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
-import { createBaseNode, NodeStruct } from '/@/utils/graphNodes/core'
+import { GraphNodeNot } from '/@/models/graphNode'
+import {
+  createBaseNode,
+  NodeStruct,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeNot> = {
   create(arg = {}) {
@@ -32,10 +36,10 @@ export const struct: NodeStruct<GraphNodeNot> = {
   },
   data: {},
   inputs: {
-    condition: { type: GRAPH_VALUE_TYPE.BOOLEAN, default: true },
+    condition: { type: UNIT_VALUE_TYPES.BOOLEAN, default: true },
   },
   outputs: {
-    value: GRAPH_VALUE_TYPE.BOOLEAN,
+    value: UNIT_VALUE_TYPES.BOOLEAN,
   },
   computation(inputs) {
     return { value: !inputs.condition }

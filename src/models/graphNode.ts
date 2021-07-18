@@ -147,6 +147,7 @@ export interface GraphNodes {
   make_path_a: GraphNodeMakePathA
   make_path_z: GraphNodeMakePathZ
 
+  add_generics: GraphNodeAddGenerics
   add_scaler: GraphNodeAddScaler
   sub_scaler: GraphNodeSubScaler
   multi_scaler: GraphNodeMultiScaler
@@ -177,7 +178,7 @@ export interface GraphNodes {
   less_than: GraphNodeLessThan
   less_than_or_equal: GraphNodeLessThanOrEqual
   between: GraphNodeBetween
-  switch_generics: GraphNodeSwitch
+  switch_generics: GraphNodeSwitchGenerics
 }
 export type GraphNodeType = keyof GraphNodes
 // Note: this union decrease performance too much of type checking and unit test
@@ -486,6 +487,11 @@ export interface GraphNodeMakePathZ extends GraphNodeBase {
   }
 }
 
+export interface GraphNodeAddGenerics extends GraphNodeBase {
+  type: 'add_generics'
+  inputs: { a: GraphNodeInput<any>; b: GraphNodeInput<any> }
+}
+
 export interface GraphNodeAddScaler extends GraphNodeBase {
   type: 'add_scaler'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
@@ -671,7 +677,7 @@ export interface GraphNodeBetween extends GraphNodeBase {
   }
 }
 
-export interface GraphNodeSwitch extends GraphNodeBase {
+export interface GraphNodeSwitchGenerics extends GraphNodeBase {
   type: 'switch_generics'
   inputs: {
     condition: GraphNodeInput<boolean>

@@ -34,6 +34,7 @@ import {
   NodeModule,
   NodeContext,
   EdgeChainGroupItem,
+  isSameValueType,
 } from '/@/utils/graphNodes/core'
 import { v4 } from 'uuid'
 import * as get_frame from './nodes/getFrame'
@@ -45,6 +46,7 @@ import * as color from './nodes/color'
 import * as make_color from './nodes/makeColor'
 import * as break_color from './nodes/breakColor'
 
+import * as add_generics from './nodes/addGenerics'
 import * as add_scaler from './nodes/addScaler'
 import * as sub_scaler from './nodes/subScaler'
 import * as multi_scaler from './nodes/multiScaler'
@@ -115,6 +117,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   make_color,
   break_color,
 
+  add_generics,
   add_scaler,
   sub_scaler,
   multi_scaler,
@@ -219,6 +222,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
   {
     label: 'Math',
     children: [
+      { label: '(+)', type: 'add_generics' },
       { label: '(+) Number', type: 'add_scaler' },
       { label: '(-) Number', type: 'sub_scaler' },
       { label: '(x) Number', type: 'multi_scaler' },
@@ -287,6 +291,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
 type NodeSuggestionMenuOptionSrc = { key: string } & NodeMenuOption
 
 const GENERICS_SUGGESTIONS: NodeSuggestionMenuOptionSrc[] = [
+  { label: '(+)', type: 'add_generics', key: 'a' },
   { label: 'Switch', type: 'switch_generics', key: 'if_true' },
 ]
 
@@ -606,13 +611,6 @@ export function validateConnection(
 function canConnectValueType(a: ValueType, b: ValueType): boolean {
   if (a.type === 'GENERICS' || b.type === 'GENERICS') return true
   return isSameValueType(a, b)
-}
-
-function isSameValueType(a?: ValueType, b?: ValueType): boolean {
-  return (
-    (a === undefined && b === undefined) ||
-    (a?.type === b?.type && a?.struct === b?.struct)
-  )
 }
 
 export function resetInput(node: GraphNode, key: string): GraphNode {

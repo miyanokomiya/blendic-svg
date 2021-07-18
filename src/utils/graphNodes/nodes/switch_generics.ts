@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeSwitch } from '/@/models/graphNode'
+import { GraphNodeSwitchGenerics } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
@@ -25,7 +25,7 @@ import {
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeSwitch> = {
+export const struct: NodeStruct<GraphNodeSwitchGenerics> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
@@ -37,7 +37,7 @@ export const struct: NodeStruct<GraphNodeSwitch> = {
         ...arg,
       }),
       type: 'switch_generics',
-    } as GraphNodeSwitch
+    } as GraphNodeSwitchGenerics
   },
   data: {},
   inputs: {

@@ -177,3 +177,10 @@ export interface EdgeChainGroupItem {
   output?: true
   type?: ValueType
 }
+
+export function isSameValueType(a?: ValueType, b?: ValueType): boolean {
+  return (
+    (a === undefined && b === undefined) ||
+    (a?.type === b?.type && a?.struct === b?.struct)
+  )
+}

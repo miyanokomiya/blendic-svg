@@ -17,7 +17,11 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { pickNotGenericsType, UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
+import {
+  isSameValueType,
+  pickNotGenericsType,
+  UNIT_VALUE_TYPES,
+} from '/@/utils/graphNodes/core'
 
 describe('src/utils/graphNodes/index.ts', () => {
   describe('pickNotGenericsType', () => {
@@ -39,6 +43,32 @@ describe('src/utils/graphNodes/index.ts', () => {
           UNIT_VALUE_TYPES.GENERICS,
         ])
       ).toBe(undefined)
+    })
+  })
+
+  describe('isSameValueType', () => {
+    it('should return true if two types are the same', () => {
+      expect(
+        isSameValueType(UNIT_VALUE_TYPES.SCALER, UNIT_VALUE_TYPES.SCALER)
+      ).toBe(true)
+      expect(
+        isSameValueType(UNIT_VALUE_TYPES.GENERICS, UNIT_VALUE_TYPES.GENERICS)
+      ).toBe(true)
+    })
+    it('should return true if two types are the same', () => {
+      expect(
+        isSameValueType(UNIT_VALUE_TYPES.SCALER, UNIT_VALUE_TYPES.VECTOR2)
+      ).toBe(false)
+      expect(
+        isSameValueType(UNIT_VALUE_TYPES.TEXT, UNIT_VALUE_TYPES.OBJECT)
+      ).toBe(false)
+      expect(
+        isSameValueType(UNIT_VALUE_TYPES.BOOLEAN, UNIT_VALUE_TYPES.SCALER)
+      ).toBe(false)
+    })
+    it('should return true if two types are undefined', () => {
+      expect(isSameValueType(undefined, undefined)).toBe(true)
+      expect(isSameValueType(undefined, UNIT_VALUE_TYPES.GENERICS)).toBe(false)
     })
   })
 })

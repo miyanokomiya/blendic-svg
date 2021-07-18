@@ -46,6 +46,7 @@ import {
   getAllEdgeConnectionInfo,
   getEdgeChainGroupAt,
   cleanEdgeGenericsGroupAt,
+  getOutputType,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -1204,6 +1205,27 @@ describe('src/utils/graphNodes/index.ts', () => {
           }),
         })
       })
+    })
+  })
+
+  describe('getOutputType', () => {
+    it('should return the output type of the node', () => {
+      expect(
+        getOutputType(createGraphNode('switch_generics'), 'value')
+      ).toEqual(UNIT_VALUE_TYPES.GENERICS)
+      expect(
+        getOutputType(
+          createGraphNode('switch_generics', {
+            inputs: {
+              if_true: { genericsType: UNIT_VALUE_TYPES.SCALER },
+            },
+          }),
+          'value'
+        )
+      ).toEqual(UNIT_VALUE_TYPES.SCALER)
+      expect(getOutputType(createGraphNode('make_vector2'), 'vector2')).toEqual(
+        UNIT_VALUE_TYPES.VECTOR2
+      )
     })
   })
 })

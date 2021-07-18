@@ -156,7 +156,7 @@ function updateNodes(val: IdMap<Partial<GraphNode>>) {
 function addNode<T extends GraphNodeType>(
   type: T,
   arg: Partial<GraphNodes[T]> = {}
-) {
+): GraphNode | undefined {
   if (!lastSelectedGraph.value) return
 
   const node = createGraphNode(type, arg, true)
@@ -168,6 +168,7 @@ function addNode<T extends GraphNodeType>(
     ),
   ])
   historyStore.push(item, true)
+  return node
 }
 
 function pasteNodes(nodes: GraphNode[]) {

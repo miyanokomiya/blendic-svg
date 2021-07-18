@@ -100,11 +100,11 @@ function initializeElement(elm: BElement): BElement {
   return getBElement(elm)
 }
 
-function initializeGraph(graph: AnimationGraph): AnimationGraph {
+export function initializeGraph(graph: AnimationGraph): AnimationGraph {
   const g = getAnimationGraph(graph)
   return {
     ...g,
-    nodes: g.nodes.map(initializeGraphNode),
+    nodes: g.nodes.filter(isValidGraphNode).map(initializeGraphNode),
   }
 }
 
@@ -117,4 +117,9 @@ export function initializeGraphNode(node: GraphNodeBase): GraphNodeBase {
     inputs: { ...model.inputs, ...node.inputs },
     data: { ...model.data, ...node.data },
   } as GraphNodeBase
+}
+
+function isValidGraphNode(node: GraphNodeBase): boolean {
+  const module = getGraphNodeModule(node.type)
+  return !!module
 }

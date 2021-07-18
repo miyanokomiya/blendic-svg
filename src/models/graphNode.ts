@@ -178,10 +178,6 @@ export interface GraphNodes {
   less_than_or_equal: GraphNodeLessThanOrEqual
   between: GraphNodeBetween
   switch_generics: GraphNodeSwitch
-  switch_scaler: GraphNodeSwitchScaler
-  switch_vector2: GraphNodeSwitchVector2
-  switch_transform: GraphNodeSwitchTransform
-  switch_object: GraphNodeSwitchObject
 }
 export type GraphNodeType = keyof GraphNodes
 // Note: this union decrease performance too much of type checking and unit test
@@ -681,41 +677,5 @@ export interface GraphNodeSwitch extends GraphNodeBase {
     condition: GraphNodeInput<boolean>
     if_true: GraphNodeInput<unknown>
     if_false: GraphNodeInput<unknown>
-  }
-}
-
-export interface GraphNodeSwitchScaler extends GraphNodeBase {
-  type: 'switch_scaler'
-  inputs: {
-    condition: GraphNodeInput<boolean>
-    if_true: GraphNodeInput<number>
-    if_false: GraphNodeInput<number>
-  }
-}
-
-export interface GraphNodeSwitchVector2 extends GraphNodeBase {
-  type: 'switch_vector2'
-  inputs: {
-    condition: GraphNodeInput<boolean>
-    if_true: GraphNodeInput<IVec2>
-    if_false: GraphNodeInput<IVec2>
-  }
-}
-
-export interface GraphNodeSwitchTransform extends GraphNodeBase {
-  type: 'switch_transform'
-  inputs: {
-    condition: GraphNodeInput<boolean>
-    if_true: GraphNodeInput<Transform>
-    if_false: GraphNodeInput<Transform>
-  }
-}
-
-export interface GraphNodeSwitchObject extends GraphNodeBase {
-  type: 'switch_object'
-  inputs: {
-    condition: GraphNodeInput<boolean>
-    if_true: GraphNodeInput<string>
-    if_false: GraphNodeInput<string>
   }
 }

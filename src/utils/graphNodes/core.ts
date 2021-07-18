@@ -60,6 +60,7 @@ export interface NodeStruct<T extends GraphNodeBase> {
     key: string,
     output?: boolean
   ) => EdgeChainGroupItem[]
+  getErrors?: (self: T) => string[] | undefined
 }
 
 export interface NodeContext<T> {

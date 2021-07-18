@@ -105,7 +105,7 @@ import * as or from './nodes/or'
 import * as equal from './nodes/equal'
 import * as switch_generics from './nodes/switch_generics'
 import { IdMap } from '/@/models'
-import { mapReduce } from '/@/utils/commons'
+import { mapReduce, toList } from '/@/utils/commons'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -947,4 +947,21 @@ export function cleanEdgeGenericsGroupAt(
     })
 
   return ret
+}
+
+export function getNodeErrors(nodeMap: GraphNodeMap): IdMap<string[]> {
+  const circularRefIds = getAllCircularRefIds(nodeMap)
+
+  return toList(nodeMap).reduce<IdMap<string[]>>((p, node) => {
+    const errors = [
+      ...(getGraphNodeModule<any>(node.type).struct.getErrors?.(node) ?? []),
+      ...(circularRefIds[node.id] ? ['circular connection is found'] : []),
+    ]
+
+    if (errors.length > 0) {
+      p[node.id] = errors
+    }
+
+    return p
+  }, {})
 }

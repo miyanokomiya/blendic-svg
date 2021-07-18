@@ -92,6 +92,25 @@ export const struct: NodeStruct<GraphNodeAddGenerics> = {
 
     return []
   },
+  getErrors(self) {
+    const type = pickNotGenericsType([
+      self.inputs.a.genericsType,
+      self.inputs.b.genericsType,
+    ])
+    if (!type) return
+
+    switch (type.type) {
+      case GRAPH_VALUE_TYPE.SCALER:
+      case GRAPH_VALUE_TYPE.VECTOR2:
+      case GRAPH_VALUE_TYPE.TRANSFORM:
+      case GRAPH_VALUE_TYPE.COLOR:
+      case GRAPH_VALUE_TYPE.TEXT:
+      case GRAPH_VALUE_TYPE.D:
+        return undefined
+      default:
+        return ['invalid type to operate']
+    }
+  },
 }
 
 function getAddFn(type: ValueType | undefined): (a: any, b: any) => any {

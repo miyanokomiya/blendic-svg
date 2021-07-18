@@ -184,4 +184,27 @@ describe('src/utils/graphNodes/nodes/addGenerics.ts', () => {
       })
     })
   })
+
+  describe('getErrors', () => {
+    it('should return errors if the node has invalid generics types', () => {
+      expect(
+        target.struct.getErrors!({
+          inputs: {
+            a: { genericsType: UNIT_VALUE_TYPES.OBJECT },
+            b: { genericsType: UNIT_VALUE_TYPES.OBJECT },
+          },
+        } as any)
+      ).toEqual(['invalid type to operate'])
+    })
+    it('should return undefined if the node does not have invalid generics types', () => {
+      expect(
+        target.struct.getErrors!({
+          inputs: {
+            a: { genericsType: UNIT_VALUE_TYPES.SCALER },
+            b: { genericsType: UNIT_VALUE_TYPES.SCALER },
+          },
+        } as any)
+      ).toBe(undefined)
+    })
+  })
 })

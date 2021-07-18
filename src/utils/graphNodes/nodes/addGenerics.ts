@@ -28,6 +28,7 @@ import {
 import { addPoseTransform } from '/@/utils/armatures'
 import {
   createBaseNode,
+  getGenericsChainAtFn,
   NodeStruct,
   pickNotGenericsType,
   UNIT_VALUE_TYPES,
@@ -82,15 +83,13 @@ export const struct: NodeStruct<GraphNodeAddGenerics> = {
     }
   },
   getGenericsChainAt(self, key, output) {
-    if ((output && key === 'value') || key === 'a' || key === 'b') {
-      return [
+    return getGenericsChainAtFn([
+      [
         { id: self.id, key: 'a' },
         { id: self.id, key: 'b' },
         { id: self.id, key: 'value', output: true },
-      ]
-    }
-
-    return []
+      ],
+    ])(key, output)
   },
   getErrors(self) {
     const type = pickNotGenericsType([

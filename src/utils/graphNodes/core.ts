@@ -185,3 +185,12 @@ export function isSameValueType(a?: ValueType, b?: ValueType): boolean {
     (a?.type === b?.type && a?.struct === b?.struct)
   )
 }
+
+export function getGenericsChainAtFn(
+  chains: EdgeChainGroupItem[][]
+): (key: string, output?: boolean) => EdgeChainGroupItem[] {
+  return (key: string, output?: boolean) =>
+    chains.find((chain) =>
+      chain.some((c) => c.key === key && c.output === output)
+    ) ?? []
+}

@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { GraphNodeSwitchGenerics } from '/@/models/graphNode'
 import {
   createBaseNode,
+  getGenericsChainAtFn,
   NodeStruct,
   pickNotGenericsType,
   UNIT_VALUE_TYPES,
@@ -69,18 +70,12 @@ export const struct: NodeStruct<GraphNodeSwitchGenerics> = {
     }
   },
   getGenericsChainAt(self, key, output) {
-    if (
-      (output && key === 'value') ||
-      key === 'if_true' ||
-      key === 'if_false'
-    ) {
-      return [
+    return getGenericsChainAtFn([
+      [
         { id: self.id, key: 'if_true' },
         { id: self.id, key: 'if_false' },
         { id: self.id, key: 'value', output: true },
-      ]
-    }
-
-    return []
+      ],
+    ])(key, output)
   },
 }

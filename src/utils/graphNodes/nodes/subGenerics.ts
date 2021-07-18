@@ -31,6 +31,7 @@ import {
   NodeStruct,
   pickNotGenericsType,
   UNIT_VALUE_TYPES,
+  getGenericsChainAtFn,
 } from '/@/utils/graphNodes/core'
 
 export const struct: NodeStruct<GraphNodeSubGenerics> = {
@@ -75,15 +76,13 @@ export const struct: NodeStruct<GraphNodeSubGenerics> = {
     }
   },
   getGenericsChainAt(self, key, output) {
-    if ((output && key === 'value') || key === 'a' || key === 'b') {
-      return [
+    return getGenericsChainAtFn([
+      [
         { id: self.id, key: 'a' },
         { id: self.id, key: 'b' },
         { id: self.id, key: 'value', output: true },
-      ]
-    }
-
-    return []
+      ],
+    ])(key, output)
   },
   getErrors(self) {
     const type = pickNotGenericsType([

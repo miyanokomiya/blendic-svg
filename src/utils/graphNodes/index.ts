@@ -96,7 +96,7 @@ import * as between from './nodes/between'
 import * as not from './nodes/not'
 import * as and from './nodes/and'
 import * as or from './nodes/or'
-import * as equal from './nodes/equal'
+import * as equal_generics from './nodes/equalGenerics'
 import * as switch_generics from './nodes/switch_generics'
 import { IdMap } from '/@/models'
 import { mapReduce, toList } from '/@/utils/commons'
@@ -158,7 +158,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   not,
   and,
   or,
-  equal,
+  equal_generics,
   greater_than,
   greater_than_or_equal,
   less_than,
@@ -233,7 +233,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Not', type: 'not' },
       { label: 'And', type: 'and' },
       { label: 'Or', type: 'or' },
-      { label: '(=) Number', type: 'equal' },
+      { label: '(=)', type: 'equal_generics' },
       { label: '(>) Number', type: 'greater_than' },
       { label: '(>=) Number', type: 'greater_than_or_equal' },
       { label: '(<) Number', type: 'less_than' },
@@ -287,6 +287,11 @@ const LERP_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
   type: 'lerp_generics',
   key: 'a',
 }
+const EQUAL_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
+  label: '(=)',
+  type: 'equal_generics',
+  key: 'a',
+}
 const GENERICS_SUGGESTIONS: NodeSuggestionMenuOptionSrc[] = [
   { label: 'Switch', type: 'switch_generics', key: 'if_true' },
 ]
@@ -298,6 +303,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Not', type: 'not', key: 'condition' },
     { label: 'And', type: 'and', key: 'a' },
     { label: 'Or', type: 'or', key: 'a' },
+    EQUAL_GENERICS_SUGGESTION,
     { label: 'Switch Condition', type: 'switch_generics', key: 'condition' },
     ...GENERICS_SUGGESTIONS,
   ],
@@ -309,7 +315,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Sin', type: 'sin', key: 'rotate' },
     { label: 'Cos', type: 'cos', key: 'rotate' },
     { label: 'Pow', type: 'pow', key: 'x' },
-    { label: '(=) Number', type: 'equal', key: 'a' },
+    EQUAL_GENERICS_SUGGESTION,
     { label: '(>) Number', type: 'greater_than', key: 'a' },
     { label: '(>=) Number', type: 'greater_than_or_equal', key: 'a' },
     { label: '(<) Number', type: 'less_than', key: 'a' },
@@ -333,6 +339,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Break Vector2', type: 'break_vector2', key: 'vector2' },
     { label: 'Invert Polar Coord', type: 'invert_polar_coord', key: 'vector2' },
     { label: 'Make Transform', type: 'make_transform', key: 'translate' },
+    EQUAL_GENERICS_SUGGESTION,
     LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
@@ -350,6 +357,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
       key: 'object',
     },
     { label: 'Grid Clone Object', type: 'grid_clone_object', key: 'object' },
+    EQUAL_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   TRANSFORM: [
@@ -359,20 +367,21 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...GENERICS_SUGGESTIONS,
   ],
   COLOR: [
-    ADD_GENERICS_SUGGESTION,
     { label: 'Break Color', type: 'break_color', key: 'color' },
+    ADD_GENERICS_SUGGESTION,
     LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   TEXT: [
-    ADD_GENERICS_SUGGESTION,
     { label: 'Text', type: 'create_object_text', key: 'text' },
+    ADD_GENERICS_SUGGESTION,
+    EQUAL_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   D: [
-    ADD_GENERICS_SUGGESTION,
     ...MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
     { label: 'Create Path', type: 'create_object_path', key: 'd' },
+    ADD_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   GENERICS: [

@@ -166,7 +166,7 @@ export interface GraphNodes {
   not: GraphNodeNot
   and: GraphNodeAnd
   or: GraphNodeOr
-  equal: GraphNodeEqual
+  equal_generics: GraphNodeEqualGenerics
   greater_than: GraphNodeGreaterThan
   greater_than_or_equal: GraphNodeBase
   less_than: GraphNodeLessThan
@@ -588,12 +588,12 @@ export interface GraphNodeOr extends GraphNodeBase {
   inputs: { a: GraphNodeInput<boolean>; b: GraphNodeInput<boolean> }
 }
 
-export interface GraphNodeEqual extends GraphNodeBase {
-  type: 'equal'
+export interface GraphNodeEqualGenerics extends GraphNodeBase {
+  type: 'equal_generics'
   inputs: {
-    a: GraphNodeInput<number>
-    b: GraphNodeInput<number>
-    threshold: GraphNodeInput<number>
+    a: GraphNodeInput<any>
+    b: GraphNodeInput<any>
+    threshold: GraphNodeInput<any>
   }
 }
 

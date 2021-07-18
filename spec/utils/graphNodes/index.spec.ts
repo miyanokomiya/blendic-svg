@@ -712,7 +712,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       ).toEqual(undefined)
     })
     it('should return undefined if the connection is recursive', () => {
-      const node = createGraphNode('add_scaler', {
+      const node = createGraphNode('add_generics', {
         id: 'a',
       })
       expect(

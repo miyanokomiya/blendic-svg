@@ -47,7 +47,6 @@ import * as make_color from './nodes/makeColor'
 import * as break_color from './nodes/breakColor'
 
 import * as add_generics from './nodes/addGenerics'
-import * as add_scaler from './nodes/addScaler'
 import * as sub_scaler from './nodes/subScaler'
 import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
@@ -56,7 +55,6 @@ import * as cos from './nodes/cos'
 import * as polar_coord from './nodes/polarCoord'
 import * as invert_polar_coord from './nodes/invertPolarCoord'
 import * as pow from './nodes/pow'
-import * as add_vector2 from './nodes/addVector2'
 import * as sub_vector2 from './nodes/subVector2'
 import * as scale_vector2 from './nodes/scaleVector2'
 import * as distance from './nodes/distance'
@@ -118,7 +116,6 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   break_color,
 
   add_generics,
-  add_scaler,
   sub_scaler,
   multi_scaler,
   divide_scaler,
@@ -127,7 +124,6 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   polar_coord,
   invert_polar_coord,
   pow,
-  add_vector2,
   sub_vector2,
   scale_vector2,
   distance,
@@ -223,7 +219,6 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
     label: 'Math',
     children: [
       { label: '(+)', type: 'add_generics' },
-      { label: '(+) Number', type: 'add_scaler' },
       { label: '(-) Number', type: 'sub_scaler' },
       { label: '(x) Number', type: 'multi_scaler' },
       { label: '(/) Number', type: 'divide_scaler' },
@@ -232,7 +227,6 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Polar Coord', type: 'polar_coord' },
       { label: 'Invert Polar Coord', type: 'invert_polar_coord' },
       { label: 'Pow', type: 'pow' },
-      { label: '(+) Vector2', type: 'add_vector2' },
       { label: '(-) Vector2', type: 'sub_vector2' },
       { label: 'Scale Vector2', type: 'scale_vector2' },
       { label: 'Distance', type: 'distance' },
@@ -306,7 +300,6 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...GENERICS_SUGGESTIONS,
   ],
   SCALER: [
-    { label: '(+) Number', type: 'add_scaler', key: 'a' },
     { label: '(-) Number', type: 'sub_scaler', key: 'a' },
     { label: '(x) Number', type: 'multi_scaler', key: 'a' },
     { label: '(/) Number', type: 'divide_scaler', key: 'a' },
@@ -329,7 +322,6 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...GENERICS_SUGGESTIONS,
   ],
   VECTOR2: [
-    { label: '(+) Vector2', type: 'add_vector2', key: 'a' },
     { label: '(-) Vector2', type: 'sub_vector2', key: 'a' },
     { label: 'Scale Vector2', type: 'scale_vector2', key: 'vector2' },
     { label: 'Distance', type: 'distance', key: 'a' },

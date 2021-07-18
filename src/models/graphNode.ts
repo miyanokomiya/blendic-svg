@@ -148,7 +148,7 @@ export interface GraphNodes {
   make_path_z: GraphNodeMakePathZ
 
   add_generics: GraphNodeAddGenerics
-  sub_scaler: GraphNodeSubScaler
+  sub_generics: GraphNodeSubGenerics
   multi_scaler: GraphNodeMultiScaler
   divide_scaler: GraphNodeDivideScaler
   sin: GraphNodeSin
@@ -157,7 +157,6 @@ export interface GraphNodes {
   invert_polar_coord: GraphNodeInvertPolarCoord
   pow: GraphNodePow
   rotate_vector2: GraphNodeRotateVector2
-  sub_vector2: GraphNodeSubVector2
   scale_vector2: GraphNodeScaleVector2
   distance: GraphNodeDistance
   lerp_scaler: GraphNodeLerpScaler
@@ -490,9 +489,9 @@ export interface GraphNodeAddGenerics extends GraphNodeBase {
   inputs: { a: GraphNodeInput<any>; b: GraphNodeInput<any> }
 }
 
-export interface GraphNodeSubScaler extends GraphNodeBase {
-  type: 'sub_scaler'
-  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+export interface GraphNodeSubGenerics extends GraphNodeBase {
+  type: 'sub_generics'
+  inputs: { a: GraphNodeInput<any>; b: GraphNodeInput<any> }
 }
 
 export interface GraphNodeMultiScaler extends GraphNodeBase {
@@ -528,11 +527,6 @@ export interface GraphNodeInvertPolarCoord extends GraphNodeBase {
 export interface GraphNodePow extends GraphNodeBase {
   type: 'pow'
   inputs: { x: GraphNodeInput<number>; t: GraphNodeInput<number> }
-}
-
-export interface GraphNodeSubVector2 extends GraphNodeBase {
-  type: 'sub_vector2'
-  inputs: { a: GraphNodeInput<IVec2>; b: GraphNodeInput<IVec2> }
 }
 
 export interface GraphNodeScaleVector2 extends GraphNodeBase {

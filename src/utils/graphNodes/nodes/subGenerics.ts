@@ -17,43 +17,36 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, IVec2 } from 'okageo'
+import { IVec2, sub } from 'okageo'
 import { getTransform, Transform } from '/@/models'
 import {
-  GraphNodeAddGenerics,
-  ValueType,
+  GraphNodeSubGenerics,
   GRAPH_VALUE_STRUCT,
   GRAPH_VALUE_TYPE,
+  ValueType,
 } from '/@/models/graphNode'
-import { addPoseTransform } from '/@/utils/armatures'
+import { subPoseTransform } from '/@/utils/armatures'
 import {
   createBaseNode,
   NodeStruct,
   pickNotGenericsType,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
-import { getCenterColor } from '/@/utils/color'
 
-export const struct: NodeStruct<GraphNodeAddGenerics> = {
+export const struct: NodeStruct<GraphNodeSubGenerics> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
         inputs: { a: { value: undefined }, b: { value: undefined } },
         ...arg,
       }),
-      type: 'add_generics',
-    } as GraphNodeAddGenerics
+      type: 'sub_generics',
+    } as GraphNodeSubGenerics
   },
   data: {},
   inputs: {
-    a: {
-      type: UNIT_VALUE_TYPES.GENERICS,
-      default: undefined,
-    },
-    b: {
-      type: UNIT_VALUE_TYPES.GENERICS,
-      default: undefined,
-    },
+    a: { type: UNIT_VALUE_TYPES.GENERICS, default: undefined },
+    b: { type: UNIT_VALUE_TYPES.GENERICS, default: undefined },
   },
   outputs: {
     value: UNIT_VALUE_TYPES.GENERICS,
@@ -61,13 +54,13 @@ export const struct: NodeStruct<GraphNodeAddGenerics> = {
   computation(inputs, self) {
     const type = this.getOutputType?.(self, 'value')
     return {
-      value: getAddFn(type)(inputs.a, inputs.b),
+      value: getSubFn(type)(inputs.a, inputs.b),
     }
   },
   width: 100,
   color: '#4169e1',
   textColor: '#fff',
-  label: 'a + b',
+  label: 'a - b',
   getOutputType(self, key) {
     switch (key) {
       case 'value':
@@ -98,14 +91,13 @@ export const struct: NodeStruct<GraphNodeAddGenerics> = {
       self.inputs.b.genericsType,
     ])
     if (!type) return
+    if (type.struct !== GRAPH_VALUE_STRUCT.UNIT)
+      return ['invalid type to operate']
 
     switch (type.type) {
       case GRAPH_VALUE_TYPE.SCALER:
       case GRAPH_VALUE_TYPE.VECTOR2:
       case GRAPH_VALUE_TYPE.TRANSFORM:
-      case GRAPH_VALUE_TYPE.COLOR:
-      case GRAPH_VALUE_TYPE.TEXT:
-      case GRAPH_VALUE_TYPE.D:
         return undefined
       default:
         return ['invalid type to operate']
@@ -113,60 +105,39 @@ export const struct: NodeStruct<GraphNodeAddGenerics> = {
   },
 }
 
-function getAddFn(type: ValueType | undefined): (a: any, b: any) => any {
-  if (!type) return addUnknown
-  if (type.struct === GRAPH_VALUE_STRUCT.ARRAY) return addArray
+function getSubFn(type: ValueType | undefined): (a: any, b: any) => any {
+  if (!type) return subUnknown
+  if (type.struct === GRAPH_VALUE_STRUCT.ARRAY) return subUnknown
 
   switch (type.type) {
     case GRAPH_VALUE_TYPE.SCALER:
-      return addScaler
+      return subScaler
     case GRAPH_VALUE_TYPE.VECTOR2:
-      return addVector2
+      return subVector2
     case GRAPH_VALUE_TYPE.TRANSFORM:
-      return addTransform
-    case GRAPH_VALUE_TYPE.COLOR:
-      return addColor
-    case GRAPH_VALUE_TYPE.TEXT:
-      return addText
-    case GRAPH_VALUE_TYPE.D:
-      return addD
+      return subTransform
     default:
-      return addUnknown
+      return subUnknown
   }
 }
 
-function addUnknown(): undefined {
+function subUnknown(): undefined {
   return undefined
 }
 
-function addArray(a: any[] = [], b: any[] = []): any[] {
-  return a.concat(b)
+function subVector2(a: IVec2 = zeroV, b: IVec2 = zeroV): IVec2 {
+  return sub(a, b)
 }
 
-function addScaler(a: number = 0, b: number = 0): number {
-  return a + b
+function subScaler(a: number = 0, b: number = 0): number {
+  return a - b
 }
 
 const zeroV = { x: 0, y: 0 }
-function addVector2(a: IVec2 = zeroV, b: IVec2 = zeroV): IVec2 {
-  return add(a, b)
-}
 
 const zeroT = getTransform({
   scale: zeroV,
 })
-function addTransform(a: Transform = zeroT, b: Transform = zeroT): Transform {
-  return addPoseTransform(a, b)
-}
-
-function addColor(a: Transform = zeroT, b: Transform = zeroT): Transform {
-  return getCenterColor(a, b)
-}
-
-function addText(a: string = '', b: string = ''): string {
-  return a + b
-}
-
-function addD(a: string[] = [], b: string[] = []): string[] {
-  return a.concat(b)
+function subTransform(a: Transform = zeroT, b: Transform = zeroT): Transform {
+  return subPoseTransform(a, b)
 }

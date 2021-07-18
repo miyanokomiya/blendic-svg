@@ -19,15 +19,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
-import * as target from '/@/utils/graphNodes/nodes/addGenerics'
+import * as target from '/@/utils/graphNodes/nodes/subGenerics'
 
-describe('src/utils/graphNodes/nodes/addGenerics.ts', () => {
+describe('src/utils/graphNodes/nodes/subGenerics.ts', () => {
   describe('computation', () => {
-    describe('should return result of a + b', () => {
+    describe('should return result of a - b', () => {
       it('type: SCALER', () => {
         expect(
           target.struct.computation(
-            { a: 1, b: 10 },
+            { a: 11, b: 1 },
             {
               inputs: {
                 a: { genericsType: UNIT_VALUE_TYPES.SCALER },
@@ -36,7 +36,7 @@ describe('src/utils/graphNodes/nodes/addGenerics.ts', () => {
             } as any,
             {} as any
           )
-        ).toEqual({ value: 11 })
+        ).toEqual({ value: 10 })
         expect(
           target.struct.computation(
             { a: undefined, b: undefined },
@@ -53,7 +53,7 @@ describe('src/utils/graphNodes/nodes/addGenerics.ts', () => {
       it('type: VECTOR2', () => {
         expect(
           target.struct.computation(
-            { a: { x: 1, y: 2 }, b: { x: 10, y: 20 } },
+            { a: { x: 11, y: 22 }, b: { x: 1, y: 2 } },
             {
               inputs: {
                 a: { genericsType: UNIT_VALUE_TYPES.VECTOR2 },
@@ -62,7 +62,7 @@ describe('src/utils/graphNodes/nodes/addGenerics.ts', () => {
             } as any,
             {} as any
           )
-        ).toEqual({ value: { x: 11, y: 22 } })
+        ).toEqual({ value: { x: 10, y: 20 } })
         expect(
           target.struct.computation(
             { a: undefined, b: undefined },
@@ -80,8 +80,8 @@ describe('src/utils/graphNodes/nodes/addGenerics.ts', () => {
         expect(
           target.struct.computation(
             {
-              a: getTransform({ rotate: 1 }),
-              b: getTransform({ rotate: 10 }),
+              a: getTransform({ rotate: 11 }),
+              b: getTransform({ rotate: 1 }),
             },
             {
               inputs: {
@@ -92,7 +92,7 @@ describe('src/utils/graphNodes/nodes/addGenerics.ts', () => {
             {} as any
           )
         ).toEqual({
-          value: getTransform({ rotate: 11, scale: { x: 2, y: 2 } }),
+          value: getTransform({ rotate: 10, scale: { x: 0, y: 0 } }),
         })
         expect(
           target.struct.computation(
@@ -108,65 +108,6 @@ describe('src/utils/graphNodes/nodes/addGenerics.ts', () => {
         ).toEqual({
           value: getTransform({ scale: { x: 0, y: 0 } }),
         })
-      })
-      it('type: COLOR', () => {
-        expect(
-          target.struct.computation(
-            {
-              a: getTransform({ rotate: 1 }),
-              b: getTransform({ rotate: 9 }),
-            },
-            {
-              inputs: {
-                a: { genericsType: UNIT_VALUE_TYPES.COLOR },
-                b: { genericsType: UNIT_VALUE_TYPES.COLOR },
-              },
-            } as any,
-            {} as any
-          )
-        ).toEqual({
-          value: getTransform({ rotate: 5 }),
-        })
-        expect(
-          target.struct.computation(
-            { a: undefined, b: undefined },
-            {
-              inputs: {
-                a: { genericsType: UNIT_VALUE_TYPES.COLOR },
-                b: { genericsType: UNIT_VALUE_TYPES.COLOR },
-              },
-            } as any,
-            {} as any
-          )
-        ).toEqual({
-          value: getTransform({ scale: { x: 0, y: 1 } }),
-        })
-      })
-      it('type: TEXT', () => {
-        expect(
-          target.struct.computation(
-            { a: 'a', b: 'b' },
-            {
-              inputs: {
-                a: { genericsType: UNIT_VALUE_TYPES.TEXT },
-                b: { genericsType: UNIT_VALUE_TYPES.TEXT },
-              },
-            } as any,
-            {} as any
-          )
-        ).toEqual({ value: 'ab' })
-        expect(
-          target.struct.computation(
-            { a: undefined, b: undefined },
-            {
-              inputs: {
-                a: { genericsType: UNIT_VALUE_TYPES.TEXT },
-                b: { genericsType: UNIT_VALUE_TYPES.TEXT },
-              },
-            } as any,
-            {} as any
-          )
-        ).toEqual({ value: '' })
       })
       it('type: invalid', () => {
         expect(

@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add } from 'okageo'
+import { getCenter } from 'okageo'
 import { useMapCache } from '/@/composables/cache'
 import { getTransform, Transform } from '/@/models'
 import { circleClamp, clamp } from '/@/utils/geometry'
@@ -186,10 +186,10 @@ export function hsvaToTransform(hsva: HSVA): Transform {
   })
 }
 
-export function addColor(a: Transform, b: Transform): Transform {
+export function getCenterColor(a: Transform, b: Transform): Transform {
   return getTransform({
-    translate: add(a.translate, b.translate),
-    rotate: a.rotate + b.rotate,
-    scale: { x: a.scale.x + b.scale.x, y: 1 },
+    translate: getCenter(a.translate, b.translate),
+    rotate: (a.rotate + b.rotate) / 2,
+    scale: { x: (a.scale.x + b.scale.x) / 2, y: 1 },
   })
 }

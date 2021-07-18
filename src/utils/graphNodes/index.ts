@@ -47,7 +47,7 @@ import * as make_color from './nodes/makeColor'
 import * as break_color from './nodes/breakColor'
 
 import * as add_generics from './nodes/addGenerics'
-import * as sub_scaler from './nodes/subScaler'
+import * as sub_generics from './nodes/subGenerics'
 import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
 import * as sin from './nodes/sin'
@@ -55,7 +55,6 @@ import * as cos from './nodes/cos'
 import * as polar_coord from './nodes/polarCoord'
 import * as invert_polar_coord from './nodes/invertPolarCoord'
 import * as pow from './nodes/pow'
-import * as sub_vector2 from './nodes/subVector2'
 import * as scale_vector2 from './nodes/scaleVector2'
 import * as distance from './nodes/distance'
 import * as rotate_vector2 from './nodes/rotateVector2'
@@ -116,7 +115,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   break_color,
 
   add_generics,
-  sub_scaler,
+  sub_generics,
   multi_scaler,
   divide_scaler,
   sin,
@@ -124,7 +123,6 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   polar_coord,
   invert_polar_coord,
   pow,
-  sub_vector2,
   scale_vector2,
   distance,
   rotate_vector2,
@@ -219,7 +217,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
     label: 'Math',
     children: [
       { label: '(+)', type: 'add_generics' },
-      { label: '(-) Number', type: 'sub_scaler' },
+      { label: '(-)', type: 'sub_generics' },
       { label: '(x) Number', type: 'multi_scaler' },
       { label: '(/) Number', type: 'divide_scaler' },
       { label: 'Sin', type: 'sin' },
@@ -227,7 +225,6 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Polar Coord', type: 'polar_coord' },
       { label: 'Invert Polar Coord', type: 'invert_polar_coord' },
       { label: 'Pow', type: 'pow' },
-      { label: '(-) Vector2', type: 'sub_vector2' },
       { label: 'Scale Vector2', type: 'scale_vector2' },
       { label: 'Distance', type: 'distance' },
       { label: 'Rotate Vector2', type: 'rotate_vector2' },
@@ -284,8 +281,17 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
 
 type NodeSuggestionMenuOptionSrc = { key: string } & NodeMenuOption
 
+const ADD_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
+  label: '(+)',
+  type: 'add_generics',
+  key: 'a',
+}
+const SUB_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
+  label: '(-)',
+  type: 'sub_generics',
+  key: 'a',
+}
 const GENERICS_SUGGESTIONS: NodeSuggestionMenuOptionSrc[] = [
-  { label: '(+)', type: 'add_generics', key: 'a' },
   { label: 'Switch', type: 'switch_generics', key: 'if_true' },
 ]
 
@@ -300,7 +306,6 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...GENERICS_SUGGESTIONS,
   ],
   SCALER: [
-    { label: '(-) Number', type: 'sub_scaler', key: 'a' },
     { label: '(x) Number', type: 'multi_scaler', key: 'a' },
     { label: '(/) Number', type: 'divide_scaler', key: 'a' },
     { label: 'Sin', type: 'sin', key: 'rotate' },
@@ -319,10 +324,11 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Lerp Number', type: 'lerp_scaler', key: 'a' },
     { label: 'Clamp', type: 'clamp', key: 'number' },
     { label: 'Round Trip', type: 'round_trip', key: 'number' },
+    ADD_GENERICS_SUGGESTION,
+    SUB_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   VECTOR2: [
-    { label: '(-) Vector2', type: 'sub_vector2', key: 'a' },
     { label: 'Scale Vector2', type: 'scale_vector2', key: 'vector2' },
     { label: 'Distance', type: 'distance', key: 'a' },
     { label: 'Rotate Vector2', type: 'rotate_vector2', key: 'vector2' },
@@ -330,6 +336,8 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Invert Polar Coord', type: 'invert_polar_coord', key: 'vector2' },
     { label: 'Make Transform', type: 'make_transform', key: 'translate' },
     { label: 'Lerp Vector2', type: 'lerp_vector2', key: 'a' },
+    ADD_GENERICS_SUGGESTION,
+    SUB_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   OBJECT: [
@@ -350,23 +358,32 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
   ],
   TRANSFORM: [
     { label: 'Lerp Transform', type: 'lerp_transform', key: 'a' },
+    ADD_GENERICS_SUGGESTION,
+    SUB_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   COLOR: [
     { label: 'Break Color', type: 'break_color', key: 'color' },
     { label: 'Lerp Color', type: 'lerp_color', key: 'a' },
+    ADD_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   TEXT: [
     { label: 'Text', type: 'create_object_text', key: 'text' },
+    ADD_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   D: [
     ...MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
     { label: 'Create Path', type: 'create_object_path', key: 'd' },
+    ADD_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
-  GENERICS: GENERICS_SUGGESTIONS,
+  GENERICS: [
+    ADD_GENERICS_SUGGESTION,
+    SUB_GENERICS_SUGGESTION,
+    ...GENERICS_SUGGESTIONS,
+  ],
 }
 
 export function getGraphNodeModule<T extends GraphNodeType>(

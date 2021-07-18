@@ -159,10 +159,7 @@ export interface GraphNodes {
   rotate_vector2: GraphNodeRotateVector2
   scale_vector2: GraphNodeScaleVector2
   distance: GraphNodeDistance
-  lerp_scaler: GraphNodeLerpScaler
-  lerp_vector2: GraphNodeLerpVector2
-  lerp_transform: GraphNodeLerpTransform
-  lerp_color: GraphNodeLerpColor
+  lerp_generics: GraphNodeLerpGenerics
   clamp: GraphNodeClamp
   round_trip: GraphNodeRoundTrip
 
@@ -548,38 +545,11 @@ export interface GraphNodeRotateVector2 extends GraphNodeBase {
   }
 }
 
-export interface GraphNodeLerpScaler extends GraphNodeBase {
-  type: 'lerp_scaler'
+export interface GraphNodeLerpGenerics extends GraphNodeBase {
+  type: 'lerp_generics'
   inputs: {
-    a: GraphNodeInput<number>
-    b: GraphNodeInput<number>
-    alpha: GraphNodeInput<number>
-  }
-}
-
-export interface GraphNodeLerpVector2 extends GraphNodeBase {
-  type: 'lerp_vector2'
-  inputs: {
-    a: GraphNodeInput<IVec2>
-    b: GraphNodeInput<IVec2>
-    alpha: GraphNodeInput<number>
-  }
-}
-
-export interface GraphNodeLerpTransform extends GraphNodeBase {
-  type: 'lerp_transform'
-  inputs: {
-    a: GraphNodeInput<Transform>
-    b: GraphNodeInput<Transform>
-    alpha: GraphNodeInput<number>
-  }
-}
-
-export interface GraphNodeLerpColor extends GraphNodeBase {
-  type: 'lerp_color'
-  inputs: {
-    a: GraphNodeInput<Transform>
-    b: GraphNodeInput<Transform>
+    a: GraphNodeInput<any>
+    b: GraphNodeInput<any>
     alpha: GraphNodeInput<number>
   }
 }

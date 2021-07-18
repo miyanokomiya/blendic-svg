@@ -58,10 +58,7 @@ import * as pow from './nodes/pow'
 import * as scale_vector2 from './nodes/scaleVector2'
 import * as distance from './nodes/distance'
 import * as rotate_vector2 from './nodes/rotateVector2'
-import * as lerp_scaler from './nodes/lerpScaler'
-import * as lerp_vector2 from './nodes/lerpVector2'
-import * as lerp_transform from './nodes/lerpTransform'
-import * as lerp_color from './nodes/lerpColor'
+import * as lerp_generics from './nodes/lerpGenerics'
 import * as clamp from './nodes/clamp'
 import * as round_trip from './nodes/roundTrip'
 
@@ -126,10 +123,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   scale_vector2,
   distance,
   rotate_vector2,
-  lerp_scaler,
-  lerp_vector2,
-  lerp_transform,
-  lerp_color,
+  lerp_generics,
   clamp,
   round_trip,
 
@@ -228,10 +222,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Scale Vector2', type: 'scale_vector2' },
       { label: 'Distance', type: 'distance' },
       { label: 'Rotate Vector2', type: 'rotate_vector2' },
-      { label: 'Lerp Number', type: 'lerp_scaler' },
-      { label: 'Lerp Vector2', type: 'lerp_vector2' },
-      { label: 'Lerp Transform', type: 'lerp_transform' },
-      { label: 'Lerp Color', type: 'lerp_color' },
+      { label: 'Lerp', type: 'lerp_generics' },
       { label: 'Clamp', type: 'clamp' },
       { label: 'Round Trip', type: 'round_trip' },
     ],
@@ -291,6 +282,11 @@ const SUB_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
   type: 'sub_generics',
   key: 'a',
 }
+const LERP_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
+  label: 'Lerp',
+  type: 'lerp_generics',
+  key: 'a',
+}
 const GENERICS_SUGGESTIONS: NodeSuggestionMenuOptionSrc[] = [
   { label: 'Switch', type: 'switch_generics', key: 'if_true' },
 ]
@@ -306,8 +302,10 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...GENERICS_SUGGESTIONS,
   ],
   SCALER: [
-    { label: '(x) Number', type: 'multi_scaler', key: 'a' },
-    { label: '(/) Number', type: 'divide_scaler', key: 'a' },
+    ADD_GENERICS_SUGGESTION,
+    SUB_GENERICS_SUGGESTION,
+    { label: '(x)', type: 'multi_scaler', key: 'a' },
+    { label: '(/)', type: 'divide_scaler', key: 'a' },
     { label: 'Sin', type: 'sin', key: 'rotate' },
     { label: 'Cos', type: 'cos', key: 'rotate' },
     { label: 'Pow', type: 'pow', key: 'x' },
@@ -321,23 +319,21 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Make Transform', type: 'make_transform', key: 'rotate' },
     { label: 'Make Color', type: 'make_color', key: 'h' },
     { label: 'Polar Coord', type: 'polar_coord', key: 'rotate' },
-    { label: 'Lerp Number', type: 'lerp_scaler', key: 'a' },
     { label: 'Clamp', type: 'clamp', key: 'number' },
     { label: 'Round Trip', type: 'round_trip', key: 'number' },
-    ADD_GENERICS_SUGGESTION,
-    SUB_GENERICS_SUGGESTION,
+    LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   VECTOR2: [
+    ADD_GENERICS_SUGGESTION,
+    SUB_GENERICS_SUGGESTION,
     { label: 'Scale Vector2', type: 'scale_vector2', key: 'vector2' },
     { label: 'Distance', type: 'distance', key: 'a' },
     { label: 'Rotate Vector2', type: 'rotate_vector2', key: 'vector2' },
     { label: 'Break Vector2', type: 'break_vector2', key: 'vector2' },
     { label: 'Invert Polar Coord', type: 'invert_polar_coord', key: 'vector2' },
     { label: 'Make Transform', type: 'make_transform', key: 'translate' },
-    { label: 'Lerp Vector2', type: 'lerp_vector2', key: 'a' },
-    ADD_GENERICS_SUGGESTION,
-    SUB_GENERICS_SUGGESTION,
+    LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   OBJECT: [
@@ -357,31 +353,32 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...GENERICS_SUGGESTIONS,
   ],
   TRANSFORM: [
-    { label: 'Lerp Transform', type: 'lerp_transform', key: 'a' },
     ADD_GENERICS_SUGGESTION,
     SUB_GENERICS_SUGGESTION,
+    LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   COLOR: [
-    { label: 'Break Color', type: 'break_color', key: 'color' },
-    { label: 'Lerp Color', type: 'lerp_color', key: 'a' },
     ADD_GENERICS_SUGGESTION,
+    { label: 'Break Color', type: 'break_color', key: 'color' },
+    LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   TEXT: [
-    { label: 'Text', type: 'create_object_text', key: 'text' },
     ADD_GENERICS_SUGGESTION,
+    { label: 'Text', type: 'create_object_text', key: 'text' },
     ...GENERICS_SUGGESTIONS,
   ],
   D: [
+    ADD_GENERICS_SUGGESTION,
     ...MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
     { label: 'Create Path', type: 'create_object_path', key: 'd' },
-    ADD_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   GENERICS: [
     ADD_GENERICS_SUGGESTION,
     SUB_GENERICS_SUGGESTION,
+    LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
 }

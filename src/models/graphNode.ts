@@ -147,8 +147,8 @@ export interface GraphNodes {
   make_path_a: GraphNodeMakePathA
   make_path_z: GraphNodeMakePathZ
 
-  add_scaler: GraphNodeAddScaler
-  sub_scaler: GraphNodeSubScaler
+  add_generics: GraphNodeAddGenerics
+  sub_generics: GraphNodeSubGenerics
   multi_scaler: GraphNodeMultiScaler
   divide_scaler: GraphNodeDivideScaler
   sin: GraphNodeSin
@@ -157,27 +157,22 @@ export interface GraphNodes {
   invert_polar_coord: GraphNodeInvertPolarCoord
   pow: GraphNodePow
   rotate_vector2: GraphNodeRotateVector2
-  add_vector2: GraphNodeAddVector2
-  sub_vector2: GraphNodeSubVector2
   scale_vector2: GraphNodeScaleVector2
   distance: GraphNodeDistance
-  lerp_scaler: GraphNodeLerpScaler
-  lerp_vector2: GraphNodeLerpVector2
-  lerp_transform: GraphNodeLerpTransform
-  lerp_color: GraphNodeLerpColor
+  lerp_generics: GraphNodeLerpGenerics
   clamp: GraphNodeClamp
   round_trip: GraphNodeRoundTrip
 
   not: GraphNodeNot
   and: GraphNodeAnd
   or: GraphNodeOr
-  equal: GraphNodeEqual
+  equal_generics: GraphNodeEqualGenerics
   greater_than: GraphNodeGreaterThan
   greater_than_or_equal: GraphNodeBase
   less_than: GraphNodeLessThan
   less_than_or_equal: GraphNodeLessThanOrEqual
   between: GraphNodeBetween
-  switch_generics: GraphNodeSwitch
+  switch_generics: GraphNodeSwitchGenerics
 }
 export type GraphNodeType = keyof GraphNodes
 // Note: this union decrease performance too much of type checking and unit test
@@ -486,14 +481,14 @@ export interface GraphNodeMakePathZ extends GraphNodeBase {
   }
 }
 
-export interface GraphNodeAddScaler extends GraphNodeBase {
-  type: 'add_scaler'
-  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+export interface GraphNodeAddGenerics extends GraphNodeBase {
+  type: 'add_generics'
+  inputs: { a: GraphNodeInput<any>; b: GraphNodeInput<any> }
 }
 
-export interface GraphNodeSubScaler extends GraphNodeBase {
-  type: 'sub_scaler'
-  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+export interface GraphNodeSubGenerics extends GraphNodeBase {
+  type: 'sub_generics'
+  inputs: { a: GraphNodeInput<any>; b: GraphNodeInput<any> }
 }
 
 export interface GraphNodeMultiScaler extends GraphNodeBase {
@@ -531,16 +526,6 @@ export interface GraphNodePow extends GraphNodeBase {
   inputs: { x: GraphNodeInput<number>; t: GraphNodeInput<number> }
 }
 
-export interface GraphNodeAddVector2 extends GraphNodeBase {
-  type: 'add_vector2'
-  inputs: { a: GraphNodeInput<IVec2>; b: GraphNodeInput<IVec2> }
-}
-
-export interface GraphNodeSubVector2 extends GraphNodeBase {
-  type: 'sub_vector2'
-  inputs: { a: GraphNodeInput<IVec2>; b: GraphNodeInput<IVec2> }
-}
-
 export interface GraphNodeScaleVector2 extends GraphNodeBase {
   type: 'scale_vector2'
   inputs: { vector2: GraphNodeInput<IVec2>; scale: GraphNodeInput<number> }
@@ -560,38 +545,11 @@ export interface GraphNodeRotateVector2 extends GraphNodeBase {
   }
 }
 
-export interface GraphNodeLerpScaler extends GraphNodeBase {
-  type: 'lerp_scaler'
+export interface GraphNodeLerpGenerics extends GraphNodeBase {
+  type: 'lerp_generics'
   inputs: {
-    a: GraphNodeInput<number>
-    b: GraphNodeInput<number>
-    alpha: GraphNodeInput<number>
-  }
-}
-
-export interface GraphNodeLerpVector2 extends GraphNodeBase {
-  type: 'lerp_vector2'
-  inputs: {
-    a: GraphNodeInput<IVec2>
-    b: GraphNodeInput<IVec2>
-    alpha: GraphNodeInput<number>
-  }
-}
-
-export interface GraphNodeLerpTransform extends GraphNodeBase {
-  type: 'lerp_transform'
-  inputs: {
-    a: GraphNodeInput<Transform>
-    b: GraphNodeInput<Transform>
-    alpha: GraphNodeInput<number>
-  }
-}
-
-export interface GraphNodeLerpColor extends GraphNodeBase {
-  type: 'lerp_color'
-  inputs: {
-    a: GraphNodeInput<Transform>
-    b: GraphNodeInput<Transform>
+    a: GraphNodeInput<any>
+    b: GraphNodeInput<any>
     alpha: GraphNodeInput<number>
   }
 }
@@ -630,12 +588,12 @@ export interface GraphNodeOr extends GraphNodeBase {
   inputs: { a: GraphNodeInput<boolean>; b: GraphNodeInput<boolean> }
 }
 
-export interface GraphNodeEqual extends GraphNodeBase {
-  type: 'equal'
+export interface GraphNodeEqualGenerics extends GraphNodeBase {
+  type: 'equal_generics'
   inputs: {
-    a: GraphNodeInput<number>
-    b: GraphNodeInput<number>
-    threshold: GraphNodeInput<number>
+    a: GraphNodeInput<any>
+    b: GraphNodeInput<any>
+    threshold: GraphNodeInput<any>
   }
 }
 
@@ -671,7 +629,7 @@ export interface GraphNodeBetween extends GraphNodeBase {
   }
 }
 
-export interface GraphNodeSwitch extends GraphNodeBase {
+export interface GraphNodeSwitchGenerics extends GraphNodeBase {
   type: 'switch_generics'
   inputs: {
     condition: GraphNodeInput<boolean>

@@ -17,15 +17,16 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeSwitch } from '/@/models/graphNode'
+import { GraphNodeSwitchGenerics } from '/@/models/graphNode'
 import {
   createBaseNode,
+  getGenericsChainAtFn,
   NodeStruct,
   pickNotGenericsType,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeSwitch> = {
+export const struct: NodeStruct<GraphNodeSwitchGenerics> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
@@ -37,7 +38,7 @@ export const struct: NodeStruct<GraphNodeSwitch> = {
         ...arg,
       }),
       type: 'switch_generics',
-    } as GraphNodeSwitch
+    } as GraphNodeSwitchGenerics
   },
   data: {},
   inputs: {
@@ -69,18 +70,12 @@ export const struct: NodeStruct<GraphNodeSwitch> = {
     }
   },
   getGenericsChainAt(self, key, output) {
-    if (
-      (output && key === 'value') ||
-      key === 'if_true' ||
-      key === 'if_false'
-    ) {
-      return [
+    return getGenericsChainAtFn([
+      [
         { id: self.id, key: 'if_true' },
         { id: self.id, key: 'if_false' },
         { id: self.id, key: 'value', output: true },
-      ]
-    }
-
-    return []
+      ],
+    ])(key, output)
   },
 }

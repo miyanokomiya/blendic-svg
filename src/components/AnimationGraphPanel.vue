@@ -109,7 +109,7 @@ import { GraphNodeEdgePositions } from '/@/models/graphNode'
 import { useElementStore } from '/@/store/element'
 import GraphSideBar from '/@/components/GraphSideBar.vue'
 import { getElementLabel } from '/@/utils/elements'
-import { getAllCircularRefIds } from '/@/utils/graphNodes'
+import { getNodeErrors } from '/@/utils/graphNodes'
 
 export default defineComponent({
   components: {
@@ -269,9 +269,7 @@ export default defineComponent({
     })
 
     const nodeErrorMessagesMap = computed<IdMap<string[]>>(() => {
-      return mapReduce(getAllCircularRefIds(graphStore.nodeMap.value), () => [
-        'circular connection is found',
-      ])
+      return getNodeErrors(graphStore.nodeMap.value)
     })
 
     function updateNodeData(id: string, data: any, seriesKey?: string) {

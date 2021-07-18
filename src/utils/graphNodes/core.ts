@@ -60,6 +60,7 @@ export interface NodeStruct<T extends GraphNodeBase> {
     key: string,
     output?: boolean
   ) => EdgeChainGroupItem[]
+  getErrors?: (self: T) => string[] | undefined
 }
 
 export interface NodeContext<T> {
@@ -176,4 +177,20 @@ export interface EdgeChainGroupItem {
   key: string
   output?: true
   type?: ValueType
+}
+
+export function isSameValueType(a?: ValueType, b?: ValueType): boolean {
+  return (
+    (a === undefined && b === undefined) ||
+    (a?.type === b?.type && a?.struct === b?.struct)
+  )
+}
+
+export function getGenericsChainAtFn(
+  chains: EdgeChainGroupItem[][]
+): (key: string, output?: boolean) => EdgeChainGroupItem[] {
+  return (key: string, output?: boolean) =>
+    chains.find((chain) =>
+      chain.some((c) => c.key === key && c.output === output)
+    ) ?? []
 }

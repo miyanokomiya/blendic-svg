@@ -94,6 +94,7 @@ export function addPoseTransform(a: Transform, b: Transform): Transform {
     scale: add(a.scale, b.scale),
     rotate: a.rotate + b.rotate,
     translate: add(a.translate, b.translate),
+    origin: add(a.origin, b.origin),
   })
 }
 
@@ -102,6 +103,7 @@ export function subPoseTransform(a: Transform, b: Transform): Transform {
     scale: sub(a.scale, b.scale),
     rotate: a.rotate - b.rotate,
     translate: sub(a.translate, b.translate),
+    origin: sub(a.origin, b.origin),
   })
 }
 
@@ -110,6 +112,7 @@ export function multiPoseTransform(a: Transform, b: Transform): Transform {
     scale: { x: a.scale.x * b.scale.x, y: a.scale.y * b.scale.y },
     rotate: a.rotate + b.rotate,
     translate: add(a.translate, b.translate),
+    origin: add(a.origin, b.origin),
   })
 }
 
@@ -118,6 +121,7 @@ export function invertPoseTransform(a: Transform): Transform {
     scale: invertScaleOrZero(a.scale),
     rotate: -a.rotate,
     translate: multi(a.translate, -1),
+    origin: multi(a.origin, -1),
   })
 }
 

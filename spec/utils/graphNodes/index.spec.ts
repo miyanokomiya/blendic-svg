@@ -47,6 +47,7 @@ import {
   getEdgeChainGroupAt,
   cleanEdgeGenericsGroupAt,
   getOutputType,
+  getNodeErrors,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -711,7 +712,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       ).toEqual(undefined)
     })
     it('should return undefined if the connection is recursive', () => {
-      const node = createGraphNode('add_scaler', {
+      const node = createGraphNode('add_generics', {
         id: 'a',
       })
       expect(
@@ -1226,6 +1227,31 @@ describe('src/utils/graphNodes/index.ts', () => {
       expect(getOutputType(createGraphNode('make_vector2'), 'vector2')).toEqual(
         UNIT_VALUE_TYPES.VECTOR2
       )
+    })
+  })
+
+  describe('getNodeErrors', () => {
+    it('should return errors map for nodes with some errors', () => {
+      expect(
+        getNodeErrors({
+          a: createGraphNode('add_generics', {
+            id: 'a',
+            inputs: { a: { genericsType: UNIT_VALUE_TYPES.OBJECT } },
+          }),
+          b: createGraphNode('sin', {
+            id: 'b',
+            inputs: { rotate: { from: { id: 'c', key: 'value' } } },
+          }),
+          c: createGraphNode('cos', {
+            id: 'c',
+            inputs: { rotate: { from: { id: 'b', key: 'value' } } },
+          }),
+        })
+      ).toEqual({
+        a: ['invalid type to operate'],
+        b: ['circular connection is found'],
+        c: ['circular connection is found'],
+      })
     })
   })
 })

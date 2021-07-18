@@ -37,6 +37,7 @@ describe('utils/armatures', () => {
           translate: { x: -20, y: -30 },
           scale: { x: 1 / 2, y: 1 / 4 },
           rotate: -45,
+          origin: { x: -0, y: -0 },
         })
       )
     })
@@ -54,6 +55,7 @@ describe('utils/armatures', () => {
           translate: { x: -20, y: -30 },
           scale: { x: 0, y: 0 },
           rotate: -45,
+          origin: { x: -0, y: -0 },
         })
       )
     })

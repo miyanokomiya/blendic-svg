@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { getTransform } from '/@/models'
 import {
+  getCenterColor,
   hslaToHsva,
   hsvaToHsla,
   hsvaToRgba,
@@ -227,6 +228,31 @@ describe('src/utils/color.ts', () => {
           translate: { x: 100, y: 100 },
           rotate: 20,
           scale: { x: 0.9, y: 1 },
+        })
+      )
+    })
+  })
+
+  describe('getCenterColor', () => {
+    it('should get average color of the two colors', () => {
+      expect(
+        getCenterColor(
+          getTransform({
+            translate: { x: 1, y: 2 },
+            rotate: 3,
+            scale: { x: 4, y: 1 },
+          }),
+          getTransform({
+            translate: { x: 9, y: 18 },
+            rotate: 27,
+            scale: { x: 36, y: 1 },
+          })
+        )
+      ).toEqual(
+        getTransform({
+          translate: { x: 5, y: 10 },
+          rotate: 15,
+          scale: { x: 20, y: 1 },
         })
       )
     })

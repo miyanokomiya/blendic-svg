@@ -34,6 +34,7 @@ import {
   NodeModule,
   NodeContext,
   EdgeChainGroupItem,
+  isSameValueType,
 } from '/@/utils/graphNodes/core'
 import { v4 } from 'uuid'
 import * as get_frame from './nodes/getFrame'
@@ -45,8 +46,8 @@ import * as color from './nodes/color'
 import * as make_color from './nodes/makeColor'
 import * as break_color from './nodes/breakColor'
 
-import * as add_scaler from './nodes/addScaler'
-import * as sub_scaler from './nodes/subScaler'
+import * as add_generics from './nodes/addGenerics'
+import * as sub_generics from './nodes/subGenerics'
 import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
 import * as sin from './nodes/sin'
@@ -54,15 +55,10 @@ import * as cos from './nodes/cos'
 import * as polar_coord from './nodes/polarCoord'
 import * as invert_polar_coord from './nodes/invertPolarCoord'
 import * as pow from './nodes/pow'
-import * as add_vector2 from './nodes/addVector2'
-import * as sub_vector2 from './nodes/subVector2'
 import * as scale_vector2 from './nodes/scaleVector2'
 import * as distance from './nodes/distance'
 import * as rotate_vector2 from './nodes/rotateVector2'
-import * as lerp_scaler from './nodes/lerpScaler'
-import * as lerp_vector2 from './nodes/lerpVector2'
-import * as lerp_transform from './nodes/lerpTransform'
-import * as lerp_color from './nodes/lerpColor'
+import * as lerp_generics from './nodes/lerpGenerics'
 import * as clamp from './nodes/clamp'
 import * as round_trip from './nodes/roundTrip'
 
@@ -100,10 +96,10 @@ import * as between from './nodes/between'
 import * as not from './nodes/not'
 import * as and from './nodes/and'
 import * as or from './nodes/or'
-import * as equal from './nodes/equal'
+import * as equal_generics from './nodes/equalGenerics'
 import * as switch_generics from './nodes/switch_generics'
 import { IdMap } from '/@/models'
-import { mapReduce } from '/@/utils/commons'
+import { mapReduce, toList } from '/@/utils/commons'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -115,8 +111,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   make_color,
   break_color,
 
-  add_scaler,
-  sub_scaler,
+  add_generics,
+  sub_generics,
   multi_scaler,
   divide_scaler,
   sin,
@@ -124,15 +120,10 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   polar_coord,
   invert_polar_coord,
   pow,
-  add_vector2,
-  sub_vector2,
   scale_vector2,
   distance,
   rotate_vector2,
-  lerp_scaler,
-  lerp_vector2,
-  lerp_transform,
-  lerp_color,
+  lerp_generics,
   clamp,
   round_trip,
 
@@ -167,7 +158,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   not,
   and,
   or,
-  equal,
+  equal_generics,
   greater_than,
   greater_than_or_equal,
   less_than,
@@ -219,8 +210,8 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
   {
     label: 'Math',
     children: [
-      { label: '(+) Number', type: 'add_scaler' },
-      { label: '(-) Number', type: 'sub_scaler' },
+      { label: '(+)', type: 'add_generics' },
+      { label: '(-)', type: 'sub_generics' },
       { label: '(x) Number', type: 'multi_scaler' },
       { label: '(/) Number', type: 'divide_scaler' },
       { label: 'Sin', type: 'sin' },
@@ -228,15 +219,10 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Polar Coord', type: 'polar_coord' },
       { label: 'Invert Polar Coord', type: 'invert_polar_coord' },
       { label: 'Pow', type: 'pow' },
-      { label: '(+) Vector2', type: 'add_vector2' },
-      { label: '(-) Vector2', type: 'sub_vector2' },
       { label: 'Scale Vector2', type: 'scale_vector2' },
       { label: 'Distance', type: 'distance' },
       { label: 'Rotate Vector2', type: 'rotate_vector2' },
-      { label: 'Lerp Number', type: 'lerp_scaler' },
-      { label: 'Lerp Vector2', type: 'lerp_vector2' },
-      { label: 'Lerp Transform', type: 'lerp_transform' },
-      { label: 'Lerp Color', type: 'lerp_color' },
+      { label: 'Lerp', type: 'lerp_generics' },
       { label: 'Clamp', type: 'clamp' },
       { label: 'Round Trip', type: 'round_trip' },
     ],
@@ -247,7 +233,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Not', type: 'not' },
       { label: 'And', type: 'and' },
       { label: 'Or', type: 'or' },
-      { label: '(=) Number', type: 'equal' },
+      { label: '(=)', type: 'equal_generics' },
       { label: '(>) Number', type: 'greater_than' },
       { label: '(>=) Number', type: 'greater_than_or_equal' },
       { label: '(<) Number', type: 'less_than' },
@@ -286,6 +272,26 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
 
 type NodeSuggestionMenuOptionSrc = { key: string } & NodeMenuOption
 
+const ADD_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
+  label: '(+)',
+  type: 'add_generics',
+  key: 'a',
+}
+const SUB_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
+  label: '(-)',
+  type: 'sub_generics',
+  key: 'a',
+}
+const LERP_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
+  label: 'Lerp',
+  type: 'lerp_generics',
+  key: 'a',
+}
+const EQUAL_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
+  label: '(=)',
+  type: 'equal_generics',
+  key: 'a',
+}
 const GENERICS_SUGGESTIONS: NodeSuggestionMenuOptionSrc[] = [
   { label: 'Switch', type: 'switch_generics', key: 'if_true' },
 ]
@@ -297,18 +303,19 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Not', type: 'not', key: 'condition' },
     { label: 'And', type: 'and', key: 'a' },
     { label: 'Or', type: 'or', key: 'a' },
+    EQUAL_GENERICS_SUGGESTION,
     { label: 'Switch Condition', type: 'switch_generics', key: 'condition' },
     ...GENERICS_SUGGESTIONS,
   ],
   SCALER: [
-    { label: '(+) Number', type: 'add_scaler', key: 'a' },
-    { label: '(-) Number', type: 'sub_scaler', key: 'a' },
-    { label: '(x) Number', type: 'multi_scaler', key: 'a' },
-    { label: '(/) Number', type: 'divide_scaler', key: 'a' },
+    ADD_GENERICS_SUGGESTION,
+    SUB_GENERICS_SUGGESTION,
+    { label: '(x)', type: 'multi_scaler', key: 'a' },
+    { label: '(/)', type: 'divide_scaler', key: 'a' },
     { label: 'Sin', type: 'sin', key: 'rotate' },
     { label: 'Cos', type: 'cos', key: 'rotate' },
     { label: 'Pow', type: 'pow', key: 'x' },
-    { label: '(=) Number', type: 'equal', key: 'a' },
+    EQUAL_GENERICS_SUGGESTION,
     { label: '(>) Number', type: 'greater_than', key: 'a' },
     { label: '(>=) Number', type: 'greater_than_or_equal', key: 'a' },
     { label: '(<) Number', type: 'less_than', key: 'a' },
@@ -318,21 +325,22 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Make Transform', type: 'make_transform', key: 'rotate' },
     { label: 'Make Color', type: 'make_color', key: 'h' },
     { label: 'Polar Coord', type: 'polar_coord', key: 'rotate' },
-    { label: 'Lerp Number', type: 'lerp_scaler', key: 'a' },
     { label: 'Clamp', type: 'clamp', key: 'number' },
     { label: 'Round Trip', type: 'round_trip', key: 'number' },
+    LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   VECTOR2: [
-    { label: '(+) Vector2', type: 'add_vector2', key: 'a' },
-    { label: '(-) Vector2', type: 'sub_vector2', key: 'a' },
+    ADD_GENERICS_SUGGESTION,
+    SUB_GENERICS_SUGGESTION,
     { label: 'Scale Vector2', type: 'scale_vector2', key: 'vector2' },
     { label: 'Distance', type: 'distance', key: 'a' },
     { label: 'Rotate Vector2', type: 'rotate_vector2', key: 'vector2' },
     { label: 'Break Vector2', type: 'break_vector2', key: 'vector2' },
     { label: 'Invert Polar Coord', type: 'invert_polar_coord', key: 'vector2' },
     { label: 'Make Transform', type: 'make_transform', key: 'translate' },
-    { label: 'Lerp Vector2', type: 'lerp_vector2', key: 'a' },
+    EQUAL_GENERICS_SUGGESTION,
+    LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   OBJECT: [
@@ -349,27 +357,39 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
       key: 'object',
     },
     { label: 'Grid Clone Object', type: 'grid_clone_object', key: 'object' },
+    EQUAL_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   TRANSFORM: [
-    { label: 'Lerp Transform', type: 'lerp_transform', key: 'a' },
+    ADD_GENERICS_SUGGESTION,
+    SUB_GENERICS_SUGGESTION,
+    LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   COLOR: [
     { label: 'Break Color', type: 'break_color', key: 'color' },
-    { label: 'Lerp Color', type: 'lerp_color', key: 'a' },
+    ADD_GENERICS_SUGGESTION,
+    LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   TEXT: [
     { label: 'Text', type: 'create_object_text', key: 'text' },
+    ADD_GENERICS_SUGGESTION,
+    EQUAL_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
   D: [
     ...MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
     { label: 'Create Path', type: 'create_object_path', key: 'd' },
+    ADD_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
-  GENERICS: GENERICS_SUGGESTIONS,
+  GENERICS: [
+    ADD_GENERICS_SUGGESTION,
+    SUB_GENERICS_SUGGESTION,
+    LERP_GENERICS_SUGGESTION,
+    ...GENERICS_SUGGESTIONS,
+  ],
 }
 
 export function getGraphNodeModule<T extends GraphNodeType>(
@@ -606,13 +626,6 @@ export function validateConnection(
 function canConnectValueType(a: ValueType, b: ValueType): boolean {
   if (a.type === 'GENERICS' || b.type === 'GENERICS') return true
   return isSameValueType(a, b)
-}
-
-function isSameValueType(a?: ValueType, b?: ValueType): boolean {
-  return (
-    (a === undefined && b === undefined) ||
-    (a?.type === b?.type && a?.struct === b?.struct)
-  )
 }
 
 export function resetInput(node: GraphNode, key: string): GraphNode {
@@ -949,4 +962,21 @@ export function cleanEdgeGenericsGroupAt(
     })
 
   return ret
+}
+
+export function getNodeErrors(nodeMap: GraphNodeMap): IdMap<string[]> {
+  const circularRefIds = getAllCircularRefIds(nodeMap)
+
+  return toList(nodeMap).reduce<IdMap<string[]>>((p, node) => {
+    const errors = [
+      ...(getGraphNodeModule<any>(node.type).struct.getErrors?.(node) ?? []),
+      ...(circularRefIds[node.id] ? ['circular connection is found'] : []),
+    ]
+
+    if (errors.length > 0) {
+      p[node.id] = errors
+    }
+
+    return p
+  }, {})
 }

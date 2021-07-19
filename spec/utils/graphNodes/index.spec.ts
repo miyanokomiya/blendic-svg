@@ -48,6 +48,7 @@ import {
   cleanEdgeGenericsGroupAt,
   getOutputType,
   getNodeErrors,
+  cleanAllEdgeGenerics,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -1201,6 +1202,102 @@ describe('src/utils/graphNodes/index.ts', () => {
               },
               if_false: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+            },
+          }),
+        })
+      })
+    })
+  })
+
+  describe('cleanAllEdgeGenerics', () => {
+    describe('should clean all edge generics', () => {
+      it('one node', () => {
+        expect(
+          cleanAllEdgeGenerics({
+            a: createGraphNode('switch_generics', {
+              id: 'a',
+              inputs: {
+                if_true: {
+                  genericsType: UNIT_VALUE_TYPES.SCALER,
+                },
+                if_false: {
+                  genericsType: UNIT_VALUE_TYPES.SCALER,
+                },
+              },
+            }),
+          })
+        ).toEqual({
+          a: createGraphNode('switch_generics', { id: 'a' }),
+        })
+      })
+      it('resolve generics if edge chains include fixed types', () => {
+        expect(
+          cleanAllEdgeGenerics({
+            a: createGraphNode('switch_generics', {
+              id: 'a',
+              inputs: {
+                if_true: { from: { id: 'b', key: 'x' } },
+                if_false: { from: { id: 'd', key: 'value' } },
+              },
+            }),
+            b: createGraphNode('break_vector2', { id: 'b' }),
+          })
+        ).toEqual({
+          a: createGraphNode('switch_generics', {
+            id: 'a',
+            inputs: {
+              if_true: {
+                from: { id: 'b', key: 'x' },
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+              if_false: {
+                from: { id: 'd', key: 'value' },
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+            },
+          }),
+        })
+      })
+      it('some independent chains', () => {
+        expect(
+          cleanAllEdgeGenerics({
+            a: createGraphNode('switch_generics', {
+              id: 'a',
+              inputs: {
+                if_true: { from: { id: 'b', key: 'x' } },
+              },
+            }),
+            b: createGraphNode('break_vector2', { id: 'b' }),
+            c: createGraphNode('switch_generics', { id: 'c' }),
+            d: createGraphNode('switch_generics', {
+              id: 'd',
+              inputs: {
+                if_true: {
+                  from: { id: 'c', key: 'value' },
+                  genericsType: UNIT_VALUE_TYPES.SCALER,
+                },
+              },
+            }),
+          })
+        ).toEqual({
+          a: createGraphNode('switch_generics', {
+            id: 'a',
+            inputs: {
+              if_true: {
+                from: { id: 'b', key: 'x' },
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+              if_false: {
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+            },
+          }),
+          d: createGraphNode('switch_generics', {
+            id: 'd',
+            inputs: {
+              if_true: {
+                from: { id: 'c', key: 'value' },
               },
             },
           }),

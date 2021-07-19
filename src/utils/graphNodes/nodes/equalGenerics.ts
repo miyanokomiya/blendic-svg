@@ -26,7 +26,6 @@ import {
 } from '/@/models/graphNode'
 import {
   createBaseNode,
-  getGenericsChainAtFn,
   NodeStruct,
   pickNotGenericsType,
   UNIT_VALUE_TYPES,
@@ -82,14 +81,9 @@ export const struct: NodeStruct<GraphNodeEqualGenerics> = {
   color: '#b0c4de',
   textColor: '#000',
   label: 'a = b',
-  getGenericsChainAt(self, key, output) {
-    return getGenericsChainAtFn([
-      [
-        { id: self.id, key: 'a' },
-        { id: self.id, key: 'b' },
-      ],
-    ])(key, output)
-  },
+  genericsChains: [
+    [{ key: 'a' }, { key: 'b' }, { key: 'value', output: true }],
+  ],
   getErrors(self) {
     const type = pickNotGenericsType([
       self.inputs.a.genericsType,

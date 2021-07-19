@@ -28,7 +28,6 @@ import {
 import { addPoseTransform } from '/@/utils/armatures'
 import {
   createBaseNode,
-  getGenericsChainAtFn,
   NodeStruct,
   pickNotGenericsType,
   UNIT_VALUE_TYPES,

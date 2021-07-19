@@ -1049,3 +1049,36 @@ export function getNodeErrors(nodeMap: GraphNodeMap): IdMap<string[]> {
     return p
   }, {})
 }
+
+export function getUpdatedNodeMapToDisconnectNodeInput(
+  nodeMap: GraphNodeMap,
+  nodeId: string,
+  inputKey: string
+): GraphNodeMap {
+  const node = nodeMap[nodeId]
+
+  const updated = resetInput(node, inputKey)
+  const currentInput = node.inputs[inputKey]
+
+  // clean generics
+  const updatedMapByDisconnectInput = cleanEdgeGenericsGroupAt(
+    { ...nodeMap, [updated.id]: updated },
+    { id: updated.id, key: inputKey }
+  )
+  const updatedMapByDisconnectOutput = currentInput?.from
+    ? cleanEdgeGenericsGroupAt(
+        {
+          ...nodeMap,
+          [updated.id]: updated,
+          ...updatedMapByDisconnectInput,
+        },
+        { id: currentInput.from.id, key: currentInput.from.key, output: true }
+      )
+    : {}
+
+  return {
+    [node.id]: updated,
+    ...updatedMapByDisconnectInput,
+    ...updatedMapByDisconnectOutput,
+  }
+}

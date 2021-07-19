@@ -49,6 +49,7 @@ import {
   getOutputType,
   getNodeErrors,
   cleanAllEdgeGenerics,
+  getUpdatedNodeMapToDisconnectNodeInput,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -1398,6 +1399,59 @@ describe('src/utils/graphNodes/index.ts', () => {
         a: ['invalid type to operate'],
         b: ['circular connection is found'],
         c: ['circular connection is found'],
+      })
+    })
+  })
+
+  describe('getNodeMapToDisconnectNodeInput', () => {
+    describe('should return updated node map to disconnect the input', () => {
+      it('when an input type is generics', () => {
+        expect(
+          getUpdatedNodeMapToDisconnectNodeInput(
+            {
+              a: createGraphNode('add_generics', {
+                id: 'a',
+                inputs: {
+                  a: {
+                    from: { id: 'b', key: 'vector2' },
+                    genericsType: UNIT_VALUE_TYPES.OBJECT,
+                  },
+                },
+              }),
+              b: createGraphNode('make_vector2', { id: 'b' }),
+            },
+            'a',
+            'a'
+          )
+        ).toEqual({
+          a: createGraphNode('add_generics', { id: 'a' }),
+        })
+      })
+      it('when an output type is generics', () => {
+        expect(
+          getUpdatedNodeMapToDisconnectNodeInput(
+            {
+              a: createGraphNode('add_generics', {
+                id: 'a',
+                inputs: {
+                  a: { genericsType: UNIT_VALUE_TYPES.SCALER },
+                  b: { genericsType: UNIT_VALUE_TYPES.SCALER },
+                },
+              }),
+              b: createGraphNode('make_vector2', {
+                id: 'b',
+                inputs: {
+                  x: { from: { id: 'a', key: 'value' } },
+                },
+              }),
+            },
+            'b',
+            'x'
+          )
+        ).toEqual({
+          a: createGraphNode('add_generics', { id: 'a' }),
+          b: createGraphNode('make_vector2', { id: 'b' }),
+        })
       })
     })
   })

@@ -38,10 +38,10 @@ import {
 import {
   cleanEdgeGenericsGroupAt,
   duplicateNodes,
+  getUpdatedNodeMapToDisconnectNodeInput,
   getOutputType,
   NODE_MENU_OPTIONS_SRC,
   NODE_SUGGESTION_MENU_OPTIONS_SRC,
-  resetInput,
   updateInputConnection,
   validateConnection,
 } from '/@/utils/graphNodes'
@@ -194,24 +194,14 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     })
   }
 
-  function disconnectNodeInput(node: GraphNode, inputKey: string) {
-    const updated = resetInput(node, inputKey)
-    const currentInput = node.inputs[inputKey]
-
-    graphStore.updateNodes({
-      [node.id]: updated,
-      // clean generics
-      ...(currentInput?.from
-        ? cleanEdgeGenericsGroupAt(
-            { ...graphStore.nodeMap.value, [updated.id]: updated },
-            {
-              id: currentInput.from.id,
-              key: currentInput.from.key,
-              output: true,
-            }
-          )
-        : {}),
-    })
+  function disconnectNodeInput(nodeId: string, inputKey: string) {
+    graphStore.updateNodes(
+      getUpdatedNodeMapToDisconnectNodeInput(
+        graphStore.nodeMap.value,
+        nodeId,
+        inputKey
+      )
+    )
   }
 
   function upLeft(options?: { empty: boolean }) {
@@ -245,7 +235,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
           const input = (toNode.inputs as any)[toKey] as GraphNodeInput<unknown>
           if (input.from) {
             // delete current edge
-            disconnectNodeInput(toNode, toKey)
+            disconnectNodeInput(to.nodeId, toKey)
           }
           cancel()
         } else {

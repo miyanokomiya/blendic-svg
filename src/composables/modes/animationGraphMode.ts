@@ -461,7 +461,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
 
     graphStore.pasteNodes(
-      toList(duplicateNodes(selectedNodeMap.value, () => v4())).map((n) => ({
+      toList(
+        duplicateNodes(selectedNodeMap.value, graphStore.nodeMap.value, () =>
+          v4()
+        )
+      ).map((n) => ({
         ...n,
         position: add(n.position, { x: 20, y: 20 }),
       }))
@@ -583,7 +587,9 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   function paste() {
     if (!state.clipboard) return
     graphStore.pasteNodes(
-      toList(duplicateNodes(state.clipboard, () => v4())).map((n) => ({
+      toList(
+        duplicateNodes(state.clipboard, graphStore.nodeMap.value, () => v4())
+      ).map((n) => ({
         ...n,
         position: add(n.position, { x: 20, y: 20 }),
       }))

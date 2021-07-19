@@ -649,10 +649,19 @@ export function resetInput(node: GraphNode, key: string): GraphNode {
 }
 
 export function duplicateNodes(
-  targetNodeMap: IdMap<GraphNode>,
+  targetNodeMap: GraphNodeMap,
+  currentNodeMap: GraphNodeMap = {},
   getId: (src: { id: string }) => string = (src) => src.id
 ): IdMap<GraphNode> {
-  return immigrateNodes(mapReduce(targetNodeMap, getId), targetNodeMap)
+  const duplicatedMap = immigrateNodes(
+    mapReduce(targetNodeMap, getId),
+    targetNodeMap
+  )
+  const updatedMap = cleanAllEdgeGenerics({
+    ...currentNodeMap,
+    ...duplicatedMap,
+  })
+  return { ...duplicatedMap, ...updatedMap }
 }
 
 function immigrateNodes(

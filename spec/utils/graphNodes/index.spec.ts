@@ -567,6 +567,7 @@ describe('src/utils/graphNodes/index.ts', () => {
               },
             }),
           },
+          {},
           (n) => `d_${n.id}`
         )
       ).toEqual({
@@ -585,6 +586,55 @@ describe('src/utils/graphNodes/index.ts', () => {
           inputs: {
             x: { from: { id: 'd', key: 'x' } },
             y: { from: { id: 'd', key: 'y' } },
+          },
+        }),
+      })
+    })
+    it('should clean generics', () => {
+      expect(
+        duplicateNodes(
+          {
+            a: createGraphNode('switch_generics', {
+              id: 'a',
+              inputs: {
+                if_true: {
+                  genericsType: UNIT_VALUE_TYPES.SCALER,
+                },
+                if_false: {
+                  genericsType: UNIT_VALUE_TYPES.SCALER,
+                },
+              },
+            }),
+            c: createGraphNode('switch_generics', {
+              id: 'c',
+              inputs: {
+                if_true: {
+                  from: { id: 'b', key: 'x' },
+                  genericsType: UNIT_VALUE_TYPES.SCALER,
+                },
+                if_false: {
+                  genericsType: UNIT_VALUE_TYPES.SCALER,
+                },
+              },
+            }),
+          },
+          {
+            b: createGraphNode('break_vector2', { id: 'b' }),
+          },
+          (n) => `d_${n.id}`
+        )
+      ).toEqual({
+        d_a: createGraphNode('switch_generics', { id: 'd_a' }),
+        d_c: createGraphNode('switch_generics', {
+          id: 'd_c',
+          inputs: {
+            if_true: {
+              from: { id: 'b', key: 'x' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+            if_false: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
           },
         }),
       })

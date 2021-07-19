@@ -38,10 +38,10 @@ import {
 import {
   cleanEdgeGenericsGroupAt,
   duplicateNodes,
+  getUpdatedNodeMapToDisconnectNodeInput,
   getOutputType,
   NODE_MENU_OPTIONS_SRC,
   NODE_SUGGESTION_MENU_OPTIONS_SRC,
-  resetInput,
   updateInputConnection,
   validateConnection,
 } from '/@/utils/graphNodes'
@@ -194,15 +194,14 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     })
   }
 
-  function disconnectNodeInput(node: GraphNode, inputKey: string) {
-    const updated = resetInput(node, inputKey)
-    graphStore.updateNodes({
-      [node.id]: updated,
-      ...cleanEdgeGenericsGroupAt(
-        { ...graphStore.nodeMap.value, [updated.id]: updated },
-        { id: updated.id, key: inputKey }
-      ),
-    })
+  function disconnectNodeInput(nodeId: string, inputKey: string) {
+    graphStore.updateNodes(
+      getUpdatedNodeMapToDisconnectNodeInput(
+        graphStore.nodeMap.value,
+        nodeId,
+        inputKey
+      )
+    )
   }
 
   function upLeft(options?: { empty: boolean }) {
@@ -236,7 +235,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
           const input = (toNode.inputs as any)[toKey] as GraphNodeInput<unknown>
           if (input.from) {
             // delete current edge
-            disconnectNodeInput(toNode, toKey)
+            disconnectNodeInput(to.nodeId, toKey)
           }
           cancel()
         } else {
@@ -452,7 +451,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
 
     graphStore.pasteNodes(
-      toList(duplicateNodes(selectedNodeMap.value, () => v4())).map((n) => ({
+      toList(
+        duplicateNodes(selectedNodeMap.value, graphStore.nodeMap.value, () =>
+          v4()
+        )
+      ).map((n) => ({
         ...n,
         position: add(n.position, { x: 20, y: 20 }),
       }))
@@ -574,7 +577,9 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   function paste() {
     if (!state.clipboard) return
     graphStore.pasteNodes(
-      toList(duplicateNodes(state.clipboard, () => v4())).map((n) => ({
+      toList(
+        duplicateNodes(state.clipboard, graphStore.nodeMap.value, () => v4())
+      ).map((n) => ({
         ...n,
         position: add(n.position, { x: 20, y: 20 }),
       }))

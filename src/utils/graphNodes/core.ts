@@ -55,11 +55,7 @@ export interface NodeStruct<T extends GraphNodeBase> {
   textColor?: string
   label?: string
   getOutputType?: (self: T, key: string) => ValueType
-  getGenericsChainAt?: (
-    self: T,
-    key: string,
-    output?: boolean
-  ) => EdgeChainGroupItem[]
+  genericsChains?: { key: string; output?: true }[][]
   getErrors?: (self: T) => string[] | undefined
 }
 
@@ -187,10 +183,11 @@ export function isSameValueType(a?: ValueType, b?: ValueType): boolean {
 }
 
 export function getGenericsChainAtFn(
-  chains: EdgeChainGroupItem[][]
-): (key: string, output?: boolean) => EdgeChainGroupItem[] {
+  id: string,
+  chains: { key: string; output?: true }[][]
+): (key: string, output?: boolean) => EdgeChainGroupItem[] | undefined {
   return (key: string, output?: boolean) =>
-    chains.find((chain) =>
-      chain.some((c) => c.key === key && c.output === output)
-    ) ?? []
+    chains
+      .find((chain) => chain.some((c) => c.key === key && c.output === output))
+      ?.map((c) => ({ ...c, id })) ?? undefined
 }

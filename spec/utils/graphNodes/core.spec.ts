@@ -75,17 +75,23 @@ describe('src/utils/graphNodes/index.ts', () => {
   })
 
   describe('getGenericsChainAtFn', () => {
-    it('should return a function to get generics chain', () => {
-      const chains: EdgeChainGroupItem[][] = [
-        [
-          { id: 'id', key: 'a' },
-          { id: 'id', key: 'b' },
-          { id: 'id', key: 'value', output: true },
-        ],
-      ]
-      expect(getGenericsChainAtFn(chains)('a')).toEqual(chains[0])
-      expect(getGenericsChainAtFn(chains)('value', true)).toEqual(chains[0])
-      expect(getGenericsChainAtFn(chains)('c')).toEqual([])
+    describe('should return a function', () => {
+      it('to get generics chain', () => {
+        const chains: EdgeChainGroupItem[][] = [
+          [
+            { id: 'id', key: 'a' },
+            { id: 'id', key: 'value', output: true },
+          ],
+        ]
+        expect(getGenericsChainAtFn('id', chains)('a')).toEqual(chains[0])
+        expect(getGenericsChainAtFn('id', chains)('value', true)).toEqual(
+          chains[0]
+        )
+      })
+      it('to get undefined if any generics chains are not found', () => {
+        const chains: EdgeChainGroupItem[][] = [[]]
+        expect(getGenericsChainAtFn('id', chains)('c')).toBe(undefined)
+      })
     })
   })
 })

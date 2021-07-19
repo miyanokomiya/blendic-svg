@@ -35,6 +35,7 @@ import {
   NodeContext,
   EdgeChainGroupItem,
   isSameValueType,
+  getGenericsChainAtFn,
 } from '/@/utils/graphNodes/core'
 import { v4 } from 'uuid'
 import * as get_frame from './nodes/getFrame'
@@ -99,7 +100,7 @@ import * as or from './nodes/or'
 import * as equal_generics from './nodes/equalGenerics'
 import * as switch_generics from './nodes/switch_generics'
 import { IdMap } from '/@/models'
-import { mapReduce, toList } from '/@/utils/commons'
+import { extractMap, mapReduce, toList } from '/@/utils/commons'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -648,10 +649,19 @@ export function resetInput(node: GraphNode, key: string): GraphNode {
 }
 
 export function duplicateNodes(
-  targetNodeMap: IdMap<GraphNode>,
+  targetNodeMap: GraphNodeMap,
+  currentNodeMap: GraphNodeMap = {},
   getId: (src: { id: string }) => string = (src) => src.id
 ): IdMap<GraphNode> {
-  return immigrateNodes(mapReduce(targetNodeMap, getId), targetNodeMap)
+  const duplicatedMap = immigrateNodes(
+    mapReduce(targetNodeMap, getId),
+    targetNodeMap
+  )
+  const updatedMap = cleanAllEdgeGenerics({
+    ...currentNodeMap,
+    ...duplicatedMap,
+  })
+  return { ...duplicatedMap, ...updatedMap }
 }
 
 function immigrateNodes(
@@ -874,7 +884,10 @@ function _getEdgeChainGroupAt(
   if (context.isDoneItem(item)) return []
 
   const struct = getGraphNodeModule(target.type).struct
-  const group = struct.getGenericsChainAt?.(target, item.key, item.output) ?? [
+  const group = getGenericsChainAtFn(target.id, struct.genericsChains ?? [])(
+    item.key,
+    item.output
+  ) ?? [
     // this edge has fixed type
     {
       ...item,
@@ -934,7 +947,14 @@ export function cleanEdgeGenericsGroupAt(
   const allEdgeConnectionInfo = getAllEdgeConnectionInfo(nodeMap)
   const group = getEdgeChainGroupAt(nodeMap, allEdgeConnectionInfo, item)
   const type = findNotResolvedGenericsType(group)
+  return cleanEdgeGenericsGroupByType(nodeMap, group, type)
+}
 
+function cleanEdgeGenericsGroupByType(
+  nodeMap: GraphNodeMap,
+  group: EdgeChainGroupItem[],
+  type: ValueType | undefined
+): GraphNodeMap {
   const ret: GraphNodeMap = {}
 
   group
@@ -964,6 +984,55 @@ export function cleanEdgeGenericsGroupAt(
   return ret
 }
 
+export function cleanAllEdgeGenerics(nodeMap: GraphNodeMap): GraphNodeMap {
+  const allEdgeConnectionInfo = getAllEdgeConnectionInfo(nodeMap)
+
+  const doneMap: IdMap<{
+    inputs: {
+      [key: string]: true
+    }
+    outputs: {
+      [key: string]: true
+    }
+  }> = {}
+
+  const updatedIdMap: IdMap<true> = {}
+
+  const nextMap = toList(nodeMap).reduce((p, target) => {
+    const struct = getGraphNodeModule(target.type).struct
+    if (!struct.genericsChains) return p
+
+    const chains = struct.genericsChains
+    return chains
+      .filter((c) => c.length > 0)
+      .reduce((q, c) => {
+        const item = { ...c[0], id: target.id }
+
+        // ignore if this chain has been done
+        if (item.output && !!doneMap[target.id]?.outputs[item.key]) return q
+        if (doneMap[target.id]?.inputs[item.key]) return q
+
+        const group = getEdgeChainGroupAt(q, allEdgeConnectionInfo, item)
+
+        group.forEach((c) => {
+          doneMap[c.id] ??= { inputs: {}, outputs: {} }
+          if (c.output) {
+            doneMap[c.id].outputs[c.key] = true
+          } else {
+            doneMap[c.id].inputs[c.key] = true
+          }
+        })
+
+        const type = findNotResolvedGenericsType(group)
+        const updated = cleanEdgeGenericsGroupByType(q, group, type)
+        toList(updated).forEach((n) => (updatedIdMap[n.id] = true))
+        return { ...q, ...updated }
+      }, p)
+  }, nodeMap)
+
+  return extractMap(nextMap, updatedIdMap)
+}
+
 export function getNodeErrors(nodeMap: GraphNodeMap): IdMap<string[]> {
   const circularRefIds = getAllCircularRefIds(nodeMap)
 
@@ -979,4 +1048,37 @@ export function getNodeErrors(nodeMap: GraphNodeMap): IdMap<string[]> {
 
     return p
   }, {})
+}
+
+export function getUpdatedNodeMapToDisconnectNodeInput(
+  nodeMap: GraphNodeMap,
+  nodeId: string,
+  inputKey: string
+): GraphNodeMap {
+  const node = nodeMap[nodeId]
+
+  const updated = resetInput(node, inputKey)
+  const currentInput = node.inputs[inputKey]
+
+  // clean generics
+  const updatedMapByDisconnectInput = cleanEdgeGenericsGroupAt(
+    { ...nodeMap, [updated.id]: updated },
+    { id: updated.id, key: inputKey }
+  )
+  const updatedMapByDisconnectOutput = currentInput?.from
+    ? cleanEdgeGenericsGroupAt(
+        {
+          ...nodeMap,
+          [updated.id]: updated,
+          ...updatedMapByDisconnectInput,
+        },
+        { id: currentInput.from.id, key: currentInput.from.key, output: true }
+      )
+    : {}
+
+  return {
+    [node.id]: updated,
+    ...updatedMapByDisconnectInput,
+    ...updatedMapByDisconnectOutput,
+  }
 }

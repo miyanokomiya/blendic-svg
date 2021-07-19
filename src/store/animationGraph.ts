@@ -24,7 +24,11 @@ import { extractMap, mapReduce } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { SelectOptions } from '/@/composables/modes/types'
 import { GraphNode, GraphNodes, GraphNodeType } from '/@/models/graphNode'
-import { createGraphNode, deleteAndDisconnectNodes } from '/@/utils/graphNodes'
+import {
+  cleanAllEdgeGenerics,
+  createGraphNode,
+  deleteAndDisconnectNodes,
+} from '/@/utils/graphNodes'
 import {
   convolute,
   getAddItemHistory,
@@ -194,12 +198,22 @@ function deleteNodes() {
     deleteIds
   )
 
+  const nodeMapByDelete = toMap(deletedInfo.nodes)
+
+  const updatedNodesByDisconnect = extractMap(
+    nodeMapByDelete,
+    deletedInfo.updatedIds
+  )
+  const updatedNodesByClean = cleanAllEdgeGenerics({
+    ...nodeMapByDelete,
+    ...updatedNodesByDisconnect,
+  })
+
   const item = convolute(
-    getDeleteAndUpdateItemHistory(
-      nodesAccessor,
-      deleteIds,
-      extractMap(toMap(deletedInfo.nodes), deletedInfo.updatedIds)
-    ),
+    getDeleteAndUpdateItemHistory(nodesAccessor, deleteIds, {
+      ...updatedNodesByDisconnect,
+      ...updatedNodesByClean,
+    }),
     [
       getSelectItemHistory(
         selectedNodesAccessor,

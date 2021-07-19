@@ -196,12 +196,21 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
 
   function disconnectNodeInput(node: GraphNode, inputKey: string) {
     const updated = resetInput(node, inputKey)
+    const currentInput = node.inputs[inputKey]
+
     graphStore.updateNodes({
       [node.id]: updated,
-      ...cleanEdgeGenericsGroupAt(
-        { ...graphStore.nodeMap.value, [updated.id]: updated },
-        { id: updated.id, key: inputKey }
-      ),
+      // clean generics
+      ...(currentInput?.from
+        ? cleanEdgeGenericsGroupAt(
+            { ...graphStore.nodeMap.value, [updated.id]: updated },
+            {
+              id: currentInput.from.id,
+              key: currentInput.from.key,
+              output: true,
+            }
+          )
+        : {}),
     })
   }
 

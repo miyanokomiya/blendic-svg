@@ -209,8 +209,6 @@ function deleteNodes() {
     ...updatedNodesByDisconnect,
   })
 
-  console.log(updatedNodesByDisconnect, updatedNodesByClean)
-
   const item = convolute(
     getDeleteAndUpdateItemHistory(nodesAccessor, deleteIds, {
       ...updatedNodesByDisconnect,

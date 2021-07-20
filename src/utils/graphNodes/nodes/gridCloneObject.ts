@@ -20,8 +20,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { rotate, sub } from 'okageo'
 import { getTransform } from '/@/models'
 import { GraphNodeGridCloneObject } from '/@/models/graphNode'
-import { multiPoseTransform } from '/@/utils/armatures'
 import {
+  cloneListFn,
   createBaseNode,
   NodeStruct,
   UNIT_VALUE_TYPES,
@@ -88,36 +88,26 @@ export const struct: NodeStruct<GraphNodeGridCloneObject> = {
     if (row <= 0 || column <= 0) return { origin: 'a', group: '' }
 
     const group = context.createCloneGroupObject(inputs.object, { id: self.id })
-    const originTransform = context.getTransform(inputs.object)
-
     const diff = inputs.centered
       ? {
           x: ((column - 1) * inputs.width) / 2,
           y: ((row - 1) * inputs.height) / 2,
         }
       : undefined
-
     const rows = [...Array(row)].map((_, i) => i * inputs.height)
     const columns = [...Array(column)].map((_, i) => i * inputs.width)
     const rad = (inputs.rotate * Math.PI) / 180
+    const cloneFn = cloneListFn(context, inputs.object, group)
+    cloneFn(
+      rows.flatMap((y) =>
+        columns.map((x) =>
+          getTransform({
+            translate: rotate(diff ? sub({ x, y }, diff) : { x, y }, rad),
+          })
+        )
+      )
+    )
 
-    rows.forEach((y, i) => {
-      columns.forEach((x, j) => {
-        const clone = context.cloneObject(
-          inputs.object,
-          { parent: group },
-          `${self.id}_${i}_${j}`
-        )
-        const t = getTransform({
-          translate: rotate(diff ? sub({ x, y }, diff) : { x, y }, rad),
-        })
-        context.setTransform(
-          clone,
-          // inherits original transform
-          originTransform ? multiPoseTransform(originTransform, t) : t
-        )
-      })
-    })
     return { origin: inputs.object, group }
   },
   width: 180,

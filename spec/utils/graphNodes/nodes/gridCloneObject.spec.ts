@@ -42,13 +42,13 @@ describe('src/utils/graphNodes/nodes/gridCloneObject.ts', () => {
         1,
         'a',
         { parent: 'b' },
-        'b_0_0'
+        'b_0'
       )
       expect(cloneObject).toHaveBeenNthCalledWith(
         2,
         'a',
         { parent: 'b' },
-        'b_0_1'
+        'b_1'
       )
       expect(setTransform).toHaveBeenNthCalledWith(
         1,

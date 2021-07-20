@@ -129,6 +129,7 @@ export interface GraphNodes {
   clone_object: GraphNodeCloneObject
   circle_clone_object: GraphNodeCircleCloneObject
   grid_clone_object: GraphNodeGridCloneObject
+  tornado_clone_object: GraphNodeTornadoCloneObject
 
   create_object_group: GraphNodeCreateObjectGroup
   create_object_rect: GraphNodeCreateObjectRect
@@ -302,6 +303,21 @@ export interface GraphNodeGridCloneObject extends GraphNodeBase {
     column: GraphNodeInput<number>
     width: GraphNodeInput<number>
     height: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeTornadoCloneObject extends GraphNodeBase {
+  type: 'tornado_clone_object'
+  inputs: {
+    object: GraphNodeInput<string>
+    rotate: GraphNodeInput<number>
+    max_rotate: GraphNodeInput<number>
+    interval_rotate: GraphNodeInput<number>
+    drift_rotate: GraphNodeInput<number>
+    radius: GraphNodeInput<number>
+    radius_grow: GraphNodeInput<number>
+    scale_grow: GraphNodeInput<number>
+    fix_rotate: GraphNodeInput<boolean>
   }
 }
 

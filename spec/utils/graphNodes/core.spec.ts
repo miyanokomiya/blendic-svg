@@ -17,7 +17,9 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { getTransform } from '/@/models'
 import {
+  cloneListFn,
   EdgeChainGroupItem,
   getGenericsChainAtFn,
   isSameValueType,
@@ -92,6 +94,59 @@ describe('src/utils/graphNodes/index.ts', () => {
         const chains: EdgeChainGroupItem[][] = [[]]
         expect(getGenericsChainAtFn('id', chains)('c')).toBe(undefined)
       })
+    })
+  })
+
+  describe('cloneListFn', () => {
+    function getContext() {
+      return {
+        getTransform: jest.fn().mockReturnValue(getTransform({ rotate: 1 })),
+        setTransform: jest.fn(),
+        createCloneGroupObject: jest.fn().mockReturnValue('b'),
+        cloneObject: jest.fn().mockImplementation((_a, _b, id: string) => {
+          return id
+        }),
+      }
+    }
+
+    it('should return a function to clone list items', () => {
+      const context = getContext()
+      const fn = cloneListFn(context as any, 'a', 'group')
+
+      fn([getTransform({ rotate: 10 }), getTransform({ rotate: 20 })])
+      expect(context.cloneObject).toHaveBeenNthCalledWith(
+        1,
+        'a',
+        { parent: 'group' },
+        'group_0'
+      )
+      expect(context.setTransform).toHaveBeenNthCalledWith(
+        1,
+        'group_0',
+        getTransform({ rotate: 11 })
+      )
+      expect(context.cloneObject).toHaveBeenNthCalledWith(
+        2,
+        'a',
+        { parent: 'group' },
+        'group_1'
+      )
+      expect(context.setTransform).toHaveBeenNthCalledWith(
+        2,
+        'group_1',
+        getTransform({ rotate: 21 })
+      )
+    })
+    it('should make rotate the same value as that of the src object if fix_rotate is true', () => {
+      const context = getContext()
+      const fn = cloneListFn(context as any, 'a', 'group', true)
+
+      fn([getTransform({ rotate: 10 })])
+      expect(context.setTransform).toHaveBeenNthCalledWith(
+        1,
+        'group_0',
+        getTransform({ rotate: 1 })
+      )
     })
   })
 })

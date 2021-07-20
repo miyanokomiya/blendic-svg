@@ -28,7 +28,7 @@ import {
   IVec2,
   multi,
   multiAffines,
-  rotate,
+  rotate as rotateVector2,
   sub,
 } from 'okageo'
 import { Bone, getTransform, scaleRate, Transform } from '/@/models'
@@ -207,7 +207,7 @@ export function invertScaleOrZero(scale: IVec2): IVec2 {
 
 export function applyTransform(p: IVec2, transform: Transform): IVec2 {
   return add(
-    rotate(
+    rotateVector2(
       applyScale(p, transform.scale, transform.origin),
       (transform.rotate / 180) * Math.PI,
       transform.origin
@@ -316,4 +316,42 @@ export function getIsRectHitRectFn(
       target.x + target.width < range.x ||
       target.y + target.height < range.y
     )
+}
+
+const baseV = { x: 1, y: 0 }
+const baseS = { x: 1, y: 1 }
+export function getTornadoTransformFn(
+  radius: number,
+  startRotate = 0,
+  radiusGrowRate = 1,
+  scaleGrowRate = 1
+): (rotate: number) => Transform {
+  return (rotate: number) => {
+    const orbitRate = rotate / 360 - 1
+    const positionRotate = rotate + startRotate
+    return getTransform({
+      rotate: positionRotate,
+      translate: multi(
+        rotateVector2(baseV, (positionRotate * Math.PI) / 180),
+        ((radius * rotate) / 360) * Math.pow(radiusGrowRate, orbitRate)
+      ),
+      scale: multi(baseS, Math.pow(scaleGrowRate, orbitRate)),
+    })
+  }
+}
+
+export function getCircleTransformFn(
+  count: number,
+  radius: number,
+  startRotate = 0
+): (index: number) => Transform {
+  const unit = 360 / count
+  const baseV = { x: radius, y: 0 }
+  return (index: number) => {
+    const rotate = index * unit
+    return getTransform({
+      translate: rotateVector2(baseV, ((rotate + startRotate) * Math.PI) / 180),
+      rotate,
+    })
+  }
 }

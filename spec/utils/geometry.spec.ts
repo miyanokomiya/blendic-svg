@@ -48,7 +48,8 @@ import {
   getIsRectInRectFn,
   getIsRectHitRectFn,
   roundTrip,
-  getTornadoTransform,
+  getTornadoTransformFn,
+  getCircleTransformFn,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -599,51 +600,76 @@ describe('src/utils/geometry.ts', () => {
     })
   })
 
-  describe('getTornadoTransform', () => {
+  describe('getTornadoTransformFn', () => {
     it('should return a transformation of tornado', () => {
-      const t1 = getTornadoTransform(90, 100)
+      const fn = getTornadoTransformFn(100)
+      const t1 = fn(90)
       expect(t1.translate.x).toBeCloseTo(0)
       expect(t1.translate.y).toBeCloseTo(25)
       expect(t1.rotate).toBeCloseTo(90)
-      const t2 = getTornadoTransform(360, 100)
+      const t2 = fn(360)
       expect(t2.translate.x).toBeCloseTo(100)
       expect(t2.translate.y).toBeCloseTo(0)
       expect(t2.rotate).toBeCloseTo(360)
-      const t3 = getTornadoTransform(540, 100)
+      const t3 = fn(540)
       expect(t3.translate.x).toBeCloseTo(-150)
       expect(t3.translate.y).toBeCloseTo(0)
       expect(t3.rotate).toBeCloseTo(540)
     })
     it('should slide start rotation', () => {
-      const t1 = getTornadoTransform(90, 100, 90)
+      const fn = getTornadoTransformFn(100, 90)
+      const t1 = fn(90)
       expect(t1.translate.x).toBeCloseTo(-25)
       expect(t1.translate.y).toBeCloseTo(0)
       expect(t1.rotate).toBeCloseTo(180)
     })
     it('should grow radius', () => {
-      const t1 = getTornadoTransform(360, 100, 0, 2)
+      const fn = getTornadoTransformFn(100, 0, 2)
+      const t1 = fn(360)
       expect(t1.translate.x).toBeCloseTo(100)
       expect(t1.translate.y).toBeCloseTo(0)
       expect(t1.rotate).toBeCloseTo(360)
-      const t2 = getTornadoTransform(720, 100, 0, 2)
+      const t2 = fn(720)
       expect(t2.translate.x).toBeCloseTo(400)
       expect(t2.translate.y).toBeCloseTo(0)
       expect(t2.rotate).toBeCloseTo(720)
-      const t3 = getTornadoTransform(1080, 100, 0, 2)
+      const t3 = fn(1080)
       expect(t3.translate.x).toBeCloseTo(1200)
       expect(t3.translate.y).toBeCloseTo(0)
       expect(t3.rotate).toBeCloseTo(1080)
     })
     it('should grow scale', () => {
-      const t1 = getTornadoTransform(360, 100, 0, 1, 2)
+      const fn = getTornadoTransformFn(100, 0, 1, 2)
+      const t1 = fn(360)
       expect(t1.scale.x).toBeCloseTo(1)
       expect(t1.scale.y).toBeCloseTo(1)
-      const t2 = getTornadoTransform(720, 100, 0, 1, 2)
+      const t2 = fn(720)
       expect(t2.scale.x).toBeCloseTo(2)
       expect(t2.scale.y).toBeCloseTo(2)
-      const t3 = getTornadoTransform(1080, 100, 0, 1, 2)
+      const t3 = fn(1080)
       expect(t3.scale.x).toBeCloseTo(4)
       expect(t3.scale.y).toBeCloseTo(4)
+    })
+  })
+
+  describe('getCircleTransformFn', () => {
+    it('should return a function to get circle transformation', () => {
+      const fn = getCircleTransformFn(4, 100)
+      expect(fn(0).translate.x).toBeCloseTo(100)
+      expect(fn(0).translate.y).toBeCloseTo(0)
+      expect(fn(0).rotate).toBeCloseTo(0)
+      expect(fn(1).translate.x).toBeCloseTo(0)
+      expect(fn(1).translate.y).toBeCloseTo(100)
+      expect(fn(1).rotate).toBeCloseTo(90)
+    })
+    it('should initialize start rotation', () => {
+      const fn = getCircleTransformFn(4, 100, 90)
+      expect(fn(0).translate.x).toBeCloseTo(0)
+      expect(fn(0).translate.y).toBeCloseTo(100)
+      expect(fn(0).rotate).toBeCloseTo(0)
+      expect(fn(1).translate.x).toBeCloseTo(-100)
+      expect(fn(1).translate.y).toBeCloseTo(0)
+      expect(fn(1).rotate).toBeCloseTo(90)
     })
   })
 })

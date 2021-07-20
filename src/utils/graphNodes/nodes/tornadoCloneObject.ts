@@ -22,9 +22,9 @@ import {
   GRAPH_VALUE_STRUCT,
   GRAPH_VALUE_TYPE,
 } from '/@/models/graphNode'
-import { multiPoseTransform } from '/@/utils/armatures'
-import { getTornadoTransform } from '/@/utils/geometry'
+import { getTornadoTransformFn } from '/@/utils/geometry'
 import {
+  cloneListFn,
   createBaseNode,
   NodeStruct,
   UNIT_VALUE_TYPES,
@@ -115,39 +115,25 @@ export const struct: NodeStruct<GraphNodeTornadoCloneObject> = {
       return { origin: inputs.object, group: '' }
 
     const group = context.createCloneGroupObject(inputs.object, { id: self.id })
-    const originTransform = context.getTransform(inputs.object)
+    const tornadoFn = getTornadoTransformFn(
+      inputs.radius,
+      inputs.rotate,
+      inputs.radius_grow,
+      inputs.scale_grow
+    )
+    const cloneFn = cloneListFn(
+      context,
+      inputs.object,
+      group,
+      inputs.fix_rotate
+    )
+    cloneFn(
+      [...Array(count)]
+        .map((_, i) => inputs.interval_rotate * i + inputs.drift_rotate)
+        .filter((angle) => 0 <= angle && angle <= inputs.max_rotate)
+        .map(tornadoFn)
+    )
 
-    const items = [...Array(count)]
-      .map((_, i) => {
-        return inputs.interval_rotate * i + inputs.drift_rotate
-      })
-      .filter((angle) => 0 <= angle && angle <= inputs.max_rotate)
-      .map((rotate) => {
-        return getTornadoTransform(
-          rotate,
-          inputs.radius,
-          inputs.rotate,
-          inputs.radius_grow,
-          inputs.scale_grow
-        )
-      })
-
-    items.forEach((transform, i) => {
-      const clone = context.cloneObject(
-        inputs.object,
-        { parent: group },
-        `${self.id}_${i}`
-      )
-      const t = {
-        ...transform,
-        rotate: inputs.fix_rotate ? 0 : transform.rotate,
-      }
-      context.setTransform(
-        clone,
-        // inherits original transform
-        originTransform ? multiPoseTransform(originTransform, t) : t
-      )
-    })
     return { origin: inputs.object, group }
   },
   width: 200,

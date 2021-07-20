@@ -17,11 +17,10 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { rotate } from 'okageo'
-import { getTransform } from '/@/models'
 import { GraphNodeCircleCloneObject } from '/@/models/graphNode'
-import { multiPoseTransform } from '/@/utils/armatures'
+import { getCircleTransformFn } from '/@/utils/geometry'
 import {
+  cloneListFn,
   createBaseNode,
   NodeStruct,
   UNIT_VALUE_TYPES,
@@ -76,27 +75,15 @@ export const struct: NodeStruct<GraphNodeCircleCloneObject> = {
     if (count <= 0) return { origin: inputs.object, group: '' }
 
     const group = context.createCloneGroupObject(inputs.object, { id: self.id })
-    const originTransform = context.getTransform(inputs.object)
+    const generateFn = getCircleTransformFn(count, inputs.radius, inputs.rotate)
+    const cloneFn = cloneListFn(
+      context,
+      inputs.object,
+      group,
+      inputs.fix_rotate
+    )
+    cloneFn([...Array(count)].map((_, i) => generateFn(i)))
 
-    const angles = [...Array(count)].map((_, i) => (i * 360) / count)
-    const baseV = { x: inputs.radius, y: 0 }
-
-    angles.forEach((angle, i) => {
-      const clone = context.cloneObject(
-        inputs.object,
-        { parent: group },
-        `${self.id}_${i}`
-      )
-      const t = getTransform({
-        translate: rotate(baseV, ((angle + inputs.rotate) * Math.PI) / 180),
-        rotate: inputs.fix_rotate ? 0 : angle,
-      })
-      context.setTransform(
-        clone,
-        // inherits original transform
-        originTransform ? multiPoseTransform(originTransform, t) : t
-      )
-    })
     return { origin: inputs.object, group }
   },
   width: 180,

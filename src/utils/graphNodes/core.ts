@@ -26,6 +26,7 @@ import {
   GRAPH_VALUE_TYPE_KEY,
   ValueType,
 } from '/@/models/graphNode'
+import { multiPoseTransform } from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
 
 export interface NodeModule<T extends GraphNodeBase> {
@@ -190,4 +191,31 @@ export function getGenericsChainAtFn(
     chains
       .find((chain) => chain.some((c) => c.key === key && c.output === output))
       ?.map((c) => ({ ...c, id })) ?? undefined
+}
+
+export function cloneListFn(
+  context: NodeContext<unknown>,
+  targetId: string,
+  parentGroupId: string,
+  fix_rotate = false
+): (transforms: Transform[]) => void {
+  const originTransform = context.getTransform(targetId)
+
+  return (transforms) =>
+    transforms.forEach((transform, i) => {
+      const clone = context.cloneObject(
+        targetId,
+        { parent: parentGroupId },
+        `${parentGroupId}_${i}`
+      )
+      const t = {
+        ...transform,
+        rotate: fix_rotate ? 0 : transform.rotate,
+      }
+      context.setTransform(
+        clone,
+        // inherits original transform
+        originTransform ? multiPoseTransform(originTransform, t) : t
+      )
+    })
 }

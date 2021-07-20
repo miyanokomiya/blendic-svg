@@ -73,6 +73,7 @@ import * as set_viewbox from './nodes/setViewbox'
 import * as clone_object from './nodes/cloneObject'
 import * as circle_clone_object from './nodes/circleCloneObject'
 import * as grid_clone_object from './nodes/gridCloneObject'
+import * as tornado_clone_object from './nodes/tornadoCloneObject'
 import * as create_object_group from './nodes/createObjectGroup'
 import * as create_object_rect from './nodes/createObjectRect'
 import * as create_object_ellipse from './nodes/createObjectEllipse'
@@ -138,6 +139,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   clone_object,
   circle_clone_object,
   grid_clone_object,
+  tornado_clone_object,
 
   create_object_group,
   create_object_rect,
@@ -256,6 +258,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Clone Object', type: 'clone_object' },
       { label: 'Circle Clone Object', type: 'circle_clone_object' },
       { label: 'Grid Clone Object', type: 'grid_clone_object' },
+      { label: 'Tornado Clone Object', type: 'tornado_clone_object' },
     ],
   },
   {
@@ -358,6 +361,11 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
       key: 'object',
     },
     { label: 'Grid Clone Object', type: 'grid_clone_object', key: 'object' },
+    {
+      label: 'Tornado Clone Object',
+      type: 'tornado_clone_object',
+      key: 'object',
+    },
     EQUAL_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],

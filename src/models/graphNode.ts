@@ -312,8 +312,8 @@ export interface GraphNodeTornadoCloneObject extends GraphNodeBase {
     object: GraphNodeInput<string>
     rotate: GraphNodeInput<number>
     max_rotate: GraphNodeInput<number>
-    interval_rotate: GraphNodeInput<number>
-    drift_rotate: GraphNodeInput<number>
+    interval: GraphNodeInput<number>
+    offset: GraphNodeInput<number>
     radius: GraphNodeInput<number>
     radius_grow: GraphNodeInput<number>
     scale_grow: GraphNodeInput<number>

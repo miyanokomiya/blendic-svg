@@ -20,8 +20,8 @@ describe('src/utils/graphNodes/nodes/tornadoCloneObject.ts', () => {
             object: 'a',
             rotate: 90,
             max_rotate: 360,
-            interval_rotate: 90,
-            drift_rotate: 90,
+            interval: 90,
+            offset: 90,
             radius: 100,
             radius_grow: 2,
             scale_grow: 2,
@@ -59,8 +59,8 @@ describe('src/utils/graphNodes/nodes/tornadoCloneObject.ts', () => {
         object: 'a',
         rotate: 90,
         max_rotate: 360,
-        interval_rotate: 90,
-        drift_rotate: 90,
+        interval: 90,
+        offset: 90,
         radius: 100,
         radius_grow: 2,
         scale_grow: 2,
@@ -88,7 +88,7 @@ describe('src/utils/graphNodes/nodes/tornadoCloneObject.ts', () => {
 
       expect(
         target.struct.computation(
-          { ...node, interval_rotate: -10 },
+          { ...node, interval: -10 },
           { id: 'b' } as any,
           { cloneObject } as any
         )

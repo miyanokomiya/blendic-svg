@@ -38,8 +38,8 @@ export const struct: NodeStruct<GraphNodeTornadoCloneObject> = {
           object: { value: '' },
           rotate: { value: 0 },
           max_rotate: { value: 360 * 3 },
-          interval_rotate: { value: 30 },
-          drift_rotate: { value: 0 },
+          interval: { value: 30 },
+          offset: { value: 0 },
           radius: { value: 50 },
           radius_grow: { value: 1 },
           scale_grow: { value: 1 },
@@ -64,11 +64,11 @@ export const struct: NodeStruct<GraphNodeTornadoCloneObject> = {
       type: UNIT_VALUE_TYPES.SCALER,
       default: 360 * 3,
     },
-    interval_rotate: {
+    interval: {
       type: UNIT_VALUE_TYPES.SCALER,
       default: 60,
     },
-    drift_rotate: {
+    offset: {
       type: UNIT_VALUE_TYPES.SCALER,
       default: 0,
     },
@@ -104,10 +104,10 @@ export const struct: NodeStruct<GraphNodeTornadoCloneObject> = {
   computation(inputs, self, context): { origin: string; group: string } {
     if (!inputs.object) return { origin: '', group: '' }
 
-    const count = Math.floor(inputs.max_rotate / inputs.interval_rotate)
+    const count = Math.floor(inputs.max_rotate / inputs.interval)
     if (
       count <= 0 ||
-      inputs.interval_rotate <= 0 ||
+      inputs.interval <= 0 ||
       inputs.radius <= 0 ||
       inputs.radius_grow <= 0 ||
       inputs.scale_grow <= 0
@@ -129,7 +129,7 @@ export const struct: NodeStruct<GraphNodeTornadoCloneObject> = {
     )
     cloneFn(
       [...Array(count)]
-        .map((_, i) => inputs.interval_rotate * i + inputs.drift_rotate)
+        .map((_, i) => inputs.interval * i + inputs.offset)
         .filter((angle) => 0 <= angle && angle <= inputs.max_rotate)
         .map(tornadoFn)
     )

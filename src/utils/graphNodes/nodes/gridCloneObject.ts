@@ -17,9 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { rotate, sub } from 'okageo'
-import { getTransform } from '/@/models'
 import { GraphNodeGridCloneObject } from '/@/models/graphNode'
+import { getGridTransformFn } from '/@/utils/geometry'
 import {
   cloneListFn,
   createBaseNode,
@@ -85,28 +84,19 @@ export const struct: NodeStruct<GraphNodeGridCloneObject> = {
 
     const row = Math.floor(inputs.row)
     const column = Math.floor(inputs.column)
-    if (row <= 0 || column <= 0) return { origin: 'a', group: '' }
+    if (row <= 0 || column <= 0) return { origin: inputs.object, group: '' }
 
     const group = context.createCloneGroupObject(inputs.object, { id: self.id })
-    const diff = inputs.centered
-      ? {
-          x: ((column - 1) * inputs.width) / 2,
-          y: ((row - 1) * inputs.height) / 2,
-        }
-      : undefined
-    const rows = [...Array(row)].map((_, i) => i * inputs.height)
-    const columns = [...Array(column)].map((_, i) => i * inputs.width)
-    const rad = (inputs.rotate * Math.PI) / 180
     const cloneFn = cloneListFn(context, inputs.object, group)
-    cloneFn(
-      rows.flatMap((y) =>
-        columns.map((x) =>
-          getTransform({
-            translate: rotate(diff ? sub({ x, y }, diff) : { x, y }, rad),
-          })
-        )
-      )
+    const generateFn = getGridTransformFn(
+      inputs.width,
+      inputs.height,
+      column,
+      row,
+      inputs.rotate,
+      inputs.centered
     )
+    cloneFn([...Array(row * column)].map((_, i) => generateFn(i)))
 
     return { origin: inputs.object, group }
   },

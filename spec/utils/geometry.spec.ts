@@ -50,6 +50,7 @@ import {
   roundTrip,
   getTornadoTransformFn,
   getCircleTransformFn,
+  getGridTransformFn,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -670,6 +671,36 @@ describe('src/utils/geometry.ts', () => {
       expect(fn(1).translate.x).toBeCloseTo(-100)
       expect(fn(1).translate.y).toBeCloseTo(0)
       expect(fn(1).rotate).toBeCloseTo(90)
+    })
+  })
+
+  describe('getGridTransformFn', () => {
+    it('should return a function to get grid transformation', () => {
+      const fn = getGridTransformFn(10, 20, 3, 2, 0, false)
+      expect(fn(0).translate.x).toBeCloseTo(0)
+      expect(fn(0).translate.y).toBeCloseTo(0)
+      expect(fn(1).translate.x).toBeCloseTo(10)
+      expect(fn(1).translate.y).toBeCloseTo(0)
+      expect(fn(3).translate.x).toBeCloseTo(0)
+      expect(fn(3).translate.y).toBeCloseTo(20)
+    })
+    it('should rotate', () => {
+      const fn = getGridTransformFn(10, 20, 3, 2, 90, false)
+      expect(fn(0).translate.x).toBeCloseTo(0)
+      expect(fn(0).translate.y).toBeCloseTo(0)
+      expect(fn(1).translate.x).toBeCloseTo(0)
+      expect(fn(1).translate.y).toBeCloseTo(10)
+      expect(fn(3).translate.x).toBeCloseTo(-20)
+      expect(fn(3).translate.y).toBeCloseTo(0)
+    })
+    it('should center if centered is true', () => {
+      const fn = getGridTransformFn(10, 20, 3, 2, 0, true)
+      expect(fn(0).translate.x).toBeCloseTo(-10)
+      expect(fn(0).translate.y).toBeCloseTo(-10)
+      expect(fn(1).translate.x).toBeCloseTo(0)
+      expect(fn(1).translate.y).toBeCloseTo(-10)
+      expect(fn(3).translate.x).toBeCloseTo(-10)
+      expect(fn(3).translate.y).toBeCloseTo(10)
     })
   })
 })

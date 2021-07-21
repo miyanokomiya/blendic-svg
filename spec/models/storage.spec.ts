@@ -169,11 +169,25 @@ describe('src/models/storage.ts', () => {
       expect(
         initializeGraphNode({
           type: 'scaler',
-          data: { tmp: 1 },
+          data: {},
         } as any)
       ).toEqual({
         ...base,
-        data: { ...base.data, tmp: 1 },
+        data: { value: 0 },
+      })
+    })
+    it('should drop invalid props of data and inputs', () => {
+      const base = createGraphNode('make_vector2')
+      expect(
+        initializeGraphNode({
+          type: 'make_vector2',
+          data: { tmp: 1 },
+          inputs: { x: { value: 2 }, y: { value: 3 }, z: { value: 4 } },
+        } as any)
+      ).toEqual({
+        ...base,
+        data: {},
+        inputs: { x: { value: 2 }, y: { value: 3 } },
       })
     })
   })

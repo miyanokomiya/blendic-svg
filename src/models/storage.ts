@@ -33,6 +33,7 @@ import {
 } from '/@/models'
 import { GraphNodeBase } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
+import { extractMap } from '/@/utils/commons'
 import { getConstraint } from '/@/utils/constraints'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { migrateConstraint, migrateKeyframe } from '/@/utils/migrations'
@@ -109,13 +110,13 @@ export function initializeGraph(graph: AnimationGraph): AnimationGraph {
 }
 
 export function initializeGraphNode(node: GraphNodeBase): GraphNodeBase {
-  const module = getGraphNodeModule(node.type)
-  const model = module.struct.create()
+  const struct = getGraphNodeModule<any>(node.type).struct
+  const model = struct.create()
   return {
     ...model,
     ...node,
-    inputs: { ...model.inputs, ...node.inputs },
-    data: { ...model.data, ...node.data },
+    inputs: extractMap({ ...model.inputs, ...node.inputs }, struct.inputs),
+    data: extractMap({ ...model.data, ...node.data }, struct.data),
   } as GraphNodeBase
 }
 

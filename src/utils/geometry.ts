@@ -355,3 +355,34 @@ export function getCircleTransformFn(
     })
   }
 }
+
+export function getGridTransformFn(
+  width: number,
+  height: number,
+  columnCount: number,
+  rowCount: number,
+  rotate: number,
+  centered: boolean
+): (index: number) => Transform {
+  const diff = centered
+    ? {
+        x: ((columnCount - 1) * width) / 2,
+        y: ((rowCount - 1) * height) / 2,
+      }
+    : undefined
+  const rows = [...Array(rowCount)].map((_, i) => i * height)
+  const columns = [...Array(columnCount)].map((_, i) => i * width)
+  const rad = (rotate * Math.PI) / 180
+
+  const list = rows.flatMap((y) =>
+    columns.map((x) =>
+      getTransform({
+        translate: rotateVector2(diff ? sub({ x, y }, diff) : { x, y }, rad),
+      })
+    )
+  )
+
+  return (index: number) => {
+    return list[index]
+  }
+}

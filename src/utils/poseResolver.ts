@@ -332,8 +332,11 @@ const NUMBER_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
   height: true,
   cx: true,
   cy: true,
+  r: true,
   rx: true,
   ry: true,
+  fx: true,
+  fy: true,
   'font-size': true,
   'stroke-dashoffset': true,
 
@@ -392,7 +395,7 @@ function getGraphResolvedAttributes(
     const attrs = graphObject.attributes
 
     Object.entries(attrs).forEach(([key, val]) => {
-      if (!val) return
+      if (val === undefined) return
       if (NUMBER_ATTRIBUTES_KEYS[key]) {
         ret[key] = val.toString()
       } else if (STRING_ATTRIBUTES_KEYS[key]) {

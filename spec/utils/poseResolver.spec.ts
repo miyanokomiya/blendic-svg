@@ -443,6 +443,20 @@ describe('utils/poseResolver.ts', () => {
         'stop-opacity': '0.3',
       })
     })
+    // a default value of scaled number (0-1) attribute may be 0.5 and
+    // => have to override it if graph objects have 0 value for it
+    it('should allways render number value even if it equals 0', () => {
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({
+            elementId: 'a',
+            attributes: { r: 0, x: 0 },
+          }),
+        },
+        getElementNode({ id: 'a' })
+      )
+      expect(ret.attributes).toEqual({ r: '0', x: '0' })
+    })
     it('should resolve recursively', () => {
       const ret = getGraphResolvedElementTree(
         {

@@ -140,8 +140,11 @@ export interface GraphObjectAttributes {
   viewBox?: IRectangle
   cx?: number
   cy?: number
+  r?: number
   rx?: number
   ry?: number
+  fx?: number
+  fy?: number
   d?: string[]
   'font-size'?: number
   'text-anchor'?: string

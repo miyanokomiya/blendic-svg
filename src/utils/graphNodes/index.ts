@@ -84,6 +84,7 @@ import * as create_object_ellipse from './nodes/createObjectEllipse'
 import * as create_object_text from './nodes/createObjectText'
 import * as create_object_path from './nodes/createObjectPath'
 import * as create_linear_gradient from './nodes/createLinearGradient'
+import * as create_radial_gradient from './nodes/createRadialGradient'
 import * as make_stop from './nodes/makeStop'
 
 import * as make_path_m from './nodes/makePathM'
@@ -156,6 +157,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   create_object_text,
   create_object_path,
   create_linear_gradient,
+  create_radial_gradient,
   make_stop,
 
   make_path_m,
@@ -284,6 +286,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Text', type: 'create_object_text' },
       { label: 'Path', type: 'create_object_path' },
       { label: 'Linear Gradient', type: 'create_linear_gradient' },
+      { label: 'Radial Gradient', type: 'create_radial_gradient' },
       { label: 'Stop', type: 'make_stop' },
     ],
   },
@@ -414,6 +417,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
   STOP: [
     { label: 'Gradient Stop', type: 'make_stop', key: 'stop' },
     { label: 'Linear Gradient', type: 'create_linear_gradient', key: 'stop' },
+    { label: 'Radial Gradient', type: 'create_radial_gradient', key: 'stop' },
   ],
   GENERICS: [
     ADD_GENERICS_SUGGESTION,

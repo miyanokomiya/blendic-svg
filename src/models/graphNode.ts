@@ -163,6 +163,7 @@ export interface GraphNodes {
   make_path_z: GraphNodeMakePathZ
 
   create_linear_gradient: GraphNodeCreateLinearGradient
+  create_radial_gradient: GraphNodeCreateRadialGradient
   make_stop: GraphNodeMakeStop
   set_gradient: GraphNodeSetGradient
 
@@ -517,6 +518,19 @@ export interface GraphNodeCreateLinearGradient extends GraphNodeBase {
     stop: GraphNodeInput<GradientStop[]>
     from: GraphNodeInput<IVec2>
     to: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeCreateRadialGradient extends GraphNodeBase {
+  type: 'create_radial_gradient'
+  inputs: {
+    disabled: GraphNodeInput<boolean>
+    parent: GraphNodeInput<string>
+    relative: GraphNodeInput<boolean>
+    stop: GraphNodeInput<GradientStop[]>
+    center: GraphNodeInput<IVec2>
+    radius: GraphNodeInput<number>
+    focus: GraphNodeInput<IVec2>
   }
 }
 

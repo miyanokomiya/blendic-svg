@@ -49,6 +49,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <InlineField label="x" label-width="20px">
           <SliderInput
             :model-value="modelValue.x"
+            :step="valueScale"
             @update:modelValue="
               (val, seriesKey) => update({ x: val, y: modelValue.y }, seriesKey)
             "
@@ -57,6 +58,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <InlineField label="y" label-width="20px">
           <SliderInput
             :model-value="modelValue.y"
+            :step="valueScale"
             @update:modelValue="
               (val, seriesKey) => update({ x: modelValue.x, y: val }, seriesKey)
             "

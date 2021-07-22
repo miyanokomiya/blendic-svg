@@ -269,18 +269,18 @@ export function createGraphNodeContext(
       if (!graphElementMap[objectId]) return
       return graphElementMap[objectId].transform
     },
-    setFill(objectId, transform) {
+    setFill(objectId, fill: Transform | string) {
       if (!graphElementMap[objectId]) return
-      graphElementMap[objectId].fill = transform
+      graphElementMap[objectId].fill = fill
       execRecursively(objectId, (elm) => {
-        elm.fill = transform
+        elm.fill = fill
       })
     },
-    setStroke(objectId, transform) {
+    setStroke(objectId, stroke: Transform | string) {
       if (!graphElementMap[objectId]) return
-      graphElementMap[objectId].stroke = transform
+      graphElementMap[objectId].stroke = stroke
       execRecursively(objectId, (elm) => {
-        elm.stroke = transform
+        elm.stroke = stroke
       })
     },
     setAttributes(objectId, attributes, replace = false) {

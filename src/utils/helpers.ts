@@ -363,6 +363,7 @@ export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
     COLOR: '#32cd32',
     TEXT: '#808000',
     D: '#00bfff',
+    STOP: '#8b008b',
     GENERICS: '#b0c4de',
   } as const
 

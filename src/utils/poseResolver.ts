@@ -336,12 +336,20 @@ const NUMBER_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
   ry: true,
   'font-size': true,
   'stroke-dashoffset': true,
+
+  x1: true,
+  y1: true,
+  x2: true,
+  y2: true,
+  offset: true,
 }
 
 const STRING_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
+  id: true,
   'text-anchor': true,
   'dominant-baseline': true,
   'stroke-dasharray': true,
+  gradientUnits: true,
 }
 
 function getGraphResolvedAttributes(
@@ -357,15 +365,23 @@ function getGraphResolvedAttributes(
   }
 
   if (graphObject.fill) {
-    const attrs = posedColorAttributes(graphObject.fill)
-    ret.fill = attrs.color
-    ret['fill-opacity'] = attrs.opacity
+    if (typeof graphObject.fill === 'string') {
+      ret.fill = `url(#${graphObject.fill})`
+    } else {
+      const attrs = posedColorAttributes(graphObject.fill)
+      ret.fill = attrs.color
+      ret['fill-opacity'] = attrs.opacity
+    }
   }
 
   if (graphObject.stroke) {
-    const attrs = posedColorAttributes(graphObject.stroke)
-    ret.stroke = attrs.color
-    ret['stroke-opacity'] = attrs.opacity
+    if (typeof graphObject.stroke === 'string') {
+      ret.stroke = `url(#${graphObject.stroke})`
+    } else {
+      const attrs = posedColorAttributes(graphObject.stroke)
+      ret.stroke = attrs.color
+      ret['stroke-opacity'] = attrs.opacity
+    }
   }
 
   if (graphObject['stroke-width']) {
@@ -391,6 +407,12 @@ function getGraphResolvedAttributes(
       // top command must be L, l, M or m
       const top = graphObject.attributes.d[0]?.trim()?.toLowerCase()[0]
       if (top === 'm' || top === 'l') ret.d = graphObject.attributes.d.join(' ')
+    }
+
+    if (graphObject.attributes['stop-color']) {
+      const attrs = posedColorAttributes(graphObject.attributes['stop-color'])
+      ret['stop-color'] = attrs.color
+      ret['stop-opacity'] = attrs.opacity
     }
   }
 

@@ -117,8 +117,8 @@ export interface GraphObject {
   elementId?: string
 
   transform?: Transform
-  fill?: Transform
-  stroke?: Transform
+  fill?: Transform | string
+  stroke?: Transform | string
   'stroke-width'?: number
   attributes?: GraphObjectAttributes
 
@@ -148,6 +148,14 @@ export interface GraphObjectAttributes {
   'dominant-baseline'?: string
   'stroke-dasharray'?: string
   'stroke-dashoffset'?: number
+
+  x1?: number
+  y1?: number
+  x2?: number
+  y2?: number
+  offset?: number
+  'stop-color'?: Transform
+  gradientUnits?: 'objectBoundingBox' | 'userSpaceOnUse'
 }
 
 export function getGraphObject(

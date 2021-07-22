@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { getTransform, GraphObjectAttributes, Transform } from '/@/models'
 import {
+  GradientStop,
   GraphNodeBase,
   GraphNodeCreateObjectInputsBase,
   GRAPH_VALUE_STRUCT,
@@ -67,8 +68,8 @@ export interface NodeContext<T> {
     inherit?: boolean
   ) => void
   getTransform: (objectId: string) => Transform | undefined
-  setFill: (objectId: string, transform: Transform) => void
-  setStroke: (objectId: string, transform: Transform) => void
+  setFill: (objectId: string, transform: Transform | string) => void
+  setStroke: (objectId: string, transform: Transform | string) => void
   setAttributes: (
     objectId: string,
     attributes: GraphObjectAttributes,
@@ -218,4 +219,27 @@ export function cloneListFn(
         originTransform ? multiPoseTransform(originTransform, t) : t
       )
     })
+}
+
+export function getStopObjects(
+  gradientId: string,
+  stops: GradientStop[]
+): {
+  id: string
+  parent: string
+  attributes: {
+    offset: number
+    'stop-color': Transform
+  }
+}[] {
+  let currentOffset = 0
+  return stops.map((s, i) => {
+    const offset = s.relative ? currentOffset + s.offset : s.offset
+    currentOffset += s.offset
+    return {
+      id: `${gradientId}_stop_${i}`,
+      parent: gradientId,
+      attributes: { offset, 'stop-color': s.color },
+    }
+  })
 }

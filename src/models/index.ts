@@ -159,6 +159,7 @@ export interface GraphObjectAttributes {
   offset?: number
   'stop-color'?: Transform
   gradientUnits?: 'objectBoundingBox' | 'userSpaceOnUse'
+  spreadMethod?: 'pad' | 'reflect' | 'repeat'
 }
 
 export function getGraphObject(

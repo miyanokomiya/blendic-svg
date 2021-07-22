@@ -353,6 +353,7 @@ const STRING_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
   'dominant-baseline': true,
   'stroke-dasharray': true,
   gradientUnits: true,
+  spreadMethod: true,
 }
 
 function getGraphResolvedAttributes(

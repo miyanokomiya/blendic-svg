@@ -30,6 +30,7 @@ describe('src/utils/graphNodes/nodes/createLinearGradient.ts', () => {
             disabled: false,
             parent: 'p',
             relative: true,
+            spread: 1,
             stop: [
               {
                 offset: 1,
@@ -54,6 +55,7 @@ describe('src/utils/graphNodes/nodes/createLinearGradient.ts', () => {
           x2: 0.3,
           y2: 0.4,
           gradientUnits: 'objectBoundingBox',
+          spreadMethod: 'reflect',
         },
       })
       expect(createObject).toHaveBeenNthCalledWith(2, 'stop', {
@@ -73,6 +75,7 @@ describe('src/utils/graphNodes/nodes/createLinearGradient.ts', () => {
             disabled: true,
             parent: 'p',
             relative: true,
+            spread: 1,
             stop: [
               {
                 offset: 0,

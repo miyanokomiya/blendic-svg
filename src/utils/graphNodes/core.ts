@@ -37,7 +37,10 @@ export interface NodeModule<T extends GraphNodeBase> {
 export interface NodeStruct<T extends GraphNodeBase> {
   create: (arg?: Partial<T>) => T
   data: {
-    [key in keyof T['data']]: { type: ValueType }
+    [key in keyof T['data']]: {
+      type: ValueType
+      default: Required<T['data'][key]>
+    }
   }
   inputs: {
     [key in keyof T['inputs']]: { type: ValueType } & {

@@ -38,6 +38,7 @@ export const struct: NodeStruct<GraphNodeGetObject> = {
   data: {
     object: {
       type: UNIT_VALUE_TYPES.OBJECT,
+      default: '',
     },
   },
   inputs: {},

@@ -22,6 +22,7 @@ import {
   GRAPH_VALUE_STRUCT,
   GRAPH_VALUE_TYPE,
 } from '/@/models/graphNode'
+import { getGraphValueEnumKey } from '/@/models/graphNodeEnums'
 import {
   createBaseNode,
   getStopObjects,
@@ -37,6 +38,7 @@ export const struct: NodeStruct<GraphNodeCreateLinearGradient> = {
           disabled: { value: false },
           parent: { value: '' },
           relative: { value: true },
+          spread: { value: 0 },
           stop: { value: [] },
           from: { value: { x: 0, y: 0 } },
           to: { value: { x: 1, y: 1 } },
@@ -59,6 +61,14 @@ export const struct: NodeStruct<GraphNodeCreateLinearGradient> = {
     relative: {
       type: UNIT_VALUE_TYPES.BOOLEAN,
       default: true,
+    },
+    spread: {
+      type: {
+        type: GRAPH_VALUE_TYPE.SCALER,
+        struct: GRAPH_VALUE_STRUCT.UNIT,
+        enumKey: 'SPREAD_METHOD',
+      },
+      default: 0,
     },
     stop: {
       type: UNIT_VALUE_TYPES.STOP,
@@ -97,6 +107,7 @@ export const struct: NodeStruct<GraphNodeCreateLinearGradient> = {
         x2: inputs.to.x,
         y2: inputs.to.y,
         gradientUnits: inputs.relative ? 'objectBoundingBox' : 'userSpaceOnUse',
+        spreadMethod: getGraphValueEnumKey('SPREAD_METHOD', inputs.spread),
       },
     })
 

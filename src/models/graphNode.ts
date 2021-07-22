@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { IVec2 } from 'okageo'
 import { Transform } from '/@/models'
+import { GraphEnumMapKey } from '/@/models/graphNodeEnums'
 
 export interface GraphEdge {
   from: GraphEdgeConnection
@@ -53,6 +54,7 @@ export const GRAPH_VALUE_TYPE = {
   TEXT: 'TEXT',
   D: 'D',
   STOP: 'STOP',
+
   GENERICS: 'GENERICS',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
@@ -80,8 +82,9 @@ interface ValueTypeBase<T extends GRAPH_VALUE_TYPE_KEY> {
   struct: GRAPH_VALUE_STRUCT_KEY
 }
 
-interface ValueTypeScaler extends ValueTypeBase<'SCALER'> {
+export interface ValueTypeScaler extends ValueTypeBase<'SCALER'> {
   scale: number
+  enumKey?: GraphEnumMapKey
 }
 
 interface ValueTypeVector2 extends ValueTypeBase<'VECTOR2'> {
@@ -515,6 +518,7 @@ export interface GraphNodeCreateLinearGradient extends GraphNodeBase {
     disabled: GraphNodeInput<boolean>
     parent: GraphNodeInput<string>
     relative: GraphNodeInput<boolean>
+    spread: GraphNodeInput<number>
     stop: GraphNodeInput<GradientStop[]>
     from: GraphNodeInput<IVec2>
     to: GraphNodeInput<IVec2>
@@ -527,6 +531,7 @@ export interface GraphNodeCreateRadialGradient extends GraphNodeBase {
     disabled: GraphNodeInput<boolean>
     parent: GraphNodeInput<string>
     relative: GraphNodeInput<boolean>
+    spread: GraphNodeInput<number>
     stop: GraphNodeInput<GradientStop[]>
     center: GraphNodeInput<IVec2>
     radius: GraphNodeInput<number>

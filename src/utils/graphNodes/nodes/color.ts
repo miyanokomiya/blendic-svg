@@ -39,6 +39,7 @@ export const struct: NodeStruct<GraphNodeColor> = {
   data: {
     color: {
       type: UNIT_VALUE_TYPES.COLOR,
+      default: getTransform(),
     },
   },
   inputs: {},

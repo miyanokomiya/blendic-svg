@@ -37,20 +37,36 @@ describe('src/components/atoms/GraphNodeDataField.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('SCALER', () => {
-      const wrapper = mount(Target, {
-        props: {
-          modelValue: 123,
-          label: 'value',
-          type: {
-            type: GRAPH_VALUE_TYPE.SCALER,
-            struct: GRAPH_VALUE_STRUCT.UNIT,
-            scale: 0.2,
+    describe('SCALER', () => {
+      it('enum', () => {
+        const wrapper = mount(Target, {
+          props: {
+            modelValue: 1,
+            label: 'value',
+            type: {
+              type: GRAPH_VALUE_TYPE.SCALER,
+              struct: GRAPH_VALUE_STRUCT.UNIT,
+              enumKey: 'SPREAD_METHOD',
+            },
           },
-        },
+        })
+        expect(wrapper.element).toMatchSnapshot()
       })
-      expect(wrapper.element).toMatchSnapshot()
-      expect(wrapper.vm.valueScale).toBe(0.2)
+      it('number', () => {
+        const wrapper = mount(Target, {
+          props: {
+            modelValue: 123,
+            label: 'value',
+            type: {
+              type: GRAPH_VALUE_TYPE.SCALER,
+              struct: GRAPH_VALUE_STRUCT.UNIT,
+              scale: 0.2,
+            },
+          },
+        })
+        expect(wrapper.element).toMatchSnapshot()
+        expect(wrapper.vm.valueScale).toBe(0.2)
+      })
     })
     it('OBJECT', () => {
       const wrapper = mount(Target, {

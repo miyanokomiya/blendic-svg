@@ -26,7 +26,9 @@ import {
   GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
   ValueType,
+  ValueTypeScaler,
 } from '/@/models/graphNode'
+import { getGraphValueEnumKey } from '/@/models/graphNodeEnums'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { BoneConstraint } from '/@/utils/constraints'
@@ -368,13 +370,16 @@ export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
   } as const
 
 export function getInputValuePreviewText(
-  type: GRAPH_VALUE_TYPE_KEY,
+  valueType: ValueType,
   value: any
 ): string {
-  switch (type) {
+  switch (valueType.type) {
     case GRAPH_VALUE_TYPE.OBJECT:
-    case GRAPH_VALUE_TYPE.SCALER:
       return trancate(value, 6)
+    case GRAPH_VALUE_TYPE.SCALER: {
+      const enumKey = (valueType as ValueTypeScaler).enumKey
+      return enumKey ? getGraphValueEnumKey(enumKey, value) : trancate(value, 6)
+    }
     case GRAPH_VALUE_TYPE.VECTOR2:
       return `${trancate(value.x, 4)}, ${trancate(value.y, 4)}`
     case GRAPH_VALUE_TYPE.BOOLEAN:

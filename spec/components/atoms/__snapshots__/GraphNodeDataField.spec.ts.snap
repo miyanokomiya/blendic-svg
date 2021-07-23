@@ -65,11 +65,52 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot OBJECT 1`] = `
 </div>
 `;
 
-exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER 1`] = `
+exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER enum 1`] = `
 <div>
   <h5>
     value
   </h5>
+  
+  
+  <span
+    class="select-root"
+  >
+    <select>
+      <option
+        value=""
+      >
+        -- None --
+      </option>
+      
+      <option
+        value="0"
+      >
+        0: pad
+      </option>
+      <option
+        value="1"
+      >
+        1: reflect
+      </option>
+      <option
+        value="2"
+      >
+        2: repeat
+      </option>
+      
+    </select>
+  </span>
+  
+  
+</div>
+`;
+
+exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER number 1`] = `
+<div>
+  <h5>
+    value
+  </h5>
+  
   
   <div
     class="slider-wrapper"
@@ -85,6 +126,7 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER 1`] = `
       class="slider-forward"
     />
   </div>
+  
   
 </div>
 `;

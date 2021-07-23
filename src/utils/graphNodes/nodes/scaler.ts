@@ -38,6 +38,7 @@ export const struct: NodeStruct<GraphNodeScaler> = {
   data: {
     value: {
       type: UNIT_VALUE_TYPES.SCALER,
+      default: 0,
     },
   },
   inputs: {},

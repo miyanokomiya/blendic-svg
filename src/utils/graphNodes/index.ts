@@ -64,21 +64,29 @@ import * as clamp from './nodes/clamp'
 import * as round_trip from './nodes/roundTrip'
 
 import * as get_object from './nodes/getObject'
+
 import * as set_transform from './nodes/setTransform'
 import * as set_fill from './nodes/setFill'
 import * as set_stroke from './nodes/setStroke'
 import * as set_stroke_length from './nodes/setStrokeLength'
-import * as hide_object from './nodes/hideObject'
+import * as set_gradient from './nodes/setGradient'
 import * as set_viewbox from './nodes/setViewbox'
+import * as hide_object from './nodes/hideObject'
+
 import * as clone_object from './nodes/cloneObject'
 import * as circle_clone_object from './nodes/circleCloneObject'
 import * as grid_clone_object from './nodes/gridCloneObject'
 import * as tornado_clone_object from './nodes/tornadoCloneObject'
+
 import * as create_object_group from './nodes/createObjectGroup'
 import * as create_object_rect from './nodes/createObjectRect'
 import * as create_object_ellipse from './nodes/createObjectEllipse'
 import * as create_object_text from './nodes/createObjectText'
 import * as create_object_path from './nodes/createObjectPath'
+import * as create_linear_gradient from './nodes/createLinearGradient'
+import * as create_radial_gradient from './nodes/createRadialGradient'
+import * as make_stop from './nodes/makeStop'
+
 import * as make_path_m from './nodes/makePathM'
 import * as make_path_l from './nodes/makePathL'
 import * as make_path_h from './nodes/makePathH'
@@ -134,8 +142,10 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   set_fill,
   set_stroke,
   set_stroke_length,
-  hide_object,
+  set_gradient,
   set_viewbox,
+  hide_object,
+
   clone_object,
   circle_clone_object,
   grid_clone_object,
@@ -146,6 +156,9 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   create_object_ellipse,
   create_object_text,
   create_object_path,
+  create_linear_gradient,
+  create_radial_gradient,
+  make_stop,
 
   make_path_m,
   make_path_l,
@@ -249,12 +262,15 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
     label: 'Object',
     children: [
       { label: 'Get Object', type: 'get_object' },
+
       { label: 'Set Transform', type: 'set_transform' },
       { label: 'Set Fill', type: 'set_fill' },
       { label: 'Set Stroke', type: 'set_stroke' },
       { label: 'Set Stroke Length', type: 'set_stroke_length' },
-      { label: 'Hide Object', type: 'hide_object' },
+      { label: 'Set Gradient', type: 'set_gradient' },
       { label: 'Set Viewbox', type: 'set_viewbox' },
+      { label: 'Hide Object', type: 'hide_object' },
+
       { label: 'Clone Object', type: 'clone_object' },
       { label: 'Circle Clone Object', type: 'circle_clone_object' },
       { label: 'Grid Clone Object', type: 'grid_clone_object' },
@@ -269,6 +285,9 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Ellipse', type: 'create_object_ellipse' },
       { label: 'Text', type: 'create_object_text' },
       { label: 'Path', type: 'create_object_path' },
+      { label: 'Linear Gradient', type: 'create_linear_gradient' },
+      { label: 'Radial Gradient', type: 'create_radial_gradient' },
+      { label: 'Stop', type: 'make_stop' },
     ],
   },
   MAKE_PATH_SRC,
@@ -352,8 +371,10 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Set Fill', type: 'set_fill', key: 'object' },
     { label: 'Set Stroke', type: 'set_stroke', key: 'object' },
     { label: 'Set Stroke Length', type: 'set_stroke_length', key: 'object' },
-    { label: 'Hide Object', type: 'hide_object', key: 'object' },
+    { label: 'Set Gradient', type: 'set_gradient', key: 'object' },
     { label: 'Set Viewbox', type: 'set_viewbox', key: 'object' },
+    { label: 'Hide Object', type: 'hide_object', key: 'object' },
+
     { label: 'Clone Object', type: 'clone_object', key: 'object' },
     {
       label: 'Circle Clone Object',
@@ -392,6 +413,11 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Create Path', type: 'create_object_path', key: 'd' },
     ADD_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
+  ],
+  STOP: [
+    { label: 'Gradient Stop', type: 'make_stop', key: 'stop' },
+    { label: 'Linear Gradient', type: 'create_linear_gradient', key: 'stop' },
+    { label: 'Radial Gradient', type: 'create_radial_gradient', key: 'stop' },
   ],
   GENERICS: [
     ADD_GENERICS_SUGGESTION,

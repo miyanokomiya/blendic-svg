@@ -366,6 +366,21 @@ describe('utils/poseResolver.ts', () => {
         'stroke-width': '3',
       })
     })
+    it('should resolve fill and stroke with gradient', () => {
+      const fill = 'fill_g'
+      const stroke = 'stroke_g'
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({ elementId: 'a', fill, stroke }),
+        },
+        getElementNode({ id: 'a', attributes: { fill: 'red', id: 'a' } })
+      )
+      expect(ret.attributes).toEqual({
+        id: 'a',
+        fill: 'url(#fill_g)',
+        stroke: 'url(#stroke_g)',
+      })
+    })
     it('should resolve viewBox of graph objects', () => {
       const viewBox = { x: 1, y: 2, width: 3, height: 4 }
       const ret = getGraphResolvedElementTree(
@@ -407,6 +422,40 @@ describe('utils/poseResolver.ts', () => {
           getElementNode({ id: 'a', attributes: {} })
         ).attributes
       ).toEqual({})
+    })
+    it('should resolve stop-color and stop-opacity of graph objects', () => {
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({
+            elementId: 'a',
+            attributes: {
+              'stop-color': getTransform({
+                translate: { x: 100, y: 100 },
+                scale: { x: 0.3, y: 1 },
+              }),
+            },
+          }),
+        },
+        getElementNode({ id: 'a' })
+      )
+      expect(ret.attributes).toEqual({
+        'stop-color': 'rgb(255,0,0)',
+        'stop-opacity': '0.3',
+      })
+    })
+    // a default value of scaled number (0-1) attribute may be 0.5 and
+    // => have to override it if graph objects have 0 value for it
+    it('should allways render number value even if it equals 0', () => {
+      const ret = getGraphResolvedElementTree(
+        {
+          a: getGraphObject({
+            elementId: 'a',
+            attributes: { r: 0, x: 0 },
+          }),
+        },
+        getElementNode({ id: 'a' })
+      )
+      expect(ret.attributes).toEqual({ r: '0', x: '0' })
     })
     it('should resolve recursively', () => {
       const ret = getGraphResolvedElementTree(

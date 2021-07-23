@@ -37,18 +37,34 @@ describe('src/components/elements/GraphNodeInputLabel.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('SCALER', () => {
-      const wrapper = mount(Target, {
-        props: {
-          input: { value: 1234567 },
-          inputKey: 'value',
-          type: {
-            type: GRAPH_VALUE_TYPE.SCALER,
-            struct: GRAPH_VALUE_STRUCT.UNIT,
+    describe('SCALER', () => {
+      it('enum', () => {
+        const wrapper = mount(Target, {
+          props: {
+            input: { value: 1 },
+            inputKey: 'value',
+            type: {
+              type: GRAPH_VALUE_TYPE.SCALER,
+              struct: GRAPH_VALUE_STRUCT.UNIT,
+              enumKey: 'SPREAD_METHOD',
+            },
           },
-        },
+        })
+        expect(wrapper.element).toMatchSnapshot()
       })
-      expect(wrapper.element).toMatchSnapshot()
+      it('number', () => {
+        const wrapper = mount(Target, {
+          props: {
+            input: { value: 1234567 },
+            inputKey: 'value',
+            type: {
+              type: GRAPH_VALUE_TYPE.SCALER,
+              struct: GRAPH_VALUE_STRUCT.UNIT,
+            },
+          },
+        })
+        expect(wrapper.element).toMatchSnapshot()
+      })
     })
     it('VECTOR2', () => {
       const wrapper = mount(Target, {

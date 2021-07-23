@@ -117,8 +117,8 @@ export interface GraphObject {
   elementId?: string
 
   transform?: Transform
-  fill?: Transform
-  stroke?: Transform
+  fill?: Transform | string
+  stroke?: Transform | string
   'stroke-width'?: number
   attributes?: GraphObjectAttributes
 
@@ -140,14 +140,26 @@ export interface GraphObjectAttributes {
   viewBox?: IRectangle
   cx?: number
   cy?: number
+  r?: number
   rx?: number
   ry?: number
+  fx?: number
+  fy?: number
   d?: string[]
   'font-size'?: number
   'text-anchor'?: string
   'dominant-baseline'?: string
   'stroke-dasharray'?: string
   'stroke-dashoffset'?: number
+
+  x1?: number
+  y1?: number
+  x2?: number
+  y2?: number
+  offset?: number
+  'stop-color'?: Transform
+  gradientUnits?: 'objectBoundingBox' | 'userSpaceOnUse'
+  spreadMethod?: 'pad' | 'reflect' | 'repeat'
 }
 
 export function getGraphObject(

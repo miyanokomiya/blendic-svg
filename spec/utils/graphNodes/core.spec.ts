@@ -22,6 +22,7 @@ import {
   cloneListFn,
   EdgeChainGroupItem,
   getGenericsChainAtFn,
+  getStopObjects,
   isSameValueType,
   pickNotGenericsType,
   UNIT_VALUE_TYPES,
@@ -147,6 +148,55 @@ describe('src/utils/graphNodes/index.ts', () => {
         'group_0',
         getTransform({ rotate: 1 })
       )
+    })
+  })
+
+  describe('getStopObjects', () => {
+    it('should return stop object list', () => {
+      expect(
+        getStopObjects('a', [
+          {
+            offset: 1,
+            color: getTransform({ rotate: 10 }),
+            relative: true,
+          },
+          {
+            offset: 2,
+            color: getTransform({ rotate: 20 }),
+            relative: true,
+          },
+          {
+            offset: 5,
+            color: getTransform({ rotate: 30 }),
+            relative: false,
+          },
+        ])
+      ).toEqual([
+        {
+          id: 'a_stop_0',
+          parent: 'a',
+          attributes: {
+            offset: 1,
+            'stop-color': getTransform({ rotate: 10 }),
+          },
+        },
+        {
+          id: 'a_stop_1',
+          parent: 'a',
+          attributes: {
+            offset: 3,
+            'stop-color': getTransform({ rotate: 20 }),
+          },
+        },
+        {
+          id: 'a_stop_2',
+          parent: 'a',
+          attributes: {
+            offset: 5,
+            'stop-color': getTransform({ rotate: 30 }),
+          },
+        },
+      ])
     })
   })
 })

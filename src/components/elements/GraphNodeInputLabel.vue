@@ -80,7 +80,7 @@ export default defineComponent({
     const valueLabel = computed<string>(() => {
       if (props.input.from) return ''
 
-      return getInputValuePreviewText(props.type.type, props.input.value)
+      return getInputValuePreviewText(props.type, props.input.value)
     })
 
     const isColor = computed(() => {

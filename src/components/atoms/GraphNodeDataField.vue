@@ -22,12 +22,20 @@ Copyright (C) 2021, Tomoya Komiyama.
     <h5>{{ label }}</h5>
     <TextInput v-if="disabled" :model-value="modelValue" disabled />
     <template v-else>
-      <SliderInput
-        v-if="valueTypeKey === 'SCALER'"
-        :step="valueScale"
-        :model-value="modelValue"
-        @update:modelValue="update"
-      />
+      <template v-if="valueTypeKey === 'SCALER'">
+        <SelectField
+          v-if="valueEnumKey"
+          :model-value="modelValue"
+          :options="valueEnumOptions"
+          @update:modelValue="update"
+        />
+        <SliderInput
+          v-else
+          :step="valueScale"
+          :model-value="modelValue"
+          @update:modelValue="update"
+        />
+      </template>
       <SelectField
         v-else-if="valueTypeKey === 'OBJECT'"
         :model-value="modelValue"
@@ -49,6 +57,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <InlineField label="x" label-width="20px">
           <SliderInput
             :model-value="modelValue.x"
+            :step="valueScale"
             @update:modelValue="
               (val, seriesKey) => update({ x: val, y: modelValue.y }, seriesKey)
             "
@@ -57,6 +66,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <InlineField label="y" label-width="20px">
           <SliderInput
             :model-value="modelValue.y"
+            :step="valueScale"
             @update:modelValue="
               (val, seriesKey) => update({ x: modelValue.x, y: val }, seriesKey)
             "
@@ -96,6 +106,7 @@ import ColorPicker from '/@/components/molecules/ColorPicker.vue'
 import ColorRect from '/@/components/atoms/ColorRect.vue'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { posedHsva } from '/@/utils/attributesResolver'
+import { GraphEnumMap, GraphEnumMapKey } from '/@/models/graphNodeEnums'
 
 const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
   [GRAPH_VALUE_TYPE.BOOLEAN]: true,
@@ -146,13 +157,24 @@ export default defineComponent({
 
     const valueTypeKey = computed(() => props.type.type)
     const valueScale = computed(() => (props.type as any).scale ?? 1)
+    const valueEnumKey = computed<GraphEnumMapKey>(
+      () => (props.type as any).enumKey
+    )
+    const valueEnumOptions = computed(() => {
+      return (GraphEnumMap[valueEnumKey.value] ?? []).map((item) => ({
+        label: `${item.value}: ${item.key}`,
+        value: item.value,
+      }))
+    })
 
     return {
       editableTypes,
       update,
       objectOptions,
+      valueEnumOptions,
       valueTypeKey,
       valueScale,
+      valueEnumKey,
 
       showColorPicker,
       toggleShowColorPicker,

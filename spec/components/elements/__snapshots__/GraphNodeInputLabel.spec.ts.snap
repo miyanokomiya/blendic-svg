@@ -45,7 +45,20 @@ exports[`src/components/elements/GraphNodeInputLabel.vue snapshot D 1`] = `
 </g>
 `;
 
-exports[`src/components/elements/GraphNodeInputLabel.vue snapshot SCALER 1`] = `
+exports[`src/components/elements/GraphNodeInputLabel.vue snapshot SCALER enum 1`] = `
+<g>
+  <text
+    dominant-baseline="middle"
+    fill="#000"
+    font-size="14"
+  >
+    value (reflect)
+  </text>
+  <!--v-if-->
+</g>
+`;
+
+exports[`src/components/elements/GraphNodeInputLabel.vue snapshot SCALER number 1`] = `
 <g>
   <text
     dominant-baseline="middle"

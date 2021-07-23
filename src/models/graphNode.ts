@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { IVec2 } from 'okageo'
 import { Transform } from '/@/models'
+import { GraphEnumMapKey } from '/@/models/graphNodeEnums'
 
 export interface GraphEdge {
   from: GraphEdgeConnection
@@ -52,11 +53,22 @@ export const GRAPH_VALUE_TYPE = {
   COLOR: 'COLOR',
   TEXT: 'TEXT',
   D: 'D',
+  STOP: 'STOP',
+
   GENERICS: 'GENERICS',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 
-export type ValueType = ValueTypeBase<GRAPH_VALUE_TYPE_KEY> | ValueTypeScaler
+export type GradientStop = {
+  offset: number
+  color: Transform
+  relative: boolean
+}
+
+export type ValueType =
+  | ValueTypeBase<GRAPH_VALUE_TYPE_KEY>
+  | ValueTypeScaler
+  | ValueTypeVector2
 
 export const GRAPH_VALUE_STRUCT = {
   UNIT: 'UNIT',
@@ -70,7 +82,12 @@ interface ValueTypeBase<T extends GRAPH_VALUE_TYPE_KEY> {
   struct: GRAPH_VALUE_STRUCT_KEY
 }
 
-interface ValueTypeScaler extends ValueTypeBase<'SCALER'> {
+export interface ValueTypeScaler extends ValueTypeBase<'SCALER'> {
+  scale: number
+  enumKey?: GraphEnumMapKey
+}
+
+interface ValueTypeVector2 extends ValueTypeBase<'VECTOR2'> {
   scale: number
 }
 
@@ -147,6 +164,11 @@ export interface GraphNodes {
   make_path_s: GraphNodeMakePathS
   make_path_a: GraphNodeMakePathA
   make_path_z: GraphNodeMakePathZ
+
+  create_linear_gradient: GraphNodeCreateLinearGradient
+  create_radial_gradient: GraphNodeCreateRadialGradient
+  make_stop: GraphNodeMakeStop
+  set_gradient: GraphNodeSetGradient
 
   add_generics: GraphNodeAddGenerics
   sub_generics: GraphNodeSubGenerics
@@ -487,6 +509,52 @@ export interface GraphNodeMakePathA extends GraphNodeBase {
     'large-arc': GraphNodeInput<boolean>
     sweep: GraphNodeInput<boolean>
     p: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeCreateLinearGradient extends GraphNodeBase {
+  type: 'create_linear_gradient'
+  inputs: {
+    disabled: GraphNodeInput<boolean>
+    parent: GraphNodeInput<string>
+    relative: GraphNodeInput<boolean>
+    spread: GraphNodeInput<number>
+    stop: GraphNodeInput<GradientStop[]>
+    from: GraphNodeInput<IVec2>
+    to: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeCreateRadialGradient extends GraphNodeBase {
+  type: 'create_radial_gradient'
+  inputs: {
+    disabled: GraphNodeInput<boolean>
+    parent: GraphNodeInput<string>
+    relative: GraphNodeInput<boolean>
+    spread: GraphNodeInput<number>
+    stop: GraphNodeInput<GradientStop[]>
+    center: GraphNodeInput<IVec2>
+    radius: GraphNodeInput<number>
+    focus: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeMakeStop extends GraphNodeBase {
+  type: 'make_stop'
+  inputs: {
+    stop: GraphNodeInput<GradientStop[]>
+    relative: GraphNodeInput<boolean>
+    offset: GraphNodeInput<number>
+    color: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeSetGradient extends GraphNodeBase {
+  type: 'set_gradient'
+  inputs: {
+    object: GraphNodeInput<string>
+    fill_gradient: GraphNodeInput<string>
+    stroke_gradient: GraphNodeInput<string>
   }
 }
 

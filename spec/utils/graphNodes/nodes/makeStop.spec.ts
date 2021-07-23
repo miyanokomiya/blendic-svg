@@ -18,38 +18,28 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform } from '/@/models'
-import { GraphNodeColor } from '/@/models/graphNode'
-import {
-  createBaseNode,
-  NodeStruct,
-  UNIT_VALUE_TYPES,
-} from '/@/utils/graphNodes/core'
+import * as target from '/@/utils/graphNodes/nodes/makeStop'
 
-export const struct: NodeStruct<GraphNodeColor> = {
-  create(arg = {}) {
-    return {
-      ...createBaseNode({
-        data: { color: getTransform() },
-        inputs: {},
-        ...arg,
-      }),
-      type: 'color',
-    } as GraphNodeColor
-  },
-  data: {
-    color: {
-      type: UNIT_VALUE_TYPES.COLOR,
-      default: getTransform(),
-    },
-  },
-  inputs: {},
-  outputs: {
-    color: UNIT_VALUE_TYPES.COLOR,
-  },
-  computation(_inputs, self) {
-    return { color: self.data.color }
-  },
-  width: 120,
-  color: '#f0e68c',
-  label: 'Color',
-}
+describe('src/utils/graphNodes/nodes/makeStop.ts', () => {
+  describe('computation', () => {
+    it('should add a stop info', () => {
+      expect(
+        target.struct.computation(
+          {
+            stop: [{ offset: 0, color: getTransform(), relative: true }],
+            relative: false,
+            offset: 0.5,
+            color: getTransform({ rotate: 10 }),
+          },
+          {} as any,
+          {} as any
+        )
+      ).toEqual({
+        stop: [
+          { offset: 0, color: getTransform(), relative: true },
+          { offset: 0.5, color: getTransform({ rotate: 10 }), relative: false },
+        ],
+      })
+    })
+  })
+})

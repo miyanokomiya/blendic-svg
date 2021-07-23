@@ -17,41 +17,45 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeGetObject } from '/@/models/graphNode'
+import { GraphNodeSetGradient } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeGetObject> = {
+export const struct: NodeStruct<GraphNodeSetGradient> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
-        data: { object: '' },
-        inputs: {},
+        inputs: {
+          object: { value: '' },
+          fill_gradient: { value: '' },
+          stroke_gradient: { value: '' },
+        },
         ...arg,
       }),
-      type: 'get_object',
-    } as GraphNodeGetObject
+      type: 'set_gradient',
+    } as GraphNodeSetGradient
   },
-  data: {
-    object: {
-      type: UNIT_VALUE_TYPES.OBJECT,
-      default: '',
-    },
+  data: {},
+  inputs: {
+    object: { type: UNIT_VALUE_TYPES.OBJECT, default: '' },
+    fill_gradient: { type: UNIT_VALUE_TYPES.OBJECT, default: '' },
+    stroke_gradient: { type: UNIT_VALUE_TYPES.OBJECT, default: '' },
   },
-  inputs: {},
   outputs: {
     object: UNIT_VALUE_TYPES.OBJECT,
   },
-  computation(_inputs, self, _context): { object: string } {
+  computation(inputs, _self, context): { object: string } {
+    context.setFill(inputs.object, inputs.fill_gradient)
+    context.setStroke(inputs.object, inputs.stroke_gradient)
     return {
-      object: self.data.object,
+      object: inputs.object,
     }
   },
-  width: 120,
+  width: 140,
   color: '#dc143c',
   textColor: '#fff',
-  label: 'Get Object',
+  label: 'Set Gradient',
 }

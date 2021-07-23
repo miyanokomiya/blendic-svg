@@ -62,6 +62,7 @@ describe('src/models/storage.ts', () => {
         actors: [
           {
             id: 'actor',
+            svgTree: getElementNode({ id: 'svg' }),
             elements: [{ id: 'elm' }],
           },
         ],
@@ -96,7 +97,8 @@ describe('src/models/storage.ts', () => {
         actors: [
           getActor({
             id: 'actor',
-            elements: [getBElement({ id: 'elm' })],
+            svgTree: getElementNode({ id: 'svg' }),
+            elements: [getBElement({ id: 'svg' })],
           }),
         ],
         graphs: [getAnimationGraph({ id: 'graph' })],
@@ -110,26 +112,20 @@ describe('src/models/storage.ts', () => {
         actors: [
           {
             id: 'actor',
-            svgTree: getElementNode({ tag: 'svg', id: 'svg_id' }),
+            svgTree: getElementNode({
+              tag: 'svg',
+              id: 'svg_id',
+              children: [getElementNode({ tag: 'g', id: 'elm' })],
+            }),
             elements: [{ id: 'elm' }],
           },
         ],
       }
-      expect(initialize(src as any)).toEqual({
-        armatures: [],
-        actions: [],
-        actors: [
-          getActor({
-            id: 'actor',
-            svgTree: getElementNode({ tag: 'svg', id: 'svg_id' }),
-            elements: [
-              getBElement({ id: 'svg_id' }),
-              getBElement({ id: 'elm' }),
-            ],
-          }),
-        ],
-        graphs: [],
-      })
+      const ret = initialize(src as any)
+      expect(ret.actors[0].elements).toEqual([
+        getBElement({ id: 'svg_id', tag: 'svg' }),
+        getBElement({ id: 'elm', tag: 'g', parentId: 'svg_id' }),
+      ])
     })
   })
 

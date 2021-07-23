@@ -76,7 +76,10 @@ export interface ElementNode {
 
 export interface BElement {
   id: string
-  boneId: string
+  tag: string
+  index: number
+  parentId?: string
+  boneId?: string
   viewBoxBoneId?: string
   fillBoneId?: string
   strokeBoneId?: string
@@ -115,6 +118,9 @@ export interface GraphObject {
   id: string
 
   elementId?: string
+  tag?: string
+  parent?: string
+  index?: number
 
   transform?: Transform
   fill?: Transform | string
@@ -124,10 +130,8 @@ export interface GraphObject {
 
   text?: string
 
-  tag?: string
   clone?: boolean
   create?: boolean
-  parent?: string
 }
 
 export interface GraphObjectAttributes {
@@ -195,7 +199,8 @@ export function getBElement(
 ): BElement {
   const id = generateId ? v4() : arg.id ?? ''
   return {
-    boneId: '',
+    index: 0,
+    tag: '',
     ...arg,
     id,
   }

@@ -66,13 +66,29 @@ export function parseFromSvg(svgText: string): Actor {
   return getActor({ svgTree, viewBox, elements: toBElements(svgTree) }, true)
 }
 
-function toBElements(tree: ElementNode | string): BElement[] {
-  if (isPlainText(tree)) return []
-  return [toBElement(tree), ...tree.children.flatMap(toBElements)]
+export function initializeBElements(
+  svgTree: ElementNode,
+  elements: BElement[]
+): BElement[] {
+  const oldMap = toMap(elements)
+  const parsed = toBElements(svgTree)
+  return parsed.map((elm) => ({ ...(oldMap[elm.id] ?? {}), ...elm }))
 }
 
-function toBElement(node: ElementNode): BElement {
-  return getBElement({ id: node.id })
+function toBElements(
+  tree: ElementNode | string,
+  parentId?: string,
+  index = 0
+): BElement[] {
+  if (isPlainText(tree)) return []
+  return [
+    toBElement(tree, parentId, index),
+    ...tree.children.flatMap((c, i) => toBElements(c, tree.id, i)),
+  ]
+}
+
+function toBElement(node: ElementNode, parentId?: string, index = 0): BElement {
+  return getBElement({ id: node.id, tag: node.tag, parentId, index })
 }
 
 function parseElementNode(parentElm: SVGElement): ElementNode {
@@ -134,7 +150,7 @@ export function cleanActors(actors: Actor[], armatures: Armature[]): Actor[] {
       armatureId: arm ? act.armatureId : '',
       elements: act.elements.map((e) => ({
         ...e,
-        boneId: boneMap[e.boneId] ? e.boneId : '',
+        boneId: e.boneId && boneMap[e.boneId] ? e.boneId : '',
       })),
     }
   })
@@ -181,12 +197,23 @@ export function getTreeFromElementNode(svg: ElementNode): TreeNode {
   }
 }
 
+function toGraphObject(e: BElement): GraphObject {
+  return getGraphObject({
+    id: e.id,
+    elementId: e.id,
+    tag: e.tag,
+    parent: e.parentId,
+    index: e.index,
+  })
+}
+
 export function createGraphNodeContext(
   elementMap: IdMap<BElement>,
   frameInfo: { currentFrame: number; endFrame: number }
 ): NodeContext<GraphObject> {
-  const graphElementMap: IdMap<GraphObject> = mapReduce(elementMap, (e) =>
-    getGraphObject({ id: e.id, elementId: e.id })
+  const graphElementMap: IdMap<GraphObject> = mapReduce(
+    elementMap,
+    toGraphObject
   )
 
   const mapByParentCache = useCache(() => {

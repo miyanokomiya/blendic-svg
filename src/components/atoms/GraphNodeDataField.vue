@@ -27,6 +27,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           v-if="valueEnumKey"
           :model-value="modelValue"
           :options="valueEnumOptions"
+          no-placeholder
           @update:modelValue="update"
         />
         <SliderInput

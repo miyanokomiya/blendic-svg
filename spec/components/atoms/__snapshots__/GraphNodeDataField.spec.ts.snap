@@ -76,11 +76,7 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER enum 1`] = 
     class="select-root"
   >
     <select>
-      <option
-        value=""
-      >
-        -- None --
-      </option>
+      <!--v-if-->
       
       <option
         value="0"

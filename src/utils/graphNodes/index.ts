@@ -64,6 +64,7 @@ import * as clamp from './nodes/clamp'
 import * as round_trip from './nodes/roundTrip'
 
 import * as get_object from './nodes/getObject'
+import * as get_child from './nodes/getChild'
 
 import * as set_transform from './nodes/setTransform'
 import * as set_fill from './nodes/setFill'
@@ -138,6 +139,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   round_trip,
 
   get_object,
+  get_child,
+
   set_transform,
   set_fill,
   set_stroke,
@@ -262,6 +265,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
     label: 'Object',
     children: [
       { label: 'Get Object', type: 'get_object' },
+      { label: 'Get Child', type: 'get_child' },
 
       { label: 'Set Transform', type: 'set_transform' },
       { label: 'Set Fill', type: 'set_fill' },
@@ -367,6 +371,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...GENERICS_SUGGESTIONS,
   ],
   OBJECT: [
+    { label: 'Get Child', type: 'get_child', key: 'object' },
     { label: 'Set Transform', type: 'set_transform', key: 'object' },
     { label: 'Set Fill', type: 'set_fill', key: 'object' },
     { label: 'Set Stroke', type: 'set_stroke', key: 'object' },

@@ -120,7 +120,7 @@ export interface GraphObject {
   elementId?: string
   tag?: string
   parent?: string
-  index?: number
+  index: number
 
   transform?: Transform
   fill?: Transform | string
@@ -172,6 +172,7 @@ export function getGraphObject(
 ): GraphObject {
   const id = generateId ? v4() : arg.id ?? ''
   return {
+    index: 0,
     ...arg,
     id,
   }

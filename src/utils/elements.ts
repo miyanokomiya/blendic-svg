@@ -220,6 +220,19 @@ export function createGraphNodeContext(
     return toKeyListMap(toList(graphElementMap), 'parent')
   })
 
+  function getChildrenSize(id: string): number {
+    const children = mapByParentCache.getValue()[id]
+    if (!children) return 0
+    return children.length
+  }
+
+  function getChildId(id: string, index: number): string | undefined {
+    if (index < 0) return
+    const children = mapByParentCache.getValue()[id]
+    if (!children) return
+    return children[index]?.id
+  }
+
   function addElement(elm: GraphObject) {
     graphElementMap[elm.id] = elm
     mapByParentCache.update()
@@ -322,6 +335,8 @@ export function createGraphNodeContext(
     getObjectMap() {
       return graphElementMap
     },
+    getChildId,
+    getChildrenSize,
     cloneObject(objectId, arg = {}, idPref?: string) {
       const src = graphElementMap[objectId]
       if (!src) return ''
@@ -331,16 +346,22 @@ export function createGraphNodeContext(
         [src, ...getAllNestedChildren(objectId)],
         idPref
       )
+
+      const clonedRoot = clonedList[0]
+      Object.entries(arg).forEach(([key, value]) => {
+        ;(clonedRoot as any)[key] = value
+      })
+      clonedRoot.index = src.parent ? getChildrenSize(src.parent) : 0
       clonedList.forEach(addElement)
 
-      const cloned = graphElementMap[clonedList[0].id]
-      graphElementMap[cloned.id] = { ...cloned, ...arg }
-      return cloned.id
+      return clonedRoot.id
     },
     createCloneGroupObject(objectId, arg = {}) {
       const src = graphElementMap[objectId]
       if (!src) return ''
 
+      const parent = src.parent
+      const index = parent ? getChildrenSize(parent) : 0
       const group = getGraphObject(
         {
           ...arg,
@@ -348,6 +369,8 @@ export function createGraphNodeContext(
           elementId: src.elementId,
           clone: false,
           create: true,
+          index,
+          parent,
         },
         !arg.id
       )
@@ -355,8 +378,13 @@ export function createGraphNodeContext(
       return group.id
     },
     createObject(tag, arg = {}) {
+      const parent = arg.parent
+      const index = parent ? getChildrenSize(parent) : 0
       // genereate new id if it has not been set
-      const created = getGraphObject({ ...arg, tag, create: true }, !arg.id)
+      const created = getGraphObject(
+        { ...arg, tag, create: true, index },
+        !arg.id
+      )
       addElement(created)
       return created.id
     },

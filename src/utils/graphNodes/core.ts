@@ -80,6 +80,8 @@ export interface NodeContext<T> {
   ) => void
   getFrameInfo: () => { currentFrame: number; endFrame: number }
   getObjectMap: () => { [id: string]: T }
+  getChildId: (id: string, index: number) => string | undefined
+  getChildrenSize: (id: string) => number
   cloneObject: (objectId: string, arg?: Partial<T>, idPref?: string) => string
   createCloneGroupObject: (objectId: string, arg?: Partial<T>) => string
   createObject: (tag: string, arg?: Partial<T>) => string

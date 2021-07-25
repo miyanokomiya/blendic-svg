@@ -33,6 +33,7 @@ import {
   getPlainSvgTree,
   getTreeFromElementNode,
   inheritWeight,
+  initializeBElements,
   isPlainText,
   parseFromSvg,
 } from '/@/utils/elements'
@@ -112,10 +113,10 @@ describe('utils/elements.ts', () => {
         })
       )
       expect(ret.elements).toEqual([
-        getBElement({ id: 'svg_1' }),
-        getBElement({ id: 'g_1' }),
-        getBElement({ id: 'rect_1' }),
-        getBElement({ id: 'text_1' }),
+        getBElement({ id: 'svg_1', tag: 'svg', index: 0 }),
+        getBElement({ id: 'g_1', tag: 'g', parentId: 'svg_1', index: 0 }),
+        getBElement({ id: 'rect_1', tag: 'rect', parentId: 'g_1', index: 0 }),
+        getBElement({ id: 'text_1', tag: 'text', parentId: 'g_1', index: 1 }),
       ])
     })
     it('assing a new id if a element has no id', () => {
@@ -124,6 +125,57 @@ describe('utils/elements.ts', () => {
       expect(ret.elements[0].id).not.toBe('')
       expect(ret.elements[1].id).toBe('rect_1')
       expect(ret.elements[2].id).not.toBe('')
+    })
+  })
+
+  describe('initializeBElements', () => {
+    it('should recalc elements and inherits current items e.g. index and tag', () => {
+      expect(
+        initializeBElements(
+          getElementNode({
+            id: 'svg_1',
+            tag: 'svg',
+            attributes: {
+              id: 'svg_1',
+              xmlns: 'http://www.w3.org/2000/svg',
+              viewBox: '1 2  3   4',
+            },
+            children: [
+              getElementNode({
+                id: 'rect_1',
+                tag: 'rect',
+                attributes: {
+                  id: 'rect_1',
+                },
+                children: [],
+              }),
+              getElementNode({
+                id: 'text_1',
+                tag: 'text',
+                attributes: {
+                  id: 'text_1',
+                },
+                children: ['message'],
+              }),
+            ],
+          }),
+          [{ id: 'svg_1' }, { id: 'text_1' }] as any
+        )
+      ).toEqual([
+        getBElement({ id: 'svg_1', tag: 'svg', index: 0 }),
+        getBElement({
+          id: 'rect_1',
+          tag: 'rect',
+          parentId: 'svg_1',
+          index: 0,
+        }),
+        getBElement({
+          id: 'text_1',
+          tag: 'text',
+          parentId: 'svg_1',
+          index: 1,
+        }),
+      ])
     })
   })
 
@@ -356,10 +408,27 @@ describe('utils/elements.ts', () => {
   describe('createGraphNodeContext', () => {
     const frameInfo = { currentFrame: 10, endFrame: 20 }
 
+    it('should store objects from elements', () => {
+      const context = createGraphNodeContext(
+        { a: getBElement({ id: 'a', tag: 'g', parentId: 'p', index: 2 }) },
+        frameInfo
+      )
+      expect(context.getObjectMap()).toEqual({
+        a: {
+          id: 'a',
+          elementId: 'a',
+          tag: 'g',
+          parent: 'p',
+          index: 2,
+        },
+      })
+      context.setTransform('a', getTransform({ rotate: 50 }))
+    })
+
     describe('should return a context to setTransform', () => {
       it('to replace transform', () => {
         const context = createGraphNodeContext(
-          { a: getBElement({ id: 'a' }) },
+          { a: getBElement({ id: 'a', tag: 'g' }) },
           frameInfo
         )
         context.setTransform('a', getTransform({ rotate: 20 }))
@@ -367,6 +436,8 @@ describe('utils/elements.ts', () => {
           a: {
             id: 'a',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             transform: getTransform({ rotate: 20 }),
           },
         })
@@ -375,13 +446,15 @@ describe('utils/elements.ts', () => {
           a: {
             id: 'a',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             transform: getTransform({ rotate: 50 }),
           },
         })
       })
       it('to fodl transform if inhefit is true', () => {
         const context = createGraphNodeContext(
-          { a: getBElement({ id: 'a' }) },
+          { a: getBElement({ id: 'a', tag: 'g' }) },
           frameInfo
         )
         context.setTransform('a', getTransform({ rotate: 20 }))
@@ -390,6 +463,8 @@ describe('utils/elements.ts', () => {
           a: {
             id: 'a',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             transform: getTransform({ rotate: 70 }),
           },
         })
@@ -406,7 +481,7 @@ describe('utils/elements.ts', () => {
     describe('should return a context to setFill', () => {
       it('to set fill', () => {
         const context = createGraphNodeContext(
-          { a: getBElement({ id: 'a' }) },
+          { a: getBElement({ id: 'a', tag: 'g' }) },
           frameInfo
         )
         context.setFill('a', getTransform({ rotate: 20 }))
@@ -414,6 +489,8 @@ describe('utils/elements.ts', () => {
           a: {
             id: 'a',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             fill: getTransform({ rotate: 20 }),
           },
         })
@@ -422,6 +499,8 @@ describe('utils/elements.ts', () => {
           a: {
             id: 'a',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             fill: getTransform({ rotate: 50 }),
           },
         })
@@ -438,6 +517,7 @@ describe('utils/elements.ts', () => {
             tag: 'g',
             fill: getTransform({ rotate: 20 }),
             create: true,
+            index: 0,
           },
           [rect1]: {
             id: rect1,
@@ -445,6 +525,7 @@ describe('utils/elements.ts', () => {
             parent: g1,
             fill: getTransform({ rotate: 20 }),
             create: true,
+            index: 0,
           },
         })
       })
@@ -452,7 +533,7 @@ describe('utils/elements.ts', () => {
     describe('should return a context to setStroke', () => {
       it('to set stroke', () => {
         const context = createGraphNodeContext(
-          { a: getBElement({ id: 'a' }) },
+          { a: getBElement({ id: 'a', tag: 'g' }) },
           frameInfo
         )
         context.setStroke('a', getTransform({ rotate: 20 }))
@@ -460,6 +541,8 @@ describe('utils/elements.ts', () => {
           a: {
             id: 'a',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             stroke: getTransform({ rotate: 20 }),
           },
         })
@@ -468,6 +551,8 @@ describe('utils/elements.ts', () => {
           a: {
             id: 'a',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             stroke: getTransform({ rotate: 50 }),
           },
         })
@@ -484,6 +569,7 @@ describe('utils/elements.ts', () => {
             tag: 'g',
             stroke: getTransform({ rotate: 20 }),
             create: true,
+            index: 0,
           },
           [rect1]: {
             id: rect1,
@@ -491,6 +577,7 @@ describe('utils/elements.ts', () => {
             parent: g1,
             stroke: getTransform({ rotate: 20 }),
             create: true,
+            index: 0,
           },
         })
       })
@@ -498,7 +585,7 @@ describe('utils/elements.ts', () => {
     describe('setAttributes', () => {
       it('should add attributes', () => {
         const context = createGraphNodeContext(
-          { a: getBElement({ id: 'a' }) },
+          { a: getBElement({ id: 'a', tag: 'g' }) },
           frameInfo
         )
         context.setAttributes('a', { x: 10 })
@@ -507,13 +594,15 @@ describe('utils/elements.ts', () => {
           a: {
             id: 'a',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             attributes: { x: 10, y: 20 },
           },
         })
       })
       it('should replace attributes if replace = true', () => {
         const context = createGraphNodeContext(
-          { a: getBElement({ id: 'a' }) },
+          { a: getBElement({ id: 'a', tag: 'g' }) },
           frameInfo
         )
         context.setAttributes('a', { x: 10 })
@@ -522,6 +611,8 @@ describe('utils/elements.ts', () => {
           a: {
             id: 'a',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             attributes: { y: 20 },
           },
         })
@@ -534,28 +625,70 @@ describe('utils/elements.ts', () => {
       )
       expect(context.getFrameInfo()).toEqual({ currentFrame: 10, endFrame: 20 })
     })
+
+    describe('getChildId', () => {
+      it('should return a child object of the parent with the index', () => {
+        const context = createGraphNodeContext(
+          {
+            a: getBElement({ id: 'a', tag: 'g', parentId: 'svg' }),
+            b: getBElement({ id: 'b', tag: 'g', parentId: 'a' }),
+            c: getBElement({ id: 'c', tag: 'g', parentId: 'a' }),
+            d: getBElement({ id: 'd', tag: 'g', parentId: 'a' }),
+          },
+          frameInfo
+        )
+        expect(context.getChildId('a', -1)).toBe(undefined)
+        expect(context.getChildId('a', 0)).toBe('b')
+        expect(context.getChildId('a', 1)).toBe('c')
+        expect(context.getChildId('a', 2)).toBe('d')
+        expect(context.getChildId('a', 3)).toBe(undefined)
+      })
+    })
+
+    describe('getChildrenSize', () => {
+      it('should return a size of the children', () => {
+        const context = createGraphNodeContext(
+          {
+            a: getBElement({ id: 'a', tag: 'g', parentId: 'svg' }),
+            b: getBElement({ id: 'b', tag: 'g', parentId: 'a' }),
+            c: getBElement({ id: 'c', tag: 'g', parentId: 'a' }),
+            d: getBElement({ id: 'd', tag: 'g', parentId: 'a' }),
+          },
+          frameInfo
+        )
+        expect(context.getChildrenSize('a')).toBe(3)
+        expect(context.getChildrenSize('b')).toBe(0)
+        expect(context.getChildrenSize('z')).toBe(0)
+      })
+    })
+
     describe('cloneObject', () => {
       it('should return a context to cloneObject', () => {
         const context = createGraphNodeContext(
-          { a: getBElement({ id: 'a' }) },
+          { a: getBElement({ id: 'a', tag: 'g', parentId: 'svg' }) },
           frameInfo
         )
         context.setTransform('a', getTransform({ rotate: 20 }))
-        const clonedId = context.cloneObject('a', { parent: 'p' })
+        const clonedId = context.cloneObject('a', { id: 'b' })
         const ret = context.getObjectMap()
 
         expect(ret).toEqual({
           a: {
             id: 'a',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             transform: getTransform({ rotate: 20 }),
+            parent: 'svg',
           },
           [clonedId]: {
-            id: clonedId,
+            id: 'b',
             elementId: 'a',
+            tag: 'g',
+            index: 1,
             transform: getTransform({ rotate: 20 }),
-            parent: 'p',
             clone: true,
+            parent: 'svg',
           },
         })
       })
@@ -584,17 +717,19 @@ describe('utils/elements.ts', () => {
       })
       it('should set id pref', () => {
         const context = createGraphNodeContext(
-          { a: getBElement({ id: 'a' }) },
+          { a: getBElement({ id: 'a', tag: 'g' }) },
           frameInfo
         )
         context.cloneObject('a', {}, 'pre')
         const ret = context.getObjectMap()
 
         expect(ret).toEqual({
-          a: { id: 'a', elementId: 'a' },
+          a: { id: 'a', elementId: 'a', tag: 'g', index: 0 },
           pre_clone_0: {
             id: 'pre_clone_0',
             elementId: 'a',
+            tag: 'g',
+            index: 0,
             clone: true,
           },
         })
@@ -616,6 +751,7 @@ describe('utils/elements.ts', () => {
             id: clonedId,
             tag: 'g',
             create: true,
+            index: 0,
           })
           delete ret[clonedId]
           const id = Object.keys(ret)[0]
@@ -624,12 +760,13 @@ describe('utils/elements.ts', () => {
             tag: 'g',
             create: true,
             parent: clonedId,
+            index: 0,
           })
         })
         it('should clone nested cloned children', () => {
           const context = createGraphNodeContext({}, frameInfo)
 
-          const parent = context.createObject('g')
+          const parent = context.createObject('g', { parent: 'svg' })
           const child1 = context.createObject('g', { parent })
           const child2 = context.createObject('g', { parent: child1 })
 
@@ -644,6 +781,8 @@ describe('utils/elements.ts', () => {
             id: clonedId,
             tag: 'g',
             create: true,
+            parent: 'svg',
+            index: 1,
           })
           delete ret[clonedId]
 
@@ -655,6 +794,7 @@ describe('utils/elements.ts', () => {
             create: true,
             tag: 'g',
             parent: clonedId,
+            index: 0,
           })
           const nested2 = Object.values(ret).find(
             (v) => v.parent === nested1.id
@@ -664,39 +804,35 @@ describe('utils/elements.ts', () => {
             create: true,
             tag: 'g',
             parent: nested1.id,
+            index: 0,
           })
         })
         it('should set id pref', () => {
           const context = createGraphNodeContext({}, frameInfo)
 
-          const parent = context.createObject('g')
+          const parent = context.createObject('g', { parent: 'svg' })
           const child1 = context.createObject('g', { parent })
-          const child2 = context.createObject('g', { parent: child1 })
 
           context.cloneObject(parent, {}, 'pre')
           const ret = context.getObjectMap()
 
           delete ret[parent]
           delete ret[child1]
-          delete ret[child2]
 
           expect(ret).toEqual({
             pre_clone_0: {
               id: 'pre_clone_0',
               tag: 'g',
               create: true,
+              parent: 'svg',
+              index: 1,
             },
             pre_clone_1: {
               id: 'pre_clone_1',
               tag: 'g',
               create: true,
               parent: 'pre_clone_0',
-            },
-            pre_clone_2: {
-              id: 'pre_clone_2',
-              tag: 'g',
-              create: true,
-              parent: 'pre_clone_1',
+              index: 0,
             },
           })
         })
@@ -706,7 +842,7 @@ describe('utils/elements.ts', () => {
     describe('should return a context to createCloneGroupObject', () => {
       it('to create group object for cloning', () => {
         const context = createGraphNodeContext(
-          { a: getBElement({ id: 'a' }) },
+          { a: getBElement({ id: 'a', tag: 'g' }) },
           frameInfo
         )
         const id = context.createCloneGroupObject('a', { id: 'b' })
@@ -714,15 +850,31 @@ describe('utils/elements.ts', () => {
 
         expect(id).toBe('b')
         expect(ret).toEqual({
-          a: { id: 'a', elementId: 'a' },
+          a: { id: 'a', elementId: 'a', tag: 'g', index: 0 },
           b: {
             id: 'b',
             clone: false,
             create: true,
             elementId: 'a',
             tag: 'g',
+            index: 0,
           },
         })
+      })
+      it('to get last index', () => {
+        const context = createGraphNodeContext(
+          {
+            a: getBElement({ id: 'a', tag: 'g' }),
+            b: getBElement({ id: 'b', tag: 'g', parentId: 'a' }),
+          },
+          frameInfo
+        )
+        context.createCloneGroupObject('b', { id: 'c' })
+        context.createCloneGroupObject('b', { id: 'd' })
+        const ret = context.getObjectMap()
+
+        expect(ret['c'].index).toBe(1)
+        expect(ret['d'].index).toBe(2)
       })
     })
 
@@ -736,6 +888,7 @@ describe('utils/elements.ts', () => {
           id,
           create: true,
           tag: 'rect',
+          index: 0,
           attributes: { x: 10 },
         })
       })
@@ -748,6 +901,37 @@ describe('utils/elements.ts', () => {
           id: 'a',
           create: true,
           tag: 'rect',
+          index: 0,
+        })
+      })
+      it('let new object have last index', () => {
+        const context = createGraphNodeContext({}, frameInfo)
+        context.createObject('g', { id: 'parent' })
+        context.createObject('g', { id: '1', parent: 'parent' })
+        context.createObject('g', { id: '2', parent: 'parent' })
+        context.createObject('g', { id: '3', parent: 'parent' })
+        const ret = context.getObjectMap()
+
+        expect(ret['1']).toEqual({
+          id: '1',
+          create: true,
+          tag: 'g',
+          index: 0,
+          parent: 'parent',
+        })
+        expect(ret['2']).toEqual({
+          id: '2',
+          create: true,
+          tag: 'g',
+          index: 1,
+          parent: 'parent',
+        })
+        expect(ret['3']).toEqual({
+          id: '3',
+          create: true,
+          tag: 'g',
+          index: 2,
+          parent: 'parent',
         })
       })
     })

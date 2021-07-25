@@ -136,6 +136,8 @@ export interface GraphNodes {
   break_color: GraphNodeBreakColor
 
   get_object: GraphNodeGetObject
+  get_child: GraphNodeGetChild
+
   set_transform: GraphNodeSetTransform
   set_fill: GraphNodeSetFill
   set_stroke: GraphNodeSetStroke
@@ -254,6 +256,14 @@ export interface GraphNodeGetFrame extends GraphNodeBase {
 export interface GraphNodeGetObject extends GraphNodeBase {
   type: 'get_object'
   data: { object: string }
+}
+
+export interface GraphNodeGetChild extends GraphNodeBase {
+  type: 'get_child'
+  inputs: {
+    object: GraphNodeInput<string>
+    index: GraphNodeInput<number>
+  }
 }
 
 export interface GraphNodeSetTransform extends GraphNodeBase {

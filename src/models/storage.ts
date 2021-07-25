@@ -35,6 +35,7 @@ import { GraphNodeBase } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
 import { extractMap } from '/@/utils/commons'
 import { getConstraint } from '/@/utils/constraints'
+import { initializeBElements } from '/@/utils/elements'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { migrateConstraint, migrateKeyframe } from '/@/utils/migrations'
 
@@ -86,14 +87,12 @@ function initializeKeyframe(keyframe: KeyframeBase): KeyframeBase {
 function initializeActor(actor: Partial<Actor>): Actor {
   const elements = actor.elements?.concat() ?? []
   const svg = actor.svgTree
-  if (svg && elements.every((e) => e.id !== svg.id)) {
-    // for compatible with old data
-    elements.unshift(getBElement({ id: svg.id }))
-  }
 
   return getActor({
     ...actor,
-    elements: elements.map(initializeElement),
+    elements: svg
+      ? initializeBElements(svg, elements.map(initializeElement))
+      : [],
   })
 }
 

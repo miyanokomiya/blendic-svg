@@ -67,6 +67,7 @@ import * as get_object from './nodes/getObject'
 import * as get_child from './nodes/getChild'
 
 import * as set_transform from './nodes/setTransform'
+import * as add_transform from './nodes/addTransform'
 import * as set_fill from './nodes/setFill'
 import * as set_stroke from './nodes/setStroke'
 import * as set_stroke_length from './nodes/setStrokeLength'
@@ -142,6 +143,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_child,
 
   set_transform,
+  add_transform,
   set_fill,
   set_stroke,
   set_stroke_length,
@@ -268,6 +270,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Get Child', type: 'get_child' },
 
       { label: 'Set Transform', type: 'set_transform' },
+      { label: 'Add Transform', type: 'add_transform' },
       { label: 'Set Fill', type: 'set_fill' },
       { label: 'Set Stroke', type: 'set_stroke' },
       { label: 'Set Stroke Length', type: 'set_stroke_length' },
@@ -373,6 +376,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
   OBJECT: [
     { label: 'Get Child', type: 'get_child', key: 'object' },
     { label: 'Set Transform', type: 'set_transform', key: 'object' },
+    { label: 'Add Transform', type: 'add_transform', key: 'object' },
     { label: 'Set Fill', type: 'set_fill', key: 'object' },
     { label: 'Set Stroke', type: 'set_stroke', key: 'object' },
     { label: 'Set Stroke Length', type: 'set_stroke_length', key: 'object' },

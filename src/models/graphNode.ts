@@ -139,6 +139,7 @@ export interface GraphNodes {
   get_child: GraphNodeGetChild
 
   set_transform: GraphNodeSetTransform
+  add_transform: GraphNodeAddTransform
   set_fill: GraphNodeSetFill
   set_stroke: GraphNodeSetStroke
   set_stroke_length: GraphNodeSetStrokeLength
@@ -268,6 +269,14 @@ export interface GraphNodeGetChild extends GraphNodeBase {
 
 export interface GraphNodeSetTransform extends GraphNodeBase {
   type: 'set_transform'
+  inputs: {
+    object: GraphNodeInput<string>
+    transform: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeAddTransform extends GraphNodeBase {
+  type: 'add_transform'
   inputs: {
     object: GraphNodeInput<string>
     transform: GraphNodeInput<Transform>

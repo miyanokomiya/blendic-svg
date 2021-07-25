@@ -137,6 +137,7 @@ export interface GraphNodes {
 
   get_object: GraphNodeGetObject
   get_child: GraphNodeGetChild
+  get_transform: GraphNodeGetTransform
 
   set_transform: GraphNodeSetTransform
   add_transform: GraphNodeAddTransform
@@ -264,6 +265,13 @@ export interface GraphNodeGetChild extends GraphNodeBase {
   inputs: {
     object: GraphNodeInput<string>
     index: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeGetTransform extends GraphNodeBase {
+  type: 'get_transform'
+  inputs: {
+    object: GraphNodeInput<string>
   }
 }
 

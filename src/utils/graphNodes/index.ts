@@ -65,6 +65,7 @@ import * as round_trip from './nodes/roundTrip'
 
 import * as get_object from './nodes/getObject'
 import * as get_child from './nodes/getChild'
+import * as get_transform from './nodes/getTransform'
 
 import * as set_transform from './nodes/setTransform'
 import * as add_transform from './nodes/addTransform'
@@ -141,6 +142,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
 
   get_object,
   get_child,
+  get_transform,
 
   set_transform,
   add_transform,
@@ -268,6 +270,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
     children: [
       { label: 'Get Object', type: 'get_object' },
       { label: 'Get Child', type: 'get_child' },
+      { label: 'Get Transform', type: 'get_transform' },
 
       { label: 'Set Transform', type: 'set_transform' },
       { label: 'Add Transform', type: 'add_transform' },
@@ -375,6 +378,8 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
   ],
   OBJECT: [
     { label: 'Get Child', type: 'get_child', key: 'object' },
+    { label: 'Get Transform', type: 'get_transform', key: 'object' },
+
     { label: 'Set Transform', type: 'set_transform', key: 'object' },
     { label: 'Add Transform', type: 'add_transform', key: 'object' },
     { label: 'Set Fill', type: 'set_fill', key: 'object' },

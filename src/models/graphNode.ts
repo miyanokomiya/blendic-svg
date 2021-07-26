@@ -131,6 +131,7 @@ export interface GraphNodes {
   make_vector2: GraphNodeMakeVector2
   break_vector2: GraphNodeBreakVector2
   make_transform: GraphNodeMakeTransform
+  break_transform: GraphNodeBreakTransform
   color: GraphNodeColor
   make_color: GraphNodeMakeColor
   break_color: GraphNodeBreakColor
@@ -229,6 +230,11 @@ export interface GraphNodeMakeTransform extends GraphNodeBase {
     scale: GraphNodeInput<IVec2>
     origin: GraphNodeInput<IVec2>
   }
+}
+
+export interface GraphNodeBreakTransform extends GraphNodeBase {
+  type: 'break_transform'
+  inputs: { transform: GraphNodeInput<Transform> }
 }
 
 export interface GraphNodeColor extends GraphNodeBase {

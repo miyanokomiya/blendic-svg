@@ -43,6 +43,7 @@ import * as scaler from './nodes/scaler'
 import * as make_vector2 from './nodes/makeVector2'
 import * as break_vector2 from './nodes/breakVector2'
 import * as make_transform from './nodes/makeTransform'
+import * as break_transform from './nodes/breakTransform'
 import * as color from './nodes/color'
 import * as make_color from './nodes/makeColor'
 import * as break_color from './nodes/breakColor'
@@ -120,6 +121,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   make_vector2,
   break_vector2,
   make_transform,
+  break_transform,
   color,
   make_color,
   break_color,
@@ -225,6 +227,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Make Vector2', type: 'make_vector2' },
       { label: 'Break Vector2', type: 'break_vector2' },
       { label: 'Make Transform', type: 'make_transform' },
+      { label: 'Break Transform', type: 'break_transform' },
       { label: 'Color', type: 'color' },
       { label: 'Make Color', type: 'make_color' },
       { label: 'Break Color', type: 'break_color' },
@@ -407,6 +410,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
   TRANSFORM: [
     ADD_GENERICS_SUGGESTION,
     SUB_GENERICS_SUGGESTION,
+    { label: 'Break Transform', type: 'break_transform', key: 'transform' },
     LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],

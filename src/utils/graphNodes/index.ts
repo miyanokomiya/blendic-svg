@@ -43,6 +43,7 @@ import * as scaler from './nodes/scaler'
 import * as make_vector2 from './nodes/makeVector2'
 import * as break_vector2 from './nodes/breakVector2'
 import * as make_transform from './nodes/makeTransform'
+import * as break_transform from './nodes/breakTransform'
 import * as color from './nodes/color'
 import * as make_color from './nodes/makeColor'
 import * as break_color from './nodes/breakColor'
@@ -65,8 +66,10 @@ import * as round_trip from './nodes/roundTrip'
 
 import * as get_object from './nodes/getObject'
 import * as get_child from './nodes/getChild'
+import * as get_transform from './nodes/getTransform'
 
 import * as set_transform from './nodes/setTransform'
+import * as add_transform from './nodes/addTransform'
 import * as set_fill from './nodes/setFill'
 import * as set_stroke from './nodes/setStroke'
 import * as set_stroke_length from './nodes/setStrokeLength'
@@ -118,6 +121,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   make_vector2,
   break_vector2,
   make_transform,
+  break_transform,
   color,
   make_color,
   break_color,
@@ -140,8 +144,10 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
 
   get_object,
   get_child,
+  get_transform,
 
   set_transform,
+  add_transform,
   set_fill,
   set_stroke,
   set_stroke_length,
@@ -221,6 +227,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Make Vector2', type: 'make_vector2' },
       { label: 'Break Vector2', type: 'break_vector2' },
       { label: 'Make Transform', type: 'make_transform' },
+      { label: 'Break Transform', type: 'break_transform' },
       { label: 'Color', type: 'color' },
       { label: 'Make Color', type: 'make_color' },
       { label: 'Break Color', type: 'break_color' },
@@ -266,8 +273,10 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
     children: [
       { label: 'Get Object', type: 'get_object' },
       { label: 'Get Child', type: 'get_child' },
+      { label: 'Get Transform', type: 'get_transform' },
 
       { label: 'Set Transform', type: 'set_transform' },
+      { label: 'Add Transform', type: 'add_transform' },
       { label: 'Set Fill', type: 'set_fill' },
       { label: 'Set Stroke', type: 'set_stroke' },
       { label: 'Set Stroke Length', type: 'set_stroke_length' },
@@ -372,7 +381,10 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
   ],
   OBJECT: [
     { label: 'Get Child', type: 'get_child', key: 'object' },
+    { label: 'Get Transform', type: 'get_transform', key: 'object' },
+
     { label: 'Set Transform', type: 'set_transform', key: 'object' },
+    { label: 'Add Transform', type: 'add_transform', key: 'object' },
     { label: 'Set Fill', type: 'set_fill', key: 'object' },
     { label: 'Set Stroke', type: 'set_stroke', key: 'object' },
     { label: 'Set Stroke Length', type: 'set_stroke_length', key: 'object' },
@@ -398,6 +410,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
   TRANSFORM: [
     ADD_GENERICS_SUGGESTION,
     SUB_GENERICS_SUGGESTION,
+    { label: 'Break Transform', type: 'break_transform', key: 'transform' },
     LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],

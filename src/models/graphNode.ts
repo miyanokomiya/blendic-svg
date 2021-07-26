@@ -131,14 +131,17 @@ export interface GraphNodes {
   make_vector2: GraphNodeMakeVector2
   break_vector2: GraphNodeBreakVector2
   make_transform: GraphNodeMakeTransform
+  break_transform: GraphNodeBreakTransform
   color: GraphNodeColor
   make_color: GraphNodeMakeColor
   break_color: GraphNodeBreakColor
 
   get_object: GraphNodeGetObject
   get_child: GraphNodeGetChild
+  get_transform: GraphNodeGetTransform
 
   set_transform: GraphNodeSetTransform
+  add_transform: GraphNodeAddTransform
   set_fill: GraphNodeSetFill
   set_stroke: GraphNodeSetStroke
   set_stroke_length: GraphNodeSetStrokeLength
@@ -229,6 +232,11 @@ export interface GraphNodeMakeTransform extends GraphNodeBase {
   }
 }
 
+export interface GraphNodeBreakTransform extends GraphNodeBase {
+  type: 'break_transform'
+  inputs: { transform: GraphNodeInput<Transform> }
+}
+
 export interface GraphNodeColor extends GraphNodeBase {
   type: 'color'
   data: { color: Transform }
@@ -266,8 +274,23 @@ export interface GraphNodeGetChild extends GraphNodeBase {
   }
 }
 
+export interface GraphNodeGetTransform extends GraphNodeBase {
+  type: 'get_transform'
+  inputs: {
+    object: GraphNodeInput<string>
+  }
+}
+
 export interface GraphNodeSetTransform extends GraphNodeBase {
   type: 'set_transform'
+  inputs: {
+    object: GraphNodeInput<string>
+    transform: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeAddTransform extends GraphNodeBase {
+  type: 'add_transform'
   inputs: {
     object: GraphNodeInput<string>
     transform: GraphNodeInput<Transform>

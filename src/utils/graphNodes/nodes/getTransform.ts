@@ -18,60 +18,39 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform, Transform } from '/@/models'
-import {
-  GraphNodeMakeTransform,
-  GRAPH_VALUE_STRUCT,
-  GRAPH_VALUE_TYPE,
-} from '/@/models/graphNode'
+import { GraphNodeGetTransform } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeMakeTransform> = {
+export const struct: NodeStruct<GraphNodeGetTransform> = {
   create(arg = {}) {
     return {
       ...createBaseNode({
         inputs: {
-          translate: { value: { x: 0, y: 0 } },
-          rotate: { value: 0 },
-          scale: { value: { x: 1, y: 1 } },
-          origin: { value: { x: 0, y: 0 } },
+          object: { value: '' },
         },
         ...arg,
       }),
-      type: 'make_transform',
-    } as GraphNodeMakeTransform
+      type: 'get_transform',
+    } as GraphNodeGetTransform
   },
   data: {},
   inputs: {
-    translate: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
-    rotate: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
-    scale: {
-      type: {
-        type: GRAPH_VALUE_TYPE.VECTOR2,
-        struct: GRAPH_VALUE_STRUCT.UNIT,
-        scale: 0.1,
-      },
-      default: { x: 1, y: 1 },
-    },
-    origin: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
+    object: { type: UNIT_VALUE_TYPES.OBJECT, default: '' },
   },
   outputs: {
     transform: UNIT_VALUE_TYPES.TRANSFORM,
   },
-  computation(inputs): { transform: Transform } {
+  computation(inputs, _self, context): { transform: Transform } {
     return {
-      transform: getTransform({
-        translate: inputs.translate,
-        rotate: inputs.rotate,
-        scale: inputs.scale,
-        origin: inputs.origin,
-      }),
+      transform: context.getTransform(inputs.object) ?? getTransform(),
     }
   },
-  width: 160,
-  color: '#f0e68c',
-  label: 'Make Transform',
+  width: 140,
+  color: '#dc143c',
+  textColor: '#fff',
+  label: 'Get Transform',
 }

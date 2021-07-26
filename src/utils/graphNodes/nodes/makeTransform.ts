@@ -18,7 +18,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getTransform, Transform } from '/@/models'
-import { GraphNodeMakeTransform } from '/@/models/graphNode'
+import {
+  GraphNodeMakeTransform,
+  GRAPH_VALUE_STRUCT,
+  GRAPH_VALUE_TYPE,
+} from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
@@ -44,7 +48,14 @@ export const struct: NodeStruct<GraphNodeMakeTransform> = {
   inputs: {
     translate: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
     rotate: { type: UNIT_VALUE_TYPES.SCALER, default: 0 },
-    scale: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 1, y: 1 } },
+    scale: {
+      type: {
+        type: GRAPH_VALUE_TYPE.VECTOR2,
+        struct: GRAPH_VALUE_STRUCT.UNIT,
+        scale: 0.1,
+      },
+      default: { x: 1, y: 1 },
+    },
     origin: { type: UNIT_VALUE_TYPES.VECTOR2, default: { x: 0, y: 0 } },
   },
   outputs: {

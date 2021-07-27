@@ -20,7 +20,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { add, getRadian, IVec2, multi, rotate, sub } from 'okageo'
 import { getParentIdPath, sumReduce } from '../commons'
 import { Bone, IdMap, toMap } from '/@/models'
-import { interpolateTransform } from '/@/utils/armatures'
+import {
+  getBoneWorldTranslate,
+  interpolateTransform,
+  toBoneSpaceFn,
+} from '/@/utils/armatures'
 
 export interface Option {
   targetId: string
@@ -41,11 +45,11 @@ export function apply(
 
   const bones = getIKBones(boneId, option, boneMap)
   const poleTarget = boneMap[option.poleTargetId]
-  const targetPoint = add(target.head, target.transform.translate)
+  const targetPoint = add(target.head, getBoneWorldTranslate(target))
 
   let applied = poleTarget
     ? straightToPoleTarget(
-        add(poleTarget.head, poleTarget.transform.translate),
+        add(poleTarget.head, getBoneWorldTranslate(poleTarget)),
         bones
       )
     : bones
@@ -94,7 +98,7 @@ function step(targetPoint: IVec2, bones: Bone[]): Bone[] {
     .reverse()
     .map((b) => {
       const stickInfo = getStickInfoTarget(currentTargetPoint, b)
-      currentTargetPoint = add(b.head, stickInfo.translate)
+      currentTargetPoint = stickInfo.head
       return {
         ...b,
         transform: {
@@ -107,16 +111,18 @@ function step(targetPoint: IVec2, bones: Bone[]): Bone[] {
     .reverse()
 
   const diff = sub(
-    bones[0].transform.translate,
-    stickedList[0].transform.translate
+    getBoneWorldTranslate(bones[0]),
+    getBoneWorldTranslate(stickedList[0])
   )
-  return stickedList.map((b) => ({
-    ...b,
-    transform: {
-      ...b.transform,
-      translate: add(b.transform.translate, diff),
-    },
-  }))
+  return stickedList.map((b) => {
+    return {
+      ...b,
+      transform: {
+        ...b.transform,
+        translate: add(b.transform.translate, toBoneSpaceFn(b).toLocal(diff)),
+      },
+    }
+  })
 }
 
 function getScaledTail(bone: Bone): IVec2 {
@@ -129,14 +135,21 @@ function getScaledTail(bone: Bone): IVec2 {
 function getStickInfoTarget(
   targetPoint: IVec2,
   bone: Bone
-): { rotate: number; translate: IVec2 } {
-  const head = add(bone.head, bone.transform.translate)
-  const tail = add(getScaledTail(bone), bone.transform.translate)
+): { rotate: number; translate: IVec2; head: IVec2 } {
+  const spaceFn = toBoneSpaceFn(bone)
+  const worldTranslate = spaceFn.toWorld(bone.transform.translate)
+
+  const head = add(bone.head, worldTranslate)
+  const tail = add(getScaledTail(bone), worldTranslate)
   const rad = getRadian(targetPoint, head) - getRadian(tail, head)
   const rotatedTail = rotate(tail, rad, head)
   return {
     rotate: (rad / Math.PI) * 180,
-    translate: add(bone.transform.translate, sub(targetPoint, rotatedTail)),
+    translate: add(
+      bone.transform.translate,
+      spaceFn.toLocal(sub(targetPoint, rotatedTail))
+    ),
+    head,
   }
 }
 
@@ -149,13 +162,16 @@ export function straightToPoleTarget(
   const root = bones[0]
   const rad = getRadian(
     poleTargetPoint,
-    add(root.head, root.transform.translate)
+    add(root.head, getBoneWorldTranslate(root))
   )
   let parent = root
   let parentTailTranslate = { x: 0, y: 0 }
   return bones.map((b) => {
-    const head = add(b.head, b.transform.translate)
-    const tail = add(b.tail, b.transform.translate)
+    const toSpaceFn = toBoneSpaceFn(b)
+    const worldTranslate = toSpaceFn.toWorld(b.transform.translate)
+
+    const head = add(b.head, worldTranslate)
+    const tail = add(b.tail, worldTranslate)
     const selfRad = rad - getRadian(tail, head)
     const angle = (selfRad / Math.PI) * 180
     const next = {
@@ -163,7 +179,10 @@ export function straightToPoleTarget(
       transform: {
         ...b.transform,
         rotate: angle,
-        translate: add(b.transform.translate, parentTailTranslate),
+        translate: add(
+          b.transform.translate,
+          toSpaceFn.toLocal(parentTailTranslate)
+        ),
       },
     }
     parent = next

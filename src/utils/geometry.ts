@@ -28,6 +28,7 @@ import {
   IVec2,
   multi,
   multiAffines,
+  rotate,
   rotate as rotateVector2,
   sub,
 } from 'okageo'
@@ -217,14 +218,20 @@ export function applyTransform(p: IVec2, transform: Transform): IVec2 {
 }
 
 export function applyPosedTransformToPoint(parent: Bone, point: IVec2): IVec2 {
+  const parentRad = getRadian(parent.tail, parent.head)
+  const worldTranslate = rotate(
+    parent.transform.translate,
+    parentRad - Math.PI / 2
+  )
   const head = applyTransform(
     parent.head,
-    getTransform({ translate: parent.transform.translate })
+    getTransform({ translate: worldTranslate })
   )
   const tail = applyTransform(
     parent.tail,
     getTransform({
       ...parent.transform,
+      translate: worldTranslate,
       origin: parent.head,
       scale: { x: 1, y: 1 },
     })
@@ -233,6 +240,7 @@ export function applyPosedTransformToPoint(parent: Bone, point: IVec2): IVec2 {
     point,
     getTransform({
       ...parent.transform,
+      translate: worldTranslate,
       origin: parent.head,
       scale: { x: 1, y: 1 },
     })

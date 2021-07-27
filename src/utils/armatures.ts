@@ -43,6 +43,7 @@ import {
   IVec2,
   multi,
   multiAffines,
+  rotate,
   sub,
 } from 'okageo'
 import {
@@ -71,22 +72,42 @@ import {
 
 export function boneToAffine(bone: Bone): AffineMatrix {
   const origin = bone.head
-  const boneRad = getRadian(bone.tail, bone.head)
+  const boneRad = getBoneRadian(bone)
   const boneCos = Math.cos(boneRad)
   const boneSin = Math.sin(boneRad)
   const rad = (bone.transform.rotate / 180) * Math.PI
   const cos = Math.cos(rad)
   const sin = Math.sin(rad)
   return multiAffines([
-    [1, 0, 0, 1, bone.transform.translate.x, bone.transform.translate.y],
     [1, 0, 0, 1, origin.x, origin.y],
-    [cos, sin, -sin, cos, 0, 0],
     [boneCos, boneSin, -boneSin, boneCos, 0, 0],
+    [1, 0, 0, 1, bone.transform.translate.x, bone.transform.translate.y],
+    [cos, sin, -sin, cos, 0, 0],
     // this rotation is correct for bone's posing space
-    [bone.transform.scale.y, 0, 0, bone.transform.scale.x, 0, 0],
+    [bone.transform.scale.x, 0, 0, bone.transform.scale.y, 0, 0],
     [boneCos, -boneSin, boneSin, boneCos, 0, 0],
     [1, 0, 0, 1, -origin.x, -origin.y],
   ])
+}
+
+export function getBoneRadian(bone: Bone): number {
+  return getRadian(bone.tail, bone.head) - Math.PI / 2
+}
+
+export function getBoneWorldTranslate(bone: Bone): IVec2 {
+  const rad = getBoneRadian(bone)
+  return rotate(bone.transform.translate, rad)
+}
+
+export function toBoneSpaceFn(bone: Bone): {
+  toLocal: (v: IVec2) => IVec2
+  toWorld: (v: IVec2) => IVec2
+} {
+  const rad = getBoneRadian(bone)
+  return {
+    toLocal: (v) => rotate(v, -rad),
+    toWorld: (v) => rotate(v, rad),
+  }
 }
 
 export function addPoseTransform(a: Transform, b: Transform): Transform {
@@ -152,13 +173,21 @@ export function editTransform(
 
 export function posedTransform(bone: Bone, transforms: Transform[]): Bone {
   const convoluted = convolutePoseTransforms(transforms)
+  const boneRad = getBoneRadian(bone)
+
+  const worldTranslate = rotate(convoluted.translate, boneRad)
   const head = applyTransform(
     bone.head,
-    getTransform({ translate: convoluted.translate })
+    getTransform({ translate: worldTranslate })
   )
   const tail = applyTransform(
     bone.tail,
-    getTransform({ ...convoluted, origin: bone.head, scale: { x: 1, y: 1 } })
+    getTransform({
+      ...convoluted,
+      translate: worldTranslate,
+      origin: bone.head,
+      scale: { x: 1, y: 1 },
+    })
   )
 
   return {
@@ -399,9 +428,11 @@ function resolveBonePose(
 }
 
 export function extendTransform(parent: Bone, child: Bone): Bone {
-  const childTranslate = child.connected
+  const childRad = getBoneRadian(child)
+  const childBaseTranslate = child.connected
     ? { x: 0, y: 0 }
     : child.transform.translate
+  const childTranslate = rotate(childBaseTranslate, childRad)
   const posedHead = add(child.head, childTranslate)
   const extendedPosedHead = applyPosedTransformToPoint(parent, posedHead)
   const headDiff = sub(extendedPosedHead, posedHead)
@@ -409,7 +440,7 @@ export function extendTransform(parent: Bone, child: Bone): Bone {
   return {
     ...child,
     transform: {
-      translate: add(childTranslate, headDiff),
+      translate: add(childBaseTranslate, rotate(headDiff, -childRad)),
       rotate: child.inheritRotation
         ? child.transform.rotate + parent.transform.rotate
         : child.transform.rotate,

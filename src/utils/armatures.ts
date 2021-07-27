@@ -34,7 +34,6 @@ import {
   AffineMatrix,
   getCenter,
   getPolygonCenter,
-  getRadian,
   interpolateScaler,
   interpolateVector,
   IRectangle,
@@ -67,7 +66,9 @@ import {
   applyPosedTransformToPoint,
   applyTransform,
   getBoneSquaredSize,
+  getBoneXRadian,
   invertScaleOrZero,
+  toBoneSpaceFn,
 } from '/@/utils/geometry'
 
 export function boneToAffine(bone: Bone): AffineMatrix {
@@ -88,26 +89,6 @@ export function boneToAffine(bone: Bone): AffineMatrix {
     [boneCos, -boneSin, boneSin, boneCos, 0, 0],
     [1, 0, 0, 1, -origin.x, -origin.y],
   ])
-}
-
-function getBoneXRadian(bone: Bone): number {
-  return getRadian(bone.tail, bone.head) - Math.PI / 2
-}
-
-export function getBoneWorldTranslate(bone: Bone): IVec2 {
-  const rad = getBoneXRadian(bone)
-  return rotate(bone.transform.translate, rad)
-}
-
-export function toBoneSpaceFn(bone: Bone): {
-  toLocal: (v: IVec2) => IVec2
-  toWorld: (v: IVec2) => IVec2
-} {
-  const rad = getBoneXRadian(bone)
-  return {
-    toLocal: (v) => rotate(v, -rad),
-    toWorld: (v) => rotate(v, rad),
-  }
 }
 
 export function addPoseTransform(a: Transform, b: Transform): Transform {

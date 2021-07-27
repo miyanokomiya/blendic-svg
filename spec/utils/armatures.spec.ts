@@ -22,6 +22,7 @@ import { getArmature, getBone, getTransform } from '../../src/models/index'
 import { getConstraint, getOptionByType } from '/@/utils/constraints'
 import { assertBoneGeometry } from 'spec/tools'
 import { add } from 'okageo'
+import { toBoneSpaceFn } from '/@/utils/geometry'
 
 describe('utils/armatures', () => {
   describe('invertPoseTransform', () => {
@@ -243,6 +244,16 @@ describe('utils/armatures', () => {
         parentId: 'parent',
         connected: false,
       })
+      const ret = target.fixConnections([parent, connected, unconnected])
+      expect(ret[0]).toEqual(parent)
+      expect(ret[2]).toEqual(unconnected)
+      assertBoneGeometry(
+        ret[1],
+        getBone({
+          id: 'connected',
+          head: { x: 1, y: 2 },
+        })
+      )
     })
   })
 
@@ -413,9 +424,9 @@ describe('utils/armatures', () => {
             transform: getTransform({
               translate: add(
                 { x: 2, y: 3 },
-                target
-                  .toBoneSpaceFn(b)
-                  .toLocal(target.toBoneSpaceFn(p).toWorld({ x: 10, y: 20 }))
+                toBoneSpaceFn(b).toLocal(
+                  toBoneSpaceFn(p).toWorld({ x: 10, y: 20 })
+                )
               ),
             }),
           })
@@ -443,9 +454,9 @@ describe('utils/armatures', () => {
           getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
-              translate: target
-                .toBoneSpaceFn(b)
-                .toLocal(target.toBoneSpaceFn(p).toWorld({ x: 10, y: 20 })),
+              translate: toBoneSpaceFn(b).toLocal(
+                toBoneSpaceFn(p).toWorld({ x: 10, y: 20 })
+              ),
             }),
             connected: true,
           })
@@ -477,7 +488,7 @@ describe('utils/armatures', () => {
           getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
-              translate: target.toBoneSpaceFn(b).toLocal({ x: 2, y: 2 }),
+              translate: toBoneSpaceFn(b).toLocal({ x: 2, y: 2 }),
               scale: { x: 4, y: 9 },
               rotate: 45,
             }),
@@ -509,7 +520,7 @@ describe('utils/armatures', () => {
           getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
-              translate: target.toBoneSpaceFn(b).toLocal({ x: 2, y: 2 }),
+              translate: toBoneSpaceFn(b).toLocal({ x: 2, y: 2 }),
               scale: { x: 2, y: 3 },
               rotate: 45,
             }),
@@ -540,7 +551,7 @@ describe('utils/armatures', () => {
           getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
-              translate: target.toBoneSpaceFn(b).toLocal({ x: -3, y: -1 }),
+              translate: toBoneSpaceFn(b).toLocal({ x: -3, y: -1 }),
               rotate: 135,
             }),
           })
@@ -559,7 +570,7 @@ describe('utils/armatures', () => {
             head: { x: 2, y: 3 },
             inheritRotation: false,
             transform: getTransform({
-              translate: target.toBoneSpaceFn(b).toLocal({ x: -3, y: -1 }),
+              translate: toBoneSpaceFn(b).toLocal({ x: -3, y: -1 }),
               rotate: 45,
             }),
           })

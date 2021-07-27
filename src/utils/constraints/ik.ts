@@ -20,11 +20,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { add, getRadian, IVec2, multi, rotate, sub } from 'okageo'
 import { getParentIdPath, sumReduce } from '../commons'
 import { Bone, IdMap, toMap } from '/@/models'
-import {
-  getBoneWorldTranslate,
-  interpolateTransform,
-  toBoneSpaceFn,
-} from '/@/utils/armatures'
+import { interpolateTransform } from '/@/utils/armatures'
+import { getBoneWorldTranslate, toBoneSpaceFn } from '/@/utils/geometry'
 
 export interface Option {
   targetId: string

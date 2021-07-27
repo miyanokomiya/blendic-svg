@@ -19,13 +19,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { assertBoneGeometry } from 'spec/tools'
 import { getTransform, getBone } from '/@/models'
-import { toBoneSpaceFn } from '/@/utils/armatures'
 import {
   apply,
   getDependentCountMap,
   getOption,
   immigrate,
 } from '/@/utils/constraints/copyLocation'
+import { toBoneSpaceFn } from '/@/utils/geometry'
 
 describe('utils/constraints/copyLocation.ts', () => {
   describe('apply', () => {

@@ -19,8 +19,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { add, sub } from 'okageo'
 import { Bone, IdMap, SpaceType } from '/@/models'
-import { getBoneWorldTranslate, toBoneSpaceFn } from '/@/utils/armatures'
-import { applyScale, getBoneWorldLocation } from '/@/utils/geometry'
+import {
+  applyScale,
+  getBoneWorldLocation,
+  getBoneWorldTranslate,
+  toBoneSpaceFn,
+} from '/@/utils/geometry'
 
 export interface Option {
   targetSpaceType: SpaceType

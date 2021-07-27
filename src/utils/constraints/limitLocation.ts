@@ -19,11 +19,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { add, IVec2, multi, sub } from 'okageo'
 import { Bone, IdMap, SpaceType } from '/@/models'
-import { toBoneSpaceFn } from '/@/utils/armatures'
 import {
   applyPosedTransformToPoint,
   clamp,
   getBoneWorldLocation,
+  toBoneSpaceFn,
 } from '/@/utils/geometry'
 
 export interface Option {

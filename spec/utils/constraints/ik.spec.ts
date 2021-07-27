@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { assertTransform } from 'spec/tools'
 import { getTransform, getBone } from '/@/models'
-import { toBoneSpaceFn } from '/@/utils/armatures'
+import { toBoneSpaceFn } from '/@/utils/geometry'
 import {
   apply,
   getDependentCountMap,

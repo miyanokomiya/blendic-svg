@@ -33,7 +33,6 @@ import {
   sub,
 } from 'okageo'
 import { Bone, getTransform, scaleRate, Transform } from '/@/models'
-import {getBoneWorldTranslate} from '/@/utils/armatures'
 
 export function clamp(min = -Infinity, max = Infinity, val: number) {
   return Math.max(Math.min(val, max), min)
@@ -181,6 +180,26 @@ export function getBoneWorldRotation(bone: Bone): number {
 
 export function getBoneWorldLocation(bone: Bone): IVec2 {
   return add(bone.head, getBoneWorldTranslate(bone))
+}
+
+export function getBoneXRadian(bone: Bone): number {
+  return getRadian(bone.tail, bone.head) - Math.PI / 2
+}
+
+export function getBoneWorldTranslate(bone: Bone): IVec2 {
+  const rad = getBoneXRadian(bone)
+  return rotate(bone.transform.translate, rad)
+}
+
+export function toBoneSpaceFn(bone: Bone): {
+  toLocal: (v: IVec2) => IVec2
+  toWorld: (v: IVec2) => IVec2
+} {
+  const rad = getBoneXRadian(bone)
+  return {
+    toLocal: (v) => rotate(v, -rad),
+    toWorld: (v) => rotate(v, rad),
+  }
 }
 
 export function getBoneSquaredSize(bone: Bone): number {

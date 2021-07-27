@@ -39,11 +39,10 @@ import { mapReduce } from '/@/utils/commons'
 import {
   addPoseTransform,
   getTransformedBoneMap,
-  invertPoseTransform,
+  getWorldToLocalTranslateFn,
   selectBoneInRect,
 } from '/@/utils/armatures'
 import {
-  applyTransformToVec,
   getContinuousRadDiff,
   snapGrid,
   snapRotate,
@@ -116,11 +115,8 @@ export function useBonePoseMode(
   function convertToPosedSpace(vec: IVec2, boneId: string): IVec2 {
     const bone = animationStore.currentPosedBones.value[boneId]
     const parent = animationStore.currentPosedBones.value[bone.parentId]
-    if (parent) {
-      return applyTransformToVec(vec, invertPoseTransform(parent.transform))
-    } else {
-      return vec
-    }
+    const worldToLocalFn = getWorldToLocalTranslateFn(bone, parent?.transform)
+    return worldToLocalFn(vec)
   }
 
   function rotateDirection(boneId: string) {

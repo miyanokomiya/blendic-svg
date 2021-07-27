@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import * as target from '../../src/utils/armatures'
 import { getArmature, getBone, getTransform } from '../../src/models/index'
 import { getConstraint, getOptionByType } from '/@/utils/constraints'
-import { assertBoneGeometry } from 'spec/tools'
+import { assertBoneGeometry, assertVec } from 'spec/tools'
 import { add } from 'okageo'
 import { toBoneSpaceFn } from '/@/utils/geometry'
 
@@ -1413,6 +1413,45 @@ describe('utils/armatures', () => {
           )
         ).toEqual({ head: true, tail: true })
       })
+    })
+  })
+
+  describe('getWorldToLocalTranslateFn', () => {
+    it('should return a function to convert the vec from world to local space', () => {
+      const fn1 = target.getWorldToLocalTranslateFn(
+        getBone({
+          tail: { x: 0, y: 1 },
+        }),
+        getTransform()
+      )
+      assertVec(fn1({ x: 1, y: 0 }), { x: 1, y: 0 })
+      assertVec(fn1({ x: 0, y: 1 }), { x: 0, y: 1 })
+
+      const fn2 = target.getWorldToLocalTranslateFn(
+        getBone({
+          tail: { x: -1, y: 0 },
+        }),
+        getTransform()
+      )
+      assertVec(fn2({ x: 1, y: 0 }), { x: 0, y: -1 })
+      assertVec(fn2({ x: 0, y: 1 }), { x: 1, y: 0 })
+
+      const fn3 = target.getWorldToLocalTranslateFn(
+        getBone({
+          tail: { x: 0, y: 1 },
+        }),
+        getTransform({ rotate: 90 })
+      )
+      assertVec(fn3({ x: 1, y: 0 }), { x: 0, y: -1 })
+      assertVec(fn3({ x: 0, y: 1 }), { x: 1, y: 0 })
+    })
+    it('parentSpace can be omitted', () => {
+      const fn = target.getWorldToLocalTranslateFn(
+        getBone({
+          tail: { x: 0, y: 1 },
+        })
+      )
+      assertVec(fn({ x: 1, y: 0 }), { x: 1, y: 0 })
     })
   })
 })

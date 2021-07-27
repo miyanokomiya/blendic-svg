@@ -65,6 +65,7 @@ import {
 import {
   applyPosedTransformToPoint,
   applyTransform,
+  applyTransformToVec,
   getBoneSquaredSize,
   getBoneXRadian,
   invertScaleOrZero,
@@ -832,4 +833,15 @@ export function getShiftClickedBoneState(
     head: clicked.head ? !current.head : current.head,
     tail: clicked.tail ? !current.tail : current.tail,
   }
+}
+
+export function getWorldToLocalTranslateFn(
+  bone: Bone,
+  parentSpace?: Transform
+): (v: IVec2) => IVec2 {
+  const toSpaceFn = toBoneSpaceFn(bone)
+  if (!parentSpace) return (v) => toSpaceFn.toLocal(v)
+
+  const invP = invertPoseTransform(parentSpace)
+  return (v) => toSpaceFn.toLocal(applyTransformToVec(v, invP))
 }

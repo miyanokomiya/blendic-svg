@@ -72,7 +72,7 @@ import {
 
 export function boneToAffine(bone: Bone): AffineMatrix {
   const origin = bone.head
-  const boneRad = getBoneRadian(bone)
+  const boneRad = getBoneXRadian(bone)
   const boneCos = Math.cos(boneRad)
   const boneSin = Math.sin(boneRad)
   const rad = (bone.transform.rotate / 180) * Math.PI
@@ -90,12 +90,12 @@ export function boneToAffine(bone: Bone): AffineMatrix {
   ])
 }
 
-export function getBoneRadian(bone: Bone): number {
+function getBoneXRadian(bone: Bone): number {
   return getRadian(bone.tail, bone.head) - Math.PI / 2
 }
 
 export function getBoneWorldTranslate(bone: Bone): IVec2 {
-  const rad = getBoneRadian(bone)
+  const rad = getBoneXRadian(bone)
   return rotate(bone.transform.translate, rad)
 }
 
@@ -103,7 +103,7 @@ export function toBoneSpaceFn(bone: Bone): {
   toLocal: (v: IVec2) => IVec2
   toWorld: (v: IVec2) => IVec2
 } {
-  const rad = getBoneRadian(bone)
+  const rad = getBoneXRadian(bone)
   return {
     toLocal: (v) => rotate(v, -rad),
     toWorld: (v) => rotate(v, rad),
@@ -173,7 +173,7 @@ export function editTransform(
 
 export function posedTransform(bone: Bone, transforms: Transform[]): Bone {
   const convoluted = convolutePoseTransforms(transforms)
-  const boneRad = getBoneRadian(bone)
+  const boneRad = getBoneXRadian(bone)
 
   const worldTranslate = rotate(convoluted.translate, boneRad)
   const head = applyTransform(
@@ -428,19 +428,19 @@ function resolveBonePose(
 }
 
 export function extendTransform(parent: Bone, child: Bone): Bone {
-  const childRad = getBoneRadian(child)
+  const toSpaceFn = toBoneSpaceFn(child)
+
   const childBaseTranslate = child.connected
     ? { x: 0, y: 0 }
     : child.transform.translate
-  const childTranslate = rotate(childBaseTranslate, childRad)
-  const posedHead = add(child.head, childTranslate)
+  const posedHead = add(child.head, toSpaceFn.toWorld(childBaseTranslate))
   const extendedPosedHead = applyPosedTransformToPoint(parent, posedHead)
   const headDiff = sub(extendedPosedHead, posedHead)
 
   return {
     ...child,
     transform: {
-      translate: add(childBaseTranslate, rotate(headDiff, -childRad)),
+      translate: add(childBaseTranslate, toSpaceFn.toLocal(headDiff)),
       rotate: child.inheritRotation
         ? child.transform.rotate + parent.transform.rotate
         : child.transform.rotate,

@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { add, IVec2, multi, sub } from 'okageo'
 import { Bone, IdMap, SpaceType } from '/@/models'
+import { toBoneSpaceFn } from '/@/utils/armatures'
 import {
   applyPosedTransformToPoint,
   clamp,
@@ -48,9 +49,11 @@ export function apply(
   if (!b) return boneMap
   if (b.connected) return boneMap
 
+  const toSpaceFn = toBoneSpaceFn(b)
+
   if (option.spaceType === 'world') {
-    const ownerLocation = getBoneWorldLocation(b)
-    const diff = limitLocationDiff(option, ownerLocation)
+    const ownerWorldLocation = getBoneWorldLocation(b)
+    const diff = limitLocationDiff(option, ownerWorldLocation)
 
     return {
       ...boneMap,
@@ -58,7 +61,9 @@ export function apply(
         ...b,
         transform: {
           ...b.transform,
-          translate: sub(add(ownerLocation, diff), b.head),
+          translate: toSpaceFn.toLocal(
+            sub(add(ownerWorldLocation, diff), b.head)
+          ),
         },
       },
     }
@@ -68,10 +73,10 @@ export function apply(
 
     const ownerTranslate = localB.transform.translate
     const diff = limitLocationDiff(option, ownerTranslate)
-    const nextLocalTranslate = add(ownerTranslate, diff)
+    const nextWorldTranslate = toSpaceFn.toWorld(add(ownerTranslate, diff))
 
     // recalc extended translation
-    const posedHead = add(localB.head, nextLocalTranslate)
+    const posedHead = add(localB.head, nextWorldTranslate)
     const extendedPosedHead = boneMap[b.parentId]
       ? applyPosedTransformToPoint(boneMap[b.parentId], posedHead)
       : posedHead
@@ -83,7 +88,7 @@ export function apply(
         ...b,
         transform: {
           ...b.transform,
-          translate: add(nextLocalTranslate, headDiff),
+          translate: toSpaceFn.toLocal(add(nextWorldTranslate, headDiff)),
         },
       },
     }

@@ -373,6 +373,7 @@ describe('src/utils/geometry.ts', () => {
         getBoneWorldLocation(
           getBone({
             head: { x: 1, y: 2 },
+            tail: { x: 1, y: 3 },
             transform: getTransform({
               translate: { x: 10, y: 20 },
             }),

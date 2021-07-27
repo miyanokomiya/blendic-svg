@@ -17,7 +17,10 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { add, sub } from 'okageo'
+import { assertBoneGeometry } from 'spec/tools'
 import { getTransform, getBone } from '/@/models'
+import { toBoneSpaceFn } from '/@/utils/armatures'
 import {
   apply,
   getDependentCountMap,
@@ -32,7 +35,7 @@ const useAll = {
   useMaxY: true,
 }
 
-describe('utils/limitLocation.ts', () => {
+describe('src/utils/constraints/limitLocation.ts', () => {
   describe('apply', () => {
     it('do nothing if target is connected', () => {
       const boneMap = {
@@ -50,29 +53,30 @@ describe('utils/limitLocation.ts', () => {
         const boneMap = {
           a: getBone({
             head: { x: 1, y: 2 },
+            tail: { x: 1, y: 3 },
             transform: getTransform({ translate: { x: 10, y: 20 } }),
           }),
         }
-        expect(
-          apply(
-            'a',
-            getOption({
-              minX: 100,
-              maxX: 500,
-              minY: 100,
-              maxY: 500,
-              useMaxX: true,
-              useMaxY: true,
-            }),
-            {},
-            boneMap
-          )
-        ).toEqual(boneMap)
+        const ret = apply(
+          'a',
+          getOption({
+            minX: 100,
+            maxX: 500,
+            minY: 100,
+            maxY: 500,
+            useMaxX: true,
+            useMaxY: true,
+          }),
+          {},
+          boneMap
+        )
+        assertBoneGeometry(ret.a, boneMap.a)
       })
       it('not use max', () => {
         const boneMap = {
           a: getBone({
             head: { x: 1, y: 2 },
+            tail: { x: 1, y: 3 },
             transform: getTransform({ translate: { x: 10, y: 20 } }),
           }),
         }
@@ -98,6 +102,7 @@ describe('utils/limitLocation.ts', () => {
       const boneMap = {
         a: getBone({
           head: { x: 1, y: 2 },
+          tail: { x: 1, y: 3 },
           transform: getTransform({ translate: { x: 10, y: 20 } }),
         }),
       }
@@ -119,6 +124,7 @@ describe('utils/limitLocation.ts', () => {
         ).toEqual({
           a: getBone({
             head: { x: 1, y: 2 },
+            tail: { x: 1, y: 3 },
             transform: getTransform({
               translate: { x: 7, y: 15 + (22 - 15) / 2 - 2 },
             }),
@@ -126,28 +132,29 @@ describe('utils/limitLocation.ts', () => {
         })
       })
       it('limit location min', () => {
-        expect(
-          apply(
-            'a',
-            getOption({
-              minX: 20,
-              maxX: 100,
-              minY: 30,
-              maxY: 100,
-              influence: 0.5,
-              ...useAll,
-            }),
-            {},
-            boneMap
-          )
-        ).toEqual({
-          a: getBone({
-            head: { x: 1, y: 2 },
-            transform: getTransform({
-              translate: { x: 14.5, y: 24 },
-            }),
+        const ret = apply(
+          'a',
+          getOption({
+            minX: 20,
+            maxX: 100,
+            minY: 30,
+            maxY: 100,
+            influence: 0.5,
+            ...useAll,
           }),
-        })
+          {},
+          boneMap
+        )
+        assertBoneGeometry(
+          ret.a,
+          getBone({
+            head: { x: 1, y: 2 },
+            tail: { x: 1, y: 3 },
+            transform: getTransform({
+              translate: toBoneSpaceFn(boneMap.a).toLocal({ x: 14.5, y: 24 }),
+            }),
+          })
+        )
       })
     })
     describe('local space', () => {
@@ -161,34 +168,40 @@ describe('utils/limitLocation.ts', () => {
         a: getBone({
           parentId: 'b',
           head: { x: 1, y: 2 },
+          tail: { x: 1, y: 3 },
           transform: getTransform({ translate: { x: 10, y: 20 } }),
         }),
         b: getBone({
+          tail: { x: 0, y: 1 },
           transform: getTransform({ translate: { x: 100, y: 200 } }),
         }),
       }
       it('limit locally', () => {
-        expect(
-          apply(
-            'a',
-            getOption({
-              maxX: 3,
-              maxY: 5,
-              influence: 0.5,
-              spaceType: 'local',
-              ...useAll,
-            }),
-            localMap,
-            boneMap
-          )
-        ).toEqual({
-          ...boneMap,
-          a: getBone({
-            parentId: 'b',
-            head: { x: 1, y: 2 },
-            transform: getTransform({ translate: { x: 103.5, y: 205.5 } }),
+        const ret = apply(
+          'a',
+          getOption({
+            maxX: 3,
+            maxY: 5,
+            influence: 0.5,
+            spaceType: 'local',
+            ...useAll,
           }),
-        })
+          localMap,
+          boneMap
+        )
+        assertBoneGeometry(
+          ret.a,
+          getBone({
+            head: { x: 1, y: 2 },
+            tail: { x: 1, y: 3 },
+            transform: getTransform({
+              translate: add(
+                toBoneSpaceFn(boneMap.a).toLocal({ x: 100, y: 200 }),
+                { x: 3.5, y: 5.5 }
+              ),
+            }),
+          })
+        )
       })
       it('limit locally and extend parent transform', () => {
         const map = {
@@ -201,26 +214,30 @@ describe('utils/limitLocation.ts', () => {
             },
           },
         }
-        expect(
-          apply(
-            'a',
-            getOption({
-              maxX: 3,
-              maxY: 5,
-              spaceType: 'local',
-              ...useAll,
-            }),
-            localMap,
-            map
-          )
-        ).toEqual({
-          ...map,
-          a: getBone({
-            parentId: 'b',
-            head: { x: 1, y: 2 },
-            transform: getTransform({ translate: { x: 97, y: 195 } }),
+        const ret = apply(
+          'a',
+          getOption({
+            maxX: 3,
+            maxY: 5,
+            spaceType: 'local',
+            ...useAll,
           }),
-        })
+          localMap,
+          map
+        )
+        assertBoneGeometry(
+          ret.a,
+          getBone({
+            head: { x: 1, y: 2 },
+            tail: { x: 1, y: 3 },
+            transform: getTransform({
+              translate: sub(
+                toBoneSpaceFn(boneMap.a).toLocal({ x: 100, y: 200 }),
+                { x: 3, y: 5 }
+              ),
+            }),
+          })
+        )
       })
     })
   })

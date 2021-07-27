@@ -17,7 +17,9 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { assertBoneGeometry } from 'spec/tools'
 import { getTransform, getBone } from '/@/models'
+import { toBoneSpaceFn } from '/@/utils/armatures'
 import {
   apply,
   getDependentCountMap,
@@ -29,17 +31,20 @@ describe('utils/constraints/copyLocation.ts', () => {
   describe('apply', () => {
     const parent = getBone({
       id: 'parent',
+      tail: { x: 0, y: 1 },
       transform: getTransform({ translate: { x: 1000, y: 2000 } }),
     })
     const boneMap = {
       a: getBone({
         id: 'a',
         head: { x: 3, y: 4 },
+        tail: { x: 3, y: 5 },
         transform: getTransform({ translate: { x: 100, y: 200 } }),
       }),
       b: getBone({
         id: 'b',
         head: { x: 1, y: 2 },
+        tail: { x: 1, y: 3 },
         transform: getTransform({ translate: { x: 10, y: 20 } }),
         parentId: 'parent',
       }),
@@ -48,10 +53,14 @@ describe('utils/constraints/copyLocation.ts', () => {
     const localMap = {
       a: getBone({
         id: 'a',
+        head: { x: 3, y: 4 },
+        tail: { x: 3, y: 5 },
         transform: getTransform({ translate: { x: 50, y: 150 } }),
       }),
       b: getBone({
         id: 'b',
+        head: { x: 1, y: 2 },
+        tail: { x: 1, y: 3 },
         transform: getTransform({ translate: { x: 5, y: 15 } }),
         parentId: 'parent',
       }),
@@ -183,11 +192,12 @@ describe('utils/constraints/copyLocation.ts', () => {
         localMap,
         boneMap
       )
-      expect(ret.b).toEqual(
+      assertBoneGeometry(
+        ret.b,
         getBone({
           ...boneMap.b,
           transform: getTransform({
-            translate: { x: 1050, y: 2150 },
+            translate: toBoneSpaceFn(boneMap.a).toLocal({ x: 1050, y: 2150 }),
           }),
         })
       )

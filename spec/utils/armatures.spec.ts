@@ -20,6 +20,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 import * as target from '../../src/utils/armatures'
 import { getArmature, getBone, getTransform } from '../../src/models/index'
 import { getConstraint, getOptionByType } from '/@/utils/constraints'
+import { assertBoneGeometry } from 'spec/tools'
+import { add } from 'okageo'
 
 describe('utils/armatures', () => {
   describe('invertPoseTransform', () => {
@@ -241,11 +243,6 @@ describe('utils/armatures', () => {
         parentId: 'parent',
         connected: false,
       })
-      expect(target.fixConnections([parent, connected, unconnected])).toEqual([
-        parent,
-        { ...connected, head: { x: 1, y: 2 } },
-        unconnected,
-      ])
     })
   })
 
@@ -394,52 +391,61 @@ describe('utils/armatures', () => {
   describe('extendTransform', () => {
     describe('translate', () => {
       it('connected: false => add parent translate', () => {
-        expect(
-          target.extendTransform(
-            getBone({
-              tail: { x: 1, y: 1 },
-              transform: getTransform({
-                translate: { x: 10, y: 20 },
-              }),
-            }),
-            getBone({
-              head: { x: 2, y: 3 },
-              transform: getTransform({
-                translate: { x: 2, y: 3 },
-              }),
-            })
-          )
-        ).toEqual(
+        const p = getBone({
+          tail: { x: 1, y: 1 },
+          transform: getTransform({
+            translate: { x: 10, y: 20 },
+          }),
+        })
+        const b = target.extendTransform(
+          p,
           getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
-              translate: { x: 12, y: 23 },
+              translate: { x: 2, y: 3 },
+            }),
+          })
+        )
+        assertBoneGeometry(
+          b,
+          getBone({
+            head: { x: 2, y: 3 },
+            transform: getTransform({
+              translate: add(
+                { x: 2, y: 3 },
+                target
+                  .toBoneSpaceFn(b)
+                  .toLocal(target.toBoneSpaceFn(p).toWorld({ x: 10, y: 20 }))
+              ),
             }),
           })
         )
       })
       it('connected: true => replace by parent translate', () => {
-        expect(
-          target.extendTransform(
-            getBone({
-              tail: { x: 1, y: 1 },
-              transform: getTransform({
-                translate: { x: 10, y: 20 },
-              }),
-            }),
-            getBone({
-              head: { x: 2, y: 3 },
-              transform: getTransform({
-                translate: { x: 2, y: 3 },
-              }),
-              connected: true,
-            })
-          )
-        ).toEqual(
+        const p = getBone({
+          tail: { x: 1, y: 1 },
+          transform: getTransform({
+            translate: { x: 10, y: 20 },
+          }),
+        })
+        const b = target.extendTransform(
+          p,
           getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
-              translate: { x: 10, y: 20 },
+              translate: { x: 2, y: 3 },
+            }),
+            connected: true,
+          })
+        )
+        assertBoneGeometry(
+          b,
+          getBone({
+            head: { x: 2, y: 3 },
+            transform: getTransform({
+              translate: target
+                .toBoneSpaceFn(b)
+                .toLocal(target.toBoneSpaceFn(p).toWorld({ x: 10, y: 20 })),
             }),
             connected: true,
           })
@@ -449,28 +455,29 @@ describe('utils/armatures', () => {
     describe('scale', () => {
       it('inheritScale: true', () => {
         expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())
-        expect(
-          target.extendTransform(
-            getBone({
-              head: { x: 1, y: 1 },
-              tail: { x: 2, y: 1 },
-              transform: getTransform({
-                scale: { x: 2, y: 3 },
-              }),
+
+        const b = target.extendTransform(
+          getBone({
+            head: { x: 1, y: 1 },
+            tail: { x: 2, y: 1 },
+            transform: getTransform({
+              scale: { x: 2, y: 3 },
             }),
-            getBone({
-              head: { x: 2, y: 3 },
-              transform: getTransform({
-                scale: { x: 2, y: 3 },
-                rotate: 45,
-              }),
-            })
-          )
-        ).toEqual(
+          }),
           getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
-              translate: { x: 2, y: 2 },
+              scale: { x: 2, y: 3 },
+              rotate: 45,
+            }),
+          })
+        )
+        assertBoneGeometry(
+          b,
+          getBone({
+            head: { x: 2, y: 3 },
+            transform: getTransform({
+              translate: target.toBoneSpaceFn(b).toLocal({ x: 2, y: 2 }),
               scale: { x: 4, y: 9 },
               rotate: 45,
             }),
@@ -479,29 +486,30 @@ describe('utils/armatures', () => {
       })
       it('inheritScale: false', () => {
         expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())
-        expect(
-          target.extendTransform(
-            getBone({
-              head: { x: 1, y: 1 },
-              tail: { x: 2, y: 1 },
-              transform: getTransform({
-                scale: { x: 2, y: 3 },
-              }),
+
+        const b = target.extendTransform(
+          getBone({
+            head: { x: 1, y: 1 },
+            tail: { x: 2, y: 1 },
+            transform: getTransform({
+              scale: { x: 2, y: 3 },
             }),
-            getBone({
-              head: { x: 2, y: 3 },
-              transform: getTransform({
-                scale: { x: 2, y: 3 },
-                rotate: 45,
-              }),
-              inheritScale: false,
-            })
-          )
-        ).toEqual(
+          }),
           getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
-              translate: { x: 2, y: 2 },
+              scale: { x: 2, y: 3 },
+              rotate: 45,
+            }),
+            inheritScale: false,
+          })
+        )
+        assertBoneGeometry(
+          b,
+          getBone({
+            head: { x: 2, y: 3 },
+            transform: getTransform({
+              translate: target.toBoneSpaceFn(b).toLocal({ x: 2, y: 2 }),
               scale: { x: 2, y: 3 },
               rotate: 45,
             }),
@@ -526,11 +534,13 @@ describe('utils/armatures', () => {
       })
       it('inheritRotation: true', () => {
         expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())
-        expect(target.extendTransform(parent, child)).toEqual(
+        const b = target.extendTransform(parent, child)
+        assertBoneGeometry(
+          b,
           getBone({
             head: { x: 2, y: 3 },
             transform: getTransform({
-              translate: { x: -3, y: -1 },
+              translate: target.toBoneSpaceFn(b).toLocal({ x: -3, y: -1 }),
               rotate: 135,
             }),
           })
@@ -538,14 +548,18 @@ describe('utils/armatures', () => {
       })
       it('inheritRotation: false', () => {
         expect(target.extendTransform(getBone(), getBone())).toEqual(getBone())
-        expect(
-          target.extendTransform(parent, { ...child, inheritRotation: false })
-        ).toEqual(
+
+        const b = target.extendTransform(parent, {
+          ...child,
+          inheritRotation: false,
+        })
+        assertBoneGeometry(
+          b,
           getBone({
             head: { x: 2, y: 3 },
             inheritRotation: false,
             transform: getTransform({
-              translate: { x: -3, y: -1 },
+              translate: target.toBoneSpaceFn(b).toLocal({ x: -3, y: -1 }),
               rotate: 45,
             }),
           })

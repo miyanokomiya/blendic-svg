@@ -17,7 +17,9 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { assertTransform } from 'spec/tools'
 import { getTransform, getBone } from '/@/models'
+import { toBoneSpaceFn } from '/@/utils/armatures'
 import {
   apply,
   getDependentCountMap,
@@ -149,8 +151,8 @@ describe('utils/constraints/ik.ts', () => {
           influence: 1,
         }
         const res = apply('b', option, {}, boneMap)
-        expect(res.a.transform.rotate).toBeCloseTo(-24.29491472973583)
-        expect(res.b.transform.rotate).toBeCloseTo(114.2955545667173)
+        expect(res.a.transform.rotate).toBeCloseTo(-24.20873509072387)
+        expect(res.b.transform.rotate).toBeCloseTo(114.41051185097109)
         expect(res.a.transform.translate.x).toBeCloseTo(0)
         expect(res.a.transform.translate.y).toBeCloseTo(0)
       })
@@ -163,8 +165,8 @@ describe('utils/constraints/ik.ts', () => {
           influence: 1,
         }
         const res = apply('b', option, {}, boneMap)
-        expect(res.a.transform.rotate).toBeCloseTo(114.2955545667173)
-        expect(res.b.transform.rotate).toBeCloseTo(-24.29491472973583)
+        expect(res.a.transform.rotate).toBeCloseTo(114.2087350907239)
+        expect(res.b.transform.rotate).toBeCloseTo(-24.410511850971062)
         expect(res.a.transform.translate.x).toBeCloseTo(0)
         expect(res.a.transform.translate.y).toBeCloseTo(0)
       })
@@ -210,28 +212,43 @@ describe('utils/constraints/ik.ts', () => {
 
   describe('straightToPoleTarget', () => {
     it('straight forward to pole target', () => {
-      const res = straightToPoleTarget({ x: 10, y: 10 }, [
-        getBone({ id: 'a', head: { x: 0, y: 0 }, tail: { x: 1, y: 0 } }),
-        getBone({ id: 'b', head: { x: 1, y: 0 }, tail: { x: 2, y: 0 } }),
-      ])
-      expect(res[0].transform.rotate).toBeCloseTo(45)
-      expect(res[0].transform.translate.x).toBeCloseTo(0)
-      expect(res[0].transform.translate.y).toBeCloseTo(0)
-      expect(res[1].transform.rotate).toBeCloseTo(45)
-      expect(res[1].transform.translate.x).toBeCloseTo(1 / Math.sqrt(2) - 1)
-      expect(res[1].transform.translate.y).toBeCloseTo(1 / Math.sqrt(2))
+      const a = getBone({ id: 'a', head: { x: 0, y: 0 }, tail: { x: 1, y: 0 } })
+      const b = getBone({ id: 'b', head: { x: 1, y: 0 }, tail: { x: 2, y: 0 } })
+      const res = straightToPoleTarget({ x: 10, y: 10 }, [a, b])
+      assertTransform(
+        res[0].transform,
+        getTransform({
+          rotate: 45,
+        })
+      )
+      assertTransform(
+        res[1].transform,
+        getTransform({
+          rotate: 45,
+          translate: toBoneSpaceFn(b).toLocal({
+            x: 1 / Math.sqrt(2) - 1,
+            y: 1 / Math.sqrt(2),
+          }),
+        })
+      )
     })
     it('inclined bones', () => {
-      const res = straightToPoleTarget({ x: 0, y: 10 }, [
-        getBone({ id: 'a', head: { x: 0, y: 0 }, tail: { x: 1, y: 1 } }),
-        getBone({ id: 'b', head: { x: 1, y: 1 }, tail: { x: 2, y: 2 } }),
-      ])
-      expect(res[0].transform.rotate).toBeCloseTo(45)
-      expect(res[0].transform.translate.x).toBeCloseTo(0)
-      expect(res[0].transform.translate.y).toBeCloseTo(0)
-      expect(res[1].transform.rotate).toBeCloseTo(45)
-      expect(res[1].transform.translate.x).toBeCloseTo(-1)
-      expect(res[1].transform.translate.y).toBeCloseTo(Math.sqrt(2) - 1)
+      const a = getBone({ id: 'a', head: { x: 0, y: 0 }, tail: { x: 1, y: 1 } })
+      const b = getBone({ id: 'b', head: { x: 1, y: 1 }, tail: { x: 2, y: 2 } })
+      const res = straightToPoleTarget({ x: 0, y: 10 }, [a, b])
+      assertTransform(
+        res[0].transform,
+        getTransform({
+          rotate: 45,
+        })
+      )
+      assertTransform(
+        res[1].transform,
+        getTransform({
+          rotate: 45,
+          translate: toBoneSpaceFn(b).toLocal({ x: -1, y: Math.sqrt(2) - 1 }),
+        })
+      )
     })
   })
 

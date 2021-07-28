@@ -41,7 +41,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                 <AppCanvas :original-view-box="viewBox" class="canvas">
                   <template #default="{ scale }">
                     <ElementLayer
-                      :bone-map="posedMap"
+                      :bone-map="posedBoneMap"
                       :canvas-mode="canvasMode"
                       :class="{ 'view-only': canvasMode !== 'weight' }"
                     />
@@ -72,6 +72,11 @@ Copyright (C) 2021, Tomoya Komiyama.
                         :selected-bones="selectedBones"
                         :canvas-mode="canvasMode"
                         @select="selectBone"
+                      />
+                      <SpaceAxis
+                        v-if="lastSelectedBoneSpace"
+                        :origin="lastSelectedBoneSpace.origin"
+                        :radian="lastSelectedBoneSpace.radian"
                       />
                     </g>
                   </template>
@@ -104,15 +109,9 @@ import ElementLayer from './components/elements/ElementLayer.vue'
 import ArmatureElm from './components/elements/ArmatureElm.vue'
 import CanvasSideBar from '/@/components/CanvasSideBar.vue'
 import BoneLayer from '/@/components/elements/BoneLayer.vue'
-import { Bone, BoneSelectedState, IdMap, toMap } from './models/index'
+import SpaceAxis from '/@/components/elements/atoms/SpaceAxis.vue'
+import { BoneSelectedState } from './models/index'
 import { EditMode, SelectOptions } from './composables/modes/types'
-
-import {
-  addPoseTransform,
-  editTransform,
-  getTransformedBoneMap,
-  posedTransform,
-} from './utils/armatures'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
@@ -135,6 +134,7 @@ export default defineComponent({
     BoneLayer,
     ResizableV,
     ResizableH,
+    SpaceAxis,
   },
   setup() {
     const store = useStore()
@@ -149,61 +149,15 @@ export default defineComponent({
 
     const canvasMode = computed(() => canvasStore.state.canvasMode)
 
-    const lastSelectedArmature = computed(
-      () => store.lastSelectedArmature.value
-    )
     const otherArmatures = computed(() =>
       store.state.armatures.filter(
         (a) => a.id !== store.lastSelectedArmature.value?.id
       )
     )
 
-    const posedMap = computed(() => {
-      if (!lastSelectedArmature.value) return {}
-
-      if (canvasStore.command.value) {
-        const constraintMap =
-          animationStore.currentInterpolatedConstraintMap.value
-
-        return getTransformedBoneMap(
-          toMap(
-            lastSelectedArmature.value.bones.map((b) => {
-              return {
-                ...b,
-                transform: addPoseTransform(
-                  animationStore.getCurrentSelfTransforms(b.id),
-                  canvasStore.getEditTransforms(b.id)
-                ),
-                constraints: b.constraints.map((b) => constraintMap[b.id]),
-              }
-            })
-          )
-        )
-      } else {
-        return animationStore.currentPosedBones.value
-      }
-    })
-
-    const visibledBoneMap = computed(() => {
-      if (!lastSelectedArmature.value) return {}
-      if (canvasMode.value === 'edit') {
-        return toMap(
-          lastSelectedArmature.value.bones.map((b) => {
-            return editTransform(
-              b,
-              canvasStore.getEditTransforms(b.id),
-              store.state.selectedBones[b.id] || {}
-            )
-          })
-        )
-      } else {
-        return Object.keys(posedMap.value).reduce<IdMap<Bone>>((p, id) => {
-          const b = posedMap.value[id]
-          p[id] = posedTransform(b, [b.transform])
-          return p
-        }, {})
-      }
-    })
+    const posedBoneMap = canvasStore.posedBoneMap
+    const visibledBoneMap = canvasStore.visibledBoneMap
+    const lastSelectedBoneSpace = canvasStore.lastSelectedBoneSpace
 
     const storage = useStorage()
 
@@ -266,7 +220,8 @@ export default defineComponent({
       lastSelectedArmatureId: computed(
         () => store.lastSelectedArmature.value?.id
       ),
-      posedMap,
+      posedBoneMap,
+      lastSelectedBoneSpace,
       visibledBoneMap,
       selectedBones,
       canvasMode,

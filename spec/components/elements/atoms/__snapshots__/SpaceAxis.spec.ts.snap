@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/atoms/SpaceAxis.vue snapshot default 1`] = `
+<g
+  transform="translate(1, 2) rotate(90)"
+>
+  <g
+    stroke-dasharray="2,2"
+    stroke-width="2"
+  >
+    <line
+      stroke="red"
+      x1="-50"
+      x2="50"
+    />
+    <line
+      stroke="green"
+      y1="-50"
+      y2="50"
+    />
+  </g>
+  <path
+    d="M50,0 L40,-5 L40,5z"
+    fill="red"
+  />
+  <path
+    d="M0,50 L-5,40 L5,40z"
+    fill="green"
+  />
+</g>
+`;

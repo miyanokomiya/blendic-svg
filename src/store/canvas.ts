@@ -81,6 +81,7 @@ function initState() {
   state.canvasMode = 'object'
   state.pastCanvasMode = 'edit'
   axisGridInfo.value = undefined
+  lastSelectedBoneSpace.value = undefined
 }
 
 const canvasEditMode = computed(
@@ -170,7 +171,10 @@ const visibledBoneMap = computed(() => {
 
 function saveLastSelectedBoneSpace() {
   const bone = posedBoneMap.value[store.state.lastSelectedBoneId]
-  if (!bone) return undefined
+  if (!bone || state.canvasMode !== 'pose') {
+    lastSelectedBoneSpace.value = undefined
+    return
+  }
 
   lastSelectedBoneSpace.value = {
     origin: posedTransform(bone, [bone.transform]).head,
@@ -234,6 +238,12 @@ watch(
   () => command.value,
   () => {
     axisGridInfo.value = undefined
+  }
+)
+watch(
+  () => [command.value, state.canvasMode, store.lastSelectedBone.value],
+  () => {
+    saveLastSelectedBoneSpace()
   }
 )
 
@@ -313,7 +323,6 @@ function editKeyDown(
       }
       return { needLock: false }
     case 'g':
-      saveLastSelectedBoneSpace()
       return execIfBoneSelected(
         () => canvasEditMode.value.setEditMode('grab'),
         true
@@ -324,13 +333,11 @@ function editKeyDown(
         true
       )
     case 's':
-      saveLastSelectedBoneSpace()
       return execIfBoneSelected(
         () => canvasEditMode.value.setEditMode('scale'),
         true
       )
     case 'e':
-      saveLastSelectedBoneSpace()
       return execIfBoneSelected(
         () => canvasEditMode.value.setEditMode('extrude'),
         true
@@ -357,7 +364,6 @@ function editKeyDown(
       canvasEditMode.value.execAdd()
       return { needLock: false }
     case 'D':
-      saveLastSelectedBoneSpace()
       if (canvasEditMode.value.duplicate()) {
         return { needLock: true }
       } else {

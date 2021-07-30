@@ -47,7 +47,7 @@ import { getNotDuplicatedName } from '/@/utils/relations'
 import type { Store } from '/@/store/index'
 import type { CanvasStore } from '/@/store/canvas'
 import { mapReduce, toList } from '/@/utils/commons'
-import { snapGrid, snapRotate, snapScale } from '/@/utils/geometry'
+import { getGridSize, snapRotate, snapScale } from '/@/utils/geometry'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { useMenuList } from '/@/composables/menuList'
 
@@ -194,10 +194,10 @@ export function useBoneEditMode(
     }
 
     const translate = sub(editMovement.current, editMovement.start)
-    const gridTranslate = editMovement.ctrl
-      ? snapGrid(editMovement.scale, translate)
-      : translate
-    const snappedTranslate = canvasStore.snapTranslate(gridTranslate)
+    const snappedTranslate = canvasStore.snapTranslate(
+      editMovement.ctrl ? getGridSize(editMovement.scale) : 0,
+      translate
+    )
 
     return Object.keys(selectedBones.value).reduce<IdMap<Transform>>(
       (map, id) => {

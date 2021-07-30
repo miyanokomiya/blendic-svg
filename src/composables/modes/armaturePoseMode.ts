@@ -44,7 +44,7 @@ import {
 } from '/@/utils/armatures'
 import {
   getContinuousRadDiff,
-  snapGrid,
+  getGridSize,
   snapRotate,
   snapScale,
 } from '/@/utils/geometry'
@@ -180,10 +180,10 @@ export function useBonePoseMode(
     } else if (state.command === 'grab') {
       const translate = sub(editMovement.current, editMovement.start)
 
-      const gridTranslate = editMovement.ctrl
-        ? snapGrid(editMovement.scale, translate)
-        : translate
-      const snappedTranslate = canvasStore.snapTranslate(gridTranslate)
+      const snappedTranslate = canvasStore.snapTranslate(
+        editMovement.ctrl ? getGridSize(editMovement.scale) : 0,
+        translate
+      )
 
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>

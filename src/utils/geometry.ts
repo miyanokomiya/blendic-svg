@@ -20,11 +20,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 import {
   add,
   AffineMatrix,
+  getNorm,
   getPedal,
   getRadian,
   IDENTITY_AFFINE,
   IRectangle,
   isSame,
+  isZero,
   IVec2,
   multi,
   multiAffines,
@@ -413,4 +415,32 @@ export function getGridTransformFn(
   return (index: number) => {
     return list[index]
   }
+}
+
+export function snapAxisGrid(
+  size: number,
+  gridUnitVector: IVec2,
+  value: IVec2
+): IVec2 {
+  const pedal = getPedal(value, [{ x: 0, y: 0 }, gridUnitVector])
+  if (size <= 0 || isZero(pedal)) return pedal
+
+  const pedalNorm = getNorm(pedal)
+  const pedalUnit = { x: pedal.x / pedalNorm, y: pedal.y / pedalNorm }
+  const d = Math.round(pedalNorm / size) * size
+  return multi(pedalUnit, d)
+}
+
+export function snapPlainGrid(
+  size: number,
+  radian: number,
+  value: IVec2
+): IVec2 {
+  if (size <= 0) return value
+  const rotated = rotate(value, -radian)
+  const snapped = {
+    x: Math.round(rotated.x / size) * size,
+    y: Math.round(rotated.y / size) * size,
+  }
+  return rotate(snapped, radian)
 }

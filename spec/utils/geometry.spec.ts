@@ -55,6 +55,8 @@ import {
   getBoneXRadian,
   getBoneWorldTranslate,
   toBoneSpaceFn,
+  snapAxisGrid,
+  snapPlainGrid,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -784,6 +786,64 @@ describe('src/utils/geometry.ts', () => {
       expect(fn(1).translate.y).toBeCloseTo(-10)
       expect(fn(3).translate.x).toBeCloseTo(-10)
       expect(fn(3).translate.y).toBeCloseTo(10)
+    })
+  })
+
+  describe('snapAxisGrid', () => {
+    it('should snap axis grid', () => {
+      assertVec(snapAxisGrid(0, { x: 2, y: 0 }, { x: 1.4, y: 1 }), {
+        x: 1.4,
+        y: 0,
+      })
+    })
+    it('should round the vector if size is greater than 0', () => {
+      assertVec(snapAxisGrid(1, { x: 2, y: 0 }, { x: 1.4, y: 0 }), {
+        x: 1,
+        y: 0,
+      })
+      assertVec(snapAxisGrid(1, { x: 2, y: 0 }, { x: 1.6, y: 0 }), {
+        x: 2,
+        y: 0,
+      })
+      assertVec(snapAxisGrid(1, { x: 1, y: 0 }, { x: 1, y: 1 }), {
+        x: 1,
+        y: 0,
+      })
+      assertVec(snapAxisGrid(1, { x: 1, y: 0 }, { x: 2, y: 1 }), {
+        x: 2,
+        y: 0,
+      })
+      assertVec(snapAxisGrid(Math.sqrt(8), { x: 2, y: 2 }, { x: 0, y: 4 }), {
+        x: 2,
+        y: 2,
+      })
+    })
+    it('in nagative space', () => {
+      assertVec(snapAxisGrid(1, { x: 2, y: 0 }, { x: -1.4, y: 0 }), {
+        x: -1,
+        y: 0,
+      })
+      assertVec(snapAxisGrid(1, { x: 2, y: 0 }, { x: -1.6, y: 0 }), {
+        x: -2,
+        y: 0,
+      })
+    })
+  })
+
+  describe('snapPlainGrid', () => {
+    it('should snap plain grid', () => {
+      assertVec(snapPlainGrid(1, 0, { x: 1.4, y: 0 }), { x: 1, y: 0 })
+      assertVec(snapPlainGrid(1, 0, { x: 1.6, y: 0 }), { x: 2, y: 0 })
+    })
+    it('should snap rotated plain grid', () => {
+      assertVec(snapPlainGrid(1, Math.PI / 4, { x: 1, y: 0 }), {
+        x: Math.sqrt(2),
+        y: 0,
+      })
+      assertVec(snapPlainGrid(1, Math.PI / 4, { x: 0, y: 1 }), {
+        x: 0,
+        y: Math.sqrt(2),
+      })
     })
   })
 })

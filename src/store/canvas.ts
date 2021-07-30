@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getInner, getPedal, IRectangle, IVec2, rotate, sub } from 'okageo'
+import { getInner, IRectangle, IVec2, rotate, sub } from 'okageo'
 import { computed, reactive, ref, watch } from 'vue'
 import {
   BoneEditMode,
@@ -54,7 +54,7 @@ import {
   getTransformedBoneMap,
   posedTransform,
 } from '/@/utils/armatures'
-import { getBoneXRadian } from '/@/utils/geometry'
+import { getBoneXRadian, snapAxisGrid, snapPlainGrid } from '/@/utils/geometry'
 
 export type AxisGrid = 'x' | 'y'
 export interface AxisGridInfo {
@@ -210,25 +210,36 @@ function setCanvasMode(canvasMode: CanvasMode) {
   item.redo()
 }
 function toggleAxisGridInfo(axis: AxisGrid) {
-  if (!lastSelectedBoneSpace.value) return
-
   const unit = axis === 'x' ? { x: 1, y: 0 } : { x: 0, y: 1 }
 
-  if (!axisGridInfo.value || axisGridInfo.value.axis !== axis) {
-    axisGridInfo.value = {
-      axis,
-      local: false,
-      vec: unit,
-      origin: lastSelectedBoneSpace.value.origin,
+  if (state.canvasMode === 'edit') {
+    axisGridInfo.value = axisGridInfo.value
+      ? undefined
+      : {
+          axis,
+          local: false,
+          vec: unit,
+          origin: selectedBonesOrigin.value,
+        }
+  } else if (state.canvasMode === 'pose') {
+    if (!lastSelectedBoneSpace.value) return
+    if (!axisGridInfo.value || axisGridInfo.value.axis !== axis) {
+      axisGridInfo.value = {
+        axis,
+        local: false,
+        vec: unit,
+        origin: lastSelectedBoneSpace.value.origin,
+      }
+    } else {
+      axisGridInfo.value = axisGridInfo.value.local
+        ? undefined
+        : {
+            axis,
+            local: true,
+            vec: rotate(unit, lastSelectedBoneSpace.value.radian),
+            origin: lastSelectedBoneSpace.value.origin,
+          }
     }
-  } else if (state.canvasMode === 'pose' && !axisGridInfo.value.local) {
-    axisGridInfo.value = {
-      axis,
-      local: true,
-      vec: rotate(unit, lastSelectedBoneSpace.value.radian),
-      origin: lastSelectedBoneSpace.value.origin,
-    }
-    return
   } else {
     axisGridInfo.value = undefined
   }
@@ -257,9 +268,9 @@ function snapScaleDiff(scaleDiff: IVec2): IVec2 {
     y: axisGridLine.value.axis === 'x' ? 0 : scaleDiff.y,
   }
 }
-function snapTranslate(translate: IVec2): IVec2 {
-  if (!axisGridLine.value) return translate
-  return getPedal(translate, [{ x: 0, y: 0 }, axisGridLine.value.vec])
+function snapTranslate(size: number, translate: IVec2): IVec2 {
+  if (!axisGridLine.value) return snapPlainGrid(size, 0, translate)
+  return snapAxisGrid(size, axisGridLine.value.vec, translate)
 }
 function isOppositeSide(origin: IVec2, from: IVec2, current: IVec2): boolean {
   return getInner(sub(from, origin), sub(current, origin)) < 0

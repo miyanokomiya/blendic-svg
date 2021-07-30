@@ -21,7 +21,11 @@ import { add, getRadian, IVec2, multi, rotate, sub } from 'okageo'
 import { getParentIdPath, sumReduce } from '../commons'
 import { Bone, IdMap, toMap } from '/@/models'
 import { interpolateTransform } from '/@/utils/armatures'
-import { getBoneWorldTranslate, toBoneSpaceFn } from '/@/utils/geometry'
+import {
+  getBoneWorldLocation,
+  getBoneWorldTranslate,
+  toBoneSpaceFn,
+} from '/@/utils/geometry'
 
 export interface Option {
   targetId: string
@@ -42,33 +46,28 @@ export function apply(
 
   const bones = getIKBones(boneId, option, boneMap)
   const poleTarget = boneMap[option.poleTargetId]
-  const targetPoint = add(target.head, getBoneWorldTranslate(target))
+  const targetWorldLocation = getBoneWorldLocation(target)
 
   let applied = poleTarget
-    ? straightToPoleTarget(
-        add(poleTarget.head, getBoneWorldTranslate(poleTarget)),
-        bones
-      )
+    ? straightToPoleTarget(getBoneWorldLocation(poleTarget), bones)
     : bones
-  for (let i = 0; i < option.iterations; i++) {
-    applied = step(targetPoint, applied)
-  }
 
-  applied = applied.map((dist, i) => {
-    const src = bones[i]
-    return {
-      ...dist,
-      transform: interpolateTransform(
-        src.transform,
-        dist.transform,
-        option.influence
-      ),
-    }
-  })
+  for (let i = 0; i < option.iterations; i++) {
+    applied = step(targetWorldLocation, applied)
+  }
 
   return {
     ...boneMap,
-    ...toMap(applied),
+    ...toMap(
+      applied.map((dist, i) => ({
+        ...dist,
+        transform: interpolateTransform(
+          bones[i].transform,
+          dist.transform,
+          option.influence
+        ),
+      }))
+    ),
   }
 }
 

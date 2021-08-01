@@ -48,8 +48,8 @@ Copyright (C) 2021, Tomoya Komiyama.
         :y1="gridLineElm.from.y"
         :x2="gridLineElm.to.x"
         :y2="gridLineElm.to.y"
-        :stroke="gridLineElm.stroke"
-        :stroke-width="gridLineElm.strokeWidth"
+        :stroke="gridLineElm.color"
+        :stroke-width="2 * scale"
       />
       <slot :scale="scale" />
       <SelectRectangle
@@ -171,14 +171,17 @@ export default defineComponent({
     const isDownEmpty = ref(false)
 
     const gridLineElm = computed(() => {
-      if (canvasStore.state.axisGrid === '') return
       if (!canvas.editStartPoint.value) return
-      return helpers.gridLineElm(
-        canvas.scale.value,
-        canvasStore.state.axisGrid,
-        canvas.viewCanvasRect.value,
-        canvasStore.selectedBonesOrigin.value
-      )
+      if (!canvasStore.axisGridLine.value) return
+
+      return {
+        ...helpers.gridLineElm(
+          canvasStore.axisGridLine.value.origin,
+          canvasStore.axisGridLine.value.vec,
+          canvas.viewCanvasRect.value
+        ),
+        color: canvasStore.axisGridLine.value.axis === 'x' ? 'red' : 'green',
+      }
     })
 
     watch(

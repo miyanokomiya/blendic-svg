@@ -19,7 +19,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { add, sub } from 'okageo'
 import { Bone, IdMap, SpaceType } from '/@/models'
-import { applyScale, getBoneWorldLocation } from '/@/utils/geometry'
+import {
+  applyScale,
+  getBoneWorldLocation,
+  getBoneWorldTranslate,
+  toBoneSpaceFn,
+} from '/@/utils/geometry'
 
 export interface Option {
   targetSpaceType: SpaceType
@@ -42,10 +47,12 @@ export function apply(
   const b = boneMap[boneId]
   if (!target || !b) return boneMap
 
-  const parentTranslate = boneMap[b.parentId]?.transform.translate ?? {
-    x: 0,
-    y: 0,
-  }
+  const parentWorldTranslate = boneMap[b.parentId]
+    ? getBoneWorldTranslate(boneMap[b.parentId])
+    : {
+        x: 0,
+        y: 0,
+      }
 
   const targetLocation = applyScale(
     option.targetSpaceType === 'world'
@@ -67,6 +74,8 @@ export function apply(
     y: option.copyY ? option.influence : 0,
   })
 
+  const toSpaceFn = toBoneSpaceFn(b)
+
   return {
     ...boneMap,
     [boneId]: {
@@ -75,8 +84,8 @@ export function apply(
         ...b.transform,
         translate:
           option.ownerSpaceType === 'world'
-            ? sub(add(ownerLocation, diff), b.head)
-            : add(add(ownerLocation, diff), parentTranslate),
+            ? toSpaceFn.toLocal(sub(add(ownerLocation, diff), b.head))
+            : add(add(ownerLocation, diff), parentWorldTranslate),
       },
     },
   }

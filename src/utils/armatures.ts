@@ -34,7 +34,6 @@ import {
   AffineMatrix,
   getCenter,
   getPolygonCenter,
-  getRadian,
   interpolateScaler,
   interpolateVector,
   IRectangle,
@@ -43,6 +42,7 @@ import {
   IVec2,
   multi,
   multiAffines,
+  rotate,
   sub,
 } from 'okageo'
 import {
@@ -65,25 +65,28 @@ import {
 import {
   applyPosedTransformToPoint,
   applyTransform,
+  applyTransformToVec,
   getBoneSquaredSize,
+  getBoneXRadian,
   invertScaleOrZero,
+  toBoneSpaceFn,
 } from '/@/utils/geometry'
 
 export function boneToAffine(bone: Bone): AffineMatrix {
   const origin = bone.head
-  const boneRad = getRadian(bone.tail, bone.head)
+  const boneRad = getBoneXRadian(bone)
   const boneCos = Math.cos(boneRad)
   const boneSin = Math.sin(boneRad)
   const rad = (bone.transform.rotate / 180) * Math.PI
   const cos = Math.cos(rad)
   const sin = Math.sin(rad)
   return multiAffines([
-    [1, 0, 0, 1, bone.transform.translate.x, bone.transform.translate.y],
     [1, 0, 0, 1, origin.x, origin.y],
-    [cos, sin, -sin, cos, 0, 0],
     [boneCos, boneSin, -boneSin, boneCos, 0, 0],
+    [1, 0, 0, 1, bone.transform.translate.x, bone.transform.translate.y],
+    [cos, sin, -sin, cos, 0, 0],
     // this rotation is correct for bone's posing space
-    [bone.transform.scale.y, 0, 0, bone.transform.scale.x, 0, 0],
+    [bone.transform.scale.x, 0, 0, bone.transform.scale.y, 0, 0],
     [boneCos, -boneSin, boneSin, boneCos, 0, 0],
     [1, 0, 0, 1, -origin.x, -origin.y],
   ])
@@ -152,13 +155,21 @@ export function editTransform(
 
 export function posedTransform(bone: Bone, transforms: Transform[]): Bone {
   const convoluted = convolutePoseTransforms(transforms)
+  const boneRad = getBoneXRadian(bone)
+
+  const worldTranslate = rotate(convoluted.translate, boneRad)
   const head = applyTransform(
     bone.head,
-    getTransform({ translate: convoluted.translate })
+    getTransform({ translate: worldTranslate })
   )
   const tail = applyTransform(
     bone.tail,
-    getTransform({ ...convoluted, origin: bone.head, scale: { x: 1, y: 1 } })
+    getTransform({
+      ...convoluted,
+      translate: worldTranslate,
+      origin: bone.head,
+      scale: { x: 1, y: 1 },
+    })
   )
 
   return {
@@ -399,17 +410,19 @@ function resolveBonePose(
 }
 
 export function extendTransform(parent: Bone, child: Bone): Bone {
-  const childTranslate = child.connected
+  const toSpaceFn = toBoneSpaceFn(child)
+
+  const childBaseTranslate = child.connected
     ? { x: 0, y: 0 }
     : child.transform.translate
-  const posedHead = add(child.head, childTranslate)
+  const posedHead = add(child.head, toSpaceFn.toWorld(childBaseTranslate))
   const extendedPosedHead = applyPosedTransformToPoint(parent, posedHead)
   const headDiff = sub(extendedPosedHead, posedHead)
 
   return {
     ...child,
     transform: {
-      translate: add(childTranslate, headDiff),
+      translate: add(childBaseTranslate, toSpaceFn.toLocal(headDiff)),
       rotate: child.inheritRotation
         ? child.transform.rotate + parent.transform.rotate
         : child.transform.rotate,
@@ -820,4 +833,15 @@ export function getShiftClickedBoneState(
     head: clicked.head ? !current.head : current.head,
     tail: clicked.tail ? !current.tail : current.tail,
   }
+}
+
+export function getWorldToLocalTranslateFn(
+  bone: Bone,
+  parentSpace?: Transform
+): (v: IVec2) => IVec2 {
+  const toSpaceFn = toBoneSpaceFn(bone)
+  if (!parentSpace) return (v) => toSpaceFn.toLocal(v)
+
+  const invP = invertPoseTransform(parentSpace)
+  return (v) => toSpaceFn.toLocal(applyTransformToVec(v, invP))
 }

@@ -17,8 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getInner, IRectangle, IVec2, sub } from 'okageo'
-import { computed, reactive, watch } from 'vue'
+import { getInner, IRectangle, IVec2, rotate, sub } from 'okageo'
+import { computed, reactive, ref, watch } from 'vue'
 import {
   BoneEditMode,
   useBoneEditMode,
@@ -30,7 +30,14 @@ import {
 import { ObjectMode, useObjectMode } from '/@/composables/modes/objectMode'
 import { useWeightPaintMode } from '/@/composables/modes/weightPaintMode'
 import { useHistoryStore } from './history'
-import { BoneSelectedState, getTransform, Transform } from '/@/models'
+import {
+  Bone,
+  BoneSelectedState,
+  getTransform,
+  IdMap,
+  toMap,
+  Transform,
+} from '/@/models'
 import {
   CanvasMode,
   EditMode,
@@ -41,8 +48,21 @@ import { HistoryItem } from '/@/composables/stores/history'
 import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
 import { useElementStore } from '/@/store/element'
+import {
+  addPoseTransform,
+  editTransform,
+  getTransformedBoneMap,
+  posedTransform,
+} from '/@/utils/armatures'
+import { getBoneXRadian, snapAxisGrid, snapPlainGrid } from '/@/utils/geometry'
 
-export type AxisGrid = '' | 'x' | 'y'
+export type AxisGrid = 'x' | 'y'
+export interface AxisGridInfo {
+  axis: AxisGrid
+  local: boolean
+  vec: IVec2
+  origin: IVec2
+}
 
 const historyStore = useHistoryStore()
 const store = useStore()
@@ -52,13 +72,16 @@ const elementStore = useElementStore()
 const state = reactive({
   canvasMode: 'object' as CanvasMode,
   pastCanvasMode: 'edit' as CanvasMode,
-  axisGrid: '' as AxisGrid,
 })
+
+const axisGridInfo = ref<AxisGridInfo>()
+const lastSelectedBoneSpace = ref<{ radian: number; origin: IVec2 }>()
 
 function initState() {
   state.canvasMode = 'object'
   state.pastCanvasMode = 'edit'
-  state.axisGrid = ''
+  axisGridInfo.value = undefined
+  lastSelectedBoneSpace.value = undefined
 }
 
 const canvasEditMode = computed(
@@ -100,6 +123,67 @@ const toolMenuGroupList = computed(() => {
   return canvasEditMode.value.toolMenuGroupList.value
 })
 
+const posedBoneMap = computed(() => {
+  if (!store.lastSelectedArmature.value) return {}
+
+  if (command.value) {
+    const constraintMap = animationStore.currentInterpolatedConstraintMap.value
+
+    return getTransformedBoneMap(
+      toMap(
+        store.lastSelectedArmature.value.bones.map((b) => {
+          return {
+            ...b,
+            transform: addPoseTransform(
+              animationStore.getCurrentSelfTransforms(b.id),
+              getEditTransforms(b.id)
+            ),
+            constraints: b.constraints.map((b) => constraintMap[b.id]),
+          }
+        })
+      )
+    )
+  } else {
+    return animationStore.currentPosedBones.value
+  }
+})
+
+const visibledBoneMap = computed(() => {
+  if (!store.lastSelectedArmature.value) return {}
+  if (state.canvasMode === 'edit') {
+    return toMap(
+      store.lastSelectedArmature.value.bones.map((b) => {
+        return editTransform(
+          b,
+          getEditTransforms(b.id),
+          store.state.selectedBones[b.id] || {}
+        )
+      })
+    )
+  } else {
+    return Object.keys(posedBoneMap.value).reduce<IdMap<Bone>>((p, id) => {
+      const b = posedBoneMap.value[id]
+      p[id] = posedTransform(b, [b.transform])
+      return p
+    }, {})
+  }
+})
+
+function saveLastSelectedBoneSpace() {
+  const bone = posedBoneMap.value[store.state.lastSelectedBoneId]
+  if (!bone || state.canvasMode !== 'pose') {
+    lastSelectedBoneSpace.value = undefined
+    return
+  }
+
+  lastSelectedBoneSpace.value = {
+    origin: posedTransform(bone, [bone.transform]).head,
+    radian: getBoneXRadian(bone),
+  }
+}
+
+const axisGridLine = computed(() => axisGridInfo.value)
+
 function toggleCanvasMode() {
   if (state.canvasMode === 'edit') {
     setCanvasMode(state.pastCanvasMode)
@@ -125,31 +209,68 @@ function setCanvasMode(canvasMode: CanvasMode) {
   historyStore.push(item)
   item.redo()
 }
-function setAxisGrid(val: AxisGrid) {
-  state.axisGrid = val
+function toggleAxisGridInfo(axis: AxisGrid) {
+  const unit = axis === 'x' ? { x: 1, y: 0 } : { x: 0, y: 1 }
+
+  if (state.canvasMode === 'edit') {
+    axisGridInfo.value = axisGridInfo.value
+      ? undefined
+      : {
+          axis,
+          local: false,
+          vec: unit,
+          origin: selectedBonesOrigin.value,
+        }
+  } else if (state.canvasMode === 'pose') {
+    if (!lastSelectedBoneSpace.value) return
+    if (!axisGridInfo.value || axisGridInfo.value.axis !== axis) {
+      axisGridInfo.value = {
+        axis,
+        local: false,
+        vec: unit,
+        origin: lastSelectedBoneSpace.value.origin,
+      }
+    } else {
+      axisGridInfo.value = axisGridInfo.value.local
+        ? undefined
+        : {
+            axis,
+            local: true,
+            vec: rotate(unit, lastSelectedBoneSpace.value.radian),
+            origin: lastSelectedBoneSpace.value.origin,
+          }
+    }
+  } else {
+    axisGridInfo.value = undefined
+  }
 }
 
 watch(
   () => command.value,
   () => {
-    setAxisGrid('')
+    axisGridInfo.value = undefined
+  }
+)
+watch(
+  () => [command.value, state.canvasMode, store.lastSelectedBone.value],
+  () => {
+    saveLastSelectedBoneSpace()
   }
 )
 
 function switchAxisGrid(val: AxisGrid) {
-  state.axisGrid = state.axisGrid === val ? '' : val
+  toggleAxisGridInfo(val)
 }
 function snapScaleDiff(scaleDiff: IVec2): IVec2 {
+  if (!axisGridLine.value) return scaleDiff
   return {
-    x: state.axisGrid === 'y' ? 0 : scaleDiff.x,
-    y: state.axisGrid === 'x' ? 0 : scaleDiff.y,
+    x: axisGridLine.value.axis === 'y' ? 0 : scaleDiff.x,
+    y: axisGridLine.value.axis === 'x' ? 0 : scaleDiff.y,
   }
 }
-function snapTranslate(translate: IVec2): IVec2 {
-  return {
-    x: state.axisGrid === 'y' ? 0 : translate.x,
-    y: state.axisGrid === 'x' ? 0 : translate.y,
-  }
+function snapTranslate(size: number, translate: IVec2): IVec2 {
+  if (!axisGridLine.value) return snapPlainGrid(size, 0, translate)
+  return snapAxisGrid(size, axisGridLine.value.vec, translate)
 }
 function isOppositeSide(origin: IVec2, from: IVec2, current: IVec2): boolean {
   return getInner(sub(from, origin), sub(current, origin)) < 0
@@ -281,8 +402,11 @@ export function useCanvasStore() {
     command,
     selectedBonesOrigin,
     changeCanvasMode,
+
     snapScaleDiff,
     snapTranslate,
+    axisGridLine,
+
     isOppositeSide,
     getEditTransforms,
     getEditPoseTransforms,
@@ -303,6 +427,10 @@ export function useCanvasStore() {
     availableCommandList,
     popupMenuList,
     toolMenuGroupList,
+
+    posedBoneMap,
+    visibledBoneMap,
+    lastSelectedBoneSpace: computed(() => lastSelectedBoneSpace.value),
   }
 }
 export type CanvasStore = ReturnType<typeof useCanvasStore>

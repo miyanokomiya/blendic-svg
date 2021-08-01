@@ -20,14 +20,17 @@ Copyright (C) 2021, Tomoya Komiyama.
 import {
   add,
   AffineMatrix,
+  getNorm,
   getPedal,
   getRadian,
   IDENTITY_AFFINE,
   IRectangle,
   isSame,
+  isZero,
   IVec2,
   multi,
   multiAffines,
+  rotate,
   rotate as rotateVector2,
   sub,
 } from 'okageo'
@@ -178,7 +181,27 @@ export function getBoneWorldRotation(bone: Bone): number {
 }
 
 export function getBoneWorldLocation(bone: Bone): IVec2 {
-  return add(bone.head, bone.transform.translate)
+  return add(bone.head, getBoneWorldTranslate(bone))
+}
+
+export function getBoneXRadian(bone: Bone): number {
+  return getRadian(bone.tail, bone.head) - Math.PI / 2
+}
+
+export function getBoneWorldTranslate(bone: Bone): IVec2 {
+  const rad = getBoneXRadian(bone)
+  return rotate(bone.transform.translate, rad)
+}
+
+export function toBoneSpaceFn(bone: Bone): {
+  toLocal: (v: IVec2) => IVec2
+  toWorld: (v: IVec2) => IVec2
+} {
+  const rad = getBoneXRadian(bone)
+  return {
+    toLocal: (v) => rotate(v, -rad),
+    toWorld: (v) => rotate(v, rad),
+  }
 }
 
 export function getBoneSquaredSize(bone: Bone): number {
@@ -217,14 +240,20 @@ export function applyTransform(p: IVec2, transform: Transform): IVec2 {
 }
 
 export function applyPosedTransformToPoint(parent: Bone, point: IVec2): IVec2 {
+  const parentRad = getRadian(parent.tail, parent.head)
+  const worldTranslate = rotate(
+    parent.transform.translate,
+    parentRad - Math.PI / 2
+  )
   const head = applyTransform(
     parent.head,
-    getTransform({ translate: parent.transform.translate })
+    getTransform({ translate: worldTranslate })
   )
   const tail = applyTransform(
     parent.tail,
     getTransform({
       ...parent.transform,
+      translate: worldTranslate,
       origin: parent.head,
       scale: { x: 1, y: 1 },
     })
@@ -233,6 +262,7 @@ export function applyPosedTransformToPoint(parent: Bone, point: IVec2): IVec2 {
     point,
     getTransform({
       ...parent.transform,
+      translate: worldTranslate,
       origin: parent.head,
       scale: { x: 1, y: 1 },
     })
@@ -385,4 +415,32 @@ export function getGridTransformFn(
   return (index: number) => {
     return list[index]
   }
+}
+
+export function snapAxisGrid(
+  size: number,
+  gridUnitVector: IVec2,
+  value: IVec2
+): IVec2 {
+  const pedal = getPedal(value, [{ x: 0, y: 0 }, gridUnitVector])
+  if (size <= 0 || isZero(pedal)) return pedal
+
+  const pedalNorm = getNorm(pedal)
+  const pedalUnit = { x: pedal.x / pedalNorm, y: pedal.y / pedalNorm }
+  const d = Math.round(pedalNorm / size) * size
+  return multi(pedalUnit, d)
+}
+
+export function snapPlainGrid(
+  size: number,
+  radian: number,
+  value: IVec2
+): IVec2 {
+  if (size <= 0) return value
+  const rotated = rotate(value, -radian)
+  const snapped = {
+    x: Math.round(rotated.x / size) * size,
+    y: Math.round(rotated.y / size) * size,
+  }
+  return rotate(snapped, radian)
 }

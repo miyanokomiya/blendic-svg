@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { assertVec } from 'spec/tools'
 import { getBone, getTransform, scaleRate } from '/@/models'
 import {
   applyScale,
@@ -51,6 +52,11 @@ import {
   getTornadoTransformFn,
   getCircleTransformFn,
   getGridTransformFn,
+  getBoneXRadian,
+  getBoneWorldTranslate,
+  toBoneSpaceFn,
+  snapAxisGrid,
+  snapPlainGrid,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -373,12 +379,91 @@ describe('src/utils/geometry.ts', () => {
         getBoneWorldLocation(
           getBone({
             head: { x: 1, y: 2 },
+            tail: { x: 1, y: 3 },
             transform: getTransform({
               translate: { x: 10, y: 20 },
             }),
           })
         )
       ).toEqual({ x: 11, y: 22 })
+    })
+  })
+
+  describe('getBoneXRadian', () => {
+    it("get radian of the bone's x axis", () => {
+      expect(
+        getBoneXRadian(
+          getBone({
+            head: { x: 1, y: 2 },
+            tail: { x: 1, y: 3 },
+          })
+        )
+      ).toBeCloseTo(0)
+      expect(
+        getBoneXRadian(
+          getBone({
+            head: { x: 1, y: 2 },
+            tail: { x: -1, y: 2 },
+          })
+        )
+      ).toBeCloseTo(Math.PI / 2)
+    })
+  })
+
+  describe('getBoneWorldTranslate', () => {
+    it('get world translate of the bone', () => {
+      assertVec(
+        getBoneWorldTranslate(
+          getBone({
+            head: { x: 1, y: 2 },
+            tail: { x: 1, y: 3 },
+            transform: getTransform({
+              translate: { x: 1, y: 0 },
+            }),
+          })
+        ),
+        { x: 1, y: 0 }
+      )
+      assertVec(
+        getBoneWorldTranslate(
+          getBone({
+            head: { x: 1, y: 2 },
+            tail: { x: -1, y: 2 },
+            transform: getTransform({
+              translate: { x: 1, y: 0 },
+            }),
+          })
+        ),
+        { x: 0, y: 1 }
+      )
+    })
+  })
+
+  describe('toBoneSpaceFn', () => {
+    it('get functions to convert world or local translate of the bone', () => {
+      const ret1 = toBoneSpaceFn(
+        getBone({
+          head: { x: 1, y: 2 },
+          tail: { x: 1, y: 3 },
+          transform: getTransform({
+            translate: { x: 1, y: 0 },
+          }),
+        })
+      )
+      assertVec(ret1.toWorld({ x: 1, y: 0 }), { x: 1, y: 0 })
+      assertVec(ret1.toLocal({ x: 1, y: 0 }), { x: 1, y: 0 })
+
+      const ret2 = toBoneSpaceFn(
+        getBone({
+          head: { x: 1, y: 2 },
+          tail: { x: -1, y: 2 },
+          transform: getTransform({
+            translate: { x: 1, y: 0 },
+          }),
+        })
+      )
+      assertVec(ret2.toWorld({ x: 1, y: 0 }), { x: 0, y: 1 })
+      assertVec(ret2.toLocal({ x: 0, y: 1 }), { x: 1, y: 0 })
     })
   })
 
@@ -701,6 +786,64 @@ describe('src/utils/geometry.ts', () => {
       expect(fn(1).translate.y).toBeCloseTo(-10)
       expect(fn(3).translate.x).toBeCloseTo(-10)
       expect(fn(3).translate.y).toBeCloseTo(10)
+    })
+  })
+
+  describe('snapAxisGrid', () => {
+    it('should snap axis grid', () => {
+      assertVec(snapAxisGrid(0, { x: 2, y: 0 }, { x: 1.4, y: 1 }), {
+        x: 1.4,
+        y: 0,
+      })
+    })
+    it('should round the vector if size is greater than 0', () => {
+      assertVec(snapAxisGrid(1, { x: 2, y: 0 }, { x: 1.4, y: 0 }), {
+        x: 1,
+        y: 0,
+      })
+      assertVec(snapAxisGrid(1, { x: 2, y: 0 }, { x: 1.6, y: 0 }), {
+        x: 2,
+        y: 0,
+      })
+      assertVec(snapAxisGrid(1, { x: 1, y: 0 }, { x: 1, y: 1 }), {
+        x: 1,
+        y: 0,
+      })
+      assertVec(snapAxisGrid(1, { x: 1, y: 0 }, { x: 2, y: 1 }), {
+        x: 2,
+        y: 0,
+      })
+      assertVec(snapAxisGrid(Math.sqrt(8), { x: 2, y: 2 }, { x: 0, y: 4 }), {
+        x: 2,
+        y: 2,
+      })
+    })
+    it('in nagative space', () => {
+      assertVec(snapAxisGrid(1, { x: 2, y: 0 }, { x: -1.4, y: 0 }), {
+        x: -1,
+        y: 0,
+      })
+      assertVec(snapAxisGrid(1, { x: 2, y: 0 }, { x: -1.6, y: 0 }), {
+        x: -2,
+        y: 0,
+      })
+    })
+  })
+
+  describe('snapPlainGrid', () => {
+    it('should snap plain grid', () => {
+      assertVec(snapPlainGrid(1, 0, { x: 1.4, y: 0 }), { x: 1, y: 0 })
+      assertVec(snapPlainGrid(1, 0, { x: 1.6, y: 0 }), { x: 2, y: 0 })
+    })
+    it('should snap rotated plain grid', () => {
+      assertVec(snapPlainGrid(1, Math.PI / 4, { x: 1, y: 0 }), {
+        x: Math.sqrt(2),
+        y: 0,
+      })
+      assertVec(snapPlainGrid(1, Math.PI / 4, { x: 0, y: 1 }), {
+        x: 0,
+        y: Math.sqrt(2),
+      })
     })
   })
 })

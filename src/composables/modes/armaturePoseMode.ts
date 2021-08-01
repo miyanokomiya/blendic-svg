@@ -39,13 +39,12 @@ import { mapReduce } from '/@/utils/commons'
 import {
   addPoseTransform,
   getTransformedBoneMap,
-  invertPoseTransform,
+  getWorldToLocalTranslateFn,
   selectBoneInRect,
 } from '/@/utils/armatures'
 import {
-  applyTransformToVec,
   getContinuousRadDiff,
-  snapGrid,
+  getGridSize,
   snapRotate,
   snapScale,
 } from '/@/utils/geometry'
@@ -116,11 +115,8 @@ export function useBonePoseMode(
   function convertToPosedSpace(vec: IVec2, boneId: string): IVec2 {
     const bone = animationStore.currentPosedBones.value[boneId]
     const parent = animationStore.currentPosedBones.value[bone.parentId]
-    if (parent) {
-      return applyTransformToVec(vec, invertPoseTransform(parent.transform))
-    } else {
-      return vec
-    }
+    const worldToLocalFn = getWorldToLocalTranslateFn(bone, parent?.transform)
+    return worldToLocalFn(vec)
   }
 
   function rotateDirection(boneId: string) {
@@ -184,10 +180,10 @@ export function useBonePoseMode(
     } else if (state.command === 'grab') {
       const translate = sub(editMovement.current, editMovement.start)
 
-      const gridTranslate = editMovement.ctrl
-        ? snapGrid(editMovement.scale, translate)
-        : translate
-      const snappedTranslate = canvasStore.snapTranslate(gridTranslate)
+      const snappedTranslate = canvasStore.snapTranslate(
+        editMovement.ctrl ? getGridSize(editMovement.scale) : 0,
+        translate
+      )
 
       return Object.keys(animationStore.selectedBones.value).reduce<
         IdMap<Transform>

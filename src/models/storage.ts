@@ -37,7 +37,8 @@ import { extractMap } from '/@/utils/commons'
 import { getConstraint } from '/@/utils/constraints'
 import { initializeBElements } from '/@/utils/elements'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
-import { migrateConstraint, migrateKeyframe } from '/@/utils/migrations'
+import { getKeyframe } from '/@/utils/keyframes'
+import { migrateConstraint } from '/@/utils/migrations'
 
 export interface StorageRoot {
   armatures: Armature[]
@@ -80,8 +81,8 @@ function initializeAction(action: Partial<Action>): Action {
   })
 }
 
-function initializeKeyframe(keyframe: KeyframeBase): KeyframeBase {
-  return migrateKeyframe(keyframe)
+function initializeKeyframe(keyframe: Partial<KeyframeBase>): KeyframeBase {
+  return getKeyframe({ name: 'bone', ...keyframe })
 }
 
 function initializeActor(actor: Partial<Actor>): Actor {

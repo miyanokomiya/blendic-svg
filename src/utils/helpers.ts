@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IVec2, IRectangle, isZero, add } from 'okageo'
+import { IVec2, IRectangle, isZero, add, sub, multi } from 'okageo'
 import { Size } from 'okanvas'
 import { IdMap, Bone, ElementNodeAttributes, Transform } from '../models/index'
 import {
@@ -73,32 +73,17 @@ export function d(points: IVec2[], closed = false): string {
 }
 
 export function gridLineElm(
-  scale: number,
-  axis: 'x' | 'y',
-  viewCanvasRect: IRectangle,
-  editStartPoint: IVec2
+  origin: IVec2,
+  vec: IVec2,
+  viewCanvasRect: IRectangle
 ) {
-  const base = { strokeWidth: scale }
-  if (axis === 'x')
-    return {
-      ...base,
-      from: { x: viewCanvasRect.x, y: editStartPoint.y },
-      to: {
-        x: viewCanvasRect.x + viewCanvasRect.width,
-        y: editStartPoint.y,
-      },
-      stroke: 'red',
-    }
-  else
-    return {
-      ...base,
-      from: { x: editStartPoint.x, y: viewCanvasRect.y },
-      to: {
-        x: editStartPoint.x,
-        y: viewCanvasRect.y + viewCanvasRect.height,
-      },
-      stroke: 'green',
-    }
+  const length = Math.max(viewCanvasRect.width, viewCanvasRect.height) * 2
+  const v = multi(vec, length)
+
+  return {
+    from: sub(origin, v),
+    to: add(origin, v),
+  }
 }
 
 export function viewbox(rect: IRectangle): string {

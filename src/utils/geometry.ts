@@ -33,37 +33,9 @@ import {
   rotate,
   rotate as rotateVector2,
   sub,
+  circleClamp,
 } from 'okageo'
 import { Bone, getTransform, scaleRate, Transform } from '/@/models'
-
-export function clamp(min = -Infinity, max = Infinity, val: number) {
-  return Math.max(Math.min(val, max), min)
-}
-
-export function circleClamp(min: number, max: number, val: number) {
-  if (min === max) return min
-
-  if (max < val) {
-    return ((val - max) % (max - min)) + min
-  } else if (val < min) {
-    return max - ((min - val) % (max - min))
-  } else {
-    return val
-  }
-}
-
-export function roundTrip(min: number, max: number, val: number) {
-  const harf = max - min
-  const length = 2 * harf
-  if (length === 0) return min
-
-  const d = Math.abs(val - min) % length
-  if (d < harf) {
-    return d + min
-  } else {
-    return length - d + min
-  }
-}
 
 export function logRound(log: number, val: number) {
   const pow = Math.pow(10, -log)

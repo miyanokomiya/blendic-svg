@@ -28,7 +28,8 @@ import {
 import { viewbox } from './helpers'
 import { HSVA, hsvaToRgba, rednerRGBA, rednerRGBByHSV } from '/@/utils/color'
 import { parseViewBoxFromStr } from '/@/utils/elements'
-import { circleClamp, clamp, transformRect } from '/@/utils/geometry'
+import { circleClamp, clamp } from 'okageo'
+import { transformRect } from '/@/utils/geometry'
 
 export function getPosedAttributesWithoutTransform(
   boneMap: IdMap<Bone>,

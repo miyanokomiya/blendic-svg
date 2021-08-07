@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { interpolateScaler, interpolateVector, IVec2 } from 'okageo'
+import { interpolateScaler, interpolateVector, IVec2, clamp } from 'okageo'
 import { getTransform, Transform } from '/@/models'
 import {
   GraphNodeLerpGenerics,
@@ -26,7 +26,6 @@ import {
   ValueType,
 } from '/@/models/graphNode'
 import { interpolateTransform } from '/@/utils/armatures'
-import { clamp } from '/@/utils/geometry'
 import {
   createBaseNode,
   NodeStruct,

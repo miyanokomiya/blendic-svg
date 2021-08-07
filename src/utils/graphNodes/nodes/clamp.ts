@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { GraphNodeClamp } from '/@/models/graphNode'
-import { circleClamp, clamp } from '/@/utils/geometry'
+import { circleClamp, clamp } from 'okageo'
 import {
   createBaseNode,
   NodeStruct,

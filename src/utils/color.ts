@@ -17,10 +17,9 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getCenter } from 'okageo'
+import { getCenter, circleClamp, clamp } from 'okageo'
 import { useMapCache } from '/@/composables/cache'
 import { getTransform, Transform } from '/@/models'
-import { circleClamp, clamp } from '/@/utils/geometry'
 
 export interface RGBA {
   r: number // 0 ~ 255

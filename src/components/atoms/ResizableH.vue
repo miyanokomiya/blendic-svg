@@ -34,11 +34,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { DragArgs, useDrag } from 'okanvas'
+import { clamp } from 'okageo'
 import { computed, defineComponent, nextTick, onMounted, ref } from 'vue'
 import { useResizableStorage } from '/@/composables/stateStorage'
 import { useThrottle } from '/@/composables/throttle'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
-import { clamp, logRound } from '/@/utils/geometry'
+import { logRound } from '/@/utils/geometry'
 
 export default defineComponent({
   props: {

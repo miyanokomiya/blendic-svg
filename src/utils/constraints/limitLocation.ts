@@ -17,11 +17,10 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, IVec2, multi, sub } from 'okageo'
+import { add, IVec2, multi, sub, clamp } from 'okageo'
 import { Bone, IdMap, SpaceType } from '/@/models'
 import {
   applyPosedTransformToPoint,
-  clamp,
   getBoneWorldLocation,
   toBoneSpaceFn,
 } from '/@/utils/geometry'

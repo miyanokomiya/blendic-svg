@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IVec2 } from 'okageo'
+import { IVec2, circleClamp } from 'okageo'
 import {
   dropListByKey,
   dropMap,
@@ -45,7 +45,7 @@ import {
 } from '/@/models/keyframe'
 import { subPoseTransform } from '/@/utils/armatures'
 import { BoneConstraint, BoneConstraintOption } from '/@/utils/constraints'
-import { circleClamp, isIdentityTransform } from '/@/utils/geometry'
+import { isIdentityTransform } from '/@/utils/geometry'
 import { mergeKeyframe } from '/@/utils/keyframes'
 
 export function getScaleLog(scale: number): number {

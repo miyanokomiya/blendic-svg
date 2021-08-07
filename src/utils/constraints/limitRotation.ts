@@ -18,7 +18,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { Bone, IdMap, SpaceType } from '/@/models'
-import { clamp, getBoneBodyRotation } from '/@/utils/geometry'
+import { clamp } from 'okageo'
+import { getBoneBodyRotation } from '/@/utils/geometry'
 
 export interface Option {
   spaceType: SpaceType

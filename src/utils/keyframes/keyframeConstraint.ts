@@ -30,7 +30,7 @@ import {
 import { mapReduce } from '/@/utils/commons'
 import { interpolateKeyframeProp } from '/@/utils/keyframes/core'
 import { BoneConstraint } from '/@/utils/constraints/index'
-import { clamp } from '/@/utils/geometry'
+import { clamp } from 'okageo'
 
 export function getInterpolatedConstraintMap(
   constraintMap: IdMap<BoneConstraint>,

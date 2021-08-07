@@ -33,11 +33,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { DragArgs, useDrag } from 'okanvas'
+import { clamp } from 'okageo'
 import { computed, defineComponent, ref, nextTick } from 'vue'
 import { useResizableStorage } from '/@/composables/stateStorage'
 import { useThrottle } from '/@/composables/throttle'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
-import { clamp, logRound } from '/@/utils/geometry'
+import { logRound } from '/@/utils/geometry'
 
 const anchorHeight = 9
 

@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { GraphNodeRoundTrip } from '/@/models/graphNode'
-import { roundTrip } from '/@/utils/geometry'
+import { roundTrip } from 'okageo'
 import {
   createBaseNode,
   NodeStruct,

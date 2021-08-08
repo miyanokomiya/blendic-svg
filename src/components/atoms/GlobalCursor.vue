@@ -51,10 +51,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { IVec2 } from 'okageo'
+import { IVec2, circleClamp } from 'okageo'
 import { computed, defineComponent, PropType, ref, watch } from 'vue'
 import { PointerType, useWindow } from '/@/composables/window'
-import { circleClamp } from '/@/utils/geometry'
 
 const margin = 13
 

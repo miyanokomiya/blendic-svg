@@ -1,4 +1,4 @@
-import { clamp } from '/@/utils/geometry'
+import { clamp } from 'okageo'
 
 type GraphEnumItem<T extends string> = {
   key: T

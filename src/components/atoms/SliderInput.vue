@@ -43,9 +43,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, defineComponent, PropType, ref, watchEffect } from 'vue'
+import { clamp } from 'okageo'
 import { useThrottle } from '/@/composables/throttle'
 import { PointerMovement, usePointerLock } from '/@/composables/window'
-import { clamp, logRound } from '/@/utils/geometry'
+import { logRound } from '/@/utils/geometry'
 
 export default defineComponent({
   props: {

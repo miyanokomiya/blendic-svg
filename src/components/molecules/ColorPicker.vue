@@ -59,7 +59,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { IVec2, sub } from 'okageo'
+import { IVec2, sub, clamp } from 'okageo'
 import { DragArgs, getPagePosition, useDrag } from 'okanvas'
 import { computed, defineComponent, PropType, ref } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
@@ -70,7 +70,6 @@ import {
   rednerRGBA,
   rgbaToHsva,
 } from '/@/utils/color'
-import { clamp } from '/@/utils/geometry'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import HueCiclePicker from '/@/components/atoms/HueCiclePicker.vue'

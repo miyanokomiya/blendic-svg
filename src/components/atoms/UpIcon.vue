@@ -28,13 +28,9 @@ Copyright (C) 2021, Tomoya Komiyama.
   </svg>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  props: {
-    flipped: { type: Boolean, default: false },
-    right: { type: Boolean, default: false },
-  },
+<script setup lang="ts">
+defineProps({
+  flipped: { type: Boolean, default: false },
+  right: { type: Boolean, default: false },
 })
 </script>

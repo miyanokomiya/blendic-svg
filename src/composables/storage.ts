@@ -322,7 +322,7 @@ async function getFileHandle(
     return handle
   } catch (e) {
     // ignore the error caused by aborting a request
-    if (e.message?.includes('aborted')) return
+    if (e instanceof Error && e.message?.includes('aborted')) return
     throw e
   }
 }
@@ -345,7 +345,7 @@ async function overrideFile(handle: FileHandle, content: string) {
     await writable.close()
   } catch (e) {
     // ignore the error caused by not allowing
-    if (e.message?.includes('not allowed')) return
+    if (e instanceof Error && e.message?.includes('not allowed')) return
     throw e
   }
 }

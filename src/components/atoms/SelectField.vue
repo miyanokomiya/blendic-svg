@@ -32,40 +32,38 @@ Copyright (C) 2021, Tomoya Komiyama.
   </span>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+<script setup lang="ts">
+import { computed, PropType } from 'vue'
 
-export default defineComponent({
-  props: {
-    options: {
-      type: Array as PropType<{ value: number | string; label: string }[]>,
-      default: () => [],
-    },
-    modelValue: {
-      type: [Number, String],
-      default: '',
-    },
-    placeholder: {
-      type: String,
-      default: 'None',
-    },
-    noPlaceholder: {
-      type: Boolean,
-      default: false,
-    },
+const props = defineProps({
+  options: {
+    type: Array as PropType<{ value: number | string; label: string }[]>,
+    default: () => [],
   },
-  emits: ['update:modelValue'],
-  setup(props, { emit }) {
-    return {
-      value: computed({
-        get() {
-          return props.modelValue
-        },
-        set(val: number | string) {
-          emit('update:modelValue', val)
-        },
-      }),
-    }
+  modelValue: {
+    type: [Number, String],
+    default: '',
+  },
+  placeholder: {
+    type: String,
+    default: 'None',
+  },
+  noPlaceholder: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const emits = defineEmits<{
+  (e: 'update:modelValue', val: number | string): void
+}>()
+
+const value = computed({
+  get() {
+    return props.modelValue
+  },
+  set(val: number | string) {
+    emits('update:modelValue', val)
   },
 })
 </script>

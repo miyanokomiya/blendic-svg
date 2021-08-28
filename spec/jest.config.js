@@ -2,6 +2,7 @@ const { pathsToModuleNameMapper } = require('ts-jest/utils')
 const { compilerOptions } = require('../tsconfig')
 
 module.exports = {
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/../'],
   modulePaths: ['<rootDir>/../'],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
@@ -12,7 +13,7 @@ module.exports = {
   preset: 'ts-jest',
   transform: {
     '^.+\\.ts$': 'ts-jest',
-    '^.+\\.vue$': 'vue-jest',
+    '^.+\\.vue$': 'vue3-jest',
   },
   globals: {
     'ts-jest': {

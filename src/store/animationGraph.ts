@@ -48,9 +48,9 @@ const graphState = useListState<AnimationGraph>('Graph')
 const selectedNodes = ref<IdMap<boolean>>({})
 const lastSelectedNodeId = ref<string>('')
 
-function initState(graph: AnimationGraph[]) {
+function initState(graphs: AnimationGraph[]) {
   graphState.initState()
-  graphState.state.list = graph
+  graphState.state.list = graphs
   selectedNodes.value = {}
   lastSelectedNodeId.value = ''
 }

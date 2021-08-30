@@ -344,10 +344,14 @@ function editKeyDown(
         true
       )
     case 's':
-      return execIfBoneSelected(
-        () => canvasEditMode.value.setEditMode('scale'),
-        true
-      )
+      if (!options.ctrl) {
+        return execIfBoneSelected(
+          () => canvasEditMode.value.setEditMode('scale'),
+          true
+        )
+      } else {
+        return { needLock: false }
+      }
     case 'e':
       return execIfBoneSelected(
         () => canvasEditMode.value.setEditMode('extrude'),

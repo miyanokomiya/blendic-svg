@@ -94,7 +94,7 @@ export function useStorage() {
     let json: string | undefined = undefined
     try {
       if (fileSystemEnable) {
-        const result = await readFile(jsonOptions)
+        const result = await readFile()
         // the user cancelled
         if (!result) return
 
@@ -126,6 +126,8 @@ export function useStorage() {
     const json = serialize()
     if (fileHandle) {
       await overrideFile(fileHandle, json)
+    } else if (fileSystemEnable) {
+      fileHandle = await writeFile(json)
     } else {
       saveJson(json, defaultProjectFileName)
     }
@@ -306,7 +308,7 @@ interface FileHandleOptions {
 const jsonOptions: FileHandleOptions = {
   types: [
     {
-      description: 'Text Files',
+      description: 'JSON File',
       accept: {
         'text/plain': ['.json'],
       },
@@ -314,7 +316,7 @@ const jsonOptions: FileHandleOptions = {
   ],
 }
 
-async function getFileHandle(
+async function getFileOpenHandle(
   options: FileHandleOptions
 ): Promise<FileHandle | undefined> {
   try {
@@ -327,15 +329,39 @@ async function getFileHandle(
   }
 }
 
-async function readFile(
+async function getFileSaveHandle(
   options: FileHandleOptions
-): Promise<{ handle: FileHandle; content: string } | undefined> {
-  const handle = await getFileHandle(options)
+): Promise<FileHandle | undefined> {
+  try {
+    const handle = await (window as any).showSaveFilePicker({
+      ...options,
+      suggestedName: defaultProjectFileName,
+    })
+    return handle
+  } catch (e) {
+    // ignore the error caused by aborting a request
+    if (e instanceof Error && e.message?.includes('aborted')) return
+    throw e
+  }
+}
+
+async function readFile(): Promise<
+  { handle: FileHandle; content: string } | undefined
+> {
+  const handle = await getFileOpenHandle(jsonOptions)
   if (!handle) return
 
   const file = await handle.getFile()
   const content = await file.text()
   return { handle, content }
+}
+
+async function writeFile(content: string): Promise<FileHandle | undefined> {
+  const handle = await getFileSaveHandle(jsonOptions)
+  if (!handle) return
+
+  await overrideFile(handle, content)
+  return handle
 }
 
 async function overrideFile(handle: FileHandle, content: string) {

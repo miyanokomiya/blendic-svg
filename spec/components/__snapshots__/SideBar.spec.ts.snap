@@ -35,11 +35,9 @@ exports[`src/components/SideBar.vue snapshot defalut 1`] = `
     class="tab-content"
   >
     
-    
     <div>
       bbb
     </div>
-    
     
   </div>
 </div>

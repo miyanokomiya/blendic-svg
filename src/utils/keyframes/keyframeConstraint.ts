@@ -90,11 +90,9 @@ export function makeKeyframe(
   frame: number,
   targetId: string,
   target: BoneConstraint,
-  keys: Partial<
-    {
-      [key in KeyframeConstraintPropKey]: boolean
-    }
-  > = {},
+  keys: Partial<{
+    [key in KeyframeConstraintPropKey]: boolean
+  }> = {},
   generateId = false
 ): KeyframeConstraint {
   return getKeyframeConstraint(

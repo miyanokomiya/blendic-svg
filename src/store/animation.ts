@@ -525,11 +525,9 @@ function getCurrentConstraintById(
 
 function execInsertKeyframeConstraint(
   constraintId: string,
-  keys: Partial<
-    {
-      [key in KeyframeConstraintPropKey]: boolean
-    }
-  > = {}
+  keys: Partial<{
+    [key in KeyframeConstraintPropKey]: boolean
+  }> = {}
 ) {
   if (Object.keys(selectedBoneIdMap.value).length === 0) return
   if (!actions.lastSelectedItem.value) {
@@ -551,11 +549,9 @@ function execInsertKeyframeConstraint(
 }
 function execDeleteKeyframeConstraint(
   constraintId: string,
-  keys: Partial<
-    {
-      [key in KeyframeConstraintPropKey]: boolean
-    }
-  > = {}
+  keys: Partial<{
+    [key in KeyframeConstraintPropKey]: boolean
+  }> = {}
 ) {
   if (!isAnyVisibledSelectedKeyframe.value) return
   historyStore.push(

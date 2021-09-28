@@ -8,11 +8,9 @@ exports[`src/components/elements/atoms/OutlineRect.vue snapshot default 1`] = `
     transform="translate(1, 20)"
   >
     
-    
     <text>
       abc
     </text>
-    
     
   </g>
 </g>

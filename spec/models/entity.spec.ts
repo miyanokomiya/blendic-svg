@@ -88,4 +88,24 @@ describe('src/models/entity.ts', () => {
       })
     })
   })
+
+  describe('toEntityList', () => {
+    it('should return list of entities', () => {
+      expect(
+        target.toEntityList({
+          byId: { a: { id: 'a' }, b: { id: 'b' } },
+          allIds: ['a', 'b'],
+        })
+      ).toEqual([{ id: 'a' }, { id: 'b' }])
+    })
+  })
+
+  describe('fromEntityList', () => {
+    it('should return entities from list', () => {
+      expect(target.fromEntityList([{ id: 'a' }, { id: 'b' }])).toEqual({
+        byId: { a: { id: 'a' }, b: { id: 'b' } },
+        allIds: ['a', 'b'],
+      })
+    })
+  })
 })

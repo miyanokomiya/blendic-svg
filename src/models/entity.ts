@@ -1,4 +1,4 @@
-import { IdMap } from '/@/models'
+import { IdMap, toMap } from '/@/models'
 import { mapFilter, reduceToMap } from '/@/utils/commons'
 
 export interface Entity {
@@ -65,5 +65,16 @@ export function removeEntities<T extends Entity>(
       return p
     }, {}),
     allIds,
+  }
+}
+
+export function toEntityList<T extends Entity>(src: Entities<T>): T[] {
+  return src.allIds.map((id) => src.byId[id])
+}
+
+export function fromEntityList<T extends Entity>(list: T[]): Entities<T> {
+  return {
+    byId: toMap(list),
+    allIds: list.map((item) => item.id),
   }
 }

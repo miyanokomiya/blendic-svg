@@ -63,5 +63,49 @@ describe('src/composables/entities.ts', () => {
         })
       })
     })
+
+    describe('getUpdateItemHistory', () => {
+      it('should return history item to update entities', () => {
+        const entities = useEntities<{ id: string; val: number }>('Test')
+        entities
+          .getAddItemsHistory([
+            { id: 'a', val: 0 },
+            { id: 'b', val: 0 },
+            { id: 'c', val: 0 },
+          ])
+          .redo()
+        const item = entities.getUpdateItemHistory({
+          a: { id: 'a', val: 1 },
+          c: { id: 'c', val: 2 },
+        })
+        expect(item.name).toBe('Update Test')
+        expect(entities.getEntities()).toEqual({
+          byId: {
+            a: { id: 'a', val: 0 },
+            b: { id: 'b', val: 0 },
+            c: { id: 'c', val: 0 },
+          },
+          allIds: ['a', 'b', 'c'],
+        })
+        item.redo()
+        expect(entities.getEntities()).toEqual({
+          byId: {
+            a: { id: 'a', val: 1 },
+            b: { id: 'b', val: 0 },
+            c: { id: 'c', val: 2 },
+          },
+          allIds: ['a', 'b', 'c'],
+        })
+        item.undo()
+        expect(entities.getEntities()).toEqual({
+          byId: {
+            a: { id: 'a', val: 0 },
+            b: { id: 'b', val: 0 },
+            c: { id: 'c', val: 0 },
+          },
+          allIds: ['a', 'b', 'c'],
+        })
+      })
+    })
   })
 })

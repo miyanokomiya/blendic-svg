@@ -1,8 +1,8 @@
 import { reactive } from 'vue'
 import { HistoryItem } from '/@/composables/stores/history'
-import { toMap } from '/@/models'
+import { IdMap, toMap } from '/@/models'
 import { Entities, Entity } from '/@/models/entity'
-import { reduceToMap } from '/@/utils/commons'
+import { extractMap, reduceToMap } from '/@/utils/commons'
 
 export function useEntities<T extends Entity>(name: string) {
   const entities: Entities<T> = reactive({ byId: {}, allIds: [] })
@@ -49,9 +49,32 @@ export function useEntities<T extends Entity>(name: string) {
     }
   }
 
+  function getUpdateItemHistory(
+    updatedMap: IdMap<Partial<T>>,
+    seriesKey?: string
+  ): HistoryItem {
+    const beforeUpdated = extractMap(entities.byId, updatedMap)
+
+    return {
+      name: `Update ${name}`,
+      undo: () => {
+        Object.entries(beforeUpdated).forEach(
+          ([id, val]) => (entities.byId[id] = val)
+        )
+      },
+      redo: () => {
+        Object.entries(beforeUpdated).forEach(
+          ([id, val]) => (entities.byId[id] = { ...val, ...updatedMap[id] })
+        )
+      },
+      seriesKey,
+    }
+  }
+
   return {
     getEntities: () => entities,
     getAddItemsHistory,
     getDeleteItemsHistory,
+    getUpdateItemHistory,
   }
 }

@@ -18,31 +18,33 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ref, computed } from 'vue'
-import { Armature, getBone, getArmature, toMap, Bone } from '/@/models/index'
+import {
+  Armature,
+  getBone,
+  getArmature,
+  toMap,
+  Bone,
+  BoneSelectedState,
+  IdMap,
+  mergeMap,
+} from '/@/models/index'
 import * as armatureUtils from '/@/utils/armatures'
 import { IVec2 } from 'okageo'
 import { useHistoryStore } from './history'
 import { HistoryItem } from '/@/composables/stores/history'
+import { SelectedItemAccessor } from '/@/utils/histories'
+import { Entities, fromEntityList, toEntityList } from '/@/models/entity'
 import {
-  getAddItemsHistory,
-  getDeleteItemHistory,
-  getUpdateSingleItemHistory,
-  SelectedItemAccessor,
-} from '/@/utils/histories'
-import {
-  Entities,
-  fromEntityList,
-  setEntities,
-  toEntityList,
-  updateEntity,
-} from '/@/models/entity'
-import { useAttrsSelectable, useItemSelectable } from '/@/components/selectable'
+  useAttrsSelectable,
+  useItemSelectable,
+} from '/@/composables/selectable'
 import { getNotDuplicatedName } from '/@/utils/relations'
-import { toList } from '/@/utils/commons'
+import { getTreeIdPath, reduceToMap, toList } from '/@/utils/commons'
+import { useEntities } from '/@/composables/entities'
+import { SelectOptions } from '/@/composables/modes/types'
 
 const historyStore = useHistoryStore()
 
-type ArmatureEntities = Entities<Armature>
 type BoneEntities = Entities<Bone>
 
 export function createStore() {
@@ -60,18 +62,16 @@ export function createStore() {
     true
   )
 
-  const armatureEntities = ref<ArmatureEntities>({
-    byId: { [armature.id]: armature },
-    allIds: [armature.id],
-  })
-  const armatures = computed(() => toEntityList(armatureEntities.value))
+  const armatureEntities = useEntities<Armature>('Armature')
+  armatureEntities.getAddItemsHistory([armature]).redo()
+  const armatures = computed(() => toEntityList(armatureEntities.getEntities()))
   const armatureSelectable = useItemSelectable(
-    () => armatureEntities.value.byId
+    () => armatureEntities.getEntities().byId
   )
   const lastSelectedArmatureId = computed(armatureSelectable.getLastSelectedId)
   const lastSelectedArmature = computed(() =>
     lastSelectedArmatureId.value
-      ? armatureEntities.value.byId[lastSelectedArmatureId.value]
+      ? armatureEntities.getEntities().byId[lastSelectedArmatureId.value]
       : undefined
   )
 
@@ -85,7 +85,7 @@ export function createStore() {
     const boneById = boneEntities.value.byId
     return toMap(lastSelectedArmature.value.b_ones.map((id) => boneById[id]))
   })
-  const boneSelectable = useAttrsSelectable<Bone, { head: true; tail: true }>(
+  const boneSelectable = useAttrsSelectable<Bone, BoneSelectedState>(
     () => boneMap.value,
     ['head', 'tail']
   )
@@ -106,13 +106,11 @@ export function createStore() {
   )
 
   const constraintMap = computed(() =>
-    toMap(
-      (lastSelectedArmature.value?.bones ?? []).flatMap((b) => b.constraints)
-    )
+    toMap((toList(boneMap.value) ?? []).flatMap((b) => b.constraints))
   )
 
   function initState(initArmatures: Armature[]) {
-    armatureEntities.value = fromEntityList(initArmatures)
+    armatureEntities.init(fromEntityList(initArmatures))
     armatureSelectable.clearAll()
     boneSelectable.clearAll()
   }
@@ -135,7 +133,7 @@ export function createStore() {
     if (lastSelectedArmatureId.value) {
       selectArmature()
     } else {
-      const id = armatureEntities.value.allIds[0]
+      const id = armatureEntities.getEntities().allIds[0]
       if (id) {
         selectArmature(id)
       }
@@ -144,24 +142,18 @@ export function createStore() {
 
   function addArmature() {
     historyStore.push(
-      getAddItemsHistory(
-        {
-          get: () => toList(armatureEntities.value.byId),
-          set: (val) => setEntities(armatureEntities.value, val),
-        },
-        [
-          getArmature(
-            {
-              name: getNotDuplicatedName(
-                'armature',
-                toList(armatureEntities.value.byId).map((a) => a.name)
-              ),
-              bones: [getBone({ name: 'bone', tail: { x: 100, y: 0 } }, true)],
-            },
-            true
-          ),
-        ]
-      ),
+      armatureEntities.getAddItemsHistory([
+        getArmature(
+          {
+            name: getNotDuplicatedName(
+              'armature',
+              toList(armatureEntities.getEntities().byId).map((a) => a.name)
+            ),
+            bones: [getBone({ name: 'bone', tail: { x: 100, y: 0 } }, true)],
+          },
+          true
+        ),
+      ]),
       true
     )
   }
@@ -170,13 +162,8 @@ export function createStore() {
     if (!lastSelectedArmatureId.value) return
 
     historyStore.push(
-      getDeleteItemHistory(
-        {
-          get: () => toList(armatureEntities.value.byId),
-          set: (val) => setEntities(armatureEntities.value, val),
-        },
-        armatureSelectable.getSelectedMap(),
-        'Delete Armature'
+      armatureEntities.getDeleteItemsHistory(
+        Object.keys(armatureSelectable.getSelectedMap())
       ),
       true
     )
@@ -191,22 +178,85 @@ export function createStore() {
       return
 
     historyStore.push(
-      getUpdateSingleItemHistory(
-        {
-          get: () => lastSelectedArmature.value!,
-          set: (val) => updateEntity(armatureEntities.value, val),
-        },
-        {
+      armatureEntities.getUpdateItemHistory({
+        [lastSelectedArmature.value!.id]: {
           name: getNotDuplicatedName(
             name,
-            toList(armatureEntities.value.byId).map((a) => a.name)
+            toList(armatureEntities.getEntities().byId).map((a) => a.name)
           ),
         },
-        undefined,
-        'Update Armature'
+      }),
+      true
+    )
+  }
+
+  function selectAllBone() {
+    if (!lastSelectedArmature.value) return
+    historyStore.push(getSelectAllBoneItem(boneSelectable), true)
+  }
+
+  function _selectBone(
+    id: string = '',
+    selectedState: BoneSelectedState = { head: true, tail: true },
+    shift = false,
+    ignoreConnection = false
+  ) {
+    if (!lastSelectedArmature.value) return
+    // skip same selected state
+    if (!lastSelectedBone.value && !id) return
+    if (
+      boneSelectable.getLastSelectedId() === id &&
+      boneSelectable.isAttrsSelected({ [id]: selectedState }) &&
+      Object.keys(allSelectedBones.value).length === 1
+    )
+      return
+
+    historyStore.push(
+      getSelectBoneItem(
+        boneSelectable,
+        toList(boneMap.value),
+        id,
+        selectedState,
+        shift,
+        ignoreConnection
       ),
       true
     )
+  }
+
+  function selectBones(
+    selectedStateMap: IdMap<BoneSelectedState>,
+    shift = false
+  ) {
+    // select nothing -> nothing
+    if (
+      Object.keys(selectedStateMap).length === 0 &&
+      !boneSelectable.getLastSelectedId()
+    )
+      return
+
+    const item = getSelectBonesItem(boneSelectable, selectedStateMap, shift)
+    item.redo()
+    historyStore.push(item)
+  }
+
+  function selectBone(
+    id?: string,
+    selectedState: BoneSelectedState = { head: true, tail: true },
+    options?: SelectOptions,
+    ignoreConnection = false
+  ) {
+    if (id && options?.ctrl && lastSelectedBone.value) {
+      selectBones(
+        reduceToMap(
+          getTreeIdPath(boneMap.value, lastSelectedBone.value.id, id),
+          () => ({ head: true, tail: true })
+        ),
+        true
+      )
+    } else {
+      _selectBone(id, selectedState, options?.shift, ignoreConnection)
+    }
   }
 
   return () => {
@@ -230,13 +280,17 @@ export function createStore() {
       addArmature,
       deleteArmature,
       updateArmatureName,
+
+      selectAllBone,
+      selectBone,
+      selectBones,
     }
   }
 }
 export type IndexStore = ReturnType<typeof createStore>
 
 const store = createStore()
-export function u_seStore() {
+export function useStore() {
   return store
 }
 
@@ -253,6 +307,84 @@ function getSelectArmatureItem(
     },
     redo: () => {
       selectedAccessor.set(id ? { [id]: true } : {})
+    },
+  }
+}
+
+function getSelectBonesItem(
+  attrsSelectable: {
+    getSelectedMap(): IdMap<BoneSelectedState>
+    multiSelect(val: IdMap<BoneSelectedState>, ctrl?: boolean): void
+  },
+  selectedStateMap: IdMap<BoneSelectedState>,
+  shift = false
+): HistoryItem {
+  const before = { ...attrsSelectable.getSelectedMap() }
+
+  return {
+    name: 'Select Bone',
+    undo: () => {
+      attrsSelectable.multiSelect(before)
+    },
+    redo: () => {
+      attrsSelectable.multiSelect(selectedStateMap, shift)
+    },
+  }
+}
+
+function getSelectBoneItem(
+  attrsSelectable: {
+    getSelectedMap(): IdMap<BoneSelectedState>
+    multiSelect(val: IdMap<BoneSelectedState>, ctrl?: boolean): void
+  },
+  bones: Bone[],
+  id: string,
+  selectedState: BoneSelectedState = { head: true, tail: true },
+  shift = false,
+  ignoreConnection = false
+): HistoryItem {
+  const before = { ...attrsSelectable.getSelectedMap() }
+
+  return {
+    name: 'Select Bone',
+    undo: () => {
+      attrsSelectable.multiSelect(before)
+    },
+    redo: () => {
+      attrsSelectable.multiSelect(
+        id
+          ? mergeMap(
+              {
+                ...(shift ? attrsSelectable.getSelectedMap() : {}),
+                [id]: selectedState,
+              },
+              armatureUtils.selectBone(
+                bones,
+                id,
+                selectedState,
+                ignoreConnection
+              )
+            )
+          : {}
+      )
+    },
+  }
+}
+
+function getSelectAllBoneItem(attrsSelectable: {
+  selectAll(toggle?: boolean): void
+  createSnapshot(): [string, BoneSelectedState][]
+  restore(snapshot: [string, BoneSelectedState][]): void
+}): HistoryItem {
+  const snapshot = attrsSelectable.createSnapshot()
+
+  return {
+    name: 'Select Bone',
+    undo: () => {
+      attrsSelectable.restore(snapshot)
+    },
+    redo: () => {
+      attrsSelectable.selectAll(true)
     },
   }
 }

@@ -185,11 +185,12 @@ export function getSelectItemsHistory(
 
 export function getDeleteItemHistory<T extends { id: string }>(
   nodeAccessor: ListItemAccessor<T>,
-  targetIds: IdMap<unknown>
+  targetIds: IdMap<unknown>,
+  name = 'Delete Item'
 ): HistoryItem {
   const deletedMap = extractMap(toMap(nodeAccessor.get()), targetIds)
   return {
-    name: 'Delete Item',
+    name,
     undo: () => {
       nodeAccessor.set(
         toList({

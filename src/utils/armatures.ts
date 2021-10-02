@@ -20,7 +20,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { v4 } from 'uuid'
 import {
   Transform,
-  Armature,
   Bone,
   BoneSelectedState,
   getTransform,
@@ -201,13 +200,13 @@ export function findBone(bones: Bone[], id: string): Bone | undefined {
   return bones.find((b) => b.id === id)
 }
 
-export function findChildren(
-  armature: Armature,
-  id: string,
+function findChildren(
+  bones: Bone[],
+  parentId: string,
   onlyConnected = false
 ): Bone[] {
-  return armature.bones.filter(
-    (b) => b.parentId === id && (!onlyConnected || b.connected)
+  return bones.filter(
+    (b) => b.parentId === parentId && (!onlyConnected || b.connected)
   )
 }
 
@@ -222,12 +221,12 @@ export function adjustConnectedPosition(bones: Bone[]): Bone[] {
 }
 
 export function selectBone(
-  armature: Armature,
+  bones: Bone[],
   id: string,
   selectedState: BoneSelectedState,
   ignoreConnection = false
 ): IdMap<BoneSelectedState> {
-  const target = findBone(armature.bones, id)
+  const target = findBone(bones, id)
   if (!target) return {}
 
   let ret: IdMap<Partial<BoneSelectedState>> = {
@@ -236,16 +235,16 @@ export function selectBone(
 
   if (!ignoreConnection) {
     if (selectedState.head && target.connected) {
-      const parent = findBone(armature.bones, target.parentId)
+      const parent = findBone(bones, target.parentId)
       if (parent) {
         ret = {
-          ...selectBone(armature, parent.id, { tail: true }, ignoreConnection),
+          ...selectBone(bones, parent.id, { tail: true }, ignoreConnection),
           ...ret,
         }
       }
     }
     if (selectedState.tail) {
-      findChildren(armature, target.id, true).forEach((b) => {
+      findChildren(bones, target.id, true).forEach((b) => {
         ret[b.id] = { head: true }
       })
     }
@@ -269,7 +268,7 @@ export function selectBoneInRect(
     const head = isOnPolygon(transformed.head, polygon)
     const tail = isOnPolygon(transformed.tail, polygon)
     if (head || tail) {
-      p[b.id] = { head, tail }
+      p[b.id] = cleanBoneSelectedStatus({ head, tail })
       if (!head) delete p[b.id].head
       if (!tail) delete p[b.id].tail
     }
@@ -824,15 +823,13 @@ export function getShiftClickedBoneState(
   clicked: BoneSelectedState
 ): BoneSelectedState {
   if (clicked.head && clicked.tail) {
-    return current.head && current.tail
-      ? { head: false, tail: false }
-      : { head: true, tail: true }
+    return current.head && current.tail ? {} : { head: true, tail: true }
   }
 
-  return {
+  return cleanBoneSelectedStatus({
     head: clicked.head ? !current.head : current.head,
     tail: clicked.tail ? !current.tail : current.tail,
-  }
+  })
 }
 
 export function getWorldToLocalTranslateFn(
@@ -844,4 +841,18 @@ export function getWorldToLocalTranslateFn(
 
   const invP = invertPoseTransform(parentSpace)
   return (v) => toSpaceFn.toLocal(applyTransformToVec(v, invP))
+}
+
+function cleanBoneSelectedStatus(state: {
+  head?: boolean
+  tail?: boolean
+}): BoneSelectedState {
+  const ret: BoneSelectedState = {}
+  if (state.head) {
+    ret.head = true
+  }
+  if (state.tail) {
+    ret.tail = true
+  }
+  return ret
 }

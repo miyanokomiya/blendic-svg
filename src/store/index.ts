@@ -484,7 +484,7 @@ function getSelectBoneItem(
       ? mergeMap(
           { ...(shift ? state.selectedBones : {}), [id]: selectedState },
           armatureUtils.selectBone(
-            lastSelectedArmature.value!,
+            lastSelectedArmature.value!.bones,
             id,
             selectedState,
             ignoreConnection

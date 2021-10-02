@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import * as target from '../../src/utils/armatures'
-import { getArmature, getBone, getTransform } from '../../src/models/index'
+import { getBone, getTransform } from '../../src/models/index'
 import { getConstraint, getOptionByType } from '/@/utils/constraints'
 import { assertBoneGeometry, assertVec } from 'spec/tools'
 import { add } from 'okageo'
@@ -167,29 +167,25 @@ describe('utils/armatures', () => {
       it("connected: true => also select parent's tail & brother's head", () => {
         expect(
           target.selectBone(
-            getArmature({
-              bones: [parent, selecgted, brother, unconnectedBrother, child],
-            }),
+            [parent, selecgted, brother, unconnectedBrother, child],
             selecgted.id,
-            { head: true, tail: false }
+            { head: true }
           )
         ).toEqual({
           parent: { tail: true },
-          selecgted: { head: true, tail: false },
+          selecgted: { head: true },
           brother: { head: true },
         })
       })
       it("connected: false => not select parent's tail", () => {
         expect(
           target.selectBone(
-            getArmature({
-              bones: [parent, { ...selecgted, connected: false }, child],
-            }),
+            [parent, { ...selecgted, connected: false }, child],
             selecgted.id,
-            { head: true, tail: false }
+            { head: true }
           )
         ).toEqual({
-          selecgted: { head: true, tail: false },
+          selecgted: { head: true },
         })
       })
     })
@@ -197,14 +193,12 @@ describe('utils/armatures', () => {
       it("also select connected children's head", () => {
         expect(
           target.selectBone(
-            getArmature({
-              bones: [parent, selecgted, child, unconnectedChild],
-            }),
+            [parent, selecgted, child, unconnectedChild],
             selecgted.id,
-            { head: false, tail: true }
+            { tail: true }
           )
         ).toEqual({
-          selecgted: { head: false, tail: true },
+          selecgted: { tail: true },
           child: { head: true },
         })
       })
@@ -313,10 +307,10 @@ describe('utils/armatures', () => {
       }
       const selectedState = {
         1: { head: true, tail: true },
-        2: { head: true, tail: false },
-        3: { head: false, tail: true },
-        4: { head: false, tail: false },
-      }
+        2: { head: true },
+        3: { tail: true },
+        4: {},
+      } as const
       expect(target.getSelectedBonesOrigin(boneMap, selectedState)).toEqual({
         x: 9,
         y: 10,
@@ -1367,12 +1361,12 @@ describe('utils/armatures', () => {
             { head: true, tail: true },
             { head: true, tail: true }
           )
-        ).toEqual({ head: false, tail: false })
+        ).toEqual({})
       })
       it('should select all if either head and tail are selected', () => {
         expect(
           target.getShiftClickedBoneState(
-            { head: false, tail: true },
+            { tail: true },
             { head: true, tail: true }
           )
         ).toEqual({ head: true, tail: true })
@@ -1383,16 +1377,13 @@ describe('utils/armatures', () => {
         expect(
           target.getShiftClickedBoneState(
             { head: true, tail: true },
-            { head: true, tail: false }
+            { head: true }
           )
-        ).toEqual({ head: false, tail: true })
+        ).toEqual({ tail: true })
       })
       it('should select head if head is not selected', () => {
         expect(
-          target.getShiftClickedBoneState(
-            { head: false, tail: true },
-            { head: true, tail: false }
-          )
+          target.getShiftClickedBoneState({ tail: true }, { head: true })
         ).toEqual({ head: true, tail: true })
       })
     })
@@ -1401,16 +1392,13 @@ describe('utils/armatures', () => {
         expect(
           target.getShiftClickedBoneState(
             { head: true, tail: true },
-            { head: false, tail: true }
+            { tail: true }
           )
-        ).toEqual({ head: true, tail: false })
+        ).toEqual({ head: true })
       })
       it('should select tail if tail is not selected', () => {
         expect(
-          target.getShiftClickedBoneState(
-            { head: true, tail: false },
-            { head: false, tail: true }
-          )
+          target.getShiftClickedBoneState({ head: true }, { tail: true })
         ).toEqual({ head: true, tail: true })
       })
     })

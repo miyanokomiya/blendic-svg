@@ -67,11 +67,11 @@ describe('models/index.ts', () => {
 
   describe('isSameBoneSelectedState', () => {
     it.each([
-      [{ head: true }, { head: true, tail: false }, true],
+      [{ head: true }, { head: true }, true],
       [{ head: true }, { head: true, tail: true }, false],
-      [{ tail: true }, { head: false, tail: true }, true],
-      [{ head: false }, { head: false, tail: false }, true],
-    ])('add(%s, %s) => %s', (a, b, expected) => {
+      [{ tail: true }, { tail: true }, true],
+      [{}, {}, true],
+    ] as const)('add(%s, %s) => %s', (a, b, expected) => {
       expect(isSameBoneSelectedState(a, b)).toBe(expected)
     })
   })
@@ -79,21 +79,21 @@ describe('models/index.ts', () => {
   describe('isBoneSelected', () => {
     describe('partial', () => {
       it.each([
-        [{ head: false, tail: false }, false],
-        [{ head: true, tail: false }, true],
-        [{ head: false, tail: true }, true],
+        [{}, false],
+        [{ head: true }, true],
+        [{ tail: true }, true],
         [{ head: true, tail: true }, true],
-      ])('add(%s, %s) => %s', (a, expected) => {
+      ] as const)('add(%s, %s) => %s', (a, expected) => {
         expect(isBoneSelected(a)).toBe(expected)
       })
     })
     describe('all', () => {
       it.each([
-        [{ head: false, tail: false }, false],
-        [{ head: true, tail: false }, false],
-        [{ head: false, tail: true }, false],
+        [{}, false],
+        [{ head: true }, false],
+        [{ tail: true }, false],
         [{ head: true, tail: true }, true],
-      ])('add(%s, %s) => %s', (a, expected) => {
+      ] as const)('add(%s, %s) => %s', (a, expected) => {
         expect(isBoneSelected(a, true)).toBe(expected)
       })
     })

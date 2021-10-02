@@ -1,17 +1,28 @@
 import * as target from '../../src/models/entity'
 
 describe('src/models/entity.ts', () => {
+  describe('setEntities', () => {
+    it('should set  entities', () => {
+      const src = {
+        byId: { a: { id: 'a' } },
+        allIds: ['a'],
+      }
+      target.setEntities(src, [{ id: 'b' }])
+      expect(src).toEqual({
+        byId: { b: { id: 'b' } },
+        allIds: ['b'],
+      })
+    })
+  })
+
   describe('addEntity', () => {
     it('should add new entity', () => {
-      expect(
-        target.addEntity(
-          {
-            byId: { a: { id: 'a' } },
-            allIds: ['a'],
-          },
-          { id: 'b' }
-        )
-      ).toEqual({
+      const src = {
+        byId: { a: { id: 'a' } },
+        allIds: ['a'],
+      }
+      target.addEntity(src, { id: 'b' })
+      expect(src).toEqual({
         byId: { a: { id: 'a' }, b: { id: 'b' } },
         allIds: ['a', 'b'],
       })
@@ -20,15 +31,12 @@ describe('src/models/entity.ts', () => {
 
   describe('updateEntity', () => {
     it('should update the entity', () => {
-      expect(
-        target.updateEntity(
-          {
-            byId: { a: { id: 'a' }, b: { id: 'b', val: 1 } },
-            allIds: ['a', 'b'],
-          },
-          { id: 'b', val: 2 }
-        )
-      ).toEqual({
+      const src = {
+        byId: { a: { id: 'a' }, b: { id: 'b', val: 1 } },
+        allIds: ['a', 'b'],
+      }
+      target.updateEntity(src, { id: 'b', val: 2 })
+      expect(src).toEqual({
         byId: { a: { id: 'a' }, b: { id: 'b', val: 2 } },
         allIds: ['a', 'b'],
       })
@@ -37,18 +45,15 @@ describe('src/models/entity.ts', () => {
 
   describe('updateEntities', () => {
     it('should update some entities', () => {
-      expect(
-        target.updateEntities(
-          {
-            byId: { a: { id: 'a', val: 0 }, b: { id: 'b', val: 1 } },
-            allIds: ['a', 'b'],
-          },
-          {
-            a: { id: 'a', val: 1 },
-            b: { id: 'b', val: 2 },
-          }
-        )
-      ).toEqual({
+      const src = {
+        byId: { a: { id: 'a', val: 0 }, b: { id: 'b', val: 1 } },
+        allIds: ['a', 'b'],
+      }
+      target.updateEntities(src, {
+        a: { id: 'a', val: 1 },
+        b: { id: 'b', val: 2 },
+      })
+      expect(src).toEqual({
         byId: { a: { id: 'a', val: 1 }, b: { id: 'b', val: 2 } },
         allIds: ['a', 'b'],
       })
@@ -74,15 +79,12 @@ describe('src/models/entity.ts', () => {
 
   describe('removeEntities', () => {
     it('should remove some entities', () => {
-      expect(
-        target.removeEntities(
-          {
-            byId: { a: { id: 'a' }, b: { id: 'b' }, c: { id: 'c' } },
-            allIds: ['a', 'b', 'c'],
-          },
-          ['b', 'c']
-        )
-      ).toEqual({
+      const src = {
+        byId: { a: { id: 'a' }, b: { id: 'b' }, c: { id: 'c' } },
+        allIds: ['a', 'b', 'c'],
+      }
+      target.removeEntities(src, ['b', 'c'])
+      expect(src).toEqual({
         byId: { a: { id: 'a' } },
         allIds: ['a'],
       })

@@ -61,6 +61,7 @@ export interface Armature {
   name: string
   transform: Transform
   bones: Bone[]
+  b_ones: string[]
 }
 
 export interface ElementNodeAttributes {
@@ -270,15 +271,16 @@ export function getArmature(
     name: '',
     transform: getTransform(),
     bones: [],
+    b_ones: [],
     ...arg,
     id,
   }
 }
 
-export interface BoneSelectedState {
-  head?: boolean
-  tail?: boolean
-}
+export type BoneSelectedState = Partial<{
+  head: true
+  tail: true
+}>
 
 export function toMap<T extends { id: string }>(list: T[]): IdMap<T> {
   return toKeyMap(list, 'id')

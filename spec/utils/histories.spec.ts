@@ -27,6 +27,7 @@ import {
   getSelectItemHistory,
   getSelectItemsHistory,
   getUpdateItemHistory,
+  getUpdateSingleItemHistory,
   hasSameSeriesKey,
 } from '/@/utils/histories'
 
@@ -353,6 +354,24 @@ describe('src/utils/histories.ts', () => {
       expect(accessor.set).toHaveBeenCalledWith([{ id: 'b', val: 1 }])
       ret.undo()
       expect(accessor.set).toHaveBeenCalledWith([{ id: 'a' }, { id: 'b' }])
+    })
+  })
+
+  describe('getUpdateSingleItemHistory', () => {
+    it('should return a history item to update an item', () => {
+      const accessor = {
+        get: jest.fn().mockReturnValue({ id: 'a', val: 0 }),
+        set: jest.fn(),
+      }
+      const val = { val: 2 }
+      const ret = getUpdateSingleItemHistory<{ id: string; val: number }>(
+        accessor,
+        val
+      )
+      ret.redo()
+      expect(accessor.set).toHaveBeenCalledWith({ id: 'a', val: 2 })
+      ret.undo()
+      expect(accessor.set).toHaveBeenCalledWith({ id: 'a', val: 0 })
     })
   })
 

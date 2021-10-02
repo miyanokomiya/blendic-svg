@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { HistoryItem } from '/@/composables/stores/history'
-import { IdMap, toMap } from '/@/models'
+import { getOriginPartial, IdMap, toMap } from '/@/models'
 import { dropMap, extractMap, mapReduce, toList } from '/@/utils/commons'
 
 export function convolute(
@@ -82,6 +82,11 @@ export interface SelectedItemAccessor {
 export interface LastSelectedItemIdAccessor {
   get: () => string
   set: (val: string) => void
+}
+
+export interface ItemAccessor<T> {
+  get: () => T
+  set: (val: T) => void
 }
 
 export function getAddItemHistory<T extends { id: string }>(
@@ -230,6 +235,26 @@ export function getDeleteAndUpdateItemHistory<T extends { id: string }>(
         })
       )
     },
+  }
+}
+
+export function getUpdateSingleItemHistory<T>(
+  targetAccessor: ItemAccessor<T>,
+  updated: Partial<T>,
+  seriesKey?: string,
+  name = 'Update Item'
+): HistoryItem {
+  const current = getOriginPartial(targetAccessor.get(), updated)
+
+  return {
+    name,
+    undo: () => {
+      targetAccessor.set({ ...targetAccessor.get(), ...current })
+    },
+    redo: () => {
+      targetAccessor.set({ ...targetAccessor.get(), ...updated })
+    },
+    seriesKey,
   }
 }
 

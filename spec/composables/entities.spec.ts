@@ -2,6 +2,28 @@ import { useEntities } from '/@/composables/entities'
 
 describe('src/composables/entities.ts', () => {
   describe('useEntities', () => {
+    describe('init', () => {
+      it('should init this composable', () => {
+        const entities = useEntities('Test')
+        entities.init({
+          byId: { a: { id: 'a' } },
+          allIds: ['a'],
+        })
+        expect(entities.getEntities()).toEqual({
+          byId: { a: { id: 'a' } },
+          allIds: ['a'],
+        })
+        entities.init({
+          byId: { b: { id: 'b' } },
+          allIds: ['b'],
+        })
+        expect(entities.getEntities()).toEqual({
+          byId: { b: { id: 'b' } },
+          allIds: ['b'],
+        })
+      })
+    })
+
     describe('getAddItemsHistory', () => {
       it('should return history item to add entities', () => {
         const entities = useEntities('Test')

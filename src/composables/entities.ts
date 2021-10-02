@@ -7,6 +7,11 @@ import { extractMap, reduceToMap } from '/@/utils/commons'
 export function useEntities<T extends Entity>(name: string) {
   const entities: Entities<T> = reactive({ byId: {}, allIds: [] })
 
+  function init(defaultEntities: Entities<T>) {
+    entities.byId = { ...defaultEntities.byId }
+    entities.allIds = defaultEntities.allIds.concat()
+  }
+
   function getAddItemsHistory(items: T[]): HistoryItem {
     return {
       name: `Add ${name}`,
@@ -72,6 +77,7 @@ export function useEntities<T extends Entity>(name: string) {
   }
 
   return {
+    init,
     getEntities: () => entities,
     getAddItemsHistory,
     getDeleteItemsHistory,

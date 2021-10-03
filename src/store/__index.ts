@@ -68,7 +68,7 @@ export function createStore() {
   const armatureSelectable = useItemSelectable(
     () => armatureEntities.getEntities().byId
   )
-  const lastSelectedArmatureId = computed(armatureSelectable.getLastSelectedId)
+  const lastSelectedArmatureId = armatureSelectable.lastSelectedId
   const lastSelectedArmature = computed(() =>
     lastSelectedArmatureId.value
       ? armatureEntities.getEntities().byId[lastSelectedArmatureId.value]
@@ -89,8 +89,8 @@ export function createStore() {
     () => boneMap.value,
     ['head', 'tail']
   )
-  const selectedBones = computed(boneSelectable.getSelectedMap)
-  const lastSelectedBoneId = computed(boneSelectable.getLastSelectedId)
+  const selectedBones = boneSelectable.selectedMap
+  const lastSelectedBoneId = boneSelectable.lastSelectedId
   const lastSelectedBone = computed(() =>
     lastSelectedBoneId.value
       ? boneEntities.value.byId[lastSelectedBoneId.value]
@@ -98,7 +98,7 @@ export function createStore() {
   )
   const allSelectedBones = computed(() => {
     const byId = boneEntities.value.byId
-    return toMap(boneSelectable.getAllAttrsSelected().map((id) => byId[id]))
+    return toMap(boneSelectable.allAttrsSelectedIds.value.map((id) => byId[id]))
   })
   const selectedBonesOrigin = computed(
     (): IVec2 =>
@@ -120,7 +120,7 @@ export function createStore() {
 
     const item = getSelectArmatureItem(
       {
-        get: () => armatureSelectable.getSelectedMap(),
+        get: () => armatureSelectable.selectedMap.value,
         set: (val) => armatureSelectable.multiSelect(Object.keys(val)),
       },
       id
@@ -163,7 +163,7 @@ export function createStore() {
 
     historyStore.push(
       armatureEntities.getDeleteItemsHistory(
-        Object.keys(armatureSelectable.getSelectedMap())
+        Object.keys(armatureSelectable.selectedMap.value)
       ),
       true
     )
@@ -205,7 +205,7 @@ export function createStore() {
     // skip same selected state
     if (!lastSelectedBone.value && !id) return
     if (
-      boneSelectable.getLastSelectedId() === id &&
+      boneSelectable.lastSelectedId.value === id &&
       boneSelectable.isAttrsSelected({ [id]: selectedState }) &&
       Object.keys(allSelectedBones.value).length === 1
     )
@@ -213,7 +213,10 @@ export function createStore() {
 
     historyStore.push(
       getSelectBoneItem(
-        boneSelectable,
+        {
+          getSelectedMap: () => boneSelectable.selectedMap.value,
+          multiSelect: boneSelectable.multiSelect,
+        },
         toList(boneMap.value),
         id,
         selectedState,
@@ -231,11 +234,18 @@ export function createStore() {
     // select nothing -> nothing
     if (
       Object.keys(selectedStateMap).length === 0 &&
-      !boneSelectable.getLastSelectedId()
+      !boneSelectable.lastSelectedId.value
     )
       return
 
-    const item = getSelectBonesItem(boneSelectable, selectedStateMap, shift)
+    const item = getSelectBonesItem(
+      {
+        getSelectedMap: () => boneSelectable.selectedMap.value,
+        multiSelect: boneSelectable.multiSelect,
+      },
+      selectedStateMap,
+      shift
+    )
     item.redo()
     historyStore.push(item)
   }

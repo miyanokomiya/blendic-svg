@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import * as okaselect from 'okaselect'
 import { IdMap } from '/@/models'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 export type SelectableAttrs = {
   [key: string]: true
@@ -37,8 +37,9 @@ export function useItemSelectable<T>(getItems: () => IdMap<T>) {
   }
 
   return {
-    getSelectedMap: () => selectedMap.value,
-    getLastSelectedId: () => lastSelectedId.value,
+    selectedMap: computed(() => selectedMap.value),
+    lastSelectedId: computed(() => lastSelectedId.value),
+
     select: selectable.select,
     multiSelect: selectable.multiSelect,
     selectAll: selectable.selectAll,
@@ -52,6 +53,7 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
 ) {
   const selectedMap = ref<IdMap<SelectableAttrs>>({})
   const lastSelectedId = ref<string>()
+  const allAttrsSelectedIds = ref<string[]>([])
 
   const selectable = okaselect.useAttributeSelectable<T, K>(
     getItems,
@@ -64,14 +66,13 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
   function onUpdated() {
     selectedMap.value = selectable.getSelected()
     lastSelectedId.value = selectable.getLastSelected()
-    selectable.getSelected
+    allAttrsSelectedIds.value = selectable.getAllAttrsSelected()
   }
 
   return {
-    getSelectedMap: () => selectedMap.value,
-    getSelectedList: () => selectedMap.value,
-    getLastSelectedId: () => lastSelectedId.value,
-    getAllAttrsSelected: () => [], // TODO
+    selectedMap: computed(() => selectedMap.value),
+    lastSelectedId: computed(() => lastSelectedId.value),
+    allAttrsSelectedIds: computed(() => allAttrsSelectedIds.value),
 
     isAttrsSelected: selectable.isAttrsSelected,
     select: selectable.select,

@@ -398,6 +398,27 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
+  function updateBoneName(name: string) {
+    if (
+      !name ||
+      !lastSelectedBone.value ||
+      lastSelectedBone.value.name === name
+    )
+      return
+
+    historyStore.push(
+      boneEntities.getUpdateItemHistory({
+        [lastSelectedBone.value.id]: {
+          name: getNotDuplicatedName(
+            name,
+            toList(boneMap.value).map((b) => b.name)
+          ),
+        },
+      }),
+      true
+    )
+  }
+
   return {
     armatures,
     lastSelectedArmatureId,
@@ -430,6 +451,7 @@ export function createStore(historyStore: HistoryStore) {
     dissolveBone,
     updateBones,
     updateBone,
+    updateBoneName,
   }
 }
 export type IndexStore = ReturnType<typeof createStore>

@@ -140,4 +140,19 @@ describe('src/store/__index.ts', () => {
       expect(target.boneMap.value['bone_c'].parentId).toBe('')
     })
   })
+
+  describe('updateBoneName', () => {
+    it('should update name of a bone and avoid duplication', () => {
+      const target = createStore(useHistoryStore())
+      target.addArmature('arm_a')
+      target.addBone('bone_a')
+      target.addBone('bone_b')
+      target.selectBone('bone_a')
+      target.updateBoneName('name_a')
+      target.selectBone('bone_b')
+      target.updateBoneName('name_a')
+      expect(target.boneMap.value['bone_a'].name).toBe('name_a')
+      expect(target.boneMap.value['bone_b'].name).toBe('name_a.001')
+    })
+  })
 })

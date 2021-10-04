@@ -277,12 +277,12 @@ export function selectBoneInRect(
 }
 
 export function fixConnection(bones: Bone[], b: Bone): Bone {
-  if (!b.connected) return b
+  if (!b.parentId && !b.connected) return b
 
   const parent = findBone(bones, b.parentId)
   if (!parent) return { ...b, connected: false, parentId: '' }
 
-  return { ...b, head: parent.tail }
+  return b.connected ? { ...b, head: parent.tail } : b
 }
 export function fixConnections(bones: Bone[]): Bone[] {
   return bones.map((b) => fixConnection(bones, b))

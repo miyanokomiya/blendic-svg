@@ -249,6 +249,30 @@ describe('utils/armatures', () => {
         })
       )
     })
+    it('reset the connection if the parent is not found', () => {
+      const connected = getBone({
+        id: 'connected',
+        parentId: 'parent',
+        connected: true,
+        head: { x: 10, y: 20 },
+      })
+      const unconnected = getBone({
+        id: 'unconnected',
+        parentId: 'parent',
+        connected: false,
+      })
+      const ret = target.fixConnections([connected, unconnected])
+      expect(ret[0]).toEqual({
+        ...connected,
+        parentId: '',
+        connected: false,
+      })
+      expect(ret[1]).toEqual({
+        ...unconnected,
+        parentId: '',
+        connected: false,
+      })
+    })
   })
 
   describe('updateConnections', () => {

@@ -1,8 +1,9 @@
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import { HistoryItem } from '/@/composables/stores/history'
 import { IdMap, toMap } from '/@/models'
 import { Entities, Entity } from '/@/models/entity'
 import { extractMap, reduceToMap } from '/@/utils/commons'
+import { convolute } from '/@/utils/histories'
 
 export function useEntities<T extends Entity>(name: string) {
   const entities: Entities<T> = reactive({ byId: {}, allIds: [] })
@@ -76,11 +77,24 @@ export function useEntities<T extends Entity>(name: string) {
     }
   }
 
+  function getDeleteAndUpdateItemHistory(
+    deleteIds: string[],
+    updatedMap: IdMap<Partial<T>>
+  ): HistoryItem {
+    return convolute(
+      getDeleteItemsHistory(deleteIds),
+      [getUpdateItemHistory(updatedMap)],
+      `Delete ${name}`
+    )
+  }
+
   return {
     init,
-    getEntities: () => entities,
+    entities: computed(() => entities),
+
     getAddItemsHistory,
     getDeleteItemsHistory,
     getUpdateItemHistory,
+    getDeleteAndUpdateItemHistory,
   }
 }

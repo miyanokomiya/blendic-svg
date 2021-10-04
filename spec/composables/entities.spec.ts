@@ -9,7 +9,7 @@ describe('src/composables/entities.ts', () => {
           byId: { a: { id: 'a' } },
           allIds: ['a'],
         })
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: { a: { id: 'a' } },
           allIds: ['a'],
         })
@@ -17,7 +17,7 @@ describe('src/composables/entities.ts', () => {
           byId: { b: { id: 'b' } },
           allIds: ['b'],
         })
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: { b: { id: 'b' } },
           allIds: ['b'],
         })
@@ -29,17 +29,17 @@ describe('src/composables/entities.ts', () => {
         const entities = useEntities('Test')
         const item = entities.getAddItemsHistory([{ id: 'a' }])
         expect(item.name).toBe('Add Test')
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: {},
           allIds: [],
         })
         item.redo()
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: { a: { id: 'a' } },
           allIds: ['a'],
         })
         item.undo()
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: {},
           allIds: [],
         })
@@ -59,7 +59,7 @@ describe('src/composables/entities.ts', () => {
           .redo()
         const item = entities.getDeleteItemsHistory(['b', 'c'])
         expect(item.name).toBe('Delete Test')
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: {
             a: { id: 'a' },
             b: { id: 'b' },
@@ -69,12 +69,12 @@ describe('src/composables/entities.ts', () => {
           allIds: ['a', 'b', 'c', 'd'],
         })
         item.redo()
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: { a: { id: 'a' }, d: { id: 'd' } },
           allIds: ['a', 'd'],
         })
         item.undo()
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: {
             a: { id: 'a' },
             b: { id: 'b' },
@@ -101,7 +101,7 @@ describe('src/composables/entities.ts', () => {
           c: { id: 'c', val: 2 },
         })
         expect(item.name).toBe('Update Test')
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: {
             a: { id: 'a', val: 0 },
             b: { id: 'b', val: 0 },
@@ -110,7 +110,7 @@ describe('src/composables/entities.ts', () => {
           allIds: ['a', 'b', 'c'],
         })
         item.redo()
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: {
             a: { id: 'a', val: 1 },
             b: { id: 'b', val: 0 },
@@ -119,7 +119,7 @@ describe('src/composables/entities.ts', () => {
           allIds: ['a', 'b', 'c'],
         })
         item.undo()
-        expect(entities.getEntities()).toEqual({
+        expect(entities.entities.value).toEqual({
           byId: {
             a: { id: 'a', val: 0 },
             b: { id: 'b', val: 0 },

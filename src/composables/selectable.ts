@@ -20,12 +20,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 import * as okaselect from 'okaselect'
 import { IdMap } from '/@/models'
 import { computed, ref } from 'vue'
+import { HistoryItem } from '/@/composables/stores/history'
 
 export type SelectableAttrs = {
   [key: string]: true
 }
 
-export function useItemSelectable<T>(getItems: () => IdMap<T>) {
+export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
   const selectedMap = ref<IdMap<true>>({})
   const lastSelectedId = ref<string>()
 
@@ -36,21 +37,60 @@ export function useItemSelectable<T>(getItems: () => IdMap<T>) {
     lastSelectedId.value = selectable.getLastSelected()
   }
 
+  function getSelectHistory(id: string, shift = false): HistoryItem {
+    const snapshot = selectable.createSnapshot()
+    return {
+      name: `Select ${name}`,
+      undo: () => selectable.restore(snapshot),
+      redo: () => selectable.select(id, shift),
+    }
+  }
+
+  function getMultiSelectHistory(ids: string[], shift = false): HistoryItem {
+    const snapshot = selectable.createSnapshot()
+    return {
+      name: `Select ${name}`,
+      undo: () => selectable.restore(snapshot),
+      redo: () => selectable.multiSelect(ids, shift),
+    }
+  }
+
+  function getSelectAllHistory(toggle = false): HistoryItem {
+    const snapshot = selectable.createSnapshot()
+    return {
+      name: `Select ${name}`,
+      undo: () => selectable.restore(snapshot),
+      redo: () => selectable.selectAll(toggle),
+    }
+  }
+
+  function getClearAllHistory(): HistoryItem {
+    const snapshot = selectable.createSnapshot()
+    return {
+      name: `Select ${name}`,
+      undo: () => selectable.restore(snapshot),
+      redo: () => selectable.clearAll(),
+    }
+  }
+
   return {
     selectedMap: computed(() => selectedMap.value),
     lastSelectedId: computed(() => lastSelectedId.value),
 
-    select: selectable.select,
-    multiSelect: selectable.multiSelect,
-    selectAll: selectable.selectAll,
-    clearAll: selectable.clearAll,
+    getSelectHistory,
+    getMultiSelectHistory,
+    getSelectAllHistory,
+    getClearAllHistory,
   }
 }
 
 export function useAttrsSelectable<T, K extends SelectableAttrs>(
+  name: string,
   getItems: () => IdMap<T>,
   attrKeys: string[]
 ) {
+  // Note: ref<IdMap<K>> does not work well
+  // => becomes UnwrapRef unexpectedly
   const selectedMap = ref<IdMap<SelectableAttrs>>({})
   const lastSelectedId = ref<string>()
   const allAttrsSelectedIds = ref<string[]>([])
@@ -69,17 +109,58 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
     allAttrsSelectedIds.value = selectable.getAllAttrsSelected()
   }
 
+  function getSelectHistory(
+    id: string,
+    attrKey: string,
+    shift = false
+  ): HistoryItem {
+    const snapshot = selectable.createSnapshot()
+    return {
+      name: `Select ${name}`,
+      undo: () => selectable.restore(snapshot),
+      redo: () => selectable.select(id, attrKey, shift),
+    }
+  }
+
+  function getMultiSelectHistory(val: IdMap<K>, shift = false): HistoryItem {
+    const snapshot = selectable.createSnapshot()
+    return {
+      name: `Select ${name}`,
+      undo: () => selectable.restore(snapshot),
+      redo: () => selectable.multiSelect(val, shift),
+    }
+  }
+
+  function getSelectAllHistory(toggle = false): HistoryItem {
+    const snapshot = selectable.createSnapshot()
+    return {
+      name: `Select ${name}`,
+      undo: () => selectable.restore(snapshot),
+      redo: () => selectable.selectAll(toggle),
+    }
+  }
+
+  function getClearAllHistory(): HistoryItem {
+    const snapshot = selectable.createSnapshot()
+    return {
+      name: `Select ${name}`,
+      undo: () => selectable.restore(snapshot),
+      redo: () => selectable.clearAll(),
+    }
+  }
+
   return {
     selectedMap: computed(() => selectedMap.value),
     lastSelectedId: computed(() => lastSelectedId.value),
     allAttrsSelectedIds: computed(() => allAttrsSelectedIds.value),
 
     isAttrsSelected: selectable.isAttrsSelected,
-    select: selectable.select,
-    multiSelect: selectable.multiSelect,
-    selectAll: selectable.selectAll,
-    clearAll: selectable.clearAll,
     createSnapshot: selectable.createSnapshot,
     restore: selectable.restore,
+
+    getSelectHistory,
+    getMultiSelectHistory,
+    getSelectAllHistory,
+    getClearAllHistory,
   }
 }

@@ -32,7 +32,7 @@ import * as armatureUtils from '/@/utils/armatures'
 import { IVec2 } from 'okageo'
 import { useHistoryStore } from './history'
 import { HistoryItem } from '/@/composables/stores/history'
-import { convolute, SelectedItemAccessor } from '/@/utils/histories'
+import { convolute } from '/@/utils/histories'
 import { fromEntityList, toEntityList } from '/@/models/entity'
 import {
   useAttrsSelectable,
@@ -51,6 +51,7 @@ export function createStore() {
     toEntityList(armatureEntities.entities.value)
   )
   const armatureSelectable = useItemSelectable(
+    'Armature',
     () => armatureEntities.entities.value.byId
   )
   const lastSelectedArmatureId = armatureSelectable.lastSelectedId
@@ -68,6 +69,7 @@ export function createStore() {
     return toMap(lastSelectedArmature.value.b_ones.map((id) => boneById[id]))
   })
   const boneSelectable = useAttrsSelectable<Bone, BoneSelectedState>(
+    'Bone',
     () => boneMap.value,
     ['head', 'tail']
   )
@@ -93,8 +95,8 @@ export function createStore() {
 
   function initState(initArmatures: Armature[]) {
     armatureEntities.init(fromEntityList(initArmatures))
-    armatureSelectable.clearAll()
-    boneSelectable.clearAll()
+    armatureSelectable.getClearAllHistory().redo()
+    boneSelectable.getClearAllHistory().redo()
   }
 
   function createDefaultEntities() {
@@ -113,21 +115,19 @@ export function createStore() {
     })
 
     armatureEntities.getAddItemsHistory([armature]).redo()
-    armatureSelectable.select(armature.id)
+    armatureSelectable.getSelectHistory(armature.id).redo()
     boneEntities.getAddItemsHistory([bone]).redo()
   }
 
   function selectArmature(id: string = '') {
     if (lastSelectedArmatureId.value === id) return
 
-    const item = getSelectArmatureItem(
-      {
-        get: () => armatureSelectable.selectedMap.value,
-        set: (val) => armatureSelectable.multiSelect(Object.keys(val)),
-      },
+    historyStore.push(
       id
+        ? armatureSelectable.getSelectHistory(id)
+        : armatureSelectable.getClearAllHistory(),
+      true
     )
-    historyStore.push(item, true)
   }
 
   function selectAllArmature() {
@@ -156,13 +156,7 @@ export function createStore() {
 
     historyStore.push(
       convolute(armatureEntities.getAddItemsHistory([created]), [
-        getSelectArmatureItem(
-          {
-            get: () => armatureSelectable.selectedMap.value,
-            set: (val) => armatureSelectable.multiSelect(Object.keys(val)),
-          },
-          created.id
-        ),
+        armatureSelectable.getSelectHistory(created.id),
       ]),
       true
     )
@@ -202,7 +196,7 @@ export function createStore() {
 
   function selectAllBone() {
     if (!lastSelectedArmature.value) return
-    historyStore.push(getSelectAllBoneItem(boneSelectable), true)
+    historyStore.push(boneSelectable.getSelectAllHistory(true), true)
   }
 
   function _selectBone(
@@ -225,7 +219,8 @@ export function createStore() {
       getSelectBoneItem(
         {
           getSelectedMap: () => boneSelectable.selectedMap.value,
-          multiSelect: boneSelectable.multiSelect,
+          getMultiSelectHistory: boneSelectable.getMultiSelectHistory,
+          getClearAllHistory: boneSelectable.getClearAllHistory,
         },
         toList(boneMap.value),
         id,
@@ -249,14 +244,7 @@ export function createStore() {
       return
 
     historyStore.push(
-      getSelectBonesItem(
-        {
-          getSelectedMap: () => boneSelectable.selectedMap.value,
-          multiSelect: boneSelectable.multiSelect,
-        },
-        selectedStateMap,
-        shift
-      ),
+      boneSelectable.getMultiSelectHistory(selectedStateMap, shift),
       true
     )
   }
@@ -312,11 +300,7 @@ export function createStore() {
             b_ones: armature.b_ones.concat(bones.map((b) => b.id)),
           },
         }),
-        getSelectBonesItem(
-          {
-            getSelectedMap: () => boneSelectable.selectedMap.value,
-            multiSelect: boneSelectable.multiSelect,
-          },
+        boneSelectable.getMultiSelectHistory(
           selectedState ? mapReduce(toMap(bones), () => selectedState) : {}
         ),
       ]),
@@ -344,13 +328,7 @@ export function createStore() {
               b_ones: armature.b_ones.filter((id) => !targetMap[id]),
             },
           }),
-          getSelectBonesItem(
-            {
-              getSelectedMap: () => boneSelectable.selectedMap.value,
-              multiSelect: boneSelectable.multiSelect,
-            },
-            {}
-          ),
+          boneSelectable.getMultiSelectHistory({}),
         ]
       ),
       true
@@ -395,48 +373,14 @@ export function useStore() {
   return store
 }
 
-function getSelectArmatureItem(
-  selectedAccessor: SelectedItemAccessor,
-  id: string
-): HistoryItem {
-  const current = { ...selectedAccessor.get() }
-
-  return {
-    name: 'Select Armature',
-    undo: () => {
-      selectedAccessor.set({ ...current })
-    },
-    redo: () => {
-      selectedAccessor.set(id ? { [id]: true } : {})
-    },
-  }
-}
-
-function getSelectBonesItem(
-  attrsSelectable: {
-    getSelectedMap(): IdMap<BoneSelectedState>
-    multiSelect(val: IdMap<BoneSelectedState>, ctrl?: boolean): void
-  },
-  selectedStateMap: IdMap<BoneSelectedState>,
-  shift = false
-): HistoryItem {
-  const before = { ...attrsSelectable.getSelectedMap() }
-
-  return {
-    name: 'Select Bone',
-    undo: () => {
-      attrsSelectable.multiSelect(before)
-    },
-    redo: () => {
-      attrsSelectable.multiSelect(selectedStateMap, shift)
-    },
-  }
-}
-
 function getSelectBoneItem(
   attrsSelectable: {
     getSelectedMap(): IdMap<BoneSelectedState>
-    multiSelect(val: IdMap<BoneSelectedState>, ctrl?: boolean): void
+    getMultiSelectHistory(
+      val: IdMap<BoneSelectedState>,
+      shift?: boolean
+    ): HistoryItem
+    getClearAllHistory(): HistoryItem
   },
   bones: Bone[],
   id: string,
@@ -444,48 +388,16 @@ function getSelectBoneItem(
   shift = false,
   ignoreConnection = false
 ): HistoryItem {
-  const before = { ...attrsSelectable.getSelectedMap() }
+  if (!id) return attrsSelectable.getClearAllHistory()
 
-  return {
-    name: 'Select Bone',
-    undo: () => {
-      attrsSelectable.multiSelect(before)
-    },
-    redo: () => {
-      attrsSelectable.multiSelect(
-        id
-          ? mergeMap(
-              {
-                ...(shift ? attrsSelectable.getSelectedMap() : {}),
-                [id]: selectedState,
-              },
-              armatureUtils.selectBone(
-                bones,
-                id,
-                selectedState,
-                ignoreConnection
-              )
-            )
-          : {}
-      )
-    },
-  }
-}
-
-function getSelectAllBoneItem(attrsSelectable: {
-  selectAll(toggle?: boolean): void
-  createSnapshot(): [string, BoneSelectedState][]
-  restore(snapshot: [string, BoneSelectedState][]): void
-}): HistoryItem {
-  const snapshot = attrsSelectable.createSnapshot()
-
-  return {
-    name: 'Select Bone',
-    undo: () => {
-      attrsSelectable.restore(snapshot)
-    },
-    redo: () => {
-      attrsSelectable.selectAll(true)
-    },
-  }
+  return attrsSelectable.getMultiSelectHistory(
+    mergeMap(
+      {
+        ...(shift ? attrsSelectable.getSelectedMap() : {}),
+        [id]: selectedState,
+      },
+      armatureUtils.selectBone(bones, id, selectedState, ignoreConnection)
+    ),
+    shift
+  )
 }

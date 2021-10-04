@@ -17,12 +17,13 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { useStore } from '/@/store/__index'
+import { createStore } from '/@/store/__index'
+import { useHistoryStore } from '/@/composables/stores/history'
 
 describe('src/store/__index.ts', () => {
   describe('addArmature', () => {
     it('should add new armature', () => {
-      const target = useStore()
+      const target = createStore(useHistoryStore())
       expect(target.armatures.value).toHaveLength(0)
       target.addArmature('arm_a')
       expect(target.armatures.value).toHaveLength(1)
@@ -30,9 +31,25 @@ describe('src/store/__index.ts', () => {
     })
   })
 
+  describe('selectAllBone', () => {
+    it('should toggle selected state of all bones', () => {
+      const target = createStore(useHistoryStore())
+      target.addArmature('arm_a')
+      target.addBone('bone_a')
+      target.addBone('bone_b')
+      target.selectAllBone()
+      expect(target.selectedBones.value).toEqual({
+        bone_a: { head: true, tail: true },
+        bone_b: { head: true, tail: true },
+      })
+      target.selectAllBone()
+      expect(target.selectedBones.value).toEqual({})
+    })
+  })
+
   describe('addBone', () => {
     it('should add new bone', () => {
-      const target = useStore()
+      const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
       expect(target.lastSelectedArmature.value!.b_ones).toHaveLength(0)
       expect(target.boneMap.value).toEqual({})
@@ -54,7 +71,7 @@ describe('src/store/__index.ts', () => {
 
   describe('deleteBone', () => {
     it('should delete bones and clean connections', () => {
-      const target = useStore()
+      const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
       target.addBone('bone_a')
       target.addBone('bone_b')

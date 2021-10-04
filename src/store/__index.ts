@@ -31,7 +31,7 @@ import {
 import * as armatureUtils from '/@/utils/armatures'
 import { IVec2 } from 'okageo'
 import { useHistoryStore } from './history'
-import { HistoryItem } from '/@/composables/stores/history'
+import { HistoryItem, HistoryStore } from '/@/composables/stores/history'
 import { convolute } from '/@/utils/histories'
 import { fromEntityList, toEntityList } from '/@/models/entity'
 import {
@@ -43,9 +43,7 @@ import { getTreeIdPath, mapReduce, reduceToMap, toList } from '/@/utils/commons'
 import { useEntities } from '/@/composables/entities'
 import { SelectOptions } from '/@/composables/modes/types'
 
-const historyStore = useHistoryStore()
-
-export function createStore() {
+export function createStore(historyStore: HistoryStore) {
   const armatureEntities = useEntities<Armature>('Armature')
   const armatures = computed(() =>
     toEntityList(armatureEntities.entities.value)
@@ -368,7 +366,7 @@ export function createStore() {
 }
 export type IndexStore = ReturnType<typeof createStore>
 
-const store = createStore()
+const store = createStore(useHistoryStore())
 export function useStore() {
   return store
 }

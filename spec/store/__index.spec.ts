@@ -70,15 +70,74 @@ describe('src/store/__index.ts', () => {
   })
 
   describe('deleteBone', () => {
-    it('should delete bones and clean connections', () => {
+    it('should delete bones whose all attrs have been selected and clean connections', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
       target.addBone('bone_a')
       target.addBone('bone_b')
+      target.selectBones({
+        bone_a: { head: true },
+        bone_b: { head: true, tail: true },
+      })
       target.deleteBone()
       expect(target.lastSelectedArmature.value!.b_ones).toEqual(['bone_a'])
       expect(target.boneMap.value).toEqual({ bone_a: expect.anything() })
       expect(target.selectedBones.value).toEqual({})
+    })
+  })
+
+  describe('dissolveBone', () => {
+    it('should dissolve bones whose all attrs have been selected and clean connections', () => {
+      const target = createStore(useHistoryStore())
+      target.addArmature('arm_a')
+      target.addBone('bone_a')
+      target.addBone('bone_b')
+      target.addBone('bone_c')
+      target.updateBones({
+        bone_b: { parentId: 'bone_a' },
+        bone_c: { parentId: 'bone_b' },
+      })
+      target.selectBones({
+        bone_a: { head: true },
+        bone_b: { head: true, tail: true },
+      })
+      target.dissolveBone()
+      expect(target.lastSelectedArmature.value!.b_ones).toEqual([
+        'bone_a',
+        'bone_c',
+      ])
+      expect(target.boneMap.value['bone_c'].parentId).toBe('bone_a')
+      expect(target.selectedBones.value).toEqual({})
+    })
+  })
+
+  describe('updateBones', () => {
+    it('should update bones clean connections', () => {
+      const target = createStore(useHistoryStore())
+      target.addArmature('arm_a')
+      target.addBone('bone_a')
+      target.addBone('bone_b')
+      target.addBone('bone_c')
+      target.updateBones({
+        bone_b: { parentId: 'bone_a' },
+        bone_c: { parentId: 'unknown' },
+      })
+      expect(target.boneMap.value['bone_b'].parentId).toBe('bone_a')
+      expect(target.boneMap.value['bone_c'].parentId).toBe('')
+    })
+  })
+
+  describe('updateBone', () => {
+    it('should update bones fix connections', () => {
+      const target = createStore(useHistoryStore())
+      target.addArmature('arm_a')
+      target.addBone('bone_a')
+      target.addBone('bone_b')
+      target.addBone('bone_c')
+      target.updateBone({
+        parentId: 'unknown',
+      })
+      expect(target.boneMap.value['bone_c'].parentId).toBe('')
     })
   })
 })

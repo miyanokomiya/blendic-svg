@@ -310,7 +310,7 @@ export function createStore(historyStore: HistoryStore) {
     const armature = lastSelectedArmature.value
     if (!armature) return
 
-    const targetMap = boneSelectable.selectedMap.value
+    const targetMap = allSelectedBones.value
 
     historyStore.push(
       convolute(
@@ -328,6 +328,71 @@ export function createStore(historyStore: HistoryStore) {
           }),
           boneSelectable.getMultiSelectHistory({}),
         ]
+      ),
+      true
+    )
+  }
+
+  function dissolveBone() {
+    const armature = lastSelectedArmature.value
+    if (!armature) return
+
+    const targetMap = allSelectedBones.value
+
+    historyStore.push(
+      convolute(
+        boneEntities.getDeleteAndUpdateItemHistory(
+          boneSelectable.allAttrsSelectedIds.value,
+          armatureUtils.getUpdatedBonesByDissolvingBones(
+            boneMap.value,
+            Object.keys(targetMap)
+          )
+        ),
+        [
+          armatureEntities.getUpdateItemHistory({
+            [armature.id]: {
+              b_ones: armature.b_ones.filter((id) => !targetMap[id]),
+            },
+          }),
+          boneSelectable.getMultiSelectHistory({}),
+        ]
+      ),
+      true
+    )
+  }
+
+  function updateBones(diffMap: IdMap<Partial<Bone>>, seriesKey?: string) {
+    if (!lastSelectedArmature.value) return
+
+    historyStore.push(
+      boneEntities.getUpdateItemHistory(
+        mergeMap(
+          diffMap,
+          armatureUtils.updateConnections(
+            toList(boneMap.value).map((b) => ({
+              ...b,
+              ...diffMap[b.id],
+            }))
+          )
+        ),
+        seriesKey
+      ),
+      true
+    )
+  }
+
+  function updateBone(diff: Partial<Bone>, seriesKey?: string) {
+    if (!lastSelectedArmature.value || !lastSelectedBone.value) return
+
+    historyStore.push(
+      boneEntities.getUpdateItemHistory(
+        {
+          [lastSelectedBone.value.id]: armatureUtils.fixConnection(
+            toList(boneMap.value),
+            { ...lastSelectedBone.value, ...diff }
+          ),
+        },
+        seriesKey
       ),
       true
     )
@@ -362,6 +427,9 @@ export function createStore(historyStore: HistoryStore) {
     addBone,
     addBones,
     deleteBone,
+    dissolveBone,
+    updateBones,
+    updateBone,
   }
 }
 export type IndexStore = ReturnType<typeof createStore>

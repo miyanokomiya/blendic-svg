@@ -42,14 +42,15 @@ describe('src/models/storage.ts', () => {
         armatures: [
           {
             id: 'arm',
-            bones: [
-              { id: 'bone' },
-              {
-                id: 'bone_2',
-                constraints: [
-                  { type: 'IK', name: 'IK.001', option: { targetId: 'a' } },
-                ],
-              },
+            bones: ['bone', 'bone_2'],
+          },
+        ],
+        bones: [
+          { id: 'bone' },
+          {
+            id: 'bone_2',
+            constraints: [
+              { type: 'IK', name: 'IK.001', option: { targetId: 'a' } },
             ],
           },
         ],
@@ -72,18 +73,19 @@ describe('src/models/storage.ts', () => {
         armatures: [
           getArmature({
             id: 'arm',
-            bones: [
-              getBone({ id: 'bone' }),
-              getBone({
-                id: 'bone_2',
-                constraints: [
-                  getConstraint({
-                    id: expect.anything(),
-                    type: 'IK',
-                    name: 'IK.001',
-                    option: { targetId: 'a' },
-                  }),
-                ],
+            bones: ['bone', 'bone_2'],
+          }),
+        ],
+        bones: [
+          getBone({ id: 'bone' }),
+          getBone({
+            id: 'bone_2',
+            constraints: [
+              getConstraint({
+                id: expect.anything(),
+                type: 'IK',
+                name: 'IK.001',
+                option: { targetId: 'a' },
               }),
             ],
           }),
@@ -108,6 +110,7 @@ describe('src/models/storage.ts', () => {
     it('complete BElement for SVG root', () => {
       const src = {
         armatures: [],
+        bones: [],
         actions: [],
         actors: [
           {

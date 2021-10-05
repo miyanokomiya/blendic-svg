@@ -153,7 +153,7 @@ export function cleanActors(
 
   return actors.map((act) => {
     const arm = armatureMap[act.armatureId]
-    const boneMap = boneMapByArmatureId[arm.id]
+    const boneMap = arm ? boneMapByArmatureId[arm.id] : {}
 
     return {
       ...act,

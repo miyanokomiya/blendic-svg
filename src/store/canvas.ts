@@ -55,6 +55,7 @@ import {
   posedTransform,
 } from '/@/utils/armatures'
 import { getBoneXRadian, snapAxisGrid, snapPlainGrid } from '/@/utils/geometry'
+import { toList } from '/@/utils/commons'
 
 export type AxisGrid = 'x' | 'y'
 export interface AxisGridInfo {
@@ -131,7 +132,7 @@ const posedBoneMap = computed(() => {
 
     return getTransformedBoneMap(
       toMap(
-        store.lastSelectedArmature.value.bones.map((b) => {
+        toList(store.boneMap.value).map((b) => {
           return {
             ...b,
             transform: addPoseTransform(
@@ -152,7 +153,7 @@ const visibledBoneMap = computed(() => {
   if (!store.lastSelectedArmature.value) return {}
   if (state.canvasMode === 'edit') {
     return toMap(
-      store.lastSelectedArmature.value.bones.map((b) => {
+      toList(store.boneMap.value).map((b) => {
         return editTransform(
           b,
           getEditTransforms(b.id),

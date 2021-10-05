@@ -76,7 +76,9 @@ export function useBoneEditMode(
 
   const isAnySelected = computed(() => !!lastSelectedBoneId.value)
 
-  const allNames = computed(() => target.value?.bones.map((a) => a.name) ?? [])
+  const allNames = computed(
+    () => toList(store.boneMap.value).map((a) => a.name) ?? []
+  )
 
   function cancel() {
     state.command = ''

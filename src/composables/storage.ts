@@ -69,11 +69,11 @@ export function useStorage() {
   const graphStore = useAnimationGraphStore()
 
   function serialize(): string {
-    const armatures = store.armatures.value
-    const actions = cleanActions(animationStore.actions.value, armatures)
-    const actors = cleanActors(elementStore.actors.value, armatures)
+    const { armatures, bones } = store.exportState()
+    const actions = cleanActions(animationStore.actions.value, armatures, bones)
+    const actors = cleanActors(elementStore.actors.value, armatures, bones)
     const graphs = cleanGraphs(graphStore.graphList.value)
-    const root: StorageRoot = { armatures, actions, actors, graphs }
+    const root: StorageRoot = { armatures, bones, actions, actors, graphs }
     return JSON.stringify(root)
   }
   function deserialize(src: string) {
@@ -81,7 +81,7 @@ export function useStorage() {
       const root: StorageRoot = initialize(JSON.parse(src))
       historyStore.clearHistory()
       canvasStore.initState()
-      store.initState(root.armatures)
+      store.initState(root.armatures, root.bones)
       animationStore.initState(root.actions)
       elementStore.initState(root.actors)
       graphStore.initState(root.graphs)

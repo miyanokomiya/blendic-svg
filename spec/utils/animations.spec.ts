@@ -247,7 +247,8 @@ describe('utils/animations.ts', () => {
             getAction({ id: 'act_1', armatureId: 'arm_1' }),
             getAction({ id: 'act_2', armatureId: 'arm_2' }),
           ],
-          [getArmature({ id: 'arm_2' })]
+          [getArmature({ id: 'arm_2' })],
+          []
         )
       ).toEqual([getAction({ id: 'act_2', armatureId: 'arm_2' })])
     })
@@ -269,9 +270,10 @@ describe('utils/animations.ts', () => {
           [
             getArmature({
               id: 'arm_1',
-              bones: [getBone({ id: 'bone_2' }), getBone({ id: 'bone_3' })],
+              bones: ['bone_2', 'bone_3'],
             }),
-          ]
+          ],
+          [getBone({ id: 'bone_2' }), getBone({ id: 'bone_3' })]
         )
       ).toEqual([
         getAction({
@@ -301,12 +303,13 @@ describe('utils/animations.ts', () => {
           [
             getArmature({
               id: 'arm_1',
-              bones: [
-                getBone({
-                  id: 'bone',
-                  constraints: [getConstraint({ type: 'IK', id: 'con_2' })],
-                }),
-              ],
+              bones: ['bone'],
+            }),
+          ],
+          [
+            getBone({
+              id: 'bone',
+              constraints: [getConstraint({ type: 'IK', id: 'con_2' })],
             }),
           ]
         )

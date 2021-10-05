@@ -195,7 +195,8 @@ describe('utils/elements.ts', () => {
               elements: [getBElement({ id: 'be_1', boneId: 'bor_1' })],
             }),
           ],
-          [getArmature({ id: 'arm_1', bones: [getBone({ id: 'bor_1' })] })]
+          [getArmature({ id: 'arm_1', bones: ['bor_1'] })],
+          [getBone({ id: 'bor_1' })]
         )
       ).toEqual([
         getActor({
@@ -223,7 +224,8 @@ describe('utils/elements.ts', () => {
               ],
             }),
           ],
-          [getArmature({ id: 'arm_1', bones: [getBone({ id: 'bor_1' })] })]
+          [getArmature({ id: 'arm_1', bones: ['bor_1'] })],
+          [getBone({ id: 'bor_1' })]
         )
       ).toEqual([
         getActor({

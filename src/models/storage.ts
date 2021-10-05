@@ -42,6 +42,7 @@ import { migrateConstraint } from '/@/utils/migrations'
 
 export interface StorageRoot {
   armatures: Armature[]
+  bones: Bone[]
   actions: Action[]
   actors: Actor[]
   graphs: AnimationGraph[]
@@ -50,6 +51,7 @@ export interface StorageRoot {
 export function initialize(src: StorageRoot): StorageRoot {
   return {
     armatures: src.armatures.map(initializeArmature),
+    bones: src.bones.map(initializeBone),
     actions: src.actions.map(initializeAction),
     actors: src.actors.map(initializeActor),
     graphs: src.graphs?.map(initializeGraph) ?? [],
@@ -59,7 +61,7 @@ export function initialize(src: StorageRoot): StorageRoot {
 function initializeArmature(armature: Partial<Armature>): Armature {
   return getArmature({
     ...armature,
-    bones: armature.bones?.map(initializeBone) ?? [],
+    bones: armature.bones ?? [],
   })
 }
 

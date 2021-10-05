@@ -53,11 +53,11 @@ describe('src/store/index.ts', () => {
     it('should add new bone', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
-      expect(target.lastSelectedArmature.value!.b_ones).toHaveLength(0)
+      expect(target.lastSelectedArmature.value!.bones).toHaveLength(0)
       expect(target.boneMap.value).toEqual({})
       target.addBone('bone_a')
       target.addBone('bone_b')
-      expect(target.lastSelectedArmature.value!.b_ones).toEqual([
+      expect(target.lastSelectedArmature.value!.bones).toEqual([
         'bone_a',
         'bone_b',
       ])
@@ -82,7 +82,7 @@ describe('src/store/index.ts', () => {
         bone_b: { head: true, tail: true },
       })
       target.deleteBone()
-      expect(target.lastSelectedArmature.value!.b_ones).toEqual(['bone_a'])
+      expect(target.lastSelectedArmature.value!.bones).toEqual(['bone_a'])
       expect(target.boneMap.value).toEqual({ bone_a: expect.anything() })
       expect(target.selectedBones.value).toEqual({})
     })
@@ -104,7 +104,7 @@ describe('src/store/index.ts', () => {
         bone_b: { head: true, tail: true },
       })
       target.dissolveBone()
-      expect(target.lastSelectedArmature.value!.b_ones).toEqual([
+      expect(target.lastSelectedArmature.value!.bones).toEqual([
         'bone_a',
         'bone_c',
       ])

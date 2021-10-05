@@ -31,6 +31,7 @@ import {
 import {
   Action,
   Armature,
+  Bone,
   frameWidth,
   getTransform,
   IdMap,
@@ -224,16 +225,22 @@ export function mergeKeyframesWithDropped(
 
 export function cleanActions(
   actions: Action[],
-  armatures: Armature[]
+  armatures: Armature[],
+  bones: Bone[]
 ): Action[] {
   const armatureMap = toMap(armatures)
+  const boneMap = toMap(bones)
+  const bonesByArmatureId = mapReduce(armatureMap, (a) =>
+    a.bones.map((id) => boneMap[id])
+  )
+
   return actions
     .filter((action) => !!armatureMap[action.armatureId])
     .map((action) => ({
       ...action,
       keyframes: cleanKeyframes(action.keyframes, [
-        ...armatureMap[action.armatureId].bones,
-        ...armatureMap[action.armatureId].bones.flatMap((b) => b.constraints),
+        ...bonesByArmatureId[action.armatureId],
+        ...bonesByArmatureId[action.armatureId].flatMap((b) => b.constraints),
       ]),
     }))
 }

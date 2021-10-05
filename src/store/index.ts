@@ -70,7 +70,7 @@ export function createStore(historyStore: HistoryStore) {
     if (!lastSelectedArmature.value) return {}
 
     const boneById = boneEntities.entities.value.byId
-    return toMap(lastSelectedArmature.value.b_ones.map((id) => boneById[id]))
+    return toMap(lastSelectedArmature.value.bones.map((id) => boneById[id]))
   })
   const boneSelectable = useAttrsSelectable<Bone, BoneSelectedState>(
     'Bone',
@@ -97,10 +97,18 @@ export function createStore(historyStore: HistoryStore) {
     toMap((toList(boneMap.value) ?? []).flatMap((b) => b.constraints))
   )
 
-  function initState(initArmatures: Armature[]) {
-    armatureEntities.init(fromEntityList(initArmatures))
+  function initState(armatures: Armature[], bones: Bone[]) {
+    armatureEntities.init(fromEntityList(armatures))
     armatureSelectable.getClearAllHistory().redo()
+    boneEntities.init(fromEntityList(bones))
     boneSelectable.getClearAllHistory().redo()
+  }
+
+  function exportState() {
+    return {
+      armatures: armatures.value,
+      bones: toEntityList(boneEntities.entities.value),
+    }
   }
 
   function createDefaultEntities() {
@@ -115,7 +123,7 @@ export function createStore(historyStore: HistoryStore) {
     const armature = getArmature({
       id: 'initial-armature',
       name: 'armature',
-      b_ones: [bone.id],
+      bones: [bone.id],
     })
 
     armatureEntities.getAddItemsHistory([armature]).redo()
@@ -146,13 +154,6 @@ export function createStore(historyStore: HistoryStore) {
   }
 
   function addArmature(id?: string) {
-    const bone = getBone(
-      {
-        name: 'bone',
-        tail: { x: 100, y: 0 },
-      },
-      true
-    )
     const armature = getArmature(
       {
         id,
@@ -160,14 +161,12 @@ export function createStore(historyStore: HistoryStore) {
           'armature',
           toList(armatureEntities.entities.value.byId).map((a) => a.name)
         ),
-        bones: [bone.id],
       },
       !id
     )
 
     historyStore.push(
       convolute(armatureEntities.getAddItemsHistory([armature]), [
-        boneEntities.getAddItemsHistory([bone]),
         armatureSelectable.getSelectHistory(armature.id),
       ]),
       true
@@ -290,7 +289,7 @@ export function createStore(historyStore: HistoryStore) {
             id,
             name: getNotDuplicatedName(
               'bone',
-              lastSelectedArmature.value.bones.map((a) => a.name)
+              toList(boneMap.value).map((a) => a.name)
             ),
             tail: { x: 100, y: 0 },
           },
@@ -309,7 +308,7 @@ export function createStore(historyStore: HistoryStore) {
       convolute(boneEntities.getAddItemsHistory(bones), [
         armatureEntities.getUpdateItemHistory({
           [armature.id]: {
-            b_ones: armature.b_ones.concat(bones.map((b) => b.id)),
+            bones: armature.bones.concat(bones.map((b) => b.id)),
           },
         }),
         boneSelectable.getMultiSelectHistory(
@@ -337,7 +336,7 @@ export function createStore(historyStore: HistoryStore) {
         [
           armatureEntities.getUpdateItemHistory({
             [armature.id]: {
-              b_ones: armature.b_ones.filter((id) => !targetMap[id]),
+              bones: armature.bones.filter((id) => !targetMap[id]),
             },
           }),
           boneSelectable.getMultiSelectHistory({}),
@@ -365,7 +364,7 @@ export function createStore(historyStore: HistoryStore) {
         [
           armatureEntities.getUpdateItemHistory({
             [armature.id]: {
-              b_ones: armature.b_ones.filter((id) => !targetMap[id]),
+              bones: armature.bones.filter((id) => !targetMap[id]),
             },
           }),
           boneSelectable.getMultiSelectHistory({}),
@@ -465,7 +464,7 @@ export function createStore(historyStore: HistoryStore) {
         [
           armatureEntities.getUpdateItemHistory({
             [armature.id]: {
-              b_ones: armature.b_ones.concat(created.map((b) => b.id)),
+              bones: armature.bones.concat(created.map((b) => b.id)),
             },
           }),
           boneEntities.getUpdateItemHistory(toMap(updated)),
@@ -492,6 +491,7 @@ export function createStore(historyStore: HistoryStore) {
     constraintMap,
 
     initState,
+    exportState,
     createDefaultEntities,
 
     selectArmature,

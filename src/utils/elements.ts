@@ -32,6 +32,7 @@ import {
   toMap,
   AnimationGraph,
   Transform,
+  Bone,
 } from '../models'
 import { extractMap, mapReduce, toKeyListMap, toList } from './commons'
 import { useCache } from '/@/composables/cache'
@@ -139,11 +140,20 @@ export function parseViewBoxFromStr(value?: string): IRectangle | undefined {
   }
 }
 
-export function cleanActors(actors: Actor[], armatures: Armature[]): Actor[] {
+export function cleanActors(
+  actors: Actor[],
+  armatures: Armature[],
+  bones: Bone[]
+): Actor[] {
   const armatureMap = toMap(armatures)
+  const boneMap = toMap(bones)
+  const boneMapByArmatureId = mapReduce(armatureMap, (a) =>
+    toMap(a.bones.map((id) => boneMap[id]))
+  )
+
   return actors.map((act) => {
     const arm = armatureMap[act.armatureId]
-    const boneMap = toMap(arm?.bones ?? [])
+    const boneMap = boneMapByArmatureId[arm.id]
 
     return {
       ...act,

@@ -241,16 +241,15 @@ const currentSelfTransforms = computed((): IdMap<Transform> => {
 
 const currentPosedBones = computed((): IdMap<Bone> => {
   if (!store.lastSelectedArmature.value) return {}
+
   return getTransformedBoneMap(
-    toMap(
-      store.lastSelectedArmature.value.bones.map((b) => ({
-        ...b,
-        transform: getCurrentSelfTransforms(b.id),
-        constraints: b.constraints.map(
-          (c) => currentInterpolatedConstraintMap.value[c.id]
-        ),
-      }))
-    )
+    mapReduce(store.boneMap.value, (b) => ({
+      ...b,
+      transform: getCurrentSelfTransforms(b.id),
+      constraints: b.constraints.map(
+        (c) => currentInterpolatedConstraintMap.value[c.id]
+      ),
+    }))
   )
 })
 

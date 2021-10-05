@@ -22,6 +22,24 @@ import { useHistoryStore } from '/@/composables/stores/history'
 import { getBone } from '/@/models'
 
 describe('src/store/index.ts', () => {
+  describe('bonesByArmatureId', () => {
+    it('should return bones by armature id', () => {
+      const target = createStore(useHistoryStore())
+      target.addArmature('0_arm')
+      target.addBone('0_0_bone')
+      target.addArmature('1_arm')
+      target.addBone('1_0_bone')
+      target.addBone('1_1_bone')
+      expect(target.bonesByArmatureId.value['0_arm'].map((b) => b.id)).toEqual([
+        '0_0_bone',
+      ])
+      expect(target.bonesByArmatureId.value['1_arm'].map((b) => b.id)).toEqual([
+        '1_0_bone',
+        '1_1_bone',
+      ])
+    })
+  })
+
   describe('addArmature', () => {
     it('should add new armature with a bone', () => {
       const target = createStore(useHistoryStore())

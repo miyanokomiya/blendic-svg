@@ -88,12 +88,12 @@ export default defineComponent({
     })
 
     const currentArmature = computed(() => {
-      return store.state.armatures.find((a) => a.id === armatureId.value)
+      return store.armatures.value.find((a) => a.id === armatureId.value)
     })
 
     const armatureOptions = computed(() => {
       return sortByValue(
-        store.state.armatures.map((a) => ({ value: a.id, label: a.name })),
+        store.armatures.value.map((a) => ({ value: a.id, label: a.name })),
         'label'
       )
     })

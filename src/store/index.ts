@@ -97,6 +97,13 @@ export function createStore(historyStore: HistoryStore) {
     toMap((toList(boneMap.value) ?? []).flatMap((b) => b.constraints))
   )
 
+  const bonesByArmatureId = computed(() => {
+    const boneById = boneEntities.entities.value.byId
+    return mapReduce(toMap(armatures.value), (a) =>
+      a.bones.map((id) => boneById[id])
+    )
+  })
+
   function initState(armatures: Armature[], bones: Bone[]) {
     armatureEntities.init(fromEntityList(armatures))
     armatureSelectable.getClearAllHistory().redo()
@@ -115,8 +122,8 @@ export function createStore(historyStore: HistoryStore) {
     const bone = getBone(
       {
         name: 'bone',
-        head: { x: 20, y: 200 },
-        tail: { x: 220, y: 200 },
+        head: { x: 0, y: 0 },
+        tail: { x: 200, y: 0 },
       },
       true
     )
@@ -489,6 +496,7 @@ export function createStore(historyStore: HistoryStore) {
     selectedBonesOrigin,
 
     constraintMap,
+    bonesByArmatureId,
 
     initState,
     exportState,

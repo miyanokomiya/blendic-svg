@@ -50,6 +50,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                         v-for="armature in armatures"
                         :key="armature.id"
                         :armature="armature"
+                        :bones="bonesByArmatureId[armature.id]"
                         :selected="lastSelectedArmatureId === armature.id"
                         :scale="scale"
                         @select="
@@ -62,6 +63,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                         v-for="armature in otherArmatures"
                         :key="armature.id"
                         :armature="armature"
+                        :bones="bonesByArmatureId[armature.id]"
                         :opacity="0.3"
                         :scale="scale"
                         class="view-only"
@@ -143,6 +145,8 @@ export default defineComponent({
     const historyStore = useHistoryStore()
     const elementStore = useElementStore()
 
+    store.createDefaultEntities()
+
     const viewBox = computed(() => {
       return elementStore.lastSelectedActor.value?.viewBox
     })
@@ -150,7 +154,7 @@ export default defineComponent({
     const canvasMode = computed(() => canvasStore.state.canvasMode)
 
     const otherArmatures = computed(() =>
-      store.state.armatures.filter(
+      store.armatures.value.filter(
         (a) => a.id !== store.lastSelectedArmature.value?.id
       )
     )
@@ -209,17 +213,18 @@ export default defineComponent({
           return {}
         }
       } else {
-        return store.state.selectedBones
+        return store.selectedBones.value
       }
     })
 
     return {
       viewBox,
-      armatures: computed(() => store.state.armatures),
+      armatures: store.armatures,
       otherArmatures,
       lastSelectedArmatureId: computed(
         () => store.lastSelectedArmature.value?.id
       ),
+      bonesByArmatureId: store.bonesByArmatureId,
       posedBoneMap,
       lastSelectedBoneSpace,
       visibledBoneMap,

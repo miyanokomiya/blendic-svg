@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { createStore } from '/@/store/__index'
 import { useHistoryStore } from '/@/composables/stores/history'
+import { getBone } from '/@/models'
 
 describe('src/store/__index.ts', () => {
   describe('addArmature', () => {
@@ -128,7 +129,7 @@ describe('src/store/__index.ts', () => {
   })
 
   describe('updateBone', () => {
-    it('should update bones fix connections', () => {
+    it('should update bones and fix connections', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
       target.addBone('bone_a')
@@ -153,6 +154,29 @@ describe('src/store/__index.ts', () => {
       target.updateBoneName('name_a')
       expect(target.boneMap.value['bone_a'].name).toBe('name_a')
       expect(target.boneMap.value['bone_b'].name).toBe('name_a.001')
+    })
+  })
+
+  describe('upsertBones', () => {
+    it('should upsert bones and fix connections', () => {
+      const target = createStore(useHistoryStore())
+      target.addArmature('arm_a')
+      target.addBone('bone_a')
+      target.addBone('bone_b')
+      target.addBone('bone_c')
+      target.upsertBones([
+        getBone({
+          id: 'bone_a',
+          parentId: 'unknown',
+          head: { x: 10, y: 20 },
+        }),
+        getBone({
+          id: 'bone_d',
+        }),
+      ])
+      expect(target.boneMap.value['bone_a'].parentId).toBe('')
+      expect(target.boneMap.value['bone_a'].head).toEqual({ x: 10, y: 20 })
+      expect(target.boneMap.value['bone_d']).toBeDefined()
     })
   })
 })

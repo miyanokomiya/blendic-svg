@@ -39,7 +39,13 @@ import {
   useItemSelectable,
 } from '/@/composables/selectable'
 import { getNotDuplicatedName } from '/@/utils/relations'
-import { getTreeIdPath, mapReduce, reduceToMap, toList } from '/@/utils/commons'
+import {
+  getTreeIdPath,
+  mapReduce,
+  reduceToMap,
+  splitList,
+  toList,
+} from '/@/utils/commons'
 import { useEntities } from '/@/composables/entities'
 import { SelectOptions } from '/@/composables/modes/types'
 
@@ -419,6 +425,50 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
+  function upsertBones(
+    upserted: Bone[],
+    selectedStateMap: IdMap<BoneSelectedState> = {}
+  ) {
+    const armature = lastSelectedArmature.value
+    if (!armature) return
+
+    const [updatedTargets, createdTargets] = splitList(
+      upserted,
+      (b) => !!boneMap.value[b.id]
+    )
+
+    const fixedDiff = armatureUtils.updateConnections(
+      toList({
+        ...boneMap.value,
+        ...toMap(upserted),
+      })
+    )
+
+    const created = createdTargets.map((b) =>
+      fixedDiff[b.id] ? { ...b, ...fixedDiff[b.id] } : b
+    )
+    const updated = updatedTargets.map((b) =>
+      fixedDiff[b.id] ? { ...b, ...fixedDiff[b.id] } : b
+    )
+
+    historyStore.push(
+      convolute(
+        boneEntities.getAddItemsHistory(created),
+        [
+          armatureEntities.getUpdateItemHistory({
+            [armature.id]: {
+              b_ones: armature.b_ones.concat(created.map((b) => b.id)),
+            },
+          }),
+          boneEntities.getUpdateItemHistory(toMap(updated)),
+          boneSelectable.getMultiSelectHistory(selectedStateMap),
+        ],
+        'Upsert Bone'
+      ),
+      true
+    )
+  }
+
   return {
     armatures,
     lastSelectedArmatureId,
@@ -452,6 +502,7 @@ export function createStore(historyStore: HistoryStore) {
     updateBones,
     updateBone,
     updateBoneName,
+    upsertBones,
   }
 }
 export type IndexStore = ReturnType<typeof createStore>

@@ -156,7 +156,7 @@ const visibledBoneMap = computed(() => {
         return editTransform(
           b,
           getEditTransforms(b.id),
-          store.state.selectedBones[b.id] || {}
+          store.selectedBones.value[b.id] || {}
         )
       })
     )
@@ -170,7 +170,9 @@ const visibledBoneMap = computed(() => {
 })
 
 function saveLastSelectedBoneSpace() {
-  const bone = posedBoneMap.value[store.state.lastSelectedBoneId]
+  if (!store.lastSelectedBoneId.value) return
+
+  const bone = posedBoneMap.value[store.lastSelectedBoneId.value]
   if (!bone || state.canvasMode !== 'pose') {
     lastSelectedBoneSpace.value = undefined
     return

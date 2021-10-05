@@ -69,7 +69,7 @@ export function useStorage() {
   const graphStore = useAnimationGraphStore()
 
   function serialize(): string {
-    const armatures = store.state.armatures
+    const armatures = store.armatures.value
     const actions = cleanActions(animationStore.actions.value, armatures)
     const actors = cleanActors(elementStore.actors.value, armatures)
     const graphs = cleanGraphs(graphStore.graphList.value)

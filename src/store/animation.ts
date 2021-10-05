@@ -177,7 +177,7 @@ const lastSelectedKeyframe = computed(() => {
 const visibledTargetPropsStateMap = computed(() => {
   return extractMap(
     targetPropsState.selectedStateMap.value,
-    store.state.selectedBones
+    store.selectedBones.value
   )
 })
 
@@ -256,7 +256,7 @@ const currentPosedBones = computed((): IdMap<Bone> => {
 
 const selectedBoneIdMap = computed(() => {
   return mapReduce(
-    mapFilter(store.state.selectedBones, (s) => isBoneSelected(s)),
+    mapFilter(store.selectedBones.value, (s) => isBoneSelected(s)),
     () => true
   )
 })
@@ -267,7 +267,7 @@ const selectedBoneMap = computed(() => {
 const selectedBones = computed(() => {
   return getPoseSelectedBones(
     currentPosedBones.value,
-    store.state.selectedBones
+    store.selectedBones.value
   )
 })
 

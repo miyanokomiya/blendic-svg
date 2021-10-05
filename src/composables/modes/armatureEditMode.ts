@@ -44,7 +44,7 @@ import {
   symmetrizeBones,
 } from '/@/utils/armatures'
 import { getNotDuplicatedName } from '/@/utils/relations'
-import type { Store } from '/@/store/index'
+import type { IndexStore } from '/@/store/index'
 import type { CanvasStore } from '/@/store/canvas'
 import { mapReduce, toList } from '/@/utils/commons'
 import { getGridSize, snapRotate, snapScale } from '/@/utils/geometry'
@@ -62,15 +62,15 @@ export interface BoneEditMode extends CanvasEditModeBase {
 }
 
 export function useBoneEditMode(
-  store: Store,
+  store: IndexStore,
   canvasStore: CanvasStore
 ): BoneEditMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
   })
-  const selectedBones = computed(() => store.state.selectedBones)
-  const lastSelectedBoneId = computed(() => store.lastSelectedBone.value?.id)
+  const selectedBones = store.selectedBones
+  const lastSelectedBoneId = store.lastSelectedBoneId
 
   const target = computed(() => store.lastSelectedArmature.value)
 

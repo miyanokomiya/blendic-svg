@@ -32,7 +32,7 @@ import type {
   PopupMenuItem,
   SelectOptions,
 } from '/@/composables/modes/types'
-import type { Store } from '/@/store/index'
+import type { IndexStore } from '/@/store/index'
 import type { CanvasStore } from '/@/store/canvas'
 import { useAnimationStore } from '/@/store/animation'
 import { mapReduce } from '/@/utils/commons'
@@ -62,7 +62,7 @@ interface State {
 export interface BonePoseMode extends CanvasEditModeBase {}
 
 export function useBonePoseMode(
-  store: Store,
+  store: IndexStore,
   canvasStore: CanvasStore
 ): BonePoseMode {
   const state = reactive<State>({

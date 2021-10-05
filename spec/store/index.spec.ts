@@ -23,12 +23,13 @@ import { getBone } from '/@/models'
 
 describe('src/store/index.ts', () => {
   describe('addArmature', () => {
-    it('should add new armature', () => {
+    it('should add new armature with a bone', () => {
       const target = createStore(useHistoryStore())
       expect(target.armatures.value).toHaveLength(0)
       target.addArmature('arm_a')
       expect(target.armatures.value).toHaveLength(1)
       expect(target.lastSelectedArmatureId.value).toBe('arm_a')
+      expect(target.boneMap).not.toEqual({})
     })
   })
 

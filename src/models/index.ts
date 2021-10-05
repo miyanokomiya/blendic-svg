@@ -60,8 +60,7 @@ export interface Armature {
   id: string
   name: string
   transform: Transform
-  bones: Bone[]
-  b_ones: string[]
+  bones: string[]
 }
 
 export interface ElementNodeAttributes {
@@ -271,7 +270,6 @@ export function getArmature(
     name: '',
     transform: getTransform(),
     bones: [],
-    b_ones: [],
     ...arg,
     id,
   }

@@ -146,21 +146,29 @@ export function createStore(historyStore: HistoryStore) {
   }
 
   function addArmature(id?: string) {
-    const created = getArmature(
+    const bone = getBone(
+      {
+        name: 'bone',
+        tail: { x: 100, y: 0 },
+      },
+      true
+    )
+    const armature = getArmature(
       {
         id,
         name: getNotDuplicatedName(
           'armature',
           toList(armatureEntities.entities.value.byId).map((a) => a.name)
         ),
-        bones: [getBone({ name: 'bone', tail: { x: 100, y: 0 } }, true)],
+        bones: [bone.id],
       },
       !id
     )
 
     historyStore.push(
-      convolute(armatureEntities.getAddItemsHistory([created]), [
-        armatureSelectable.getSelectHistory(created.id),
+      convolute(armatureEntities.getAddItemsHistory([armature]), [
+        boneEntities.getAddItemsHistory([bone]),
+        armatureSelectable.getSelectHistory(armature.id),
       ]),
       true
     )

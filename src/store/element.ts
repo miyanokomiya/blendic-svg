@@ -63,11 +63,6 @@ const lastSelectedElement = computed(() => {
   return elementMap.value[lastSelectedElementId.value]
 })
 
-const lastSelectedNativeElement = computed(() => {
-  if (!lastSelectedElementId.value) return
-  return nativeElementMap.value[lastSelectedElementId.value]
-})
-
 const selectedElementCount = computed(() => {
   return Object.keys(selectedElements.value).length
 })
@@ -138,7 +133,6 @@ export function useElementStore() {
     elementMap,
     lastSelectedActor,
     lastSelectedElement,
-    lastSelectedNativeElement,
     nativeElementMap,
 
     updateArmatureId,

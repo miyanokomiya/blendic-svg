@@ -36,6 +36,7 @@ import {
   initializeBElements,
   isPlainText,
   parseFromSvg,
+  toBElement,
 } from '/@/utils/elements'
 
 const svgText_1 = `
@@ -943,6 +944,14 @@ describe('utils/elements.ts', () => {
     it('should return true if elm is string', () => {
       expect(isPlainText('a')).toBe(true)
       expect(isPlainText({} as any)).toBe(false)
+    })
+  })
+
+  describe('toBElement', () => {
+    it('should return BElement created from ElementNode', () => {
+      expect(toBElement(getElementNode({ id: 'a', tag: 'g' }), 'p', 1)).toEqual(
+        getBElement({ id: 'a', tag: 'g', parentId: 'p', index: 1 })
+      )
     })
   })
 })

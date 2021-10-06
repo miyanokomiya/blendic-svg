@@ -90,6 +90,7 @@ export interface Actor {
   armatureId: string
   svgTree: ElementNode
   elements: BElement[]
+  e_lements: string[]
   viewBox: IRectangle
 }
 
@@ -213,6 +214,7 @@ export function getActor(arg: Partial<Actor> = {}, generateId = false): Actor {
     armatureId: '',
     svgTree: getElementNode(),
     elements: [],
+    e_lements: [],
     viewBox: { x: 0, y: 0, width: 400, height: 400 },
     ...arg,
     id,

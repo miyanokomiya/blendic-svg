@@ -24,8 +24,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       <BlockField label="Armature">
         <SelectField v-model="armatureId" :options="armatureOptions" />
       </BlockField>
-      <template v-if="targetElement && targetNativeElement">
-        <template v-if="targetNativeElement.tag === 'svg'">
+      <template v-if="targetElement">
+        <template v-if="targetElement.tag === 'svg'">
           <BlockField label="Viewbox">
             <SelectField v-model="viewBoxBoneId" :options="boneOptions" />
           </BlockField>
@@ -73,9 +73,6 @@ export default defineComponent({
 
     const targetElement = computed(() => {
       return elementStore.lastSelectedElement.value
-    })
-    const targetNativeElement = computed(() => {
-      return elementStore.lastSelectedNativeElement.value
     })
 
     const armatureId = computed({
@@ -148,7 +145,6 @@ export default defineComponent({
       canvasMode,
       targetActor,
       targetElement,
-      targetNativeElement,
       armatureId,
       armatureOptions,
       boneOptions,

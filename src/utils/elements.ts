@@ -88,7 +88,11 @@ function toBElements(
   ]
 }
 
-function toBElement(node: ElementNode, parentId?: string, index = 0): BElement {
+export function toBElement(
+  node: ElementNode,
+  parentId?: string,
+  index = 0
+): BElement {
   return getBElement({ id: node.id, tag: node.tag, parentId, index })
 }
 

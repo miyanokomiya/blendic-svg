@@ -39,6 +39,31 @@ describe('src/composables/selectable.ts', () => {
         item.undo()
         expect(target.selectedMap.value).toEqual({})
       })
+      it('should return history item to clear all if empty id is passed', () => {
+        const target = useItemSelectable('Test', () => items)
+        target.getSelectHistory('a').redo()
+        const item = target.getSelectHistory('')
+        expect(target.selectedMap.value).toEqual({ a: true })
+        item.redo()
+        expect(target.selectedMap.value).toEqual({})
+        item.undo()
+        expect(target.selectedMap.value).toEqual({ a: true })
+      })
+    })
+
+    describe('getSelectHistoryDryRun', () => {
+      it('should return true only if an operation to select updates the state', () => {
+        const target = useItemSelectable('Test', () => items)
+        expect(target.getSelectHistoryDryRun('')).toBe(false)
+        expect(target.getSelectHistoryDryRun('a')).toBe(true)
+        target.getSelectHistory('a').redo()
+        expect(target.getSelectHistoryDryRun('a')).toBe(false)
+        expect(target.getSelectHistoryDryRun('a', true)).toBe(true)
+        expect(target.getSelectHistoryDryRun('')).toBe(true)
+        target.getSelectHistory('b', true).redo()
+        expect(target.getSelectHistoryDryRun('a')).toBe(true)
+        expect(target.getSelectHistoryDryRun('b')).toBe(true)
+      })
     })
 
     describe('getMultiSelectHistory', () => {
@@ -108,6 +133,34 @@ describe('src/composables/selectable.ts', () => {
         expect(target.selectedMap.value).toEqual({ a: { x: true } })
         item.undo()
         expect(target.selectedMap.value).toEqual({})
+      })
+      it('should return history item to clear all if empty id is passed', () => {
+        const target = useAttrsSelectable('Test', () => items, ['x', 'y'])
+        target.getSelectHistory('a', 'x').redo()
+        const item = target.getSelectHistory('', 'x')
+        expect(target.selectedMap.value).toEqual({ a: { x: true } })
+        item.redo()
+        expect(target.selectedMap.value).toEqual({})
+        item.undo()
+        expect(target.selectedMap.value).toEqual({ a: { x: true } })
+      })
+    })
+
+    describe('getSelectHistoryDryRun', () => {
+      it('should return true only if an operation to select updates the state', () => {
+        const target = useAttrsSelectable('Test', () => items, ['x', 'y'])
+        expect(target.getSelectHistoryDryRun('', 'x')).toBe(false)
+        expect(target.getSelectHistoryDryRun('a', 'x')).toBe(true)
+        target.getSelectHistory('a', 'x').redo()
+        expect(target.getSelectHistoryDryRun('', 'x')).toBe(true)
+        expect(target.getSelectHistoryDryRun('a', 'x')).toBe(false)
+        expect(target.getSelectHistoryDryRun('a', 'x', true)).toBe(true)
+        target.getSelectHistory('b', 'x', true).redo()
+        expect(target.getSelectHistoryDryRun('a', 'x')).toBe(true)
+        expect(target.getSelectHistoryDryRun('b', 'x')).toBe(true)
+        target.getSelectHistory('a', 'y', true).redo()
+        expect(target.getSelectHistoryDryRun('a', 'x')).toBe(true)
+        expect(target.getSelectHistoryDryRun('a', 'y')).toBe(true)
       })
     })
 

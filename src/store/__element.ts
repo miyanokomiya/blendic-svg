@@ -21,6 +21,7 @@ import { computed } from 'vue'
 import { Actor, BElement, getActor, toMap } from '../models'
 import { useHistoryStore } from './history'
 import { useEntities } from '/@/composables/entities'
+import { SelectOptions } from '/@/composables/modes/types'
 import { useItemSelectable } from '/@/composables/selectable'
 import { HistoryStore } from '/@/composables/stores/history'
 import { fromEntityList, toEntityList } from '/@/models/entity'
@@ -46,6 +47,7 @@ export function createStore(historyStore: HistoryStore) {
     'Element',
     () => elementEntities.entities.value.byId
   )
+  const selectedElements = elementSelectable.selectedMap
   const lastSelectedElementId = elementSelectable.lastSelectedId
   const elementMap = computed(() => {
     const byId = elementEntities.entities.value.byId
@@ -115,11 +117,54 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
+  function updateArmatureId(id: string) {
+    const actor = lastSelectedActor.value
+    if (!actor) return
+
+    historyStore.push(
+      actorEntities.getUpdateItemHistory({
+        [actor.id]: { armatureId: id },
+      }),
+      true
+    )
+  }
+
+  function selectElement(id = '', options?: SelectOptions) {
+    if (
+      !lastSelectedActor.value ||
+      !elementSelectable.getSelectHistoryDryRun(id, options?.shift)
+    )
+      return
+
+    historyStore.push(
+      elementSelectable.getSelectHistory(id, options?.shift),
+      true
+    )
+  }
+
+  function selectAllElement() {
+    if (!lastSelectedActor.value) return
+    historyStore.push(elementSelectable.getSelectAllHistory(true), true)
+  }
+
+  function updateElement(val: Partial<BElement>) {
+    const element = lastSelectedElement.value
+    if (!element) return
+
+    historyStore.push(
+      elementEntities.getUpdateItemHistory({
+        [element.id]: val,
+      }),
+      true
+    )
+  }
+
   return {
     actors,
     lastSelectedActor,
 
     elementMap,
+    selectedElements,
     lastSelectedElement,
 
     initState,
@@ -128,6 +173,11 @@ export function createStore(historyStore: HistoryStore) {
     importActor,
 
     selectActor,
+    updateArmatureId,
+
+    selectElement,
+    selectAllElement,
+    updateElement,
   }
 }
 

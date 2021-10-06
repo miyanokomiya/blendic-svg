@@ -53,13 +53,78 @@ describe('src/store/element.ts', () => {
   describe('selectActor', () => {
     it('should select the actor', () => {
       const target = createStore(useHistoryStore())
-      const actor = getActor({ id: 'ac' })
-      target.importActor(actor, [])
       target.initState([getActor({ id: 'ac_0' }), getActor({ id: 'ac_1' })], [])
       target.selectActor('ac_0')
       expect(target.lastSelectedActor.value?.id).toEqual('ac_0')
       target.selectActor('ac_1')
       expect(target.lastSelectedActor.value?.id).toEqual('ac_1')
+    })
+  })
+
+  describe('updateArmatureId', () => {
+    it('should update armatureId of a selected actor', () => {
+      const target = createStore(useHistoryStore())
+      target.initState([getActor({ id: 'ac_0' })], [])
+      target.selectActor('ac_0')
+      target.updateArmatureId('armature')
+      expect(target.lastSelectedActor.value?.armatureId).toBe('armature')
+    })
+  })
+
+  describe('selectElement', () => {
+    it('should select the element', () => {
+      const target = createStore(useHistoryStore())
+      const elements = [
+        getBElement({ id: 'elm_0' }),
+        getBElement({ id: 'elm_1' }),
+      ]
+      target.initState(
+        [getActor({ id: 'ac_0', e_lements: elements.map((e) => e.id) })],
+        elements
+      )
+      target.selectActor('ac_0')
+      target.selectElement('elm_1')
+      expect(target.selectedElements.value).toEqual({ elm_1: true })
+    })
+  })
+
+  describe('selectAllElement', () => {
+    it('should select all elements', () => {
+      const target = createStore(useHistoryStore())
+      const elements = [
+        getBElement({ id: 'elm_0' }),
+        getBElement({ id: 'elm_1' }),
+      ]
+      target.initState(
+        [getActor({ id: 'ac_0', e_lements: elements.map((e) => e.id) })],
+        elements
+      )
+      target.selectActor('ac_0')
+      target.selectAllElement()
+      expect(target.selectedElements.value).toEqual({
+        elm_0: true,
+        elm_1: true,
+      })
+      target.selectAllElement()
+      expect(target.selectedElements.value).toEqual({})
+    })
+  })
+
+  describe('updateElement', () => {
+    it('should update an selected element', () => {
+      const target = createStore(useHistoryStore())
+      const elements = [
+        getBElement({ id: 'elm_0' }),
+        getBElement({ id: 'elm_1' }),
+      ]
+      target.initState(
+        [getActor({ id: 'ac_0', e_lements: elements.map((e) => e.id) })],
+        elements
+      )
+      target.selectActor('ac_0')
+      target.selectElement('elm_1')
+      target.updateElement({ boneId: 'bone' })
+      expect(target.lastSelectedElement.value?.boneId).toBe('bone')
     })
   })
 })

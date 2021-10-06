@@ -42,8 +42,16 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
     return {
       name: `Select ${name}`,
       undo: () => selectable.restore(snapshot),
-      redo: () => selectable.select(id, shift),
+      redo: () => (id ? selectable.select(id, shift) : selectable.clearAll()),
     }
+  }
+
+  function getSelectHistoryDryRun(id: string, shift = false): boolean {
+    const selectedCount = Object.keys(selectedMap.value).length
+    if (!id && selectedCount === 0) return false
+    if (shift) return true
+    if (lastSelectedId.value === id && selectedCount === 1) return false
+    return true
   }
 
   function getMultiSelectHistory(ids: string[], shift = false): HistoryItem {
@@ -78,6 +86,7 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
     lastSelectedId: computed(() => lastSelectedId.value),
 
     getSelectHistory,
+    getSelectHistoryDryRun,
     getMultiSelectHistory,
     getSelectAllHistory,
     getClearAllHistory,
@@ -118,8 +127,26 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
     return {
       name: `Select ${name}`,
       undo: () => selectable.restore(snapshot),
-      redo: () => selectable.select(id, attrKey, shift),
+      redo: () =>
+        id ? selectable.select(id, attrKey, shift) : selectable.clearAll(),
     }
+  }
+
+  function getSelectHistoryDryRun(
+    id: string,
+    attrKey: string,
+    shift = false
+  ): boolean {
+    const selectedCount = Object.keys(selectedMap.value).length
+    if (!id && selectedCount === 0) return false
+    if (shift) return true
+    if (lastSelectedId.value === id && selectedCount === 1) {
+      const lastAttrs = selectedMap.value[id]
+      if (Object.keys(lastAttrs).length === 1 && lastAttrs[attrKey]) {
+        return false
+      }
+    }
+    return true
   }
 
   function getMultiSelectHistory(val: IdMap<K>, shift = false): HistoryItem {
@@ -159,6 +186,7 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
     restore: selectable.restore,
 
     getSelectHistory,
+    getSelectHistoryDryRun,
     getMultiSelectHistory,
     getSelectAllHistory,
     getClearAllHistory,

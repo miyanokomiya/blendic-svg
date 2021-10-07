@@ -122,7 +122,6 @@ export function createStore(historyStore: HistoryStore) {
     const bone = getBone(
       {
         name: 'bone',
-        head: { x: 0, y: 0 },
         tail: { x: 200, y: 0 },
       },
       true
@@ -143,9 +142,12 @@ export function createStore(historyStore: HistoryStore) {
     if (lastSelectedArmatureId.value === id) return
 
     historyStore.push(
-      id
-        ? armatureSelectable.getSelectHistory(id)
-        : armatureSelectable.getClearAllHistory(),
+      convolute(
+        id
+          ? armatureSelectable.getSelectHistory(id)
+          : armatureSelectable.getClearAllHistory(),
+        [boneSelectable.getClearAllHistory()]
+      ),
       true
     )
   }
@@ -162,7 +164,10 @@ export function createStore(historyStore: HistoryStore) {
   }
 
   function addArmature(id?: string, boneId?: string) {
-    const bone = getBone({ id: boneId, name: 'bone' }, !boneId)
+    const bone = getBone(
+      { id: boneId, name: 'bone', tail: { x: 200, y: 0 } },
+      !boneId
+    )
     const armature = getArmature(
       {
         id,

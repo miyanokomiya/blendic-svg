@@ -49,6 +49,20 @@ describe('src/store/animation.ts', () => {
     })
   })
 
+  describe('selectAction', () => {
+    it('should select an action and clear keyframes selecte state', () => {
+      const { target } = prepare()
+      target.addAction('ac_0')
+      target.addAction('ac_1')
+      target.execInsertKeyframe({ rotate: true })
+      expect(target.selectedAction.value?.id).toBe('ac_1')
+      expect(target.selectedKeyframeMap.value).not.toEqual({})
+      target.selectAction('ac_0')
+      expect(target.selectedAction.value?.id).toBe('ac_0')
+      expect(target.selectedKeyframeMap.value).toEqual({})
+    })
+  })
+
   describe('addAction', () => {
     it('should add new action having a ref to current armature', () => {
       const { target, store } = prepare()

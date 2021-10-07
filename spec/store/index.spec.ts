@@ -42,6 +42,20 @@ describe('src/store/index.ts', () => {
     })
   })
 
+  describe('selectArmature', () => {
+    it('should select an armature and clear bone selecte state', () => {
+      const target = createStore(useHistoryStore())
+      expect(target.armatures.value).toHaveLength(0)
+      target.addArmature('arm_a', 'bo_a')
+      target.addArmature('arm_b', 'bo_b')
+      expect(target.lastSelectedArmatureId.value).toBe('arm_b')
+      expect(target.selectedBones.value).toHaveProperty('bo_b')
+      target.selectArmature('arm_a')
+      expect(target.lastSelectedArmatureId.value).toBe('arm_a')
+      expect(target.selectedBones.value).toEqual({})
+    })
+  })
+
   describe('addArmature', () => {
     it('should add new armature with a bone', () => {
       const target = createStore(useHistoryStore())

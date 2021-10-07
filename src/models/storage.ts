@@ -45,6 +45,7 @@ export interface StorageRoot {
   bones: Bone[]
 
   actions: Action[]
+  keyframes: KeyframeBase[]
 
   actors: Actor[]
   elements: BElement[]
@@ -53,15 +54,23 @@ export interface StorageRoot {
 }
 
 export function initialize(src: StorageRoot): StorageRoot {
+  const keyframeById = toMap(src.keyframes)
+  const keyframeMapByActionId = mapReduce(toMap(src.actions), (a) =>
+    a.keyframes.map((id) => keyframeById[id])
+  )
   const elementById = toMap(src.elements)
   const elementMapByActorId = mapReduce(toMap(src.actors), (a) =>
     a.elements.map((id) => elementById[id])
   )
+
   return {
     armatures: src.armatures.map(initializeArmature),
     bones: src.bones.map(initializeBone),
 
     actions: src.actions.map(initializeAction),
+    keyframes: src.actions.flatMap((a) =>
+      keyframeMapByActionId[a.id].map(initializeKeyframe)
+    ),
 
     actors: src.actors.map(initializeActor),
     elements: src.actors.flatMap((a) =>
@@ -91,10 +100,7 @@ function initializeBone(bone: Bone): Bone {
 }
 
 function initializeAction(action: Partial<Action>): Action {
-  return getAction({
-    ...action,
-    keyframes: action.keyframes?.map(initializeKeyframe) ?? [],
-  })
+  return getAction({ ...action })
 }
 
 function initializeKeyframe(keyframe: Partial<KeyframeBase>): KeyframeBase {

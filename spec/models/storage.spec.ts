@@ -57,9 +57,10 @@ describe('src/models/storage.ts', () => {
         actions: [
           {
             id: 'act',
-            keyframes: [{ id: 'key' }],
+            keyframes: ['key'],
           },
         ],
+        keyframes: [{ id: 'key' }],
         actors: [
           {
             id: 'actor',
@@ -91,12 +92,8 @@ describe('src/models/storage.ts', () => {
             ],
           }),
         ],
-        actions: [
-          getAction({
-            id: 'act',
-            keyframes: [getKeyframeBone({ id: 'key' })],
-          }),
-        ],
+        actions: [getAction({ id: 'act', keyframes: ['key'] })],
+        keyframes: [getKeyframeBone({ id: 'key' })],
         actors: [
           getActor({
             id: 'actor',
@@ -114,6 +111,7 @@ describe('src/models/storage.ts', () => {
         armatures: [],
         bones: [],
         actions: [],
+        keyframes: [],
         actors: [
           {
             id: 'actor',

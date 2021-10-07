@@ -19,10 +19,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { IRectangle, IVec2 } from 'okageo'
 import { v4 } from 'uuid'
-import { toKeyMap } from '../utils/commons'
-import { BoneConstraint } from '../utils/constraints'
+import { toKeyMap } from '/@/utils/commons'
+import { BoneConstraint } from '/@/utils/constraints'
 import { GraphNode } from '/@/models/graphNode'
-import { KeyframeBase } from '/@/models/keyframe'
 
 export type IdMap<T> = {
   [id: string]: T
@@ -40,7 +39,7 @@ export interface Action {
   name: string
   totalFrame: number
   armatureId: string
-  keyframes: KeyframeBase[]
+  keyframes: string[]
 }
 
 export interface Bone {

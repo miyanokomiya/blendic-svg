@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ElementNode, ElementNodeAttributes, IdMap } from '../models'
+import { ElementNode, ElementNodeAttributes, IdMap, toMap } from '../models'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import { useCanvasStore } from '../store/canvas'
@@ -71,7 +71,13 @@ export function useStorage() {
 
   function serialize(): string {
     const { armatures, bones } = store.exportState()
-    const actions = cleanActions(animationStore.actions.value, armatures, bones)
+    const exportedAnimation = animationStore.exportState()
+    const { actions, keyframes } = cleanActions(
+      exportedAnimation.actions,
+      exportedAnimation.keyframes,
+      armatures,
+      bones
+    )
     const fromElementStore = elementStore.exportState()
     const { actors, elements } = cleanActors(
       fromElementStore.actors,
@@ -84,6 +90,7 @@ export function useStorage() {
       armatures,
       bones,
       actions,
+      keyframes,
       actors,
       elements,
       graphs,
@@ -176,17 +183,21 @@ export function useStorage() {
     if (!armature || !actor) return
 
     const svgTree = addEssentialSvgAttributes(actor.svgTree)
-    const actionMap = animationStore.actionMap.value
+    const exportedAnimation = animationStore.exportState()
+    const actionMap = toMap(exportedAnimation.actions)
+    const keyframeMap = toMap(exportedAnimation.keyframes)
+
     const actions = actionIds
       .filter((id) => actionMap[id])
       .map((id) => {
         const action = actionMap[id]
+        const keyframes = action.keyframes.map((id) => keyframeMap[id])
         const attributesMapPerFrame = bakeKeyframes(
-          getKeyframeMapByTargetId(action.keyframes),
+          getKeyframeMapByTargetId(keyframes),
           store.boneMap.value,
           elementStore.elementMap.value,
           svgTree,
-          getLastFrame(action.keyframes)
+          getLastFrame(keyframes)
         )
         return {
           name: action.name,

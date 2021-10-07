@@ -51,6 +51,26 @@ describe('src/store/index.ts', () => {
     })
   })
 
+  describe('getBonesByArmatureId', () => {
+    it('should return bones belonging the armature', () => {
+      const target = createStore(useHistoryStore())
+      target.addArmature('arm_a')
+      target.addBone('bone_a_0')
+      target.addBone('bone_a_1')
+      target.addArmature('arm_b')
+      target.addBone('bone_b_0')
+      target.addBone('bone_b_1')
+      expect(target.getBonesByArmatureId('arm_a').map((b) => b.id)).toEqual([
+        'bone_a_0',
+        'bone_a_1',
+      ])
+      expect(target.getBonesByArmatureId('arm_b').map((b) => b.id)).toEqual([
+        'bone_b_0',
+        'bone_b_1',
+      ])
+    })
+  })
+
   describe('selectAllBone', () => {
     it('should toggle selected state of all bones', () => {
       const target = createStore(useHistoryStore())

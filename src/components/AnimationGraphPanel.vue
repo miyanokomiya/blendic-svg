@@ -96,7 +96,7 @@ import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import GraphNode from '/@/components/elements/GraphNode.vue'
 import GraphEdge from '/@/components/elements/GraphEdge.vue'
-import { getAnimationGraph, IdMap } from '/@/models'
+import { getAnimationGraph, IdMap, toMap } from '/@/models'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { SelectOptions } from '/@/composables/modes/types'
 import { mapReduce } from '/@/utils/commons'
@@ -108,7 +108,7 @@ import {
 import { GraphNodeEdgePositions } from '/@/models/graphNode'
 import { useElementStore } from '/@/store/element'
 import GraphSideBar from '/@/components/GraphSideBar.vue'
-import { getElementLabel } from '/@/utils/elements'
+import { flatElementTree, getElementLabel } from '/@/utils/elements'
 import { getNodeErrors } from '/@/utils/graphNodes'
 
 export default defineComponent({
@@ -288,13 +288,16 @@ export default defineComponent({
     provide('getObjectOptions', () => {
       if (!currentGraph.value) return []
 
-      const elementMap = elementStore.nativeElementMap.value
+      const nativeElementMap = elementStore.lastSelectedActor.value
+        ? toMap(flatElementTree([elementStore.lastSelectedActor.value.svgTree]))
+        : {}
+
       const actor = elementStore.actors.value.find(
         (a) => a.armatureId === currentGraph.value!.armatureId
       )
       return (
-        actor?.elements.map((e) => {
-          return { value: e.id, label: getElementLabel(elementMap[e.id]) }
+        actor?.elements.map((id) => {
+          return { value: id, label: getElementLabel(nativeElementMap[id]) }
         }) ?? []
       )
     })

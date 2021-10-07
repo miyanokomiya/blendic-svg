@@ -146,6 +146,7 @@ export default defineComponent({
     const elementStore = useElementStore()
 
     store.createDefaultEntities()
+    elementStore.createDefaultEntities()
 
     const viewBox = computed(() => {
       return elementStore.lastSelectedActor.value?.viewBox

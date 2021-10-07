@@ -133,7 +133,7 @@ export default defineComponent({
       if (!currentArmature.value) return []
 
       return sortByValue(
-        currentArmature.value?.bones.map((b) => ({
+        store.getBonesByArmatureId(currentArmature.value.id).map((b) => ({
           value: b.id,
           label: b.name,
         })),

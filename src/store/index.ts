@@ -212,6 +212,13 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
+  function getBonesByArmatureId(armatureId: string): Bone[] {
+    const boneById = boneEntities.entities.value.byId
+    return armatureEntities.entities.value.byId[armatureId].bones.map(
+      (id) => boneById[id]
+    )
+  }
+
   function selectAllBone() {
     if (!lastSelectedArmature.value) return
     historyStore.push(boneSelectable.getSelectAllHistory(true), true)
@@ -508,6 +515,7 @@ export function createStore(historyStore: HistoryStore) {
     deleteArmature,
     updateArmatureName,
 
+    getBonesByArmatureId,
     selectAllBone,
     selectBone,
     selectBones,

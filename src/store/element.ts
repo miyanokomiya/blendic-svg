@@ -110,9 +110,12 @@ export function createStore(historyStore: HistoryStore) {
     if (lastSelectedActorId.value === id) return
 
     historyStore.push(
-      id
-        ? actorSelectable.getSelectHistory(id)
-        : actorSelectable.getClearAllHistory(),
+      convolute(
+        id
+          ? actorSelectable.getSelectHistory(id)
+          : actorSelectable.getClearAllHistory(),
+        [elementSelectable.getClearAllHistory()]
+      ),
       true
     )
   }

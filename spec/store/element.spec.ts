@@ -51,13 +51,19 @@ describe('src/store/element.ts', () => {
   })
 
   describe('selectActor', () => {
-    it('should select the actor', () => {
+    it('should select the actor and clear element selected state', () => {
       const target = createStore(useHistoryStore())
-      target.initState([getActor({ id: 'ac_0' }), getActor({ id: 'ac_1' })], [])
+      target.initState(
+        [getActor({ id: 'ac_0', elements: ['e_0'] }), getActor({ id: 'ac_1' })],
+        [getBElement({ id: 'e_0' })]
+      )
       target.selectActor('ac_0')
+      target.selectElement('e_0')
       expect(target.lastSelectedActor.value?.id).toEqual('ac_0')
+      expect(target.selectedElements.value).toEqual({ e_0: true })
       target.selectActor('ac_1')
       expect(target.lastSelectedActor.value?.id).toEqual('ac_1')
+      expect(target.selectedElements.value).toEqual({})
     })
   })
 

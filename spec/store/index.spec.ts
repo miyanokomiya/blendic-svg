@@ -26,8 +26,10 @@ describe('src/store/index.ts', () => {
     it('should return bones by armature id', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('0_arm')
+      target.deleteBone()
       target.addBone('0_0_bone')
       target.addArmature('1_arm')
+      target.deleteBone()
       target.addBone('1_0_bone')
       target.addBone('1_1_bone')
       expect(target.bonesByArmatureId.value['0_arm'].map((b) => b.id)).toEqual([
@@ -44,10 +46,26 @@ describe('src/store/index.ts', () => {
     it('should add new armature with a bone', () => {
       const target = createStore(useHistoryStore())
       expect(target.armatures.value).toHaveLength(0)
-      target.addArmature('arm_a')
+      target.addArmature('arm_a', 'bo_a')
       expect(target.armatures.value).toHaveLength(1)
+      expect(target.boneMap.value).not.toEqual({})
       expect(target.lastSelectedArmatureId.value).toBe('arm_a')
-      expect(target.boneMap).not.toEqual({})
+      expect(target.selectedBones.value).toEqual({
+        bo_a: { head: true, tail: true },
+      })
+    })
+  })
+
+  describe('deleteArmature', () => {
+    it('should delete an armature and beloging bones', () => {
+      const target = createStore(useHistoryStore())
+      expect(target.armatures.value).toHaveLength(0)
+      target.addArmature('arm_a', 'bo_a')
+      target.deleteArmature()
+      expect(target.armatures.value).toHaveLength(0)
+      expect(target.lastSelectedArmature.value).toBe(undefined)
+      expect(target.boneMap.value).toEqual({})
+      expect(target.selectedBones.value).toEqual({})
     })
   })
 
@@ -55,9 +73,11 @@ describe('src/store/index.ts', () => {
     it('should return bones belonging the armature', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
+      target.deleteBone()
       target.addBone('bone_a_0')
       target.addBone('bone_a_1')
       target.addArmature('arm_b')
+      target.deleteBone()
       target.addBone('bone_b_0')
       target.addBone('bone_b_1')
       expect(target.getBonesByArmatureId('arm_a').map((b) => b.id)).toEqual([
@@ -75,6 +95,7 @@ describe('src/store/index.ts', () => {
     it('should toggle selected state of all bones', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
+      target.deleteBone()
       target.addBone('bone_a')
       target.addBone('bone_b')
       target.selectAllBone()
@@ -91,6 +112,7 @@ describe('src/store/index.ts', () => {
     it('should add new bone', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
+      target.deleteBone()
       expect(target.lastSelectedArmature.value!.bones).toHaveLength(0)
       expect(target.boneMap.value).toEqual({})
       target.addBone('bone_a')
@@ -113,6 +135,7 @@ describe('src/store/index.ts', () => {
     it('should delete bones whose all attrs have been selected and clean connections', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
+      target.deleteBone()
       target.addBone('bone_a')
       target.addBone('bone_b')
       target.selectBones({
@@ -130,6 +153,7 @@ describe('src/store/index.ts', () => {
     it('should dissolve bones whose all attrs have been selected and clean connections', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
+      target.deleteBone()
       target.addBone('bone_a')
       target.addBone('bone_b')
       target.addBone('bone_c')
@@ -155,6 +179,7 @@ describe('src/store/index.ts', () => {
     it('should update bones clean connections', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
+      target.deleteBone()
       target.addBone('bone_a')
       target.addBone('bone_b')
       target.addBone('bone_c')
@@ -171,6 +196,7 @@ describe('src/store/index.ts', () => {
     it('should update bones and fix connections', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
+      target.deleteBone()
       target.addBone('bone_a')
       target.addBone('bone_b')
       target.addBone('bone_c')
@@ -185,6 +211,7 @@ describe('src/store/index.ts', () => {
     it('should update name of a bone and avoid duplication', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
+      target.deleteBone()
       target.addBone('bone_a')
       target.addBone('bone_b')
       target.selectBone('bone_a')
@@ -200,6 +227,7 @@ describe('src/store/index.ts', () => {
     it('should upsert bones and fix connections', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
+      target.deleteBone()
       target.addBone('bone_a')
       target.addBone('bone_b')
       target.addBone('bone_c')

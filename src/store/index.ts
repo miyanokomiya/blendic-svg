@@ -136,6 +136,7 @@ export function createStore(historyStore: HistoryStore) {
     armatureEntities.getAddItemsHistory([armature]).redo()
     armatureSelectable.getSelectHistory(armature.id).redo()
     boneEntities.getAddItemsHistory([bone]).redo()
+    boneSelectable.getSelectAllHistory().redo()
   }
 
   function selectArmature(id: string = '') {
@@ -160,7 +161,8 @@ export function createStore(historyStore: HistoryStore) {
     }
   }
 
-  function addArmature(id?: string) {
+  function addArmature(id?: string, boneId?: string) {
+    const bone = getBone({ id: boneId, name: 'bone' }, !boneId)
     const armature = getArmature(
       {
         id,
@@ -168,6 +170,7 @@ export function createStore(historyStore: HistoryStore) {
           'armature',
           toList(armatureEntities.entities.value.byId).map((a) => a.name)
         ),
+        bones: [bone.id],
       },
       !id
     )
@@ -175,18 +178,24 @@ export function createStore(historyStore: HistoryStore) {
     historyStore.push(
       convolute(armatureEntities.getAddItemsHistory([armature]), [
         armatureSelectable.getSelectHistory(armature.id),
+        boneEntities.getAddItemsHistory([bone]),
+        boneSelectable.getMultiSelectHistory({
+          [bone.id]: { head: true, tail: true },
+        }),
       ]),
       true
     )
   }
 
   function deleteArmature() {
-    if (!lastSelectedArmatureId.value) return
+    const armature = lastSelectedArmature.value
+    if (!armature) return
 
     historyStore.push(
-      armatureEntities.getDeleteItemsHistory(
-        Object.keys(armatureSelectable.selectedMap.value)
-      ),
+      convolute(armatureEntities.getDeleteItemsHistory([armature.id]), [
+        boneEntities.getDeleteItemsHistory(armature.bones),
+        boneSelectable.getClearAllHistory(),
+      ]),
       true
     )
   }

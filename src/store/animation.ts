@@ -440,18 +440,19 @@ export function createStore(
       true
     )
   }
-  function addAction() {
+  function addAction(id?: string) {
     if (!indexStore.lastSelectedArmature.value) return
 
     const action = getAction(
       {
+        id,
         name: getNotDuplicatedName(
           'action',
           actions.value.map((a) => a.name)
         ),
         armatureId: indexStore.lastSelectedArmature.value.id,
       },
-      true
+      !id
     )
     historyStore.push(
       convolute(actionEntities.getAddItemsHistory([action]), [

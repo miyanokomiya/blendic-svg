@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { createStore } from '/@/store/__element'
+import { createStore } from '/@/store/element'
 import { useHistoryStore } from '/@/composables/stores/history'
 import { getActor, getBElement } from '/@/models'
 
@@ -27,7 +27,7 @@ describe('src/store/element.ts', () => {
       const target = createStore(useHistoryStore())
       const actor = getActor({
         id: 'ac',
-        e_lements: ['el'],
+        elements: ['el'],
       })
       const element = getBElement({ id: 'el' })
       target.initState([actor], [element])
@@ -41,7 +41,7 @@ describe('src/store/element.ts', () => {
       const target = createStore(useHistoryStore())
       const actor = getActor({
         id: 'ac',
-        e_lements: ['el'],
+        elements: ['el'],
       })
       const element = getBElement({ id: 'el' })
       target.importActor(actor, [element])
@@ -79,7 +79,7 @@ describe('src/store/element.ts', () => {
         getBElement({ id: 'elm_1' }),
       ]
       target.initState(
-        [getActor({ id: 'ac_0', e_lements: elements.map((e) => e.id) })],
+        [getActor({ id: 'ac_0', elements: elements.map((e) => e.id) })],
         elements
       )
       target.selectActor('ac_0')
@@ -96,7 +96,7 @@ describe('src/store/element.ts', () => {
         getBElement({ id: 'elm_1' }),
       ]
       target.initState(
-        [getActor({ id: 'ac_0', e_lements: elements.map((e) => e.id) })],
+        [getActor({ id: 'ac_0', elements: elements.map((e) => e.id) })],
         elements
       )
       target.selectActor('ac_0')
@@ -118,7 +118,7 @@ describe('src/store/element.ts', () => {
         getBElement({ id: 'elm_1' }),
       ]
       target.initState(
-        [getActor({ id: 'ac_0', e_lements: elements.map((e) => e.id) })],
+        [getActor({ id: 'ac_0', elements: elements.map((e) => e.id) })],
         elements
       )
       target.selectActor('ac_0')

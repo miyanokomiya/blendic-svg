@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ElementNode, ElementNodeAttributes, IdMap, toMap } from '../models'
+import { ElementNode, ElementNodeAttributes, IdMap } from '../models'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import { useCanvasStore } from '../store/canvas'
@@ -43,6 +43,7 @@ import {
 } from '../utils/poseResolver'
 import { initialize, StorageRoot } from '/@/models/storage'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
+import { toList } from '/@/utils/commons'
 import { makeSvg } from '/@/utils/svgMaker'
 
 interface BakedData {
@@ -71,9 +72,22 @@ export function useStorage() {
   function serialize(): string {
     const { armatures, bones } = store.exportState()
     const actions = cleanActions(animationStore.actions.value, armatures, bones)
-    const actors = cleanActors(elementStore.actors.value, armatures, bones)
+    const fromElementStore = elementStore.exportState()
+    const { actors, elements } = cleanActors(
+      fromElementStore.actors,
+      fromElementStore.elements,
+      armatures,
+      bones
+    )
     const graphs = cleanGraphs(graphStore.graphList.value)
-    const root: StorageRoot = { armatures, bones, actions, actors, graphs }
+    const root: StorageRoot = {
+      armatures,
+      bones,
+      actions,
+      actors,
+      elements,
+      graphs,
+    }
     return JSON.stringify(root)
   }
   function deserialize(src: string) {
@@ -83,7 +97,7 @@ export function useStorage() {
       canvasStore.initState()
       store.initState(root.armatures, root.bones)
       animationStore.initState(root.actions)
-      elementStore.initState(root.actors)
+      elementStore.initState(root.actors, root.elements)
       graphStore.initState(root.graphs)
     } catch (e) {
       alert('Failed to load: Invalid file.')
@@ -137,14 +151,19 @@ export function useStorage() {
     try {
       const file = await showOpenFileDialog('.svg, image/svg+xml')
       const svg = await readAsText(file)
-      const actor = parseFromSvg(svg)
+      const { actor, elements } = parseFromSvg(svg)
 
       if (isInheritWeight && elementStore.lastSelectedActor.value) {
-        elementStore.importActor(
-          inheritWeight(elementStore.lastSelectedActor.value, actor)
+        const inherited = inheritWeight(
+          {
+            actor: elementStore.lastSelectedActor.value,
+            elements: toList(elementStore.elementMap.value),
+          },
+          { actor, elements }
         )
+        elementStore.importActor(inherited.actor, inherited.elements)
       } else {
-        elementStore.importActor(actor)
+        elementStore.importActor(actor, elements)
       }
     } catch (e) {
       alert('Failed to load: Invalid file.')
@@ -165,7 +184,7 @@ export function useStorage() {
         const attributesMapPerFrame = bakeKeyframes(
           getKeyframeMapByTargetId(action.keyframes),
           store.boneMap.value,
-          toMap(actor.elements),
+          elementStore.elementMap.value,
           svgTree,
           getLastFrame(action.keyframes)
         )
@@ -200,7 +219,7 @@ export function useStorage() {
     const svgNode = addEssentialSvgAttributes(
       getPosedElementTree(
         animationStore.currentPosedBones.value,
-        toMap(actor.elements ?? []),
+        elementStore.elementMap.value,
         actor.svgTree
       )
     )

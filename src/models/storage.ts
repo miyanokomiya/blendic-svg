@@ -27,13 +27,13 @@ import {
   getBone,
   getActor,
   BElement,
-  getBElement,
   AnimationGraph,
   getAnimationGraph,
+  toMap,
 } from '/@/models'
 import { GraphNodeBase } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
-import { extractMap } from '/@/utils/commons'
+import { extractMap, mapReduce } from '/@/utils/commons'
 import { getConstraint } from '/@/utils/constraints'
 import { initializeBElements } from '/@/utils/elements'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
@@ -43,17 +43,31 @@ import { migrateConstraint } from '/@/utils/migrations'
 export interface StorageRoot {
   armatures: Armature[]
   bones: Bone[]
+
   actions: Action[]
+
   actors: Actor[]
+  elements: BElement[]
+
   graphs: AnimationGraph[]
 }
 
 export function initialize(src: StorageRoot): StorageRoot {
+  const elementById = toMap(src.elements)
+  const elementMapByActorId = mapReduce(toMap(src.actors), (a) =>
+    a.elements.map((id) => elementById[id])
+  )
   return {
     armatures: src.armatures.map(initializeArmature),
     bones: src.bones.map(initializeBone),
+
     actions: src.actions.map(initializeAction),
+
     actors: src.actors.map(initializeActor),
+    elements: src.actors.flatMap((a) =>
+      initializeBElements(a.svgTree, elementMapByActorId[a.id])
+    ),
+
     graphs: src.graphs?.map(initializeGraph) ?? [],
   }
 }
@@ -88,19 +102,10 @@ function initializeKeyframe(keyframe: Partial<KeyframeBase>): KeyframeBase {
 }
 
 function initializeActor(actor: Partial<Actor>): Actor {
-  const elements = actor.elements?.concat() ?? []
-  const svg = actor.svgTree
-
-  return getActor({
-    ...actor,
-    elements: svg
-      ? initializeBElements(svg, elements.map(initializeElement))
-      : [],
-  })
-}
-
-function initializeElement(elm: BElement): BElement {
-  return getBElement(elm)
+  const a = getActor({ ...actor })
+  return a.elements.includes(a.svgTree.id)
+    ? a
+    : { ...a, elements: [a.svgTree.id, ...a.elements] }
 }
 
 export function initializeGraph(graph: AnimationGraph): AnimationGraph {

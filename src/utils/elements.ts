@@ -54,7 +54,10 @@ export function getPlainSvgTree(): ElementNode {
   })
 }
 
-export function parseFromSvg(svgText: string): Actor {
+export function parseFromSvg(svgText: string): {
+  actor: Actor
+  elements: BElement[]
+} {
   const domParser = new DOMParser()
   const svgDom = domParser.parseFromString(svgText, 'image/svg+xml')
   const svgTags = svgDom.getElementsByTagName('svg')
@@ -64,7 +67,15 @@ export function parseFromSvg(svgText: string): Actor {
   const viewBox = parseViewBox(svg)
   const svgTree = parseElementNode(svg)
 
-  return getActor({ svgTree, viewBox, elements: toBElements(svgTree) }, true)
+  const elements = toBElements(svgTree)
+
+  return {
+    actor: getActor(
+      { svgTree, viewBox, elements: elements.map((elm) => elm.id) },
+      true
+    ),
+    elements,
+  }
 }
 
 export function initializeBElements(
@@ -146,28 +157,31 @@ export function parseViewBoxFromStr(value?: string): IRectangle | undefined {
 
 export function cleanActors(
   actors: Actor[],
+  elements: BElement[],
   armatures: Armature[],
   bones: Bone[]
-): Actor[] {
+): { actors: Actor[]; elements: BElement[] } {
+  const elementMap = toMap(elements)
   const armatureMap = toMap(armatures)
   const boneMap = toMap(bones)
   const boneMapByArmatureId = mapReduce(armatureMap, (a) =>
     toMap(a.bones.map((id) => boneMap[id]))
   )
 
-  return actors.map((act) => {
+  const cleanedActors = actors.map((act) => {
     const arm = armatureMap[act.armatureId]
-    const boneMap = arm ? boneMapByArmatureId[arm.id] : {}
-
-    return {
-      ...act,
-      armatureId: arm ? act.armatureId : '',
-      elements: act.elements.map((e) => ({
-        ...e,
-        boneId: e.boneId && boneMap[e.boneId] ? e.boneId : '',
-      })),
-    }
+    return arm ? act : { ...act, armatureId: '' }
   })
+  const cleanedElements = cleanedActors.flatMap((act) => {
+    const boneMap = act.armatureId ? boneMapByArmatureId[act.armatureId] : {}
+    return act.elements.map((elmId) => {
+      const elm = elementMap[elmId]
+      if (!elm.boneId) return elm
+      return boneMap[elm.boneId] ? elm : { ...elm, boneId: '' }
+    })
+  })
+
+  return { actors: cleanedActors, elements: cleanedElements }
 }
 
 export function cleanGraphs(graphs: AnimationGraph[]): AnimationGraph[] {
@@ -175,14 +189,20 @@ export function cleanGraphs(graphs: AnimationGraph[]): AnimationGraph[] {
   return graphs
 }
 
-export function inheritWeight(old: Actor, next: Actor): Actor {
+export function inheritWeight(
+  old: { actor: Actor; elements: BElement[] },
+  next: { actor: Actor; elements: BElement[] }
+): { actor: Actor; elements: BElement[] } {
   const oldMap = toMap(old.elements)
   const nextMap = toMap(next.elements)
   const elements = toList({
     ...toMap(next.elements),
     ...extractMap(oldMap, nextMap),
   })
-  return { ...next, armatureId: old.armatureId, elements }
+  return {
+    actor: { ...next.actor, armatureId: old.actor.armatureId },
+    elements,
+  }
 }
 
 export function flatElementTree(

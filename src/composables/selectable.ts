@@ -64,6 +64,20 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
     }
   }
 
+  function getMultiSelectHistoryDryRun(ids: string[], shift = false): boolean {
+    const selectedIds = Object.keys(selectedMap.value).sort()
+    const selectedCount = selectedIds.length
+    if (ids.length === 0 && selectedCount === 0) return false
+    if (
+      !shift &&
+      ids.length === selectedCount &&
+      ids.concat().sort().join(',') === selectedIds.join(',')
+    ) {
+      return false
+    }
+    return true
+  }
+
   function getSelectAllHistory(toggle = false): HistoryItem {
     const snapshot = selectable.createSnapshot()
     return {
@@ -89,6 +103,7 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
     getSelectHistory,
     getSelectHistoryDryRun,
     getMultiSelectHistory,
+    getMultiSelectHistoryDryRun,
     getSelectAllHistory,
     getClearAllHistory,
   }

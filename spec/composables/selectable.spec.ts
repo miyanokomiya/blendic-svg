@@ -79,6 +79,20 @@ describe('src/composables/selectable.ts', () => {
       })
     })
 
+    describe('getMultiSelectHistoryDryRun', () => {
+      it('should return true only if an operation to select updates the state', () => {
+        const target = useItemSelectable('Test', () => items)
+        expect(target.getMultiSelectHistoryDryRun([])).toBe(false)
+        expect(target.getMultiSelectHistoryDryRun(['a', 'b'])).toBe(true)
+        target.getMultiSelectHistory(['a', 'b']).redo()
+        expect(target.getMultiSelectHistoryDryRun(['a', 'b'])).toBe(false)
+        expect(target.getMultiSelectHistoryDryRun(['b', 'a'])).toBe(false)
+        expect(target.getMultiSelectHistoryDryRun(['b'])).toBe(true)
+        expect(target.getMultiSelectHistoryDryRun(['a', 'b', 'c'])).toBe(true)
+        expect(target.getMultiSelectHistoryDryRun([])).toBe(true)
+      })
+    })
+
     describe('getSelectAllHistory', () => {
       it('should return history item to select all', () => {
         const target = useItemSelectable('Test', () => items)

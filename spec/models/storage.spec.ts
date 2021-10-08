@@ -30,7 +30,7 @@ import { getKeyframeBone } from '/@/models/keyframe'
 import {
   initialize,
   initializeGraph,
-  initializeGraphNode,
+  initializeGraphNodes,
 } from '/@/models/storage'
 import { getConstraint } from '/@/utils/constraints'
 import { createGraphNode } from '/@/utils/graphNodes'
@@ -69,7 +69,8 @@ describe('src/models/storage.ts', () => {
           },
         ],
         elements: [{ id: 'svg' }],
-        graphs: [{ id: 'graph' }],
+        graphs: [{ id: 'graph', nodes: ['node'] }],
+        nodes: [{ id: 'node', type: 'scaler' }],
       }
       expect(initialize(src as any)).toEqual({
         armatures: [
@@ -102,7 +103,8 @@ describe('src/models/storage.ts', () => {
           }),
         ],
         elements: [getBElement({ id: 'svg' })],
-        graphs: [getAnimationGraph({ id: 'graph' })],
+        graphs: [getAnimationGraph({ id: 'graph', nodes: ['node'] })],
+        nodes: [createGraphNode('scaler', { id: 'node' })],
       })
     })
 
@@ -135,61 +137,84 @@ describe('src/models/storage.ts', () => {
   })
 
   describe('initializeGraph', () => {
-    it('should drop invalid nodes', () => {
-      const valid = createGraphNode('scaler')
-      const invalid = { ...createGraphNode('scaler'), type: 'invalid' }
+    it('should drop unexisted nodes', () => {
+      const valid = createGraphNode('scaler', { id: 'valid' })
+      const invalid = createGraphNode('scaler', { id: 'invalid' })
       expect(
         initializeGraph(
           getAnimationGraph({
-            nodes: [valid, invalid as any],
-          })
+            nodes: [valid.id, invalid.id],
+          }),
+          { [valid.id]: valid }
         )
       ).toEqual(
         getAnimationGraph({
-          nodes: [valid],
+          nodes: [valid.id],
         })
       )
     })
   })
 
-  describe('initializeGraphNode', () => {
+  describe('initializeGraphNodes', () => {
     it('should complete new inputs', () => {
       const base = createGraphNode('make_vector2')
       expect(
-        initializeGraphNode({
-          type: 'make_vector2',
-          inputs: { x: { from: 'a', key: 'b' } },
-        } as any)
-      ).toEqual({
-        ...base,
-        inputs: { ...base.inputs, x: { from: 'a', key: 'b' } },
-      })
+        initializeGraphNodes([
+          {
+            type: 'make_vector2',
+            inputs: { x: { from: 'a', key: 'b' } },
+          },
+        ] as any)
+      ).toEqual([
+        {
+          ...base,
+          inputs: { ...base.inputs, x: { from: 'a', key: 'b' } },
+        },
+      ])
     })
     it('should complete new data', () => {
       const base = createGraphNode('scaler')
       expect(
-        initializeGraphNode({
-          type: 'scaler',
-          data: {},
-        } as any)
-      ).toEqual({
-        ...base,
-        data: { value: 0 },
-      })
+        initializeGraphNodes([
+          {
+            type: 'scaler',
+            data: {},
+          },
+        ] as any)
+      ).toEqual([
+        {
+          ...base,
+          data: { value: 0 },
+        },
+      ])
     })
     it('should drop invalid props of data and inputs', () => {
       const base = createGraphNode('make_vector2')
       expect(
-        initializeGraphNode({
-          type: 'make_vector2',
-          data: { tmp: 1 },
-          inputs: { x: { value: 2 }, y: { value: 3 }, z: { value: 4 } },
-        } as any)
-      ).toEqual({
-        ...base,
-        data: {},
-        inputs: { x: { value: 2 }, y: { value: 3 } },
-      })
+        initializeGraphNodes([
+          {
+            type: 'make_vector2',
+            data: { tmp: 1 },
+            inputs: { x: { value: 2 }, y: { value: 3 }, z: { value: 4 } },
+          },
+        ] as any)
+      ).toEqual([
+        {
+          ...base,
+          data: {},
+          inputs: { x: { value: 2 }, y: { value: 3 } },
+        },
+      ])
+    })
+    it('should drop invalid nodes', () => {
+      expect(
+        initializeGraphNodes([
+          {
+            type: 'invalid',
+            inputs: { val: 0 },
+          },
+        ] as any)
+      ).toEqual([])
     })
   })
 })

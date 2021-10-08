@@ -234,7 +234,7 @@ export function createStore(historyStore: HistoryStore) {
   }
 
   function selectAllBone() {
-    if (!lastSelectedArmature.value) return
+    if (Object.keys(boneMap.value).length === 0) return
     historyStore.push(boneSelectable.getSelectAllHistory(true), true)
   }
 
@@ -367,7 +367,7 @@ export function createStore(historyStore: HistoryStore) {
               bones: armature.bones.filter((id) => !targetMap[id]),
             },
           }),
-          boneSelectable.getMultiSelectHistory({}),
+          boneSelectable.getClearAllHistory(),
         ]
       ),
       true

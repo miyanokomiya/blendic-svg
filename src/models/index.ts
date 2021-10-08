@@ -21,7 +21,6 @@ import { IRectangle, IVec2 } from 'okageo'
 import { v4 } from 'uuid'
 import { toKeyMap } from '/@/utils/commons'
 import { BoneConstraint } from '/@/utils/constraints'
-import { GraphNode } from '/@/models/graphNode'
 
 export type IdMap<T> = {
   [id: string]: T
@@ -96,7 +95,7 @@ export interface AnimationGraph {
   id: string
   name: string
   armatureId: string
-  nodes: GraphNode[]
+  nodes: string[]
 }
 
 export function getAnimationGraph(

@@ -8,15 +8,18 @@ describe('src/store/animationGraph.ts', () => {
 
   beforeEach(() => {
     target = useAnimationGraphStore()
-    target.initState([
-      getAnimationGraph({
-        id: 'graph',
-        nodes: [
-          createGraphNode('scaler', { id: 'scaler' }),
-          createGraphNode('make_vector2', { id: 'make_vector2' }),
-        ],
-      }),
-    ])
+    target.initState(
+      [
+        getAnimationGraph({
+          id: 'graph',
+          nodes: ['scaler', 'make_vector2'],
+        }),
+      ],
+      [
+        createGraphNode('scaler', { id: 'scaler' }),
+        createGraphNode('make_vector2', { id: 'make_vector2' }),
+      ]
+    )
     target.selectGraph('graph')
   })
 

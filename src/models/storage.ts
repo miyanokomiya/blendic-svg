@@ -30,6 +30,7 @@ import {
   AnimationGraph,
   getAnimationGraph,
   toMap,
+  IdMap,
 } from '/@/models'
 import { GraphNodeBase } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
@@ -51,6 +52,7 @@ export interface StorageRoot {
   elements: BElement[]
 
   graphs: AnimationGraph[]
+  nodes: GraphNodeBase[]
 }
 
 export function initialize(src: StorageRoot): StorageRoot {
@@ -62,6 +64,10 @@ export function initialize(src: StorageRoot): StorageRoot {
   const elementMapByActorId = mapReduce(toMap(src.actors), (a) =>
     a.elements.map((id) => elementById[id])
   )
+
+  const nodeMap = toMap(src.nodes ?? [])
+  const graphs = src.graphs?.map((g) => initializeGraph(g, nodeMap)) ?? []
+  const nodes = initializeGraphNodes(src.nodes ?? [])
 
   return {
     armatures: src.armatures.map(initializeArmature),
@@ -77,7 +83,8 @@ export function initialize(src: StorageRoot): StorageRoot {
       initializeBElements(a.svgTree, elementMapByActorId[a.id])
     ),
 
-    graphs: src.graphs?.map(initializeGraph) ?? [],
+    graphs,
+    nodes,
   }
 }
 
@@ -114,15 +121,18 @@ function initializeActor(actor: Partial<Actor>): Actor {
     : { ...a, elements: [a.svgTree.id, ...a.elements] }
 }
 
-export function initializeGraph(graph: AnimationGraph): AnimationGraph {
+export function initializeGraph(
+  graph: AnimationGraph,
+  nodeMap: IdMap<GraphNodeBase>
+): AnimationGraph {
   const g = getAnimationGraph(graph)
   return {
     ...g,
-    nodes: g.nodes.filter(isValidGraphNode).map(initializeGraphNode),
+    nodes: g.nodes.filter((id) => !!nodeMap[id]),
   }
 }
 
-export function initializeGraphNode(node: GraphNodeBase): GraphNodeBase {
+function initializeGraphNode(node: GraphNodeBase): GraphNodeBase {
   const struct = getGraphNodeModule<any>(node.type).struct
   const model = struct.create()
   return {
@@ -133,7 +143,11 @@ export function initializeGraphNode(node: GraphNodeBase): GraphNodeBase {
   } as GraphNodeBase
 }
 
-function isValidGraphNode(node: GraphNodeBase): boolean {
+export function initializeGraphNodes(nodes: GraphNodeBase[]): GraphNodeBase[] {
+  return nodes.filter(isValidGraphNodeType).map(initializeGraphNode)
+}
+
+function isValidGraphNodeType(node: GraphNodeBase): boolean {
   const module = getGraphNodeModule(node.type)
   return !!module
 }

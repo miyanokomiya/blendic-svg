@@ -85,7 +85,10 @@ export function useStorage() {
       armatures,
       bones
     )
-    const graphs = cleanGraphs(graphStore.graphList.value)
+    const fromGraphStore = graphStore.exportState()
+    const graphs = cleanGraphs(fromGraphStore.graphs)
+    const nodes = fromGraphStore.nodes
+
     const root: StorageRoot = {
       armatures,
       bones,
@@ -94,6 +97,7 @@ export function useStorage() {
       actors,
       elements,
       graphs,
+      nodes,
     }
     return JSON.stringify(root)
   }
@@ -105,7 +109,7 @@ export function useStorage() {
       store.initState(root.armatures, root.bones)
       animationStore.initState(root.actions)
       elementStore.initState(root.actors, root.elements)
-      graphStore.initState(root.graphs)
+      graphStore.initState(root.graphs, root.nodes)
     } catch (e) {
       alert('Failed to load: Invalid file.')
     }

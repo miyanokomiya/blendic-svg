@@ -133,9 +133,7 @@ export default defineComponent({
     const selectedArmature = computed(() => store.lastSelectedArmature.value)
     const selectedGraph = computed(() => graphStore.lastSelectedGraph.value)
 
-    const allNames = computed(() =>
-      graphStore.graphList.value.map((g) => g.name)
-    )
+    const allNames = computed(() => graphStore.graphs.value.map((g) => g.name))
 
     const draftName = ref('')
     watchEffect(() => {
@@ -151,7 +149,7 @@ export default defineComponent({
     }
 
     const graphOptions = computed(() =>
-      graphStore.graphList.value.map((g) => {
+      graphStore.graphs.value.map((g) => {
         const valid = selectedArmature.value?.id !== g.armatureId
         return {
           value: g.id,

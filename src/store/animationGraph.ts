@@ -102,17 +102,6 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
-  function updateGraph(graph: Partial<AnimationGraph>) {
-    if (!lastSelectedGraphId.value) return
-
-    historyStore.push(
-      graphEntities.getUpdateItemHistory({
-        [lastSelectedGraphId.value]: graph,
-      }),
-      true
-    )
-  }
-
   function deleteGraph() {
     if (!lastSelectedGraphId.value) return
 
@@ -120,10 +109,21 @@ export function createStore(historyStore: HistoryStore) {
       convolute(
         graphEntities.getDeleteItemsHistory([lastSelectedGraphId.value]),
         [
-          nodeSelectable.getClearAllHistory(),
+          graphSelectable.getClearAllHistory(),
           nodeSelectable.getClearAllHistory(),
         ]
       ),
+      true
+    )
+  }
+
+  function updateGraph(graph: Partial<AnimationGraph>) {
+    if (!lastSelectedGraphId.value) return
+
+    historyStore.push(
+      graphEntities.getUpdateItemHistory({
+        [lastSelectedGraphId.value]: graph,
+      }),
       true
     )
   }
@@ -154,26 +154,6 @@ export function createStore(historyStore: HistoryStore) {
     historyStore.push(nodeSelectable.getSelectAllHistory(true), true)
   }
 
-  function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
-    if (!lastSelectedGraph.value) return
-
-    historyStore.push(
-      nodeEntities.getUpdateItemHistory(
-        {
-          [id]: val,
-        },
-        seriesKey
-      ),
-      true
-    )
-  }
-
-  function updateNodes(val: IdMap<Partial<GraphNode>>) {
-    if (!lastSelectedGraph.value) return
-
-    historyStore.push(nodeEntities.getUpdateItemHistory(val), true)
-  }
-
   function addNode<T extends GraphNodeType>(
     type: T,
     arg: Partial<GraphNodes[T]> = {}
@@ -181,7 +161,7 @@ export function createStore(historyStore: HistoryStore) {
     const graph = lastSelectedGraph.value
     if (!graph) return
 
-    const node = createGraphNode(type, arg, true)
+    const node = createGraphNode(type, arg, !arg.id)
 
     historyStore.push(
       convolute(nodeEntities.getAddItemsHistory([node]), [
@@ -259,6 +239,26 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
+  function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
+    if (!lastSelectedGraph.value) return
+
+    historyStore.push(
+      nodeEntities.getUpdateItemHistory(
+        {
+          [id]: val,
+        },
+        seriesKey
+      ),
+      true
+    )
+  }
+
+  function updateNodes(val: IdMap<Partial<GraphNode>>) {
+    if (!lastSelectedGraph.value) return
+
+    historyStore.push(nodeEntities.getUpdateItemHistory(val), true)
+  }
+
   return {
     initState,
     exportState,
@@ -272,17 +272,17 @@ export function createStore(historyStore: HistoryStore) {
 
     selectGraph,
     addGraph,
-    updateGraph,
     deleteGraph,
+    updateGraph,
 
     selectNode,
     selectNodes,
     selectAllNode,
+    addNode,
+    deleteNodes,
+    pasteNodes,
     updateNode,
     updateNodes,
-    addNode,
-    pasteNodes,
-    deleteNodes,
   }
 }
 export type AnimationGraphStore = ReturnType<typeof createStore>

@@ -245,7 +245,7 @@ export function useBonePoseMode(
       cancel()
       return
     }
-    store.selectAllBone()
+    store.selectAllBones()
   }
 
   function mousemove(arg: EditMovement) {

@@ -99,7 +99,7 @@ export default defineComponent({
           if (!store.lastSelectedArmature.value) return
 
           if (id === store.lastSelectedArmature.value.id) {
-            store.selectAllBone()
+            store.selectAllBones()
           } else {
             store.selectBone(
               id,

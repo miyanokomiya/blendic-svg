@@ -28,6 +28,7 @@ describe('src/store/animation.ts', () => {
     const historyStore = useHistoryStore()
     const store = indexStore.createStore(useHistoryStore())
     store.createDefaultEntities()
+    store.selectAllBones()
     const target = createStore(historyStore, store)
 
     return { target, store }

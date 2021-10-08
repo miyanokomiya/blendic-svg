@@ -135,7 +135,7 @@ export function createStore(historyStore: HistoryStore) {
     armatureEntities.getAddItemsHistory([armature]).redo()
     armatureSelectable.getSelectHistory(armature.id).redo()
     boneEntities.getAddItemsHistory([bone]).redo()
-    boneSelectable.getSelectAllHistory().redo()
+    boneSelectable.getClearAllHistory().redo()
   }
 
   function selectArmature(id: string = '') {
@@ -233,7 +233,7 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
-  function selectAllBone() {
+  function selectAllBones() {
     if (Object.keys(boneMap.value).length === 0) return
     historyStore.push(boneSelectable.getSelectAllHistory(true), true)
   }
@@ -530,7 +530,7 @@ export function createStore(historyStore: HistoryStore) {
     updateArmatureName,
 
     getBonesByArmatureId,
-    selectAllBone,
+    selectAllBones,
     selectBone,
     selectBones,
     addBone,

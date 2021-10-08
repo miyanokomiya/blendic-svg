@@ -105,19 +105,19 @@ describe('src/store/index.ts', () => {
     })
   })
 
-  describe('selectAllBone', () => {
+  describe('selectAllBones', () => {
     it('should toggle selected state of all bones', () => {
       const target = createStore(useHistoryStore())
       target.addArmature('arm_a')
       target.deleteBone()
       target.addBone('bone_a')
       target.addBone('bone_b')
-      target.selectAllBone()
+      target.selectAllBones()
       expect(target.selectedBones.value).toEqual({
         bone_a: { head: true, tail: true },
         bone_b: { head: true, tail: true },
       })
-      target.selectAllBone()
+      target.selectAllBones()
       expect(target.selectedBones.value).toEqual({})
     })
   })

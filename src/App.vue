@@ -53,9 +53,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                         :bones="bonesByArmatureId[armature.id]"
                         :selected="lastSelectedArmatureId === armature.id"
                         :scale="scale"
-                        @select="
-                          (selected) => selectArmature(armature.id, selected)
-                        "
+                        @select="selectArmature(armature.id)"
                       />
                     </g>
                     <g v-else>
@@ -234,8 +232,8 @@ export default defineComponent({
       selectBone(id: string, state: BoneSelectedState, options: SelectOptions) {
         canvasStore.select(id, state, options)
       },
-      selectArmature(id: string, selected: boolean) {
-        store.selectArmature(selected ? id : '')
+      selectArmature(id: string) {
+        store.selectArmature(id)
       },
       setEditMode(mode: EditMode) {
         canvasStore.setEditMode(mode)

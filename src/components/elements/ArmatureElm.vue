@@ -69,7 +69,7 @@ export default defineComponent({
       boneSelectedState: computed(() =>
         props.selected ? { head: true, tail: true } : undefined
       ),
-      click: () => emit('select', !props.selected),
+      click: () => emit('select'),
     }
   },
 })

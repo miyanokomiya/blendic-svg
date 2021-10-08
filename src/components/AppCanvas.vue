@@ -160,7 +160,7 @@ export default defineComponent({
       const ret = centerizeView(
         props.originalViewBox,
         canvas.viewSize.value,
-        50
+        150
       )
       canvas.viewOrigin.value = ret.viewOrigin
       canvas.scale.value = ret.scale

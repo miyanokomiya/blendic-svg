@@ -1,0 +1,124 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/BoneLayer.vue snapshot defalut 1`] = `
+<g>
+  
+  <g
+    class=""
+    fill="#ddd"
+    opacity="1"
+    stroke="black"
+    stroke-width="1.2"
+    title=""
+  >
+    <g
+      stroke-linejoin="bevel"
+    >
+      <path
+        d="M0,0L0.6000000000000001,2.4L2.4,0.6000000000000001z"
+        fill="#bbb"
+      />
+      <path
+        d="M10,10L0.6000000000000001,2.4L2.4,0.6000000000000001z"
+      />
+    </g>
+    <circle
+      cx="0"
+      cy="0"
+      fill=""
+      r="2"
+    />
+    <circle
+      cx="10"
+      cy="10"
+      fill=""
+      r="2"
+    />
+    <!--v-if-->
+    <!--v-if-->
+  </g>
+  
+</g>
+`;
+
+exports[`src/components/elements/BoneLayer.vue snapshot pose mode 1`] = `
+<g>
+  
+  <g
+    class=""
+    fill="#ddd"
+    opacity="1"
+    stroke="black"
+    stroke-width="1.2"
+    title=""
+  >
+    <g
+      stroke-linejoin="bevel"
+    >
+      <path
+        d="M0,0L0.6000000000000001,2.4L2.4,0.6000000000000001z"
+        fill="#bbb"
+      />
+      <path
+        d="M10,10L0.6000000000000001,2.4L2.4,0.6000000000000001z"
+      />
+    </g>
+    <circle
+      cx="0"
+      cy="0"
+      fill=""
+      r="2"
+    />
+    <circle
+      cx="10"
+      cy="10"
+      fill=""
+      r="2"
+    />
+    <!--v-if-->
+    <!--v-if-->
+  </g>
+  
+</g>
+`;
+
+exports[`src/components/elements/BoneLayer.vue snapshot selected 1`] = `
+<g>
+  
+  <g
+    class=""
+    fill="#ddd"
+    opacity="1"
+    stroke="black"
+    stroke-width="1.2"
+    title=""
+  >
+    <g
+      stroke-linejoin="bevel"
+    >
+      <path
+        d="M0,0L0.6000000000000001,2.4L2.4,0.6000000000000001z"
+        fill="#bbb"
+      />
+      <path
+        d="M10,10L0.6000000000000001,2.4L2.4,0.6000000000000001z"
+      />
+    </g>
+    <circle
+      cx="0"
+      cy="0"
+      fill=""
+      r="2"
+    />
+    <circle
+      cx="10"
+      cy="10"
+      fill=""
+      r="2"
+    />
+    <!--v-if-->
+    <!--v-if-->
+  </g>
+  
+</g>
+`;

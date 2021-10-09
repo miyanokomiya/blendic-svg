@@ -40,14 +40,11 @@ import BoneElm from '/@/components/elements/Bone.vue'
 import { CanvasMode, SelectOptions } from '/@/composables/modes/types'
 import { sortBoneBySize } from '/@/utils/armatures'
 import { toList } from '/@/utils/commons'
+import { injectScale } from '/@/composables/canvas'
 
 export default defineComponent({
   components: { BoneElm },
   props: {
-    scale: {
-      type: Number,
-      default: 1,
-    },
     boneMap: {
       type: Object as PropType<IdMap<Bone>>,
       default: () => ({}),
@@ -67,7 +64,10 @@ export default defineComponent({
       return sortBoneBySize(toList(props.boneMap))
     })
 
+    const scale = computed(injectScale())
+
     return {
+      scale,
       sortedBoneMap,
       selectBone(
         boneId: string,

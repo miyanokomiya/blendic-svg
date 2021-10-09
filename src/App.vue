@@ -39,47 +39,42 @@ Copyright (C) 2021, Tomoya Komiyama.
             <template #right>
               <div class="main">
                 <AppCanvas :original-view-box="viewBox" class="canvas">
-                  <template #default="{ scale }">
-                    <ElementLayer
-                      :bone-map="posedBoneMap"
-                      :canvas-mode="canvasMode"
-                      :class="{ 'view-only': canvasMode !== 'weight' }"
+                  <ElementLayer
+                    :bone-map="posedBoneMap"
+                    :canvas-mode="canvasMode"
+                    :class="{ 'view-only': canvasMode !== 'weight' }"
+                  />
+                  <g v-if="canvasMode === 'object'">
+                    <ArmatureElm
+                      v-for="armature in armatures"
+                      :key="armature.id"
+                      :armature="armature"
+                      :bones="bonesByArmatureId[armature.id]"
+                      :selected="lastSelectedArmatureId === armature.id"
+                      @select="selectArmature(armature.id)"
                     />
-                    <g v-if="canvasMode === 'object'">
-                      <ArmatureElm
-                        v-for="armature in armatures"
-                        :key="armature.id"
-                        :armature="armature"
-                        :bones="bonesByArmatureId[armature.id]"
-                        :selected="lastSelectedArmatureId === armature.id"
-                        :scale="scale"
-                        @select="selectArmature(armature.id)"
-                      />
-                    </g>
-                    <g v-else>
-                      <ArmatureElm
-                        v-for="armature in otherArmatures"
-                        :key="armature.id"
-                        :armature="armature"
-                        :bones="bonesByArmatureId[armature.id]"
-                        :opacity="0.3"
-                        :scale="scale"
-                        class="view-only"
-                      />
-                      <BoneLayer
-                        :scale="scale"
-                        :bone-map="visibledBoneMap"
-                        :selected-bones="selectedBones"
-                        :canvas-mode="canvasMode"
-                        @select="selectBone"
-                      />
-                      <SpaceAxis
-                        v-if="lastSelectedBoneSpace"
-                        :origin="lastSelectedBoneSpace.origin"
-                        :radian="lastSelectedBoneSpace.radian"
-                      />
-                    </g>
-                  </template>
+                  </g>
+                  <g v-else>
+                    <ArmatureElm
+                      v-for="armature in otherArmatures"
+                      :key="armature.id"
+                      :armature="armature"
+                      :bones="bonesByArmatureId[armature.id]"
+                      :opacity="0.3"
+                      class="view-only"
+                    />
+                    <BoneLayer
+                      :bone-map="visibledBoneMap"
+                      :selected-bones="selectedBones"
+                      :canvas-mode="canvasMode"
+                      @select="selectBone"
+                    />
+                    <SpaceAxis
+                      v-if="lastSelectedBoneSpace"
+                      :origin="lastSelectedBoneSpace.origin"
+                      :radian="lastSelectedBoneSpace.radian"
+                    />
+                  </g>
                 </AppCanvas>
                 <CanvasSideBar class="side-bar" />
               </div>

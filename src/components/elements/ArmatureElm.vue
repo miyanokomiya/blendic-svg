@@ -37,6 +37,7 @@ import { Armature, Bone, toMap } from '/@/models/index'
 import { getTnansformStr } from '/@/utils/helpers'
 import BoneElm from '/@/components/elements/Bone.vue'
 import { sortBoneBySize } from '/@/utils/armatures'
+import { injectScale } from '/@/composables/canvas'
 
 export default defineComponent({
   components: { BoneElm },
@@ -50,7 +51,6 @@ export default defineComponent({
       required: true,
     },
     opacity: { type: Number, default: 0.8 },
-    scale: { type: Number, default: 1 },
     selected: {
       type: Boolean,
       default: false,
@@ -62,7 +62,10 @@ export default defineComponent({
       return sortBoneBySize(props.bones)
     })
 
+    const scale = computed(injectScale())
+
     return {
+      scale,
       sortedBoneMap,
       boneMap: computed(() => toMap(props.bones)),
       transform: computed(() => getTnansformStr(props.armature.transform)),

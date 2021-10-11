@@ -166,10 +166,7 @@ export function createStore(
   const targetPropsState = useTargetProps(() => ({}))
   const keyframeState = useKeyframeStates(() => visibledKeyframeMap.value)
 
-  function initState(
-    initActions: Action[] = [],
-    initKeyframes: KeyframeBase[] = []
-  ) {
+  function initState(initActions: Action[], initKeyframes: KeyframeBase[]) {
     actionEntities.init(fromEntityList(initActions))
     actionSelectable.getClearAllHistory().redo()
     keyframeEntities.init(fromEntityList(initKeyframes))

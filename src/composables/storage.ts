@@ -108,7 +108,7 @@ export function useStorage() {
       historyStore.clearHistory()
       canvasStore.initState()
       store.initState(root.armatures, root.bones, root.constraints)
-      animationStore.initState(root.actions)
+      animationStore.initState(root.actions, root.keyframes)
       elementStore.initState(root.actors, root.elements)
       graphStore.initState(root.graphs, root.nodes)
     } catch (e) {

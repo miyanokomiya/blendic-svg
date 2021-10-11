@@ -212,7 +212,7 @@ export function useStorage() {
       })
 
     const data: BakedData = {
-      version: '1.0.0',
+      version: '2.0.0',
       appVersion: process.env.APP_VERSION ?? 'dev',
       actions,
       svgTree,

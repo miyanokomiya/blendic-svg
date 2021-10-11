@@ -109,34 +109,6 @@ describe('src/models/storage.ts', () => {
         nodes: [createGraphNode('scaler', { id: 'node' })],
       })
     })
-
-    it('complete BElement for SVG root', () => {
-      const src = {
-        armatures: [],
-        bones: [],
-        constraints: [],
-        actions: [],
-        keyframes: [],
-        actors: [
-          {
-            id: 'actor',
-            svgTree: getElementNode({
-              tag: 'svg',
-              id: 'svg_id',
-              children: [getElementNode({ tag: 'g', id: 'elm' })],
-            }),
-            elements: ['elm'],
-          },
-        ],
-        elements: [{ id: 'elm' }],
-      }
-      const ret = initialize(src as any)
-      expect(ret.actors[0].elements).toEqual(['svg_id', 'elm'])
-      expect(ret.elements).toEqual([
-        getBElement({ id: 'svg_id', tag: 'svg' }),
-        getBElement({ id: 'elm', tag: 'g', parentId: 'svg_id' }),
-      ])
-    })
   })
 
   describe('initializeGraph', () => {

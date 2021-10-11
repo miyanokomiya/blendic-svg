@@ -91,14 +91,11 @@ export function initialize(src: StorageRoot): StorageRoot {
 }
 
 function initializeArmature(armature: Partial<Armature>): Armature {
-  return getArmature({
-    ...armature,
-    bones: armature.bones ?? [],
-  })
+  return getArmature(armature)
 }
 
-function initializeBone(bone: Bone): Bone {
-  return getBone({ ...bone })
+function initializeBone(bone: Partial<Bone>): Bone {
+  return getBone(bone)
 }
 
 function initializeConstraint(c: BoneConstraint): BoneConstraint {
@@ -106,7 +103,7 @@ function initializeConstraint(c: BoneConstraint): BoneConstraint {
 }
 
 function initializeAction(action: Partial<Action>): Action {
-  return getAction({ ...action })
+  return getAction(action)
 }
 
 function initializeKeyframe(keyframe: Partial<KeyframeBase>): KeyframeBase {
@@ -114,10 +111,7 @@ function initializeKeyframe(keyframe: Partial<KeyframeBase>): KeyframeBase {
 }
 
 function initializeActor(actor: Partial<Actor>): Actor {
-  const a = getActor({ ...actor })
-  return a.elements.includes(a.svgTree.id)
-    ? a
-    : { ...a, elements: [a.svgTree.id, ...a.elements] }
+  return getActor(actor)
 }
 
 export function initializeGraph(

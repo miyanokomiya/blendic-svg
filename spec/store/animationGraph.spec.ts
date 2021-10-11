@@ -57,7 +57,8 @@ describe('src/store/animationGraph.ts', () => {
   describe('deleteGraph', () => {
     it('should delete current graph and clear all selected', () => {
       target.deleteGraph()
-      expect(target.graphs.value).toHaveLength(0)
+      expect(target.exportState().graphs).toHaveLength(0)
+      expect(target.exportState().nodes).toHaveLength(0)
       expect(target.lastSelectedGraph.value).toBeUndefined()
       expect(target.selectedNodes.value).toEqual({})
     })

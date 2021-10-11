@@ -103,16 +103,15 @@ export function createStore(historyStore: HistoryStore) {
   }
 
   function deleteGraph() {
-    if (!lastSelectedGraphId.value) return
+    const graph = lastSelectedGraph.value
+    if (!graph) return
 
     historyStore.push(
-      convolute(
-        graphEntities.getDeleteItemsHistory([lastSelectedGraphId.value]),
-        [
-          graphSelectable.getClearAllHistory(),
-          nodeSelectable.getClearAllHistory(),
-        ]
-      ),
+      convolute(graphEntities.getDeleteItemsHistory([graph.id]), [
+        graphSelectable.getClearAllHistory(),
+        nodeEntities.getDeleteItemsHistory(graph.nodes),
+        nodeSelectable.getClearAllHistory(),
+      ]),
       true
     )
   }

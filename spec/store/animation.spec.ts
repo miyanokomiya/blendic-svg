@@ -84,9 +84,9 @@ describe('src/store/animation.ts', () => {
       target.addAction()
       target.execInsertKeyframe({ rotate: true })
       target.deleteAction()
-      expect(target.actions.value).toHaveLength(0)
+      expect(target.exportState().actions).toHaveLength(0)
       expect(target.selectedAction.value).toBe(undefined)
-      expect(target.keyframes.value).toEqual([])
+      expect(target.exportState().keyframes).toHaveLength(0)
       expect(target.selectedKeyframeMap.value).toEqual({})
     })
   })
@@ -98,9 +98,22 @@ describe('src/store/animation.ts', () => {
       target.execInsertKeyframe({ rotate: true, scaleX: true })
       const keyframe = target.keyframes.value[0]
       expect(keyframe.targetId).toBe(store.lastSelectedBoneId.value)
+      expect(target.selectedAction.value?.keyframes).toEqual([keyframe.id])
       expect(target.selectedKeyframeMap.value).toEqual({
         [keyframe.id]: { props: { rotate: true, scaleX: true } },
       })
+    })
+  })
+
+  describe('execDeleteKeyframes', () => {
+    it('should delete keyframes', () => {
+      const { target } = prepare()
+      target.addAction()
+      target.execInsertKeyframe({ rotate: true, scaleX: true })
+      target.execDeleteKeyframes()
+      expect(target.selectedAction.value?.keyframes).toHaveLength(0)
+      expect(target.keyframes.value).toHaveLength(0)
+      expect(target.selectedKeyframeMap.value).toEqual({})
     })
   })
 })

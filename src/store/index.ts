@@ -209,9 +209,14 @@ export function createStore(historyStore: HistoryStore) {
     const armature = lastSelectedArmature.value
     if (!armature) return
 
+    const boneById = boneEntities.entities.value.byId
+
     historyStore.push(
       convolute(armatureEntities.getDeleteItemsHistory([armature.id]), [
         boneEntities.getDeleteItemsHistory(armature.bones),
+        constraintEntities.getDeleteItemsHistory(
+          armature.bones.flatMap((bid) => boneById[bid].constraints)
+        ),
         boneSelectable.getClearAllHistory(),
       ]),
       true

@@ -72,15 +72,19 @@ describe('src/store/index.ts', () => {
   })
 
   describe('deleteArmature', () => {
-    it('should delete an armature and beloging bones', () => {
+    it('should delete an armature and beloging bones and constraints', () => {
       const target = createStore(useHistoryStore())
       expect(target.armatures.value).toHaveLength(0)
       target.addArmature('arm_a', 'bo_a')
+      target.updateBoneConstraints([getConstraint({ type: 'IK' })])
+      expect(target.boneMap.value).not.toEqual({})
+      expect(target.constraintMap.value).not.toEqual({})
       target.deleteArmature()
       expect(target.armatures.value).toHaveLength(0)
       expect(target.lastSelectedArmature.value).toBe(undefined)
       expect(target.boneMap.value).toEqual({})
       expect(target.selectedBones.value).toEqual({})
+      expect(target.constraintMap.value).toEqual({})
     })
   })
 

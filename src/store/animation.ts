@@ -469,13 +469,14 @@ export function createStore(
     )
   }
   function deleteAction() {
-    if (!lastSelectedActionId.value) return
+    const action = lastSelectedAction.value
+    if (!action) return
 
     historyStore.push(
-      convolute(
-        actionEntities.getDeleteItemsHistory([lastSelectedActionId.value]),
-        [getSelectKeyframesItem({})]
-      ),
+      convolute(actionEntities.getDeleteItemsHistory([action.id]), [
+        keyframeEntities.getDeleteItemsHistory(action.keyframes),
+        getSelectKeyframesItem({}),
+      ]),
       true
     )
   }

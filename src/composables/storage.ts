@@ -70,7 +70,7 @@ export function useStorage() {
   const graphStore = useAnimationGraphStore()
 
   function serialize(): string {
-    const { armatures, bones } = store.exportState()
+    const { armatures, bones, constraints } = store.exportState()
     const exportedAnimation = animationStore.exportState()
     const { actions, keyframes } = cleanActions(
       exportedAnimation.actions,
@@ -92,6 +92,7 @@ export function useStorage() {
     const root: StorageRoot = {
       armatures,
       bones,
+      constraints,
       actions,
       keyframes,
       actors,
@@ -106,7 +107,7 @@ export function useStorage() {
       const root: StorageRoot = initialize(JSON.parse(src))
       historyStore.clearHistory()
       canvasStore.initState()
-      store.initState(root.armatures, root.bones)
+      store.initState(root.armatures, root.bones, root.constraints)
       animationStore.initState(root.actions)
       elementStore.initState(root.actors, root.elements)
       graphStore.initState(root.graphs, root.nodes)
@@ -199,6 +200,7 @@ export function useStorage() {
         const attributesMapPerFrame = bakeKeyframes(
           getKeyframeMapByTargetId(keyframes),
           store.boneMap.value,
+          store.constraintMap.value,
           elementStore.elementMap.value,
           svgTree,
           getLastFrame(keyframes)

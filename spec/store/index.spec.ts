@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { createStore } from '/@/store/index'
 import { useHistoryStore } from '/@/composables/stores/history'
 import { getBone } from '/@/models'
+import { getConstraint } from '/@/utils/constraints'
 
 describe('src/store/index.ts', () => {
   describe('bonesByArmatureId', () => {
@@ -234,6 +235,43 @@ describe('src/store/index.ts', () => {
       target.updateBoneName('name_a')
       expect(target.boneMap.value['bone_a'].name).toBe('name_a')
       expect(target.boneMap.value['bone_b'].name).toBe('name_a.001')
+    })
+  })
+
+  describe('updateBoneConstraints', () => {
+    it('should replace all constraints of the bone', () => {
+      const target = createStore(useHistoryStore())
+      target.addArmature('arm_a')
+      expect(target.lastSelectedBone.value?.constraints).toEqual([])
+      expect(target.constraintMap.value).toEqual({})
+      target.updateBoneConstraints([
+        getConstraint({ id: 'ik_0', type: 'IK' }),
+        getConstraint({ id: 'ik_1', type: 'IK' }),
+      ])
+      expect(target.lastSelectedBone.value?.constraints).toEqual([
+        'ik_0',
+        'ik_1',
+      ])
+      expect(target.constraintMap.value).toEqual({
+        ik_0: getConstraint({ id: 'ik_0', type: 'IK' }),
+        ik_1: getConstraint({ id: 'ik_1', type: 'IK' }),
+      })
+
+      target.updateBoneConstraints([
+        getConstraint({ id: 'ik_0', type: 'IK', name: 'updated' }),
+        getConstraint({ id: 'copy_0', type: 'COPY_SCALE' }),
+        getConstraint({ id: 'copy_1', type: 'COPY_LOCATION' }),
+      ])
+      expect(target.lastSelectedBone.value?.constraints).toEqual([
+        'ik_0',
+        'copy_0',
+        'copy_1',
+      ])
+      expect(target.constraintMap.value).toEqual({
+        ik_0: getConstraint({ id: 'ik_0', type: 'IK', name: 'updated' }),
+        copy_0: getConstraint({ id: 'copy_0', type: 'COPY_SCALE' }),
+        copy_1: getConstraint({ id: 'copy_1', type: 'COPY_LOCATION' }),
+      })
     })
   })
 

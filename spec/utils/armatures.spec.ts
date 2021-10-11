@@ -600,28 +600,31 @@ describe('utils/armatures', () => {
   describe('getTransformedBoneMap', () => {
     it('get transformed bone map', () => {
       expect(
-        target.getTransformedBoneMap({
-          a: getBone({
-            id: 'a',
-            parentId: '',
-            transform: getTransform({ rotate: 10 }),
-          }),
-          aa: getBone({
-            id: 'aa',
-            parentId: 'a',
-            transform: getTransform({ rotate: 20 }),
-          }),
-          aaa: getBone({
-            id: 'aaa',
-            parentId: 'aa',
-            transform: getTransform({ rotate: 30 }),
-          }),
-          b: getBone({
-            id: 'b',
-            parentId: '',
-            transform: getTransform({ rotate: 30 }),
-          }),
-        })
+        target.getTransformedBoneMap(
+          {
+            a: getBone({
+              id: 'a',
+              parentId: '',
+              transform: getTransform({ rotate: 10 }),
+            }),
+            aa: getBone({
+              id: 'aa',
+              parentId: 'a',
+              transform: getTransform({ rotate: 20 }),
+            }),
+            aaa: getBone({
+              id: 'aaa',
+              parentId: 'aa',
+              transform: getTransform({ rotate: 30 }),
+            }),
+            b: getBone({
+              id: 'b',
+              parentId: '',
+              transform: getTransform({ rotate: 30 }),
+            }),
+          },
+          {}
+        )
       ).toEqual({
         a: getBone({
           id: 'a',
@@ -813,40 +816,49 @@ describe('utils/armatures', () => {
       id: 'aa',
       parentId: 'c',
       connected: true,
-      constraints: [
-        getConstraint({
-          id: 'ik',
-          type: 'IK',
-          option: getOptionByType('IK', { targetId: 'b' }),
-        }),
-      ],
+      constraints: ['ik'],
     })
+    const ik = getConstraint({
+      id: 'ik',
+      type: 'IK',
+      option: getOptionByType('IK', { targetId: 'b' }),
+    })
+
     it('should replace the props for a parent', () => {
-      const ret = target.immigrateBoneRelations({ a: 'aa', b: 'bb' }, [
-        aa,
-        getBone({ id: 'bb', parentId: 'a' }),
-      ])
-      expect(ret[0].id).toBe('aa')
-      expect(ret[0].parentId).toBe('c')
-      expect(ret[0].connected).toBe(true)
-      expect(ret[1].parentId).toBe('aa')
-      expect(ret[1].connected).toBe(false)
+      const ret = target.immigrateBoneRelations(
+        { a: 'aa', b: 'bb' },
+        [aa, getBone({ id: 'bb', parentId: 'a' })],
+        { ik }
+      )
+      expect(ret.bones[0].id).toBe('aa')
+      expect(ret.bones[0].parentId).toBe('c')
+      expect(ret.bones[0].connected).toBe(true)
+      expect(ret.bones[1].parentId).toBe('aa')
+      expect(ret.bones[1].connected).toBe(false)
     })
     it('should replace ids of constraints', () => {
-      const ret = target.immigrateBoneRelations({ a: 'aa', b: 'bb' }, [
-        aa,
-        getBone({ id: 'bb', parentId: 'a' }),
-      ])
-      expect(ret[0].constraints[0].id).toBe('ik')
-      expect((ret[0].constraints[0].option as any).targetId).toBe('bb')
+      const ret = target.immigrateBoneRelations(
+        { a: 'aa', b: 'bb' },
+        [aa, getBone({ id: 'bb', parentId: 'a' })],
+        { ik }
+      )
+      expect(ret.bones[0].constraints[0]).toBe('ik')
+      expect(
+        (ret.constraints.find((c) => c.id === 'ik')?.option as any).targetId
+      ).toBe('bb')
     })
     describe('options', () => {
       it('should reset constraint ids if resetConstraintId is true', () => {
-        const ret = target.immigrateBoneRelations({ a: 'aa' }, [aa], {
-          resetConstraintId: true,
-        })
-        expect(ret[0].id).toBe('aa')
-        expect(ret[0].constraints[0].id).not.toBe('ik')
+        const ret = target.immigrateBoneRelations(
+          { a: 'aa' },
+          [aa],
+          { ik },
+          {
+            resetConstraintId: true,
+          }
+        )
+        expect(ret.bones[0].id).toBe('aa')
+        expect(ret.bones[0].constraints[0]).not.toBe('ik')
       })
     })
   })
@@ -858,23 +870,25 @@ describe('utils/armatures', () => {
           b: getBone({ id: 'b', name: 'b' }),
           a: getBone({ id: 'a', name: 'aa' }),
         },
+        {},
         ['b', 'aa', 'aa.001']
       )
-      expect(ret.length).toBe(2)
-      expect(ret[0].id).not.toBe('a')
-      expect(ret[0].name).toBe('aa.002')
-      expect(ret[1].id).not.toBe('b')
-      expect(ret[1].name).toBe('b.001')
+      expect(ret.bones.length).toBe(2)
+      expect(ret.bones[0].id).not.toBe('a')
+      expect(ret.bones[0].name).toBe('aa.002')
+      expect(ret.bones[1].id).not.toBe('b')
+      expect(ret.bones[1].name).toBe('b.001')
     })
     it('should set connected false if the parent is not duplicated together', () => {
       const ret = target.duplicateBones(
         {
           a: getBone({ id: 'a', name: 'aa', parentId: 'b', connected: true }),
         },
+        {},
         ['aa']
       )
-      expect(ret).toHaveLength(1)
-      expect(ret[0]).toEqual(
+      expect(ret.bones).toHaveLength(1)
+      expect(ret.bones[0]).toEqual(
         getBone({
           id: expect.anything(),
           name: 'aa.001',
@@ -903,10 +917,11 @@ describe('utils/armatures', () => {
             connected: true,
           }),
         },
+        {},
         ['b']
       )
-      expect(res[0].id).not.toBe('b')
-      expect(res[0]).toEqual(
+      expect(res.bones[0].id).not.toBe('b')
+      expect(res.bones[0]).toEqual(
         getBone({
           id: expect.anything(),
           name: 'b.L',
@@ -929,9 +944,10 @@ describe('utils/armatures', () => {
             name: 'b.Rbb',
           }),
         },
+        {},
         ['a', 'b']
       )
-      expect(res.length).toBe(0)
+      expect(res.bones.length).toBe(0)
     })
     it('should override symmetrized bones and inherit current id', () => {
       const res = target.symmetrizeBones(
@@ -956,10 +972,11 @@ describe('utils/armatures', () => {
             parentId: 'a',
           }),
         },
+        {},
         ['b_R']
       )
-      expect(res).toHaveLength(1)
-      expect(res[0]).toEqual(
+      expect(res.bones).toHaveLength(1)
+      expect(res.bones[0]).toEqual(
         getBone({
           id: 'b_L',
           name: 'b.L',
@@ -996,10 +1013,11 @@ describe('utils/armatures', () => {
             parentId: 'a',
           }),
         },
+        {},
         ['b2_R']
       )
-      expect(res).toHaveLength(1)
-      expect(res[0]).toEqual(
+      expect(res.bones).toHaveLength(1)
+      expect(res.bones[0]).toEqual(
         getBone({
           id: expect.anything(),
           name: 'b2.L',
@@ -1167,7 +1185,7 @@ describe('utils/armatures', () => {
               name: 'name_a',
               head: { x: 1, y: 2 },
               tail: { x: 11, y: 22 },
-              constraints: [getConstraint({ id: 'ik', type: 'IK' })],
+              constraints: ['ik'],
               inheritRotation: false,
               inheritScale: false,
             }),
@@ -1182,7 +1200,7 @@ describe('utils/armatures', () => {
           name: 'name_a',
           head: { x: 1, y: 2 },
           tail: { x: 6, y: 12 },
-          constraints: [getConstraint({ id: 'ik', type: 'IK' })],
+          constraints: ['ik'],
           inheritRotation: false,
           inheritScale: false,
         }),
@@ -1238,26 +1256,30 @@ describe('utils/armatures', () => {
         c: getBone({
           id: 'c',
           parentId: 'b',
-          constraints: [
-            getConstraint({
-              type: 'IK',
-              option: getOptionByType('IK', { targetId: 'b' }),
-            }),
-          ],
+          constraints: ['ik'],
         }),
       }
-      const ret = target.getUpdatedBonesByDissolvingBones(boneMap, ['b'])
-      expect(ret).toEqual({
-        c: getBone({
-          id: 'c',
-          parentId: 'a',
-          constraints: [
-            getConstraint({
-              type: 'IK',
-              option: getOptionByType('IK', { targetId: 'a' }),
-            }),
-          ],
+      const constraintMap = {
+        ik: getConstraint({
+          id: 'ik',
+          type: 'IK',
+          option: getOptionByType('IK', { targetId: 'b' }),
         }),
+      }
+      const ret = target.getUpdatedBonesByDissolvingBones(
+        boneMap,
+        constraintMap,
+        ['b']
+      )
+      expect(ret).toEqual({
+        bones: {
+          c: getBone({
+            id: 'c',
+            parentId: 'a',
+            constraints: ['ik'],
+          }),
+        },
+        constraints: {},
       })
     })
   })
@@ -1277,26 +1299,36 @@ describe('utils/armatures', () => {
         c: getBone({
           id: 'c',
           parentId: 'b',
-          constraints: [
-            getConstraint({
-              type: 'IK',
-              option: getOptionByType('IK', { targetId: 'b' }),
-            }),
-          ],
+          constraints: ['ik'],
         }),
       }
-      const ret = target.getUpdatedBonesByDissolvingBone(boneMap, 'b')
-      expect(ret).toEqual({
-        c: getBone({
-          id: 'c',
-          parentId: 'a',
-          constraints: [
-            getConstraint({
-              type: 'IK',
-              option: getOptionByType('IK', { targetId: 'a' }),
-            }),
-          ],
+      const constraintMap = {
+        ik: getConstraint({
+          id: 'ik',
+          type: 'IK',
+          option: getOptionByType('IK', { targetId: 'b' }),
         }),
+      }
+      const ret = target.getUpdatedBonesByDissolvingBone(
+        boneMap,
+        constraintMap,
+        'b'
+      )
+      expect(ret).toEqual({
+        bones: {
+          c: getBone({
+            id: 'c',
+            parentId: 'a',
+            constraints: ['ik'],
+          }),
+        },
+        constraints: {
+          ik: getConstraint({
+            id: 'ik',
+            type: 'IK',
+            option: getOptionByType('IK', { targetId: 'a' }),
+          }),
+        },
       })
     })
     it('should clear parent connection if the parent is dissolved and not have self parent', () => {
@@ -1310,8 +1342,8 @@ describe('utils/armatures', () => {
           connected: true,
         }),
       }
-      const ret = target.getUpdatedBonesByDissolvingBone(boneMap, 'b')
-      expect(ret).toEqual({
+      const ret = target.getUpdatedBonesByDissolvingBone(boneMap, {}, 'b')
+      expect(ret.bones).toEqual({
         c: getBone({
           id: 'c',
           parentId: '',
@@ -1343,8 +1375,8 @@ describe('utils/armatures', () => {
           head: { x: 100, y: 200 },
         }),
       }
-      const ret = target.getUpdatedBonesByDissolvingBone(boneMap, 'b')
-      expect(ret).toEqual({
+      const ret = target.getUpdatedBonesByDissolvingBone(boneMap, {}, 'b')
+      expect(ret.bones).toEqual({
         c: getBone({
           id: 'c',
           parentId: 'a',

@@ -48,6 +48,7 @@ import {
 } from '/@/utils/commons'
 import { useEntities } from '/@/composables/entities'
 import { SelectOptions } from '/@/composables/modes/types'
+import { BoneConstraint } from '/@/utils/constraints'
 
 export function createStore(historyStore: HistoryStore) {
   const armatureEntities = useEntities<Armature>('Armature')
@@ -93,9 +94,15 @@ export function createStore(historyStore: HistoryStore) {
       armatureUtils.getSelectedBonesOrigin(boneMap.value, selectedBones.value)
   )
 
-  const constraintMap = computed(() =>
-    toMap((toList(boneMap.value) ?? []).flatMap((b) => b.constraints))
-  )
+  const constraintEntities = useEntities<BoneConstraint>('Constraint')
+  const constraintMap = computed(() => {
+    const byId = constraintEntities.entities.value.byId
+    return toMap(
+      (toList(boneMap.value) ?? []).flatMap((b) =>
+        b.constraints.map((id) => byId[id])
+      )
+    )
+  })
 
   const bonesByArmatureId = computed(() => {
     const boneById = boneEntities.entities.value.byId
@@ -104,17 +111,23 @@ export function createStore(historyStore: HistoryStore) {
     )
   })
 
-  function initState(armatures: Armature[], bones: Bone[]) {
+  function initState(
+    armatures: Armature[],
+    bones: Bone[],
+    constraints: BoneConstraint[]
+  ) {
     armatureEntities.init(fromEntityList(armatures))
     armatureSelectable.getClearAllHistory().redo()
     boneEntities.init(fromEntityList(bones))
     boneSelectable.getClearAllHistory().redo()
+    constraintEntities.init(fromEntityList(constraints))
   }
 
   function exportState() {
     return {
       armatures: armatures.value,
       bones: toEntityList(boneEntities.entities.value),
+      constraints: toEntityList(constraintEntities.entities.value),
     }
   }
 
@@ -328,7 +341,11 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
-  function addBones(bones: Bone[], selectedState?: BoneSelectedState) {
+  function addBones(
+    bones: Bone[],
+    selectedState?: BoneSelectedState,
+    constraints?: BoneConstraint[]
+  ) {
     const armature = lastSelectedArmature.value
     if (!armature) return
 
@@ -342,6 +359,9 @@ export function createStore(historyStore: HistoryStore) {
         boneSelectable.getMultiSelectHistory(
           selectedState ? mapReduce(toMap(bones), () => selectedState) : {}
         ),
+        constraints
+          ? constraintEntities.getAddItemsHistory(constraints)
+          : undefined,
       ]),
       true
     )
@@ -352,11 +372,12 @@ export function createStore(historyStore: HistoryStore) {
     if (!armature) return
 
     const targetMap = allSelectedBones.value
+    const targetIds = Object.keys(targetMap)
 
     historyStore.push(
       convolute(
         boneEntities.getDeleteAndUpdateItemHistory(
-          Object.keys(targetMap),
+          targetIds,
           armatureUtils.updateConnections(
             toList(boneMap.value).filter((val) => !targetMap[val.id])
           )
@@ -368,6 +389,9 @@ export function createStore(historyStore: HistoryStore) {
             },
           }),
           boneSelectable.getClearAllHistory(),
+          constraintEntities.getDeleteItemsHistory(
+            targetIds.flatMap((id) => targetMap[id].constraints)
+          ),
         ]
       ),
       true
@@ -379,16 +403,17 @@ export function createStore(historyStore: HistoryStore) {
     if (!armature) return
 
     const targetMap = allSelectedBones.value
+    const targetIds = Object.keys(targetMap)
+
+    const dissolved = armatureUtils.getUpdatedBonesByDissolvingBones(
+      boneMap.value,
+      constraintMap.value,
+      Object.keys(targetMap)
+    )
 
     historyStore.push(
       convolute(
-        boneEntities.getDeleteAndUpdateItemHistory(
-          boneSelectable.allAttrsSelectedIds.value,
-          armatureUtils.getUpdatedBonesByDissolvingBones(
-            boneMap.value,
-            Object.keys(targetMap)
-          )
-        ),
+        boneEntities.getDeleteAndUpdateItemHistory(targetIds, dissolved.bones),
         [
           armatureEntities.getUpdateItemHistory({
             [armature.id]: {
@@ -396,6 +421,10 @@ export function createStore(historyStore: HistoryStore) {
             },
           }),
           boneSelectable.getMultiSelectHistory({}),
+          constraintEntities.getDeleteAndUpdateItemHistory(
+            targetIds.flatMap((id) => targetMap[id].constraints),
+            dissolved.constraints
+          ),
         ]
       ),
       true
@@ -460,9 +489,52 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
+  function updateBoneConstraints(
+    constraints: BoneConstraint[],
+    seriesKey?: string
+  ) {
+    if (!lastSelectedArmature.value || !lastSelectedBone.value) return
+
+    const all = constraintMap.value
+    const currentMap = reduceToMap(
+      lastSelectedBone.value.constraints,
+      (id) => all[id]
+    )
+    const nextMap = toMap(constraints)
+
+    const created = constraints.filter((c) => !currentMap[c.id])
+    const deleted = lastSelectedBone.value.constraints.filter(
+      (cid) => !nextMap[cid]
+    )
+    const updated = constraints.filter((c) => currentMap[c.id])
+
+    historyStore.push(
+      convolute(
+        constraintEntities.getUpdateItemHistory(toMap(updated), seriesKey),
+        [
+          created.length + deleted.length > 0
+            ? boneEntities.getUpdateItemHistory({
+                [lastSelectedBone.value.id]: {
+                  constraints: constraints.map((c) => c.id),
+                },
+              })
+            : undefined,
+          created.length > 0
+            ? constraintEntities.getAddItemsHistory(created)
+            : undefined,
+          deleted.length > 0
+            ? constraintEntities.getDeleteItemsHistory(deleted)
+            : undefined,
+        ]
+      ),
+      true
+    )
+  }
+
   function upsertBones(
     upserted: Bone[],
-    selectedStateMap: IdMap<BoneSelectedState> = {}
+    selectedStateMap: IdMap<BoneSelectedState> = {},
+    constraints?: BoneConstraint[]
   ) {
     const armature = lastSelectedArmature.value
     if (!armature) return
@@ -486,6 +558,8 @@ export function createStore(historyStore: HistoryStore) {
       fixedDiff[b.id] ? { ...b, ...fixedDiff[b.id] } : b
     )
 
+    const _constraintMap = constraintMap.value
+
     historyStore.push(
       convolute(
         boneEntities.getAddItemsHistory(created),
@@ -497,6 +571,16 @@ export function createStore(historyStore: HistoryStore) {
           }),
           boneEntities.getUpdateItemHistory(toMap(updated)),
           boneSelectable.getMultiSelectHistory(selectedStateMap),
+          constraints
+            ? constraintEntities.getAddItemsHistory(
+                constraints.filter((c) => !_constraintMap[c.id])
+              )
+            : undefined,
+          constraints
+            ? constraintEntities.getUpdateItemHistory(
+                toMap(constraints.filter((c) => _constraintMap[c.id]))
+              )
+            : undefined,
         ],
         'Upsert Bone'
       ),
@@ -540,6 +624,7 @@ export function createStore(historyStore: HistoryStore) {
     updateBones,
     updateBone,
     updateBoneName,
+    updateBoneConstraints,
     upsertBones,
   }
 }

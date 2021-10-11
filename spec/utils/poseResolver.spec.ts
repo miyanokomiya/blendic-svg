@@ -188,6 +188,7 @@ describe('utils/poseResolver.ts', () => {
       bone_a: getBone({ id: 'bone_a', parentId: 'bone_b' }),
       bone_b: getBone({ id: 'bone_b' }),
     }
+    const constraintMap = {}
     const elementMap = {
       root: getBElement({ id: 'root', viewBoxBoneId: 'bone_a' }),
       elm_a: getBElement({ id: 'elm_a', boneId: 'bone_a' }),
@@ -204,7 +205,14 @@ describe('utils/poseResolver.ts', () => {
 
     describe('bakeKeyframes', () => {
       it('bake poses from frame 0 to endFrame', () => {
-        const res = bakeKeyframes(keyMap, boneMap, elementMap, root, 5)
+        const res = bakeKeyframes(
+          keyMap,
+          boneMap,
+          constraintMap,
+          elementMap,
+          root,
+          5
+        )
         expect(Object.keys(res).sort()).toEqual(['0', '1', '2', '3', '4', '5'])
         expect(res[2]).toEqual({
           root: { viewBox: '1 2 3 4' },
@@ -295,18 +303,28 @@ describe('utils/poseResolver.ts', () => {
         const boneMap = {
           a: getBone({
             id: 'a',
-            constraints: [getConstraint({ id: 'con', type: 'IK' })],
+            constraints: ['con'],
           }),
         }
-        const ret = getInterpolatedBoneMap(keyframeMapByTargetId, boneMap, 2)
-        expect(ret.a.transform.rotate).toBe(20)
-        expect(ret.a.constraints[0].option.influence).toBe(0.2)
+        const constraintMap = {
+          con: getConstraint({ id: 'con', type: 'IK' }),
+        }
+        const ret = getInterpolatedBoneMap(
+          keyframeMapByTargetId,
+          boneMap,
+          constraintMap,
+          2
+        )
+        expect(ret.bones['a'].transform.rotate).toBe(20)
+        expect(ret.constraints['con'].option.influence).toBe(0.2)
       })
     })
 
     describe('bakeKeyframe', () => {
       it('bake interpolated poses', () => {
-        expect(bakeKeyframe(keyMap, boneMap, elementMap, root, 2)).toEqual({
+        expect(
+          bakeKeyframe(keyMap, boneMap, constraintMap, elementMap, root, 2)
+        ).toEqual({
           root: { viewBox: '1 2 3 4' },
           elm_a: {
             transform: affineToTransform(
@@ -319,7 +337,7 @@ describe('utils/poseResolver.ts', () => {
       it('json snapshot', () => {
         expect(
           JSON.stringify(
-            bakeKeyframe(keyMap, boneMap, elementMap, root, 2),
+            bakeKeyframe(keyMap, boneMap, constraintMap, elementMap, root, 2),
             null,
             ' '
           )

@@ -246,7 +246,9 @@ export function cleanActions(
   const cleanedKeyframes = validActions.flatMap((action) =>
     cleanKeyframes(keyframeMapByActionId[action.id], [
       ...bonesByArmatureId[action.armatureId],
-      ...bonesByArmatureId[action.armatureId].flatMap((b) => b.constraints),
+      ...bonesByArmatureId[action.armatureId].flatMap((b) =>
+        b.constraints.map((id) => ({ id }))
+      ),
     ])
   )
 

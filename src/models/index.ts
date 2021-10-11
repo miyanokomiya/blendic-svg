@@ -20,7 +20,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { IRectangle, IVec2 } from 'okageo'
 import { v4 } from 'uuid'
 import { toKeyMap } from '/@/utils/commons'
-import { BoneConstraint } from '/@/utils/constraints'
 
 export type IdMap<T> = {
   [id: string]: T
@@ -51,7 +50,7 @@ export interface Bone {
   tail: IVec2
   inheritRotation: boolean
   inheritScale: boolean
-  constraints: BoneConstraint[]
+  constraints: string[]
 }
 
 export interface Armature {

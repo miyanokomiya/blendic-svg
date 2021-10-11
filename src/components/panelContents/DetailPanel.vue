@@ -123,7 +123,7 @@ export default defineComponent({
       if (!lastSelectedBone.value) return []
 
       return lastSelectedBone.value.constraints.map(
-        (c) => animationStore.currentInterpolatedConstraintMap.value[c.id]
+        (cid) => animationStore.currentInterpolatedConstraintMap.value[cid]
       )
     })
 
@@ -147,7 +147,7 @@ export default defineComponent({
     ) {
       if (!lastSelectedBone.value) return
 
-      store.updateBone({ constraints }, seriesKey)
+      store.updateBoneConstraints(constraints, seriesKey)
     }
 
     function updateConstraint(constraint: BoneConstraint, seriesKey?: string) {
@@ -177,7 +177,7 @@ export default defineComponent({
       } else {
         const next = constraintList.value.concat()
         next[index] = constraint
-        store.updateBone({ constraints: next }, seriesKey)
+        store.updateBoneConstraints(next, seriesKey)
       }
     }
 

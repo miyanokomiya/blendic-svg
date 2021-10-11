@@ -319,7 +319,7 @@ describe('utils/animations.ts', () => {
           [
             getBone({
               id: 'bone',
-              constraints: [getConstraint({ type: 'IK', id: 'con_2' })],
+              constraints: ['con_2'],
             }),
           ]
         )

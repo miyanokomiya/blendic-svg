@@ -277,10 +277,8 @@ export function createStore(
       mapReduce(indexStore.boneMap.value, (b) => ({
         ...b,
         transform: getCurrentSelfTransforms(b.id),
-        constraints: b.constraints.map(
-          (c) => currentInterpolatedConstraintMap.value[c.id]
-        ),
-      }))
+      })),
+      currentInterpolatedConstraintMap.value
     )
   })
 
@@ -312,8 +310,9 @@ export function createStore(
   const selectedConstraintMapByBoneId = computed<{
     [id: string]: BoneConstraintWithBoneId[]
   }>(() => {
+    const map = indexStore.constraintMap.value
     return mapReduce(selectedBoneMap.value, (b) =>
-      b.constraints.map((c) => ({ ...c, boneId: b.id }))
+      b.constraints.map((cid) => ({ ...map[cid], boneId: b.id }))
     )
   })
 

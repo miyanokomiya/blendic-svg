@@ -139,10 +139,10 @@ const posedBoneMap = computed(() => {
               animationStore.getCurrentSelfTransforms(b.id),
               getEditTransforms(b.id)
             ),
-            constraints: b.constraints.map((b) => constraintMap[b.id]),
           }
         })
-      )
+      ),
+      constraintMap
     )
   } else {
     return animationStore.currentPosedBones.value

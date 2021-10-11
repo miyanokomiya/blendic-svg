@@ -110,6 +110,7 @@ function applyConstraint(
 export function applyBoneConstraints(
   localMap: IdMap<Bone>,
   posedMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
   boneId: string
 ): IdMap<Bone> {
   const b = posedMap[boneId]
@@ -118,7 +119,7 @@ export function applyBoneConstraints(
   return b.constraints.reduce((p, c) => {
     return {
       ...p,
-      ...applyConstraint(localMap, p, c, b.id),
+      ...applyConstraint(localMap, p, constraintMap[c], b.id),
     }
   }, posedMap)
 }
@@ -170,25 +171,31 @@ export function getOptionByType(
   return getConstraintModule(type).getOption(src)
 }
 
-export function sortBoneByHighDependency(bones: Bone[]): Bone[] {
+export function sortBoneByHighDependency(
+  bones: Bone[],
+  constraintMap: IdMap<BoneConstraint>
+): Bone[] {
   const boneMap = toMap(bones)
-  const dmap = getDependentCountMap(boneMap)
+  const dmap = getDependentCountMap(boneMap, constraintMap)
   const sortedIds = sortByDependency(dmap)
   return sortedIds.map((id) => boneMap[id])
 }
 
 export function getDependentCountMap(
-  boneMap: IdMap<Bone>
+  boneMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>
 ): IdMap<IdMap<number>> {
   return mapReduce(boneMap, (b) => {
     return sumReduce(
-      b.constraints.map(getDependentCountMapOfConstrain).concat(
-        b.parentId
-          ? {
-              [b.parentId]: 1,
-            }
-          : {}
-      )
+      b.constraints
+        .map((id) => getDependentCountMapOfConstrain(constraintMap[id]))
+        .concat(
+          b.parentId
+            ? {
+                [b.parentId]: 1,
+              }
+            : {}
+        )
     )
   })
 }

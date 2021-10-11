@@ -49,10 +49,11 @@ describe('src/models/storage.ts', () => {
           { id: 'bone' },
           {
             id: 'bone_2',
-            constraints: [
-              { type: 'IK', name: 'IK.001', option: { targetId: 'a' } },
-            ],
+            constraints: ['ik'],
           },
+        ],
+        constraints: [
+          { id: 'ik', type: 'IK', name: 'IK.001', option: { targetId: 'a' } },
         ],
         actions: [
           {
@@ -83,14 +84,15 @@ describe('src/models/storage.ts', () => {
           getBone({ id: 'bone' }),
           getBone({
             id: 'bone_2',
-            constraints: [
-              getConstraint({
-                id: expect.anything(),
-                type: 'IK',
-                name: 'IK.001',
-                option: { targetId: 'a' },
-              }),
-            ],
+            constraints: ['ik'],
+          }),
+        ],
+        constraints: [
+          getConstraint({
+            id: 'ik',
+            type: 'IK',
+            name: 'IK.001',
+            option: { targetId: 'a' },
           }),
         ],
         actions: [getAction({ id: 'act', keyframes: ['key'] })],
@@ -112,6 +114,7 @@ describe('src/models/storage.ts', () => {
       const src = {
         armatures: [],
         bones: [],
+        constraints: [],
         actions: [],
         keyframes: [],
         actors: [

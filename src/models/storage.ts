@@ -35,7 +35,7 @@ import {
 import { GraphNodeBase } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
 import { extractMap, mapReduce } from '/@/utils/commons'
-import { getConstraint } from '/@/utils/constraints'
+import { BoneConstraint, getConstraint } from '/@/utils/constraints'
 import { initializeBElements } from '/@/utils/elements'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { getKeyframe } from '/@/utils/keyframes'
@@ -44,6 +44,7 @@ import { migrateConstraint } from '/@/utils/migrations'
 export interface StorageRoot {
   armatures: Armature[]
   bones: Bone[]
+  constraints: BoneConstraint[]
 
   actions: Action[]
   keyframes: KeyframeBase[]
@@ -72,6 +73,7 @@ export function initialize(src: StorageRoot): StorageRoot {
   return {
     armatures: src.armatures.map(initializeArmature),
     bones: src.bones.map(initializeBone),
+    constraints: src.constraints.map(initializeConstraint),
 
     actions: src.actions.map(initializeAction),
     keyframes: src.actions.flatMap((a) =>
@@ -96,14 +98,11 @@ function initializeArmature(armature: Partial<Armature>): Armature {
 }
 
 function initializeBone(bone: Bone): Bone {
-  return getBone({
-    ...bone,
-    constraints: bone.constraints
-      ? bone.constraints
-          .map((c) => migrateConstraint(c))
-          .map((c) => getConstraint(c))
-      : [],
-  })
+  return getBone({ ...bone })
+}
+
+function initializeConstraint(c: BoneConstraint): BoneConstraint {
+  return getConstraint(migrateConstraint(c))
 }
 
 function initializeAction(action: Partial<Action>): Action {

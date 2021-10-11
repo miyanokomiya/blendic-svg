@@ -234,7 +234,8 @@ export function useBonePoseMode(
             getEditTransforms(b.id)
           ),
         }
-      })
+      }),
+      store.constraintMap.value
     )
     const stateMap = selectBoneInRect(rect, boneMap)
     store.selectBones(stateMap, options?.shift || options?.ctrl)

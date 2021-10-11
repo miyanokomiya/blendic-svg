@@ -57,6 +57,7 @@ import {
 import { getNotDuplicatedName, TreeNode } from './relations'
 import {
   applyBoneConstraints,
+  BoneConstraint,
   getDependentCountMap,
   immigrateConstraints,
   sortBoneByHighDependency,
@@ -365,10 +366,16 @@ interface BoneNode extends Bone, TreeNode {
   children: BoneNode[]
 }
 
-export function getTransformedBoneMap(boneMap: IdMap<Bone>): IdMap<Bone> {
-  return sortBoneByHighDependency(toList(boneMap)).reduce((p, c) => {
-    return resolveBonePose(boneMap, p, c.id)
-  }, {})
+export function getTransformedBoneMap(
+  boneMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>
+): IdMap<Bone> {
+  return sortBoneByHighDependency(toList(boneMap), constraintMap).reduce(
+    (p, c) => {
+      return resolveBonePose(boneMap, p, constraintMap, c.id)
+    },
+    {}
+  )
 }
 
 /**
@@ -377,6 +384,7 @@ export function getTransformedBoneMap(boneMap: IdMap<Bone>): IdMap<Bone> {
 function resolveBonePose(
   originalMap: IdMap<Bone>,
   resolvedMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
   boneId: string
 ): IdMap<Bone> {
   if (resolvedMap[boneId]) return resolvedMap
@@ -389,7 +397,7 @@ function resolveBonePose(
       // a parent of the target must be resolved earlier
       ret = {
         ...ret,
-        ...resolveBonePose(originalMap, ret, b.parentId),
+        ...resolveBonePose(originalMap, ret, constraintMap, b.parentId),
       }
     }
 
@@ -403,7 +411,7 @@ function resolveBonePose(
 
   ret = {
     ...ret,
-    ...applyBoneConstraints(originalMap, ret, boneId),
+    ...applyBoneConstraints(originalMap, ret, constraintMap, boneId),
   }
   return ret
 }
@@ -500,27 +508,41 @@ export function interpolateTransform(
 export function immigrateBoneRelations(
   immigratedIdMap: IdMap<string>,
   bones: Bone[],
+  constraintMap: IdMap<BoneConstraint>,
   options: {
     resetConstraintId?: boolean
   } = {}
-): Bone[] {
-  return bones.map((src) => {
+): { bones: Bone[]; constraints: BoneConstraint[] } {
+  const createdConstraintsByBoneId = mapReduce(toMap(bones), (src) => {
+    return immigrateConstraints(
+      immigratedIdMap,
+      src.constraints.map((id) => constraintMap[id]),
+      (src) => (options.resetConstraintId ? v4() : src.id)
+    )
+  })
+
+  const updated = bones.map((src) => {
     return {
       ...src,
       parentId: immigratedIdMap[src.parentId] ?? src.parentId,
-      constraints: immigrateConstraints(
-        immigratedIdMap,
-        src.constraints,
-        (src) => (options.resetConstraintId ? v4() : src.id)
-      ),
+      constraints: createdConstraintsByBoneId[src.id].map((c) => c.id),
     }
   })
+
+  return {
+    bones: updated,
+    constraints: toList(createdConstraintsByBoneId).flat(),
+  }
 }
 
 /**
  * @return duplicated bones
  */
-export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
+export function duplicateBones(
+  srcBones: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
+  names: string[]
+): { bones: Bone[]; createdConstraints: BoneConstraint[] } {
   const duplicatedIdMap = mapReduce(srcBones, () => v4())
   const nextIdMap = Object.values(duplicatedIdMap).reduce<{
     [id: string]: boolean
@@ -529,7 +551,7 @@ export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
     return p
   }, {})
 
-  return immigrateBoneRelations(
+  const immigrated = immigrateBoneRelations(
     duplicatedIdMap,
     toList(
       mapReduce(srcBones, (src) => {
@@ -542,12 +564,18 @@ export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
         return b
       })
     ).sort((a, b) => (a.name >= b.name ? 1 : -1)),
+    constraintMap,
     { resetConstraintId: true }
-  ).map((b) => {
-    // set connected false if the parent is not duplicated together
-    if (!b.parentId || nextIdMap[b.parentId]) return b
-    return { ...b, connected: false }
-  })
+  )
+
+  return {
+    bones: immigrated.bones.map((b) => {
+      // set connected false if the parent is not duplicated together
+      if (!b.parentId || nextIdMap[b.parentId]) return b
+      return { ...b, connected: false }
+    }),
+    createdConstraints: immigrated.constraints,
+  }
 }
 
 /**
@@ -555,8 +583,9 @@ export function duplicateBones(srcBones: IdMap<Bone>, names: string[]): Bone[] {
  */
 export function symmetrizeBones(
   boneMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
   selectedIds: string[]
-): Bone[] {
+): { bones: Bone[]; createdConstraints: BoneConstraint[] } {
   const currentNameIdMap = Object.keys(boneMap).reduce<{
     [name: string]: string
   }>((p, id) => {
@@ -596,16 +625,23 @@ export function symmetrizeBones(
     })
   })
 
-  const newBones = immigrateBoneRelations(
+  const immigrated = immigrateBoneRelations(
     getSymmetrizedIdMap({ ...boneMap, ...toMap(symmetrizedList) }, true),
     symmetrizedList,
+    constraintMap,
     { resetConstraintId: true }
   )
 
   const updatedConnections = updateConnections(
-    toList({ ...boneMap, ...toMap(newBones) })
+    toList({ ...boneMap, ...toMap(immigrated.bones) })
   )
-  return newBones.map((b) => ({ ...b, ...(updatedConnections[b.id] ?? {}) }))
+
+  return {
+    bones: immigrated.bones.map((b) =>
+      updatedConnections[b.id] ? { ...b, ...updatedConnections[b.id] } : b
+    ),
+    createdConstraints: [],
+  }
 }
 
 export function getSymmetrizedIdMap(
@@ -679,25 +715,42 @@ export function sortBoneByName(bones: Bone[]): Bone[] {
 /**
  * @return Upserted bones
  */
-function reduceUpdateBones(
+function reduceUpdateEntities(
   boneMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
   targetIds: string[],
-  updatePartialFn: (arg: IdMap<Bone>, targetId: string) => IdMap<Bone>
-): IdMap<Bone> {
+  updatePartialFn: (
+    arg: IdMap<Bone>,
+    constraintMap: IdMap<BoneConstraint>,
+    targetId: string
+  ) => { bones: IdMap<Bone>; constraints: IdMap<BoneConstraint> }
+): { bones: IdMap<Bone>; constraints: IdMap<BoneConstraint> } {
   const upsertedIdMap: { [id: string]: true } = {}
-  const allMap = targetIds.reduce<IdMap<Bone>>(
+  const upsertedConstraintIdMap: { [id: string]: true } = {}
+
+  const allMap = targetIds.reduce<{
+    bones: IdMap<Bone>
+    constraints: IdMap<BoneConstraint>
+  }>(
     (p, targetId) => {
-      const upsertedMap = updatePartialFn(p, targetId)
-      Object.keys(upsertedMap).forEach((id) => {
+      const upsertedMap = updatePartialFn(p.bones, p.constraints, targetId)
+      Object.keys(upsertedMap.bones).forEach((id) => {
         upsertedIdMap[id] = true
-        p[id] = upsertedMap[id]
+        p.bones[id] = upsertedMap.bones[id]
+      })
+      Object.keys(upsertedMap.constraints).forEach((id) => {
+        upsertedConstraintIdMap[id] = true
+        p.constraints[id] = upsertedMap.constraints[id]
       })
       return p
     },
-    { ...boneMap }
+    { bones: { ...boneMap }, constraints: { ...constraintMap } }
   )
 
-  return extractMap(allMap, upsertedIdMap)
+  return {
+    bones: extractMap(allMap.bones, upsertedIdMap),
+    constraints: extractMap(allMap.constraints, upsertedIdMap),
+  }
 }
 
 /**
@@ -708,9 +761,9 @@ export function subdivideBones(
   targetIds: string[],
   generateId: () => string = v4
 ): IdMap<Bone> {
-  return reduceUpdateBones(boneMap, targetIds, (p, targetId) => {
-    return subdivideBone(p, targetId, generateId)
-  })
+  return reduceUpdateEntities(boneMap, {}, targetIds, (p, _, targetId) => {
+    return { bones: subdivideBone(p, targetId, generateId), constraints: {} }
+  }).bones
 }
 
 /**
@@ -767,13 +820,19 @@ function splitBone(
 }
 
 /**
- * @return Updated bones
+ * @return Updated entities
  */
 export function getUpdatedBonesByDissolvingBones(
   boneMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
   targetIds: string[]
-): IdMap<Bone> {
-  return reduceUpdateBones(boneMap, targetIds, getUpdatedBonesByDissolvingBone)
+): { bones: IdMap<Bone>; constraints: IdMap<BoneConstraint> } {
+  return reduceUpdateEntities(
+    boneMap,
+    constraintMap,
+    targetIds,
+    getUpdatedBonesByDissolvingBone
+  )
 }
 
 /**
@@ -781,35 +840,40 @@ export function getUpdatedBonesByDissolvingBones(
  */
 export function getUpdatedBonesByDissolvingBone(
   boneMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
   targetId: string
-): IdMap<Bone> {
+): { bones: IdMap<Bone>; constraints: IdMap<BoneConstraint> } {
   const target = boneMap[targetId]
-  if (!target) return boneMap
+  if (!target) return { bones: {}, constraints: {} }
 
   const dependentBoneIdMap = mapFilter(
-    getDependentCountMap(boneMap),
+    getDependentCountMap(boneMap, constraintMap),
     (map) => targetId in map
   )
 
-  return toMap(
-    immigrateBoneRelations(
-      { [targetId]: target.parentId },
-      toList(boneMap)
-        .filter((b) => !!dependentBoneIdMap[b.id])
-        // replace bone's head to new parent's tail if the connected parent will be dissolved
-        .map((b) => {
-          if (b.parentId !== targetId || !b.connected) return b
+  const ret = immigrateBoneRelations(
+    { [targetId]: target.parentId },
+    toList(boneMap)
+      .filter((b) => !!dependentBoneIdMap[b.id])
+      // replace bone's head to new parent's tail if the connected parent will be dissolved
+      .map((b) => {
+        if (b.parentId !== targetId || !b.connected) return b
 
-          const parent = boneMap[targetId]
-          if (!parent.parentId) return { ...b, parentId: '', connected: false }
+        const parent = boneMap[targetId]
+        if (!parent.parentId) return { ...b, parentId: '', connected: false }
 
-          const newParent = boneMap[parent.parentId]
-          if (!newParent) return b
+        const newParent = boneMap[parent.parentId]
+        if (!newParent) return b
 
-          return { ...b, parentId: parent.parentId, head: newParent.tail }
-        })
-    )
+        return { ...b, parentId: parent.parentId, head: newParent.tail }
+      }),
+    constraintMap
   )
+
+  return {
+    bones: toMap(ret.bones),
+    constraints: toMap(ret.constraints),
+  }
 }
 
 export function sortBoneBySize(bones: Bone[]): Bone[] {

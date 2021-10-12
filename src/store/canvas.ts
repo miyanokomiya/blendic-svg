@@ -55,6 +55,7 @@ import {
   posedTransform,
 } from '/@/utils/armatures'
 import { getBoneXRadian, snapAxisGrid, snapPlainGrid } from '/@/utils/geometry'
+import { toList } from '/@/utils/commons'
 
 export type AxisGrid = 'x' | 'y'
 export interface AxisGridInfo {
@@ -131,17 +132,17 @@ const posedBoneMap = computed(() => {
 
     return getTransformedBoneMap(
       toMap(
-        store.lastSelectedArmature.value.bones.map((b) => {
+        toList(store.boneMap.value).map((b) => {
           return {
             ...b,
             transform: addPoseTransform(
               animationStore.getCurrentSelfTransforms(b.id),
               getEditTransforms(b.id)
             ),
-            constraints: b.constraints.map((b) => constraintMap[b.id]),
           }
         })
-      )
+      ),
+      constraintMap
     )
   } else {
     return animationStore.currentPosedBones.value
@@ -152,11 +153,11 @@ const visibledBoneMap = computed(() => {
   if (!store.lastSelectedArmature.value) return {}
   if (state.canvasMode === 'edit') {
     return toMap(
-      store.lastSelectedArmature.value.bones.map((b) => {
+      toList(store.boneMap.value).map((b) => {
         return editTransform(
           b,
           getEditTransforms(b.id),
-          store.state.selectedBones[b.id] || {}
+          store.selectedBones.value[b.id] || {}
         )
       })
     )
@@ -170,7 +171,9 @@ const visibledBoneMap = computed(() => {
 })
 
 function saveLastSelectedBoneSpace() {
-  const bone = posedBoneMap.value[store.state.lastSelectedBoneId]
+  if (!store.lastSelectedBoneId.value) return
+
+  const bone = posedBoneMap.value[store.lastSelectedBoneId.value]
   if (!bone || state.canvasMode !== 'pose') {
     lastSelectedBoneSpace.value = undefined
     return

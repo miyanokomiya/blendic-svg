@@ -32,13 +32,7 @@ describe('src/utils/constraints/index.ts', () => {
       const bones = [
         getBone({
           id: 'a',
-          constraints: [
-            getConstraint({
-              type: 'IK',
-              name: 'IK.001',
-              option: ik.getOption({ targetId: 'c' }),
-            }),
-          ],
+          constraints: ['a_0'],
         }),
         getBone({
           id: 'b',
@@ -46,7 +40,15 @@ describe('src/utils/constraints/index.ts', () => {
         }),
         getBone({ id: 'c' }),
       ]
-      const res = sortBoneByHighDependency(bones)
+      const constraintMap = {
+        a_0: getConstraint({
+          id: 'a_0',
+          type: 'IK',
+          name: 'IK.001',
+          option: ik.getOption({ targetId: 'c' }),
+        }),
+      }
+      const res = sortBoneByHighDependency(bones, constraintMap)
       expect(res.map((b) => b.id)).toEqual(['c', 'a', 'b'])
     })
   })
@@ -56,13 +58,7 @@ describe('src/utils/constraints/index.ts', () => {
       const boneMap = {
         a: getBone({
           id: 'a',
-          constraints: [
-            getConstraint({
-              type: 'IK',
-              name: 'IK.001',
-              option: ik.getOption({ targetId: 'c' }),
-            }),
-          ],
+          constraints: ['a_0'],
         }),
         b: getBone({
           id: 'b',
@@ -70,7 +66,15 @@ describe('src/utils/constraints/index.ts', () => {
         }),
         c: getBone({ id: 'c' }),
       }
-      const res = getDependentCountMap(boneMap)
+      const constraintMap = {
+        a_0: getConstraint({
+          id: 'a_0',
+          type: 'IK',
+          name: 'IK.001',
+          option: ik.getOption({ targetId: 'c' }),
+        }),
+      }
+      const res = getDependentCountMap(boneMap, constraintMap)
       expect(res).toEqual({
         a: { c: 1 },
         b: { a: 1 },

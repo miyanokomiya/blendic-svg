@@ -42,7 +42,6 @@ describe('posing', () => {
 
     // Move to pose mode
     await page.hover('.app-canvas-root')
-    await page.press('.app-canvas-root', 'a')
     await page.click('text=Pose')
 
     // Select

@@ -1,6 +1,6 @@
 {
   "name": "blendic-svg",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "license": "SEE LICENSE IN README.md",
   "scripts": {
     "dev": "vite",
@@ -17,6 +17,7 @@
   "dependencies": {
     "okageo": "^2.0.13",
     "okanvas": "^0.0.4",
+    "okaselect": "^0.0.10",
     "ress": "^4.0.0",
     "uuid": "^8.3.2",
     "vue": "^3.0.6"

@@ -39,47 +39,42 @@ Copyright (C) 2021, Tomoya Komiyama.
             <template #right>
               <div class="main">
                 <AppCanvas :original-view-box="viewBox" class="canvas">
-                  <template #default="{ scale }">
-                    <ElementLayer
-                      :bone-map="posedBoneMap"
-                      :canvas-mode="canvasMode"
-                      :class="{ 'view-only': canvasMode !== 'weight' }"
+                  <ElementLayer
+                    :bone-map="posedBoneMap"
+                    :canvas-mode="canvasMode"
+                    :class="{ 'view-only': canvasMode !== 'weight' }"
+                  />
+                  <g v-if="canvasMode === 'object'">
+                    <ArmatureElm
+                      v-for="armature in armatures"
+                      :key="armature.id"
+                      :armature="armature"
+                      :bones="bonesByArmatureId[armature.id]"
+                      :selected="lastSelectedArmatureId === armature.id"
+                      @select="selectArmature(armature.id)"
                     />
-                    <g v-if="canvasMode === 'object'">
-                      <ArmatureElm
-                        v-for="armature in armatures"
-                        :key="armature.id"
-                        :armature="armature"
-                        :selected="lastSelectedArmatureId === armature.id"
-                        :scale="scale"
-                        @select="
-                          (selected) => selectArmature(armature.id, selected)
-                        "
-                      />
-                    </g>
-                    <g v-else>
-                      <ArmatureElm
-                        v-for="armature in otherArmatures"
-                        :key="armature.id"
-                        :armature="armature"
-                        :opacity="0.3"
-                        :scale="scale"
-                        class="view-only"
-                      />
-                      <BoneLayer
-                        :scale="scale"
-                        :bone-map="visibledBoneMap"
-                        :selected-bones="selectedBones"
-                        :canvas-mode="canvasMode"
-                        @select="selectBone"
-                      />
-                      <SpaceAxis
-                        v-if="lastSelectedBoneSpace"
-                        :origin="lastSelectedBoneSpace.origin"
-                        :radian="lastSelectedBoneSpace.radian"
-                      />
-                    </g>
-                  </template>
+                  </g>
+                  <g v-else>
+                    <ArmatureElm
+                      v-for="armature in otherArmatures"
+                      :key="armature.id"
+                      :armature="armature"
+                      :bones="bonesByArmatureId[armature.id]"
+                      :opacity="0.3"
+                      class="view-only"
+                    />
+                    <BoneLayer
+                      :bone-map="visibledBoneMap"
+                      :selected-bones="selectedBones"
+                      :canvas-mode="canvasMode"
+                      @select="selectBone"
+                    />
+                    <SpaceAxis
+                      v-if="lastSelectedBoneSpace"
+                      :origin="lastSelectedBoneSpace.origin"
+                      :radian="lastSelectedBoneSpace.radian"
+                    />
+                  </g>
                 </AppCanvas>
                 <CanvasSideBar class="side-bar" />
               </div>
@@ -143,6 +138,9 @@ export default defineComponent({
     const historyStore = useHistoryStore()
     const elementStore = useElementStore()
 
+    store.createDefaultEntities()
+    elementStore.createDefaultEntities()
+
     const viewBox = computed(() => {
       return elementStore.lastSelectedActor.value?.viewBox
     })
@@ -150,7 +148,7 @@ export default defineComponent({
     const canvasMode = computed(() => canvasStore.state.canvasMode)
 
     const otherArmatures = computed(() =>
-      store.state.armatures.filter(
+      store.armatures.value.filter(
         (a) => a.id !== store.lastSelectedArmature.value?.id
       )
     )
@@ -209,17 +207,18 @@ export default defineComponent({
           return {}
         }
       } else {
-        return store.state.selectedBones
+        return store.selectedBones.value
       }
     })
 
     return {
       viewBox,
-      armatures: computed(() => store.state.armatures),
+      armatures: store.armatures,
       otherArmatures,
       lastSelectedArmatureId: computed(
         () => store.lastSelectedArmature.value?.id
       ),
+      bonesByArmatureId: store.bonesByArmatureId,
       posedBoneMap,
       lastSelectedBoneSpace,
       visibledBoneMap,
@@ -228,8 +227,8 @@ export default defineComponent({
       selectBone(id: string, state: BoneSelectedState, options: SelectOptions) {
         canvasStore.select(id, state, options)
       },
-      selectArmature(id: string, selected: boolean) {
-        store.selectArmature(selected ? id : '')
+      selectArmature(id: string) {
+        store.selectArmature(id)
       },
       setEditMode(mode: EditMode) {
         canvasStore.setEditMode(mode)

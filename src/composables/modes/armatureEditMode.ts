@@ -44,7 +44,7 @@ import {
   symmetrizeBones,
 } from '/@/utils/armatures'
 import { getNotDuplicatedName } from '/@/utils/relations'
-import type { Store } from '/@/store/index'
+import type { IndexStore } from '/@/store/index'
 import type { CanvasStore } from '/@/store/canvas'
 import { mapReduce, toList } from '/@/utils/commons'
 import { getGridSize, snapRotate, snapScale } from '/@/utils/geometry'
@@ -62,21 +62,23 @@ export interface BoneEditMode extends CanvasEditModeBase {
 }
 
 export function useBoneEditMode(
-  store: Store,
+  store: IndexStore,
   canvasStore: CanvasStore
 ): BoneEditMode {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
   })
-  const selectedBones = computed(() => store.state.selectedBones)
-  const lastSelectedBoneId = computed(() => store.lastSelectedBone.value?.id)
+  const selectedBones = store.selectedBones
+  const lastSelectedBoneId = store.lastSelectedBoneId
 
   const target = computed(() => store.lastSelectedArmature.value)
 
   const isAnySelected = computed(() => !!lastSelectedBoneId.value)
 
-  const allNames = computed(() => target.value?.bones.map((a) => a.name) ?? [])
+  const allNames = computed(
+    () => toList(store.boneMap.value).map((a) => a.name) ?? []
+  )
 
   function cancel() {
     state.command = ''
@@ -251,7 +253,7 @@ export function useBoneEditMode(
       cancel()
       return
     }
-    store.selectAllBone()
+    store.selectAllBones()
   }
 
   function mousemove(arg: EditMovement) {
@@ -290,13 +292,21 @@ export function useBoneEditMode(
 
     const srcBones = store.allSelectedBones.value
     const names = allNames.value.concat()
-    const duplicated = duplicateBones(srcBones, names)
-    if (duplicated.length === 0) return false
+    const duplicated = duplicateBones(
+      srcBones,
+      store.constraintMap.value,
+      names
+    )
+    if (duplicated.bones.length === 0) return false
 
-    store.addBones(duplicated, {
-      head: true,
-      tail: true,
-    })
+    store.addBones(
+      duplicated.bones,
+      {
+        head: true,
+        tail: true,
+      },
+      duplicated.createdConstraints
+    )
     setEditMode('grab')
     return true
   }
@@ -362,13 +372,15 @@ export function useBoneEditMode(
       return
     }
 
-    const newBones = symmetrizeBones(
+    const created = symmetrizeBones(
       store.boneMap.value,
+      store.constraintMap.value,
       Object.keys(store.allSelectedBones.value)
     )
     store.upsertBones(
-      newBones,
-      mapReduce(toMap(newBones), () => ({ head: true, tail: true }))
+      created.bones,
+      mapReduce(toMap(created.bones), () => ({ head: true, tail: true })),
+      created.createdConstraints
     )
   }
 

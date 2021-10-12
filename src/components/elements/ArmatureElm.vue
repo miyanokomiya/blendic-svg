@@ -33,10 +33,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType, computed } from 'vue'
-import { Armature, toMap } from '/@/models/index'
+import { Armature, Bone, toMap } from '/@/models/index'
 import { getTnansformStr } from '/@/utils/helpers'
 import BoneElm from '/@/components/elements/Bone.vue'
 import { sortBoneBySize } from '/@/utils/armatures'
+import { injectScale } from '/@/composables/canvas'
 
 export default defineComponent({
   components: { BoneElm },
@@ -45,8 +46,11 @@ export default defineComponent({
       type: Object as PropType<Armature>,
       required: true,
     },
+    bones: {
+      type: Array as PropType<Bone[]>,
+      required: true,
+    },
     opacity: { type: Number, default: 0.8 },
-    scale: { type: Number, default: 1 },
     selected: {
       type: Boolean,
       default: false,
@@ -55,17 +59,20 @@ export default defineComponent({
   emits: ['select'],
   setup(props, { emit }) {
     const sortedBoneMap = computed(() => {
-      return sortBoneBySize(props.armature.bones)
+      return sortBoneBySize(props.bones)
     })
 
+    const scale = computed(injectScale())
+
     return {
+      scale,
       sortedBoneMap,
-      boneMap: computed(() => toMap(sortedBoneMap.value)),
+      boneMap: computed(() => toMap(props.bones)),
       transform: computed(() => getTnansformStr(props.armature.transform)),
       boneSelectedState: computed(() =>
         props.selected ? { head: true, tail: true } : undefined
       ),
-      click: () => emit('select', !props.selected),
+      click: () => emit('select'),
     }
   },
 })

@@ -17,725 +17,654 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive, computed, watch } from 'vue'
-import { getNotDuplicatedName } from '/@/utils/relations'
+import { computed } from 'vue'
 import {
   Armature,
-  BoneSelectedState,
   getBone,
   getArmature,
   toMap,
   Bone,
+  BoneSelectedState,
   IdMap,
-  isSameBoneSelectedState,
-  isBoneSelected,
   mergeMap,
-  getOriginPartial,
 } from '/@/models/index'
 import * as armatureUtils from '/@/utils/armatures'
 import { IVec2 } from 'okageo'
 import { useHistoryStore } from './history'
-import { HistoryItem } from '/@/composables/stores/history'
-import { getTreeIdPath, reduceToMap, splitList, toList } from '/@/utils/commons'
+import { HistoryItem, HistoryStore } from '/@/composables/stores/history'
 import { convolute } from '/@/utils/histories'
+import { fromEntityList, toEntityList } from '/@/models/entity'
+import {
+  useAttrsSelectable,
+  useItemSelectable,
+} from '/@/composables/selectable'
+import { getNotDuplicatedName } from '/@/utils/relations'
+import {
+  getTreeIdPath,
+  mapReduce,
+  reduceToMap,
+  splitList,
+  toList,
+} from '/@/utils/commons'
+import { useEntities } from '/@/composables/entities'
 import { SelectOptions } from '/@/composables/modes/types'
+import { BoneConstraint } from '/@/utils/constraints'
 
-const historyStore = useHistoryStore()
+export function createStore(historyStore: HistoryStore) {
+  const armatureEntities = useEntities<Armature>('Armature')
+  const armatures = computed(() =>
+    toEntityList(armatureEntities.entities.value)
+  )
+  const armatureSelectable = useItemSelectable(
+    'Armature',
+    () => armatureEntities.entities.value.byId
+  )
+  const lastSelectedArmatureId = armatureSelectable.lastSelectedId
+  const lastSelectedArmature = computed(() =>
+    lastSelectedArmatureId.value
+      ? armatureEntities.entities.value.byId[lastSelectedArmatureId.value]
+      : undefined
+  )
 
-const armature = reactive<Armature>(
-  getArmature({
-    id: 'initial-armature',
-    name: 'armature',
-    bones: [
-      getBone(
-        {
-          name: 'bone',
-          head: { x: 20, y: 200 },
-          tail: { x: 220, y: 200 },
-        },
-        true
-      ),
-    ],
+  const boneEntities = useEntities<Bone>('Bone')
+  const boneMap = computed(() => {
+    if (!lastSelectedArmature.value) return {}
+
+    const boneById = boneEntities.entities.value.byId
+    return toMap(lastSelectedArmature.value.bones.map((id) => boneById[id]))
   })
-)
-
-const state = reactive({
-  armatures: [armature],
-  lastSelectedArmatureId: '',
-  lastSelectedBoneId: '',
-  selectedArmatures: {} as IdMap<boolean>,
-  selectedBones: {} as IdMap<BoneSelectedState>,
-})
-
-function initState(initArmatures: Armature[]) {
-  state.armatures = initArmatures
-  state.lastSelectedArmatureId = ''
-  state.selectedArmatures = {}
-  state.selectedBones = {}
-}
-
-const lastSelectedArmatureIndex = computed(() =>
-  state.armatures.findIndex(
-    (a) =>
-      a.id === state.lastSelectedArmatureId &&
-      state.selectedArmatures[state.lastSelectedArmatureId]
+  const boneSelectable = useAttrsSelectable<Bone, BoneSelectedState>(
+    'Bone',
+    () => boneMap.value,
+    ['head', 'tail']
   )
-)
-const lastSelectedArmature = computed(() =>
-  lastSelectedArmatureIndex.value !== -1
-    ? state.armatures[lastSelectedArmatureIndex.value]
-    : undefined
-)
-
-const lastSelectedBoneIndex = computed(() => {
-  if (!lastSelectedArmature.value) return -1
-  return lastSelectedArmature.value.bones.findIndex(
-    (b) =>
-      b.id === state.lastSelectedBoneId &&
-      (state.selectedBones[state.lastSelectedBoneId]?.head ||
-        state.selectedBones[state.lastSelectedBoneId]?.tail)
+  const selectedBones = boneSelectable.selectedMap
+  const lastSelectedBoneId = boneSelectable.lastSelectedId
+  const lastSelectedBone = computed(() =>
+    lastSelectedBoneId.value
+      ? boneEntities.entities.value.byId[lastSelectedBoneId.value]
+      : undefined
   )
-})
-const lastSelectedBone = computed(() => {
-  if (!lastSelectedArmature.value) return
-  return lastSelectedBoneIndex.value !== -1
-    ? lastSelectedArmature.value.bones[lastSelectedBoneIndex.value]
-    : undefined
-})
+  const allSelectedBones = computed(() => {
+    const byId = boneEntities.entities.value.byId
+    return toMap(boneSelectable.allAttrsSelectedIds.value.map((id) => byId[id]))
+  })
+  const selectedBonesOrigin = computed(
+    (): IVec2 =>
+      armatureUtils.getSelectedBonesOrigin(boneMap.value, selectedBones.value)
+  )
 
-const armatureMap = computed(() => toMap(state.armatures))
-const boneMap = computed(() => toMap(lastSelectedArmature.value?.bones ?? []))
-const constraintMap = computed(() =>
-  toMap((lastSelectedArmature.value?.bones ?? []).flatMap((b) => b.constraints))
-)
+  const constraintEntities = useEntities<BoneConstraint>('Constraint')
+  const constraintMap = computed(() => {
+    const byId = constraintEntities.entities.value.byId
+    return toMap(
+      (toList(boneMap.value) ?? []).flatMap((b) =>
+        b.constraints.map((id) => byId[id])
+      )
+    )
+  })
 
-const selectedBonesOrigin = computed(
-  (): IVec2 =>
-    armatureUtils.getSelectedBonesOrigin(boneMap.value, state.selectedBones)
-)
+  const bonesByArmatureId = computed(() => {
+    const boneById = boneEntities.entities.value.byId
+    return mapReduce(toMap(armatures.value), (a) =>
+      a.bones.map((id) => boneById[id])
+    )
+  })
 
-const allSelectedBones = computed(() => {
-  return armatureUtils.getAllSelectedBones(boneMap.value, state.selectedBones)
-})
+  function initState(
+    armatures: Armature[],
+    bones: Bone[],
+    constraints: BoneConstraint[]
+  ) {
+    armatureEntities.init(fromEntityList(armatures))
+    armatureSelectable.getClearAllHistory().redo()
+    boneEntities.init(fromEntityList(bones))
+    boneSelectable.getClearAllHistory().redo()
+    constraintEntities.init(fromEntityList(constraints))
+  }
 
-watch(
-  () => state.selectedArmatures,
-  () => {
-    if (!state.selectedArmatures[state.lastSelectedArmatureId]) {
-      state.lastSelectedArmatureId = ''
+  function exportState() {
+    return {
+      armatures: armatures.value,
+      bones: toEntityList(boneEntities.entities.value),
+      constraints: toEntityList(constraintEntities.entities.value),
     }
   }
-)
-watch(
-  () => armatureMap.value,
-  () => {
-    // unselect unexisted armatures
-    state.selectedArmatures = Object.keys(state.selectedArmatures).reduce<
-      IdMap<boolean>
-    >((m, id) => {
-      return armatureMap.value[id]
-        ? {
-            ...m,
-            [id]: state.selectedArmatures[id],
-          }
-        : m
-    }, {})
-  }
-)
 
-watch(
-  () => state.selectedBones,
-  () => {
-    if (!isBoneSelected(state.selectedBones[state.lastSelectedBoneId])) {
-      const otherKeys = Object.keys(state.selectedBones)
-      state.lastSelectedBoneId = otherKeys.length > 0 ? otherKeys[0] : ''
-    }
-  }
-)
-watch(
-  () => boneMap.value,
-  () => {
-    // unselect unexisted bones
-    state.selectedBones = Object.keys(state.selectedBones).reduce<
-      IdMap<BoneSelectedState>
-    >((m, id) => {
-      return boneMap.value[id]
-        ? {
-            ...m,
-            [id]: state.selectedBones[id],
-          }
-        : m
-    }, {})
-  }
-)
-
-function selectAllArmature() {
-  // TODO: multi select armatures
-  if (state.lastSelectedArmatureId) {
-    selectArmature()
-  } else {
-    const armature = state.armatures[0]
-    if (!armature) return
-
-    selectArmature(armature.id)
-  }
-}
-function selectArmature(id: string = '') {
-  if (state.lastSelectedArmatureId === id) return
-
-  const item = getSelectArmatureItem(id)
-  item.redo()
-  historyStore.push(item)
-}
-function updateArmatureName(name: string) {
-  if (!name) return
-  if (!lastSelectedArmature.value) return
-  if (lastSelectedArmature.value.name === name) return
-
-  const item = getUpdateArmatureItem({
-    name: getNotDuplicatedName(
-      name,
-      state.armatures.map((a) => a.name)
-    ),
-  })
-  item.redo()
-  historyStore.push(item)
-}
-function deleteArmature() {
-  const item = getDeleteArmatureItem()
-  item.redo()
-  historyStore.push(item)
-}
-function addArmature() {
-  const item = getAddArmatureItem(
-    getArmature(
+  function createDefaultEntities() {
+    const bone = getBone(
       {
+        name: 'bone',
+        tail: { x: 200, y: 0 },
+      },
+      true
+    )
+    const armature = getArmature({
+      id: 'initial-armature',
+      name: 'armature',
+      bones: [bone.id],
+    })
+
+    armatureEntities.getAddItemsHistory([armature]).redo()
+    armatureSelectable.getSelectHistory(armature.id).redo()
+    boneEntities.getAddItemsHistory([bone]).redo()
+    boneSelectable.getClearAllHistory().redo()
+  }
+
+  function selectArmature(id: string = '') {
+    if (lastSelectedArmatureId.value === id) return
+
+    historyStore.push(
+      convolute(
+        id
+          ? armatureSelectable.getSelectHistory(id)
+          : armatureSelectable.getClearAllHistory(),
+        [boneSelectable.getClearAllHistory()]
+      ),
+      true
+    )
+  }
+
+  function selectAllArmature() {
+    if (lastSelectedArmatureId.value) {
+      selectArmature()
+    } else {
+      const id = armatureEntities.entities.value.allIds[0]
+      if (id) {
+        selectArmature(id)
+      }
+    }
+  }
+
+  function addArmature(id?: string, boneId?: string) {
+    const bone = getBone(
+      { id: boneId, name: 'bone', tail: { x: 200, y: 0 } },
+      !boneId
+    )
+    const armature = getArmature(
+      {
+        id,
         name: getNotDuplicatedName(
           'armature',
-          state.armatures.map((a) => a.name)
+          toList(armatureEntities.entities.value.byId).map((a) => a.name)
         ),
-        bones: [getBone({ name: 'bone', tail: { x: 100, y: 0 } }, true)],
+        bones: [bone.id],
       },
+      !id
+    )
+
+    historyStore.push(
+      convolute(armatureEntities.getAddItemsHistory([armature]), [
+        armatureSelectable.getSelectHistory(armature.id),
+        boneEntities.getAddItemsHistory([bone]),
+        boneSelectable.getMultiSelectHistory({
+          [bone.id]: { head: true, tail: true },
+        }),
+      ]),
       true
     )
-  )
-  historyStore.push(item, true)
-}
-
-function selectAllBone() {
-  if (!lastSelectedArmature.value) return
-  if (
-    Object.keys(allSelectedBones.value).length ===
-    Object.keys(boneMap.value).length
-  ) {
-    selectBone()
-  } else {
-    const item = getSelectAllBoneItem()
-    item.redo()
-    historyStore.push(item)
   }
-}
-function _selectBone(
-  id: string = '',
-  selectedState: BoneSelectedState = { head: true, tail: true },
-  shift = false,
-  ignoreConnection = false
-) {
-  if (!lastSelectedArmature.value) return
-  // skip same selected state
-  if (!lastSelectedBone.value && !id) return
-  if (
-    state.lastSelectedBoneId === id &&
-    isSameBoneSelectedState(state.selectedBones[id], selectedState) &&
-    Object.keys(allSelectedBones.value).length === 1
-  )
-    return
 
-  const item = getSelectBoneItem(id, selectedState, shift, ignoreConnection)
-  item.redo()
-  historyStore.push(item)
-}
-function selectBones(
-  selectedStateMap: IdMap<BoneSelectedState>,
-  shift = false
-) {
-  // select nothing -> nothing
-  if (Object.keys(selectedStateMap).length === 0 && !state.lastSelectedBoneId)
-    return
+  function deleteArmature() {
+    const armature = lastSelectedArmature.value
+    if (!armature) return
 
-  const item = getSelectBonesItem(selectedStateMap, shift)
-  item.redo()
-  historyStore.push(item)
-}
-function selectBone(
-  id?: string,
-  selectedState: BoneSelectedState = { head: true, tail: true },
-  options?: SelectOptions,
-  ignoreConnection = false
-) {
-  if (id && options?.ctrl && lastSelectedBone.value) {
-    selectBones(
-      reduceToMap(
-        getTreeIdPath(boneMap.value, lastSelectedBone.value.id, id),
-        () => ({ head: true, tail: true })
+    const boneById = boneEntities.entities.value.byId
+
+    historyStore.push(
+      convolute(armatureEntities.getDeleteItemsHistory([armature.id]), [
+        boneEntities.getDeleteItemsHistory(armature.bones),
+        constraintEntities.getDeleteItemsHistory(
+          armature.bones.flatMap((bid) => boneById[bid].constraints)
+        ),
+        boneSelectable.getClearAllHistory(),
+      ]),
+      true
+    )
+  }
+
+  function updateArmatureName(name: string) {
+    if (
+      !name ||
+      !lastSelectedArmature.value ||
+      lastSelectedArmature.value.name === name
+    )
+      return
+
+    historyStore.push(
+      armatureEntities.getUpdateItemHistory({
+        [lastSelectedArmature.value!.id]: {
+          name: getNotDuplicatedName(
+            name,
+            toList(armatureEntities.entities.value.byId).map((a) => a.name)
+          ),
+        },
+      }),
+      true
+    )
+  }
+
+  function getBonesByArmatureId(armatureId: string): Bone[] {
+    const boneById = boneEntities.entities.value.byId
+    return armatureEntities.entities.value.byId[armatureId].bones.map(
+      (id) => boneById[id]
+    )
+  }
+
+  function selectAllBones() {
+    if (Object.keys(boneMap.value).length === 0) return
+    historyStore.push(boneSelectable.getSelectAllHistory(true), true)
+  }
+
+  function _selectBone(
+    id: string = '',
+    selectedState: BoneSelectedState = { head: true, tail: true },
+    shift = false,
+    ignoreConnection = false
+  ) {
+    if (!lastSelectedArmature.value) return
+    // skip same selected state
+    if (!lastSelectedBone.value && !id) return
+    if (
+      boneSelectable.lastSelectedId.value === id &&
+      boneSelectable.isAttrsSelected({ [id]: selectedState }) &&
+      Object.keys(allSelectedBones.value).length === 1
+    )
+      return
+
+    historyStore.push(
+      getSelectBoneItem(
+        {
+          getSelectedMap: () => boneSelectable.selectedMap.value,
+          getMultiSelectHistory: boneSelectable.getMultiSelectHistory,
+          getClearAllHistory: boneSelectable.getClearAllHistory,
+        },
+        toList(boneMap.value),
+        id,
+        selectedState,
+        shift,
+        ignoreConnection
       ),
       true
     )
-  } else {
-    _selectBone(id, selectedState, options?.shift, ignoreConnection)
   }
-}
 
-function deleteBone() {
-  if (!lastSelectedArmature.value) return
-  historyStore.push(getDeleteBoneItem(), true)
-}
-function dissolveBone() {
-  if (!lastSelectedArmature.value) return
-  historyStore.push(getDissolveBoneItem(), true)
-}
-function addBone() {
-  if (!lastSelectedArmature.value) return
+  function selectBones(
+    selectedStateMap: IdMap<BoneSelectedState>,
+    shift = false
+  ) {
+    // select nothing -> nothing
+    if (
+      Object.keys(selectedStateMap).length === 0 &&
+      !boneSelectable.lastSelectedId.value
+    )
+      return
 
-  addBones([
-    getBone(
-      {
-        name: getNotDuplicatedName(
-          'bone',
-          lastSelectedArmature.value.bones.map((a) => a.name)
-        ),
-        tail: { x: 100, y: 0 },
-      },
+    historyStore.push(
+      boneSelectable.getMultiSelectHistory(selectedStateMap, shift),
       true
-    ),
-  ])
-}
-function addBones(bones: Bone[], selectedState?: BoneSelectedState) {
-  if (!lastSelectedArmature.value) return
+    )
+  }
 
-  const item = getAddBoneItem(
-    bones,
-    bones.reduce<IdMap<BoneSelectedState>>((p, bone) => {
-      if (selectedState) p[bone.id] = { ...selectedState }
-      return p
-    }, {})
-  )
-  item.redo()
-  historyStore.push(item)
-}
-function updateBones(diffMap: IdMap<Partial<Bone>>, seriesKey?: string) {
-  if (!lastSelectedArmature.value) return
+  function selectBone(
+    id?: string,
+    selectedState: BoneSelectedState = { head: true, tail: true },
+    options?: SelectOptions,
+    ignoreConnection = false
+  ) {
+    if (id && options?.ctrl && lastSelectedBone.value) {
+      selectBones(
+        reduceToMap(
+          getTreeIdPath(boneMap.value, lastSelectedBone.value.id, id),
+          () => ({ head: true, tail: true })
+        ),
+        true
+      )
+    } else {
+      _selectBone(id, selectedState, options?.shift, ignoreConnection)
+    }
+  }
 
-  const item = getUpdateBonesItem(diffMap, seriesKey)
-  item.redo()
-  historyStore.push(item)
-}
-function updateBone(diff: Partial<Bone>, seriesKey?: string) {
-  if (!lastSelectedArmature.value) return
-  if (!lastSelectedBone.value) return
+  function addBone(id?: string) {
+    if (!lastSelectedArmature.value) return
 
-  const item = getUpdateBoneItem(
-    armatureUtils.fixConnection(lastSelectedArmature.value.bones, {
-      ...lastSelectedBone.value,
-      ...diff,
-    }),
-    seriesKey
-  )
-  item.redo()
-  historyStore.push(item)
-}
-function updateBoneName(name: string) {
-  if (!name) return
-  if (!lastSelectedArmature.value) return
-  if (!lastSelectedBone.value) return
-  if (lastSelectedBone.value.name === name) return
+    addBones(
+      [
+        getBone(
+          {
+            id,
+            name: getNotDuplicatedName(
+              'bone',
+              toList(boneMap.value).map((a) => a.name)
+            ),
+            tail: { x: 100, y: 0 },
+          },
+          !id
+        ),
+      ],
+      { head: true, tail: true }
+    )
+  }
 
-  const item = getUpdateBoneItem({
-    name: getNotDuplicatedName(
-      name,
-      lastSelectedArmature.value.bones.map((b) => b.name)
-    ),
-  })
-  historyStore.push(item, true)
-}
-function upsertBones(
-  bones: Bone[],
-  selectedStateMap: IdMap<BoneSelectedState> = {}
-) {
-  if (!lastSelectedArmature.value) return
+  function addBones(
+    bones: Bone[],
+    selectedState?: BoneSelectedState,
+    constraints?: BoneConstraint[]
+  ) {
+    const armature = lastSelectedArmature.value
+    if (!armature) return
 
-  const item = convolute(
-    getUpsertBonesItem(bones),
-    [getSelectBonesItem(selectedStateMap)],
-    'Upsert Bone'
-  )
-  historyStore.push(item, true)
-}
+    historyStore.push(
+      convolute(boneEntities.getAddItemsHistory(bones), [
+        armatureEntities.getUpdateItemHistory({
+          [armature.id]: {
+            bones: armature.bones.concat(bones.map((b) => b.id)),
+          },
+        }),
+        boneSelectable.getMultiSelectHistory(
+          selectedState ? mapReduce(toMap(bones), () => selectedState) : {}
+        ),
+        constraints
+          ? constraintEntities.getAddItemsHistory(constraints)
+          : undefined,
+      ]),
+      true
+    )
+  }
 
-export function useStore() {
+  function deleteBone() {
+    const armature = lastSelectedArmature.value
+    if (!armature) return
+
+    const targetMap = allSelectedBones.value
+    const targetIds = Object.keys(targetMap)
+
+    historyStore.push(
+      convolute(
+        boneEntities.getDeleteAndUpdateItemHistory(
+          targetIds,
+          armatureUtils.updateConnections(
+            toList(boneMap.value).filter((val) => !targetMap[val.id])
+          )
+        ),
+        [
+          armatureEntities.getUpdateItemHistory({
+            [armature.id]: {
+              bones: armature.bones.filter((id) => !targetMap[id]),
+            },
+          }),
+          boneSelectable.getClearAllHistory(),
+          constraintEntities.getDeleteItemsHistory(
+            targetIds.flatMap((id) => targetMap[id].constraints)
+          ),
+        ]
+      ),
+      true
+    )
+  }
+
+  function dissolveBone() {
+    const armature = lastSelectedArmature.value
+    if (!armature) return
+
+    const targetMap = allSelectedBones.value
+    const targetIds = Object.keys(targetMap)
+
+    const dissolved = armatureUtils.getUpdatedBonesByDissolvingBones(
+      boneMap.value,
+      constraintMap.value,
+      Object.keys(targetMap)
+    )
+
+    historyStore.push(
+      convolute(
+        boneEntities.getDeleteAndUpdateItemHistory(targetIds, dissolved.bones),
+        [
+          armatureEntities.getUpdateItemHistory({
+            [armature.id]: {
+              bones: armature.bones.filter((id) => !targetMap[id]),
+            },
+          }),
+          boneSelectable.getMultiSelectHistory({}),
+          constraintEntities.getDeleteAndUpdateItemHistory(
+            targetIds.flatMap((id) => targetMap[id].constraints),
+            dissolved.constraints
+          ),
+        ]
+      ),
+      true
+    )
+  }
+
+  function updateBones(diffMap: IdMap<Partial<Bone>>, seriesKey?: string) {
+    if (!lastSelectedArmature.value) return
+
+    historyStore.push(
+      boneEntities.getUpdateItemHistory(
+        mergeMap(
+          diffMap,
+          armatureUtils.updateConnections(
+            toList(boneMap.value).map((b) => ({
+              ...b,
+              ...diffMap[b.id],
+            }))
+          )
+        ),
+        seriesKey
+      ),
+      true
+    )
+  }
+
+  function updateBone(diff: Partial<Bone>, seriesKey?: string) {
+    if (!lastSelectedArmature.value || !lastSelectedBone.value) return
+
+    historyStore.push(
+      boneEntities.getUpdateItemHistory(
+        {
+          [lastSelectedBone.value.id]: armatureUtils.fixConnection(
+            toList(boneMap.value),
+            { ...lastSelectedBone.value, ...diff }
+          ),
+        },
+        seriesKey
+      ),
+      true
+    )
+  }
+
+  function updateBoneName(name: string) {
+    if (
+      !name ||
+      !lastSelectedBone.value ||
+      lastSelectedBone.value.name === name
+    )
+      return
+
+    historyStore.push(
+      boneEntities.getUpdateItemHistory({
+        [lastSelectedBone.value.id]: {
+          name: getNotDuplicatedName(
+            name,
+            toList(boneMap.value).map((b) => b.name)
+          ),
+        },
+      }),
+      true
+    )
+  }
+
+  function updateBoneConstraints(
+    constraints: BoneConstraint[],
+    seriesKey?: string
+  ) {
+    if (!lastSelectedArmature.value || !lastSelectedBone.value) return
+
+    const all = constraintMap.value
+    const currentMap = reduceToMap(
+      lastSelectedBone.value.constraints,
+      (id) => all[id]
+    )
+    const nextMap = toMap(constraints)
+
+    const created = constraints.filter((c) => !currentMap[c.id])
+    const deleted = lastSelectedBone.value.constraints.filter(
+      (cid) => !nextMap[cid]
+    )
+    const updated = constraints.filter((c) => currentMap[c.id])
+
+    historyStore.push(
+      convolute(
+        constraintEntities.getUpdateItemHistory(toMap(updated), seriesKey),
+        [
+          created.length + deleted.length > 0
+            ? boneEntities.getUpdateItemHistory({
+                [lastSelectedBone.value.id]: {
+                  constraints: constraints.map((c) => c.id),
+                },
+              })
+            : undefined,
+          created.length > 0
+            ? constraintEntities.getAddItemsHistory(created)
+            : undefined,
+          deleted.length > 0
+            ? constraintEntities.getDeleteItemsHistory(deleted)
+            : undefined,
+        ]
+      ),
+      true
+    )
+  }
+
+  function upsertBones(
+    upserted: Bone[],
+    selectedStateMap: IdMap<BoneSelectedState> = {},
+    constraints?: BoneConstraint[]
+  ) {
+    const armature = lastSelectedArmature.value
+    if (!armature) return
+
+    const [updatedTargets, createdTargets] = splitList(
+      upserted,
+      (b) => !!boneMap.value[b.id]
+    )
+
+    const fixedDiff = armatureUtils.updateConnections(
+      toList({
+        ...boneMap.value,
+        ...toMap(upserted),
+      })
+    )
+
+    const created = createdTargets.map((b) =>
+      fixedDiff[b.id] ? { ...b, ...fixedDiff[b.id] } : b
+    )
+    const updated = updatedTargets.map((b) =>
+      fixedDiff[b.id] ? { ...b, ...fixedDiff[b.id] } : b
+    )
+
+    const _constraintMap = constraintMap.value
+
+    historyStore.push(
+      convolute(
+        boneEntities.getAddItemsHistory(created),
+        [
+          armatureEntities.getUpdateItemHistory({
+            [armature.id]: {
+              bones: armature.bones.concat(created.map((b) => b.id)),
+            },
+          }),
+          boneEntities.getUpdateItemHistory(toMap(updated)),
+          boneSelectable.getMultiSelectHistory(selectedStateMap),
+          constraints
+            ? constraintEntities.getAddItemsHistory(
+                constraints.filter((c) => !_constraintMap[c.id])
+              )
+            : undefined,
+          constraints
+            ? constraintEntities.getUpdateItemHistory(
+                toMap(constraints.filter((c) => _constraintMap[c.id]))
+              )
+            : undefined,
+        ],
+        'Upsert Bone'
+      ),
+      true
+    )
+  }
+
   return {
-    initState,
-    state,
+    armatures,
+    lastSelectedArmatureId,
     lastSelectedArmature,
-    lastSelectedBone,
+
     boneMap,
-    constraintMap,
+    selectedBones,
+    lastSelectedBoneId,
+    lastSelectedBone,
     allSelectedBones,
     selectedBonesOrigin,
-    selectAllArmature,
+
+    constraintMap,
+    bonesByArmatureId,
+
+    initState,
+    exportState,
+    createDefaultEntities,
+
     selectArmature,
-    updateArmatureName,
-    deleteArmature,
+    selectAllArmature,
     addArmature,
-    selectAllBone,
+    deleteArmature,
+    updateArmatureName,
+
+    getBonesByArmatureId,
+    selectAllBones,
     selectBone,
     selectBones,
-
-    deleteBone,
-    dissolveBone,
     addBone,
     addBones,
+    deleteBone,
+    dissolveBone,
     updateBones,
     updateBone,
     updateBoneName,
+    updateBoneConstraints,
     upsertBones,
   }
 }
-export type Store = ReturnType<typeof useStore>
+export type IndexStore = ReturnType<typeof createStore>
 
-function getSelectArmatureItem(id: string): HistoryItem {
-  const current = { ...state.selectedArmatures }
-  const currentLast = state.lastSelectedArmatureId
-  const redo = () => {
-    state.selectedArmatures = id ? { [id]: true } : {}
-    state.lastSelectedArmatureId = id
-  }
-  return {
-    name: 'Select Armature',
-    undo: () => {
-      state.selectedArmatures = { ...current }
-      state.lastSelectedArmatureId = currentLast
-    },
-    redo,
-  }
-}
-function getUpdateArmatureItem(updated: Partial<Armature>): HistoryItem {
-  const current = getOriginPartial(lastSelectedArmature.value!, updated)
-
-  const redo = () => {
-    const index = lastSelectedArmatureIndex.value
-    state.armatures[index] = { ...state.armatures[index], ...updated }
-  }
-  return {
-    name: 'Update Armature',
-    undo: () => {
-      const index = lastSelectedArmatureIndex.value
-      state.armatures[index] = { ...state.armatures[index], ...current }
-    },
-    redo,
-  }
-}
-function getDeleteArmatureItem(): HistoryItem {
-  const current = { ...lastSelectedArmature.value! }
-  const index = lastSelectedArmatureIndex.value
-  const selectItem = getSelectArmatureItem('')
-
-  const redo = () => {
-    state.armatures.splice(index, 1)
-  }
-  return {
-    name: 'Delete Armature',
-    undo: () => {
-      state.armatures.splice(index, 0, current)
-      selectItem.undo()
-    },
-    redo,
-  }
-}
-function getAddArmatureItem(armature: Armature): HistoryItem {
-  const index = state.armatures.length
-  const selectItem = getSelectArmatureItem(armature.id)
-
-  const redo = () => {
-    state.armatures.push(armature)
-    selectItem.redo()
-  }
-  return {
-    name: 'Add Armature',
-    undo: () => {
-      state.armatures.splice(index, 1)
-      selectItem.undo()
-    },
-    redo,
-  }
+const store = createStore(useHistoryStore())
+export function useStore() {
+  return store
 }
 
 function getSelectBoneItem(
+  attrsSelectable: {
+    getSelectedMap(): IdMap<BoneSelectedState>
+    getMultiSelectHistory(
+      val: IdMap<BoneSelectedState>,
+      shift?: boolean
+    ): HistoryItem
+    getClearAllHistory(): HistoryItem
+  },
+  bones: Bone[],
   id: string,
   selectedState: BoneSelectedState = { head: true, tail: true },
   shift = false,
   ignoreConnection = false
 ): HistoryItem {
-  const current = { ...state.selectedBones }
-  const currentLast = state.lastSelectedBoneId
+  if (!id) return attrsSelectable.getClearAllHistory()
 
-  const redo = () => {
-    state.selectedBones = id
-      ? mergeMap(
-          { ...(shift ? state.selectedBones : {}), [id]: selectedState },
-          armatureUtils.selectBone(
-            lastSelectedArmature.value!,
-            id,
-            selectedState,
-            ignoreConnection
-          )
-        )
-      : {}
-    state.lastSelectedBoneId = id
-  }
-  return {
-    name: 'Select Bone',
-    undo: () => {
-      state.selectedBones = { ...current }
-      state.lastSelectedBoneId = currentLast
-    },
-    redo,
-  }
-}
-
-function getAllBoneSelectedStateMap(): IdMap<BoneSelectedState> {
-  if (!lastSelectedArmature.value) return {}
-
-  return lastSelectedArmature.value.bones.reduce<IdMap<BoneSelectedState>>(
-    (p, b) => {
-      p[b.id] = { head: true, tail: true }
-      return p
-    },
-    {}
+  return attrsSelectable.getMultiSelectHistory(
+    mergeMap(
+      {
+        ...(shift ? attrsSelectable.getSelectedMap() : {}),
+        [id]: selectedState,
+      },
+      armatureUtils.selectBone(bones, id, selectedState, ignoreConnection)
+    ),
+    shift
   )
-}
-
-function getSelectAllBoneItem(): HistoryItem {
-  const current = { ...state.selectedBones }
-  const currentLast = state.lastSelectedBoneId
-
-  const redo = () => {
-    state.selectedBones = getAllBoneSelectedStateMap()
-  }
-  return {
-    name: 'Select All Bone',
-    undo: () => {
-      state.selectedBones = { ...current }
-      state.lastSelectedBoneId = currentLast
-    },
-    redo,
-  }
-}
-
-function getSelectBonesItem(
-  selectedStateMap: IdMap<BoneSelectedState>,
-  shift = false
-): HistoryItem {
-  const current = { ...state.selectedBones }
-  const currentLast = state.lastSelectedBoneId
-
-  const redo = () => {
-    if (shift) {
-      state.selectedBones = mergeMap(state.selectedBones, selectedStateMap)
-    } else {
-      state.selectedBones = selectedStateMap
-    }
-
-    const last = Object.keys(state.selectedBones).find(
-      (s) => state.selectedBones[s].head || state.selectedBones[s].tail
-    )
-    state.lastSelectedBoneId = last ?? ''
-  }
-  return {
-    name: 'Select Bones',
-    undo: () => {
-      state.selectedBones = { ...current }
-      state.lastSelectedBoneId = currentLast
-    },
-    redo,
-  }
-}
-
-function getUpdateBoneItem(
-  updated: Partial<Bone>,
-  seriesKey?: string
-): HistoryItem {
-  const current = getOriginPartial(lastSelectedBone.value!, updated)
-
-  const redo = () => {
-    const index = lastSelectedBoneIndex.value
-    lastSelectedArmature.value!.bones[index] = {
-      ...lastSelectedArmature.value!.bones[index],
-      ...updated,
-    }
-  }
-  return {
-    name: 'Update Bone',
-    undo: () => {
-      const index = lastSelectedBoneIndex.value
-      lastSelectedArmature.value!.bones[index] = {
-        ...lastSelectedArmature.value!.bones[index],
-        ...current,
-      }
-    },
-    redo,
-    seriesKey,
-  }
-}
-function getUpdateBonesItem(
-  updated: IdMap<Partial<Bone>>,
-  seriesKey?: string
-): HistoryItem {
-  const updatedMap = mergeMap<Partial<Bone>>(
-    updated,
-    armatureUtils.updateConnections(
-      lastSelectedArmature.value!.bones.map((b) => ({
-        ...b,
-        ...updated[b.id],
-      }))
-    )
-  )
-
-  const current = Object.keys(updatedMap).reduce<IdMap<Partial<Bone>>>(
-    (p, id) => {
-      if (boneMap.value[id])
-        p[id] = getOriginPartial(boneMap.value[id], updatedMap[id])
-      return p
-    },
-    {}
-  )
-
-  const redo = () => {
-    lastSelectedArmature.value!.bones = lastSelectedArmature.value!.bones.map(
-      (b) => ({
-        ...b,
-        ...updatedMap[b.id],
-      })
-    )
-  }
-  return {
-    name: 'Update Bone',
-    undo: () => {
-      lastSelectedArmature.value!.bones = lastSelectedArmature.value!.bones.map(
-        (b) => ({
-          ...b,
-          ...current[b.id],
-        })
-      )
-    },
-    redo,
-    seriesKey,
-  }
-}
-function getUpsertBonesItem(bones: Bone[], seriesKey?: string): HistoryItem {
-  const [existedbones, newbones] = splitList(
-    bones,
-    (b) => !!boneMap.value[b.id]
-  )
-  const existedboneMap = toMap(existedbones)
-  const newBoneMap = toMap(newbones)
-
-  const updatedMap = mergeMap<Partial<Bone>>(
-    existedboneMap,
-    armatureUtils.updateConnections(
-      toList({
-        ...toMap(lastSelectedArmature.value!.bones),
-        ...existedboneMap,
-        ...newBoneMap,
-      })
-    )
-  )
-  const currentMap = Object.keys(updatedMap).reduce<IdMap<Partial<Bone>>>(
-    (p, id) => {
-      if (boneMap.value[id])
-        p[id] = getOriginPartial(boneMap.value[id], updatedMap[id])
-      return p
-    },
-    {}
-  )
-
-  return {
-    name: 'Upsert Bone',
-    undo: () => {
-      lastSelectedArmature.value!.bones = lastSelectedArmature
-        .value!.bones.filter((b) => !newBoneMap[b.id])
-        .map((b) => ({ ...b, ...currentMap[b.id] }))
-    },
-    redo: () => {
-      lastSelectedArmature.value!.bones = lastSelectedArmature
-        .value!.bones.map((b) => ({ ...b, ...updatedMap[b.id] }))
-        .concat(newbones)
-    },
-    seriesKey,
-  }
-}
-function getDeleteAndUpdateBoneItem(
-  name: string,
-  updateFn: (existed: Bone[]) => IdMap<Partial<Bone>>
-): HistoryItem {
-  const current = lastSelectedArmature.value!.bones.concat()
-  const existed = lastSelectedArmature.value!.bones.filter(
-    (b) => !allSelectedBones.value[b.id]
-  )
-  const selectItem = getSelectBoneItem('')
-
-  return {
-    name,
-    undo: () => {
-      lastSelectedArmature.value!.bones = current.concat()
-      selectItem.undo()
-    },
-    redo: () => {
-      const updatedMap = updateFn(existed)
-      lastSelectedArmature.value!.bones = existed.map((b) => ({
-        ...b,
-        ...updatedMap[b.id],
-      }))
-      selectItem.redo()
-    },
-  }
-}
-function getDeleteBoneItem(): HistoryItem {
-  return getDeleteAndUpdateBoneItem('Delete Bone', (existed) =>
-    armatureUtils.updateConnections(existed)
-  )
-}
-function getDissolveBoneItem(): HistoryItem {
-  return getDeleteAndUpdateBoneItem('Dissolve Bone', () =>
-    armatureUtils.getUpdatedBonesByDissolvingBones(
-      boneMap.value,
-      Object.keys(allSelectedBones.value)
-    )
-  )
-}
-function getAddBoneItem(
-  bones: Bone[],
-  selectedBones: IdMap<BoneSelectedState>
-): HistoryItem {
-  const selectItems = bones.map((b, i) =>
-    getSelectBoneItem(b.id, selectedBones[b.id], i !== 0)
-  )
-
-  const redo = () => {
-    lastSelectedArmature.value!.bones =
-      lastSelectedArmature.value!.bones.concat(bones)
-    selectItems.forEach((i) => i.redo())
-  }
-  return {
-    name: 'Add Bone',
-    undo: () => {
-      lastSelectedArmature.value!.bones =
-        lastSelectedArmature.value!.bones.slice(
-          0,
-          lastSelectedArmature.value!.bones.length - bones.length
-        )
-      selectItems.forEach((i) => i.undo())
-    },
-    redo,
-  }
 }

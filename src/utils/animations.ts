@@ -31,6 +31,7 @@ import {
 import {
   Action,
   Armature,
+  Bone,
   frameWidth,
   getTransform,
   IdMap,
@@ -224,18 +225,41 @@ export function mergeKeyframesWithDropped(
 
 export function cleanActions(
   actions: Action[],
-  armatures: Armature[]
-): Action[] {
+  keyframes: KeyframeBase[],
+  armatures: Armature[],
+  bones: Bone[]
+): { actions: Action[]; keyframes: KeyframeBase[] } {
+  const keyframeMap = toMap(keyframes)
+  const keyframeMapByActionId = mapReduce(toMap(actions), (a) =>
+    a.keyframes.map((id) => keyframeMap[id])
+  )
   const armatureMap = toMap(armatures)
-  return actions
-    .filter((action) => !!armatureMap[action.armatureId])
-    .map((action) => ({
-      ...action,
-      keyframes: cleanKeyframes(action.keyframes, [
-        ...armatureMap[action.armatureId].bones,
-        ...armatureMap[action.armatureId].bones.flatMap((b) => b.constraints),
-      ]),
-    }))
+  const boneMap = toMap(bones)
+  const bonesByArmatureId = mapReduce(armatureMap, (a) =>
+    a.bones.map((id) => boneMap[id])
+  )
+
+  const validActions = actions.filter(
+    (action) => !!armatureMap[action.armatureId]
+  )
+
+  const cleanedKeyframes = validActions.flatMap((action) =>
+    cleanKeyframes(keyframeMapByActionId[action.id], [
+      ...bonesByArmatureId[action.armatureId],
+      ...bonesByArmatureId[action.armatureId].flatMap((b) =>
+        b.constraints.map((id) => ({ id }))
+      ),
+    ])
+  )
+
+  const cleanedKeyframeMap = toMap(cleanedKeyframes)
+
+  const cleanedActions = validActions.map((action) => ({
+    ...action,
+    keyframes: action.keyframes.filter((id) => cleanedKeyframeMap[id]),
+  }))
+
+  return { actions: cleanedActions, keyframes: cleanedKeyframes }
 }
 
 function cleanKeyframes(

@@ -36,6 +36,7 @@ import {
   initializeBElements,
   isPlainText,
   parseFromSvg,
+  toBElement,
 } from '/@/utils/elements'
 
 const svgText_1 = `
@@ -73,8 +74,8 @@ describe('utils/elements.ts', () => {
     it('parse SVG to a actor', () => {
       const ret = parseFromSvg(svgText_1)
 
-      expect(ret.viewBox).toEqual({ x: 1, y: 2, width: 3, height: 4 })
-      expect(ret.svgTree).toEqual(
+      expect(ret.actor.viewBox).toEqual({ x: 1, y: 2, width: 3, height: 4 })
+      expect(ret.actor.svgTree).toEqual(
         getElementNode({
           id: 'svg_1',
           tag: 'svg',
@@ -112,6 +113,7 @@ describe('utils/elements.ts', () => {
           ],
         })
       )
+      expect(ret.actor.elements).toEqual(['svg_1', 'g_1', 'rect_1', 'text_1'])
       expect(ret.elements).toEqual([
         getBElement({ id: 'svg_1', tag: 'svg', index: 0 }),
         getBElement({ id: 'g_1', tag: 'g', parentId: 'svg_1', index: 0 }),
@@ -122,8 +124,11 @@ describe('utils/elements.ts', () => {
     it('assing a new id if a element has no id', () => {
       const ret = parseFromSvg(svgText_2)
 
+      expect(ret.actor.elements[0]).not.toBe('')
       expect(ret.elements[0].id).not.toBe('')
+      expect(ret.actor.elements[1]).toBe('rect_1')
       expect(ret.elements[1].id).toBe('rect_1')
+      expect(ret.actor.elements[2]).not.toBe('rect_1')
       expect(ret.elements[2].id).not.toBe('')
     })
   })
@@ -187,28 +192,39 @@ describe('utils/elements.ts', () => {
             getActor({
               id: 'act_1',
               armatureId: 'arm_1',
-              elements: [getBElement({ id: 'be_1', boneId: 'bor_1' })],
+              elements: ['be_0_1'],
             }),
             getActor({
               id: 'act_2',
               armatureId: 'arm_2',
-              elements: [getBElement({ id: 'be_1', boneId: 'bor_1' })],
+              elements: ['be_1_1'],
             }),
           ],
-          [getArmature({ id: 'arm_1', bones: [getBone({ id: 'bor_1' })] })]
+          [
+            getBElement({ id: 'be_0_1', boneId: 'bor_1' }),
+            getBElement({ id: 'be_1_1', boneId: 'bor_1' }),
+          ],
+          [getArmature({ id: 'arm_1', bones: ['bor_1'] })],
+          [getBone({ id: 'bor_1' })]
         )
-      ).toEqual([
-        getActor({
-          id: 'act_1',
-          armatureId: 'arm_1',
-          elements: [getBElement({ id: 'be_1', boneId: 'bor_1' })],
-        }),
-        getActor({
-          id: 'act_2',
-          armatureId: '',
-          elements: [getBElement({ id: 'be_1', boneId: '' })],
-        }),
-      ])
+      ).toEqual({
+        actors: [
+          getActor({
+            id: 'act_1',
+            armatureId: 'arm_1',
+            elements: ['be_0_1'],
+          }),
+          getActor({
+            id: 'act_2',
+            armatureId: '',
+            elements: ['be_1_1'],
+          }),
+        ],
+        elements: [
+          getBElement({ id: 'be_0_1', boneId: 'bor_1' }),
+          getBElement({ id: 'be_1_1', boneId: '' }),
+        ],
+      })
     })
     it('clear boneId if the bone does not exist', () => {
       expect(
@@ -217,24 +233,29 @@ describe('utils/elements.ts', () => {
             getActor({
               id: 'act_1',
               armatureId: 'arm_1',
-              elements: [
-                getBElement({ id: 'be_1', boneId: 'bor_1' }),
-                getBElement({ id: 'be_2', boneId: 'bor_2' }),
-              ],
+              elements: ['be_1', 'be_2'],
             }),
           ],
-          [getArmature({ id: 'arm_1', bones: [getBone({ id: 'bor_1' })] })]
-        )
-      ).toEqual([
-        getActor({
-          id: 'act_1',
-          armatureId: 'arm_1',
-          elements: [
+          [
             getBElement({ id: 'be_1', boneId: 'bor_1' }),
-            getBElement({ id: 'be_2', boneId: '' }),
+            getBElement({ id: 'be_2', boneId: 'bor_2' }),
           ],
-        }),
-      ])
+          [getArmature({ id: 'arm_1', bones: ['bor_1'] })],
+          [getBone({ id: 'bor_1' })]
+        )
+      ).toEqual({
+        actors: [
+          getActor({
+            id: 'act_1',
+            armatureId: 'arm_1',
+            elements: ['be_1', 'be_2'],
+          }),
+        ],
+        elements: [
+          getBElement({ id: 'be_1', boneId: 'bor_1' }),
+          getBElement({ id: 'be_2', boneId: '' }),
+        ],
+      })
     })
   })
 
@@ -242,39 +263,46 @@ describe('utils/elements.ts', () => {
     it('inhefit old weight info to new elements', () => {
       expect(
         inheritWeight(
-          getActor({
-            id: 'old_act',
-            armatureId: 'old_arm',
+          {
+            actor: getActor({
+              id: 'old_act',
+              armatureId: 'old_arm',
+              elements: ['old_elm_1', 'old_elm_2', 'old_elm_3'],
+              svgTree: getElementNode({ id: 'old_svg' }),
+            }),
             elements: [
               getBElement({ id: 'old_elm_1', boneId: 'old_bone_1' }),
               getBElement({ id: 'old_elm_2', boneId: 'old_bone_2' }),
               getBElement({ id: 'old_elm_3', boneId: 'old_bone_3' }),
             ],
-            svgTree: getElementNode({ id: 'old_svg' }),
-          }),
-          getActor({
-            id: 'new_act',
-            armatureId: '',
+          },
+          {
+            actor: getActor({
+              id: 'new_act',
+              armatureId: '',
+              elements: ['old_elm_1', 'old_elm_2', 'new_elm_3'],
+              svgTree: getElementNode({ id: 'new_svg' }),
+            }),
             elements: [
               getBElement({ id: 'old_elm_1', boneId: 'old_bone_1' }),
               getBElement({ id: 'old_elm_2', boneId: 'old_bone_2' }),
               getBElement({ id: 'new_elm_3', boneId: 'new_bone_3' }),
             ],
-            svgTree: getElementNode({ id: 'new_svg' }),
-          })
+          }
         )
-      ).toEqual(
-        getActor({
+      ).toEqual({
+        actor: getActor({
           id: 'new_act',
           armatureId: 'old_arm',
-          elements: [
-            getBElement({ id: 'old_elm_1', boneId: 'old_bone_1' }),
-            getBElement({ id: 'old_elm_2', boneId: 'old_bone_2' }),
-            getBElement({ id: 'new_elm_3', boneId: 'new_bone_3' }),
-          ],
+          elements: ['old_elm_1', 'old_elm_2', 'new_elm_3'],
           svgTree: getElementNode({ id: 'new_svg' }),
-        })
-      )
+        }),
+        elements: [
+          getBElement({ id: 'old_elm_1', boneId: 'old_bone_1' }),
+          getBElement({ id: 'old_elm_2', boneId: 'old_bone_2' }),
+          getBElement({ id: 'new_elm_3', boneId: 'new_bone_3' }),
+        ],
+      })
     })
   })
 
@@ -941,6 +969,14 @@ describe('utils/elements.ts', () => {
     it('should return true if elm is string', () => {
       expect(isPlainText('a')).toBe(true)
       expect(isPlainText({} as any)).toBe(false)
+    })
+  })
+
+  describe('toBElement', () => {
+    it('should return BElement created from ElementNode', () => {
+      expect(toBElement(getElementNode({ id: 'a', tag: 'g' }), 'p', 1)).toEqual(
+        getBElement({ id: 'a', tag: 'g', parentId: 'p', index: 1 })
+      )
     })
   })
 })

@@ -211,7 +211,7 @@ export default defineComponent({
         return editTransform(
           original,
           canvasStore.getEditTransforms(original.id),
-          store.state.selectedBones[original.id] || {}
+          store.selectedBones.value[original.id] || {}
         )
       }
 

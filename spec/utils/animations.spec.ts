@@ -247,9 +247,14 @@ describe('utils/animations.ts', () => {
             getAction({ id: 'act_1', armatureId: 'arm_1' }),
             getAction({ id: 'act_2', armatureId: 'arm_2' }),
           ],
-          [getArmature({ id: 'arm_2' })]
+          [],
+          [getArmature({ id: 'arm_2' })],
+          []
         )
-      ).toEqual([getAction({ id: 'act_2', armatureId: 'arm_2' })])
+      ).toEqual({
+        actions: [getAction({ id: 'act_2', armatureId: 'arm_2' })],
+        keyframes: [],
+      })
     })
     it('drop keyframes of unexisted bones', () => {
       expect(
@@ -258,68 +263,87 @@ describe('utils/animations.ts', () => {
             getAction({
               id: 'act_1',
               armatureId: 'arm_1',
-              keyframes: [
-                getKeyframeBone({ id: 'key_1', targetId: 'bone_1', frame: 1 }),
-                getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 1 }),
-                getKeyframeBone({ id: 'key_3', targetId: 'bone_2', frame: 2 }),
-                getKeyframeBone({ id: 'key_4', targetId: 'bone_4', frame: 1 }),
-              ],
+              keyframes: ['key_1', 'key_2', 'key_3', 'key_4'],
             }),
+          ],
+          [
+            getKeyframeBone({ id: 'key_1', targetId: 'bone_1', frame: 1 }),
+            getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 1 }),
+            getKeyframeBone({ id: 'key_3', targetId: 'bone_2', frame: 2 }),
+            getKeyframeBone({ id: 'key_4', targetId: 'bone_4', frame: 1 }),
           ],
           [
             getArmature({
               id: 'arm_1',
-              bones: [getBone({ id: 'bone_2' }), getBone({ id: 'bone_3' })],
+              bones: ['bone_2', 'bone_3'],
             }),
-          ]
-        )
-      ).toEqual([
-        getAction({
-          id: 'act_1',
-          armatureId: 'arm_1',
-          keyframes: [
-            getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 1 }),
-            getKeyframeBone({ id: 'key_3', targetId: 'bone_2', frame: 2 }),
           ],
-        }),
-      ])
+          [getBone({ id: 'bone_2' }), getBone({ id: 'bone_3' })]
+        )
+      ).toEqual({
+        actions: [
+          getAction({
+            id: 'act_1',
+            armatureId: 'arm_1',
+            keyframes: ['key_2', 'key_3'],
+          }),
+        ],
+        keyframes: [
+          getKeyframeBone({ id: 'key_2', targetId: 'bone_2', frame: 1 }),
+          getKeyframeBone({ id: 'key_3', targetId: 'bone_2', frame: 2 }),
+        ],
+      })
     })
     it('drop keyframes of unexisted constraints', () => {
+      const keyframes = [
+        getKeyframeConstraint({ id: 'key_1', targetId: 'con_1', frame: 1 }),
+        getKeyframeConstraint({ id: 'key_2', targetId: 'con_2', frame: 1 }),
+        getKeyframeConstraint({ id: 'key_3', targetId: 'con_2', frame: 2 }),
+        getKeyframeConstraint({ id: 'key_4', targetId: 'con_4', frame: 1 }),
+      ]
       const action = getAction({
         id: 'act_1',
         armatureId: 'arm_1',
-        keyframes: [
-          getKeyframeConstraint({ id: 'key_1', targetId: 'con_1', frame: 1 }),
-          getKeyframeConstraint({ id: 'key_2', targetId: 'con_2', frame: 1 }),
-          getKeyframeConstraint({ id: 'key_3', targetId: 'con_2', frame: 2 }),
-          getKeyframeConstraint({ id: 'key_4', targetId: 'con_4', frame: 1 }),
-        ],
+        keyframes: keyframes.map((k) => k.id),
       })
       expect(
         cleanActions(
           [action],
+          keyframes,
           [
             getArmature({
               id: 'arm_1',
-              bones: [
-                getBone({
-                  id: 'bone',
-                  constraints: [getConstraint({ type: 'IK', id: 'con_2' })],
-                }),
-              ],
+              bones: ['bone'],
+            }),
+          ],
+          [
+            getBone({
+              id: 'bone',
+              constraints: ['con_2'],
             }),
           ]
         )
-      ).toEqual([
-        getAction({
-          id: 'act_1',
-          armatureId: 'arm_1',
-          keyframes: [
-            getKeyframeConstraint({ id: 'key_2', targetId: 'con_2', frame: 1 }),
-            getKeyframeConstraint({ id: 'key_3', targetId: 'con_2', frame: 2 }),
-          ],
-        }),
-      ])
+      ).toEqual({
+        actions: [
+          getAction({
+            id: 'act_1',
+            armatureId: 'arm_1',
+            keyframes: ['key_2', 'key_3'],
+          }),
+        ],
+        keyframes: [
+          getKeyframeConstraint({
+            id: 'key_2',
+            targetId: 'con_2',
+            frame: 1,
+          }),
+          getKeyframeConstraint({
+            id: 'key_3',
+            targetId: 'con_2',
+            frame: 2,
+          }),
+        ],
+      })
     })
   })
 

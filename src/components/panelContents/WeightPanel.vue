@@ -24,8 +24,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       <BlockField label="Armature">
         <SelectField v-model="armatureId" :options="armatureOptions" />
       </BlockField>
-      <template v-if="targetElement && targetNativeElement">
-        <template v-if="targetNativeElement.tag === 'svg'">
+      <template v-if="targetElement">
+        <template v-if="targetElement.tag === 'svg'">
           <BlockField label="Viewbox">
             <SelectField v-model="viewBoxBoneId" :options="boneOptions" />
           </BlockField>
@@ -74,9 +74,6 @@ export default defineComponent({
     const targetElement = computed(() => {
       return elementStore.lastSelectedElement.value
     })
-    const targetNativeElement = computed(() => {
-      return elementStore.lastSelectedNativeElement.value
-    })
 
     const armatureId = computed({
       get(): string {
@@ -88,12 +85,12 @@ export default defineComponent({
     })
 
     const currentArmature = computed(() => {
-      return store.state.armatures.find((a) => a.id === armatureId.value)
+      return store.armatures.value.find((a) => a.id === armatureId.value)
     })
 
     const armatureOptions = computed(() => {
       return sortByValue(
-        store.state.armatures.map((a) => ({ value: a.id, label: a.name })),
+        store.armatures.value.map((a) => ({ value: a.id, label: a.name })),
         'label'
       )
     })
@@ -136,7 +133,7 @@ export default defineComponent({
       if (!currentArmature.value) return []
 
       return sortByValue(
-        currentArmature.value?.bones.map((b) => ({
+        store.getBonesByArmatureId(currentArmature.value.id).map((b) => ({
           value: b.id,
           label: b.name,
         })),
@@ -148,7 +145,6 @@ export default defineComponent({
       canvasMode,
       targetActor,
       targetElement,
-      targetNativeElement,
       armatureId,
       armatureOptions,
       boneOptions,

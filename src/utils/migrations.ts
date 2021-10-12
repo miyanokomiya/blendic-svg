@@ -17,45 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { v4 } from 'uuid'
-import { BoneConstraint, BoneConstraintType } from '/@/utils/constraints'
+import { BoneConstraint } from '/@/utils/constraints'
 
 export function migrateConstraint(src: BoneConstraint): BoneConstraint {
-  return migrateConstraint6(migrateConstraint5(migrateConstraint4(src)))
-}
-
-export function migrateConstraint4(
-  src: Omit<BoneConstraint, 'type' | 'id'> & {
-    type?: BoneConstraintType
-  }
-): Omit<BoneConstraint, 'id'> {
-  if (src.type) return src as BoneConstraint
-  return {
-    type: src.name as BoneConstraintType,
-    name: src.name,
-    option: src.option,
-  }
-}
-
-export function migrateConstraint5(
-  src: Omit<BoneConstraint, 'id'> & { id?: string }
-): BoneConstraint {
-  if (src.id) return src as BoneConstraint
-  return {
-    ...src,
-    id: v4(),
-  }
-}
-
-export function migrateConstraint6(
-  src: Omit<BoneConstraint, 'influence'>
-): BoneConstraint {
-  if (!isNaN(src.option.influence)) return src
-  return {
-    ...src,
-    option: {
-      ...src.option,
-      influence: 1,
-    },
-  }
+  return src
 }

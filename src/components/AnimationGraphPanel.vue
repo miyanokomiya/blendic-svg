@@ -96,7 +96,7 @@ import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import GraphNode from '/@/components/elements/GraphNode.vue'
 import GraphEdge from '/@/components/elements/GraphEdge.vue'
-import { getAnimationGraph, IdMap } from '/@/models'
+import { getAnimationGraph, IdMap, toMap } from '/@/models'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { SelectOptions } from '/@/composables/modes/types'
 import { mapReduce } from '/@/utils/commons'
@@ -108,7 +108,7 @@ import {
 import { GraphNodeEdgePositions } from '/@/models/graphNode'
 import { useElementStore } from '/@/store/element'
 import GraphSideBar from '/@/components/GraphSideBar.vue'
-import { getElementLabel } from '/@/utils/elements'
+import { flatElementTree, getElementLabel } from '/@/utils/elements'
 import { getNodeErrors } from '/@/utils/graphNodes'
 
 export default defineComponent({
@@ -133,9 +133,7 @@ export default defineComponent({
     const selectedArmature = computed(() => store.lastSelectedArmature.value)
     const selectedGraph = computed(() => graphStore.lastSelectedGraph.value)
 
-    const allNames = computed(() =>
-      graphStore.graphList.value.map((g) => g.name)
-    )
+    const allNames = computed(() => graphStore.graphs.value.map((g) => g.name))
 
     const draftName = ref('')
     watchEffect(() => {
@@ -151,7 +149,7 @@ export default defineComponent({
     }
 
     const graphOptions = computed(() =>
-      graphStore.graphList.value.map((g) => {
+      graphStore.graphs.value.map((g) => {
         const valid = selectedArmature.value?.id !== g.armatureId
         return {
           value: g.id,
@@ -288,13 +286,16 @@ export default defineComponent({
     provide('getObjectOptions', () => {
       if (!currentGraph.value) return []
 
-      const elementMap = elementStore.nativeElementMap.value
+      const nativeElementMap = elementStore.lastSelectedActor.value
+        ? toMap(flatElementTree([elementStore.lastSelectedActor.value.svgTree]))
+        : {}
+
       const actor = elementStore.actors.value.find(
         (a) => a.armatureId === currentGraph.value!.armatureId
       )
       return (
-        actor?.elements.map((e) => {
-          return { value: e.id, label: getElementLabel(elementMap[e.id]) }
+        actor?.elements.map((id) => {
+          return { value: id, label: getElementLabel(nativeElementMap[id]) }
         }) ?? []
       )
     })

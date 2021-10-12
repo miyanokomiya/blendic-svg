@@ -44,7 +44,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent, PropType, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
-import { Bone, ElementNode, IdMap, toMap } from '/@/models'
+import { Bone, ElementNode, IdMap } from '/@/models'
 import {
   getGraphResolvedElementTree,
   getPosedElementTree,
@@ -116,7 +116,7 @@ export default defineComponent({
       if (!elementStore.lastSelectedActor.value) return
       return getPosedElementTree(
         boneMap.value,
-        toMap(elementStore.lastSelectedActor.value.elements),
+        elementStore.elementMap.value,
         elementStore.lastSelectedActor.value.svgTree
       )
     })

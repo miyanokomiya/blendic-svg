@@ -27,14 +27,15 @@ import {
   getBone,
   getActor,
   BElement,
-  getBElement,
   AnimationGraph,
   getAnimationGraph,
+  toMap,
+  IdMap,
 } from '/@/models'
 import { GraphNodeBase } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
-import { extractMap } from '/@/utils/commons'
-import { getConstraint } from '/@/utils/constraints'
+import { extractMap, mapReduce } from '/@/utils/commons'
+import { BoneConstraint, getConstraint } from '/@/utils/constraints'
 import { initializeBElements } from '/@/utils/elements'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { getKeyframe } from '/@/utils/keyframes'
@@ -42,43 +43,67 @@ import { migrateConstraint } from '/@/utils/migrations'
 
 export interface StorageRoot {
   armatures: Armature[]
+  bones: Bone[]
+  constraints: BoneConstraint[]
+
   actions: Action[]
+  keyframes: KeyframeBase[]
+
   actors: Actor[]
+  elements: BElement[]
+
   graphs: AnimationGraph[]
+  nodes: GraphNodeBase[]
 }
 
 export function initialize(src: StorageRoot): StorageRoot {
+  const keyframeById = toMap(src.keyframes)
+  const keyframeMapByActionId = mapReduce(toMap(src.actions), (a) =>
+    a.keyframes.map((id) => keyframeById[id])
+  )
+  const elementById = toMap(src.elements)
+  const elementMapByActorId = mapReduce(toMap(src.actors), (a) =>
+    a.elements.map((id) => elementById[id])
+  )
+
+  const nodeMap = toMap(src.nodes ?? [])
+  const graphs = src.graphs?.map((g) => initializeGraph(g, nodeMap)) ?? []
+  const nodes = initializeGraphNodes(src.nodes ?? [])
+
   return {
     armatures: src.armatures.map(initializeArmature),
+    bones: src.bones.map(initializeBone),
+    constraints: src.constraints.map(initializeConstraint),
+
     actions: src.actions.map(initializeAction),
+    keyframes: src.actions.flatMap((a) =>
+      keyframeMapByActionId[a.id].map(initializeKeyframe)
+    ),
+
     actors: src.actors.map(initializeActor),
-    graphs: src.graphs?.map(initializeGraph) ?? [],
+    elements: src.actors.flatMap((a) =>
+      initializeBElements(a.svgTree, elementMapByActorId[a.id])
+    ),
+
+    graphs,
+    nodes,
   }
 }
 
 function initializeArmature(armature: Partial<Armature>): Armature {
-  return getArmature({
-    ...armature,
-    bones: armature.bones?.map(initializeBone) ?? [],
-  })
+  return getArmature(armature)
 }
 
-function initializeBone(bone: Bone): Bone {
-  return getBone({
-    ...bone,
-    constraints: bone.constraints
-      ? bone.constraints
-          .map((c) => migrateConstraint(c))
-          .map((c) => getConstraint(c))
-      : [],
-  })
+function initializeBone(bone: Partial<Bone>): Bone {
+  return getBone(bone)
+}
+
+function initializeConstraint(c: BoneConstraint): BoneConstraint {
+  return getConstraint(migrateConstraint(c))
 }
 
 function initializeAction(action: Partial<Action>): Action {
-  return getAction({
-    ...action,
-    keyframes: action.keyframes?.map(initializeKeyframe) ?? [],
-  })
+  return getAction(action)
 }
 
 function initializeKeyframe(keyframe: Partial<KeyframeBase>): KeyframeBase {
@@ -86,30 +111,21 @@ function initializeKeyframe(keyframe: Partial<KeyframeBase>): KeyframeBase {
 }
 
 function initializeActor(actor: Partial<Actor>): Actor {
-  const elements = actor.elements?.concat() ?? []
-  const svg = actor.svgTree
-
-  return getActor({
-    ...actor,
-    elements: svg
-      ? initializeBElements(svg, elements.map(initializeElement))
-      : [],
-  })
+  return getActor(actor)
 }
 
-function initializeElement(elm: BElement): BElement {
-  return getBElement(elm)
-}
-
-export function initializeGraph(graph: AnimationGraph): AnimationGraph {
+export function initializeGraph(
+  graph: AnimationGraph,
+  nodeMap: IdMap<GraphNodeBase>
+): AnimationGraph {
   const g = getAnimationGraph(graph)
   return {
     ...g,
-    nodes: g.nodes.filter(isValidGraphNode).map(initializeGraphNode),
+    nodes: g.nodes.filter((id) => !!nodeMap[id]),
   }
 }
 
-export function initializeGraphNode(node: GraphNodeBase): GraphNodeBase {
+function initializeGraphNode(node: GraphNodeBase): GraphNodeBase {
   const struct = getGraphNodeModule<any>(node.type).struct
   const model = struct.create()
   return {
@@ -120,7 +136,11 @@ export function initializeGraphNode(node: GraphNodeBase): GraphNodeBase {
   } as GraphNodeBase
 }
 
-function isValidGraphNode(node: GraphNodeBase): boolean {
+export function initializeGraphNodes(nodes: GraphNodeBase[]): GraphNodeBase[] {
+  return nodes.filter(isValidGraphNodeType).map(initializeGraphNode)
+}
+
+function isValidGraphNodeType(node: GraphNodeBase): boolean {
   const module = getGraphNodeModule(node.type)
   return !!module
 }

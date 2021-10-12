@@ -17,241 +17,276 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { computed, ref } from 'vue'
-import { useListState } from '../composables/listState'
+import { computed } from 'vue'
 import { AnimationGraph, IdMap, toMap } from '../models'
-import { extractMap, mapReduce } from '../utils/commons'
+import { extractMap, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
+import { useEntities } from '/@/composables/entities'
 import { SelectOptions } from '/@/composables/modes/types'
+import { useItemSelectable } from '/@/composables/selectable'
+import { HistoryStore } from '/@/composables/stores/history'
+import { fromEntityList, toEntityList } from '/@/models/entity'
 import { GraphNode, GraphNodes, GraphNodeType } from '/@/models/graphNode'
 import {
   cleanAllEdgeGenerics,
   createGraphNode,
   deleteAndDisconnectNodes,
 } from '/@/utils/graphNodes'
-import {
-  convolute,
-  getAddItemHistory,
-  getAddItemsHistory,
-  getDeleteAndUpdateItemHistory,
-  getSelectItemHistory,
-  getSelectItemsHistory,
-  getUpdateItemHistory,
-  LastSelectedItemIdAccessor,
-  ListItemAccessor,
-  SelectedItemAccessor,
-} from '/@/utils/histories'
+import { convolute } from '/@/utils/histories'
 
-const historyStore = useHistoryStore()
-
-const graphState = useListState<AnimationGraph>('Graph')
-const selectedNodes = ref<IdMap<boolean>>({})
-const lastSelectedNodeId = ref<string>('')
-
-function initState(graphs: AnimationGraph[]) {
-  graphState.initState()
-  graphState.state.list = graphs
-  selectedNodes.value = {}
-  lastSelectedNodeId.value = ''
-}
-
-const lastSelectedGraph = computed(() => {
-  return graphState.lastSelectedItem.value
-})
-
-const nodeMap = computed(() => toMap(lastSelectedGraph.value?.nodes ?? []))
-
-const lastSelectedNode = computed(() => {
-  if (!lastSelectedNodeId.value) return
-  return nodeMap.value[lastSelectedNodeId.value]
-})
-
-const selectedNodeCount = computed(() => {
-  return Object.keys(selectedNodes.value).length
-})
-
-const nodesAccessor: ListItemAccessor<GraphNode> = {
-  get: () => lastSelectedGraph.value?.nodes ?? [],
-  set: (val) => {
-    if (!lastSelectedGraph.value) return
-    lastSelectedGraph.value.nodes = val
-  },
-}
-
-const selectedNodesAccessor: SelectedItemAccessor = {
-  get: () => selectedNodes.value,
-  set: (val) => {
-    if (!lastSelectedGraph.value) return
-    selectedNodes.value = val
-  },
-}
-
-const lastSelectedNodeIdAccessor: LastSelectedItemIdAccessor = {
-  get: () => lastSelectedNodeId.value ?? '',
-  set: (val) => {
-    if (!lastSelectedGraph.value) return
-    lastSelectedNodeId.value = val
-  },
-}
-
-function selectNode(id = '', options?: SelectOptions) {
-  if (!id && Object.keys(selectedNodes.value).length === 0) return
-  if (
-    !options?.shift &&
-    id === lastSelectedNodeId.value &&
-    selectedNodeCount.value === 1
+export function createStore(historyStore: HistoryStore) {
+  const graphEntities = useEntities<AnimationGraph>('Graph')
+  const graphs = computed(() => toEntityList(graphEntities.entities.value))
+  const graphSelectable = useItemSelectable(
+    'Graph',
+    () => graphEntities.entities.value.byId
   )
-    return
-
-  const item = getSelectItemHistory(
-    selectedNodesAccessor,
-    lastSelectedNodeIdAccessor,
-    id,
-    options?.shift
-  )
-  historyStore.push(item, true)
-}
-
-function selectNodes(ids: IdMap<boolean>, options?: SelectOptions) {
-  if (
-    Object.keys(ids).sort().join(',') ===
-    Object.keys(selectedNodes.value).sort().join(',')
-  )
-    return
-
-  const item = getSelectItemsHistory(
-    selectedNodesAccessor,
-    lastSelectedNodeIdAccessor,
-    ids,
-    options?.shift
-  )
-  historyStore.push(item, true)
-}
-
-function selectAllNode() {
-  if (Object.keys(nodeMap.value).length === 0) return
-
-  if (selectedNodeCount.value === Object.keys(nodeMap.value).length) {
-    selectNode('')
-  } else {
-    const item = getSelectItemsHistory(
-      selectedNodesAccessor,
-      lastSelectedNodeIdAccessor,
-      mapReduce(nodeMap.value, () => true)
-    )
-    historyStore.push(item, true)
-  }
-}
-
-function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
-  if (!lastSelectedGraph.value) return
-
-  const item = getUpdateItemHistory(nodesAccessor, { [id]: val }, seriesKey)
-  historyStore.push(item, true)
-}
-
-function updateNodes(val: IdMap<Partial<GraphNode>>) {
-  if (!lastSelectedGraph.value) return
-
-  const item = getUpdateItemHistory(nodesAccessor, val)
-  historyStore.push(item, true)
-}
-
-function addNode<T extends GraphNodeType>(
-  type: T,
-  arg: Partial<GraphNodes[T]> = {}
-): GraphNode | undefined {
-  if (!lastSelectedGraph.value) return
-
-  const node = createGraphNode(type, arg, true)
-  const item = convolute(getAddItemHistory(nodesAccessor, node), [
-    getSelectItemHistory(
-      selectedNodesAccessor,
-      lastSelectedNodeIdAccessor,
-      node.id
-    ),
-  ])
-  historyStore.push(item, true)
-  return node
-}
-
-function pasteNodes(nodes: GraphNode[]) {
-  if (!lastSelectedGraph.value || nodes.length === 0) return
-
-  const item = convolute(getAddItemsHistory(nodesAccessor, nodes), [
-    getSelectItemsHistory(
-      selectedNodesAccessor,
-      lastSelectedNodeIdAccessor,
-      mapReduce(toMap(nodes), () => true)
-    ),
-  ])
-  historyStore.push(item, true)
-}
-
-function deleteNodes() {
-  if (!lastSelectedGraph.value) return
-
-  const deleteIds = selectedNodes.value
-
-  const deletedInfo = deleteAndDisconnectNodes(
-    lastSelectedGraph.value.nodes,
-    deleteIds
+  const lastSelectedGraphId = graphSelectable.lastSelectedId
+  const lastSelectedGraph = computed(() =>
+    graphSelectable.lastSelectedId.value
+      ? graphEntities.entities.value.byId[graphSelectable.lastSelectedId.value]
+      : undefined
   )
 
-  const nodeMapByDelete = toMap(deletedInfo.nodes)
+  const nodeEntities = useEntities<GraphNode>('Node')
+  const nodeMap = computed(() => {
+    if (!lastSelectedGraph.value) return {}
 
-  const updatedNodesByDisconnect = extractMap(
-    nodeMapByDelete,
-    deletedInfo.updatedIds
-  )
-  const updatedNodesByClean = cleanAllEdgeGenerics({
-    ...nodeMapByDelete,
-    ...updatedNodesByDisconnect,
+    const nodeById = nodeEntities.entities.value.byId
+    return toMap(lastSelectedGraph.value.nodes.map((id) => nodeById[id]))
   })
-
-  const item = convolute(
-    getDeleteAndUpdateItemHistory(nodesAccessor, deleteIds, {
-      ...updatedNodesByDisconnect,
-      ...updatedNodesByClean,
-    }),
-    [
-      getSelectItemHistory(
-        selectedNodesAccessor,
-        lastSelectedNodeIdAccessor,
-        ''
-      ),
-    ]
+  const nodeSelectable = useItemSelectable('Node', () => nodeMap.value)
+  const selectedNodes = nodeSelectable.selectedMap
+  const lastSelectedNodeId = nodeSelectable.lastSelectedId
+  const lastSelectedNode = computed(() =>
+    lastSelectedNodeId.value
+      ? nodeEntities.entities.value.byId[lastSelectedNodeId.value]
+      : undefined
   )
-  historyStore.push(item, true)
-}
 
-export function useAnimationGraphStore() {
+  function initState(graphs: AnimationGraph[], nodes: GraphNode[]) {
+    graphEntities.init(fromEntityList(graphs))
+    graphSelectable.getClearAllHistory().redo()
+    nodeEntities.init(fromEntityList(nodes))
+    nodeSelectable.getClearAllHistory().redo()
+  }
+
+  function exportState() {
+    return {
+      graphs: graphs.value,
+      nodes: toEntityList(nodeEntities.entities.value),
+    }
+  }
+
+  function selectGraph(id: string = '') {
+    if (lastSelectedGraphId.value === id) return
+
+    historyStore.push(
+      convolute(
+        id
+          ? graphSelectable.getSelectHistory(id)
+          : graphSelectable.getClearAllHistory(),
+        [nodeSelectable.getClearAllHistory()]
+      ),
+      true
+    )
+  }
+
+  function addGraph(graph: AnimationGraph) {
+    historyStore.push(
+      convolute(graphEntities.getAddItemsHistory([graph]), [
+        nodeSelectable.getClearAllHistory(),
+        graphSelectable.getSelectHistory(graph.id),
+      ]),
+      true
+    )
+  }
+
+  function deleteGraph() {
+    const graph = lastSelectedGraph.value
+    if (!graph) return
+
+    historyStore.push(
+      convolute(graphEntities.getDeleteItemsHistory([graph.id]), [
+        graphSelectable.getClearAllHistory(),
+        nodeEntities.getDeleteItemsHistory(graph.nodes),
+        nodeSelectable.getClearAllHistory(),
+      ]),
+      true
+    )
+  }
+
+  function updateGraph(graph: Partial<AnimationGraph>) {
+    if (!lastSelectedGraphId.value) return
+
+    historyStore.push(
+      graphEntities.getUpdateItemHistory({
+        [lastSelectedGraphId.value]: graph,
+      }),
+      true
+    )
+  }
+
+  function selectNode(id = '', options?: SelectOptions) {
+    if (
+      !lastSelectedGraph.value ||
+      !nodeSelectable.getSelectHistoryDryRun(id, options?.shift)
+    )
+      return
+
+    historyStore.push(nodeSelectable.getSelectHistory(id, options?.shift), true)
+  }
+
+  function selectNodes(ids: IdMap<boolean>, options?: SelectOptions) {
+    const idList = Object.keys(ids)
+    if (!nodeSelectable.getMultiSelectHistoryDryRun(idList, options?.shift))
+      return
+
+    historyStore.push(
+      nodeSelectable.getMultiSelectHistory(idList, options?.shift),
+      true
+    )
+  }
+
+  function selectAllNode() {
+    if (Object.keys(nodeMap.value).length === 0) return
+    historyStore.push(nodeSelectable.getSelectAllHistory(true), true)
+  }
+
+  function addNode<T extends GraphNodeType>(
+    type: T,
+    arg: Partial<GraphNodes[T]> = {}
+  ): GraphNode | undefined {
+    const graph = lastSelectedGraph.value
+    if (!graph) return
+
+    const node = createGraphNode(type, arg, !arg.id)
+
+    historyStore.push(
+      convolute(nodeEntities.getAddItemsHistory([node]), [
+        graphEntities.getUpdateItemHistory({
+          [graph.id]: {
+            nodes: [...graph.nodes, node.id],
+          },
+        }),
+        nodeSelectable.getSelectHistory(node.id),
+      ]),
+      true
+    )
+    return node
+  }
+
+  function pasteNodes(nodes: GraphNode[]) {
+    const graph = lastSelectedGraph.value
+    if (!graph || nodes.length === 0) return
+
+    historyStore.push(
+      convolute(nodeEntities.getAddItemsHistory(nodes), [
+        graphEntities.getUpdateItemHistory({
+          [graph.id]: {
+            nodes: graph.nodes.concat(nodes.map((n) => n.id)),
+          },
+        }),
+        nodeSelectable.getMultiSelectHistory(nodes.map((n) => n.id)),
+      ]),
+      true
+    )
+  }
+
+  function deleteNodes() {
+    if (!lastSelectedGraph.value) return
+
+    const deleteIds = selectedNodes.value
+
+    const deletedInfo = deleteAndDisconnectNodes(
+      toList(nodeMap.value),
+      deleteIds
+    )
+
+    const nodeMapByDelete = toMap(deletedInfo.nodes)
+
+    const updatedNodesByDisconnect = extractMap(
+      nodeMapByDelete,
+      deletedInfo.updatedIds
+    )
+    const updatedNodesByClean = cleanAllEdgeGenerics({
+      ...nodeMapByDelete,
+      ...updatedNodesByDisconnect,
+    })
+
+    const graph = lastSelectedGraph.value
+    if (!graph) return
+
+    const deletedIds = selectedNodes.value
+
+    historyStore.push(
+      convolute(
+        nodeEntities.getDeleteAndUpdateItemHistory(Object.keys(deletedIds), {
+          ...updatedNodesByDisconnect,
+          ...updatedNodesByClean,
+        }),
+        [
+          graphEntities.getUpdateItemHistory({
+            [graph.id]: {
+              nodes: graph.nodes.filter((id) => !deletedIds[id]),
+            },
+          }),
+          nodeSelectable.getClearAllHistory(),
+        ]
+      ),
+      true
+    )
+  }
+
+  function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
+    if (!lastSelectedGraph.value) return
+
+    historyStore.push(
+      nodeEntities.getUpdateItemHistory(
+        {
+          [id]: val,
+        },
+        seriesKey
+      ),
+      true
+    )
+  }
+
+  function updateNodes(val: IdMap<Partial<GraphNode>>) {
+    if (!lastSelectedGraph.value) return
+
+    historyStore.push(nodeEntities.getUpdateItemHistory(val), true)
+  }
+
   return {
     initState,
-    graphList: computed(() => graphState.state.list),
-    nodeMap,
+    exportState,
+
+    graphs,
     lastSelectedGraph,
+
+    nodeMap,
     lastSelectedNode,
-
-    selectGraph: (id: string) => graphState.selectItem(id),
-    updateGraph: (val: Partial<AnimationGraph>) => graphState.updateItem(val),
-    addGraph: (graph: AnimationGraph) => {
-      graphState.addItem(graph, true)
-    },
-    deleteGraph() {
-      graphState.deleteItem()
-    },
-
-    updateNode,
-    updateNodes,
-    addNode,
-    pasteNodes,
-    deleteNodes,
-
     selectedNodes,
+
+    selectGraph,
+    addGraph,
+    deleteGraph,
+    updateGraph,
+
     selectNode,
     selectNodes,
     selectAllNode,
+    addNode,
+    deleteNodes,
+    pasteNodes,
+    updateNode,
+    updateNodes,
   }
 }
-export type AnimationGraphStore = ReturnType<typeof useAnimationGraphStore>
+export type AnimationGraphStore = ReturnType<typeof createStore>
+
+const store = createStore(useHistoryStore())
+export function useAnimationGraphStore() {
+  return store
+}

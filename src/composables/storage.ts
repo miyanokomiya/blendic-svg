@@ -43,6 +43,7 @@ import {
 } from '../utils/poseResolver'
 import { initialize, StorageRoot } from '/@/models/storage'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
+import { toList } from '/@/utils/commons'
 import { makeSvg } from '/@/utils/svgMaker'
 
 interface BakedData {
@@ -69,11 +70,36 @@ export function useStorage() {
   const graphStore = useAnimationGraphStore()
 
   function serialize(): string {
-    const armatures = store.state.armatures
-    const actions = cleanActions(animationStore.actions.value, armatures)
-    const actors = cleanActors(elementStore.actors.value, armatures)
-    const graphs = cleanGraphs(graphStore.graphList.value)
-    const root: StorageRoot = { armatures, actions, actors, graphs }
+    const { armatures, bones, constraints } = store.exportState()
+    const exportedAnimation = animationStore.exportState()
+    const { actions, keyframes } = cleanActions(
+      exportedAnimation.actions,
+      exportedAnimation.keyframes,
+      armatures,
+      bones
+    )
+    const fromElementStore = elementStore.exportState()
+    const { actors, elements } = cleanActors(
+      fromElementStore.actors,
+      fromElementStore.elements,
+      armatures,
+      bones
+    )
+    const fromGraphStore = graphStore.exportState()
+    const graphs = cleanGraphs(fromGraphStore.graphs)
+    const nodes = fromGraphStore.nodes
+
+    const root: StorageRoot = {
+      armatures,
+      bones,
+      constraints,
+      actions,
+      keyframes,
+      actors,
+      elements,
+      graphs,
+      nodes,
+    }
     return JSON.stringify(root)
   }
   function deserialize(src: string) {
@@ -81,10 +107,10 @@ export function useStorage() {
       const root: StorageRoot = initialize(JSON.parse(src))
       historyStore.clearHistory()
       canvasStore.initState()
-      store.initState(root.armatures)
-      animationStore.initState(root.actions)
-      elementStore.initState(root.actors)
-      graphStore.initState(root.graphs)
+      store.initState(root.armatures, root.bones, root.constraints)
+      animationStore.initState(root.actions, root.keyframes)
+      elementStore.initState(root.actors, root.elements)
+      graphStore.initState(root.graphs, root.nodes)
     } catch (e) {
       alert('Failed to load: Invalid file.')
     }
@@ -137,14 +163,19 @@ export function useStorage() {
     try {
       const file = await showOpenFileDialog('.svg, image/svg+xml')
       const svg = await readAsText(file)
-      const actor = parseFromSvg(svg)
+      const { actor, elements } = parseFromSvg(svg)
 
       if (isInheritWeight && elementStore.lastSelectedActor.value) {
-        elementStore.importActor(
-          inheritWeight(elementStore.lastSelectedActor.value, actor)
+        const inherited = inheritWeight(
+          {
+            actor: elementStore.lastSelectedActor.value,
+            elements: toList(elementStore.elementMap.value),
+          },
+          { actor, elements }
         )
+        elementStore.importActor(inherited.actor, inherited.elements)
       } else {
-        elementStore.importActor(actor)
+        elementStore.importActor(actor, elements)
       }
     } catch (e) {
       alert('Failed to load: Invalid file.')
@@ -157,17 +188,22 @@ export function useStorage() {
     if (!armature || !actor) return
 
     const svgTree = addEssentialSvgAttributes(actor.svgTree)
-    const actionMap = animationStore.actionMap.value
+    const exportedAnimation = animationStore.exportState()
+    const actionMap = toMap(exportedAnimation.actions)
+    const keyframeMap = toMap(exportedAnimation.keyframes)
+
     const actions = actionIds
       .filter((id) => actionMap[id])
       .map((id) => {
         const action = actionMap[id]
+        const keyframes = action.keyframes.map((id) => keyframeMap[id])
         const attributesMapPerFrame = bakeKeyframes(
-          getKeyframeMapByTargetId(action.keyframes),
+          getKeyframeMapByTargetId(keyframes),
           store.boneMap.value,
-          toMap(actor.elements),
+          store.constraintMap.value,
+          elementStore.elementMap.value,
           svgTree,
-          getLastFrame(action.keyframes)
+          getLastFrame(keyframes)
         )
         return {
           name: action.name,
@@ -200,7 +236,7 @@ export function useStorage() {
     const svgNode = addEssentialSvgAttributes(
       getPosedElementTree(
         animationStore.currentPosedBones.value,
-        toMap(actor.elements ?? []),
+        elementStore.elementMap.value,
         actor.svgTree
       )
     )

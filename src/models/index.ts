@@ -19,10 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { IRectangle, IVec2 } from 'okageo'
 import { v4 } from 'uuid'
-import { toKeyMap } from '../utils/commons'
-import { BoneConstraint } from '../utils/constraints'
-import { GraphNode } from '/@/models/graphNode'
-import { KeyframeBase } from '/@/models/keyframe'
+import { toKeyMap } from '/@/utils/commons'
 
 export type IdMap<T> = {
   [id: string]: T
@@ -40,7 +37,7 @@ export interface Action {
   name: string
   totalFrame: number
   armatureId: string
-  keyframes: KeyframeBase[]
+  keyframes: string[]
 }
 
 export interface Bone {
@@ -53,14 +50,14 @@ export interface Bone {
   tail: IVec2
   inheritRotation: boolean
   inheritScale: boolean
-  constraints: BoneConstraint[]
+  constraints: string[]
 }
 
 export interface Armature {
   id: string
   name: string
   transform: Transform
-  bones: Bone[]
+  bones: string[]
 }
 
 export interface ElementNodeAttributes {
@@ -89,7 +86,7 @@ export interface Actor {
   id: string
   armatureId: string
   svgTree: ElementNode
-  elements: BElement[]
+  elements: string[]
   viewBox: IRectangle
 }
 
@@ -97,7 +94,7 @@ export interface AnimationGraph {
   id: string
   name: string
   armatureId: string
-  nodes: GraphNode[]
+  nodes: string[]
 }
 
 export function getAnimationGraph(
@@ -275,10 +272,10 @@ export function getArmature(
   }
 }
 
-export interface BoneSelectedState {
-  head?: boolean
-  tail?: boolean
-}
+export type BoneSelectedState = Partial<{
+  head: true
+  tail: true
+}>
 
 export function toMap<T extends { id: string }>(list: T[]): IdMap<T> {
   return toKeyMap(list, 'id')

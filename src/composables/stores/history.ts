@@ -105,3 +105,5 @@ export function useHistoryStore(getHistoryMax: () => number = () => 64) {
     redo,
   }
 }
+
+export type HistoryStore = ReturnType<typeof useHistoryStore>

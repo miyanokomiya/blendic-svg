@@ -45,6 +45,7 @@ import {
   getPosedAttributesWithoutTransform,
   posedColorAttributes,
 } from '/@/utils/attributesResolver'
+import { BoneConstraint } from '/@/utils/constraints'
 import { flatElementTree, isPlainText } from '/@/utils/elements'
 import { isIdentityAffine, transformToAffine } from '/@/utils/geometry'
 import { splitKeyframeMapByName } from '/@/utils/keyframes'
@@ -214,20 +215,29 @@ function getnativeMatrix(node: ElementNode, spaceNativeMatrix: AffineMatrix) {
 export function bakeKeyframes(
   keyframeMapByTargetId: IdMap<KeyframeBase[]>,
   boneMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
   endFrame: number
 ): IdMap<ElementNodeAttributes>[] {
   return [...Array(endFrame + 1)].map((_, i) => {
-    return bakeKeyframe(keyframeMapByTargetId, boneMap, elementMap, svgRoot, i)
+    return bakeKeyframe(
+      keyframeMapByTargetId,
+      boneMap,
+      constraintMap,
+      elementMap,
+      svgRoot,
+      i
+    )
   })
 }
 
 export function getInterpolatedBoneMap(
   keyframeMapByTargetId: IdMap<KeyframeBase[]>,
   boneMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
   currentFrame: number
-): IdMap<Bone> {
+): { bones: IdMap<Bone>; constraints: IdMap<BoneConstraint> } {
   const splitedKeyframeMapByTargetId = splitKeyframeMapByName(
     keyframeMapByTargetId
   )
@@ -247,29 +257,32 @@ export function getInterpolatedBoneMap(
       currentFrame
     )
 
-  return mapReduce(interpolatedBoneMap, (bone) => {
-    return {
-      ...bone,
-      constraints: bone.constraints.map((c) => {
-        if (!interpolatedOptionMap[c.id]) return c
-        return {
-          ...c,
-          option: { ...c.option, ...interpolatedOptionMap[c.id] },
-        }
-      }),
-    }
-  })
+  return {
+    bones: interpolatedBoneMap,
+    constraints: mapReduce(constraintMap, (c) => {
+      const option = interpolatedOptionMap[c.id]
+      return option ? ({ ...c, option } as BoneConstraint) : c
+    }),
+  }
 }
 
 export function bakeKeyframe(
   keyframeMapByTargetId: IdMap<KeyframeBase[]>,
   boneMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
   elementMap: IdMap<BElement>,
   svgRoot: ElementNode,
   currentFrame: number
 ): IdMap<ElementNodeAttributes> {
+  const interpolated = getInterpolatedBoneMap(
+    keyframeMapByTargetId,
+    boneMap,
+    constraintMap,
+    currentFrame
+  )
   const resolvedBoneMap = getTransformedBoneMap(
-    getInterpolatedBoneMap(keyframeMapByTargetId, boneMap, currentFrame)
+    interpolated.bones,
+    interpolated.constraints
   )
   const matrixMap = getPosedElementMatrixMap(
     resolvedBoneMap,

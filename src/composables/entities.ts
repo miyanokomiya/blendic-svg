@@ -1,9 +1,10 @@
 import { computed, reactive } from 'vue'
-import { HistoryItem } from '/@/composables/stores/history'
-import { IdMap, toMap } from '/@/models'
+import { IdMap } from '/@/models'
 import { Entities, Entity } from '/@/models/entity'
 import { extractMap, reduceToMap } from '/@/utils/commons'
-import { convolute } from '/@/utils/histories'
+import * as okahistory from 'okahistory'
+
+type DeletedInfo<T> = { entity: T; index: number }
 
 export function useEntities<T extends Entity>(name: string) {
   const entities: Entities<T> = reactive({ byId: {}, allIds: [] })
@@ -13,88 +14,100 @@ export function useEntities<T extends Entity>(name: string) {
     entities.allIds = defaultEntities.allIds.concat()
   }
 
-  function getAddItemsHistory(items: T[]): HistoryItem {
+  const actionNames = {
+    add: `${name}_ADD`,
+    delete: `${name}_DELETE`,
+    update: `${name}_UPDATE`,
+  }
+
+  const addReducer: okahistory.Reducer<T[], string[]> = {
+    getLabel: () => `Add ${name}`,
+    redo(items) {
+      items.forEach((item) => {
+        entities.byId[item.id] = item
+        entities.allIds.push(item.id)
+      })
+      return items.map((item) => item.id)
+    },
+    undo(ids) {
+      ids.forEach((id) => delete entities.byId[id])
+      const idMap = reduceToMap(ids, () => true)
+      entities.allIds = entities.allIds.filter((id) => !idMap[id])
+    },
+  }
+
+  function createAddAction(items: T[]): okahistory.Action<T[]> {
     return {
-      name: `Add ${name}`,
-      undo: () => {
-        items.forEach((item) => delete entities.byId[item.id])
-        const ids = toMap(items)
-        entities.allIds = entities.allIds.filter((id) => !ids[id])
-      },
-      redo: () => {
-        items.forEach((item) => {
-          entities.byId[item.id] = item
-          entities.allIds.push(item.id)
-        })
-      },
+      name: actionNames.add,
+      args: items,
     }
   }
 
-  function getDeleteItemsHistory(ids: string[]): HistoryItem {
-    const deletedInfo = ids
-      .map((id) => ({
-        entity: entities.byId[id],
-        index: entities.allIds.indexOf(id),
-      }))
-      // sort asc by index to splice easily in the undo operation
-      .sort((a, b) => a.index - b.index)
+  const deleteReducer: okahistory.Reducer<string[], DeletedInfo<T>[]> = {
+    getLabel: () => `Delete ${name}`,
+    redo(ids) {
+      const deletedInfo = ids
+        .map((id) => ({
+          entity: entities.byId[id],
+          index: entities.allIds.indexOf(id),
+        }))
+        // sort asc by index to splice easily in the undo operation
+        .sort((a, b) => a.index - b.index)
 
+      ids.forEach((id) => delete entities.byId[id])
+      const map = reduceToMap(ids, () => true)
+      entities.allIds = entities.allIds.filter((id) => !map[id])
+
+      return deletedInfo
+    },
+    undo(deletedInfo) {
+      deletedInfo.forEach((info) => {
+        entities.byId[info.entity.id] = info.entity
+        entities.allIds.splice(info.index, 0, info.entity.id)
+      })
+    },
+  }
+
+  function createDeleteAction(ids: string[]): okahistory.Action<string[]> {
     return {
-      name: `Delete ${name}`,
-      undo: () => {
-        deletedInfo.forEach((info) => {
-          entities.byId[info.entity.id] = info.entity
-          entities.allIds.splice(info.index, 0, info.entity.id)
-        })
-      },
-      redo: () => {
-        ids.forEach((id) => delete entities.byId[id])
-        const map = reduceToMap(ids, () => true)
-        entities.allIds = entities.allIds.filter((id) => !map[id])
-      },
+      name: actionNames.delete,
+      args: ids,
     }
   }
 
-  function getUpdateItemHistory(
-    updatedMap: IdMap<Partial<T>>,
-    seriesKey?: string
-  ): HistoryItem {
-    const beforeUpdated = extractMap(entities.byId, updatedMap)
-
-    return {
-      name: `Update ${name}`,
-      undo: () => {
-        Object.entries(beforeUpdated).forEach(
-          ([id, val]) => (entities.byId[id] = val)
-        )
-      },
-      redo: () => {
-        Object.entries(beforeUpdated).forEach(
-          ([id, val]) => (entities.byId[id] = { ...val, ...updatedMap[id] })
-        )
-      },
-      seriesKey,
-    }
+  const updateReducer: okahistory.Reducer<IdMap<Partial<T>>, IdMap<T>> = {
+    getLabel: () => `Update ${name}`,
+    redo: (updatedMap) => {
+      const origin = extractMap(entities.byId, updatedMap)
+      Object.entries(origin).forEach(
+        ([id, val]) => (entities.byId[id] = { ...val, ...updatedMap[id] })
+      )
+      return origin
+    },
+    undo: (snapshot) => {
+      Object.entries(snapshot).forEach(([id, val]) => (entities.byId[id] = val))
+    },
   }
 
-  function getDeleteAndUpdateItemHistory(
-    deleteIds: string[],
+  function createUpdateAction(
     updatedMap: IdMap<Partial<T>>
-  ): HistoryItem {
-    return convolute(
-      getDeleteItemsHistory(deleteIds),
-      [getUpdateItemHistory(updatedMap)],
-      `Delete ${name}`
-    )
+  ): okahistory.Action<IdMap<Partial<T>>> {
+    return {
+      name: actionNames.update,
+      args: updatedMap,
+    }
   }
 
   return {
     init,
     entities: computed(() => entities),
-
-    getAddItemsHistory,
-    getDeleteItemsHistory,
-    getUpdateItemHistory,
-    getDeleteAndUpdateItemHistory,
+    reducers: {
+      [actionNames.add]: addReducer,
+      [actionNames.delete]: deleteReducer,
+      [actionNames.update]: updateReducer,
+    },
+    createAddAction,
+    createDeleteAction,
+    createUpdateAction,
   }
 }

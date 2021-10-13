@@ -20,8 +20,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 import * as okaselect from 'okaselect'
 import { IdMap } from '/@/models'
 import { computed, ref } from 'vue'
-import { HistoryItem } from '/@/composables/stores/history'
 import { mapReduce } from '/@/utils/commons'
+import * as okahistory from 'okahistory'
 
 export type SelectableAttrs = {
   [key: string]: true
@@ -38,12 +38,35 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
     lastSelectedId.value = selectable.getLastSelected()
   }
 
-  function getSelectHistory(id: string, shift = false): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  const actionNames = {
+    select: `${name}_SELECT`,
+    multiSelect: `${name}_MULTI_SELECT`,
+    selectAll: `${name}_SELECT_ALL`,
+    clearAll: `${name}_CLEAR_ALL`,
+  }
+
+  const selectReducer: okahistory.Reducer<
+    { id: string; shift?: boolean },
+    string[]
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(args) {
+      const snapshot = selectable.createSnapshot()
+      args.id ? selectable.select(args.id, args.shift) : selectable.clearAll()
+      return snapshot.map(([id]) => id)
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot.map((id) => [id, true]))
+    },
+  }
+
+  function createSelectAction(
+    id: string,
+    shift = false
+  ): okahistory.Action<{ id: string; shift?: boolean }> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () => (id ? selectable.select(id, shift) : selectable.clearAll()),
+      name: actionNames.select,
+      args: { id, shift },
     }
   }
 
@@ -55,12 +78,28 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
     return true
   }
 
-  function getMultiSelectHistory(ids: string[], shift = false): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  const multiSelectReducer: okahistory.Reducer<
+    { ids: string[]; shift?: boolean },
+    string[]
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(args) {
+      const snapshot = selectable.createSnapshot()
+      selectable.multiSelect(args.ids, args.shift)
+      return snapshot.map(([id]) => id)
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot.map((id) => [id, true]))
+    },
+  }
+
+  function createMultiSelectAction(
+    ids: string[],
+    shift = false
+  ): okahistory.Action<{ ids: string[]; shift?: boolean }> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () => selectable.multiSelect(ids, shift),
+      name: actionNames.multiSelect,
+      args: { ids, shift },
     }
   }
 
@@ -78,21 +117,41 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
     return true
   }
 
-  function getSelectAllHistory(toggle = false): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  const selectAllReducer: okahistory.Reducer<boolean, string[]> = {
+    getLabel: () => `Select ${name}`,
+    redo(toggle) {
+      const snapshot = selectable.createSnapshot()
+      selectable.selectAll(toggle)
+      return snapshot.map(([id]) => id)
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot.map((id) => [id, true]))
+    },
+  }
+
+  function createSelectAllAction(toggle = false): okahistory.Action<boolean> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () => selectable.selectAll(toggle),
+      name: actionNames.selectAll,
+      args: toggle,
     }
   }
 
-  function getClearAllHistory(): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  const clearAllReducer: okahistory.Reducer<void, string[]> = {
+    getLabel: () => `Select ${name}`,
+    redo() {
+      const snapshot = selectable.createSnapshot()
+      selectable.clearAll()
+      return snapshot.map(([id]) => id)
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot.map((id) => [id, true]))
+    },
+  }
+
+  function createClearAllAction(): okahistory.Action<void> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () => selectable.clearAll(),
+      name: actionNames.clearAll,
+      args: undefined,
     }
   }
 
@@ -100,12 +159,19 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
     selectedMap: computed(() => selectedMap.value),
     lastSelectedId: computed(() => lastSelectedId.value),
 
-    getSelectHistory,
     getSelectHistoryDryRun,
-    getMultiSelectHistory,
     getMultiSelectHistoryDryRun,
-    getSelectAllHistory,
-    getClearAllHistory,
+
+    reducers: {
+      [actionNames.select]: selectReducer,
+      [actionNames.multiSelect]: multiSelectReducer,
+      [actionNames.selectAll]: selectAllReducer,
+      [actionNames.clearAll]: clearAllReducer,
+    },
+    createSelectAction,
+    createMultiSelectAction,
+    createSelectAllAction,
+    createClearAllAction,
   }
 }
 
@@ -134,17 +200,38 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
     allAttrsSelectedIds.value = selectable.getAllAttrsSelected()
   }
 
-  function getSelectHistory(
+  const actionNames = {
+    select: `${name}_SELECT`,
+    multiSelect: `${name}_MULTI_SELECT`,
+    selectAll: `${name}_SELECT_ALL`,
+    clearAll: `${name}_CLEAR_ALL`,
+  }
+
+  const selectReducer: okahistory.Reducer<
+    { id: string; attrKey: string; shift?: boolean },
+    [string, K][]
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(args) {
+      const snapshot = selectable.createSnapshot()
+      args.id
+        ? selectable.select(args.id, args.attrKey, args.shift)
+        : selectable.clearAll()
+      return snapshot
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot)
+    },
+  }
+
+  function createSelectAction(
     id: string,
     attrKey: string,
     shift = false
-  ): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  ): okahistory.Action<{ id: string; attrKey: string; shift?: boolean }> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () =>
-        id ? selectable.select(id, attrKey, shift) : selectable.clearAll(),
+      name: actionNames.select,
+      args: { id, attrKey, shift },
     }
   }
 
@@ -165,30 +252,66 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
     return true
   }
 
-  function getMultiSelectHistory(val: IdMap<K>, shift = false): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  const multiSelectReducer: okahistory.Reducer<
+    { val: IdMap<K>; shift?: boolean },
+    [string, K][]
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(args) {
+      const snapshot = selectable.createSnapshot()
+      selectable.multiSelect(args.val, args.shift)
+      return snapshot
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot)
+    },
+  }
+
+  function createMultiSelectAction(
+    val: IdMap<K>,
+    shift = false
+  ): okahistory.Action<{ val: IdMap<K>; shift?: boolean }> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () => selectable.multiSelect(val, shift),
+      name: actionNames.multiSelect,
+      args: { val, shift },
     }
   }
 
-  function getSelectAllHistory(toggle = false): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  const selectAllReducer: okahistory.Reducer<boolean, [string, K][]> = {
+    getLabel: () => `Select ${name}`,
+    redo(toggle) {
+      const snapshot = selectable.createSnapshot()
+      selectable.selectAll(toggle)
+      return snapshot
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot)
+    },
+  }
+
+  function createSelectAllAction(toggle = false): okahistory.Action<boolean> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () => selectable.selectAll(toggle),
+      name: actionNames.selectAll,
+      args: toggle,
     }
   }
 
-  function getClearAllHistory(): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  const clearAllReducer: okahistory.Reducer<void, [string, K][]> = {
+    getLabel: () => `Select ${name}`,
+    redo() {
+      const snapshot = selectable.createSnapshot()
+      selectable.clearAll()
+      return snapshot
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot)
+    },
+  }
+
+  function createClearAllAction(): okahistory.Action<void> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () => selectable.clearAll(),
+      name: actionNames.clearAll,
+      args: undefined,
     }
   }
 
@@ -201,11 +324,18 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
     createSnapshot: selectable.createSnapshot,
     restore: selectable.restore,
 
-    getSelectHistory,
     getSelectHistoryDryRun,
-    getMultiSelectHistory,
-    getSelectAllHistory,
-    getClearAllHistory,
+
+    reducers: {
+      [actionNames.select]: selectReducer,
+      [actionNames.multiSelect]: multiSelectReducer,
+      [actionNames.selectAll]: selectAllReducer,
+      [actionNames.clearAll]: clearAllReducer,
+    },
+    createSelectAction,
+    createMultiSelectAction,
+    createSelectAllAction,
+    createClearAllAction,
   }
 }
 
@@ -237,17 +367,38 @@ export function useGeneAttrsSelectable<T, K extends GenericsProps>(
     allAttrsSelectedIds.value = selectable.getAllAttrsSelected()
   }
 
-  function getSelectHistory(
+  const actionNames = {
+    select: `${name}_SELECT`,
+    multiSelect: `${name}_MULTI_SELECT`,
+    selectAll: `${name}_SELECT_ALL`,
+    clearAll: `${name}_CLEAR_ALL`,
+  }
+
+  const selectReducer: okahistory.Reducer<
+    { id: string; attrKey: string; shift?: boolean },
+    [string, okaselect.GenericsAttrs][]
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(args) {
+      const snapshot = selectable.createSnapshot()
+      args.id
+        ? selectable.select(args.id, args.attrKey, args.shift)
+        : selectable.clearAll()
+      return snapshot
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot)
+    },
+  }
+
+  function createSelectAction(
     id: string,
     attrKey: string,
     shift = false
-  ): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  ): okahistory.Action<{ id: string; attrKey: string; shift?: boolean }> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () =>
-        id ? selectable.select(id, attrKey, shift) : selectable.clearAll(),
+      name: actionNames.select,
+      args: { id, attrKey, shift },
     }
   }
 
@@ -268,30 +419,72 @@ export function useGeneAttrsSelectable<T, K extends GenericsProps>(
     return true
   }
 
-  function getMultiSelectHistory(val: IdMap<K>, shift = false): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  const multiSelectReducer: okahistory.Reducer<
+    { val: IdMap<K>; shift?: boolean },
+    [string, okaselect.GenericsAttrs][]
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(args) {
+      const snapshot = selectable.createSnapshot()
+      selectable.multiSelect(mapReduce(args.val, toAttrs), args.shift)
+      return snapshot
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot)
+    },
+  }
+
+  function createMultiSelectAction(
+    val: IdMap<K>,
+    shift = false
+  ): okahistory.Action<{ val: IdMap<K>; shift?: boolean }> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () => selectable.multiSelect(mapReduce(val, toAttrs), shift),
+      name: actionNames.multiSelect,
+      args: { val, shift },
     }
   }
 
-  function getSelectAllHistory(toggle = false): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  const selectAllReducer: okahistory.Reducer<
+    boolean,
+    [string, okaselect.GenericsAttrs][]
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(toggle) {
+      const snapshot = selectable.createSnapshot()
+      selectable.selectAll(toggle)
+      return snapshot
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot)
+    },
+  }
+
+  function createSelectAllAction(toggle = false): okahistory.Action<boolean> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () => selectable.selectAll(toggle),
+      name: actionNames.selectAll,
+      args: toggle,
     }
   }
 
-  function getClearAllHistory(): HistoryItem {
-    const snapshot = selectable.createSnapshot()
+  const clearAllReducer: okahistory.Reducer<
+    void,
+    [string, okaselect.GenericsAttrs][]
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo() {
+      const snapshot = selectable.createSnapshot()
+      selectable.clearAll()
+      return snapshot
+    },
+    undo(snapshot) {
+      selectable.restore(snapshot)
+    },
+  }
+
+  function createClearAllAction(): okahistory.Action<void> {
     return {
-      name: `Select ${name}`,
-      undo: () => selectable.restore(snapshot),
-      redo: () => selectable.clearAll(),
+      name: actionNames.clearAll,
+      args: undefined,
     }
   }
 
@@ -304,11 +497,18 @@ export function useGeneAttrsSelectable<T, K extends GenericsProps>(
     createSnapshot: selectable.createSnapshot,
     restore: selectable.restore,
 
-    getSelectHistory,
     getSelectHistoryDryRun,
-    getMultiSelectHistory,
-    getSelectAllHistory,
-    getClearAllHistory,
+
+    reducers: {
+      [actionNames.select]: selectReducer,
+      [actionNames.multiSelect]: multiSelectReducer,
+      [actionNames.selectAll]: selectAllReducer,
+      [actionNames.clearAll]: clearAllReducer,
+    },
+    createSelectAction,
+    createMultiSelectAction,
+    createSelectAllAction,
+    createClearAllAction,
   }
 }
 

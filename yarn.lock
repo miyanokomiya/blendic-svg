@@ -4799,6 +4799,11 @@ okageo@^2.0.13:
   resolved "https://registry.yarnpkg.com/okageo/-/okageo-2.0.13.tgz#b0a7d5c7b2347684c001e233c91654d92c3496d2"
   integrity sha512-gXP/MbBlZAT+ZfnjUNMVffKPcPPCCPBdm7YI2kfiKNGHUDejD0vssxafGzpce3592GFGAYEs4YhhTl+YWILuHw==
 
+okahistory@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/okahistory/-/okahistory-0.0.6.tgz#f69a4b0fd1d123aff63bd8ee243262cee3987126"
+  integrity sha512-xUo7s9dpP9jWcz8eX7lhVGQ78SML0LzLmDf1+AL4X5AtqqTzZRGhnTlTKY9FtgFPdq5mYyd+gyneBDgPtsDrCA==
+
 okanvas@^0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/okanvas/-/okanvas-0.0.4.tgz#5c0eb0e9ffba9ec03ef2810e7467216b5ee3cf89"

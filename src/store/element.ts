@@ -26,15 +26,26 @@ import { useItemSelectable } from '/@/composables/selectable'
 import { HistoryStore } from '/@/composables/stores/history'
 import { fromEntityList, toEntityList } from '/@/models/entity'
 import { getPlainSvgTree, toBElement } from '/@/utils/elements'
-import { convolute } from '/@/utils/histories'
 
 export function createStore(historyStore: HistoryStore) {
   const actorEntities = useEntities<Actor>('Actor')
-  const actors = computed(() => toEntityList(actorEntities.entities.value))
+  const elementEntities = useEntities<BElement>('Element')
+
+  const elementSelectable = useItemSelectable(
+    'Element',
+    () => elementEntities.entities.value.byId
+  )
   const actorSelectable = useItemSelectable(
     'Actor',
     () => actorEntities.entities.value.byId
   )
+
+  historyStore.defineReducers(actorEntities.reducers)
+  historyStore.defineReducers(elementEntities.reducers)
+  historyStore.defineReducers(actorSelectable.reducers)
+  historyStore.defineReducers(elementSelectable.reducers)
+
+  const actors = computed(() => toEntityList(actorEntities.entities.value))
   const lastSelectedActorId = actorSelectable.lastSelectedId
   const lastSelectedActor = computed(() =>
     lastSelectedActorId.value
@@ -42,11 +53,6 @@ export function createStore(historyStore: HistoryStore) {
       : undefined
   )
 
-  const elementEntities = useEntities<BElement>('Element')
-  const elementSelectable = useItemSelectable(
-    'Element',
-    () => elementEntities.entities.value.byId
-  )
   const selectedElements = elementSelectable.selectedMap
   const lastSelectedElementId = elementSelectable.lastSelectedId
   const elementMap = computed(() => {
@@ -60,13 +66,9 @@ export function createStore(historyStore: HistoryStore) {
 
   function initState(actors: Actor[], elements: BElement[]) {
     actorEntities.init(fromEntityList(actors))
-    if (actors.length > 0) {
-      actorSelectable.getSelectHistory(actors[0].id).redo()
-    } else {
-      actorSelectable.getClearAllHistory().redo()
-    }
     elementEntities.init(fromEntityList(elements))
-    elementSelectable.getClearAllHistory().redo()
+    actorSelectable.init(actors.length > 0 ? [actors[0].id] : [])
+    elementSelectable.init([])
   }
 
   function exportState() {
@@ -86,49 +88,42 @@ export function createStore(historyStore: HistoryStore) {
       elements: [element.id],
     })
 
-    actorEntities.getAddItemsHistory([actor]).redo()
-    actorSelectable.getSelectHistory(actor.id).redo()
-    elementEntities.getAddItemsHistory([element]).redo()
+    actorEntities.init(fromEntityList([actor]))
+    elementEntities.init(fromEntityList([element]))
+    actorSelectable.init([actor.id])
+    elementSelectable.init([])
   }
 
   // only one actor is enabled currently
   function importActor(actor: Actor, elements: BElement[]) {
-    historyStore.push(
-      convolute(
-        actorEntities.getDeleteItemsHistory(actors.value.map((a) => a.id)),
-        [
-          actorEntities.getAddItemsHistory([actor]),
-          elementEntities.getAddItemsHistory(elements),
-          actorSelectable.getSelectHistory(actor.id),
-        ]
-      ),
+    historyStore.dispatch(
+      actorEntities.createDeleteAction(actors.value.map((a) => a.id)),
+      [
+        actorEntities.createAddAction([actor]),
+        elementEntities.createAddAction(elements),
+        actorSelectable.createSelectAction(actor.id),
+      ]
+    ),
       true
-    )
   }
 
   function selectActor(id: string = '') {
-    if (lastSelectedActorId.value === id) return
+    if (!actorSelectable.getSelectHistoryDryRun(id)) return
 
-    historyStore.push(
-      convolute(
-        id
-          ? actorSelectable.getSelectHistory(id)
-          : actorSelectable.getClearAllHistory(),
-        [elementSelectable.getClearAllHistory()]
-      ),
+    historyStore.dispatch(actorSelectable.createSelectAction(id), [
+      elementSelectable.createClearAllAction(),
+    ]),
       true
-    )
   }
 
   function updateArmatureId(id: string) {
     const actor = lastSelectedActor.value
     if (!actor) return
 
-    historyStore.push(
-      actorEntities.getUpdateItemHistory({
+    historyStore.dispatch(
+      actorEntities.createUpdateAction({
         [actor.id]: { armatureId: id },
-      }),
-      true
+      })
     )
   }
 
@@ -139,26 +134,24 @@ export function createStore(historyStore: HistoryStore) {
     )
       return
 
-    historyStore.push(
-      elementSelectable.getSelectHistory(id, options?.shift),
-      true
+    historyStore.dispatch(
+      elementSelectable.createSelectAction(id, options?.shift)
     )
   }
 
   function selectAllElement() {
     if (!lastSelectedActor.value) return
-    historyStore.push(elementSelectable.getSelectAllHistory(true), true)
+    historyStore.dispatch(elementSelectable.createSelectAllAction(true))
   }
 
   function updateElement(val: Partial<BElement>) {
     const element = lastSelectedElement.value
     if (!element) return
 
-    historyStore.push(
-      elementEntities.getUpdateItemHistory({
+    historyStore.dispatch(
+      elementEntities.createUpdateAction({
         [element.id]: val,
-      }),
-      true
+      })
     )
   }
 

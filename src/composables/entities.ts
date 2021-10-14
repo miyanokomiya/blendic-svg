@@ -90,11 +90,13 @@ export function useEntities<T extends Entity>(name: string) {
   }
 
   function createUpdateAction(
-    updatedMap: IdMap<Partial<T>>
+    updatedMap: IdMap<Partial<T>>,
+    seriesKey?: string
   ): okahistory.Action<IdMap<Partial<T>>> {
     return {
       name: actionNames.update,
       args: updatedMap,
+      seriesKey,
     }
   }
 

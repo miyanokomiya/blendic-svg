@@ -45,9 +45,8 @@ export function useHistoryStore(getHistoryMax: () => number = () => 64) {
     undo: historyModule.undo,
     redo: historyModule.redo,
     defineReducers: historyModule.defineReducers,
-  } as any
+  }
 }
 
-// export type HistoryStore = ReturnType<typeof useHistoryStore>
-export type HistoryStore = any
+export type HistoryStore = ReturnType<typeof useHistoryStore>
 export type HistoryItem = any

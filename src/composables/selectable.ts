@@ -38,6 +38,10 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
     lastSelectedId.value = selectable.getLastSelected()
   }
 
+  function init(ids: string[]) {
+    selectable.restore(ids.map((id) => [id, true]))
+  }
+
   const actionNames = {
     select: `${name}_SELECT`,
     multiSelect: `${name}_MULTI_SELECT`,
@@ -158,6 +162,7 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
   return {
     selectedMap: computed(() => selectedMap.value),
     lastSelectedId: computed(() => lastSelectedId.value),
+    init,
 
     getSelectHistoryDryRun,
     getMultiSelectHistoryDryRun,
@@ -198,6 +203,10 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
     selectedMap.value = selectable.getSelected()
     lastSelectedId.value = selectable.getLastSelected()
     allAttrsSelectedIds.value = selectable.getAllAttrsSelected()
+  }
+
+  function init(val: IdMap<K>) {
+    selectable.restore(Object.entries(val))
   }
 
   const actionNames = {
@@ -319,6 +328,7 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
     selectedMap: computed(() => selectedMap.value),
     lastSelectedId: computed(() => lastSelectedId.value),
     allAttrsSelectedIds: computed(() => allAttrsSelectedIds.value),
+    init,
 
     isAttrsSelected: selectable.isAttrsSelected,
     createSnapshot: selectable.createSnapshot,
@@ -365,6 +375,10 @@ export function useGeneAttrsSelectable<T, K extends GenericsProps>(
     selectedMap.value = selectable.getSelected()
     lastSelectedId.value = selectable.getLastSelected()
     allAttrsSelectedIds.value = selectable.getAllAttrsSelected()
+  }
+
+  function init(val: IdMap<okaselect.GenericsAttrs>) {
+    selectable.restore(Object.entries(val))
   }
 
   const actionNames = {
@@ -496,6 +510,7 @@ export function useGeneAttrsSelectable<T, K extends GenericsProps>(
     isAttrsSelected: selectable.isAttrsSelected,
     createSnapshot: selectable.createSnapshot,
     restore: selectable.restore,
+    init,
 
     getSelectHistoryDryRun,
 

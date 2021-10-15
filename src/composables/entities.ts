@@ -1,10 +1,27 @@
+/*
+This file is part of Blendic SVG.
+
+Blendic SVG is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Blendic SVG is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
+
+Copyright (C) 2021, Tomoya Komiyama.
+*/
+
 import { computed, reactive } from 'vue'
 import { IdMap } from '/@/models'
-import { Entities, Entity } from '/@/models/entity'
+import { DeletedInfo, Entities, Entity } from '/@/models/entity'
 import { extractMap, reduceToMap } from '/@/utils/commons'
 import * as okahistory from 'okahistory'
-
-type DeletedInfo<T> = { entity: T; index: number }
 
 export function useEntities<T extends Entity>(name: string) {
   const entities: Entities<T> = reactive({ byId: {}, allIds: [] })

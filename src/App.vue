@@ -145,7 +145,7 @@ export default defineComponent({
       return elementStore.lastSelectedActor.value?.viewBox
     })
 
-    const canvasMode = computed(() => canvasStore.state.canvasMode)
+    const canvasMode = canvasStore.canvasMode
 
     const otherArmatures = computed(() =>
       store.armatures.value.filter(

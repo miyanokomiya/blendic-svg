@@ -276,7 +276,7 @@ export default defineComponent({
       viewBox: canvas.viewBox,
       gridLineElm,
       dragRectangle: canvas.dragRectangle,
-      canvasMode: computed(() => canvasStore.state.canvasMode),
+      canvasMode: canvasStore.canvasMode,
       popupMenuList,
       popupMenuListPosition,
       focus() {
@@ -295,7 +295,7 @@ export default defineComponent({
         if (canvasStore.command.value) return
 
         // NOTE: rect-select only supports 'edit' and 'pose' modes currently
-        if (['edit', 'pose'].includes(canvasStore.state.canvasMode)) {
+        if (['edit', 'pose'].includes(canvasStore.canvasMode.value)) {
           canvas.downLeft('rect-select')
         }
       },

@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getInner, IRectangle, IVec2, rotate, sub } from 'okageo'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import {
   BoneEditMode,
   useBoneEditMode,
@@ -44,10 +44,10 @@ import {
   EditMovement,
   SelectOptions,
 } from '/@/composables/modes/types'
-import { HistoryItem } from '/@/composables/stores/history'
-import { useStore } from '/@/store'
-import { useAnimationStore } from '/@/store/animation'
-import { useElementStore } from '/@/store/element'
+import { HistoryStore } from '/@/composables/stores/history'
+import { IndexStore, useStore } from '/@/store'
+import { AnimationStore, useAnimationStore } from '/@/store/animation'
+import { ElementStore, useElementStore } from '/@/store/element'
 import {
   addPoseTransform,
   editTransform,
@@ -56,6 +56,7 @@ import {
 } from '/@/utils/armatures'
 import { getBoneXRadian, snapAxisGrid, snapPlainGrid } from '/@/utils/geometry'
 import { toList } from '/@/utils/commons'
+import { useValueStore } from '/@/composables/stores/valueStore'
 
 export type AxisGrid = 'x' | 'y'
 export interface AxisGridInfo {
@@ -65,347 +66,356 @@ export interface AxisGridInfo {
   origin: IVec2
 }
 
-const historyStore = useHistoryStore()
-const store = useStore()
-const animationStore = useAnimationStore()
-const elementStore = useElementStore()
+export function createStore(
+  historyStore: HistoryStore,
+  indexStore: IndexStore,
+  elementStore: ElementStore,
+  animationStore: AnimationStore
+) {
+  const canvasModeStore = useValueStore<CanvasMode>(
+    'Canvas Mode',
+    () => 'object'
+  )
 
-const state = reactive({
-  canvasMode: 'object' as CanvasMode,
-  pastCanvasMode: 'edit' as CanvasMode,
-})
+  historyStore.defineReducers(canvasModeStore.reducers)
 
-const axisGridInfo = ref<AxisGridInfo>()
-const lastSelectedBoneSpace = ref<{ radian: number; origin: IVec2 }>()
+  const pastCanvasMode = ref<CanvasMode>('edit')
+  const axisGridInfo = ref<AxisGridInfo>()
+  const lastSelectedBoneSpace = ref<{ radian: number; origin: IVec2 }>()
 
-function initState() {
-  state.canvasMode = 'object'
-  state.pastCanvasMode = 'edit'
-  axisGridInfo.value = undefined
-  lastSelectedBoneSpace.value = undefined
-}
+  const canvasMode = canvasModeStore.state
 
-const canvasEditMode = computed(
-  (): BoneEditMode | ObjectMode | BonePoseMode => {
-    if (state.canvasMode === 'edit') {
-      return useBoneEditMode(store, useCanvasStore())
-    } else if (state.canvasMode === 'pose') {
-      return useBonePoseMode(store, useCanvasStore())
-    } else if (state.canvasMode === 'weight') {
-      return useWeightPaintMode(useElementStore())
+  watch(canvasMode, (_, from) => {
+    pastCanvasMode.value = from
+  })
+
+  function initState() {
+    canvasModeStore.init('object')
+    pastCanvasMode.value = 'edit'
+    axisGridInfo.value = undefined
+    lastSelectedBoneSpace.value = undefined
+  }
+
+  const canvasEditMode = computed(
+    (): BoneEditMode | ObjectMode | BonePoseMode => {
+      if (canvasMode.value === 'edit') {
+        return useBoneEditMode(indexStore, useCanvasStore())
+      } else if (canvasMode.value === 'pose') {
+        return useBonePoseMode(indexStore, useCanvasStore())
+      } else if (canvasMode.value === 'weight') {
+        return useWeightPaintMode(useElementStore())
+      } else {
+        return useObjectMode()
+      }
+    }
+  )
+  watch(canvasEditMode, (_to, from) => {
+    if (from) from.end()
+  })
+
+  const selectedBonesOrigin = computed(() => {
+    if (canvasMode.value === 'edit') {
+      return indexStore.selectedBonesOrigin.value
     } else {
-      return useObjectMode()
+      return animationStore.selectedPosedBoneOrigin.value
+    }
+  })
+
+  const command = computed((): EditMode => canvasEditMode.value.command.value)
+
+  const availableCommandList = computed(
+    () => canvasEditMode.value.availableCommandList.value
+  )
+
+  const popupMenuList = computed(() => {
+    return canvasEditMode.value.popupMenuList.value
+  })
+
+  const toolMenuGroupList = computed(() => {
+    return canvasEditMode.value.toolMenuGroupList.value
+  })
+
+  const posedBoneMap = computed(() => {
+    if (!indexStore.lastSelectedArmature.value) return {}
+
+    if (command.value) {
+      const constraintMap =
+        animationStore.currentInterpolatedConstraintMap.value
+
+      return getTransformedBoneMap(
+        toMap(
+          toList(indexStore.boneMap.value).map((b) => {
+            return {
+              ...b,
+              transform: addPoseTransform(
+                animationStore.getCurrentSelfTransforms(b.id),
+                getEditTransforms(b.id)
+              ),
+            }
+          })
+        ),
+        constraintMap
+      )
+    } else {
+      return animationStore.currentPosedBones.value
+    }
+  })
+
+  const visibledBoneMap = computed(() => {
+    if (!indexStore.lastSelectedArmature.value) return {}
+    if (canvasMode.value === 'edit') {
+      return toMap(
+        toList(indexStore.boneMap.value).map((b) => {
+          return editTransform(
+            b,
+            getEditTransforms(b.id),
+            indexStore.selectedBones.value[b.id] || {}
+          )
+        })
+      )
+    } else {
+      return Object.keys(posedBoneMap.value).reduce<IdMap<Bone>>((p, id) => {
+        const b = posedBoneMap.value[id]
+        p[id] = posedTransform(b, [b.transform])
+        return p
+      }, {})
+    }
+  })
+
+  function saveLastSelectedBoneSpace() {
+    if (!indexStore.lastSelectedBoneId.value) return
+
+    const bone = posedBoneMap.value[indexStore.lastSelectedBoneId.value]
+    if (!bone || canvasMode.value !== 'pose') {
+      lastSelectedBoneSpace.value = undefined
+      return
+    }
+
+    lastSelectedBoneSpace.value = {
+      origin: posedTransform(bone, [bone.transform]).head,
+      radian: getBoneXRadian(bone),
     }
   }
-)
-watch(canvasEditMode, (_to, from) => {
-  if (from) from.end()
-})
 
-const selectedBonesOrigin = computed(() => {
-  if (state.canvasMode === 'edit') {
-    return store.selectedBonesOrigin.value
-  } else {
-    return animationStore.selectedPosedBoneOrigin.value
+  const axisGridLine = computed(() => axisGridInfo.value)
+
+  function toggleCanvasMode() {
+    if (canvasMode.value === 'edit') {
+      setCanvasMode(pastCanvasMode.value)
+    } else {
+      setCanvasMode('edit')
+    }
   }
-})
-
-const command = computed((): EditMode => canvasEditMode.value.command.value)
-
-const availableCommandList = computed(
-  () => canvasEditMode.value.availableCommandList.value
-)
-
-const popupMenuList = computed(() => {
-  return canvasEditMode.value.popupMenuList.value
-})
-
-const toolMenuGroupList = computed(() => {
-  return canvasEditMode.value.toolMenuGroupList.value
-})
-
-const posedBoneMap = computed(() => {
-  if (!store.lastSelectedArmature.value) return {}
-
-  if (command.value) {
-    const constraintMap = animationStore.currentInterpolatedConstraintMap.value
-
-    return getTransformedBoneMap(
-      toMap(
-        toList(store.boneMap.value).map((b) => {
-          return {
-            ...b,
-            transform: addPoseTransform(
-              animationStore.getCurrentSelfTransforms(b.id),
-              getEditTransforms(b.id)
-            ),
-          }
-        })
-      ),
-      constraintMap
-    )
-  } else {
-    return animationStore.currentPosedBones.value
-  }
-})
-
-const visibledBoneMap = computed(() => {
-  if (!store.lastSelectedArmature.value) return {}
-  if (state.canvasMode === 'edit') {
-    return toMap(
-      toList(store.boneMap.value).map((b) => {
-        return editTransform(
-          b,
-          getEditTransforms(b.id),
-          store.selectedBones.value[b.id] || {}
-        )
-      })
-    )
-  } else {
-    return Object.keys(posedBoneMap.value).reduce<IdMap<Bone>>((p, id) => {
-      const b = posedBoneMap.value[id]
-      p[id] = posedTransform(b, [b.transform])
-      return p
-    }, {})
-  }
-})
-
-function saveLastSelectedBoneSpace() {
-  if (!store.lastSelectedBoneId.value) return
-
-  const bone = posedBoneMap.value[store.lastSelectedBoneId.value]
-  if (!bone || state.canvasMode !== 'pose') {
-    lastSelectedBoneSpace.value = undefined
-    return
-  }
-
-  lastSelectedBoneSpace.value = {
-    origin: posedTransform(bone, [bone.transform]).head,
-    radian: getBoneXRadian(bone),
-  }
-}
-
-const axisGridLine = computed(() => axisGridInfo.value)
-
-function toggleCanvasMode() {
-  if (state.canvasMode === 'edit') {
-    setCanvasMode(state.pastCanvasMode)
-  } else {
-    setCanvasMode('edit')
-  }
-}
-function ctrlToggleCanvasMode() {
-  if (state.canvasMode === 'edit') {
-    if (state.pastCanvasMode === 'object') {
+  function ctrlToggleCanvasMode() {
+    if (canvasMode.value === 'edit') {
+      if (pastCanvasMode.value === 'object') {
+        setCanvasMode('pose')
+      } else {
+        setCanvasMode('object')
+      }
+    } else if (canvasMode.value === 'object') {
       setCanvasMode('pose')
     } else {
       setCanvasMode('object')
     }
-  } else if (state.canvasMode === 'object') {
-    setCanvasMode('pose')
-  } else {
-    setCanvasMode('object')
   }
-}
-function setCanvasMode(canvasMode: CanvasMode) {
-  const item = getChangeCanvasModeItem(canvasMode)
-  historyStore.push(item)
-  item.redo()
-}
-function toggleAxisGridInfo(axis: AxisGrid) {
-  const unit = axis === 'x' ? { x: 1, y: 0 } : { x: 0, y: 1 }
+  function setCanvasMode(canvasMode: CanvasMode) {
+    historyStore.dispatch(canvasModeStore.createUpdateAction(canvasMode))
+  }
+  function toggleAxisGridInfo(axis: AxisGrid) {
+    const unit = axis === 'x' ? { x: 1, y: 0 } : { x: 0, y: 1 }
 
-  if (state.canvasMode === 'edit') {
-    axisGridInfo.value = axisGridInfo.value
-      ? undefined
-      : {
-          axis,
-          local: false,
-          vec: unit,
-          origin: selectedBonesOrigin.value,
-        }
-  } else if (state.canvasMode === 'pose') {
-    if (!lastSelectedBoneSpace.value) return
-    if (!axisGridInfo.value || axisGridInfo.value.axis !== axis) {
-      axisGridInfo.value = {
-        axis,
-        local: false,
-        vec: unit,
-        origin: lastSelectedBoneSpace.value.origin,
-      }
-    } else {
-      axisGridInfo.value = axisGridInfo.value.local
+    if (canvasMode.value === 'edit') {
+      axisGridInfo.value = axisGridInfo.value
         ? undefined
         : {
             axis,
-            local: true,
-            vec: rotate(unit, lastSelectedBoneSpace.value.radian),
-            origin: lastSelectedBoneSpace.value.origin,
+            local: false,
+            vec: unit,
+            origin: selectedBonesOrigin.value,
           }
-    }
-  } else {
-    axisGridInfo.value = undefined
-  }
-}
-
-watch(
-  () => command.value,
-  () => {
-    axisGridInfo.value = undefined
-  }
-)
-watch(
-  () => [command.value, state.canvasMode, store.lastSelectedBone.value],
-  () => {
-    saveLastSelectedBoneSpace()
-  }
-)
-
-function switchAxisGrid(val: AxisGrid) {
-  toggleAxisGridInfo(val)
-}
-function snapScaleDiff(scaleDiff: IVec2): IVec2 {
-  if (!axisGridLine.value) return scaleDiff
-  return {
-    x: axisGridLine.value.axis === 'y' ? 0 : scaleDiff.x,
-    y: axisGridLine.value.axis === 'x' ? 0 : scaleDiff.y,
-  }
-}
-function snapTranslate(size: number, translate: IVec2): IVec2 {
-  if (!axisGridLine.value) return snapPlainGrid(size, 0, translate)
-  return snapAxisGrid(size, axisGridLine.value.vec, translate)
-}
-function isOppositeSide(origin: IVec2, from: IVec2, current: IVec2): boolean {
-  return getInner(sub(from, origin), sub(current, origin)) < 0
-}
-
-function getEditTransforms(id: string): Transform {
-  return canvasEditMode.value.getEditTransforms(id)
-}
-
-function getEditPoseTransforms(id: string): Transform {
-  if (state.canvasMode !== 'pose') return getTransform()
-  return canvasEditMode.value.getEditTransforms(id)
-}
-
-const axisGridEnabled = computed<boolean>(() => {
-  return ['grab', 'scale'].includes(command.value)
-})
-
-function changeCanvasMode(canvasMode: CanvasMode) {
-  if (canvasMode === 'weight') {
-    if (elementStore.lastSelectedActor.value) {
-      setCanvasMode(canvasMode)
-    }
-  } else {
-    if (store.lastSelectedArmature.value) {
-      setCanvasMode(canvasMode)
-    } else {
-      setCanvasMode('object')
-    }
-  }
-}
-
-function execIfBoneSelected(
-  fn: () => void,
-  needLock: boolean
-): { needLock: boolean } {
-  if (store.lastSelectedBone.value) {
-    fn()
-    return { needLock }
-  } else {
-    return { needLock: false }
-  }
-}
-
-function editKeyDown(
-  key: string,
-  options: { shift?: boolean; ctrl?: boolean }
-): { needLock: boolean } {
-  switch (key) {
-    case 'Escape':
-      canvasEditMode.value.cancel
-      return { needLock: false }
-    case 'Tab':
-      if (store.lastSelectedArmature.value) {
-        // Ctrl + Tab cannot be controlled by JS
-        if (options.shift) {
-          ctrlToggleCanvasMode()
-        } else {
-          toggleCanvasMode()
+    } else if (canvasMode.value === 'pose') {
+      if (!lastSelectedBoneSpace.value) return
+      if (!axisGridInfo.value || axisGridInfo.value.axis !== axis) {
+        axisGridInfo.value = {
+          axis,
+          local: false,
+          vec: unit,
+          origin: lastSelectedBoneSpace.value.origin,
         }
+      } else {
+        axisGridInfo.value = axisGridInfo.value.local
+          ? undefined
+          : {
+              axis,
+              local: true,
+              vec: rotate(unit, lastSelectedBoneSpace.value.radian),
+              origin: lastSelectedBoneSpace.value.origin,
+            }
       }
+    } else {
+      axisGridInfo.value = undefined
+    }
+  }
+
+  watch(
+    () => command.value,
+    () => {
+      axisGridInfo.value = undefined
+    }
+  )
+  watch(
+    () => [command.value, canvasMode.value, indexStore.lastSelectedBone.value],
+    () => {
+      saveLastSelectedBoneSpace()
+    }
+  )
+
+  function switchAxisGrid(val: AxisGrid) {
+    toggleAxisGridInfo(val)
+  }
+  function snapScaleDiff(scaleDiff: IVec2): IVec2 {
+    if (!axisGridLine.value) return scaleDiff
+    return {
+      x: axisGridLine.value.axis === 'y' ? 0 : scaleDiff.x,
+      y: axisGridLine.value.axis === 'x' ? 0 : scaleDiff.y,
+    }
+  }
+  function snapTranslate(size: number, translate: IVec2): IVec2 {
+    if (!axisGridLine.value) return snapPlainGrid(size, 0, translate)
+    return snapAxisGrid(size, axisGridLine.value.vec, translate)
+  }
+  function isOppositeSide(origin: IVec2, from: IVec2, current: IVec2): boolean {
+    return getInner(sub(from, origin), sub(current, origin)) < 0
+  }
+
+  function getEditTransforms(id: string): Transform {
+    return canvasEditMode.value.getEditTransforms(id)
+  }
+
+  function getEditPoseTransforms(id: string): Transform {
+    if (canvasMode.value !== 'pose') return getTransform()
+    return canvasEditMode.value.getEditTransforms(id)
+  }
+
+  const axisGridEnabled = computed<boolean>(() => {
+    return ['grab', 'scale'].includes(command.value)
+  })
+
+  function changeCanvasMode(canvasMode: CanvasMode) {
+    if (canvasMode === 'weight') {
+      if (elementStore.lastSelectedActor.value) {
+        setCanvasMode(canvasMode)
+      }
+    } else {
+      if (indexStore.lastSelectedArmature.value) {
+        setCanvasMode(canvasMode)
+      } else {
+        setCanvasMode('object')
+      }
+    }
+  }
+
+  function execIfBoneSelected(
+    fn: () => void,
+    needLock: boolean
+  ): { needLock: boolean } {
+    if (indexStore.lastSelectedBone.value) {
+      fn()
+      return { needLock }
+    } else {
       return { needLock: false }
-    case 'g':
-      return execIfBoneSelected(
-        () => canvasEditMode.value.setEditMode('grab'),
-        true
-      )
-    case 'r':
-      return execIfBoneSelected(
-        () => canvasEditMode.value.setEditMode('rotate'),
-        true
-      )
-    case 's':
-      if (!options.ctrl) {
+    }
+  }
+
+  function editKeyDown(
+    key: string,
+    options: { shift?: boolean; ctrl?: boolean }
+  ): { needLock: boolean } {
+    switch (key) {
+      case 'Escape':
+        canvasEditMode.value.cancel
+        return { needLock: false }
+      case 'Tab':
+        if (indexStore.lastSelectedArmature.value) {
+          // Ctrl + Tab cannot be controlled by JS
+          if (options.shift) {
+            ctrlToggleCanvasMode()
+          } else {
+            toggleCanvasMode()
+          }
+        }
+        return { needLock: false }
+      case 'g':
         return execIfBoneSelected(
-          () => canvasEditMode.value.setEditMode('scale'),
+          () => canvasEditMode.value.setEditMode('grab'),
           true
         )
-      } else {
+      case 'r':
+        return execIfBoneSelected(
+          () => canvasEditMode.value.setEditMode('rotate'),
+          true
+        )
+      case 's':
+        if (!options.ctrl) {
+          return execIfBoneSelected(
+            () => canvasEditMode.value.setEditMode('scale'),
+            true
+          )
+        } else {
+          return { needLock: false }
+        }
+      case 'e':
+        return execIfBoneSelected(
+          () => canvasEditMode.value.setEditMode('extrude'),
+          true
+        )
+      case 'x':
+        if (axisGridEnabled.value) {
+          switchAxisGrid(key)
+        } else {
+          canvasEditMode.value.setEditMode('delete')
+        }
         return { needLock: false }
-      }
-    case 'e':
-      return execIfBoneSelected(
-        () => canvasEditMode.value.setEditMode('extrude'),
-        true
-      )
-    case 'x':
-      if (axisGridEnabled.value) {
-        switchAxisGrid(key)
-      } else {
-        canvasEditMode.value.setEditMode('delete')
-      }
-      return { needLock: false }
-    case 'y':
-      if (axisGridEnabled.value) {
-        switchAxisGrid(key)
-      }
-      return { needLock: false }
-    case 'a':
-      canvasEditMode.value.selectAll()
-      return { needLock: false }
-    case 'i':
-      canvasEditMode.value.insert()
-      return { needLock: false }
-    case 'A':
-      canvasEditMode.value.execAdd()
-      return { needLock: false }
-    case 'D':
-      if (canvasEditMode.value.duplicate()) {
-        return { needLock: true }
-      } else {
+      case 'y':
+        if (axisGridEnabled.value) {
+          switchAxisGrid(key)
+        }
         return { needLock: false }
-      }
-    case 'c':
-      if (options.ctrl) {
-        canvasEditMode.value.clip()
-      }
-      return { needLock: false }
-    case 'v':
-      if (options.ctrl) {
-        canvasEditMode.value.paste()
-      }
-      return { needLock: false }
-    default:
-      return { needLock: false }
+      case 'a':
+        canvasEditMode.value.selectAll()
+        return { needLock: false }
+      case 'i':
+        canvasEditMode.value.insert()
+        return { needLock: false }
+      case 'A':
+        canvasEditMode.value.execAdd()
+        return { needLock: false }
+      case 'D':
+        if (canvasEditMode.value.duplicate()) {
+          return { needLock: true }
+        } else {
+          return { needLock: false }
+        }
+      case 'c':
+        if (options.ctrl) {
+          canvasEditMode.value.clip()
+        }
+        return { needLock: false }
+      case 'v':
+        if (options.ctrl) {
+          canvasEditMode.value.paste()
+        }
+        return { needLock: false }
+      default:
+        return { needLock: false }
+    }
   }
-}
 
-export function useCanvasStore() {
   return {
     initState,
-    state,
+
+    canvasMode,
     command,
     selectedBonesOrigin,
     changeCanvasMode,
@@ -440,21 +450,15 @@ export function useCanvasStore() {
     lastSelectedBoneSpace: computed(() => lastSelectedBoneSpace.value),
   }
 }
-export type CanvasStore = ReturnType<typeof useCanvasStore>
 
-function getChangeCanvasModeItem(canvasMode: CanvasMode): HistoryItem {
-  const currentMode = state.canvasMode
-  const currentPastMode = state.pastCanvasMode
-  const redo = () => {
-    state.pastCanvasMode = state.canvasMode
-    state.canvasMode = canvasMode
-  }
-  return {
-    name: 'Change Mode',
-    undo: () => {
-      state.canvasMode = currentMode
-      state.pastCanvasMode = currentPastMode
-    },
-    redo,
-  }
+export type CanvasStore = ReturnType<typeof createStore>
+
+const store = createStore(
+  useHistoryStore(),
+  useStore(),
+  useElementStore(),
+  useAnimationStore()
+)
+export function useCanvasStore() {
+  return store
 }

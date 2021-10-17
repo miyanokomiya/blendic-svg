@@ -45,7 +45,7 @@ export default defineComponent({
     const store = useStore()
 
     const treeType = computed(() => {
-      switch (canvasStore.state.canvasMode) {
+      switch (canvasStore.canvasMode.value) {
         case 'object':
         case 'edit':
         case 'pose':
@@ -62,7 +62,7 @@ export default defineComponent({
     })
 
     const treeRoot = computed(() => {
-      switch (canvasStore.state.canvasMode) {
+      switch (canvasStore.canvasMode.value) {
         case 'object':
         case 'edit':
         case 'pose':
@@ -81,7 +81,7 @@ export default defineComponent({
     })
 
     const selectedMap = computed(() => {
-      switch (canvasStore.state.canvasMode) {
+      switch (canvasStore.canvasMode.value) {
         case 'edit':
         case 'pose':
           return mapReduce(store.allSelectedBones.value, () => true)
@@ -93,7 +93,7 @@ export default defineComponent({
     })
 
     function clickElement(id: string, options?: SelectOptions) {
-      switch (canvasStore.state.canvasMode) {
+      switch (canvasStore.canvasMode.value) {
         case 'edit':
         case 'pose':
           if (!store.lastSelectedArmature.value) return
@@ -105,7 +105,7 @@ export default defineComponent({
               id,
               { head: true, tail: true },
               options,
-              canvasStore.state.canvasMode === 'pose'
+              canvasStore.canvasMode.value === 'pose'
             )
           }
           return
@@ -120,7 +120,7 @@ export default defineComponent({
     function updateName(id: string, name: string) {
       if (!name) return
 
-      switch (canvasStore.state.canvasMode) {
+      switch (canvasStore.canvasMode.value) {
         case 'object':
         case 'edit':
         case 'pose':
@@ -140,7 +140,7 @@ export default defineComponent({
     provide('onClickElement', clickElement)
     provide('selectedMap', selectedMap)
     provide('updateName', updateName)
-    provide('getEditable', () => canvasStore.state.canvasMode !== 'weight')
+    provide('getEditable', () => canvasStore.canvasMode.value !== 'weight')
 
     return {
       treeType,

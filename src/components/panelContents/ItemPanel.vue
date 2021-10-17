@@ -200,14 +200,14 @@ export default defineComponent({
     })
 
     const targetBone = computed((): Bone | undefined => {
-      if (canvasStore.state.canvasMode === 'object') {
+      if (canvasStore.canvasMode.value === 'object') {
         return undefined
       }
 
       const original = store.lastSelectedBone.value
       if (!original) return undefined
 
-      if (canvasStore.state.canvasMode === 'edit') {
+      if (canvasStore.canvasMode.value === 'edit') {
         return editTransform(
           original,
           canvasStore.getEditTransforms(original.id),
@@ -224,7 +224,7 @@ export default defineComponent({
 
     const targetTransform = computed((): Transform | undefined => {
       if (!targetBone.value) return undefined
-      if (canvasStore.state.canvasMode !== 'pose') return undefined
+      if (canvasStore.canvasMode.value !== 'pose') return undefined
 
       return addPoseTransform(
         animationStore.getCurrentSelfTransforms(targetBone.value.id),
@@ -379,7 +379,7 @@ export default defineComponent({
 
     return {
       labelWidth: '20px',
-      canvasMode: computed(() => canvasStore.state.canvasMode),
+      canvasMode: canvasStore.canvasMode,
       targetBone,
       hsva,
       draftBone,

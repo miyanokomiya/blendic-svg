@@ -103,7 +103,7 @@ export default defineComponent({
       if (!store.lastSelectedArmature.value) return false
       if (!elementStore.lastSelectedActor.value) return false
       if (!graphStore.lastSelectedGraph.value) return false
-      if (canvasStore.state.canvasMode === 'edit') return false
+      if (canvasStore.canvasMode.value === 'edit') return false
 
       const id = store.lastSelectedArmature.value.id
       return (

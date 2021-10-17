@@ -38,7 +38,7 @@ export function useItemSelectable<T>(name: string, getItems: () => IdMap<T>) {
     lastSelectedId.value = selectable.getLastSelected()
   }
 
-  function init(ids: string[]) {
+  function init(ids: string[] = []) {
     selectable.restore(ids.map((id) => [id, true]))
   }
 

@@ -86,8 +86,12 @@ export function removeEntities<T extends Entity>(
 export function replaceEntities<T extends Entity>(
   src: Entities<T>,
   val: T[],
-  targets: { [id: string]: true }
+  targets: { [id: string]: true } | string[]
 ): RestoreData<T> {
+  const _targets = Array.isArray(targets)
+    ? reduceToMap(targets, () => true)
+    : targets
+
   const replaced = toMap(val)
   const restoreData: RestoreData<T> = {
     created: [],
@@ -96,7 +100,7 @@ export function replaceEntities<T extends Entity>(
   }
 
   src.allIds.forEach((id, index) => {
-    if (!targets[id]) return
+    if (!_targets[id]) return
 
     if (replaced[id]) {
       // update

@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { useAnimationFrameStore } from '/@/composables/stores/animationFrame'
+import { useHistoryStore } from '/@/composables/stores/history'
 import { getKeyframeBone } from '/@/models/keyframe'
 
 describe('src/composables/stores/animationFrame.ts', () => {
@@ -33,6 +34,7 @@ describe('src/composables/stores/animationFrame.ts', () => {
   describe('togglePlaying', () => {
     it('should toggle play <-> pause', () => {
       const store = useAnimationFrameStore()
+
       expect(store.playing.value).toBe('pause')
       store.togglePlaying()
       expect(store.playing.value).toBe('play')
@@ -41,89 +43,120 @@ describe('src/composables/stores/animationFrame.ts', () => {
     })
   })
 
-  describe('jumpStartFrame', () => {
+  describe('createJumpStartFrameAction', () => {
     it('should jump 0', () => {
+      const historyStore = useHistoryStore()
       const store = useAnimationFrameStore()
-      store.setCurrentFrame(10)!.redo()
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(store.createUpdateCurrentFrameAction(10)!)
       expect(store.currentFrame.value).toBe(10)
-      store.jumpStartFrame()!.redo()
+      historyStore.dispatch(store.createJumpStartFrameAction()!)
       expect(store.currentFrame.value).toBe(0)
     })
   })
 
-  describe('jumpEndFrame', () => {
+  describe('createJumpEndFrameAction', () => {
     it('should jump 0', () => {
+      const historyStore = useHistoryStore()
       const store = useAnimationFrameStore()
-      store.setCurrentFrame(10)!.redo()
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(store.createUpdateCurrentFrameAction(10)!)
       expect(store.currentFrame.value).toBe(10)
-      store.jumpEndFrame()!.redo()
+      historyStore.dispatch(store.createJumpEndFrameAction()!)
       expect(store.currentFrame.value).toBe(60)
     })
   })
 
-  describe('stepFrame', () => {
+  describe('createStepFrameAction', () => {
     it('should step frame', () => {
+      const historyStore = useHistoryStore()
       const store = useAnimationFrameStore()
-      store.stepFrame(1)!.redo()
-      store.stepFrame(1)!.redo()
-      store.stepFrame(1)!.redo()
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(store.createStepFrameAction(1)!)
+      historyStore.dispatch(store.createStepFrameAction(1)!)
+      historyStore.dispatch(store.createStepFrameAction(1)!)
       expect(store.currentFrame.value).toBe(3)
     })
   })
 
-  describe('jumpNextKey', () => {
+  describe('createJumpNextKeyAction', () => {
     it('should jump next keyframe', () => {
+      const historyStore = useHistoryStore()
       const store = useAnimationFrameStore()
-      store.setCurrentFrame(5)?.redo()
-      const item = store.jumpNextKey(
-        [1, 2, 5, 9, 10].map((frame) => getKeyframeBone({ frame }))
-      )!
+      historyStore.defineReducers(store.reducers)
 
+      historyStore.dispatch(store.createUpdateCurrentFrameAction(5)!)
       expect(store.currentFrame.value).toBe(5)
-      item.redo()
+
+      historyStore.dispatch(
+        store.createJumpNextKeyAction(
+          [1, 2, 5, 9, 10].map((frame) => getKeyframeBone({ frame }))
+        )!
+      )
       expect(store.currentFrame.value).toBe(9)
-      item.undo()
+
+      historyStore.undo()
       expect(store.currentFrame.value).toBe(5)
+
+      historyStore.redo()
+      expect(store.currentFrame.value).toBe(9)
     })
 
     it('should return undefined if next keyframe does not exist', () => {
+      const historyStore = useHistoryStore()
       const store = useAnimationFrameStore()
-      store.setCurrentFrame(10)?.redo()
-      expect(store.jumpNextKey([getKeyframeBone({ frame: 10 })])).toBe(
-        undefined
-      )
-      store.setCurrentFrame(11)?.redo()
-      expect(store.jumpNextKey([getKeyframeBone({ frame: 10 })])).toBe(
-        undefined
-      )
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(store.createUpdateCurrentFrameAction(10)!)
+      expect(
+        store.createJumpNextKeyAction([getKeyframeBone({ frame: 10 })])
+      ).toBe(undefined)
+      historyStore.dispatch(store.createUpdateCurrentFrameAction(11)!)
+      expect(
+        store.createJumpNextKeyAction([getKeyframeBone({ frame: 10 })])
+      ).toBe(undefined)
     })
   })
 
-  describe('jumpPrevKey', () => {
+  describe('createJumpPrevKeyAction', () => {
     it('should jump prev keyframe', () => {
+      const historyStore = useHistoryStore()
       const store = useAnimationFrameStore()
-      store.setCurrentFrame(5)?.redo()
-      const item = store.jumpPrevKey(
-        [1, 2, 5, 9, 10].map((frame) => getKeyframeBone({ frame }))
-      )!
+      historyStore.defineReducers(store.reducers)
 
-      expect(store.currentFrame.value).toBe(5)
-      item.redo()
+      historyStore.dispatch(store.createUpdateCurrentFrameAction(5)!)
+
+      historyStore.dispatch(
+        store.createJumpPrevKeyAction(
+          [1, 2, 5, 9, 10].map((frame) => getKeyframeBone({ frame }))
+        )!
+      )
       expect(store.currentFrame.value).toBe(2)
-      item.undo()
+
+      historyStore.undo()
       expect(store.currentFrame.value).toBe(5)
+
+      historyStore.redo()
+      expect(store.currentFrame.value).toBe(2)
     })
 
     it('should return undefined if prev keyframe does not exist', () => {
+      const historyStore = useHistoryStore()
       const store = useAnimationFrameStore()
-      store.setCurrentFrame(10)?.redo()
-      expect(store.jumpPrevKey([getKeyframeBone({ frame: 10 })])).toBe(
-        undefined
-      )
-      store.setCurrentFrame(9)?.redo()
-      expect(store.jumpPrevKey([getKeyframeBone({ frame: 10 })])).toBe(
-        undefined
-      )
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(store.createUpdateCurrentFrameAction(10)!)
+      expect(
+        store.createJumpPrevKeyAction([getKeyframeBone({ frame: 10 })])
+      ).toBe(undefined)
+
+      historyStore.dispatch(store.createUpdateCurrentFrameAction(9)!)
+      expect(
+        store.createJumpPrevKeyAction([getKeyframeBone({ frame: 10 })])
+      ).toBe(undefined)
     })
   })
 })

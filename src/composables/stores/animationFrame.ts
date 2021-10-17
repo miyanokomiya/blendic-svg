@@ -19,7 +19,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { ref } from '@vue/reactivity'
 import { computed } from '@vue/runtime-core'
-import { HistoryItem } from '/@/composables/stores/history'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import { PlayState } from '/@/models'
 import { KeyframeBase } from '/@/models/keyframe'
@@ -28,6 +27,7 @@ import {
   findPrevFrameWithKeyframe,
   getSteppedFrame,
 } from '/@/utils/animations'
+import * as okahistory from 'okahistory'
 
 export function useAnimationFrameStore() {
   const currentFrame = useValueStore('Frame', () => 0)
@@ -43,20 +43,20 @@ export function useAnimationFrameStore() {
     playing.value = playing.value === 'pause' ? 'play' : 'pause'
   }
 
-  function jumpStartFrame(): HistoryItem | undefined {
-    return currentFrame.setState(0)
+  function createJumpStartFrameAction(): okahistory.Action<number> | undefined {
+    return currentFrame.createUpdateAction(0)
   }
 
-  function jumpEndFrame(): HistoryItem | undefined {
-    return currentFrame.setState(endFrame.state.value)
+  function createJumpEndFrameAction(): okahistory.Action<number> | undefined {
+    return currentFrame.createUpdateAction(endFrame.state.value)
   }
 
-  function stepFrame(
+  function createStepFrameAction(
     tickFrame: number,
     reverse = false,
     seriesKey?: string
-  ): HistoryItem | undefined {
-    return currentFrame.setState(
+  ): okahistory.Action<number> | undefined {
+    return currentFrame.createUpdateAction(
       getSteppedFrame(
         currentFrame.state.value,
         endFrame.state.value,
@@ -67,32 +67,42 @@ export function useAnimationFrameStore() {
     )
   }
 
-  function jumpNextKey(keyframes: KeyframeBase[]): HistoryItem | undefined {
-    return currentFrame.setState(
+  function createJumpNextKeyAction(
+    keyframes: KeyframeBase[]
+  ): okahistory.Action<number> | undefined {
+    return currentFrame.createUpdateAction(
       findNextFrameWithKeyframe(keyframes, currentFrame.state.value)
     )
   }
 
-  function jumpPrevKey(keyframes: KeyframeBase[]): HistoryItem | undefined {
-    return currentFrame.setState(
+  function createJumpPrevKeyAction(
+    keyframes: KeyframeBase[]
+  ): okahistory.Action<number> | undefined {
+    return currentFrame.createUpdateAction(
       findPrevFrameWithKeyframe(keyframes, currentFrame.state.value)
     )
   }
 
   return {
     currentFrame: currentFrame.state,
-    setCurrentFrame: currentFrame.setState,
     endFrame: endFrame.state,
-    setEndFrame: endFrame.setState,
+
+    createUpdateCurrentFrameAction: currentFrame.createUpdateAction,
+    createUpdateEndFrameAction: endFrame.createUpdateAction,
 
     playing: computed(() => playing.value),
     setPlaying,
     togglePlaying,
 
-    jumpStartFrame,
-    jumpEndFrame,
-    stepFrame,
-    jumpNextKey,
-    jumpPrevKey,
+    createJumpStartFrameAction,
+    createJumpEndFrameAction,
+    createStepFrameAction,
+    createJumpNextKeyAction,
+    createJumpPrevKeyAction,
+
+    reducers: {
+      ...currentFrame.reducers,
+      ...endFrame.reducers,
+    },
   }
 }

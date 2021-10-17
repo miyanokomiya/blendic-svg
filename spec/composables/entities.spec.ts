@@ -135,5 +135,50 @@ describe('src/composables/entities.ts', () => {
         })
       })
     })
+
+    describe('replace', () => {
+      it('should define a reducer and create an action to do', () => {
+        const history = useHistoryStore()
+        const entities = useEntities<{ id: string; val: number }>('Test')
+        const { dispatch } = history.defineReducers(entities.reducers)
+
+        dispatch(
+          entities.createAddAction([
+            { id: 'a', val: 0 },
+            { id: 'b', val: 0 },
+            { id: 'c', val: 0 },
+          ])
+        )
+        expect(entities.entities.value).toEqual({
+          byId: {
+            a: { id: 'a', val: 0 },
+            b: { id: 'b', val: 0 },
+            c: { id: 'c', val: 0 },
+          },
+          allIds: ['a', 'b', 'c'],
+        })
+
+        history.dispatch(
+          entities.createReplaceAction([{ id: 'a', val: 1 }], ['a', 'b'])
+        )
+        expect(entities.entities.value).toEqual({
+          byId: {
+            a: { id: 'a', val: 1 },
+            c: { id: 'c', val: 0 },
+          },
+          allIds: ['a', 'c'],
+        })
+
+        history.undo()
+        expect(entities.entities.value).toEqual({
+          byId: {
+            a: { id: 'a', val: 0 },
+            b: { id: 'b', val: 0 },
+            c: { id: 'c', val: 0 },
+          },
+          allIds: ['a', 'b', 'c'],
+        })
+      })
+    })
   })
 })

@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "okageo": "^2.0.13",
-    "okahistory": "^0.0.6",
+    "okahistory": "^0.0.7",
     "okanvas": "^0.0.4",
     "okaselect": "^0.0.10",
     "ress": "^4.0.0",

@@ -40,12 +40,15 @@ export interface KeyframeBaseProps<T> {
 
 export type KeyframePropKey = KeyframeBonePropKey | KeyframeConstraintPropKey
 
-export type KeyframeBonePropKey =
-  | 'translateX'
-  | 'translateY'
-  | 'rotate'
-  | 'scaleX'
-  | 'scaleY'
+const keyframeBonePropKey = {
+  translateX: 'translateX',
+  translateY: 'translateY',
+  rotate: 'rotate',
+  scaleX: 'scaleX',
+  scaleY: 'scaleY',
+}
+export const keyframeBonePropKeys = Object.keys(keyframeBonePropKey)
+export type KeyframeBonePropKey = keyof typeof keyframeBonePropKey
 
 export interface KeyframeBone extends KeyframeBase {
   name: 'bone'
@@ -54,7 +57,11 @@ export interface KeyframeBone extends KeyframeBase {
   }
 }
 
-export type KeyframeConstraintPropKey = 'influence'
+const keyframeConstraintPropKey = {
+  influence: 'influence',
+}
+export const keyframeConstraintPropKeys = Object.keys(keyframeConstraintPropKey)
+export type KeyframeConstraintPropKey = keyof typeof keyframeConstraintPropKey
 
 export interface KeyframeConstraint extends KeyframeBase {
   name: 'constraint'

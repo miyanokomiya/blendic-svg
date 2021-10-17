@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { useHistoryStore } from '/@/composables/stores/history'
 import { useTargetProps } from '/@/composables/stores/targetProps'
 
 describe('src/composables/stores/targetProps.ts', () => {
@@ -26,92 +27,150 @@ describe('src/composables/stores/targetProps.ts', () => {
   }
 
   function getStore() {
-    return useTargetProps(() => visibledMap)
+    return useTargetProps('props', () => visibledMap)
   }
 
-  describe('select', () => {
-    it('should return history item to do', () => {
+  describe('action to select', () => {
+    it('should create an action to do', () => {
       const targetProps = getStore()
-      const ret = targetProps.select('a', { props: { x: 'selected' } })
-      expect(targetProps.selectedStateMap.value).toEqual({})
-      ret.redo()
+      const historyStore = useHistoryStore()
+      historyStore.defineReducers(targetProps.reducers)
+
+      historyStore.dispatch(
+        targetProps.createSelectAction('a', {
+          props: { x: 'selected' },
+        })
+      )
       expect(targetProps.selectedStateMap.value).toEqual({
         a: { props: { x: 'selected' } },
       })
-      ret.undo()
+
+      historyStore.undo()
       expect(targetProps.selectedStateMap.value).toEqual({})
+
+      historyStore.redo()
+      expect(targetProps.selectedStateMap.value).toEqual({
+        a: { props: { x: 'selected' } },
+      })
     })
     describe('shift select', () => {
       it('add selected state', () => {
         const targetProps = getStore()
-        targetProps.select('a', { props: { x: 'selected' } }).redo()
-        const item = targetProps.select('b', { props: { x: 'selected' } }, true)
-        expect(targetProps.selectedStateMap.value).toEqual({
-          a: { props: { x: 'selected' } },
-        })
-        item.redo()
+        const historyStore = useHistoryStore()
+        historyStore.defineReducers(targetProps.reducers)
+
+        historyStore.dispatch(
+          targetProps.createSelectAction('a', { props: { x: 'selected' } })
+        )
+        historyStore.dispatch(
+          targetProps.createSelectAction(
+            'b',
+            { props: { x: 'selected' } },
+            true
+          )
+        )
         expect(targetProps.selectedStateMap.value).toEqual({
           a: { props: { x: 'selected' } },
           b: { props: { x: 'selected' } },
         })
-        item.undo()
+
+        historyStore.undo()
         expect(targetProps.selectedStateMap.value).toEqual({
           a: { props: { x: 'selected' } },
         })
-        item.redo()
-        targetProps.select('b', { props: { y: 'selected' } }, true).redo()
+
+        historyStore.redo()
+        expect(targetProps.selectedStateMap.value).toEqual({
+          a: { props: { x: 'selected' } },
+          b: { props: { x: 'selected' } },
+        })
+
+        historyStore.dispatch(
+          targetProps.createSelectAction(
+            'b',
+            { props: { y: 'selected' } },
+            true
+          )
+        )
         expect(targetProps.selectedStateMap.value).toEqual({
           a: { props: { x: 'selected' } },
           b: { props: { x: 'selected', y: 'selected' } },
         })
       })
+
       it('toggle selected', () => {
         const targetProps = getStore()
-        targetProps.select('a', { props: { x: 'selected' } }).redo()
-        const item = targetProps.select('a', { props: { x: 'selected' } }, true)
-        expect(targetProps.selectedStateMap.value).toEqual({
-          a: { props: { x: 'selected' } },
-        })
-        item.redo()
+        const historyStore = useHistoryStore()
+        historyStore.defineReducers(targetProps.reducers)
+
+        historyStore.dispatch(
+          targetProps.createSelectAction('a', { props: { x: 'selected' } })
+        )
+        historyStore.dispatch(
+          targetProps.createSelectAction(
+            'a',
+            { props: { x: 'selected' } },
+            true
+          )
+        )
         expect(targetProps.selectedStateMap.value).toEqual({})
-        item.undo()
+
+        historyStore.undo()
         expect(targetProps.selectedStateMap.value).toEqual({
           a: { props: { x: 'selected' } },
         })
+
+        historyStore.redo()
+        expect(targetProps.selectedStateMap.value).toEqual({})
       })
+
       it('not toggle selected if notToggle = true', () => {
         const targetProps = getStore()
-        targetProps.select('a', { props: { x: 'selected' } }).redo()
-        const item = targetProps.select(
-          'a',
-          { props: { x: 'selected' } },
-          true,
-          true
+        const historyStore = useHistoryStore()
+        historyStore.defineReducers(targetProps.reducers)
+
+        historyStore.dispatch(
+          targetProps.createSelectAction('a', { props: { x: 'selected' } })
+        )
+        historyStore.dispatch(
+          targetProps.createSelectAction(
+            'a',
+            { props: { x: 'selected' } },
+            true,
+            true
+          )
         )
         expect(targetProps.selectedStateMap.value).toEqual({
           a: { props: { x: 'selected' } },
         })
-        item.redo()
+
+        historyStore.undo()
         expect(targetProps.selectedStateMap.value).toEqual({
           a: { props: { x: 'selected' } },
         })
-        item.undo()
+
+        historyStore.redo()
         expect(targetProps.selectedStateMap.value).toEqual({
           a: { props: { x: 'selected' } },
         })
       })
 
       it('should keep invisible items', () => {
-        const store = getStore()
-        store
-          .selectAll({
+        const targetProps = getStore()
+        const historyStore = useHistoryStore()
+        historyStore.defineReducers(targetProps.reducers)
+
+        historyStore.dispatch(
+          targetProps.createSelectAllAction({
             b: { id: 'b', props: { x: true } },
             c: { id: 'c', props: { x: true } },
           })
-          .redo()
+        )
 
-        store.select('a', { props: { x: 'selected' } }).redo()
-        expect(store.selectedStateMap.value).toEqual({
+        historyStore.dispatch(
+          targetProps.createSelectAction('a', { props: { x: 'selected' } })
+        )
+        expect(targetProps.selectedStateMap.value).toEqual({
           a: { props: { x: 'selected' } },
           c: { props: { x: 'selected' } },
         })
@@ -119,126 +178,163 @@ describe('src/composables/stores/targetProps.ts', () => {
     })
   })
 
-  describe('selectAll', () => {
-    it('should return history item to do', () => {
+  describe('action to selectAll', () => {
+    it('should create an action to do', () => {
       const targetProps = getStore()
-      const item = targetProps.selectAll({
-        a: { id: 'a', props: { x: true, y: false } },
-        b: { id: 'b', props: { p: 0, q: 1 } },
-      })
-      expect(targetProps.selectedStateMap.value).toEqual({})
-      item.redo()
+      const historyStore = useHistoryStore()
+      historyStore.defineReducers(targetProps.reducers)
+
+      historyStore.dispatch(
+        targetProps.createSelectAllAction({
+          a: { id: 'a', props: { x: true, y: false } },
+          b: { id: 'b', props: { p: 0, q: 1 } },
+        })
+      )
       expect(targetProps.selectedStateMap.value).toEqual({
         a: { props: { x: 'selected', y: 'selected' } },
         b: { props: { p: 'selected', q: 'selected' } },
       })
-      item.undo()
+
+      historyStore.undo()
       expect(targetProps.selectedStateMap.value).toEqual({})
+
+      historyStore.redo()
+      expect(targetProps.selectedStateMap.value).toEqual({
+        a: { props: { x: 'selected', y: 'selected' } },
+        b: { props: { p: 'selected', q: 'selected' } },
+      })
     })
 
     it('should keep invisible items', () => {
-      const store = getStore()
-      store.select('b', { props: { x: 'selected' } }).redo()
-      store.select('c', { props: { x: 'selected' } }).redo()
+      const targetProps = getStore()
+      const historyStore = useHistoryStore()
+      historyStore.defineReducers(targetProps.reducers)
 
-      store.selectAll({ a: { id: 'a', props: { y: true } } }).redo()
-      expect(store.selectedStateMap.value).toEqual({
+      historyStore.dispatch(
+        targetProps.createSelectAction('b', { props: { x: 'selected' } })
+      )
+      historyStore.dispatch(
+        targetProps.createSelectAction('c', { props: { x: 'selected' } })
+      )
+
+      historyStore.dispatch(
+        targetProps.createSelectAllAction({
+          a: { id: 'a', props: { y: true } },
+        })
+      )
+      expect(targetProps.selectedStateMap.value).toEqual({
         a: { props: { y: 'selected' } },
         c: { props: { x: 'selected' } },
       })
     })
   })
 
-  describe('filter', () => {
-    it('should return history item to do', () => {
+  describe('action filter', () => {
+    it('should create an action to do', () => {
       const targetProps = getStore()
-      targetProps
-        .selectAll({
+      const historyStore = useHistoryStore()
+      historyStore.defineReducers(targetProps.reducers)
+
+      historyStore.dispatch(
+        targetProps.createSelectAllAction({
           a: { id: 'a', props: { x: true, y: true } },
           b: { id: 'b', props: { p: true, q: true } },
         })
-        .redo()
-      const item = targetProps.filter({ b: true })
+      )
+
+      historyStore.dispatch(targetProps.createFilterAction({ b: true }))
+      expect(targetProps.selectedStateMap.value).toEqual({
+        b: { props: { p: 'selected', q: 'selected' } },
+      })
+
+      historyStore.undo()
       expect(targetProps.selectedStateMap.value).toEqual({
         a: { props: { x: 'selected', y: 'selected' } },
         b: { props: { p: 'selected', q: 'selected' } },
       })
-      item.redo()
+
+      historyStore.redo()
       expect(targetProps.selectedStateMap.value).toEqual({
-        b: { props: { p: 'selected', q: 'selected' } },
-      })
-      item.undo()
-      expect(targetProps.selectedStateMap.value).toEqual({
-        a: { props: { x: 'selected', y: 'selected' } },
         b: { props: { p: 'selected', q: 'selected' } },
       })
     })
 
     it('should keep invisible items', () => {
-      const store = getStore()
-      store
-        .selectAll({
+      const targetProps = getStore()
+      const historyStore = useHistoryStore()
+      historyStore.defineReducers(targetProps.reducers)
+
+      historyStore.dispatch(
+        targetProps.createSelectAllAction({
           a: { id: 'a', props: { x: true } },
           b: { id: 'b', props: { x: true } },
           c: { id: 'c', props: { x: true } },
         })
-        .redo()
+      )
 
-      store.filter({ b: true }).redo()
-      expect(store.selectedStateMap.value).toEqual({
+      historyStore.dispatch(targetProps.createFilterAction({ b: true }))
+      expect(targetProps.selectedStateMap.value).toEqual({
         b: { props: { x: 'selected' } },
         c: { props: { x: 'selected' } },
       })
     })
   })
 
-  describe('drop', () => {
-    it('should return history item to do', () => {
+  describe('action to drop', () => {
+    it('should create an action to do', () => {
       const targetProps = getStore()
-      targetProps
-        .selectAll({
+      const historyStore = useHistoryStore()
+      historyStore.defineReducers(targetProps.reducers)
+
+      historyStore.dispatch(
+        targetProps.createSelectAllAction({
           a: { id: 'a', props: { x: true, y: true } },
           b: { id: 'b', props: { p: true, q: true } },
         })
-        .redo()
-      const item = targetProps.drop({ b: true })
+      )
+
+      historyStore.dispatch(targetProps.createDropAction({ b: true }))
+      expect(targetProps.selectedStateMap.value).toEqual({
+        a: { props: { x: 'selected', y: 'selected' } },
+      })
+
+      historyStore.undo()
       expect(targetProps.selectedStateMap.value).toEqual({
         a: { props: { x: 'selected', y: 'selected' } },
         b: { props: { p: 'selected', q: 'selected' } },
       })
-      item.redo()
+
+      historyStore.redo()
       expect(targetProps.selectedStateMap.value).toEqual({
         a: { props: { x: 'selected', y: 'selected' } },
-      })
-      item.undo()
-      expect(targetProps.selectedStateMap.value).toEqual({
-        a: { props: { x: 'selected', y: 'selected' } },
-        b: { props: { p: 'selected', q: 'selected' } },
       })
     })
   })
 
-  describe('clear', () => {
-    it('should return history item to do', () => {
+  describe('action to clearAll', () => {
+    it('should create an action to do', () => {
       const targetProps = getStore()
-      targetProps
-        .selectAll({
+      const historyStore = useHistoryStore()
+      historyStore.defineReducers(targetProps.reducers)
+
+      historyStore.dispatch(
+        targetProps.createSelectAllAction({
           a: { id: 'a', props: { x: true, y: true } },
           b: { id: 'b', props: { p: true, q: true } },
         })
-        .redo()
-      const item = targetProps.clear()
-      expect(targetProps.selectedStateMap.value).toEqual({
-        a: { props: { x: 'selected', y: 'selected' } },
-        b: { props: { p: 'selected', q: 'selected' } },
-      })
-      item.redo()
+      )
+
+      historyStore.dispatch(targetProps.createClearAllAction())
       expect(targetProps.selectedStateMap.value).toEqual({})
-      item.undo()
+
+      historyStore.undo()
       expect(targetProps.selectedStateMap.value).toEqual({
         a: { props: { x: 'selected', y: 'selected' } },
         b: { props: { p: 'selected', q: 'selected' } },
       })
+
+      historyStore.redo()
+      expect(targetProps.selectedStateMap.value).toEqual({})
     })
   })
 })

@@ -17,9 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ref } from '@vue/reactivity'
-import { computed } from '@vue/runtime-core'
-import { HistoryItem } from '/@/composables/stores/history'
+import { ref, computed } from 'vue'
 import { IdMap } from '/@/models'
 import {
   dropMap,
@@ -27,9 +25,10 @@ import {
   mapFilterExec,
   mapReduce,
   mergeOrDropMap,
+  reduceToMap,
   shiftMergeProps,
 } from '/@/utils/commons'
-import { getReplaceItem } from '/@/utils/histories'
+import * as okahistory from 'okahistory'
 
 type PropStatus = 'selected' | 'hidden'
 
@@ -42,7 +41,15 @@ export interface TargetPropsState {
   props: { [key: string]: PropStatus }
 }
 
-export function useTargetProps(getVisibledMap: () => IdMap<TargetPropsState>) {
+interface RestoreData {
+  toUpsert: IdMap<TargetPropsState>
+  toDelete: string[]
+}
+
+export function useTargetProps(
+  name: string,
+  getVisibledMap: () => IdMap<TargetPropsState>
+) {
   const empty = {}
   const selectedStateMap = ref<IdMap<TargetPropsState>>(empty)
 
@@ -50,67 +57,184 @@ export function useTargetProps(getVisibledMap: () => IdMap<TargetPropsState>) {
     selectedStateMap.value = val
   }
 
-  function select(
+  function restore(data: RestoreData) {
+    selectedStateMap.value = dropMap(
+      { ...selectedStateMap.value, ...data.toUpsert },
+      reduceToMap(data.toDelete, () => true)
+    )
+  }
+
+  function init(val: IdMap<TargetPropsState> = {}) {
+    setSelectedStateMap(val)
+  }
+
+  const actionNames = {
+    select: `${name}_SELECT`,
+    selectAll: `${name}_SELECT_ALL`,
+    filter: `${name}_FILTER`,
+    drop: `${name}_DROP`,
+    clearAll: `${name}_CLEAR_ALL`,
+  }
+
+  const selectReducer: okahistory.Reducer<
+    {
+      id: string
+      propsState: TargetPropsState
+      shift?: boolean
+      notToggle?: boolean
+    },
+    RestoreData
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(args) {
+      const current = selectedStateMap.value
+      const undoData = current[args.id]
+        ? { toUpsert: { [args.id]: current[args.id] }, toDelete: [] }
+        : { toUpsert: {}, toDelete: [args.id] }
+
+      if (args.shift) {
+        const props = args.notToggle
+          ? { ...(current[args.id]?.props ?? {}), ...args.propsState.props }
+          : shiftMergeProps(current[args.id]?.props, args.propsState.props)
+        setSelectedStateMap(
+          mergeOrDropMap(current, args.id, props ? { props } : undefined)
+        )
+      } else {
+        setSelectedStateMap(
+          mapFilterExec(current, getVisibledMap(), () =>
+            args.id ? { [args.id]: args.propsState } : {}
+          )
+        )
+      }
+      return undoData
+    },
+    undo(data) {
+      restore(data)
+    },
+  }
+
+  function createSelectAction(
     id: string,
     propsState: TargetPropsState,
     shift = false,
     notToggle = false
-  ): HistoryItem {
-    return getSelectItem(
-      selectedStateMap.value,
-      id,
-      propsState,
-      getVisibledMap(),
-      shift,
-      notToggle,
-      setSelectedStateMap
-    )
+  ): okahistory.Action<{
+    id: string
+    propsState: TargetPropsState
+    shift?: boolean
+    notToggle?: boolean
+  }> {
+    return {
+      name: actionNames.select,
+      args: { id, propsState, shift, notToggle },
+    }
   }
 
-  function selectAll(targetMap: IdMap<TargetProps>): HistoryItem {
-    return getReplaceItem(
-      selectedStateMap.value,
-      mapReduce({ ...selectedStateMap.value, ...targetMap }, (_, id) =>
-        targetMap[id]
-          ? mergePropsState(
-              getAllSelectedProps(targetMap[id]),
-              selectedStateMap.value[id]
-            )
-          : selectedStateMap.value[id]
-      ),
-      setSelectedStateMap
-    )
+  const selectAllReducer: okahistory.Reducer<
+    IdMap<TargetProps>,
+    IdMap<TargetPropsState>
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(targetMap) {
+      const snapshot = { ...selectedStateMap.value }
+      setSelectedStateMap(
+        mapReduce({ ...selectedStateMap.value, ...targetMap }, (_, id) =>
+          targetMap[id]
+            ? mergePropsState(
+                getAllSelectedProps(targetMap[id]),
+                selectedStateMap.value[id]
+              )
+            : selectedStateMap.value[id]
+        )
+      )
+      return snapshot
+    },
+    undo(snapshot) {
+      setSelectedStateMap(snapshot)
+    },
   }
 
-  function filter(keepIdMap: { [id: string]: unknown } = {}): HistoryItem {
-    return getReplaceItem(
-      selectedStateMap.value,
-      mapFilterExec(selectedStateMap.value, getVisibledMap(), (map) =>
-        extractMap(map, keepIdMap)
-      ),
-      setSelectedStateMap
-    )
+  function createSelectAllAction(
+    targetMap: IdMap<TargetProps>
+  ): okahistory.Action<IdMap<TargetProps>> {
+    return { name: actionNames.selectAll, args: targetMap }
   }
 
-  function drop(targetMap: { [id: string]: unknown } = {}): HistoryItem {
-    return getReplaceItem(
-      selectedStateMap.value,
-      dropMap(selectedStateMap.value, targetMap),
-      setSelectedStateMap
-    )
+  const filterReducer: okahistory.Reducer<
+    IdMap<unknown>,
+    IdMap<TargetPropsState>
+  > = {
+    getLabel: () => `Filter ${name}`,
+    redo(keepIdMap) {
+      const snapshot = { ...selectedStateMap.value }
+      setSelectedStateMap(
+        mapFilterExec(selectedStateMap.value, getVisibledMap(), (map) =>
+          extractMap(map, keepIdMap)
+        )
+      )
+      return snapshot
+    },
+    undo(snapshot) {
+      setSelectedStateMap(snapshot)
+    },
   }
 
-  function clear(): HistoryItem {
-    return getReplaceItem(selectedStateMap.value, {}, setSelectedStateMap)
+  function createFilterAction(
+    keepIdMap: IdMap<unknown> = {}
+  ): okahistory.Action<IdMap<unknown>> {
+    return { name: actionNames.filter, args: keepIdMap }
+  }
+
+  const dropReducer: okahistory.Reducer<IdMap<unknown>, RestoreData> = {
+    getLabel: () => `Drop ${name}`,
+    redo(targetMap) {
+      const toUpsert = extractMap(selectedStateMap.value, targetMap)
+      setSelectedStateMap(dropMap(selectedStateMap.value, targetMap))
+      return { toUpsert, toDelete: [] }
+    },
+    undo(restoreData) {
+      restore(restoreData)
+    },
+  }
+
+  function createDropAction(
+    targetMap: IdMap<unknown> = {}
+  ): okahistory.Action<IdMap<unknown>> {
+    return { name: actionNames.drop, args: targetMap }
+  }
+
+  const clearAllReducer: okahistory.Reducer<void, IdMap<TargetPropsState>> = {
+    getLabel: () => `Select ${name}`,
+    redo() {
+      const snapshot = { ...selectedStateMap.value }
+      setSelectedStateMap({})
+      return snapshot
+    },
+    undo(snapshot) {
+      setSelectedStateMap(snapshot)
+    },
+  }
+
+  function createClearAllAction(): okahistory.Action<void> {
+    return { name: actionNames.clearAll, args: undefined }
   }
 
   return {
+    init,
     selectedStateMap: computed(() => selectedStateMap.value),
-    select,
-    selectAll,
-    filter,
-    drop,
-    clear,
+
+    reducers: {
+      [actionNames.select]: selectReducer,
+      [actionNames.selectAll]: selectAllReducer,
+      [actionNames.filter]: filterReducer,
+      [actionNames.drop]: dropReducer,
+      [actionNames.clearAll]: clearAllReducer,
+    },
+    createSelectAction,
+    createSelectAllAction,
+    createFilterAction,
+    createDropAction,
+    createClearAllAction,
   }
 }
 
@@ -127,34 +251,5 @@ function mergePropsState(
   if (!b) return a
   return {
     props: { ...a.props, ...b.props },
-  }
-}
-
-function getSelectItem(
-  state: IdMap<TargetPropsState>,
-  id: string,
-  propsState: TargetPropsState,
-  visibledMap: IdMap<TargetPropsState>,
-  shift = false,
-  notToggle = false,
-  setFn: (val: IdMap<TargetPropsState>) => void
-): HistoryItem {
-  return {
-    name: 'Select',
-    undo: () => setFn({ ...state }),
-    redo: () => {
-      if (shift) {
-        const props = notToggle
-          ? { ...(state[id]?.props ?? {}), ...propsState.props }
-          : shiftMergeProps(state[id]?.props, propsState.props)
-        setFn(mergeOrDropMap(state, id, props ? { props } : undefined))
-      } else {
-        setFn(
-          mapFilterExec(state, visibledMap, () =>
-            id ? { [id]: propsState } : {}
-          )
-        )
-      }
-    },
   }
 }

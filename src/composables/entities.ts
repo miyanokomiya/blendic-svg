@@ -19,7 +19,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { computed, reactive } from 'vue'
 import { IdMap } from '/@/models'
-import { DeletedInfo, Entities, Entity } from '/@/models/entity'
+import {
+  DeletedInfo,
+  Entities,
+  Entity,
+  replaceEntities,
+  RestoreData,
+  restoreEntities,
+} from '/@/models/entity'
 import { extractMap, reduceToMap } from '/@/utils/commons'
 import * as okahistory from 'okahistory'
 
@@ -35,6 +42,7 @@ export function useEntities<T extends Entity>(name: string) {
     add: `${name}_ADD`,
     delete: `${name}_DELETE`,
     update: `${name}_UPDATE`,
+    replace: `${name}_REPLACE`,
   }
 
   const addReducer: okahistory.Reducer<T[], string[]> = {
@@ -117,6 +125,37 @@ export function useEntities<T extends Entity>(name: string) {
     }
   }
 
+  const replaceReducer: okahistory.Reducer<
+    {
+      val: T[]
+      targets: { [id: string]: true } | string[]
+    },
+    RestoreData<T>
+  > = {
+    getLabel: () => `Replace ${name}`,
+    redo: (args) => {
+      return replaceEntities(entities, args.val, args.targets)
+    },
+    undo: (restoreData) => {
+      restoreEntities(entities, restoreData)
+    },
+  }
+
+  function createReplaceAction(
+    val: T[],
+    targets: { [id: string]: true } | string[],
+    seriesKey?: string
+  ): okahistory.Action<{
+    val: T[]
+    targets: { [id: string]: true } | string[]
+  }> {
+    return {
+      name: actionNames.replace,
+      args: { val, targets },
+      seriesKey,
+    }
+  }
+
   return {
     init,
     entities: computed(() => entities),
@@ -124,9 +163,11 @@ export function useEntities<T extends Entity>(name: string) {
       [actionNames.add]: addReducer,
       [actionNames.delete]: deleteReducer,
       [actionNames.update]: updateReducer,
+      [actionNames.replace]: replaceReducer,
     },
     createAddAction,
     createDeleteAction,
     createUpdateAction,
+    createReplaceAction,
   }
 }

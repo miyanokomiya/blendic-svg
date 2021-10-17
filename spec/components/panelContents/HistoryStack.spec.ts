@@ -24,7 +24,7 @@ import { useHistoryStore } from '/@/store/history'
 describe('src/components/panelContents/HistoryStack.vue', () => {
   const historyStore = useHistoryStore()
   beforeEach(() => {
-    historyStore.clearHistory()
+    historyStore.clear()
   })
 
   describe('snapshot', () => {
@@ -34,10 +34,21 @@ describe('src/components/panelContents/HistoryStack.vue', () => {
     })
 
     it('some histories', () => {
-      historyStore.push({ name: 'item 1', undo: () => {}, redo: () => {} })
-      historyStore.push({ name: 'item 2', undo: () => {}, redo: () => {} })
-      historyStore.push({ name: 'item 3', undo: () => {}, redo: () => {} })
+      const { dispatch, createAction } = historyStore.defineReducers({
+        test0: {
+          redo() {},
+          undo() {},
+        },
+        test1: {
+          redo() {},
+          undo() {},
+        },
+      })
+      dispatch(createAction('test0', undefined))
+      dispatch(createAction('test1', undefined))
+      dispatch(createAction('test0', undefined))
       historyStore.undo()
+
       const wrapper = mount(Target)
       expect(wrapper.element).toMatchSnapshot()
     })

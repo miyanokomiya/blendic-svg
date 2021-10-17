@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import * as okahistory from 'okahistory'
 
 export function useHistoryStore(getHistoryMax: () => number = () => 64) {
@@ -37,9 +37,8 @@ export function useHistoryStore(getHistoryMax: () => number = () => 64) {
   }
 
   return {
-    historySummaries: historySummaries.value as Readonly<
-      typeof historySummaries.value
-    >,
+    historySummaries: computed(() => historySummaries.value),
+    currentItemIndex: computed(() => currentItemIndex.value),
     clear: historyModule.clear,
     dispatch: historyModule.dispatch,
     undo: historyModule.undo,

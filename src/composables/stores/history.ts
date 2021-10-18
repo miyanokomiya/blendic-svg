@@ -48,4 +48,3 @@ export function useHistoryStore(getHistoryMax: () => number = () => 64) {
 }
 
 export type HistoryStore = ReturnType<typeof useHistoryStore>
-export type HistoryItem = any

@@ -61,9 +61,9 @@ ul {
     width: 100%;
     padding: 4px 8px;
     text-align: left;
-    border-bottom: solid 1px #aaa;
+    border-bottom: solid 1px #888;
     &.done {
-      background-color: #888;
+      background-color: #aaa;
     }
   }
 }

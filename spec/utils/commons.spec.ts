@@ -48,6 +48,7 @@ import {
   getTreeIdPath,
   reduceToMap,
   shallowEqual,
+  xor,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -573,6 +574,15 @@ describe('utils/commons.ts', () => {
       expect(shallowEqual({ a: 1 }, { b: 1 })).toBe(false)
       expect(shallowEqual({ a: 1 }, { a: 1, b: 1 })).toBe(false)
       expect(shallowEqual({ a: 1, b: 1 }, { a: 1 })).toBe(false)
+    })
+  })
+
+  describe('xor', () => {
+    it('should return xor boolean', () => {
+      expect(xor(false, false)).toBe(false)
+      expect(xor(false, true)).toBe(true)
+      expect(xor(true, false)).toBe(true)
+      expect(xor(true, true)).toBe(false)
     })
   })
 })

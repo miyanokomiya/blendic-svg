@@ -228,7 +228,7 @@ export function selectBone(
   ignoreConnection = false
 ): IdMap<BoneSelectedState> {
   const target = findBone(bones, id)
-  if (!target) return {}
+  if (!target || Object.keys(selectedState).length === 0) return {}
 
   let ret: IdMap<Partial<BoneSelectedState>> = {
     [id]: selectedState,

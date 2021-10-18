@@ -39,11 +39,14 @@ import {
 } from '/@/composables/selectable'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import {
+  dropMap,
   getTreeIdPath,
   mapReduce,
   reduceToMap,
+  shallowEqual,
   splitList,
   toList,
+  xor,
 } from '/@/utils/commons'
 import { useEntities } from '/@/composables/entities'
 import { SelectOptions } from '/@/composables/modes/types'
@@ -260,29 +263,41 @@ export function createStore(historyStore: HistoryStore) {
     if (!lastSelectedBone.value && !id) return
     if (
       boneSelectable.lastSelectedId.value === id &&
-      boneSelectable.isAttrsSelected({ [id]: selectedState }) &&
-      Object.keys(allSelectedBones.value).length === 1
+      Object.keys(selectedBones.value).length === 1 &&
+      !shift &&
+      shallowEqual(selectedBones.value[id], selectedState)
     )
       return
 
     if (!id) {
       historyStore.dispatch(boneSelectable.createClearAllAction())
     } else {
+      let nextState: BoneSelectedState = {}
+
+      if (shift) {
+        const current: BoneSelectedState = selectedBones.value[id] ?? {}
+        if (xor(current.head, selectedState.head)) nextState.head = true
+        if (xor(current.tail, selectedState.tail)) nextState.tail = true
+      } else {
+        nextState = selectedState
+      }
+
       historyStore.dispatch(
         boneSelectable.createMultiSelectAction(
           mergeMap(
             {
-              ...(shift ? boneSelectable.selectedMap.value : {}),
-              [id]: selectedState,
+              ...(shift
+                ? dropMap(boneSelectable.selectedMap.value, { [id]: true })
+                : {}),
+              ...(Object.keys(nextState).length > 0 ? { [id]: nextState } : {}),
             },
             armatureUtils.selectBone(
               toList(boneMap.value),
               id,
-              selectedState,
+              nextState,
               ignoreConnection
             )
-          ),
-          shift
+          )
         )
       )
     }

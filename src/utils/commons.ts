@@ -373,3 +373,7 @@ export function shallowEqual(
     aEntries.every(([key, val]) => val === b[key])
   )
 }
+
+export function xor(a: any, b: any): boolean {
+  return (a || b) && !(a && b)
+}

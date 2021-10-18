@@ -256,7 +256,6 @@ export function useKeyframeEditMode(
 
   function completeEdit() {
     if (editedKeyframeMap.value) {
-      console.log(editedKeyframeMap.value)
       animationStore.upsertKeyframes(
         toList(editedKeyframeMap.value.notSelected),
         toList(editedKeyframeMap.value.selected)

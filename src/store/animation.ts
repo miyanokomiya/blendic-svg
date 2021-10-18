@@ -115,7 +115,7 @@ export function createStore(
     useMapStore<Partial<BoneConstraintOption>>('ConstraintPose')
 
   // Note: All bones are visible currently
-  const targetPropsState = useTargetProps('Pose Target', () => ({}))
+  const targetPropsState = useTargetProps('PoseTarget', () => targetMap.value)
   const keyframeState = useKeyframeStates(
     'Keyframe',
     () => visibledKeyframeMap.value
@@ -154,11 +154,15 @@ export function createStore(
     return getKeyframeMapByTargetId(keyframeList.value)
   })
 
+  const targetMap = computed(() => ({
+    ...indexStore.boneMap.value,
+    ...indexStore.constraintMap.value,
+  }))
+
   const keyframeBoneMapByTargetId = computed(() => {
-    return extractMap(keyframeMapByTargetId.value, {
-      ...indexStore.boneMap.value,
-      ...indexStore.constraintMap.value,
-    }) as IdMap<KeyframeBone[]>
+    return extractMap(keyframeMapByTargetId.value, targetMap.value) as IdMap<
+      KeyframeBone[]
+    >
   })
 
   const visibledKeyframeMapByTargetId = computed(() => {
@@ -691,6 +695,7 @@ export function createStore(
     propsState: TargetPropsState,
     shift = false
   ) {
+    if (!targetPropsState.selectDryRun(targetId, propsState, shift)) return
     historyStore.dispatch(
       targetPropsState.createSelectAction(targetId, propsState, shift)
     )

@@ -30,6 +30,43 @@ describe('src/composables/stores/targetProps.ts', () => {
     return useTargetProps('props', () => visibledMap)
   }
 
+  describe('selectDryRun', () => {
+    it('should return true if the operation to do with the args will update the state', () => {
+      const targetProps = getStore()
+      const historyStore = useHistoryStore()
+      historyStore.defineReducers(targetProps.reducers)
+
+      expect(targetProps.selectDryRun('a', { props: { x: 'selected' } })).toBe(
+        true
+      )
+
+      historyStore.dispatch(
+        targetProps.createSelectAction('a', {
+          props: { x: 'selected' },
+        })
+      )
+      expect(targetProps.selectDryRun('a', { props: { x: 'selected' } })).toBe(
+        false
+      )
+      expect(
+        targetProps.selectDryRun('a', { props: { x: 'selected' } }, true)
+      ).toBe(true)
+
+      historyStore.dispatch(
+        targetProps.createSelectAction(
+          'a',
+          {
+            props: { x: 'selected' },
+          },
+          true
+        )
+      )
+      expect(
+        targetProps.selectDryRun('a', { props: { x: 'selected' } }, true)
+      ).toBe(true)
+    })
+  })
+
   describe('action to select', () => {
     it('should create an action to do', () => {
       const targetProps = getStore()
@@ -51,6 +88,15 @@ describe('src/composables/stores/targetProps.ts', () => {
       historyStore.redo()
       expect(targetProps.selectedStateMap.value).toEqual({
         a: { props: { x: 'selected' } },
+      })
+
+      historyStore.dispatch(
+        targetProps.createSelectAction('b', {
+          props: { x: 'selected' },
+        })
+      )
+      expect(targetProps.selectedStateMap.value).toEqual({
+        b: { props: { x: 'selected' } },
       })
     })
     describe('shift select', () => {

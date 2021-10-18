@@ -26,6 +26,7 @@ import {
   mapReduce,
   mergeOrDropMap,
   reduceToMap,
+  shallowEqual,
   shiftMergeProps,
 } from '/@/utils/commons'
 import * as okahistory from 'okahistory'
@@ -48,7 +49,7 @@ interface RestoreData {
 
 export function useTargetProps(
   name: string,
-  getVisibledMap: () => IdMap<TargetPropsState>
+  getVisibledMap: () => IdMap<unknown>
 ) {
   const empty = {}
   const selectedStateMap = ref<IdMap<TargetPropsState>>(empty)
@@ -74,6 +75,31 @@ export function useTargetProps(
     filter: `${name}_FILTER`,
     drop: `${name}_DROP`,
     clearAll: `${name}_CLEAR_ALL`,
+  }
+
+  function selectDryRun(
+    id: string,
+    propsState: TargetPropsState,
+    shift = false,
+    notToggle = false
+  ): boolean {
+    const size = Object.keys(selectedStateMap.value).length
+    if (size === 0) {
+      return !!id
+    } else if (size === 1) {
+      if (
+        id &&
+        selectedStateMap.value[id] &&
+        shallowEqual(selectedStateMap.value[id].props, propsState.props)
+      ) {
+        return shift && !notToggle
+      } else {
+        return true
+      }
+    } else {
+      // TODO: check more accurately
+      return true
+    }
   }
 
   const selectReducer: okahistory.Reducer<
@@ -222,6 +248,7 @@ export function useTargetProps(
   return {
     init,
     selectedStateMap: computed(() => selectedStateMap.value),
+    selectDryRun,
 
     reducers: {
       [actionNames.select]: selectReducer,

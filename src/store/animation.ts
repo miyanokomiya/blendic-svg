@@ -635,8 +635,9 @@ export function createStore(
     keyframes: IdMap<KeyframeBase>,
     seriesKey?: string
   ) {
-    const [head, ...body] = createExecUpdateKeyframeActions(
-      keyframes,
+    const [head, ...body] = createUpsertKeyframeActions(
+      toList(keyframes),
+      true,
       seriesKey
     )
     historyStore.dispatch(head, body)
@@ -654,14 +655,8 @@ export function createStore(
     historyStore.dispatch(head, body)
   }
 
-  function completeDuplicateKeyframes(
-    duplicatedKeyframeList: KeyframeBase[],
-    updatedKeyframeList: KeyframeBase[]
-  ) {
-    const [head, ...body] = getCompleteDuplicateKeyframesItem(
-      duplicatedKeyframeList,
-      updatedKeyframeList
-    )
+  function upsertKeyframes(upsertedList: KeyframeBase[]) {
+    const [head, ...body] = createUpsertKeyframeActions(upsertedList, true)
     historyStore.dispatch(head, body)
   }
 
@@ -744,7 +739,7 @@ export function createStore(
 
     execUpdateKeyframes,
     pasteKeyframes,
-    completeDuplicateKeyframes,
+    upsertKeyframes,
 
     selectTargetProp,
   }
@@ -798,7 +793,7 @@ export function createStore(
     notSelect = false
   ): (okahistory.Action<unknown> | undefined)[] {
     return [
-      ...createReplaceVisibledKeyframeActions(keyframes, !replace),
+      ...createUpsertKeyframeActions(keyframes, !replace),
       editTransformsStore.createSetAction(
         resetTransformByKeyframeMap(
           editTransforms.value,
@@ -809,28 +804,36 @@ export function createStore(
     ]
   }
 
-  function createReplaceVisibledKeyframeActions(
+  function createUpsertKeyframeActions(
     replaced: KeyframeBase[],
     mergeDeep = false,
     seriesKey?: string
   ): okahistory.Action<unknown>[] {
-    const visibles = toList(visibledKeyframeMap.value)
-    const droppedMap = dropMap(visibledKeyframeMap.value, toMap(replaced))
-    const { merged } = mergeKeyframesWithDropped(visibles, replaced, mergeDeep)
-    const keyframeMap = toMap(keyframeList.value)
-    const created = merged.filter((k) => !keyframeMap[k.id]).map((k) => k.id)
+    const current = visibledKeyframeMap.value
+
+    const { merged, dropped } = mergeKeyframesWithDropped(
+      toList(current),
+      replaced,
+      mergeDeep
+    )
+
+    const mergedMap = toMap(merged)
+
+    const createdMap = dropMap(mergedMap, current)
+    const updatedMap = extractMap(mergedMap, current)
+    const deletedMap = dropMap(toMap(dropped), mergedMap)
+
+    const createdList = toList(createdMap)
 
     return [
-      keyframeEntities.createReplaceAction(
-        merged,
-        visibles.map((k) => k.id),
-        seriesKey
-      ),
+      keyframeEntities.createAddAction(createdList),
+      keyframeEntities.createDeleteAction(toList(deletedMap).map((k) => k.id)),
+      keyframeEntities.createUpdateAction(updatedMap, seriesKey),
       actionEntities.createUpdateAction({
         [lastSelectedAction.value!.id]: {
           keyframes: lastSelectedAction
-            .value!.keyframes.filter((id) => !droppedMap[id])
-            .concat(created),
+            .value!.keyframes.filter((id) => !deletedMap[id])
+            .concat(createdList.map((k) => k.id)),
         },
       }),
     ]
@@ -841,16 +844,29 @@ export function createStore(
   ): okahistory.Action<unknown>[] {
     const visibled = visibledKeyframeMap.value
     const targetMap = extractMap(visibled, selectedStateMap)
-    const deletedMap = mapReduce(targetMap, (keyframe) => {
-      return deleteKeyframeByProp(keyframe, selectedStateMap[keyframe.id])
+
+    const updatedMap: IdMap<KeyframeBase> = {}
+    const deletedMap: IdMap<true> = {}
+
+    toList(targetMap).forEach((item) => {
+      const updated = deleteKeyframeByProp(item, selectedStateMap[item.id])
+      if (updated) {
+        updatedMap[updated.id] = updated
+      } else {
+        deletedMap[item.id] = true
+      }
     })
-    const updated = toList({
-      ...visibled,
-      ...deletedMap,
-    }).filter((k): k is Exclude<typeof k, undefined> => !!k)
 
     return [
-      ...createReplaceVisibledKeyframeActions(updated),
+      keyframeEntities.createUpdateAction(updatedMap),
+      keyframeEntities.createDeleteAction(Object.keys(deletedMap)),
+      actionEntities.createUpdateAction({
+        [lastSelectedAction.value!.id]: {
+          keyframes: lastSelectedAction.value!.keyframes.filter(
+            (id) => !deletedMap[id]
+          ),
+        },
+      }),
       keyframeState.createClearAllAction(),
     ]
   }
@@ -860,8 +876,7 @@ export function createStore(
     targetFrame: number,
     key: KeyframePropKey
   ): okahistory.Action<unknown>[] {
-    const visibled = visibledKeyframeMap.value
-    const keyframe = toList(visibled).find(
+    const keyframe = toList(visibledKeyframeMap.value).find(
       (k) => k.targetId === targetId && k.frame === targetFrame
     )
     if (!keyframe) return []
@@ -869,35 +884,25 @@ export function createStore(
     const deletedTarget = deleteKeyframeByProp(keyframe, {
       props: { [key]: true },
     })
-    const updated = toList({
-      ...visibled,
-      [keyframe.id]: deletedTarget,
-    }).filter((k): k is Exclude<typeof k, undefined> => !!k)
 
-    return [
-      ...createReplaceVisibledKeyframeActions(updated),
-      keyframeState.createClearAllAction(),
-    ]
-  }
-
-  function createExecUpdateKeyframeActions(
-    keyframes: IdMap<KeyframeBase>,
-    seriesKey?: string
-  ): okahistory.Action<unknown>[] {
-    return createReplaceVisibledKeyframeActions(
-      toList(keyframes),
-      true,
-      seriesKey
-    )
-  }
-
-  function getCompleteDuplicateKeyframesItem(
-    duplicatedKeyframeList: KeyframeBase[],
-    updatedKeyframeList: KeyframeBase[]
-  ): okahistory.Action<unknown>[] {
-    return createExecInsertKeyframeActions(duplicatedKeyframeList, true, true)
-      .concat(createExecUpdateKeyframeActions(toMap(updatedKeyframeList)))
-      .filter((a): a is Exclude<typeof a, undefined> => !!a)
+    return deletedTarget
+      ? [
+          keyframeEntities.createUpdateAction({
+            [deletedTarget.id]: deletedTarget,
+          }),
+          keyframeState.createClearAllAction(),
+        ]
+      : [
+          keyframeEntities.createDeleteAction([keyframe.id]),
+          actionEntities.createUpdateAction({
+            [lastSelectedAction.value!.id]: {
+              keyframes: lastSelectedAction.value!.keyframes.filter(
+                (id) => id !== keyframe.id
+              ),
+            },
+          }),
+          keyframeState.createClearAllAction(),
+        ]
   }
 }
 

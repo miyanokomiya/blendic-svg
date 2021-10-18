@@ -256,9 +256,10 @@ export function useKeyframeEditMode(
 
   function completeEdit() {
     if (editedKeyframeMap.value) {
-      animationStore.completeDuplicateKeyframes(
-        toList(editedKeyframeMap.value.notSelected),
-        toList(editedKeyframeMap.value.selected)
+      animationStore.upsertKeyframes(
+        toList(editedKeyframeMap.value.notSelected).concat(
+          toList(editedKeyframeMap.value.selected)
+        )
       )
     }
 

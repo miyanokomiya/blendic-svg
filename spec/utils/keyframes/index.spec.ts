@@ -556,6 +556,32 @@ describe('utils/keyframes/index.ts', () => {
       expect(ret.selected).toEqual({})
       expect(ret.notSelected).toEqual({})
     })
+    it('should ignore keyframes that are not selected at all', () => {
+      const keyframeMap = {
+        a: getKeyframeBone({
+          id: 'a',
+          points: { translateX: getKeyframePoint() },
+        }),
+        b: getKeyframeBone({
+          id: 'b',
+          points: { translateX: getKeyframePoint() },
+        }),
+      }
+      const selectedKeyframeMap = {
+        a: { props: { translateX: true } },
+      } as const
+      const ret = target.splitKeyframeMapBySelected(
+        keyframeMap,
+        selectedKeyframeMap
+      )
+      expect(ret.selected).toEqual({
+        a: getKeyframeBone({
+          id: 'a',
+          points: { translateX: getKeyframePoint() },
+        }),
+      })
+      expect(ret.notSelected).toEqual({})
+    })
   })
 
   describe('moveKeyframe', () => {

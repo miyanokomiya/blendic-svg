@@ -153,18 +153,55 @@ export function slideKeyframesTo<T extends KeyframeBase>(
   return keyframes.map((k) => ({ ...k, frame: k.frame + (at - min) }))
 }
 
+/**
+ * merge the keyframes having the same `frame` and `targetId`
+ * `id`: pick from first item
+ * `points`: assign from first to last
+ *
+ * e.g.
+ * [
+ *   { id: 'a', points: { translateX: tA, rotate: rA } },
+ *   { id: 'b', points: { rotate: rB, scaleX: sB } }
+ * ]
+ * => [{ id: 'a', points: { translateX: tA, rotate: rB, scaleX: sB } }]
+ */
+export function normalizeKeyframes(src: KeyframeBase[]): KeyframeBase[] {
+  const srcByFrame = getKeyframeMapByFrame(src)
+
+  return Object.values(srcByFrame)
+    .map((sameFrameList) => {
+      const sameFrameTargetMap = toKeyListMap(sameFrameList, 'targetId')
+      return Object.values(sameFrameTargetMap).map((sameFrameTarget) => {
+        const [head, ...body] = sameFrameTarget
+        return body.reduce(
+          (p, item) => {
+            Object.assign(p.points, item.points)
+            return p
+          },
+          { ...head, points: { ...head.points } }
+        )
+      })
+    })
+    .flat()
+}
+
+/**
+ * each merged items has the same id as in `override`
+ */
 export function mergeKeyframesWithDropped(
   src: KeyframeBase[],
   override: KeyframeBase[],
   mergeDeep = false
 ): { merged: KeyframeBase[]; dropped: KeyframeBase[] } {
+  const normalizeOverride = normalizeKeyframes(override)
+
   const srcMap = toMap(src)
-  const overrideMap = toMap(override)
+  const overrideMap = toMap(normalizeOverride)
 
   const srcMapByFrame = getKeyframeMapByFrame(
     toList(dropMap(srcMap, overrideMap))
   )
-  const overrideMapByFrame = getKeyframeMapByFrame(override)
+  const overrideMapByFrame = getKeyframeMapByFrame(normalizeOverride)
   const overrideMapByNewFrame = dropMap(overrideMapByFrame, srcMapByFrame)
 
   const droppedMap: IdMap<KeyframeBase> = extractMap(srcMap, overrideMap)

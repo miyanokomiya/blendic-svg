@@ -45,6 +45,8 @@ import {
   uniq,
   resetId,
   dropMap,
+  toKeyListMap,
+  toKeyMap,
 } from '../utils/commons'
 import { getNotDuplicatedName } from '../utils/relations'
 import { useHistoryStore } from './history'
@@ -498,16 +500,16 @@ export function createStore(
     if (!keyframeId && !isAnyVisibledSelectedKeyframe.value) return
 
     if (keyframeId) {
-      const [head, ...body] = getSelectKeyframeItem(
+      const [head, ...body] = createSelectKeyframeActions(
         keyframeId,
         selectedState,
         shift
       )
       historyStore.dispatch(head, body)
+    } else {
+      const [head, ...body] = getClearSelectKeyframeItem()
+      historyStore.dispatch(head, body)
     }
-
-    const [head, ...body] = getClearSelectKeyframeItem()
-    historyStore.dispatch(head, body)
   }
 
   function selectKeyframeByFrame(frame: number, shift = false) {
@@ -563,7 +565,7 @@ export function createStore(
       )
     })
 
-    const [head, ...body] = createExecInsertKeyframeActions(keyframes)
+    const [head, ...body] = createInsertKeyframeActions(keyframes)
     historyStore.dispatch(head, body)
   }
   function execDeleteKeyframes() {
@@ -613,7 +615,7 @@ export function createStore(
       true
     )
 
-    const [head, ...body] = createExecInsertKeyframeActions([keyframe])
+    const [head, ...body] = createInsertKeyframeActions([keyframe])
     historyStore.dispatch(head, body)
   }
 
@@ -644,7 +646,7 @@ export function createStore(
   }
 
   function pasteKeyframes(keyframeList: KeyframeBase[]) {
-    const [head, ...body] = createExecInsertKeyframeActions(
+    const [head, ...body] = createInsertKeyframeActions(
       slideKeyframesTo(
         keyframeList
           .filter((k) => indexStore.boneMap.value[k.targetId])
@@ -655,9 +657,33 @@ export function createStore(
     historyStore.dispatch(head, body)
   }
 
-  function upsertKeyframes(upsertedList: KeyframeBase[]) {
-    const [head, ...body] = createUpsertKeyframeActions(upsertedList, true)
-    historyStore.dispatch(head, body)
+  /**
+   * items in `updatedList` will be selected by this operation
+   */
+  function upsertKeyframes(
+    createdList: KeyframeBase[],
+    updatedList: KeyframeBase[] = []
+  ) {
+    const [head, ...body] = createUpsertKeyframeActions(
+      [...createdList, ...updatedList],
+      true
+    )
+
+    const createdByFrame = toKeyListMap(createdList, 'frame')
+    const selectedMap: IdMap<KeyframeBase> = {}
+
+    // items in `updatedList` may be deleted by merging with a item in `createdList`
+    // => select the item having the same position in createdList
+    updatedList.forEach((u) => {
+      const byTargetId = toKeyMap(createdByFrame[u.frame] ?? [], 'targetId')
+      const c = byTargetId[u.targetId]
+      selectedMap[c?.id ?? u.id] = u
+    })
+
+    historyStore.dispatch(head, [
+      ...body,
+      keyframeState.createMultiSelectAction(selectedMap),
+    ])
   }
 
   function selectTargetProp(
@@ -748,17 +774,6 @@ export function createStore(
     return keyframeState.createSelectAllAction(visibledKeyframeMap.value)
   }
 
-  function getSelectKeyframesPropsItem(
-    keyframeMap: IdMap<KeyframeBase>
-  ): okahistory.Action<unknown>[] {
-    return [
-      keyframeState.createSelectAllAction(keyframeMap),
-      targetPropsState.createDropAction(
-        toTargetIdMap(toList(visibledKeyframeMap.value))
-      ),
-    ]
-  }
-
   function getClearSelectKeyframeItem(): okahistory.Action<unknown>[] {
     return [
       keyframeState.createFilterAction(),
@@ -768,7 +783,7 @@ export function createStore(
     ]
   }
 
-  function getSelectKeyframeItem(
+  function createSelectKeyframeActions(
     id: string,
     selectedState?: KeyframeSelectedState,
     shift = false
@@ -787,10 +802,9 @@ export function createStore(
     ]
   }
 
-  function createExecInsertKeyframeActions(
+  function createInsertKeyframeActions(
     keyframes: KeyframeBase[],
-    replace = false,
-    notSelect = false
+    replace = false
   ): (okahistory.Action<unknown> | undefined)[] {
     return [
       ...createUpsertKeyframeActions(keyframes, !replace),
@@ -800,7 +814,10 @@ export function createStore(
           toTargetIdMap(keyframes)
         )
       ),
-      ...(notSelect ? [] : getSelectKeyframesPropsItem(toMap(keyframes))),
+      keyframeState.createSelectAllAction(toMap(keyframes)),
+      targetPropsState.createDropAction(
+        toTargetIdMap(toList(visibledKeyframeMap.value))
+      ),
     ]
   }
 
@@ -836,6 +853,7 @@ export function createStore(
             .concat(createdList.map((k) => k.id)),
         },
       }),
+      keyframeState.createDropAction(deletedMap),
     ]
   }
 

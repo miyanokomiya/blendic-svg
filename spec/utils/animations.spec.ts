@@ -50,6 +50,7 @@ import {
   getEditedKeyframeConstraint,
   resetTransformByKeyframe,
   resetTransformByKeyframeMap,
+  normalizeKeyframes,
 } from '/@/utils/animations'
 import { getConstraint } from '/@/utils/constraints'
 
@@ -151,6 +152,58 @@ describe('utils/animations.ts', () => {
     })
   })
 
+  describe('normalizeKeyframes', () => {
+    it('should normalize keyframes having the same frame and a target', () => {
+      expect(
+        normalizeKeyframes([
+          getKeyframeBone({
+            id: '1_a',
+            frame: 1,
+            targetId: 'a',
+            points: { rotate: getKeyframePoint() },
+          }),
+          getKeyframeBone({
+            id: '2_b',
+            frame: 1,
+            targetId: 'a',
+            points: { scaleX: getKeyframePoint() },
+          }),
+          getKeyframeBone({
+            id: '1_b',
+            frame: 1,
+            targetId: 'b',
+            points: { scaleX: getKeyframePoint({ value: 1 }) },
+          }),
+          getKeyframeBone({
+            id: '2_b',
+            frame: 1,
+            targetId: 'b',
+            points: {
+              scaleX: getKeyframePoint({ value: 10 }),
+              scaleY: getKeyframePoint({ value: 20 }),
+            },
+          }),
+        ])
+      ).toEqual([
+        getKeyframeBone({
+          id: '1_a',
+          frame: 1,
+          targetId: 'a',
+          points: { rotate: getKeyframePoint(), scaleX: getKeyframePoint() },
+        }),
+        getKeyframeBone({
+          id: '1_b',
+          frame: 1,
+          targetId: 'b',
+          points: {
+            scaleX: getKeyframePoint({ value: 10 }),
+            scaleY: getKeyframePoint({ value: 20 }),
+          },
+        }),
+      ])
+    })
+  })
+
   describe('mergeKeyframesWithDropped', () => {
     it('merge keyframes by the same frame and targetId', () => {
       const ret = mergeKeyframesWithDropped(
@@ -197,7 +250,7 @@ describe('utils/animations.ts', () => {
       })
     })
     describe('mergeDeep: true', () => {
-      it('merge props by the same frame and targetId', () => {
+      it('should merge props by the same frame and targetId', () => {
         const ret = mergeKeyframesWithDropped(
           [
             getKeyframeBone({
@@ -226,6 +279,44 @@ describe('utils/animations.ts', () => {
         expect(toMap(ret.merged)).toEqual({
           ove_1_c: getKeyframeBone({
             id: 'ove_1_c',
+            frame: 1,
+            targetId: 'a',
+            points: {
+              translateX: getKeyframePoint({ value: 10 }),
+              translateY: getKeyframePoint({ value: 2 }),
+              rotate: getKeyframePoint({ value: 20 }),
+            },
+          }),
+        })
+      })
+      it('should merge props by the same frame and targetId in override list', () => {
+        const ret = mergeKeyframesWithDropped(
+          [],
+          [
+            getKeyframeBone({
+              id: 'ove_1_a',
+              frame: 1,
+              targetId: 'a',
+              points: {
+                translateX: getKeyframePoint({ value: 1 }),
+                translateY: getKeyframePoint({ value: 2 }),
+              },
+            }),
+            getKeyframeBone({
+              id: 'ove_1_b',
+              frame: 1,
+              targetId: 'a',
+              points: {
+                translateX: getKeyframePoint({ value: 10 }),
+                rotate: getKeyframePoint({ value: 20 }),
+              },
+            }),
+          ],
+          true
+        )
+        expect(toMap(ret.merged)).toEqual({
+          ove_1_a: getKeyframeBone({
+            id: 'ove_1_a',
             frame: 1,
             targetId: 'a',
             points: {

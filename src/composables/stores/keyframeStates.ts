@@ -206,8 +206,9 @@ export function useKeyframeStates(
         map: { ...selectedStateMap.value },
         lastSelectedId: lastSelectedId.value,
       }
+      const invisibled = dropMap(selectedStateMap.value, getVisibledMap())
       setSelectedStateMap(
-        mapReduce({ ...selectedStateMap.value, ...targetMap }, (_, id) =>
+        mapReduce({ ...targetMap, ...invisibled }, (_, id) =>
           targetMap[id]
             ? mergePropsState(
                 getAllSelectedProps(targetMap[id]),

@@ -330,7 +330,7 @@ describe('src/composables/stores/keyframeStates.ts', () => {
       historyStore.dispatch(
         store.createSelectAllAction({
           a: { id: 'a', points: { x: true, y: false } },
-          b: { id: 'b', points: { p: 0, q: 1 } },
+          b: { id: 'b', points: { p: true, q: true } },
         })
       )
       expect(store.selectedStateMap.value).toEqual({

@@ -36,7 +36,7 @@ import { fromEntityList, toEntityList } from '/@/models/entity'
 import {
   useAttrsSelectable,
   useItemSelectable,
-} from '/@/composables/selectable'
+} from '/@/composables/stores/selectable'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import {
   dropMap,
@@ -48,7 +48,7 @@ import {
   toList,
   xor,
 } from '/@/utils/commons'
-import { useEntities } from '/@/composables/entities'
+import { useEntities } from '/@/composables/stores/entities'
 import { SelectOptions } from '/@/composables/modes/types'
 import { BoneConstraint } from '/@/utils/constraints'
 

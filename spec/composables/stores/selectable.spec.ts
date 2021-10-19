@@ -21,10 +21,10 @@ import {
   useItemSelectable,
   useAttrsSelectable,
   useGeneAttrsSelectable,
-} from '../../src/composables/selectable'
+} from '/@/composables/stores/selectable'
 import { useHistoryStore } from '/@/composables/stores/history'
 
-describe('src/composables/selectable.ts', () => {
+describe('src/composables/stores/selectable.ts', () => {
   describe('useItemSelectable', () => {
     const items = {
       a: { id: 'a' },

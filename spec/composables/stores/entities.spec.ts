@@ -1,7 +1,7 @@
-import { useEntities } from '/@/composables/entities'
+import { useEntities } from '/@/composables/stores/entities'
 import { useHistoryStore } from '/@/composables/stores/history'
 
-describe('src/composables/entities.ts', () => {
+describe('src/composables/stores/entities.ts', () => {
   describe('useEntities', () => {
     describe('init', () => {
       it('should init this composable', () => {

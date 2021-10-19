@@ -70,17 +70,24 @@ export function createStore(historyStore: HistoryStore) {
       : undefined
   )
 
-  function initState(graphs: AnimationGraph[], nodes: GraphNode[]) {
+  function initState(
+    graphs: AnimationGraph[],
+    nodes: GraphNode[],
+    graphSelected: [string, true][],
+    nodeSelected: [string, true][]
+  ) {
     graphEntities.init(fromEntityList(graphs))
-    graphSelectable.init([])
     nodeEntities.init(fromEntityList(nodes))
-    nodeSelectable.init([])
+    graphSelectable.restore(graphSelected)
+    nodeSelectable.restore(nodeSelected)
   }
 
   function exportState() {
     return {
       graphs: graphs.value,
       nodes: toEntityList(nodeEntities.entities.value),
+      graphSelected: graphSelectable.createSnapshot(),
+      nodeSelected: nodeSelectable.createSnapshot(),
     }
   }
 

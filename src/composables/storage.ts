@@ -70,7 +70,8 @@ export function useStorage() {
   const graphStore = useAnimationGraphStore()
 
   function serialize(): string {
-    const { armatures, bones, constraints } = store.exportState()
+    const { armatures, bones, constraints, armatureSelected, boneSelected } =
+      store.exportState()
     const exportedAnimation = animationStore.exportState()
     const { actions, keyframes } = cleanActions(
       exportedAnimation.actions,
@@ -78,6 +79,9 @@ export function useStorage() {
       armatures,
       bones
     )
+
+    const { canvasMode } = canvasStore.exportState()
+
     const fromElementStore = elementStore.exportState()
     const { actors, elements } = cleanActors(
       fromElementStore.actors,
@@ -85,6 +89,7 @@ export function useStorage() {
       armatures,
       bones
     )
+
     const fromGraphStore = graphStore.exportState()
     const graphs = cleanGraphs(fromGraphStore.graphs)
     const nodes = fromGraphStore.nodes
@@ -93,12 +98,24 @@ export function useStorage() {
       armatures,
       bones,
       constraints,
+      armatureSelected,
+      boneSelected,
+
+      canvasMode,
+
       actions,
       keyframes,
+      actionSelected: exportedAnimation.actionSelected,
+
       actors,
       elements,
+      actorSelected: fromElementStore.actorSelected,
+      elementSelected: fromElementStore.elementSelected,
+
       graphs,
       nodes,
+      graphSelected: fromGraphStore.graphSelected,
+      nodeSelected: fromGraphStore.nodeSelected,
     }
     return JSON.stringify(root)
   }
@@ -106,11 +123,31 @@ export function useStorage() {
     try {
       const root: StorageRoot = initialize(JSON.parse(src))
       historyStore.clear()
-      canvasStore.initState()
-      store.initState(root.armatures, root.bones, root.constraints)
-      animationStore.initState(root.actions, root.keyframes)
-      elementStore.initState(root.actors, root.elements)
-      graphStore.initState(root.graphs, root.nodes)
+      store.initState(
+        root.armatures,
+        root.bones,
+        root.constraints,
+        root.armatureSelected,
+        root.boneSelected
+      )
+      canvasStore.initState(root.canvasMode)
+      animationStore.initState(
+        root.actions,
+        root.keyframes,
+        root.actionSelected
+      )
+      elementStore.initState(
+        root.actors,
+        root.elements,
+        root.actorSelected,
+        root.elementSelected
+      )
+      graphStore.initState(
+        root.graphs,
+        root.nodes,
+        root.graphSelected,
+        root.nodeSelected
+      )
     } catch (e) {
       alert('Failed to load: Invalid file.')
     }

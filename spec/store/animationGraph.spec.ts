@@ -19,7 +19,9 @@ describe('src/store/animationGraph.ts', () => {
       [
         createGraphNode('scaler', { id: 'scaler' }),
         createGraphNode('make_vector2', { id: 'make_vector2' }),
-      ]
+      ],
+      [],
+      []
     )
     target.selectGraph('graph')
   })

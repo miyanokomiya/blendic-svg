@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { CanvasMode } from '/@/composables/modes/types'
 import {
   Action,
   Actor,
@@ -31,6 +32,7 @@ import {
   getAnimationGraph,
   toMap,
   IdMap,
+  BoneSelectedState,
 } from '/@/models'
 import { GraphNodeBase } from '/@/models/graphNode'
 import { KeyframeBase } from '/@/models/keyframe'
@@ -45,15 +47,24 @@ export interface StorageRoot {
   armatures: Armature[]
   bones: Bone[]
   constraints: BoneConstraint[]
+  armatureSelected: [string, true][]
+  boneSelected: [string, BoneSelectedState][]
+
+  canvasMode: CanvasMode
 
   actions: Action[]
   keyframes: KeyframeBase[]
+  actionSelected: [string, true][]
 
   actors: Actor[]
   elements: BElement[]
+  actorSelected: [string, true][]
+  elementSelected: [string, true][]
 
   graphs: AnimationGraph[]
   nodes: GraphNodeBase[]
+  graphSelected: [string, true][]
+  nodeSelected: [string, true][]
 }
 
 export function initialize(src: StorageRoot): StorageRoot {
@@ -74,19 +85,28 @@ export function initialize(src: StorageRoot): StorageRoot {
     armatures: src.armatures.map(initializeArmature),
     bones: src.bones.map(initializeBone),
     constraints: src.constraints.map(initializeConstraint),
+    armatureSelected: src.armatureSelected ?? [],
+    boneSelected: src.boneSelected ?? [],
+
+    canvasMode: src.canvasMode ?? 'object',
 
     actions: src.actions.map(initializeAction),
     keyframes: src.actions.flatMap((a) =>
       keyframeMapByActionId[a.id].map(initializeKeyframe)
     ),
+    actionSelected: src.actionSelected ?? [],
 
     actors: src.actors.map(initializeActor),
     elements: src.actors.flatMap((a) =>
       initializeBElements(a.svgTree, elementMapByActorId[a.id])
     ),
+    actorSelected: src.actorSelected ?? [],
+    elementSelected: src.elementSelected ?? [],
 
     graphs,
     nodes,
+    graphSelected: src.graphSelected ?? [],
+    nodeSelected: src.nodeSelected ?? [],
   }
 }
 

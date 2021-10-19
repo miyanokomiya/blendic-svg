@@ -360,3 +360,20 @@ export function reduceToMap<T>(ids: string[], fn: (id: string) => T): IdMap<T> {
     return p
   }, {})
 }
+
+export function shallowEqual(
+  a: { [key: string]: any },
+  b: { [key: string]: any }
+): boolean {
+  const aEntries = Object.entries(a)
+  const bEntries = Object.entries(b)
+
+  return (
+    aEntries.length === bEntries.length &&
+    aEntries.every(([key, val]) => val === b[key])
+  )
+}
+
+export function xor(a: any, b: any): boolean {
+  return (a || b) && !(a && b)
+}

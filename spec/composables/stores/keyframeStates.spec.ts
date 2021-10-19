@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { useHistoryStore } from '/@/composables/stores/history'
 import { useKeyframeStates } from '/@/composables/stores/keyframeStates'
 
 describe('src/composables/stores/keyframeStates.ts', () => {
@@ -26,33 +27,46 @@ describe('src/composables/stores/keyframeStates.ts', () => {
   }
 
   function getStore() {
-    return useKeyframeStates(() => visibledMap)
+    return useKeyframeStates('Keyframe', () => visibledMap)
   }
 
   describe('select', () => {
-    it('should return history item to do', () => {
+    it('should create an action to do', () => {
+      const historyStore = useHistoryStore()
       const store = getStore()
-      const ret = store.select('a', { props: { x: true } })
+      historyStore.defineReducers(store.reducers)
 
-      expect(store.selectedStateMap.value).toEqual({})
-      ret.redo()
+      historyStore.dispatch(
+        store.createSelectAction('a', { props: { x: true } })
+      )
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true } },
       })
-      ret.undo()
+
+      historyStore.undo()
       expect(store.selectedStateMap.value).toEqual({})
+
+      historyStore.redo()
+      expect(store.selectedStateMap.value).toEqual({
+        a: { props: { x: true } },
+      })
     })
 
     it('should keep invisible items', () => {
+      const historyStore = useHistoryStore()
       const store = getStore()
-      store
-        .selectAll({
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(
+        store.createSelectAllAction({
           b: { id: 'b', points: { x: true } },
           c: { id: 'c', points: { x: true } },
         })
-        .redo()
+      )
 
-      store.select('a', { props: { x: true } }).redo()
+      historyStore.dispatch(
+        store.createSelectAction('a', { props: { x: true } })
+      )
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true } },
         c: { props: { x: true } },
@@ -61,23 +75,35 @@ describe('src/composables/stores/keyframeStates.ts', () => {
 
     describe('shift select', () => {
       it('add selected state', () => {
+        const historyStore = useHistoryStore()
         const store = getStore()
-        store.select('a', { props: { x: true } }).redo()
-        const item = store.select('b', { props: { x: true } }, true)
-        expect(store.selectedStateMap.value).toEqual({
-          a: { props: { x: true } },
-        })
-        item.redo()
+        historyStore.defineReducers(store.reducers)
+
+        historyStore.dispatch(
+          store.createSelectAction('a', { props: { x: true } })
+        )
+        historyStore.dispatch(
+          store.createSelectAction('b', { props: { x: true } }, true)
+        )
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true } },
           b: { props: { x: true } },
         })
-        item.undo()
+
+        historyStore.undo()
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true } },
         })
-        item.redo()
-        store.select('b', { props: { y: true } }, true).redo()
+
+        historyStore.redo()
+        expect(store.selectedStateMap.value).toEqual({
+          a: { props: { x: true } },
+          b: { props: { x: true } },
+        })
+
+        historyStore.dispatch(
+          store.createSelectAction('b', { props: { y: true } }, true)
+        )
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true } },
           b: { props: { x: true, y: true } },
@@ -85,28 +111,38 @@ describe('src/composables/stores/keyframeStates.ts', () => {
       })
 
       it('toggle selected', () => {
+        const historyStore = useHistoryStore()
         const store = getStore()
-        store.select('a', { props: { x: true } }).redo()
-        const item = store.select('a', { props: { x: true } }, true)
-        expect(store.selectedStateMap.value).toEqual({
-          a: { props: { x: true } },
-        })
-        item.redo()
+        historyStore.defineReducers(store.reducers)
+
+        historyStore.dispatch(
+          store.createSelectAction('a', { props: { x: true } })
+        )
+        historyStore.dispatch(
+          store.createSelectAction('a', { props: { x: true } }, true)
+        )
         expect(store.selectedStateMap.value).toEqual({})
-        item.undo()
+
+        historyStore.undo()
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true } },
         })
 
         // not toggle partial selected
-        store.select('a', { props: { x: true, y: true } }, true).redo()
+        historyStore.dispatch(
+          store.createSelectAction('a', { props: { x: true, y: true } }, true)
+        )
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true, y: true } },
         })
 
         // toggle all selected
-        store.select('b', { props: { x: true, y: true } }, true).redo()
-        store.select('a', { props: { x: true, y: true } }, true).redo()
+        historyStore.dispatch(
+          store.createSelectAction('b', { props: { x: true, y: true } }, true)
+        )
+        historyStore.dispatch(
+          store.createSelectAction('a', { props: { x: true, y: true } }, true)
+        )
         expect(store.selectedStateMap.value).toEqual({
           b: { props: { x: true, y: true } },
         })
@@ -114,25 +150,43 @@ describe('src/composables/stores/keyframeStates.ts', () => {
     })
   })
 
-  describe('selectList', () => {
-    it('should return history item to do', () => {
+  describe('multiSelect', () => {
+    it('should create an action to do', () => {
+      const historyStore = useHistoryStore()
       const store = getStore()
-      const ret = store.selectList({ a: { id: 'a', points: { x: 1 } } })
-      expect(store.selectedStateMap.value).toEqual({})
-      ret.redo()
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(
+        store.createMultiSelectAction({ a: { id: 'a', points: { x: 1 } } })
+      )
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true } },
       })
-      ret.undo()
+
+      historyStore.undo()
       expect(store.selectedStateMap.value).toEqual({})
+
+      historyStore.redo()
+      expect(store.selectedStateMap.value).toEqual({
+        a: { props: { x: true } },
+      })
     })
 
     it('should keep invisible items', () => {
+      const historyStore = useHistoryStore()
       const store = getStore()
-      store.select('b', { props: { x: true } }).redo()
-      store.select('c', { props: { x: true } }).redo()
+      historyStore.defineReducers(store.reducers)
 
-      store.selectList({ a: { id: 'a', points: { x: 1 } } }).redo()
+      historyStore.dispatch(
+        store.createSelectAction('b', { props: { x: true } })
+      )
+      historyStore.dispatch(
+        store.createSelectAction('c', { props: { x: true } })
+      )
+
+      historyStore.dispatch(
+        store.createMultiSelectAction({ a: { id: 'a', points: { x: 1 } } })
+      )
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true } },
         c: { props: { x: true } },
@@ -141,33 +195,45 @@ describe('src/composables/stores/keyframeStates.ts', () => {
 
     describe('shift select', () => {
       it('add selected state', () => {
+        const historyStore = useHistoryStore()
         const store = getStore()
-        store.selectList({ a: { id: 'a', points: { x: 1 } } }, true).redo()
+        historyStore.defineReducers(store.reducers)
 
-        const item = store.selectList(
-          { b: { id: 'b', points: { x: 1 } } },
-          true
+        historyStore.dispatch(
+          store.createMultiSelectAction(
+            { a: { id: 'a', points: { x: 1 } } },
+            true
+          )
         )
 
-        expect(store.selectedStateMap.value).toEqual({
-          a: { props: { x: true } },
-        })
-
-        item.redo()
+        historyStore.dispatch(
+          store.createMultiSelectAction(
+            { b: { id: 'b', points: { x: 1 } } },
+            true
+          )
+        )
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true } },
           b: { props: { x: true } },
         })
 
-        item.undo()
+        historyStore.undo()
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true } },
         })
 
-        item.redo()
-        store
-          .selectList({ b: { id: 'b', points: { y: 1, z: 1 } } }, true)
-          .redo()
+        historyStore.redo()
+        expect(store.selectedStateMap.value).toEqual({
+          a: { props: { x: true } },
+          b: { props: { x: true } },
+        })
+
+        historyStore.dispatch(
+          store.createMultiSelectAction(
+            { b: { id: 'b', points: { y: 1, z: 1 } } },
+            true
+          )
+        )
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true } },
           b: { props: { y: true, z: true } },
@@ -175,60 +241,78 @@ describe('src/composables/stores/keyframeStates.ts', () => {
       })
 
       it('toggle selected', () => {
+        const historyStore = useHistoryStore()
         const store = getStore()
-        store.selectList({ a: { id: 'a', points: { x: 1 } } }, true).redo()
+        historyStore.defineReducers(store.reducers)
 
-        const item = store.selectList(
-          { a: { id: 'a', points: { x: 1 } } },
-          true
+        historyStore.dispatch(
+          store.createMultiSelectAction(
+            { a: { id: 'a', points: { x: 1 } } },
+            true
+          )
         )
 
-        item.redo()
+        historyStore.dispatch(
+          store.createMultiSelectAction(
+            { a: { id: 'a', points: { x: 1 } } },
+            true
+          )
+        )
         expect(store.selectedStateMap.value).toEqual({})
 
-        item.undo()
+        historyStore.undo()
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true } },
         })
 
-        item.redo()
-        store
-          .selectList(
+        historyStore.redo()
+        expect(store.selectedStateMap.value).toEqual({})
+
+        historyStore.dispatch(
+          store.createMultiSelectAction(
             {
               a: { id: 'a', points: { x: 1, y: 1 } },
             },
             true
           )
-          .redo()
+        )
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true, y: true } },
         })
       })
       it('should avoid toggling separately', () => {
+        const historyStore = useHistoryStore()
         const store = getStore()
-        store.selectList({ a: { id: 'a', points: { x: 1 } } }, true).redo()
+        historyStore.defineReducers(store.reducers)
 
-        store
-          .selectList(
+        historyStore.dispatch(
+          store.createMultiSelectAction(
+            { a: { id: 'a', points: { x: 1 } } },
+            true
+          )
+        )
+
+        historyStore.dispatch(
+          store.createMultiSelectAction(
             {
               a: { id: 'a', points: { x: 1, y: 1 } },
             },
             true
           )
-          .redo()
+        )
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true, y: true } },
         })
 
-        store
-          .selectList(
+        historyStore.dispatch(
+          store.createMultiSelectAction(
             {
               a: { id: 'a', points: { x: 1, y: 1 } },
               b: { id: 'b', points: { x: 1, y: 1 } },
             },
             true
           )
-          .redo()
+        )
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true, y: true } },
           b: { props: { x: true, y: true } },
@@ -239,27 +323,46 @@ describe('src/composables/stores/keyframeStates.ts', () => {
 
   describe('selectAll', () => {
     it('should return history item to do', () => {
+      const historyStore = useHistoryStore()
       const store = getStore()
-      const item = store.selectAll({
-        a: { id: 'a', points: { x: true, y: false } },
-        b: { id: 'b', points: { p: 0, q: 1 } },
-      })
-      expect(store.selectedStateMap.value).toEqual({})
-      item.redo()
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(
+        store.createSelectAllAction({
+          a: { id: 'a', points: { x: true, y: false } },
+          b: { id: 'b', points: { p: true, q: true } },
+        })
+      )
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true, y: true } },
         b: { props: { p: true, q: true } },
       })
-      item.undo()
+
+      historyStore.undo()
       expect(store.selectedStateMap.value).toEqual({})
+
+      historyStore.redo()
+      expect(store.selectedStateMap.value).toEqual({
+        a: { props: { x: true, y: true } },
+        b: { props: { p: true, q: true } },
+      })
     })
 
     it('should keep invisible items', () => {
+      const historyStore = useHistoryStore()
       const store = getStore()
-      store.select('b', { props: { x: true } }).redo()
-      store.select('c', { props: { x: true } }).redo()
+      historyStore.defineReducers(store.reducers)
 
-      store.selectAll({ a: { id: 'a', points: { y: 1 } } }).redo()
+      historyStore.dispatch(
+        store.createSelectAction('b', { props: { x: true } })
+      )
+      historyStore.dispatch(
+        store.createSelectAction('c', { props: { x: true } })
+      )
+
+      historyStore.dispatch(
+        store.createSelectAllAction({ a: { id: 'a', points: { y: 1 } } })
+      )
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { y: true } },
         c: { props: { x: true } },
@@ -269,40 +372,48 @@ describe('src/composables/stores/keyframeStates.ts', () => {
 
   describe('filter', () => {
     it('should return history item to do', () => {
+      const historyStore = useHistoryStore()
       const store = getStore()
-      store
-        .selectAll({
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(
+        store.createSelectAllAction({
           a: { id: 'a', points: { x: true, y: true } },
           b: { id: 'b', points: { p: true, q: true } },
         })
-        .redo()
-      const item = store.filter({ b: true })
+      )
+
+      historyStore.dispatch(store.createFilterAction({ b: true }))
+      expect(store.selectedStateMap.value).toEqual({
+        b: { props: { p: true, q: true } },
+      })
+
+      historyStore.undo()
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true, y: true } },
         b: { props: { p: true, q: true } },
       })
-      item.redo()
+
+      historyStore.redo()
       expect(store.selectedStateMap.value).toEqual({
-        b: { props: { p: true, q: true } },
-      })
-      item.undo()
-      expect(store.selectedStateMap.value).toEqual({
-        a: { props: { x: true, y: true } },
         b: { props: { p: true, q: true } },
       })
     })
 
     it('should keep invisible items', () => {
+      const historyStore = useHistoryStore()
       const store = getStore()
-      store
-        .selectAll({
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(
+        store.createSelectAllAction({
           a: { id: 'a', points: { x: true } },
           b: { id: 'b', points: { x: true } },
           c: { id: 'c', points: { x: true } },
         })
-        .redo()
+      )
 
-      store.filter({ b: true }).redo()
+      historyStore.dispatch(store.createFilterAction({ b: true }))
       expect(store.selectedStateMap.value).toEqual({
         b: { props: { x: true } },
         c: { props: { x: true } },
@@ -312,54 +423,64 @@ describe('src/composables/stores/keyframeStates.ts', () => {
 
   describe('drop', () => {
     it('should return history item to do', () => {
+      const historyStore = useHistoryStore()
       const store = getStore()
-      store
-        .selectAll({
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(
+        store.createSelectAllAction({
           a: { id: 'a', points: { x: true, y: true } },
           b: { id: 'b', points: { p: true, q: true } },
         })
-        .redo()
-      const item = store.drop({ b: true })
+      )
+
+      historyStore.dispatch(store.createDropAction({ b: true }))
+      expect(store.selectedStateMap.value).toEqual({
+        a: { props: { x: true, y: true } },
+      })
+
+      historyStore.undo()
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true, y: true } },
         b: { props: { p: true, q: true } },
       })
-      item.redo()
+
+      historyStore.redo()
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true, y: true } },
-      })
-      item.undo()
-      expect(store.selectedStateMap.value).toEqual({
-        a: { props: { x: true, y: true } },
-        b: { props: { p: true, q: true } },
       })
     })
   })
 
   describe('clear', () => {
     it('should return history item to clear all states', () => {
+      const historyStore = useHistoryStore()
       const store = getStore()
-      store
-        .selectAll({
+      historyStore.defineReducers(store.reducers)
+
+      historyStore.dispatch(
+        store.createSelectAllAction({
           a: { id: 'a', points: { x: true, y: true } },
           c: { id: 'c', points: { x: true, y: true } },
         })
-        .redo()
-      const item = store.clear()
+      )
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true, y: true } },
         c: { props: { x: true, y: true } },
       })
 
-      item.redo()
+      historyStore.dispatch(store.createClearAllAction())
       // should clear all items including invisible ones
       expect(store.selectedStateMap.value).toEqual({})
 
-      item.undo()
+      historyStore.undo()
       expect(store.selectedStateMap.value).toEqual({
         a: { props: { x: true, y: true } },
         c: { props: { x: true, y: true } },
       })
+
+      historyStore.redo()
+      expect(store.selectedStateMap.value).toEqual({})
     })
   })
 })

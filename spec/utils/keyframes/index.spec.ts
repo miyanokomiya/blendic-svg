@@ -187,14 +187,16 @@ describe('utils/keyframes/index.ts', () => {
   })
 
   describe('mergeKeyframe', () => {
-    it('merge two keyframes', () => {
+    it('should merge two keyframes', () => {
       const src = getKeyframeBone({
+        id: 'src',
         points: {
           translateX: getKeyframePoint({ value: 10 }),
           translateY: getKeyframePoint({ value: 20 }),
         },
       })
       const override = getKeyframeBone({
+        id: 'override',
         points: {
           translateX: getKeyframePoint({ value: 100 }),
           rotate: getKeyframePoint({ value: 300 }),
@@ -202,6 +204,33 @@ describe('utils/keyframes/index.ts', () => {
       })
       expect(target.mergeKeyframe(src, override)).toEqual(
         getKeyframeBone({
+          id: 'override',
+          points: {
+            translateX: getKeyframePoint({ value: 100 }),
+            translateY: getKeyframePoint({ value: 20 }),
+            rotate: getKeyframePoint({ value: 300 }),
+          },
+        })
+      )
+    })
+    it('should inherit src id if inheritSrcId = true', () => {
+      const src = getKeyframeBone({
+        id: 'src',
+        points: {
+          translateX: getKeyframePoint({ value: 10 }),
+          translateY: getKeyframePoint({ value: 20 }),
+        },
+      })
+      const override = getKeyframeBone({
+        id: 'override',
+        points: {
+          translateX: getKeyframePoint({ value: 100 }),
+          rotate: getKeyframePoint({ value: 300 }),
+        },
+      })
+      expect(target.mergeKeyframe(src, override, true)).toEqual(
+        getKeyframeBone({
+          id: 'src',
           points: {
             translateX: getKeyframePoint({ value: 100 }),
             translateY: getKeyframePoint({ value: 20 }),
@@ -525,6 +554,32 @@ describe('utils/keyframes/index.ts', () => {
         selectedKeyframeMap
       )
       expect(ret.selected).toEqual({})
+      expect(ret.notSelected).toEqual({})
+    })
+    it('should ignore keyframes that are not selected at all', () => {
+      const keyframeMap = {
+        a: getKeyframeBone({
+          id: 'a',
+          points: { translateX: getKeyframePoint() },
+        }),
+        b: getKeyframeBone({
+          id: 'b',
+          points: { translateX: getKeyframePoint() },
+        }),
+      }
+      const selectedKeyframeMap = {
+        a: { props: { translateX: true } },
+      } as const
+      const ret = target.splitKeyframeMapBySelected(
+        keyframeMap,
+        selectedKeyframeMap
+      )
+      expect(ret.selected).toEqual({
+        a: getKeyframeBone({
+          id: 'a',
+          points: { translateX: getKeyframePoint() },
+        }),
+      })
       expect(ret.notSelected).toEqual({})
     })
   })

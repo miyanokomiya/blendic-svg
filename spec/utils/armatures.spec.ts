@@ -163,6 +163,16 @@ describe('utils/armatures', () => {
       connected: false,
     })
 
+    it('should return empty if the selected state is empty', () => {
+      expect(
+        target.selectBone(
+          [parent, selecgted, brother, unconnectedBrother, child],
+          selecgted.id,
+          {}
+        )
+      ).toEqual({})
+    })
+
     describe('head: true', () => {
       it("connected: true => also select parent's tail & brother's head", () => {
         expect(

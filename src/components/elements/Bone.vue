@@ -37,14 +37,14 @@ Copyright (C) 2021, Tomoya Komiyama.
       :cx="head.x"
       :cy="head.y"
       :fill="fillHead"
-      @click="click($event, { head: true, tail: false })"
+      @click="click($event, { head: true })"
     ></circle>
     <circle
       :r="circleR"
       :cx="tail.x"
       :cy="tail.y"
       :fill="fillTail"
-      @click="click($event, { head: false, tail: true })"
+      @click="click($event, { tail: true })"
     ></circle>
     <line
       v-if="parent"
@@ -78,7 +78,6 @@ import { d } from '../../utils/helpers'
 import { IVec2, add, sub, multi, rotate, getDistance } from 'okageo'
 import { useSettings } from '../../composables/settings'
 import { switchClick } from '/@/utils/devices'
-import { getShiftClickedBoneState } from '/@/utils/armatures'
 
 function d1(head: IVec2, tail: IVec2, scaleX: number, invert = false): IVec2 {
   const v = multi(sub(tail, head), 0.15)
@@ -108,7 +107,7 @@ export default defineComponent({
     scale: { type: Number, default: 1 },
     selectedState: {
       type: Object as PropType<BoneSelectedState>,
-      default: () => ({ head: false, tail: false }),
+      default: () => ({}),
     },
     poseMode: {
       type: Boolean,
@@ -144,10 +143,6 @@ export default defineComponent({
       getCircleR(head.value, tail.value, props.scale)
     )
 
-    function emitShiftClick(state: BoneSelectedState) {
-      emit('select', state, { shift: true })
-    }
-
     return {
       adjustedOpacity: computed(() => props.opacity * settings.boneOpacity),
       name: computed(() => (settings.showBoneName ? props.bone.name : '')),
@@ -169,28 +164,13 @@ export default defineComponent({
         props.selectedState.tail ? settings.selectedColor : ''
       ),
       click: (e: MouseEvent, state: BoneSelectedState) => {
-        if (props.poseMode) {
-          switchClick(e, {
-            plain: () => emit('select', { head: true, tail: true }),
-            shift: () =>
-              emitShiftClick(
-                selectedAll.value
-                  ? { head: false, tail: false }
-                  : { head: true, tail: true }
-              ),
-            ctrl: () =>
-              emit('select', { head: true, tail: true }, { ctrl: true }),
-          })
-        } else {
-          switchClick(e, {
-            plain: () => emit('select', state),
-            shift: () =>
-              emitShiftClick(
-                getShiftClickedBoneState(props.selectedState, state)
-              ),
-            ctrl: () => emit('select', state, { ctrl: true }),
-          })
-        }
+        const stateForMode = props.poseMode ? { head: true, tail: true } : state
+
+        switchClick(e, {
+          plain: () => emit('select', stateForMode),
+          shift: () => emit('select', stateForMode, { shift: true }),
+          ctrl: () => emit('select', stateForMode, { ctrl: true }),
+        })
       },
     }
   },

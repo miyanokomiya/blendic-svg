@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { IVec2 } from 'okageo'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { IndexStore, useStore } from '.'
 import {
   getKeyframeMapByTargetId,
@@ -27,6 +27,8 @@ import {
   pastePoseMap,
   getEditedConstraint,
   getEditedKeyframeConstraint,
+  mergeKeyframesWithDropped,
+  resetTransformByKeyframeMap,
 } from '../utils/animations'
 import {
   addPoseTransform,
@@ -43,23 +45,17 @@ import {
   uniq,
   resetId,
   dropMap,
-  splitList,
-  reduceToMap,
+  toKeyListMap,
+  toKeyMap,
 } from '../utils/commons'
 import { getNotDuplicatedName } from '../utils/relations'
 import { useHistoryStore } from './history'
-import { makeRefAccessors } from '/@/composables/commons'
-import { useEntities } from '/@/composables/entities'
-import { useItemSelectable } from '/@/composables/selectable'
-import {
-  getDeleteKeyframesItem,
-  getDeleteTargetKeyframeItem,
-  getInsertKeyframeItem,
-  getUpdateKeyframeItem,
-} from '/@/composables/stores/animation'
+import { useEntities } from '/@/composables/stores/entities'
+import { useItemSelectable } from '/@/composables/stores/selectable'
 import { useAnimationFrameStore } from '/@/composables/stores/animationFrame'
-import { HistoryItem, HistoryStore } from '/@/composables/stores/history'
+import { HistoryStore } from '/@/composables/stores/history'
 import { useKeyframeStates } from '/@/composables/stores/keyframeStates'
+import { useMapStore } from '/@/composables/stores/mapStore'
 import {
   TargetPropsState,
   useTargetProps,
@@ -89,8 +85,8 @@ import {
   BoneConstraintOption,
   BoneConstraintWithBoneId,
 } from '/@/utils/constraints'
-import { convolute, getReplaceItem } from '/@/utils/histories'
 import {
+  deleteKeyframeByProp,
   getAllSelectedState,
   isAllExistSelected,
   splitKeyframeMapByName,
@@ -100,17 +96,41 @@ import {
   makeKeyframe,
 } from '/@/utils/keyframes/keyframeBone'
 import * as keyframeConstraint from '/@/utils/keyframes/keyframeConstraint'
+import * as okahistory from 'okahistory'
 
 export function createStore(
   historyStore: HistoryStore,
   indexStore: IndexStore
 ) {
   const actionEntities = useEntities<Action>('Action')
-  const actions = computed(() => toEntityList(actionEntities.entities.value))
+  const keyframeEntities = useEntities<KeyframeBase>('Keyframe')
+
   const actionSelectable = useItemSelectable(
     'Action',
     () => actionEntities.entities.value.byId
   )
+  const animationFrameStore = useAnimationFrameStore()
+  const editTransformsStore = useMapStore<Transform>('BonePose')
+  const editConstraintsStore =
+    useMapStore<Partial<BoneConstraintOption>>('ConstraintPose')
+
+  // Note: All bones are visible currently
+  const targetPropsState = useTargetProps('PoseTarget', () => targetMap.value)
+  const keyframeState = useKeyframeStates(
+    'Keyframe',
+    () => visibledKeyframeMap.value
+  )
+
+  historyStore.defineReducers(actionEntities.reducers)
+  historyStore.defineReducers(keyframeEntities.reducers)
+  historyStore.defineReducers(actionSelectable.reducers)
+  historyStore.defineReducers(animationFrameStore.reducers)
+  historyStore.defineReducers(editTransformsStore.reducers)
+  historyStore.defineReducers(editConstraintsStore.reducers)
+  historyStore.defineReducers(targetPropsState.reducers)
+  historyStore.defineReducers(keyframeState.reducers)
+
+  const actions = computed(() => toEntityList(actionEntities.entities.value))
   const lastSelectedActionId = actionSelectable.lastSelectedId
   const lastSelectedAction = computed(() =>
     lastSelectedActionId.value
@@ -118,10 +138,8 @@ export function createStore(
       : undefined
   )
 
-  const editTransforms = ref<IdMap<Transform>>({})
-  const editConstraints = ref<IdMap<Partial<BoneConstraintOption>>>({})
-
-  const keyframeEntities = useEntities<KeyframeBase>('Keyframe')
+  const editTransforms = editTransformsStore.state
+  const editConstraints = editConstraintsStore.state
 
   const keyframeList = computed(() => {
     const byId = keyframeEntities.entities.value.byId
@@ -136,11 +154,15 @@ export function createStore(
     return getKeyframeMapByTargetId(keyframeList.value)
   })
 
+  const targetMap = computed(() => ({
+    ...indexStore.boneMap.value,
+    ...indexStore.constraintMap.value,
+  }))
+
   const keyframeBoneMapByTargetId = computed(() => {
-    return extractMap(keyframeMapByTargetId.value, {
-      ...indexStore.boneMap.value,
-      ...indexStore.constraintMap.value,
-    }) as IdMap<KeyframeBone[]>
+    return extractMap(keyframeMapByTargetId.value, targetMap.value) as IdMap<
+      KeyframeBone[]
+    >
   })
 
   const visibledKeyframeMapByTargetId = computed(() => {
@@ -161,19 +183,14 @@ export function createStore(
     return toMap(flatKeyListMap(visibledKeyframeMapByTargetId.value))
   })
 
-  const animationFrameStore = useAnimationFrameStore()
-  // Note: All bones are visible currently
-  const targetPropsState = useTargetProps(() => ({}))
-  const keyframeState = useKeyframeStates(() => visibledKeyframeMap.value)
-
   function initState(initActions: Action[], initKeyframes: KeyframeBase[]) {
     actionEntities.init(fromEntityList(initActions))
-    actionSelectable.getClearAllHistory().redo()
     keyframeEntities.init(fromEntityList(initKeyframes))
-    editTransforms.value = {}
-    editConstraints.value = {}
-    targetPropsState.clear().redo()
-    keyframeState.clear().redo()
+    actionSelectable.init()
+    editTransformsStore.init()
+    editConstraintsStore.init()
+    targetPropsState.init()
+    keyframeState.init()
   }
 
   function exportState() {
@@ -324,8 +341,9 @@ export function createStore(
   })
 
   function setEditedTransforms(mapByTargetId: IdMap<Transform>) {
-    historyStore.push(getUpdateEditedTransformsItem(mapByTargetId), true)
+    historyStore.dispatch(editTransformsStore.createSetAction(mapByTargetId))
   }
+
   function applyEditedTransforms(mapByTargetId: IdMap<Transform>) {
     setEditedTransforms(
       mapReduce({ ...editTransforms.value, ...mapByTargetId }, (_p, id) => {
@@ -339,11 +357,11 @@ export function createStore(
     mapByTargetId: IdMap<Partial<BoneConstraintOption>>,
     seriesKey?: string
   ) {
-    historyStore.push(
-      getUpdateEditedConstraintsItem(mapByTargetId, undefined, seriesKey),
-      true
+    historyStore.dispatch(
+      editConstraintsStore.createSetAction(mapByTargetId, seriesKey)
     )
   }
+
   function applyEditedConstraint(
     mapByTargetId: IdMap<Partial<BoneConstraintOption>>,
     seriesKey?: string
@@ -358,18 +376,18 @@ export function createStore(
     nextPoseMapByTargetId: IdMap<Transform>,
     seriesKey?: string
   ) {
-    const item = getUpdateEditedTransformsItem(
-      {
-        ...editTransforms.value,
-        ...pastePoseMap(nextPoseMapByTargetId, (id) => {
-          if (!selectedTargetIdMap.value[id]) return
-          return currentInterpolatedTransform(id)
-        }),
-      },
-      'Paste Pose',
-      seriesKey
+    historyStore.dispatch(
+      editTransformsStore.createSetAction(
+        {
+          ...editTransforms.value,
+          ...pastePoseMap(nextPoseMapByTargetId, (id) => {
+            if (!selectedTargetIdMap.value[id]) return
+            return currentInterpolatedTransform(id)
+          }),
+        },
+        seriesKey
+      )
     )
-    historyStore.push(item, true)
   }
 
   function currentInterpolatedTransform(targetId: string): Transform {
@@ -387,55 +405,56 @@ export function createStore(
     return currentSelfTransforms.value[targetId] ?? getTransform()
   }
 
-  function updateCurrentFrame(frameItem?: HistoryItem) {
+  function updateCurrentFrame(frameItem?: okahistory.Action<unknown>) {
     if (frameItem) {
-      historyStore.push(
-        convolute(frameItem, [
-          getUpdateEditedTransformsItem({}),
-          getUpdateEditedConstraintsItem({}),
-        ]),
-        true
-      )
+      historyStore.dispatch(frameItem, [
+        editTransformsStore.createSetAction({}),
+        editConstraintsStore.createSetAction({}),
+      ])
     }
   }
+
   function setCurrentFrame(val: number, seriesKey?: string) {
-    updateCurrentFrame(animationFrameStore.setCurrentFrame(val, seriesKey))
+    updateCurrentFrame(
+      animationFrameStore.createUpdateCurrentFrameAction(val, seriesKey)
+    )
   }
   function jumpStartFrame() {
-    updateCurrentFrame(animationFrameStore.jumpStartFrame())
+    updateCurrentFrame(animationFrameStore.createJumpStartFrameAction())
   }
   function jumpEndFrame() {
-    updateCurrentFrame(animationFrameStore.jumpEndFrame())
+    updateCurrentFrame(animationFrameStore.createJumpEndFrameAction())
   }
   function stepFrame(tickFrame: number, reverse = false, seriesKey?: string) {
     updateCurrentFrame(
-      animationFrameStore.stepFrame(tickFrame, reverse, seriesKey)
+      animationFrameStore.createStepFrameAction(tickFrame, reverse, seriesKey)
     )
   }
   function jumpNextKey() {
-    updateCurrentFrame(animationFrameStore.jumpNextKey(keyframeList.value))
+    updateCurrentFrame(
+      animationFrameStore.createJumpNextKeyAction(keyframeList.value)
+    )
   }
   function jumpPrevKey() {
-    updateCurrentFrame(animationFrameStore.jumpPrevKey(keyframeList.value))
+    updateCurrentFrame(
+      animationFrameStore.createJumpPrevKeyAction(keyframeList.value)
+    )
   }
 
   function setEndFrame(next: number, seriesKey?: string) {
-    historyStore.push(animationFrameStore.setEndFrame(next, seriesKey), true)
+    historyStore.dispatch(
+      animationFrameStore.createUpdateEndFrameAction(next, seriesKey)
+    )
   }
 
   function selectAction(id: string) {
     if (lastSelectedActionId.value === id) return
 
-    historyStore.push(
-      convolute(
-        id
-          ? actionSelectable.getSelectHistory(id)
-          : actionSelectable.getClearAllHistory(),
-        [getSelectKeyframesItem({})]
-      ),
-      true
-    )
+    historyStore.dispatch(actionSelectable.createSelectAction(id), [
+      keyframeState.createClearAllAction(),
+    ])
   }
+
   function addAction(id?: string) {
     if (!indexStore.lastSelectedArmature.value) return
 
@@ -450,35 +469,31 @@ export function createStore(
       },
       !id
     )
-    historyStore.push(
-      convolute(actionEntities.getAddItemsHistory([action]), [
-        getSelectKeyframesItem({}),
-        actionSelectable.getSelectHistory(action.id),
-      ]),
-      true
-    )
+
+    historyStore.dispatch(actionEntities.createAddAction([action]), [
+      keyframeState.createClearAllAction(),
+      actionSelectable.createSelectAction(action.id),
+    ])
   }
+
   function updateAction(action: Partial<Action>) {
     if (!lastSelectedActionId.value) return
 
-    historyStore.push(
-      actionEntities.getUpdateItemHistory({
+    historyStore.dispatch(
+      actionEntities.createUpdateAction({
         [lastSelectedActionId.value]: action,
-      }),
-      true
+      })
     )
   }
+
   function deleteAction() {
     const action = lastSelectedAction.value
     if (!action) return
 
-    historyStore.push(
-      convolute(actionEntities.getDeleteItemsHistory([action.id]), [
-        keyframeEntities.getDeleteItemsHistory(action.keyframes),
-        getSelectKeyframesItem({}),
-      ]),
-      true
-    )
+    historyStore.dispatch(actionEntities.createDeleteAction([action.id]), [
+      keyframeEntities.createDeleteAction(action.keyframes),
+      keyframeState.createClearAllAction(),
+    ])
   }
 
   function selectKeyframe(
@@ -488,19 +503,30 @@ export function createStore(
   ) {
     if (!keyframeId && !isAnyVisibledSelectedKeyframe.value) return
 
-    historyStore.push(
-      keyframeId
-        ? getSelectKeyframeItem(keyframeId, selectedState, shift)
-        : getClearSelectKeyframeItem(),
-      true
-    )
+    if (keyframeId) {
+      const [head, ...body] = createSelectKeyframeActions(
+        keyframeId,
+        selectedState,
+        shift
+      )
+      historyStore.dispatch(head, body)
+    } else {
+      const [head, ...body] = getClearSelectKeyframeItem()
+      historyStore.dispatch(head, body)
+    }
   }
+
   function selectKeyframeByFrame(frame: number, shift = false) {
     const frames = keyframeMapByFrame.value[frame]
     if (frames.length === 0) return
 
-    historyStore.push(getSelectKeyframesItem(toMap(frames), shift), true)
+    // const [head, ...body] = getSelectKeyframesItem(toMap(frames), shift)
+    historyStore.dispatch(
+      keyframeState.createMultiSelectAction(toMap(frames), shift),
+      [targetPropsState.createClearAllAction()]
+    )
   }
+
   function selectAllKeyframes() {
     if (
       Object.keys(visibledSelectedKeyframeMap.value).length ===
@@ -516,7 +542,7 @@ export function createStore(
         selectKeyframe('')
       }
     } else {
-      historyStore.push(getSelectAllKeyframesItem(), true)
+      historyStore.dispatch(getSelectAllKeyframesItem())
     }
   }
 
@@ -543,24 +569,24 @@ export function createStore(
       )
     })
 
-    historyStore.push(getExecInsertKeyframeItem(keyframes), true)
+    const [head, ...body] = createInsertKeyframeActions(keyframes)
+    historyStore.dispatch(head, body)
   }
   function execDeleteKeyframes() {
     if (!isAnyVisibledSelectedKeyframe.value) return
-    historyStore.push(
-      getExecDeleteKeyframesItem(keyframeState.selectedStateMap.value),
-      true
+
+    const [head, ...body] = createExecDeleteKeyframesActions(
+      keyframeState.selectedStateMap.value
     )
+    historyStore.dispatch(head, body)
   }
   function execDeleteTargetKeyframe(targetId: string, key: KeyframePropKey) {
-    historyStore.push(
-      getExecDeleteTargetKeyframeItem(
-        targetId,
-        animationFrameStore.currentFrame.value,
-        key
-      ),
-      true
+    const [head, ...body] = createExecDeleteTargetKeyframeActions(
+      targetId,
+      animationFrameStore.currentFrame.value,
+      key
     )
+    historyStore.dispatch(head, body)
   }
 
   function getCurrentConstraintById(
@@ -593,8 +619,10 @@ export function createStore(
       true
     )
 
-    historyStore.push(getExecInsertKeyframeItem([keyframe]), true)
+    const [head, ...body] = createInsertKeyframeActions([keyframe])
+    historyStore.dispatch(head, body)
   }
+
   function execDeleteKeyframeConstraint(
     constraintId: string,
     keys: Partial<{
@@ -602,22 +630,27 @@ export function createStore(
     }> = {}
   ) {
     if (!isAnyVisibledSelectedKeyframe.value) return
-    historyStore.push(
-      getExecDeleteKeyframesItem({
-        [constraintId]: { props: keys },
-      }),
-      true
-    )
+
+    const [head, ...body] = createExecDeleteKeyframesActions({
+      [constraintId]: { props: keys },
+    })
+    historyStore.dispatch(head, body)
   }
 
   function execUpdateKeyframes(
     keyframes: IdMap<KeyframeBase>,
     seriesKey?: string
   ) {
-    historyStore.push(getExecUpdateKeyframeItem(keyframes, seriesKey), true)
+    const [head, ...body] = createUpsertKeyframeActions(
+      toList(keyframes),
+      true,
+      seriesKey
+    )
+    historyStore.dispatch(head, body)
   }
+
   function pasteKeyframes(keyframeList: KeyframeBase[]) {
-    const item = getExecInsertKeyframeItem(
+    const [head, ...body] = createInsertKeyframeActions(
       slideKeyframesTo(
         keyframeList
           .filter((k) => indexStore.boneMap.value[k.targetId])
@@ -625,19 +658,36 @@ export function createStore(
         animationFrameStore.currentFrame.value
       )
     )
-    historyStore.push(item, true)
+    historyStore.dispatch(head, body)
   }
-  function completeDuplicateKeyframes(
-    duplicatedKeyframeList: KeyframeBase[],
-    updatedKeyframeList: KeyframeBase[]
+
+  /**
+   * items in `updatedList` will be selected by this operation
+   */
+  function upsertKeyframes(
+    createdList: KeyframeBase[],
+    updatedList: KeyframeBase[] = []
   ) {
-    historyStore.push(
-      getCompleteDuplicateKeyframesItem(
-        duplicatedKeyframeList,
-        updatedKeyframeList
-      ),
+    const [head, ...body] = createUpsertKeyframeActions(
+      [...createdList, ...updatedList],
       true
     )
+
+    const createdByFrame = toKeyListMap(createdList, 'frame')
+    const selectedMap: IdMap<KeyframeBase> = {}
+
+    // items in `updatedList` may be deleted by merging with a item in `createdList`
+    // => select the item having the same position in createdList
+    updatedList.forEach((u) => {
+      const byTargetId = toKeyMap(createdByFrame[u.frame] ?? [], 'targetId')
+      const c = byTargetId[u.targetId]
+      selectedMap[c?.id ?? u.id] = u
+    })
+
+    historyStore.dispatch(head, [
+      ...body,
+      keyframeState.createMultiSelectAction(selectedMap),
+    ])
   }
 
   function selectTargetProp(
@@ -645,9 +695,9 @@ export function createStore(
     propsState: TargetPropsState,
     shift = false
   ) {
-    historyStore.push(
-      targetPropsState.select(targetId, propsState, shift),
-      true
+    if (!targetPropsState.selectDryRun(targetId, propsState, shift)) return
+    historyStore.dispatch(
+      targetPropsState.createSelectAction(targetId, propsState, shift)
     )
   }
 
@@ -720,204 +770,162 @@ export function createStore(
 
     execUpdateKeyframes,
     pasteKeyframes,
-    completeDuplicateKeyframes,
+    upsertKeyframes,
 
     selectTargetProp,
   }
 
-  function getUpdateEditedTransformsItem(
-    val: IdMap<Transform>,
-    name = 'Update Pose',
-    seriesKey?: string
-  ): HistoryItem {
-    return getReplaceItem(
-      editTransforms.value,
-      val,
-      (val) => (editTransforms.value = val),
-      name,
-      seriesKey
-    )
+  function getSelectAllKeyframesItem(): okahistory.Action<unknown> {
+    return keyframeState.createSelectAllAction(visibledKeyframeMap.value)
   }
 
-  function getUpdateEditedConstraintsItem(
-    val: IdMap<Partial<BoneConstraintOption>>,
-    name = 'Update Constraint',
-    seriesKey?: string
-  ): HistoryItem {
-    return getReplaceItem(
-      editConstraints.value,
-      val,
-      (val) => (editConstraints.value = val),
-      name,
-      seriesKey
-    )
+  function getClearSelectKeyframeItem(): okahistory.Action<unknown>[] {
+    return [
+      keyframeState.createFilterAction(),
+      targetPropsState.createDropAction(
+        toTargetIdMap(toList(visibledKeyframeMap.value))
+      ),
+    ]
   }
 
-  function getSelectAllKeyframesItem(): HistoryItem {
-    return keyframeState.selectAll(visibledKeyframeMap.value)
-  }
-
-  function getSelectKeyframesItem(
-    keyframeMap: IdMap<KeyframeBase>,
-    shift = false
-  ): HistoryItem {
-    const selectKeyframeItem = keyframeState.selectList(keyframeMap, shift)
-
-    // TODO: select correct props
-    const targetPropsItem = targetPropsState.drop(
-      Object.keys(keyframeMap).length === 0
-        ? toTargetIdMap(toList(visibledKeyframeMap.value))
-        : {}
-    )
-
-    return convolute(selectKeyframeItem, [targetPropsItem])
-  }
-
-  function getSelectKeyframesPropsItem(
-    keyframeMap: IdMap<KeyframeBase>
-  ): HistoryItem {
-    const selectKeyframeItem = keyframeState.selectAll(keyframeMap)
-    const targetPropsClearItem = targetPropsState.drop(
-      toTargetIdMap(toList(visibledKeyframeMap.value))
-    )
-    return convolute(selectKeyframeItem, [targetPropsClearItem])
-  }
-
-  function getClearSelectKeyframeItem(): HistoryItem {
-    return convolute(keyframeState.filter(), [
-      targetPropsState.drop(toTargetIdMap(toList(visibledKeyframeMap.value))),
-    ])
-  }
-
-  function getSelectKeyframeItem(
+  function createSelectKeyframeActions(
     id: string,
     selectedState?: KeyframeSelectedState,
     shift = false
-  ): HistoryItem {
+  ): okahistory.Action<unknown>[] {
     const keyframe = visibledKeyframeMap.value[id]
     const nextSelectedState = selectedState ?? getAllSelectedState(keyframe)
 
-    return convolute(keyframeState.select(id, nextSelectedState, shift), [
-      targetPropsState.select(
+    return [
+      keyframeState.createSelectAction(id, nextSelectedState, shift),
+      targetPropsState.createSelectAction(
         keyframe.targetId,
         { props: mapReduce(nextSelectedState.props, () => 'selected') },
         shift,
         true
       ),
-    ])
+    ]
   }
 
-  function execUpsertKeyframes(val: KeyframeBase[]) {
-    const action = lastSelectedAction.value
-    if (!action) return
-
-    const valById = toMap(val)
-    const byId = keyframeEntities.entities.value.byId
-    const [updated, created] = splitList(val, (k) => !!byId[k.id])
-    const deleted = action.keyframes.filter((id) => !valById[id])
-    const deletedMap = reduceToMap(deleted, () => true)
-
-    convolute(keyframeEntities.getUpdateItemHistory(toMap(updated)), [
-      created.length > 0
-        ? keyframeEntities.getAddItemsHistory(created)
-        : undefined,
-      deleted.length > 0
-        ? keyframeEntities.getDeleteItemsHistory(deleted)
-        : undefined,
-      created.length + deleted.length > 0
-        ? actionEntities.getUpdateItemHistory({
-            [action.id]: {
-              keyframes: action.keyframes
-                .filter((id) => !deletedMap[id])
-                .concat(created.map((k) => k.id)),
-            },
-          })
-        : undefined,
-    ]).redo()
-  }
-
-  function getKeyframeAccessor() {
-    return {
-      get: () => keyframeList.value,
-      set: execUpsertKeyframes,
-    }
-  }
-
-  function getVisibledKeyframeAccessor() {
-    return {
-      get: () => toList(visibledKeyframeMap.value),
-      set: (val: KeyframeBase[]) => {
-        execUpsertKeyframes([
-          ...toList(
-            dropMap(toMap(keyframeList.value), visibledKeyframeMap.value)
-          ),
-          ...val,
-        ])
-      },
-    }
-  }
-
-  function getExecInsertKeyframeItem(
+  function createInsertKeyframeActions(
     keyframes: KeyframeBase[],
-    replace = false,
-    notSelect = false
-  ) {
-    return convolute(
-      getInsertKeyframeItem(
-        getKeyframeAccessor(),
-        makeRefAccessors(editTransforms),
-        keyframes,
-        replace
+    replace = false
+  ): (okahistory.Action<unknown> | undefined)[] {
+    return [
+      ...createUpsertKeyframeActions(keyframes, !replace),
+      editTransformsStore.createSetAction(
+        resetTransformByKeyframeMap(
+          editTransforms.value,
+          toTargetIdMap(keyframes)
+        )
       ),
-      [!notSelect ? getSelectKeyframesPropsItem(toMap(keyframes)) : undefined]
-    )
+      keyframeState.createSelectAllAction(toMap(keyframes)),
+      targetPropsState.createDropAction(
+        toTargetIdMap(toList(visibledKeyframeMap.value))
+      ),
+    ]
   }
 
-  function getExecDeleteKeyframesItem(
+  function createUpsertKeyframeActions(
+    replaced: KeyframeBase[],
+    mergeDeep = false,
+    seriesKey?: string
+  ): okahistory.Action<unknown>[] {
+    const current = visibledKeyframeMap.value
+
+    const { merged, dropped } = mergeKeyframesWithDropped(
+      toList(current),
+      replaced,
+      mergeDeep
+    )
+
+    const mergedMap = toMap(merged)
+
+    const createdMap = dropMap(mergedMap, current)
+    const updatedMap = extractMap(mergedMap, current)
+    const deletedMap = dropMap(toMap(dropped), mergedMap)
+
+    const createdList = toList(createdMap)
+
+    return [
+      keyframeEntities.createAddAction(createdList),
+      keyframeEntities.createDeleteAction(toList(deletedMap).map((k) => k.id)),
+      keyframeEntities.createUpdateAction(updatedMap, seriesKey),
+      actionEntities.createUpdateAction({
+        [lastSelectedAction.value!.id]: {
+          keyframes: lastSelectedAction
+            .value!.keyframes.filter((id) => !deletedMap[id])
+            .concat(createdList.map((k) => k.id)),
+        },
+      }),
+      keyframeState.createDropAction(deletedMap),
+    ]
+  }
+
+  function createExecDeleteKeyframesActions(
     selectedStateMap: IdMap<KeyframeSelectedState>
-  ): HistoryItem {
-    return convolute(
-      getDeleteKeyframesItem(getVisibledKeyframeAccessor(), selectedStateMap),
-      [getSelectKeyframesItem({})]
-    )
+  ): okahistory.Action<unknown>[] {
+    const visibled = visibledKeyframeMap.value
+    const targetMap = extractMap(visibled, selectedStateMap)
+
+    const updatedMap: IdMap<KeyframeBase> = {}
+    const deletedMap: IdMap<true> = {}
+
+    toList(targetMap).forEach((item) => {
+      const updated = deleteKeyframeByProp(item, selectedStateMap[item.id])
+      if (updated) {
+        updatedMap[updated.id] = updated
+      } else {
+        deletedMap[item.id] = true
+      }
+    })
+
+    return [
+      keyframeEntities.createUpdateAction(updatedMap),
+      keyframeEntities.createDeleteAction(Object.keys(deletedMap)),
+      actionEntities.createUpdateAction({
+        [lastSelectedAction.value!.id]: {
+          keyframes: lastSelectedAction.value!.keyframes.filter(
+            (id) => !deletedMap[id]
+          ),
+        },
+      }),
+      keyframeState.createClearAllAction(),
+    ]
   }
 
-  function getExecDeleteTargetKeyframeItem(
+  function createExecDeleteTargetKeyframeActions(
     targetId: string,
     targetFrame: number,
     key: KeyframePropKey
-  ): HistoryItem | undefined {
-    const item = getDeleteTargetKeyframeItem(
-      getVisibledKeyframeAccessor(),
-      targetId,
-      targetFrame,
-      key
+  ): okahistory.Action<unknown>[] {
+    const keyframe = toList(visibledKeyframeMap.value).find(
+      (k) => k.targetId === targetId && k.frame === targetFrame
     )
-    if (!item) return
+    if (!keyframe) return []
 
-    return convolute(item, [getSelectKeyframesItem({})])
-  }
+    const deletedTarget = deleteKeyframeByProp(keyframe, {
+      props: { [key]: true },
+    })
 
-  function getExecUpdateKeyframeItem(
-    keyframes: IdMap<KeyframeBase>,
-    seriesKey?: string
-  ) {
-    return getUpdateKeyframeItem(
-      getVisibledKeyframeAccessor(),
-      keyframes,
-      seriesKey
-    )
-  }
-
-  function getCompleteDuplicateKeyframesItem(
-    duplicatedKeyframeList: KeyframeBase[],
-    updatedKeyframeList: KeyframeBase[]
-  ) {
-    return convolute(
-      getExecInsertKeyframeItem(duplicatedKeyframeList, true, true),
-      [getExecUpdateKeyframeItem(toMap(updatedKeyframeList))],
-      'Duplicate Keyframe'
-    )
+    return deletedTarget
+      ? [
+          keyframeEntities.createUpdateAction({
+            [deletedTarget.id]: deletedTarget,
+          }),
+          keyframeState.createClearAllAction(),
+        ]
+      : [
+          keyframeEntities.createDeleteAction([keyframe.id]),
+          actionEntities.createUpdateAction({
+            [lastSelectedAction.value!.id]: {
+              keyframes: lastSelectedAction.value!.keyframes.filter(
+                (id) => id !== keyframe.id
+              ),
+            },
+          }),
+          keyframeState.createClearAllAction(),
+        ]
   }
 }
 

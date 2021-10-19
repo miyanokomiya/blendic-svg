@@ -20,19 +20,19 @@ exports[`src/components/panelContents/HistoryStack.vue snapshot some histories 1
   <ul>
     
     <li
-      class=""
+      class="done"
     >
-      item 1
+      test0
     </li>
     <li
-      class="current"
+      class="done"
     >
-      item 2
+      test1
     </li>
     <li
       class=""
     >
-      item 3
+      test0
     </li>
     
   </ul>

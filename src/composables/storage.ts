@@ -105,7 +105,7 @@ export function useStorage() {
   function deserialize(src: string) {
     try {
       const root: StorageRoot = initialize(JSON.parse(src))
-      historyStore.clearHistory()
+      historyStore.clear()
       canvasStore.initState()
       store.initState(root.armatures, root.bones, root.constraints)
       animationStore.initState(root.actions, root.keyframes)

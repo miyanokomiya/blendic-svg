@@ -22,9 +22,9 @@ Copyright (C) 2021, Tomoya Komiyama.
     <h3>history</h3>
     <ul>
       <li
-        v-for="(item, i) in allStack"
+        v-for="(item, i) in historySummaries"
         :key="i"
-        :class="{ current: i === currentItemIndex }"
+        :class="{ done: item.done }"
       >
         {{ item.name }}
       </li>
@@ -41,8 +41,7 @@ export default defineComponent({
     const historyStore = useHistoryStore()
 
     return {
-      allStack: historyStore.allStack,
-      currentItemIndex: historyStore.currentItemIndex,
+      historySummaries: historyStore.historySummaries,
     }
   },
 })
@@ -62,9 +61,9 @@ ul {
     width: 100%;
     padding: 4px 8px;
     text-align: left;
-    border-bottom: solid 1px #aaa;
-    &.current {
-      background-color: lime;
+    border-bottom: solid 1px #888;
+    &.done {
+      background-color: #aaa;
     }
   }
 }

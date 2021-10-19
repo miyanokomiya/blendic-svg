@@ -65,7 +65,7 @@ export default defineComponent({
     const canvasStore = useCanvasStore()
     const elementStore = useElementStore()
 
-    const canvasMode = computed(() => canvasStore.state.canvasMode)
+    const canvasMode = canvasStore.canvasMode
 
     const targetActor = computed(() => {
       return elementStore.lastSelectedActor.value

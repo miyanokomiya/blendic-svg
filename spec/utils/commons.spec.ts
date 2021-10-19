@@ -47,6 +47,8 @@ import {
   splitList,
   getTreeIdPath,
   reduceToMap,
+  shallowEqual,
+  xor,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -560,6 +562,27 @@ describe('utils/commons.ts', () => {
   describe('reduceToMap', () => {
     it('should return boolean map', () => {
       expect(reduceToMap(['a', 'b'], () => true)).toEqual({ a: true, b: true })
+    })
+  })
+
+  describe('shallowEqual', () => {
+    it('should return true if two args have the same key values in shallow', () => {
+      expect(shallowEqual({}, {})).toBe(true)
+      expect(shallowEqual({ a: 1 }, { a: 1 })).toBe(true)
+
+      expect(shallowEqual({ a: 1 }, { a: 2 })).toBe(false)
+      expect(shallowEqual({ a: 1 }, { b: 1 })).toBe(false)
+      expect(shallowEqual({ a: 1 }, { a: 1, b: 1 })).toBe(false)
+      expect(shallowEqual({ a: 1, b: 1 }, { a: 1 })).toBe(false)
+    })
+  })
+
+  describe('xor', () => {
+    it('should return xor boolean', () => {
+      expect(xor(false, false)).toBe(false)
+      expect(xor(false, true)).toBe(true)
+      expect(xor(true, false)).toBe(true)
+      expect(xor(true, true)).toBe(false)
     })
   })
 })

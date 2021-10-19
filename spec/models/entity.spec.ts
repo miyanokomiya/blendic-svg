@@ -110,6 +110,71 @@ describe('src/models/entity.ts', () => {
     })
   })
 
+  describe('replaceEntities', () => {
+    it('should replace targeted entities', () => {
+      const src = {
+        byId: {
+          a: { id: 'a', val: 0 },
+          b: { id: 'b', val: 0 },
+          c: { id: 'c', val: 0 },
+          z: { id: 'z', val: 0 },
+        },
+        allIds: ['a', 'b', 'c', 'z'],
+      }
+      const res = target.replaceEntities(
+        src,
+        [
+          { id: 'a', val: 10 },
+          { id: 'd', val: 20 },
+        ],
+        { a: true, b: true, z: true }
+      )
+      expect(src).toEqual({
+        byId: {
+          a: { id: 'a', val: 10 },
+          c: { id: 'c', val: 0 },
+          d: { id: 'd', val: 20 },
+        },
+        allIds: ['a', 'c', 'd'],
+      })
+      expect(res).toEqual({
+        created: ['d'],
+        updated: [{ id: 'a', val: 0 }],
+        deleted: [
+          { entity: { id: 'b', val: 0 }, index: 1 },
+          { entity: { id: 'z', val: 0 }, index: 3 },
+        ],
+      })
+    })
+  })
+
+  describe('restoreEntities', () => {
+    it('should restore entities', () => {
+      const src = {
+        byId: {
+          a: { id: 'a', val: 0 },
+          b: { id: 'b', val: 0 },
+          c: { id: 'c', val: 0 },
+          z: { id: 'z', val: 0 },
+        },
+        allIds: ['a', 'b', 'c', 'z'],
+      }
+      const org = JSON.parse(JSON.stringify(src))
+      const restoreData = target.replaceEntities(
+        src,
+        [
+          { id: 'a', val: 10 },
+          { id: 'd', val: 20 },
+        ],
+        { a: true, b: true, z: true }
+      )
+
+      expect(src).not.toEqual(org)
+      target.restoreEntities(src, restoreData)
+      expect(src).toEqual(org)
+    })
+  })
+
   describe('toEntityList', () => {
     it('should return list of entities', () => {
       expect(

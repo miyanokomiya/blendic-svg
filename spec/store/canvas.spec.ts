@@ -17,55 +17,54 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { useCanvasStore } from '../../src/store/canvas'
+import { createStore } from '/@/store/canvas'
+import { createStore as createIndexStore } from '/@/store'
+import { createStore as createElementStore } from '/@/store/element'
+import { createStore as createAnimationStore } from '/@/store/animation'
+import { useHistoryStore } from '/@/composables/stores/history'
 
 describe('store/canvas.ts', () => {
+  function prepare() {
+    const historyStore = useHistoryStore()
+    const indexStore = createIndexStore(historyStore)
+    const target = createStore(
+      historyStore,
+      indexStore,
+      createElementStore(historyStore),
+      createAnimationStore(historyStore, indexStore)
+    )
+
+    return {
+      historyStore,
+      indexStore,
+      target,
+    }
+  }
   describe('isOppositeSide', () => {
-    const canvasStore = useCanvasStore()
     it('returns false if same side', () => {
+      const { target } = prepare()
+
       expect(
-        canvasStore.isOppositeSide(
-          { x: 0, y: 0 },
-          { x: 1, y: 0 },
-          { x: 1, y: 1 }
-        )
+        target.isOppositeSide({ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 })
       ).toBe(false)
       expect(
-        canvasStore.isOppositeSide(
-          { x: 0, y: 0 },
-          { x: -1, y: 0 },
-          { x: -1, y: 1 }
-        )
+        target.isOppositeSide({ x: 0, y: 0 }, { x: -1, y: 0 }, { x: -1, y: 1 })
       ).toBe(false)
       expect(
-        canvasStore.isOppositeSide(
-          { x: 0, y: 0 },
-          { x: -1, y: -1 },
-          { x: -1, y: 0 }
-        )
+        target.isOppositeSide({ x: 0, y: 0 }, { x: -1, y: -1 }, { x: -1, y: 0 })
       ).toBe(false)
     })
     it('returns true if opposite side', () => {
+      const { target } = prepare()
+
       expect(
-        canvasStore.isOppositeSide(
-          { x: 0, y: 0 },
-          { x: 1, y: 0 },
-          { x: -1, y: 1 }
-        )
+        target.isOppositeSide({ x: 0, y: 0 }, { x: 1, y: 0 }, { x: -1, y: 1 })
       ).toBe(true)
       expect(
-        canvasStore.isOppositeSide(
-          { x: 0, y: 0 },
-          { x: -1, y: 0 },
-          { x: 1, y: 1 }
-        )
+        target.isOppositeSide({ x: 0, y: 0 }, { x: -1, y: 0 }, { x: 1, y: 1 })
       ).toBe(true)
       expect(
-        canvasStore.isOppositeSide(
-          { x: 0, y: 0 },
-          { x: -1, y: -1 },
-          { x: 1, y: 0 }
-        )
+        target.isOppositeSide({ x: 0, y: 0 }, { x: -1, y: -1 }, { x: 1, y: 0 })
       ).toBe(true)
     })
   })

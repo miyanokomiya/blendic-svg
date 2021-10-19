@@ -110,6 +110,78 @@ describe('src/store/index.ts', () => {
     })
   })
 
+  describe('selectBone', () => {
+    describe('empty target', () => {
+      it('should clear all selected', () => {
+        const target = createStore(useHistoryStore())
+        target.addArmature('arm_a')
+        target.deleteBone()
+        target.addBone('bone_a')
+        target.addBone('bone_b')
+
+        target.selectAllBones()
+        expect(target.selectedBones.value).not.toEqual({})
+
+        target.selectBone()
+        expect(target.selectedBones.value).toEqual({})
+      })
+    })
+
+    describe('without options', () => {
+      it('should select a bone', () => {
+        const target = createStore(useHistoryStore())
+        target.addArmature('arm_a')
+        target.deleteBone()
+        target.addBone('bone_a')
+        target.addBone('bone_b')
+
+        target.selectBone('bone_a', { head: true })
+        expect(target.selectedBones.value).toEqual({
+          bone_a: { head: true },
+        })
+
+        target.selectBone('bone_a', { tail: true })
+        expect(target.selectedBones.value).toEqual({
+          bone_a: { tail: true },
+        })
+
+        target.selectBone('bone_b', { head: true, tail: true })
+        expect(target.selectedBones.value).toEqual({
+          bone_b: { head: true, tail: true },
+        })
+      })
+    })
+
+    describe('with shift option', () => {
+      it('should shift-select a bone', () => {
+        const target = createStore(useHistoryStore())
+        target.addArmature('arm_a')
+        target.deleteBone()
+        target.addBone('bone_a')
+        target.addBone('bone_b')
+
+        target.selectBone('bone_a', { head: true })
+        target.selectBone('bone_a', { tail: true }, { shift: true })
+        expect(target.selectedBones.value).toEqual({
+          bone_a: { head: true, tail: true },
+        })
+
+        target.selectBone('bone_b', { head: true, tail: true }, { shift: true })
+        expect(target.selectedBones.value).toEqual({
+          bone_a: { head: true, tail: true },
+          bone_b: { head: true, tail: true },
+        })
+
+        target.selectBone('bone_a', { head: true }, { shift: true })
+        target.selectBone('bone_a', { tail: true }, { shift: true })
+        target.selectBone('bone_b', { head: true }, { shift: true })
+        expect(target.selectedBones.value).toEqual({
+          bone_b: { tail: true },
+        })
+      })
+    })
+  })
+
   describe('selectAllBones', () => {
     it('should toggle selected state of all bones', () => {
       const target = createStore(useHistoryStore())

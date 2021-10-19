@@ -118,9 +118,14 @@ export function splitKeyframeBySelected(
 
 export function mergeKeyframe(
   src: KeyframeBase,
-  override: KeyframeBase
+  override: KeyframeBase,
+  inheritSrcId = false
 ): KeyframeBase {
-  const ret = { ...override, points: { ...override.points } }
+  const ret = {
+    ...override,
+    points: { ...override.points },
+    id: inheritSrcId ? src.id : override.id,
+  }
 
   Object.keys(src.points).forEach((key) => {
     if (src.points[key] && !override.points[key]) {

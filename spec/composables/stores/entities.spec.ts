@@ -1,6 +1,7 @@
-import { useEntities } from '/@/composables/entities'
+import { useEntities } from '/@/composables/stores/entities'
+import { useHistoryStore } from '/@/composables/stores/history'
 
-describe('src/composables/entities.ts', () => {
+describe('src/composables/stores/entities.ts', () => {
   describe('useEntities', () => {
     describe('init', () => {
       it('should init this composable', () => {
@@ -24,21 +25,18 @@ describe('src/composables/entities.ts', () => {
       })
     })
 
-    describe('getAddItemsHistory', () => {
-      it('should return history item to add entities', () => {
+    describe('add', () => {
+      it('should define a reducer and create an action to do', () => {
+        const history = useHistoryStore()
         const entities = useEntities('Test')
-        const item = entities.getAddItemsHistory([{ id: 'a' }])
-        expect(item.name).toBe('Add Test')
-        expect(entities.entities.value).toEqual({
-          byId: {},
-          allIds: [],
-        })
-        item.redo()
+        const { dispatch } = history.defineReducers(entities.reducers)
+        dispatch(entities.createAddAction([{ id: 'a' }]))
         expect(entities.entities.value).toEqual({
           byId: { a: { id: 'a' } },
           allIds: ['a'],
         })
-        item.undo()
+
+        history.undo()
         expect(entities.entities.value).toEqual({
           byId: {},
           allIds: [],
@@ -46,19 +44,20 @@ describe('src/composables/entities.ts', () => {
       })
     })
 
-    describe('getDeleteItemsHistory', () => {
-      it('should return history item to delete entities', () => {
+    describe('delete', () => {
+      it('should define a reducer and create an action to do', () => {
+        const history = useHistoryStore()
         const entities = useEntities('Test')
-        entities
-          .getAddItemsHistory([
+        const { dispatch } = history.defineReducers(entities.reducers)
+
+        dispatch(
+          entities.createAddAction([
             { id: 'a' },
             { id: 'b' },
             { id: 'c' },
             { id: 'd' },
           ])
-          .redo()
-        const item = entities.getDeleteItemsHistory(['b', 'c'])
-        expect(item.name).toBe('Delete Test')
+        )
         expect(entities.entities.value).toEqual({
           byId: {
             a: { id: 'a' },
@@ -68,12 +67,14 @@ describe('src/composables/entities.ts', () => {
           },
           allIds: ['a', 'b', 'c', 'd'],
         })
-        item.redo()
+
+        dispatch(entities.createDeleteAction(['b', 'c']))
         expect(entities.entities.value).toEqual({
           byId: { a: { id: 'a' }, d: { id: 'd' } },
           allIds: ['a', 'd'],
         })
-        item.undo()
+
+        history.undo()
         expect(entities.entities.value).toEqual({
           byId: {
             a: { id: 'a' },
@@ -86,21 +87,19 @@ describe('src/composables/entities.ts', () => {
       })
     })
 
-    describe('getUpdateItemHistory', () => {
-      it('should return history item to update entities', () => {
+    describe('update', () => {
+      it('should define a reducer and create an action to do', () => {
+        const history = useHistoryStore()
         const entities = useEntities<{ id: string; val: number }>('Test')
-        entities
-          .getAddItemsHistory([
+        const { dispatch } = history.defineReducers(entities.reducers)
+
+        dispatch(
+          entities.createAddAction([
             { id: 'a', val: 0 },
             { id: 'b', val: 0 },
             { id: 'c', val: 0 },
           ])
-          .redo()
-        const item = entities.getUpdateItemHistory({
-          a: { id: 'a', val: 1 },
-          c: { id: 'c', val: 2 },
-        })
-        expect(item.name).toBe('Update Test')
+        )
         expect(entities.entities.value).toEqual({
           byId: {
             a: { id: 'a', val: 0 },
@@ -109,7 +108,13 @@ describe('src/composables/entities.ts', () => {
           },
           allIds: ['a', 'b', 'c'],
         })
-        item.redo()
+
+        history.dispatch(
+          entities.createUpdateAction({
+            a: { id: 'a', val: 1 },
+            c: { id: 'c', val: 2 },
+          })
+        )
         expect(entities.entities.value).toEqual({
           byId: {
             a: { id: 'a', val: 1 },
@@ -118,7 +123,53 @@ describe('src/composables/entities.ts', () => {
           },
           allIds: ['a', 'b', 'c'],
         })
-        item.undo()
+
+        history.undo()
+        expect(entities.entities.value).toEqual({
+          byId: {
+            a: { id: 'a', val: 0 },
+            b: { id: 'b', val: 0 },
+            c: { id: 'c', val: 0 },
+          },
+          allIds: ['a', 'b', 'c'],
+        })
+      })
+    })
+
+    describe('replace', () => {
+      it('should define a reducer and create an action to do', () => {
+        const history = useHistoryStore()
+        const entities = useEntities<{ id: string; val: number }>('Test')
+        const { dispatch } = history.defineReducers(entities.reducers)
+
+        dispatch(
+          entities.createAddAction([
+            { id: 'a', val: 0 },
+            { id: 'b', val: 0 },
+            { id: 'c', val: 0 },
+          ])
+        )
+        expect(entities.entities.value).toEqual({
+          byId: {
+            a: { id: 'a', val: 0 },
+            b: { id: 'b', val: 0 },
+            c: { id: 'c', val: 0 },
+          },
+          allIds: ['a', 'b', 'c'],
+        })
+
+        history.dispatch(
+          entities.createReplaceAction([{ id: 'a', val: 1 }], ['a', 'b'])
+        )
+        expect(entities.entities.value).toEqual({
+          byId: {
+            a: { id: 'a', val: 1 },
+            c: { id: 'c', val: 0 },
+          },
+          allIds: ['a', 'c'],
+        })
+
+        history.undo()
         expect(entities.entities.value).toEqual({
           byId: {
             a: { id: 'a', val: 0 },

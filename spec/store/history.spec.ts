@@ -24,9 +24,7 @@ describe('store/history.ts', () => {
     it('should return static store', () => {
       const store1 = useHistoryStore()
       const store2 = useHistoryStore()
-      store1.push({ name: 'item', undo: () => {}, redo: () => {} })
-      expect(store1.undoStack.value).toHaveLength(1)
-      expect(store2.undoStack.value).toHaveLength(1)
+      expect(store1).toBe(store2)
     })
   })
 })

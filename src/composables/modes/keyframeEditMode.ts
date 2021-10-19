@@ -256,7 +256,7 @@ export function useKeyframeEditMode(
 
   function completeEdit() {
     if (editedKeyframeMap.value) {
-      animationStore.completeDuplicateKeyframes(
+      animationStore.upsertKeyframes(
         toList(editedKeyframeMap.value.notSelected),
         toList(editedKeyframeMap.value.selected)
       )
@@ -338,8 +338,8 @@ export function useKeyframeEditMode(
       return notNeedLock
     }
 
-    // duplicate current edit targets as tmp keyframes
-    // & continue to edit original edit targets
+    // duplicate current selected targets as tmp keyframes
+    // & continue editing original targets
     const duplicated = toMap(
       toList(
         mapReduce(editTargets.value, (src) => {

@@ -19,8 +19,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { ref } from '@vue/reactivity'
 import { computed } from '@vue/runtime-core'
-import { HistoryItem } from '/@/composables/stores/history'
-import { useValueStore } from '/@/composables/stores/valueStore'
 import { IdMap } from '/@/models'
 import { KeyframeSelectedState } from '/@/models/keyframe'
 import {
@@ -31,116 +29,297 @@ import {
   mapReduce,
   mergeOrDropMap,
   pickAnyItem,
+  reduceToMap,
   shiftMergeProps,
 } from '/@/utils/commons'
-import { convolute, getReplaceItem } from '/@/utils/histories'
+import * as okahistory from 'okahistory'
 
 export interface TargetProps {
   id: string
   points: { [key: string]: unknown }
 }
 
-export function useKeyframeStates(getVisibledMap: () => IdMap<TargetProps>) {
+interface RestoreData {
+  toUpsert: IdMap<KeyframeSelectedState>
+  toDelete: string[]
+  lastSelectedId: string
+}
+
+interface Snapshot {
+  map: IdMap<KeyframeSelectedState>
+  lastSelectedId: string
+}
+
+export function useKeyframeStates(
+  name: string,
+  getVisibledMap: () => IdMap<TargetProps>
+) {
   const empty = {}
   const selectedStateMap = ref<IdMap<KeyframeSelectedState>>(empty)
-  const lastSelectedId = useValueStore('', () => '')
+  const lastSelectedId = ref('')
 
   function setSelectedStateMap(val: IdMap<KeyframeSelectedState>) {
     selectedStateMap.value = val
   }
 
-  function select(
+  function restore(data: RestoreData) {
+    selectedStateMap.value = dropMap(
+      { ...selectedStateMap.value, ...data.toUpsert },
+      reduceToMap(data.toDelete, () => true)
+    )
+    lastSelectedId.value = data.lastSelectedId
+  }
+
+  function init(val: IdMap<KeyframeSelectedState> = {}) {
+    setSelectedStateMap(val)
+    const keys = Object.keys(val)
+    lastSelectedId.value = keys.length > 0 ? keys[0] : ''
+  }
+
+  const actionNames = {
+    select: `${name}_SELECT`,
+    multiSelect: `${name}_MULTI_SELECT`,
+    selectAll: `${name}_SELECT_ALL`,
+    filter: `${name}_FILTER`,
+    drop: `${name}_DROP`,
+    clearAll: `${name}_CLEAR_ALL`,
+  }
+
+  const selectReducer: okahistory.Reducer<
+    {
+      id: string
+      propsState: KeyframeSelectedState
+      shift?: boolean
+    },
+    RestoreData
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(args) {
+      const current = selectedStateMap.value
+      const undoData = {
+        lastSelectedId: lastSelectedId.value,
+        ...(current[args.id]
+          ? { toUpsert: { [args.id]: current[args.id] }, toDelete: [] }
+          : { toUpsert: {}, toDelete: [args.id] }),
+      }
+
+      if (args.shift) {
+        const props = shiftMergeProps(
+          current[args.id]?.props,
+          args.propsState.props
+        )
+        setSelectedStateMap(
+          mergeOrDropMap(current, args.id, props ? { props } : undefined)
+        )
+        lastSelectedId.value = props ? args.id : ''
+      } else {
+        setSelectedStateMap(
+          mapFilterExec(current, getVisibledMap(), () =>
+            args.id ? { [args.id]: args.propsState } : {}
+          )
+        )
+        lastSelectedId.value = args.id
+      }
+
+      return undoData
+    },
+    undo(data) {
+      restore(data)
+    },
+  }
+
+  function createSelectAction(
     id: string,
     propsState: KeyframeSelectedState,
     shift = false
-  ): HistoryItem {
-    return convolute(
-      getSelectItem(
-        selectedStateMap.value,
-        id,
-        propsState,
-        getVisibledMap(),
-        shift,
-        setSelectedStateMap
-      ),
-      [lastSelectedId.setState(id)]
-    )
+  ): okahistory.Action<{
+    id: string
+    propsState: KeyframeSelectedState
+    shift?: boolean
+  }> {
+    return { name: actionNames.select, args: { id, propsState, shift } }
   }
 
-  function selectList(
+  const multiSelectReducer: okahistory.Reducer<
+    {
+      selectedTargetMap: IdMap<TargetProps>
+      shift?: boolean
+    },
+    Snapshot
+  > = {
+    getLabel: () => `Select ${name}`,
+    redo(args) {
+      const snapshot = {
+        map: { ...selectedStateMap.value },
+        lastSelectedId: lastSelectedId.value,
+      }
+
+      if (args.shift) {
+        if (
+          isAllExistStatesSelected(
+            selectedStateMap.value,
+            args.selectedTargetMap
+          )
+        ) {
+          // clear all if all targets have been selected already
+          setSelectedStateMap(
+            dropMap(selectedStateMap.value, args.selectedTargetMap)
+          )
+          lastSelectedId.value = ''
+        } else {
+          setSelectedStateMap({
+            ...selectedStateMap.value,
+            ...mapReduce(args.selectedTargetMap, getAllSelectedProps),
+          })
+          lastSelectedId.value = pickAnyItem(args.selectedTargetMap)?.id ?? ''
+        }
+      } else {
+        setSelectedStateMap({
+          ...dropMap(selectedStateMap.value, getVisibledMap()),
+          ...mapReduce(args.selectedTargetMap, getAllSelectedProps),
+        })
+        lastSelectedId.value = pickAnyItem(args.selectedTargetMap)?.id ?? ''
+      }
+
+      return snapshot
+    },
+    undo(snapshot) {
+      setSelectedStateMap(snapshot.map)
+      lastSelectedId.value = snapshot.lastSelectedId
+    },
+  }
+
+  function createMultiSelectAction(
     selectedTargetMap: IdMap<TargetProps>,
     shift = false
-  ): HistoryItem {
-    return convolute(
-      getSelectListItem(
-        selectedStateMap.value,
-        selectedTargetMap,
-        getVisibledMap(),
-        shift,
-        setSelectedStateMap
-      ),
-      [lastSelectedId.setState(pickAnyItem(selectedTargetMap)?.id ?? '')]
-    )
+  ): okahistory.Action<{
+    selectedTargetMap: IdMap<TargetProps>
+    shift?: boolean
+  }> {
+    return { name: actionNames.multiSelect, args: { selectedTargetMap, shift } }
   }
 
-  function selectAll(targetMap: IdMap<TargetProps>): HistoryItem {
-    return convolute(
-      getReplaceItem(
-        selectedStateMap.value,
-        mapReduce({ ...selectedStateMap.value, ...targetMap }, (_, id) =>
+  const selectAllReducer: okahistory.Reducer<IdMap<TargetProps>, Snapshot> = {
+    getLabel: () => `Select ${name}`,
+    redo(targetMap) {
+      const snapshot = {
+        map: { ...selectedStateMap.value },
+        lastSelectedId: lastSelectedId.value,
+      }
+      const invisibled = dropMap(selectedStateMap.value, getVisibledMap())
+      setSelectedStateMap(
+        mapReduce({ ...targetMap, ...invisibled }, (_, id) =>
           targetMap[id]
             ? mergePropsState(
                 getAllSelectedProps(targetMap[id]),
                 selectedStateMap.value[id]
               )
             : selectedStateMap.value[id]
-        ),
-        setSelectedStateMap
-      ),
-      [lastSelectedId.setState(Object.keys(targetMap)[0] ?? '')]
-    )
+        )
+      )
+      lastSelectedId.value = Object.keys(targetMap)[0] ?? ''
+      return snapshot
+    },
+    undo(snapshot) {
+      setSelectedStateMap(snapshot.map)
+      lastSelectedId.value = snapshot.lastSelectedId
+    },
   }
 
-  function filter(keepIdMap: { [id: string]: unknown } = {}): HistoryItem {
-    return convolute(
-      getReplaceItem(
-        selectedStateMap.value,
+  function createSelectAllAction(
+    targetMap: IdMap<TargetProps>
+  ): okahistory.Action<IdMap<TargetProps>> {
+    return { name: actionNames.selectAll, args: targetMap }
+  }
+
+  const filterReducer: okahistory.Reducer<IdMap<unknown>, Snapshot> = {
+    getLabel: () => `Filter ${name}`,
+    redo(keepIdMap) {
+      const snapshot = {
+        map: { ...selectedStateMap.value },
+        lastSelectedId: lastSelectedId.value,
+      }
+      setSelectedStateMap(
         mapFilterExec(selectedStateMap.value, getVisibledMap(), (map) =>
           extractMap(map, keepIdMap)
-        ),
-        setSelectedStateMap
-      ),
-      [lastSelectedId.setState(Object.keys(keepIdMap)[0] ?? '')]
-    )
+        )
+      )
+      return snapshot
+    },
+    undo(snapshot) {
+      setSelectedStateMap(snapshot.map)
+      lastSelectedId.value = snapshot.lastSelectedId
+    },
   }
 
-  function drop(dropIdMap: { [id: string]: unknown } = {}): HistoryItem {
-    return convolute(
-      getReplaceItem(
-        selectedStateMap.value,
-        dropMap(selectedStateMap.value, dropIdMap),
-        setSelectedStateMap
-      ),
-      [lastSelectedId.setState('')]
-    )
+  function createFilterAction(
+    keepIdMap: IdMap<unknown> = {}
+  ): okahistory.Action<IdMap<unknown>> {
+    return { name: actionNames.filter, args: keepIdMap }
   }
 
-  function clear(): HistoryItem {
-    return convolute(
-      getReplaceItem(selectedStateMap.value, {}, setSelectedStateMap),
-      [lastSelectedId.setState('')]
-    )
+  const dropReducer: okahistory.Reducer<IdMap<unknown>, RestoreData> = {
+    getLabel: () => `Drop ${name}`,
+    redo(targetMap) {
+      const currentLastId = lastSelectedId.value
+      const toUpsert = extractMap(selectedStateMap.value, targetMap)
+      setSelectedStateMap(dropMap(selectedStateMap.value, targetMap))
+      if (targetMap[lastSelectedId.value]) {
+        lastSelectedId.value = ''
+      }
+      return { toUpsert, toDelete: [], lastSelectedId: currentLastId }
+    },
+    undo(restoreData) {
+      restore(restoreData)
+    },
+  }
+
+  function createDropAction(
+    targetMap: IdMap<unknown> = {}
+  ): okahistory.Action<IdMap<unknown>> {
+    return { name: actionNames.drop, args: targetMap }
+  }
+
+  const clearAllReducer: okahistory.Reducer<void, Snapshot> = {
+    getLabel: () => `Select ${name}`,
+    redo() {
+      const snapshot = {
+        map: { ...selectedStateMap.value },
+        lastSelectedId: lastSelectedId.value,
+      }
+      setSelectedStateMap({})
+      lastSelectedId.value = ''
+      return snapshot
+    },
+    undo(snapshot) {
+      setSelectedStateMap(snapshot.map)
+      lastSelectedId.value = snapshot.lastSelectedId
+    },
+  }
+
+  function createClearAllAction(): okahistory.Action<void> {
+    return { name: actionNames.clearAll, args: undefined }
   }
 
   return {
+    init,
     selectedStateMap: computed(() => selectedStateMap.value),
-    lastSelectedId: lastSelectedId.state,
-    select,
-    selectList,
-    selectAll,
-    filter,
-    drop,
-    clear,
+    lastSelectedId: computed(() => lastSelectedId.value),
+
+    reducers: {
+      [actionNames.select]: selectReducer,
+      [actionNames.multiSelect]: multiSelectReducer,
+      [actionNames.selectAll]: selectAllReducer,
+      [actionNames.filter]: filterReducer,
+      [actionNames.drop]: dropReducer,
+      [actionNames.clearAll]: clearAllReducer,
+    },
+    createSelectAction,
+    createMultiSelectAction,
+    createSelectAllAction,
+    createFilterAction,
+    createDropAction,
+    createClearAllAction,
   }
 }
 
@@ -154,32 +333,6 @@ function mergePropsState(
 ): KeyframeSelectedState {
   if (!b) return a
   return { props: { ...a.props, ...b.props } }
-}
-
-function getSelectItem(
-  state: IdMap<KeyframeSelectedState>,
-  id: string,
-  propsState: KeyframeSelectedState,
-  visibledMap: IdMap<TargetProps>,
-  shift = false,
-  setFn: (val: IdMap<KeyframeSelectedState>) => void
-): HistoryItem {
-  return {
-    name: 'Select Keyframe',
-    undo: () => setFn({ ...state }),
-    redo: () => {
-      if (shift) {
-        const props = shiftMergeProps(state[id]?.props, propsState.props)
-        setFn(mergeOrDropMap(state, id, props ? { props } : undefined))
-      } else {
-        setFn(
-          mapFilterExec(state, visibledMap, () =>
-            id ? { [id]: propsState } : {}
-          )
-        )
-      }
-    },
-  }
 }
 
 function isAllExistSelected(
@@ -201,35 +354,4 @@ function isAllExistStatesSelected(
   return Object.keys(selectedTargetMap).every((id) =>
     isAllExistSelected(selectedTargetMap[id], state[id])
   )
-}
-
-function getSelectListItem(
-  state: IdMap<KeyframeSelectedState>,
-  selectedTargetMap: { [id: string]: TargetProps } = {},
-  visibledMap: { [id: string]: unknown } = {},
-  shift = false,
-  setFn: (val: IdMap<KeyframeSelectedState>) => void
-): HistoryItem {
-  return {
-    name: 'Select Keyframe',
-    undo: () => setFn({ ...state }),
-    redo: () => {
-      if (shift) {
-        if (isAllExistStatesSelected(state, selectedTargetMap)) {
-          // clear all if all targets have been selected already
-          setFn(dropMap(state, selectedTargetMap))
-        } else {
-          setFn({
-            ...state,
-            ...mapReduce(selectedTargetMap, getAllSelectedProps),
-          })
-        }
-      } else {
-        setFn({
-          ...dropMap(state, visibledMap),
-          ...mapReduce(selectedTargetMap, getAllSelectedProps),
-        })
-      }
-    },
-  }
 }

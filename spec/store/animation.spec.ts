@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { getAction } from '/@/models'
-import { getKeyframeBone } from '/@/models/keyframe'
+import { getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 import * as indexStore from '/@/store'
 import { createStore } from '/@/store/animation'
 import { useHistoryStore } from '/@/store/history'
@@ -91,16 +91,46 @@ describe('src/store/animation.ts', () => {
     })
   })
 
-  describe('execInsertKeyframe', () => {
-    it('should insert keyframes for selected bones', () => {
-      const { target, store } = prepare()
+  describe('selectKeyframe', () => {
+    it('should select an keyframe', () => {
+      const { target } = prepare()
       target.addAction()
       target.execInsertKeyframe({ rotate: true, scaleX: true })
-      const keyframe = target.keyframes.value[0]
-      expect(keyframe.targetId).toBe(store.lastSelectedBoneId.value)
-      expect(target.selectedAction.value?.keyframes).toEqual([keyframe.id])
+      const keyframe0 = target.keyframes.value[0]
       expect(target.selectedKeyframeMap.value).toEqual({
-        [keyframe.id]: { props: { rotate: true, scaleX: true } },
+        [keyframe0.id]: { props: { rotate: true, scaleX: true } },
+      })
+
+      target.selectKeyframe(keyframe0.id, { props: { rotate: true } })
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframe0.id]: { props: { rotate: true } },
+      })
+      target.selectKeyframe(keyframe0.id, { props: { scaleY: true } }, true)
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframe0.id]: { props: { rotate: true, scaleY: true } },
+      })
+    })
+  })
+
+  describe('execInsertKeyframe', () => {
+    it('should insert keyframes for selected bones and select the keyframes', () => {
+      const { target, store } = prepare()
+      target.addAction()
+
+      target.execInsertKeyframe({ rotate: true, scaleX: true })
+      const keyframe0 = target.keyframes.value[0]
+      expect(keyframe0.targetId).toBe(store.lastSelectedBoneId.value)
+      expect(target.selectedAction.value?.keyframes).toEqual([keyframe0.id])
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframe0.id]: { props: { rotate: true, scaleX: true } },
+      })
+
+      target.execInsertKeyframe({ scaleY: true })
+      const keyframe1 = target.keyframes.value[0]
+      expect(keyframe1.targetId).toBe(store.lastSelectedBoneId.value)
+      expect(target.selectedAction.value?.keyframes).toEqual([keyframe1.id])
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframe1.id]: { props: { scaleY: true } },
       })
     })
   })
@@ -114,6 +144,142 @@ describe('src/store/animation.ts', () => {
       expect(target.selectedAction.value?.keyframes).toHaveLength(0)
       expect(target.keyframes.value).toHaveLength(0)
       expect(target.selectedKeyframeMap.value).toEqual({})
+    })
+  })
+
+  describe('execDeleteTargetKeyframe', () => {
+    it('should delete the keyframe', () => {
+      const { target } = prepare()
+      target.addAction()
+      target.execInsertKeyframe({ rotate: true, scaleX: true })
+      expect(target.selectedAction.value?.keyframes).toHaveLength(1)
+      expect(target.keyframes.value).toHaveLength(1)
+
+      const keyframe = target.keyframes.value[0]
+      target.execDeleteTargetKeyframe(keyframe.targetId, 'rotate')
+      expect(target.keyframes.value[0].points).not.toHaveProperty('rotate')
+      expect(target.keyframes.value[0].points).toHaveProperty('scaleX')
+      expect(target.selectedAction.value?.keyframes).toHaveLength(1)
+      expect(target.keyframes.value).toHaveLength(1)
+    })
+  })
+
+  describe('upsertKeyframes', () => {
+    it('should duplicate keyframes', () => {
+      const { target } = prepare()
+      target.addAction()
+      target.execInsertKeyframe({ rotate: true, scaleX: true })
+      expect(target.selectedAction.value?.keyframes).toHaveLength(1)
+      expect(target.keyframes.value).toHaveLength(1)
+
+      const keyframes = target.keyframes.value
+
+      target.upsertKeyframes(
+        [{ ...keyframes[0], id: 'dup' }],
+        [{ ...keyframes[0], frame: 10 }]
+      )
+      expect(target.keyframes.value).toHaveLength(2)
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframes[0].id]: { props: { rotate: true, scaleX: true } },
+      })
+    })
+
+    it('should merge duplicated keyframes having the same frame and a target', () => {
+      const { target } = prepare()
+      target.addAction()
+      target.execInsertKeyframe({ rotate: true, scaleX: true })
+      const keyframes = target.keyframes.value
+
+      expect(target.selectedAction.value?.keyframes).toEqual([keyframes[0].id])
+      expect(target.keyframes.value).toHaveLength(1)
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframes[0].id]: { props: { rotate: true, scaleX: true } },
+      })
+
+      target.upsertKeyframes(
+        [
+          getKeyframeBone({
+            frame: 0,
+            targetId: keyframes[0].targetId,
+            id: 'dup',
+            points: {
+              scaleX: getKeyframePoint({ value: 1 }),
+              scaleY: getKeyframePoint(),
+            },
+          }),
+        ],
+        keyframes
+      )
+      expect(target.keyframes.value).toEqual([
+        getKeyframeBone({
+          frame: 0,
+          targetId: keyframes[0].targetId,
+          id: 'dup',
+          points: {
+            scaleX: getKeyframePoint({ value: 1 }),
+            scaleY: getKeyframePoint(),
+            rotate: getKeyframePoint(),
+          },
+        }),
+      ])
+      expect(target.selectedKeyframeMap.value).toEqual({
+        ['dup']: { props: { rotate: true, scaleX: true } },
+      })
+    })
+
+    it('should update duplicated keyframes that have existed already', () => {
+      const { target } = prepare()
+      target.addAction()
+      target.execInsertKeyframe({ rotate: true, scaleX: true })
+      expect(target.selectedAction.value?.keyframes).toHaveLength(1)
+      expect(target.keyframes.value).toHaveLength(1)
+
+      const keyframes = target.keyframes.value
+
+      target.upsertKeyframes(
+        [
+          getKeyframeBone({
+            frame: 0,
+            targetId: keyframes[0].targetId,
+            id: 'dup',
+            points: {
+              scaleX: getKeyframePoint({ value: 1 }),
+              scaleY: getKeyframePoint(),
+            },
+          }),
+        ],
+        [
+          {
+            ...keyframes[0],
+            frame: 10,
+            points: {
+              rotate: getKeyframePoint({ value: 1 }),
+            },
+          },
+        ]
+      )
+      expect(target.keyframes.value).toEqual([
+        getKeyframeBone({
+          frame: 10,
+          targetId: keyframes[0].targetId,
+          id: keyframes[0].id,
+          points: {
+            rotate: getKeyframePoint({ value: 1 }),
+          },
+        }),
+        getKeyframeBone({
+          frame: 0,
+          targetId: keyframes[0].targetId,
+          id: 'dup',
+          points: {
+            scaleX: getKeyframePoint({ value: 1 }),
+            scaleY: getKeyframePoint(),
+          },
+        }),
+      ])
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframes[0].id]: { props: { rotate: true } },
+      })
     })
   })
 })

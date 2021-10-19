@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { computed, Ref, ref } from '@vue/runtime-core'
-import { HistoryItem } from '/@/composables/stores/history'
+import * as okahistory from 'okahistory'
 
 export function useValueStore<T>(
   name: string,
@@ -27,37 +27,40 @@ export function useValueStore<T>(
 ) {
   const state = ref<T>(getDefaultState()) as Ref<T>
 
-  function _setState(val: T) {
+  function init(val: T) {
     state.value = val
   }
 
-  function setState(next: T, seriesKey?: string): HistoryItem | undefined {
-    if (isSameState(state.value, next)) return
+  const actionNames = {
+    update: `${name}_UPDATE`,
+  }
 
-    return getUpdateStateItem(name, state.value, next, _setState, seriesKey)
+  const updateReducer: okahistory.Reducer<T, T> = {
+    getLabel: () => `Update ${name}`,
+    redo(val) {
+      const snapshot = state.value
+      state.value = val
+      return snapshot
+    },
+    undo(snapshot) {
+      state.value = snapshot
+    },
+  }
+
+  function createUpdateAction(
+    val: T,
+    seriesKey?: string
+  ): okahistory.Action<T> | undefined {
+    if (isSameState(state.value, val)) return
+    return { name: actionNames.update, args: val, seriesKey }
   }
 
   return {
     state: computed(() => state.value),
-    setState,
-  }
-}
-
-function getUpdateStateItem<T>(
-  name: string,
-  current: T,
-  next: T,
-  setState: (val: T) => void,
-  seriesKey?: string
-): HistoryItem {
-  return {
-    name: `Update ${name}`,
-    undo: () => {
-      setState(current)
+    init,
+    reducers: {
+      [actionNames.update]: updateReducer,
     },
-    redo: () => {
-      setState(next)
-    },
-    seriesKey,
+    createUpdateAction,
   }
 }

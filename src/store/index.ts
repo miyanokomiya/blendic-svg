@@ -123,13 +123,15 @@ export function createStore(historyStore: HistoryStore) {
   function initState(
     armatures: Armature[],
     bones: Bone[],
-    constraints: BoneConstraint[]
+    constraints: BoneConstraint[],
+    armatureSelectad: [string, true][],
+    boneSelectad: [string, BoneSelectedState][]
   ) {
     armatureEntities.init(fromEntityList(armatures))
     boneEntities.init(fromEntityList(bones))
     constraintEntities.init(fromEntityList(constraints))
-    armatureSelectable.init([])
-    boneSelectable.init({})
+    armatureSelectable.restore(armatureSelectad)
+    boneSelectable.restore(boneSelectad)
   }
 
   function exportState() {
@@ -137,6 +139,8 @@ export function createStore(historyStore: HistoryStore) {
       armatures: armatures.value,
       bones: toEntityList(boneEntities.entities.value),
       constraints: toEntityList(constraintEntities.entities.value),
+      armatureSelected: armatureSelectable.createSnapshot(),
+      boneSelected: boneSelectable.createSnapshot(),
     }
   }
 
@@ -156,8 +160,8 @@ export function createStore(historyStore: HistoryStore) {
 
     armatureEntities.init(fromEntityList([armature]))
     boneEntities.init(fromEntityList([bone]))
-    armatureSelectable.init([armature.id])
-    boneSelectable.init({})
+    armatureSelectable.restore([[armature.id, true]])
+    boneSelectable.restore([])
   }
 
   function selectArmature(id: string = '') {

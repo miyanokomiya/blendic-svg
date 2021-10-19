@@ -89,11 +89,17 @@ export function createStore(
     pastCanvasMode.value = from
   })
 
-  function initState() {
-    canvasModeStore.init('object')
-    pastCanvasMode.value = 'edit'
+  function initState(canvasMode: CanvasMode) {
+    canvasModeStore.restore(canvasMode)
+    pastCanvasMode.value = canvasMode !== 'edit' ? 'edit' : 'object'
     axisGridInfo.value = undefined
     lastSelectedBoneSpace.value = undefined
+  }
+
+  function exportState() {
+    return {
+      canvasMode: canvasModeStore.createSnapshot(),
+    }
   }
 
   const canvasEditMode = computed(
@@ -414,6 +420,7 @@ export function createStore(
 
   return {
     initState,
+    exportState,
 
     canvasMode,
     command,

@@ -23,14 +23,14 @@ import { getActor, getBElement } from '/@/models'
 
 describe('src/store/element.ts', () => {
   describe('init', () => {
-    it('should init state and select an actor', () => {
+    it('should init state', () => {
       const target = createStore(useHistoryStore())
       const actor = getActor({
         id: 'ac',
         elements: ['el'],
       })
       const element = getBElement({ id: 'el' })
-      target.initState([actor], [element])
+      target.initState([actor], [element], [[actor.id, true]], [])
       expect(target.lastSelectedActor.value).toEqual(actor)
       expect(target.elementMap.value['el']).toEqual(element)
     })
@@ -55,7 +55,9 @@ describe('src/store/element.ts', () => {
       const target = createStore(useHistoryStore())
       target.initState(
         [getActor({ id: 'ac_0', elements: ['e_0'] }), getActor({ id: 'ac_1' })],
-        [getBElement({ id: 'e_0' })]
+        [getBElement({ id: 'e_0' })],
+        [],
+        []
       )
       target.selectActor('ac_0')
       target.selectElement('e_0')
@@ -70,7 +72,7 @@ describe('src/store/element.ts', () => {
   describe('updateArmatureId', () => {
     it('should update armatureId of a selected actor', () => {
       const target = createStore(useHistoryStore())
-      target.initState([getActor({ id: 'ac_0' })], [])
+      target.initState([getActor({ id: 'ac_0' })], [], [], [])
       target.selectActor('ac_0')
       target.updateArmatureId('armature')
       expect(target.lastSelectedActor.value?.armatureId).toBe('armature')
@@ -86,7 +88,9 @@ describe('src/store/element.ts', () => {
       ]
       target.initState(
         [getActor({ id: 'ac_0', elements: elements.map((e) => e.id) })],
-        elements
+        elements,
+        [],
+        []
       )
       target.selectActor('ac_0')
       target.selectElement('elm_1')
@@ -103,7 +107,9 @@ describe('src/store/element.ts', () => {
       ]
       target.initState(
         [getActor({ id: 'ac_0', elements: elements.map((e) => e.id) })],
-        elements
+        elements,
+        [],
+        []
       )
       target.selectActor('ac_0')
       target.selectAllElement()
@@ -125,7 +131,9 @@ describe('src/store/element.ts', () => {
       ]
       target.initState(
         [getActor({ id: 'ac_0', elements: elements.map((e) => e.id) })],
-        elements
+        elements,
+        [],
+        []
       )
       target.selectActor('ac_0')
       target.selectElement('elm_1')

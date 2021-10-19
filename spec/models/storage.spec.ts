@@ -95,8 +95,15 @@ describe('src/models/storage.ts', () => {
             option: { targetId: 'a' },
           }),
         ],
+        armatureSelected: [],
+        boneSelected: [],
+
+        canvasMode: 'object',
+
         actions: [getAction({ id: 'act', keyframes: ['key'] })],
         keyframes: [getKeyframeBone({ id: 'key' })],
+        actionSelected: [],
+
         actors: [
           getActor({
             id: 'actor',
@@ -105,8 +112,13 @@ describe('src/models/storage.ts', () => {
           }),
         ],
         elements: [getBElement({ id: 'svg' })],
+        actorSelected: [],
+        elementSelected: [],
+
         graphs: [getAnimationGraph({ id: 'graph', nodes: ['node'] })],
         nodes: [createGraphNode('scaler', { id: 'node' })],
+        graphSelected: [],
+        nodeSelected: [],
       })
     })
   })

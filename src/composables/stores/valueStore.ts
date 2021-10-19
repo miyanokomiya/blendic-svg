@@ -27,8 +27,12 @@ export function useValueStore<T>(
 ) {
   const state = ref<T>(getDefaultState()) as Ref<T>
 
-  function init(val: T) {
+  function restore(val: T) {
     state.value = val
+  }
+
+  function createSnapshot(): T {
+    return state.value
   }
 
   const actionNames = {
@@ -57,7 +61,8 @@ export function useValueStore<T>(
 
   return {
     state: computed(() => state.value),
-    init,
+    restore,
+    createSnapshot,
     reducers: {
       [actionNames.update]: updateReducer,
     },

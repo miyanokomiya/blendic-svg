@@ -64,17 +64,24 @@ export function createStore(historyStore: HistoryStore) {
     return elementMap.value[lastSelectedElementId.value]
   })
 
-  function initState(actors: Actor[], elements: BElement[]) {
+  function initState(
+    actors: Actor[],
+    elements: BElement[],
+    actorSelected: [string, true][],
+    elementSelected: [string, true][]
+  ) {
     actorEntities.init(fromEntityList(actors))
     elementEntities.init(fromEntityList(elements))
-    actorSelectable.init(actors.length > 0 ? [actors[0].id] : [])
-    elementSelectable.init([])
+    actorSelectable.restore(actorSelected)
+    elementSelectable.restore(elementSelected)
   }
 
   function exportState() {
     return {
       actors: actors.value,
       elements: toEntityList(elementEntities.entities.value),
+      actorSelected: actorSelectable.createSnapshot(),
+      elementSelected: elementSelectable.createSnapshot(),
     }
   }
 
@@ -90,8 +97,8 @@ export function createStore(historyStore: HistoryStore) {
 
     actorEntities.init(fromEntityList([actor]))
     elementEntities.init(fromEntityList([element]))
-    actorSelectable.init([actor.id])
-    elementSelectable.init([])
+    actorSelectable.restore([[actor.id, true]])
+    elementSelectable.restore([])
   }
 
   // only one actor is enabled currently

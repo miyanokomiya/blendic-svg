@@ -699,10 +699,14 @@ export function getBoneIdsWithoutDescendants(
   boneMap: IdMap<Bone>,
   targetId: string
 ): string[] {
-  const tree = getTree({
-    ...boneMap,
-    [targetId]: { ...boneMap[targetId], parentId: '' },
-  }) as BoneNode[]
+  const tree = getTree(
+    boneMap[targetId]
+      ? {
+          ...boneMap,
+          [targetId]: { ...boneMap[targetId], parentId: '' },
+        }
+      : boneMap
+  ) as BoneNode[]
   return sortBoneByName(
     flatBoneTree(tree.filter((b) => b.id !== targetId))
   ).map((b) => b.id)

@@ -39,13 +39,15 @@ export interface TargetProps {
   points: { [key: string]: unknown }
 }
 
-interface RestoreData {
+type Snapshot = [string, KeyframeSelectedState][]
+
+interface LocalRestoreData {
   toUpsert: IdMap<KeyframeSelectedState>
   toDelete: string[]
   lastSelectedId: string
 }
 
-interface Snapshot {
+interface LocalSnapshot {
   map: IdMap<KeyframeSelectedState>
   lastSelectedId: string
 }
@@ -58,11 +60,32 @@ export function useKeyframeStates(
   const selectedStateMap = ref<IdMap<KeyframeSelectedState>>(empty)
   const lastSelectedId = ref('')
 
+  function restore(snapshot: Snapshot) {
+    lastSelectedId.value =
+      snapshot.length > 0 ? snapshot[snapshot.length - 1][0] : ''
+    setSelectedStateMap(
+      snapshot.reduce<IdMap<KeyframeSelectedState>>((p, [id, val]) => {
+        p[id] = val
+        return p
+      }, {})
+    )
+  }
+
+  function createSnapshot(): Snapshot {
+    const lastId = lastSelectedId.value
+    const snapshot = Object.entries(selectedStateMap.value)
+    return lastId
+      ? snapshot
+          .filter(([id]) => id !== lastId)
+          .concat([[lastId, selectedStateMap.value[lastId]]])
+      : snapshot
+  }
+
   function setSelectedStateMap(val: IdMap<KeyframeSelectedState>) {
     selectedStateMap.value = val
   }
 
-  function restore(data: RestoreData) {
+  function localRestore(data: LocalRestoreData) {
     selectedStateMap.value = dropMap(
       { ...selectedStateMap.value, ...data.toUpsert },
       reduceToMap(data.toDelete, () => true)
@@ -91,7 +114,7 @@ export function useKeyframeStates(
       propsState: KeyframeSelectedState
       shift?: boolean
     },
-    RestoreData
+    LocalRestoreData
   > = {
     getLabel: () => `Select ${name}`,
     redo(args) {
@@ -124,7 +147,7 @@ export function useKeyframeStates(
       return undoData
     },
     undo(data) {
-      restore(data)
+      localRestore(data)
     },
   }
 
@@ -145,7 +168,7 @@ export function useKeyframeStates(
       selectedTargetMap: IdMap<TargetProps>
       shift?: boolean
     },
-    Snapshot
+    LocalSnapshot
   > = {
     getLabel: () => `Select ${name}`,
     redo(args) {
@@ -199,7 +222,10 @@ export function useKeyframeStates(
     return { name: actionNames.multiSelect, args: { selectedTargetMap, shift } }
   }
 
-  const selectAllReducer: okahistory.Reducer<IdMap<TargetProps>, Snapshot> = {
+  const selectAllReducer: okahistory.Reducer<
+    IdMap<TargetProps>,
+    LocalSnapshot
+  > = {
     getLabel: () => `Select ${name}`,
     redo(targetMap) {
       const snapshot = {
@@ -232,7 +258,7 @@ export function useKeyframeStates(
     return { name: actionNames.selectAll, args: targetMap }
   }
 
-  const filterReducer: okahistory.Reducer<IdMap<unknown>, Snapshot> = {
+  const filterReducer: okahistory.Reducer<IdMap<unknown>, LocalSnapshot> = {
     getLabel: () => `Filter ${name}`,
     redo(keepIdMap) {
       const snapshot = {
@@ -258,7 +284,7 @@ export function useKeyframeStates(
     return { name: actionNames.filter, args: keepIdMap }
   }
 
-  const dropReducer: okahistory.Reducer<IdMap<unknown>, RestoreData> = {
+  const dropReducer: okahistory.Reducer<IdMap<unknown>, LocalRestoreData> = {
     getLabel: () => `Drop ${name}`,
     redo(targetMap) {
       const currentLastId = lastSelectedId.value
@@ -270,7 +296,7 @@ export function useKeyframeStates(
       return { toUpsert, toDelete: [], lastSelectedId: currentLastId }
     },
     undo(restoreData) {
-      restore(restoreData)
+      localRestore(restoreData)
     },
   }
 
@@ -280,7 +306,7 @@ export function useKeyframeStates(
     return { name: actionNames.drop, args: targetMap }
   }
 
-  const clearAllReducer: okahistory.Reducer<void, Snapshot> = {
+  const clearAllReducer: okahistory.Reducer<void, LocalSnapshot> = {
     getLabel: () => `Select ${name}`,
     redo() {
       const snapshot = {
@@ -305,6 +331,9 @@ export function useKeyframeStates(
     init,
     selectedStateMap: computed(() => selectedStateMap.value),
     lastSelectedId: computed(() => lastSelectedId.value),
+
+    restore,
+    createSnapshot,
 
     reducers: {
       [actionNames.select]: selectReducer,

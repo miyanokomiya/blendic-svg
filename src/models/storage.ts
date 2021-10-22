@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { CanvasMode } from '/@/composables/modes/types'
+import { TargetPropsState } from '/@/composables/stores/targetProps'
 import {
   Action,
   Actor,
@@ -35,7 +36,7 @@ import {
   BoneSelectedState,
 } from '/@/models'
 import { GraphNodeBase } from '/@/models/graphNode'
-import { KeyframeBase } from '/@/models/keyframe'
+import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
 import { extractMap, mapReduce } from '/@/utils/commons'
 import { BoneConstraint, getConstraint } from '/@/utils/constraints'
 import { initializeBElements } from '/@/utils/elements'
@@ -55,6 +56,8 @@ export interface StorageRoot {
   actions: Action[]
   keyframes: KeyframeBase[]
   actionSelected: [string, true][]
+  keyframeState: [string, KeyframeSelectedState][]
+  targetPropsState: [string, TargetPropsState][]
 
   actors: Actor[]
   elements: BElement[]
@@ -95,6 +98,8 @@ export function initialize(src: StorageRoot): StorageRoot {
       keyframeMapByActionId[a.id].map(initializeKeyframe)
     ),
     actionSelected: src.actionSelected ?? [],
+    keyframeState: src.keyframeState ?? [],
+    targetPropsState: src.targetPropsState ?? [],
 
     actors: src.actors.map(initializeActor),
     elements: src.actors.flatMap((a) =>

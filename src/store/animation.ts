@@ -186,15 +186,17 @@ export function createStore(
   function initState(
     initActions: Action[],
     initKeyframes: KeyframeBase[],
-    actionSelected: [string, true][]
+    actionSelected: [string, true][],
+    initKeyframeState: [string, KeyframeSelectedState][],
+    inittargetPropsState: [string, TargetPropsState][]
   ) {
     actionEntities.init(fromEntityList(initActions))
     keyframeEntities.init(fromEntityList(initKeyframes))
     actionSelectable.restore(actionSelected)
     editTransformsStore.init()
     editConstraintsStore.init()
-    targetPropsState.init()
-    keyframeState.init()
+    keyframeState.restore(initKeyframeState)
+    targetPropsState.restore(inittargetPropsState)
   }
 
   function exportState() {
@@ -202,6 +204,8 @@ export function createStore(
       actions: actions.value,
       keyframes: toEntityList(keyframeEntities.entities.value),
       actionSelected: actionSelectable.createSnapshot(),
+      keyframeState: keyframeState.createSnapshot(),
+      targetPropsState: targetPropsState.createSnapshot(),
     }
   }
 

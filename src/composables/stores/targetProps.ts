@@ -58,7 +58,20 @@ export function useTargetProps(
     selectedStateMap.value = val
   }
 
-  function restore(data: RestoreData) {
+  function restore(snapshot: [string, TargetPropsState][]) {
+    setSelectedStateMap(
+      snapshot.reduce<IdMap<TargetPropsState>>((p, [id, val]) => {
+        p[id] = val
+        return p
+      }, {})
+    )
+  }
+
+  function createSnapshot(): [string, TargetPropsState][] {
+    return Object.entries(selectedStateMap.value)
+  }
+
+  function localRestore(data: RestoreData) {
     selectedStateMap.value = dropMap(
       { ...selectedStateMap.value, ...data.toUpsert },
       reduceToMap(data.toDelete, () => true)
@@ -135,7 +148,7 @@ export function useTargetProps(
       return undoData
     },
     undo(data) {
-      restore(data)
+      localRestore(data)
     },
   }
 
@@ -219,7 +232,7 @@ export function useTargetProps(
       return { toUpsert, toDelete: [] }
     },
     undo(restoreData) {
-      restore(restoreData)
+      localRestore(restoreData)
     },
   }
 
@@ -247,6 +260,8 @@ export function useTargetProps(
 
   return {
     init,
+    restore,
+    createSnapshot,
     selectedStateMap: computed(() => selectedStateMap.value),
     selectDryRun,
 

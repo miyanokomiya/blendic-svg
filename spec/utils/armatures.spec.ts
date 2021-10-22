@@ -1087,6 +1087,17 @@ describe('utils/armatures', () => {
   })
 
   describe('getBoneIdsWithoutDescendants', () => {
+    it('should get all bone ids if target does not exist in the map', () => {
+      expect(
+        target.getBoneIdsWithoutDescendants(
+          {
+            a: getBone({ id: 'a' }),
+            b: getBone({ id: 'b' }),
+          },
+          'unknown'
+        )
+      ).toEqual(['a', 'b'])
+    })
     it('get bone ids without its descenedants', () => {
       expect(
         target.getBoneIdsWithoutDescendants(

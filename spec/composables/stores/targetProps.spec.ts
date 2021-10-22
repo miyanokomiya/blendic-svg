@@ -30,6 +30,34 @@ describe('src/composables/stores/targetProps.ts', () => {
     return useTargetProps('props', () => visibledMap)
   }
 
+  describe('restore', () => {
+    it('should restore the state from its snapshot', () => {
+      const store1 = getStore()
+      const historyStore = useHistoryStore()
+      historyStore.defineReducers(store1.reducers)
+
+      historyStore.dispatch(
+        store1.createSelectAction('a', {
+          props: { x: 'selected' },
+        })
+      )
+      historyStore.dispatch(
+        store1.createSelectAction('b', { props: { y: 'selected' } }, true)
+      )
+      expect(store1.selectedStateMap.value).toEqual({
+        a: { props: { x: 'selected' } },
+        b: { props: { y: 'selected' } },
+      })
+
+      const store2 = getStore()
+      store2.restore(store1.createSnapshot())
+      expect(store2.selectedStateMap.value).toEqual({
+        a: { props: { x: 'selected' } },
+        b: { props: { y: 'selected' } },
+      })
+    })
+  })
+
   describe('selectDryRun', () => {
     it('should return true if the operation to do with the args will update the state', () => {
       const targetProps = getStore()

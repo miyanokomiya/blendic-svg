@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { CanvasMode } from '/@/composables/modes/types'
+import { TargetPropsState } from '/@/composables/stores/targetProps'
 import {
   Action,
   Actor,
@@ -56,6 +57,7 @@ export interface StorageRoot {
   keyframes: KeyframeBase[]
   actionSelected: [string, true][]
   keyframeState: [string, KeyframeSelectedState][]
+  targetPropsState: [string, TargetPropsState][]
 
   actors: Actor[]
   elements: BElement[]
@@ -97,6 +99,7 @@ export function initialize(src: StorageRoot): StorageRoot {
     ),
     actionSelected: src.actionSelected ?? [],
     keyframeState: src.keyframeState ?? [],
+    targetPropsState: src.targetPropsState ?? [],
 
     actors: src.actors.map(initializeActor),
     elements: src.actors.flatMap((a) =>

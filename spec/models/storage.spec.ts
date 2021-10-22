@@ -103,6 +103,8 @@ describe('src/models/storage.ts', () => {
         actions: [getAction({ id: 'act', keyframes: ['key'] })],
         keyframes: [getKeyframeBone({ id: 'key' })],
         actionSelected: [],
+        keyframeState: [],
+        targetPropsState: [],
 
         actors: [
           getActor({

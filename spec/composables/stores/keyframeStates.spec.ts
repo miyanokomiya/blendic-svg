@@ -30,6 +30,35 @@ describe('src/composables/stores/keyframeStates.ts', () => {
     return useKeyframeStates('Keyframe', () => visibledMap)
   }
 
+  describe('restore', () => {
+    it('should restore the state from its snapshot', () => {
+      const historyStore = useHistoryStore()
+      const store1 = getStore()
+      historyStore.defineReducers(store1.reducers)
+
+      historyStore.dispatch(
+        store1.createSelectAction('a', { props: { x: true } })
+      )
+      historyStore.dispatch(
+        store1.createSelectAction('b', { props: { x: true } }, true)
+      )
+      historyStore.dispatch(
+        store1.createSelectAction('a', { props: { y: true } }, true)
+      )
+      expect(store1.selectedStateMap.value).toEqual({
+        a: { props: { x: true, y: true } },
+        b: { props: { x: true } },
+      })
+
+      const store2 = getStore()
+      store2.restore(store1.createSnapshot())
+
+      expect(store1.selectedStateMap.value).toEqual(
+        store2.selectedStateMap.value
+      )
+    })
+  })
+
   describe('select', () => {
     it('should create an action to do', () => {
       const historyStore = useHistoryStore()

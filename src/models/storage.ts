@@ -35,7 +35,7 @@ import {
   BoneSelectedState,
 } from '/@/models'
 import { GraphNodeBase } from '/@/models/graphNode'
-import { KeyframeBase } from '/@/models/keyframe'
+import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
 import { extractMap, mapReduce } from '/@/utils/commons'
 import { BoneConstraint, getConstraint } from '/@/utils/constraints'
 import { initializeBElements } from '/@/utils/elements'
@@ -55,6 +55,7 @@ export interface StorageRoot {
   actions: Action[]
   keyframes: KeyframeBase[]
   actionSelected: [string, true][]
+  keyframeState: [string, KeyframeSelectedState][]
 
   actors: Actor[]
   elements: BElement[]
@@ -95,6 +96,7 @@ export function initialize(src: StorageRoot): StorageRoot {
       keyframeMapByActionId[a.id].map(initializeKeyframe)
     ),
     actionSelected: src.actionSelected ?? [],
+    keyframeState: src.keyframeState ?? [],
 
     actors: src.actors.map(initializeActor),
     elements: src.actors.flatMap((a) =>

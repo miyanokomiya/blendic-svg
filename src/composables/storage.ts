@@ -106,6 +106,7 @@ export function useStorage() {
       actions,
       keyframes,
       actionSelected: exportedAnimation.actionSelected,
+      keyframeState: exportedAnimation.keyframeState,
 
       actors,
       elements,
@@ -134,7 +135,8 @@ export function useStorage() {
       animationStore.initState(
         root.actions,
         root.keyframes,
-        root.actionSelected
+        root.actionSelected,
+        root.keyframeState
       )
       elementStore.initState(
         root.actors,

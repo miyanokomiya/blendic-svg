@@ -174,8 +174,11 @@ export function createStore(
 
   const selectedTargetIdMap = computed(() => {
     return {
-      ...mapReduce(selectedBoneIdMap.value, () => ({ type: 'bone' })),
-      ...mapReduce(selectedConstraintMap.value, () => ({ type: 'constraint' })),
+      ...mapReduce(selectedBoneIdMap.value, () => ({ type: 'bone' } as const)),
+      ...mapReduce(
+        selectedConstraintMap.value,
+        () => ({ type: 'constraint' } as const)
+      ),
     }
   })
 
@@ -226,7 +229,7 @@ export function createStore(
   const visibledTargetPropsStateMap = computed(() => {
     return extractMap(
       targetPropsState.selectedStateMap.value,
-      indexStore.selectedBones.value
+      selectedTargetIdMap.value
     )
   })
 

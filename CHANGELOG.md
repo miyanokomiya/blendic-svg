@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Enable keyframe series of constraints to be selected in the timeline panel.
 
 ## [0.13.0] - 2021-10-22
 ### Changed

@@ -449,7 +449,6 @@ export default defineComponent({
       labelCanvas,
       currentCanvas,
       playing: animationStore.playing,
-      actions: animationStore.actions,
       selectedTargetIdList,
       selectedTargetSummaryList,
       propsStateMap: animationStore.visibledTargetPropsStateMap,

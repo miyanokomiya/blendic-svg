@@ -137,10 +137,10 @@ export default defineComponent({
     },
     disabled: { type: Boolean, default: false },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:model-value'],
   setup(props, { emit }) {
     function update(val: any, seriesKey?: string) {
-      emit('update:modelValue', val, seriesKey)
+      emit('update:model-value', val, seriesKey)
     }
 
     const objectOptions = computed(inject('getObjectOptions', () => []))

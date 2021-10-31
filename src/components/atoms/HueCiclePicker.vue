@@ -54,7 +54,7 @@ export default defineComponent({
       default: undefined,
     },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:model-value'],
   setup(props, { emit }) {
     function radToP(rad: number) {
       return {
@@ -77,7 +77,7 @@ export default defineComponent({
     const svg = ref<Element>()
 
     function update(val: number) {
-      emit('update:modelValue', val, seriesKey.value)
+      emit('update:model-value', val, seriesKey.value)
     }
 
     function getHueByPoint(pageP: IVec2): number | undefined {

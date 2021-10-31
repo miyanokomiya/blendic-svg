@@ -47,7 +47,7 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ['update:modelValue', 'blur'],
+  emits: ['update:model-value', 'blur'],
   setup(props, { emit }) {
     const inputEl = ref<HTMLInputElement>()
     const focused = ref(props.autofocus)
@@ -61,7 +61,7 @@ export default defineComponent({
     function input() {
       if (draftValue.value === props.modelValue) return
 
-      emit('update:modelValue', draftValue.value)
+      emit('update:model-value', draftValue.value)
     }
 
     function onClick() {

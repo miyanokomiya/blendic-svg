@@ -89,7 +89,7 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:model-value'],
   setup(props, { emit }) {
     const colorRect = ref<Element>()
     const dragged = ref(false)
@@ -112,7 +112,7 @@ export default defineComponent({
 
     function update(hsva: HSVA, seriesKey?: string) {
       emit(
-        'update:modelValue',
+        'update:model-value',
         typeof props.modelValue === 'string'
           ? rednerRGBA(hsvaToRgba(hsva))
           : hsva,

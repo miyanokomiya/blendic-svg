@@ -116,7 +116,7 @@ defineProps(propsDef)
 
 const emits = defineEmits<{
   (
-    e: 'update:modelValue',
+    e: 'update:model-value',
     val: Partial<BoneConstraintOptions['LIMIT_SCALE']>,
     seriesKey?: string
   ): void
@@ -128,7 +128,7 @@ function emitUpdated(
   val: Partial<BoneConstraintOptions['LIMIT_SCALE']>,
   seriesKey?: string
 ) {
-  emits('update:modelValue', val, seriesKey)
+  emits('update:model-value', val, seriesKey)
 }
 
 function updateSpaceType(val: unknown) {

@@ -115,13 +115,13 @@ export default defineComponent({
     KeyDot,
   },
   props: getProps<BoneConstraintOptions['LIMIT_LOCATION']>(),
-  emits: ['update:modelValue'],
+  emits: ['update:model-value'],
   setup(props, { emit }) {
     function emitUpdated(
       val: Partial<BoneConstraintOptions['LIMIT_LOCATION']>,
       seriesKey?: string
     ) {
-      emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
+      emit('update:model-value', { ...props.modelValue, ...val }, seriesKey)
     }
 
     return {

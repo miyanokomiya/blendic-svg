@@ -55,7 +55,7 @@ const props = defineProps({
 })
 
 const emits = defineEmits<{
-  (e: 'update:modelValue', val: number | string): void
+  (e: 'update:model-value', val: number | string): void
 }>()
 
 const value = computed({
@@ -63,7 +63,7 @@ const value = computed({
     return props.modelValue
   },
   set(val: number | string) {
-    emits('update:modelValue', val)
+    emits('update:model-value', val)
   },
 })
 </script>

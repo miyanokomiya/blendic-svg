@@ -70,7 +70,7 @@ export default defineComponent({
       boneMap: computed(() => toMap(props.bones)),
       transform: computed(() => getTnansformStr(props.armature.transform)),
       boneSelectedState: computed(() =>
-        props.selected ? { head: true, tail: true } : undefined
+        props.selected ? ({ head: true, tail: true } as const) : undefined
       ),
       click: () => emit('select'),
     }

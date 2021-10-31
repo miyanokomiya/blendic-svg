@@ -25,7 +25,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <g
       v-for="(keyframes, f) in sortedKeyframeMapByFrame"
       :key="f"
-      :transform="`translate(${parseInt(f) * frameWidth}, 0)`"
+      :transform="`translate(${parseInt(f as string) * frameWidth}, 0)`"
     >
       <g :transform="`scale(${scale}) translate(0, ${height / 2})`">
         <circle
@@ -35,8 +35,8 @@ Copyright (C) 2021, Tomoya Komiyama.
           r="5"
           stroke="#000"
           :fill="selectedFrameMap[f] ? selectedColor : '#fff'"
-          @click.left.exact="selectFrame(f)"
-          @click.left.shift.exact="shiftSelectFrame(f)"
+          @click.left.exact="selectFrame(f as string)"
+          @click.left.shift.exact="shiftSelectFrame(f as string)"
         />
         <g :transform="`translate(0, ${-scrollY})`">
           <g v-for="k in keyframes" :key="k.id">

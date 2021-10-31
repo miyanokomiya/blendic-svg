@@ -106,7 +106,7 @@ import CanvasSideBar from '/@/components/CanvasSideBar.vue'
 import BoneLayer from '/@/components/elements/BoneLayer.vue'
 import SpaceAxis from '/@/components/elements/atoms/SpaceAxis.vue'
 import { BoneSelectedState } from './models/index'
-import { EditMode, SelectOptions } from './composables/modes/types'
+import { SelectOptions } from './composables/modes/types'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
@@ -202,7 +202,9 @@ export default defineComponent({
         // hilight parent bone for weight paiting
         const selectedElement = elementStore.lastSelectedElement.value
         if (selectedElement?.boneId) {
-          return { [selectedElement.boneId]: { head: true, tail: true } }
+          return {
+            [selectedElement.boneId]: { head: true, tail: true } as const,
+          }
         } else {
           return {}
         }
@@ -229,12 +231,6 @@ export default defineComponent({
       },
       selectArmature(id: string) {
         store.selectArmature(id)
-      },
-      setEditMode(mode: EditMode) {
-        canvasStore.setEditMode(mode)
-      },
-      selectAll() {
-        canvasStore.selectAll()
       },
     }
   },

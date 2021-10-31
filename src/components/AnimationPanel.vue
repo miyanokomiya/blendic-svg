@@ -477,7 +477,7 @@ export default defineComponent({
       updateEndFrame(val: number, seriesKey?: string) {
         animationStore.setEndFrame(val, seriesKey)
       },
-      addAction: animationStore.addAction,
+      addAction: () => animationStore.addAction(),
       deleteAction: animationStore.deleteAction,
       actionOptions,
       selectedActionId: computed({
@@ -497,7 +497,8 @@ export default defineComponent({
       selectTargetProp: animationStore.selectTargetProp,
 
       canvasType: canvasList.canvasType,
-      setCurrentCanvas: canvasList.setCanvas,
+      setCurrentCanvas: (val: unknown) =>
+        canvasList.setCanvas(val as CanvasType),
       canvasOptions: canvasList.canvasOptions,
       keyframePointColorMap,
 

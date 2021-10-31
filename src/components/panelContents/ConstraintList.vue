@@ -105,9 +105,7 @@ const constraintNameMap: { [key in BoneConstraintType]: string } = {
   COPY_SCALE: 'Copy Scale',
 } as const
 
-const componentMap: {
-  [key in BoneConstraintType]: typeof LimitLocationOptionField
-} = {
+const componentMap = {
   IK: IKOptionField,
   LIMIT_LOCATION: LimitLocationOptionField,
   LIMIT_ROTATION: LimitRotationOptionField,

@@ -21,13 +21,13 @@ Copyright (C) 2021, Tomoya Komiyama.
   <g>
     <g>
       <g
-        v-for="(
-          map, targetId
-        ) in keyframePointsMapByTargetIdFilteredFocused.falseMap"
+        v-for="[targetId, map] in Object.entries(
+          keyframePointsMapByTargetIdFilteredFocused.falseMap
+        )"
         :key="targetId"
       >
         <GraphKeyPoints
-          v-for="(keyFrames, key) in map.props"
+          v-for="key in Object.keys(map.props)"
           :key="key"
           :point-key="key"
           :keyframes="getKeyframes(targetId, key)"
@@ -41,13 +41,13 @@ Copyright (C) 2021, Tomoya Komiyama.
     </g>
     <g>
       <g
-        v-for="(
-          map, targetId
-        ) in keyframePointsMapByTargetIdFilteredFocused.trueMap"
+        v-for="[targetId, map] in Object.entries(
+          keyframePointsMapByTargetIdFilteredFocused.trueMap
+        )"
         :key="targetId"
       >
         <GraphKeyPoints
-          v-for="(keyFrames, key) in map.props"
+          v-for="key in Object.keys(map.props)"
           :key="key"
           :point-key="key"
           :keyframes="getKeyframes(targetId, key)"

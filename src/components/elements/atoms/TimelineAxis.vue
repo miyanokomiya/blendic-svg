@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <g class="view-only">
       <g
         v-for="f in frames"
-        :key="f"
+        :key="f.f"
         :transform="`translate(${f.f * frameWidth}, 0) scale(${scale})`"
       >
         <line
@@ -75,7 +75,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <g class="view-only">
       <g
         v-for="f in frames"
-        :key="f"
+        :key="f.f"
         :transform="`translate(${f.f * frameWidth}, 0) scale(${scale})`"
       >
         <text

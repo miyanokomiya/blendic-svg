@@ -64,6 +64,7 @@ export default defineComponent({
     }
 
     const modelRad = computed(() => {
+      if (props.modelValue === undefined) return 0
       return (props.modelValue * Math.PI) / 180
     })
 

@@ -30,7 +30,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
-import { CommandExam } from '/@/models'
+import { CommandExam } from '/@/composables/modes/types'
 
 export default defineComponent({
   props: {

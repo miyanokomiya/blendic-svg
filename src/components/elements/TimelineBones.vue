@@ -42,14 +42,14 @@ Copyright (C) 2021, Tomoya Komiyama.
             :transform="`translate(10, ${y})`"
             :label-width="labelWidth - 10"
             :label-height="height"
-            :label="getLabel(key)"
+            :label="getLabel(key as string)"
             :color="
-              isSelectedProp(target.id, key)
+              isSelectedProp(target.id, key as string)
                 ? settings.selectedColor
                 : undefined
             "
-            @click.left.exact="clickRow(target.id, key)"
-            @click.left.shift.exact="clickRow(target.id, key, true)"
+            @click.left.exact="clickRow(target.id, key as string)"
+            @click.left.shift.exact="clickRow(target.id, key as string, true)"
           />
         </g>
       </g>

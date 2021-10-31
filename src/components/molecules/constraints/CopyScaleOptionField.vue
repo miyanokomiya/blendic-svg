@@ -23,7 +23,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <SelectField
         :model-value="modelValue.targetId"
         :options="boneOptions"
-        @update:modelValue="updateTargetId"
+        @update:model-value="updateTargetId"
       />
     </InlineField>
     <InlineField label="Target Space" :label-width="labelWidth">
@@ -31,7 +31,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :model-value="modelValue.targetSpaceType"
         :options="spaceTypeOptions"
         no-placeholder
-        @update:modelValue="updateTargetSpaceType"
+        @update:model-value="updateTargetSpaceType"
       />
     </InlineField>
     <InlineField label="Owner Space" :label-width="labelWidth">
@@ -39,28 +39,28 @@ Copyright (C) 2021, Tomoya Komiyama.
         :model-value="modelValue.ownerSpaceType"
         :options="spaceTypeOptions"
         no-placeholder
-        @update:modelValue="updateOwnerSpaceType"
+        @update:model-value="updateOwnerSpaceType"
       />
     </InlineField>
     <InlineField>
       <CheckboxInput
         :model-value="modelValue.copyX"
         label="Axis X"
-        @update:modelValue="updateCopyX"
+        @update:model-value="updateCopyX"
       />
     </InlineField>
     <InlineField>
       <CheckboxInput
         :model-value="modelValue.copyY"
         label="Axis Y"
-        @update:modelValue="updateCopyY"
+        @update:model-value="updateCopyY"
       />
     </InlineField>
     <InlineField label="Power" :label-width="labelWidth">
       <SliderInput
         :model-value="modelValue.power"
         :step="0.1"
-        @update:modelValue="updatePower"
+        @update:model-value="updatePower"
       />
     </InlineField>
     <InlineField label="Influence" :label-width="labelWidth">
@@ -68,7 +68,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :model-value="modelValue.influence"
         :min="0"
         :max="1"
-        @update:modelValue="updateInfluence"
+        @update:model-value="updateInfluence"
       />
       <KeyDot
         :status="keyframeStatusMap['influence']"

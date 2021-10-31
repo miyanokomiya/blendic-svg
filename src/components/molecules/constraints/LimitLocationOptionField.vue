@@ -24,18 +24,18 @@ Copyright (C) 2021, Tomoya Komiyama.
         :model-value="modelValue.spaceType"
         :options="spaceTypeOptions"
         no-placeholder
-        @update:modelValue="updateSpaceType"
+        @update:model-value="updateSpaceType"
       />
     </InlineField>
     <InlineField label="Min X" :label-width="labelWidth">
       <div class="inline">
         <CheckboxInput
           :model-value="modelValue.useMinX"
-          @update:modelValue="updateUseMinX"
+          @update:model-value="updateUseMinX"
         />
         <SliderInput
           :model-value="modelValue.minX"
-          @update:modelValue="updateMinX"
+          @update:model-value="updateMinX"
         />
       </div>
     </InlineField>
@@ -43,11 +43,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       <div class="inline">
         <CheckboxInput
           :model-value="modelValue.useMinY"
-          @update:modelValue="updateUseMinY"
+          @update:model-value="updateUseMinY"
         />
         <SliderInput
           :model-value="modelValue.minY"
-          @update:modelValue="updateMinY"
+          @update:model-value="updateMinY"
         />
       </div>
     </InlineField>
@@ -55,11 +55,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       <div class="inline">
         <CheckboxInput
           :model-value="modelValue.useMaxX"
-          @update:modelValue="updateUseMaxX"
+          @update:model-value="updateUseMaxX"
         />
         <SliderInput
           :model-value="modelValue.maxX"
-          @update:modelValue="updateMaxX"
+          @update:model-value="updateMaxX"
         />
       </div>
     </InlineField>
@@ -67,11 +67,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       <div class="inline">
         <CheckboxInput
           :model-value="modelValue.useMaxY"
-          @update:modelValue="updateUseMaxY"
+          @update:model-value="updateUseMaxY"
         />
         <SliderInput
           :model-value="modelValue.maxY"
-          @update:modelValue="updateMaxY"
+          @update:model-value="updateMaxY"
         />
       </div>
     </InlineField>
@@ -80,7 +80,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :model-value="modelValue.influence"
         :min="0"
         :max="1"
-        @update:modelValue="updateInfluence"
+        @update:model-value="updateInfluence"
       />
       <KeyDot
         :status="keyframeStatusMap['influence']"

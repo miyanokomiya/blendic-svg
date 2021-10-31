@@ -23,7 +23,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <HueCiclePicker
         :model-value="localHsva.h"
         class="hue-circle"
-        @update:modelValue="updateHue"
+        @update:model-value="updateHue"
       />
       <div
         ref="colorRect"
@@ -49,7 +49,7 @@ Copyright (C) 2021, Tomoya Komiyama.
               :model-value="localHsva.a"
               :min="0"
               :max="1"
-              @update:modelValue="updateAlpha"
+              @update:model-value="updateAlpha"
             />
           </InlineField>
         </div>

@@ -23,14 +23,14 @@ Copyright (C) 2021, Tomoya Komiyama.
       <SelectField
         :model-value="modelValue.targetId"
         :options="boneOptions"
-        @update:modelValue="updateTargetId"
+        @update:model-value="updateTargetId"
       />
     </InlineField>
     <InlineField label="Pole Target" :label-width="labelWidth">
       <SelectField
         :model-value="modelValue.poleTargetId"
         :options="boneOptions"
-        @update:modelValue="updatePoleTargetId"
+        @update:model-value="updatePoleTargetId"
       />
     </InlineField>
     <InlineField label="Chain Length" :label-width="labelWidth">
@@ -38,7 +38,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :model-value="modelValue.chainLength"
         integer
         :min="0"
-        @update:modelValue="updateChainLength"
+        @update:model-value="updateChainLength"
       />
     </InlineField>
     <InlineField label="Iterations" :label-width="labelWidth">
@@ -47,7 +47,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         integer
         :min="0"
         :max="500"
-        @update:modelValue="updateIterations"
+        @update:model-value="updateIterations"
       />
     </InlineField>
     <InlineField label="Influence" :label-width="labelWidth">
@@ -55,7 +55,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :model-value="modelValue.influence"
         :min="0"
         :max="1"
-        @update:modelValue="updateInfluence"
+        @update:model-value="updateInfluence"
       />
       <KeyDot
         :status="keyframeStatusMap['influence']"

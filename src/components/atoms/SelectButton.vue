@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     v-model="localValue"
     :options="options"
     placeholder="Add"
-    @update:modelValue="update"
+    @update:model-value="update"
   />
 </template>
 

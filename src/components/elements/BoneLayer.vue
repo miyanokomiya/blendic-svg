@@ -36,7 +36,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
 import { Bone, BoneSelectedState, IdMap } from '/@/models'
-import BoneElm from '/@/components/elements/Bone.vue'
+import BoneElm from '/@/components/elements/BoneElm.vue'
 import { CanvasMode, SelectOptions } from '/@/composables/modes/types'
 import { sortBoneBySize } from '/@/utils/armatures'
 import { toList } from '/@/utils/commons'

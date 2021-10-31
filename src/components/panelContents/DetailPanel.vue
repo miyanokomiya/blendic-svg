@@ -27,7 +27,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <InlineField label="Name" label-width="50px">
         <TextInput
           :model-value="lastSelectedArmature.name"
-          @update:modelValue="changeArmatureName"
+          @update:model-value="changeArmatureName"
         />
       </InlineField>
     </form>
@@ -39,7 +39,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <InlineField label="Name" label-width="50px">
         <TextInput
           :model-value="lastSelectedBone.name"
-          @update:modelValue="changeBoneName"
+          @update:model-value="changeBoneName"
         />
       </InlineField>
       <InlineField label="Parent" label-width="50px">

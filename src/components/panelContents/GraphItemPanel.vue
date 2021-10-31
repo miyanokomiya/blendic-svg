@@ -27,7 +27,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             :label="key"
             :type="data.type"
             :model-value="data.value"
-            @update:modelValue="
+            @update:model-value="
               (val, seriesKey) => updateData(key, val, seriesKey)
             "
           />
@@ -49,7 +49,7 @@ Copyright (C) 2021, Tomoya Komiyama.
               :label="key"
               :type="input.type"
               :model-value="input.value"
-              @update:modelValue="
+              @update:model-value="
                 (val, seriesKey) => updateInput(key, val, seriesKey)
               "
             />

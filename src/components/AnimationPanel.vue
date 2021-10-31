@@ -25,7 +25,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :model-value="canvasType"
           :options="canvasOptions"
           no-placeholder
-          @update:modelValue="setCurrentCanvas"
+          @update:model-value="setCurrentCanvas"
         />
       </div>
       <div class="select-action">
@@ -62,7 +62,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             :min="0"
             integer
             class="slider"
-            @update:modelValue="updateEndFrame"
+            @update:model-value="updateEndFrame"
           />
         </InlineField>
       </div>
@@ -126,7 +126,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                       :header-height="labelHeight"
                       @down-current-frame="downCurrentFrame"
                     >
-                      <Keyframes
+                      <KeyframeGroup
                         v-if="canvasType === 'action'"
                         :scale="scale"
                         :keyframe-map-by-frame="keyframeMapByFrame"
@@ -187,7 +187,7 @@ import TimelineCanvas from './TimelineCanvas.vue'
 import TimelineAxis from './elements/atoms/TimelineAxis.vue'
 import GraphAxis from './elements/atoms/GraphAxis.vue'
 import TimelineBones from './elements/TimelineBones.vue'
-import Keyframes from './elements/Keyframes.vue'
+import KeyframeGroup from './elements/KeyframeGroup.vue'
 import GraphKeyframes from './elements/GraphKeyframes.vue'
 import AnimationController from './molecules/AnimationController.vue'
 import AddIcon from '/@/components/atoms/AddIcon.vue'
@@ -296,7 +296,7 @@ export default defineComponent({
     TimelineAxis,
     GraphAxis,
     TimelineBones,
-    Keyframes,
+    KeyframeGroup,
     GraphKeyframes,
     AnimationController,
     SliderInput,

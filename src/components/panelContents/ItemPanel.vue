@@ -27,7 +27,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <SliderInput
           :model-value="draftTransform.translateX"
           :disabled="connected"
-          @update:modelValue="changeTranslateX"
+          @update:model-value="changeTranslateX"
         />
         <KeyDot
           :status="keyframeStatusMap.translateX"
@@ -40,7 +40,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <SliderInput
           :model-value="draftTransform.translateY"
           :disabled="connected"
-          @update:modelValue="changeTranslateY"
+          @update:model-value="changeTranslateY"
         />
         <KeyDot
           :status="keyframeStatusMap.translateY"
@@ -53,7 +53,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <InlineField :label-width="labelWidth">
         <SliderInput
           :model-value="draftTransform.rotate"
-          @update:modelValue="changeRotate"
+          @update:model-value="changeRotate"
         />
         <KeyDot
           data-test-id="key-dot-rotate"
@@ -68,7 +68,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <SliderInput
           :step="0.1"
           :model-value="draftTransform.scaleX"
-          @update:modelValue="changeScaleX"
+          @update:model-value="changeScaleX"
         />
         <KeyDot
           :status="keyframeStatusMap.scaleX"
@@ -81,7 +81,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <SliderInput
           :step="0.1"
           :model-value="draftTransform.scaleY"
-          @update:modelValue="changeScaleY"
+          @update:model-value="changeScaleY"
         />
         <KeyDot
           :status="keyframeStatusMap.scaleY"
@@ -103,7 +103,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             class="color-picker"
             :model-value="hsva"
             extra-hue
-            @update:modelValue="updatePoseByColor"
+            @update:model-value="updatePoseByColor"
           />
         </div>
       </InlineField>
@@ -119,26 +119,26 @@ Copyright (C) 2021, Tomoya Komiyama.
       <InlineField label="x" :label-width="labelWidth">
         <SliderInput
           :model-value="draftBone.headX"
-          @update:modelValue="changeBoneHeadX"
+          @update:model-value="changeBoneHeadX"
         />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
         <SliderInput
           :model-value="draftBone.headY"
-          @update:modelValue="changeBoneHeadY"
+          @update:model-value="changeBoneHeadY"
         />
       </InlineField>
       <h5>Tail</h5>
       <InlineField label="x" :label-width="labelWidth">
         <SliderInput
           :model-value="draftBone.tailX"
-          @update:modelValue="changeBoneTailX"
+          @update:model-value="changeBoneTailX"
         />
       </InlineField>
       <InlineField label="y" :label-width="labelWidth">
         <SliderInput
           :model-value="draftBone.tailY"
-          @update:modelValue="changeBoneTailY"
+          @update:model-value="changeBoneTailY"
         />
       </InlineField>
     </form>

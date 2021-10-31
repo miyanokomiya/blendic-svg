@@ -29,13 +29,13 @@ Copyright (C) 2021, Tomoya Komiyama.
           :model-value="targetPoint.curve.name"
           :options="curveOptions"
           no-placeholder
-          @update:modelValue="updateCurveName"
+          @update:model-value="updateCurveName"
         />
       </BlockField>
       <BlockField label="Value">
         <SliderInput
           :model-value="targetPoint.value"
-          @update:modelValue="updateCurveValue"
+          @update:model-value="updateCurveValue"
         />
       </BlockField>
     </template>

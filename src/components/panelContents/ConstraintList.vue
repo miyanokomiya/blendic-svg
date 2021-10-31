@@ -28,7 +28,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div class="constraint-header">
       <TextInput
         :model-value="c.name"
-        @update:modelValue="(val) => updateName(i, val)"
+        @update:model-value="(val) => updateName(i, val)"
       />
       <button :disabled="i === 0" type="button" @click="upConstraint(i)">
         <UpIcon class="icon" />
@@ -52,7 +52,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :bone-options="boneOptions"
       :create-keyframe="createKeyframe(i)"
       :delete-keyframe="deleteKeyframe(i)"
-      @update:modelValue="
+      @update:model-value="
         (option, seriesKey) => updateConstraint(i, option, seriesKey)
       "
       @add-keyframe="(key) => addKeyframe(i, key)"

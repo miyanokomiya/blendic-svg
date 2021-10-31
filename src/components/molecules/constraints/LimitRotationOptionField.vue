@@ -24,18 +24,18 @@ Copyright (C) 2021, Tomoya Komiyama.
         :model-value="modelValue.spaceType"
         :options="spaceTypeOptions"
         no-placeholder
-        @update:modelValue="updateSpaceType"
+        @update:model-value="updateSpaceType"
       />
     </InlineField>
     <InlineField label="Min" :label-width="labelWidth">
       <div class="inline">
         <CheckboxInput
           :model-value="modelValue.useMin"
-          @update:modelValue="updateUseMin"
+          @update:model-value="updateUseMin"
         />
         <SliderInput
           :model-value="modelValue.min"
-          @update:modelValue="updateMin"
+          @update:model-value="updateMin"
         />
       </div>
     </InlineField>
@@ -43,11 +43,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       <div class="inline">
         <CheckboxInput
           :model-value="modelValue.useMax"
-          @update:modelValue="updateUseMax"
+          @update:model-value="updateUseMax"
         />
         <SliderInput
           :model-value="modelValue.max"
-          @update:modelValue="updateMax"
+          @update:model-value="updateMax"
         />
       </div>
     </InlineField>
@@ -56,7 +56,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :model-value="modelValue.influence"
         :min="0"
         :max="1"
-        @update:modelValue="updateInfluence"
+        @update:model-value="updateInfluence"
       />
       <KeyDot
         :status="keyframeStatusMap['influence']"

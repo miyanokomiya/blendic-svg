@@ -28,38 +28,38 @@ Copyright (C) 2021, Tomoya Komiyama.
           :model-value="modelValue"
           :options="valueEnumOptions"
           no-placeholder
-          @update:modelValue="update"
+          @update:model-value="update"
         />
         <SliderInput
           v-else
           :step="valueScale"
           :model-value="modelValue"
-          @update:modelValue="update"
+          @update:model-value="update"
         />
       </template>
       <SelectField
         v-else-if="valueTypeKey === 'OBJECT'"
         :model-value="modelValue"
         :options="objectOptions"
-        @update:modelValue="update"
+        @update:model-value="update"
       />
       <TextInput
         v-else-if="valueTypeKey === 'TEXT'"
         :model-value="modelValue"
         :options="objectOptions"
-        @update:modelValue="update"
+        @update:model-value="update"
       />
       <CheckboxInput
         v-else-if="valueTypeKey === 'BOOLEAN'"
         :model-value="modelValue"
-        @update:modelValue="update"
+        @update:model-value="update"
       />
       <template v-else-if="valueTypeKey === 'VECTOR2'">
         <InlineField label="x" label-width="20px">
           <SliderInput
             :model-value="modelValue.x"
             :step="valueScale"
-            @update:modelValue="
+            @update:model-value="
               (val, seriesKey) => update({ x: val, y: modelValue.y }, seriesKey)
             "
           />
@@ -68,7 +68,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           <SliderInput
             :model-value="modelValue.y"
             :step="valueScale"
-            @update:modelValue="
+            @update:model-value="
               (val, seriesKey) => update({ x: modelValue.x, y: val }, seriesKey)
             "
           />
@@ -87,7 +87,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             class="color-picker"
             :model-value="hsva"
             extra-hue
-            @update:modelValue="updateByColor"
+            @update:model-value="updateByColor"
           />
         </div>
       </div>

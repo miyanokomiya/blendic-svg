@@ -29,7 +29,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-if="editingName"
         :model-value="node.name"
         autofocus
-        @update:modelValue="updateName"
+        @update:model-value="updateName"
         @blur="endEditingName"
       />
       <a

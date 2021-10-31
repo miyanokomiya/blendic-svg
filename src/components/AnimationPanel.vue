@@ -25,7 +25,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :model-value="canvasType"
           :options="canvasOptions"
           no-placeholder
-          @update:modelValue="setCurrentCanvas"
+          @update:model-value="setCurrentCanvas"
         />
       </div>
       <div class="select-action">
@@ -62,7 +62,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             :min="0"
             integer
             class="slider"
-            @update:modelValue="updateEndFrame"
+            @update:model-value="updateEndFrame"
           />
         </InlineField>
       </div>

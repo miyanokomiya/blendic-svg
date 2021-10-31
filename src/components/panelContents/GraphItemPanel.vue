@@ -24,11 +24,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       <template v-for="(data, key) in dataMap" :key="key">
         <BlockField>
           <GraphNodeDataField
-            :label="key"
+            :label="key as string"
             :type="data.type"
             :model-value="data.value"
             @update:model-value="
-              (val, seriesKey) => updateData(key, val, seriesKey)
+              (val, seriesKey) => updateData(key as string, val, seriesKey)
             "
           />
         </BlockField>
@@ -39,18 +39,18 @@ Copyright (C) 2021, Tomoya Komiyama.
           <BlockField>
             <GraphNodeDataField
               v-if="input.disabled"
-              :label="key"
+              :label="key as string"
               :type="input.type"
               model-value="connected"
               disabled
             />
             <GraphNodeDataField
               v-else
-              :label="key"
+              :label="key as string"
               :type="input.type"
               :model-value="input.value"
               @update:model-value="
-                (val, seriesKey) => updateInput(key, val, seriesKey)
+                (val, seriesKey) => updateInput(key as string, val, seriesKey)
               "
             />
           </BlockField>
@@ -70,9 +70,10 @@ import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { mapReduce } from '/@/utils/commons'
 import GraphNodeDataField from '/@/components/atoms/GraphNodeDataField.vue'
+import { ValueType } from '/@/models/graphNode'
 
 interface DataInfo {
-  type: string
+  type: ValueType
   value: unknown
   disabled?: boolean
 }
@@ -99,7 +100,7 @@ export default defineComponent({
       const dataStruct = struct.value.data
       return mapReduce(targetNode.value.data, (value, key) => {
         return {
-          type: (dataStruct as any)[key].type as string,
+          type: (dataStruct as any)[key].type as ValueType,
           value,
         }
       })
@@ -123,7 +124,7 @@ export default defineComponent({
       const inputs = targetNode.value.inputs
       return mapReduce(inputs, (value, key) => {
         return {
-          type: (inputsStruct as any)[key].type as string,
+          type: (inputsStruct as any)[key].type as ValueType,
           value: value.value,
           disabled: !!value.from,
         }
@@ -141,7 +142,6 @@ export default defineComponent({
     const hasInput = computed(() => Object.keys(inputsMap.value).length > 0)
 
     return {
-      labelWidth: '20px',
       targetNode,
       dataMap,
       updateData,

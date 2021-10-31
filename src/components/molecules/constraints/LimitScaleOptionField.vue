@@ -97,67 +97,70 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
+import { SpaceType } from '/@/models'
+import { getProps } from '/@/components/molecules/constraints/common'
+
+const propsDef = getProps<BoneConstraintOptions['LIMIT_SCALE']>()
+</script>
+
+<script setup lang="ts">
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
-import { SpaceType } from '/@/models'
-import {
-  getProps,
-  spaceTypeOptions,
-} from '/@/components/molecules/constraints/common'
+import { spaceTypeOptions } from '/@/components/molecules/constraints/common'
 
-export default defineComponent({
-  components: { SliderInput, SelectField, InlineField, CheckboxInput, KeyDot },
-  props: getProps<BoneConstraintOptions['LIMIT_SCALE']>(),
-  emits: ['update:modelValue'],
-  setup(props, { emit }) {
-    function emitUpdated(
-      val: Partial<BoneConstraintOptions['LIMIT_SCALE']>,
-      seriesKey?: string
-    ) {
-      emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
-    }
+defineProps(propsDef)
 
-    return {
-      labelWidth: '90px',
-      spaceTypeOptions,
-      updateSpaceType(val: SpaceType) {
-        emitUpdated({ spaceType: val })
-      },
-      updateMinX(val: number, seriesKey?: string) {
-        emitUpdated({ minX: val }, seriesKey)
-      },
-      updateMaxX(val: number, seriesKey?: string) {
-        emitUpdated({ maxX: val }, seriesKey)
-      },
-      updateMinY(val: number, seriesKey?: string) {
-        emitUpdated({ minY: val }, seriesKey)
-      },
-      updateMaxY(val: number, seriesKey?: string) {
-        emitUpdated({ maxY: val }, seriesKey)
-      },
-      updateUseMinX(val: boolean, seriesKey?: string) {
-        emitUpdated({ useMinX: val }, seriesKey)
-      },
-      updateUseMaxX(val: boolean, seriesKey?: string) {
-        emitUpdated({ useMaxX: val }, seriesKey)
-      },
-      updateUseMinY(val: boolean, seriesKey?: string) {
-        emitUpdated({ useMinY: val }, seriesKey)
-      },
-      updateUseMaxY(val: boolean, seriesKey?: string) {
-        emitUpdated({ useMaxY: val }, seriesKey)
-      },
-      updateInfluence(val: number, seriesKey?: string) {
-        emitUpdated({ influence: val }, seriesKey)
-      },
-    }
-  },
-})
+const emits = defineEmits<{
+  (
+    e: 'update:model-value',
+    val: Partial<BoneConstraintOptions['LIMIT_SCALE']>,
+    seriesKey?: string
+  ): void
+}>()
+
+const labelWidth = '90px'
+
+function emitUpdated(
+  val: Partial<BoneConstraintOptions['LIMIT_SCALE']>,
+  seriesKey?: string
+) {
+  emits('update:model-value', val, seriesKey)
+}
+
+function updateSpaceType(val: unknown) {
+  emitUpdated({ spaceType: val as SpaceType })
+}
+function updateMinX(val: number, seriesKey?: string) {
+  emitUpdated({ minX: val }, seriesKey)
+}
+function updateMaxX(val: number, seriesKey?: string) {
+  emitUpdated({ maxX: val }, seriesKey)
+}
+function updateMinY(val: number, seriesKey?: string) {
+  emitUpdated({ minY: val }, seriesKey)
+}
+function updateMaxY(val: number, seriesKey?: string) {
+  emitUpdated({ maxY: val }, seriesKey)
+}
+function updateUseMinX(val: boolean, seriesKey?: string) {
+  emitUpdated({ useMinX: val }, seriesKey)
+}
+function updateUseMaxX(val: boolean, seriesKey?: string) {
+  emitUpdated({ useMaxX: val }, seriesKey)
+}
+function updateUseMinY(val: boolean, seriesKey?: string) {
+  emitUpdated({ useMinY: val }, seriesKey)
+}
+function updateUseMaxY(val: boolean, seriesKey?: string) {
+  emitUpdated({ useMaxY: val }, seriesKey)
+}
+function updateInfluence(val: number, seriesKey?: string) {
+  emitUpdated({ influence: val }, seriesKey)
+}
 </script>
 
 <style lang="scss" scoped>

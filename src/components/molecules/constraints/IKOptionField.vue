@@ -79,13 +79,13 @@ import { getProps } from '/@/components/molecules/constraints/common'
 export default defineComponent({
   components: { SliderInput, SelectField, InlineField, KeyDot },
   props: getProps<BoneConstraintOptions['IK']>(),
-  emits: ['update:modelValue'],
+  emits: ['update:model-value'],
   setup(props, { emit }) {
     function emitUpdated(
       val: Partial<BoneConstraintOptions['IK']>,
       seriesKey?: string
     ) {
-      emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
+      emit('update:model-value', { ...props.modelValue, ...val }, seriesKey)
     }
 
     return {

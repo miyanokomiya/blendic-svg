@@ -49,7 +49,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     </g>
     <g>
       <g
-        v-for="(edge, key) in edgePositions.outputs"
+        v-for="[key, edge] in Object.entries(edgePositions.outputs)"
         :key="key"
         :transform="`translate(${edge.p.x}, ${edge.p.y})`"
       >
@@ -102,7 +102,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     </g>
     <g>
       <g
-        v-for="(edge, key) in edgePositions.inputs"
+        v-for="[key, edge] in Object.entries(edgePositions.inputs)"
         :key="key"
         :transform="`translate(${edge.p.x}, ${edge.p.y})`"
       >
@@ -194,7 +194,7 @@ export default defineComponent({
     },
     edgePositions: {
       type: Object as PropType<GraphNodeEdgePositions>,
-      default: () => ({}),
+      default: () => ({ inputs: {}, outputs: {} }),
     },
     selected: { type: Boolean, default: false },
     errors: {

@@ -33,7 +33,7 @@ export default defineComponent({
     label: { type: String, default: '' },
     disabled: { type: Boolean, default: false },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:model-value'],
   setup(props, { emit }) {
     return {
       value: computed({
@@ -41,7 +41,7 @@ export default defineComponent({
           return props.modelValue
         },
         set(val: boolean) {
-          emit('update:modelValue', val)
+          emit('update:model-value', val)
         },
       }),
     }

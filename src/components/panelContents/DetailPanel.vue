@@ -74,7 +74,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { ComputedRef, defineComponent, computed } from 'vue'
 import { useStore } from '/@/store/index'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
@@ -89,6 +89,7 @@ import {
 } from '/@/models/keyframe'
 import { useAnimationStore } from '/@/store/animation'
 import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
+import { IdMap } from '/@/models'
 
 export default defineComponent({
   components: {
@@ -106,7 +107,10 @@ export default defineComponent({
       return store.lastSelectedBone.value
     })
 
-    const constraintKeyframeMapByTargetId = animationStore.keyframeMapByTargetId
+    const constraintKeyframeMapByTargetId =
+      animationStore.keyframeMapByTargetId as ComputedRef<
+        IdMap<KeyframeConstraint[]>
+      >
     const currentFrame = animationStore.currentFrame
 
     const otherBoneOptions = computed(() => {

@@ -49,10 +49,10 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:model-value'],
   setup(props, { emit }) {
     function update(val: any, seriesKey?: string) {
-      emit('update:modelValue', val, seriesKey)
+      emit('update:model-value', val, seriesKey)
     }
 
     const inputType = computed(() => props.type.type)

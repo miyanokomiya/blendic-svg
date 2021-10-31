@@ -89,13 +89,13 @@ export default defineComponent({
     KeyDot,
   },
   props: getProps<BoneConstraintOptions['COPY_ROTATION']>(),
-  emits: ['update:modelValue'],
+  emits: ['update:model-value'],
   setup(props, { emit }) {
     function emitUpdated(
       val: Partial<BoneConstraintOptions['COPY_ROTATION']>,
       seriesKey?: string
     ) {
-      emit('update:modelValue', { ...props.modelValue, ...val }, seriesKey)
+      emit('update:model-value', { ...props.modelValue, ...val }, seriesKey)
     }
 
     return {

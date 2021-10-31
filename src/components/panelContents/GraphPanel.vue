@@ -99,10 +99,10 @@ export default defineComponent({
       )
     }
 
-    function updateCurveName(curveName: CurveName) {
+    function updateCurveName(curveName: unknown) {
       updateCurve((p) => ({
         ...p,
-        curve: getCurve(curveName),
+        curve: getCurve(curveName as CurveName),
       }))
     }
 

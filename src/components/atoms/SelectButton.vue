@@ -39,7 +39,7 @@ export default defineComponent({
     },
   },
   emits: ['select'],
-  setup(props, { emit }) {
+  setup(_props, { emit }) {
     const localValue = ref<number | string>()
 
     return {

@@ -35,7 +35,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { defineComponent, PropType, computed } from 'vue'
 import { Armature, Bone, toMap } from '/@/models/index'
 import { getTnansformStr } from '/@/utils/helpers'
-import BoneElm from '/@/components/elements/Bone.vue'
+import BoneElm from '/@/components/elements/BoneElm.vue'
 import { sortBoneBySize } from '/@/utils/armatures'
 import { injectScale } from '/@/composables/canvas'
 

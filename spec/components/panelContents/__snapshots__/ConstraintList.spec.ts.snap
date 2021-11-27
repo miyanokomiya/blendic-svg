@@ -26,7 +26,9 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
             -- Add --
           </option>
           
-          <option>
+          <option
+            value="IK"
+          >
             IK
           </option>
           <option

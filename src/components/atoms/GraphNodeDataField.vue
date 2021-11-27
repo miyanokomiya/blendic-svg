@@ -152,10 +152,6 @@ export default defineComponent({
     function updateByColor(hsva: HSVA, seriesKey?: string) {
       update(hsvaToTransform(hsva), seriesKey)
     }
-    const hsva = computed(() => {
-      return posedHsva(props.modelValue)
-    })
-
     const valueTypeKey = computed(() => props.type.type)
     const valueScale = computed(() => (props.type as any).scale ?? 1)
     const valueEnumKey = computed<GraphEnumMapKey>(
@@ -166,6 +162,12 @@ export default defineComponent({
         label: `${item.value}: ${item.key}`,
         value: item.value,
       }))
+    })
+
+    const hsva = computed(() => {
+      return valueTypeKey.value === 'COLOR'
+        ? posedHsva(props.modelValue)
+        : undefined
     })
 
     return {

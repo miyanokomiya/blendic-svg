@@ -25,6 +25,8 @@ export type IdMap<T> = {
   [id: string]: T
 }
 
+export type KeyValueMap<T> = [string, T][]
+
 export interface Transform {
   translate: IVec2
   origin: IVec2

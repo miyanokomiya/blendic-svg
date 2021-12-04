@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Fixed
 - Enable keyframe series of constraints to be selected in the timeline panel.
+- Invalid last selected bone in edit mode #254
 
 ## [0.13.0] - 2021-10-22
 ### Changed

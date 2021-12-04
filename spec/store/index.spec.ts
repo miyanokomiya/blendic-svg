@@ -180,6 +180,32 @@ describe('src/store/index.ts', () => {
         })
       })
     })
+
+    describe('connected bone', () => {
+      it('should select connected parts', () => {
+        const target = createStore(useHistoryStore())
+        target.addArmature('arm_a')
+        target.deleteBone()
+        target.addBones([
+          getBone({ id: 'bone_a' }),
+          getBone({ id: 'bone_b', parentId: 'bone_a', connected: true }),
+        ])
+
+        target.selectBone('bone_b', { head: true })
+        expect(target.selectedBones.value).toEqual({
+          bone_a: { tail: true },
+          bone_b: { head: true },
+        })
+        expect(target.lastSelectedBoneId.value).toBe('bone_b')
+
+        target.selectBone('bone_a', { head: true, tail: true })
+        expect(target.selectedBones.value).toEqual({
+          bone_a: { head: true, tail: true },
+          bone_b: { head: true },
+        })
+        expect(target.lastSelectedBoneId.value).toBe('bone_a')
+      })
+    })
   })
 
   describe('selectAllBones', () => {

@@ -18,7 +18,7 @@
     "okageo": "^2.0.13",
     "okahistory": "^0.0.8",
     "okanvas": "^0.0.4",
-    "okaselect": "^0.0.10",
+    "okaselect": "^0.0.11",
     "ress": "^4.0.0",
     "uuid": "^8.3.2",
     "vue": "^3.0.6"

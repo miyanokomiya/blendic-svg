@@ -40,6 +40,7 @@ import {
 import { getNotDuplicatedName } from '/@/utils/relations'
 import {
   dropMap,
+  getEntries,
   getTreeIdPath,
   mapReduce,
   reduceToMap,
@@ -203,9 +204,9 @@ export function createStore(historyStore: HistoryStore) {
     historyStore.dispatch(armatureEntities.createAddAction([armature]), [
       armatureSelectable.createSelectAction(armature.id),
       boneEntities.createAddAction([bone]),
-      boneSelectable.createMultiSelectAction({
-        [bone.id]: { head: true, tail: true },
-      }),
+      boneSelectable.createMultiSelectAction([
+        [bone.id, { head: true, tail: true }],
+      ]),
     ])
   }
 
@@ -288,19 +289,24 @@ export function createStore(historyStore: HistoryStore) {
 
       historyStore.dispatch(
         boneSelectable.createMultiSelectAction(
-          mergeMap(
-            {
-              ...(shift
-                ? dropMap(boneSelectable.selectedMap.value, { [id]: true })
-                : {}),
-              ...(Object.keys(nextState).length > 0 ? { [id]: nextState } : {}),
-            },
-            armatureUtils.selectBone(
-              toList(boneMap.value),
-              id,
-              nextState,
-              ignoreConnection
-            )
+          getEntries(
+            mergeMap(
+              {
+                ...(shift
+                  ? dropMap(boneSelectable.selectedMap.value, { [id]: true })
+                  : {}),
+                ...(Object.keys(nextState).length > 0
+                  ? { [id]: nextState }
+                  : {}),
+              },
+              armatureUtils.selectBone(
+                toList(boneMap.value),
+                id,
+                nextState,
+                ignoreConnection
+              )
+            ),
+            id
           )
         )
       )

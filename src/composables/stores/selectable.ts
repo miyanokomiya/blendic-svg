@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import * as okaselect from 'okaselect'
-import { IdMap } from '/@/models'
+import { IdMap, KeyValueMap } from '/@/models'
 import { computed, ref } from 'vue'
 import { mapReduce } from '/@/utils/commons'
 import * as okahistory from 'okahistory'
@@ -255,13 +255,13 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
   }
 
   const multiSelectReducer: okahistory.Reducer<
-    { val: IdMap<K>; shift?: boolean },
+    { val: KeyValueMap<K>; shift?: boolean },
     [string, K][]
   > = {
     getLabel: () => `Select ${name}`,
     redo(args) {
       const snapshot = selectable.createSnapshot()
-      selectable.multiSelect(args.val, args.shift)
+      selectable.multiSelect(new Map(args.val), args.shift)
       return snapshot
     },
     undo(snapshot) {
@@ -270,9 +270,10 @@ export function useAttrsSelectable<T, K extends SelectableAttrs>(
   }
 
   function createMultiSelectAction(
-    val: IdMap<K>,
+    val: IdMap<K> | KeyValueMap<K>,
     shift = false
-  ): okahistory.Action<{ val: IdMap<K>; shift?: boolean }> {
+  ): okahistory.Action<{ val: KeyValueMap<K>; shift?: boolean }> {
+    val = Array.isArray(val) ? val : Object.entries(val)
     return {
       name: actionNames.multiSelect,
       args: { val, shift },

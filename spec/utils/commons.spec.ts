@@ -49,6 +49,7 @@ import {
   reduceToMap,
   shallowEqual,
   xor,
+  getEntries,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -583,6 +584,20 @@ describe('utils/commons.ts', () => {
       expect(xor(false, true)).toBe(true)
       expect(xor(true, false)).toBe(true)
       expect(xor(true, true)).toBe(false)
+    })
+  })
+
+  describe('getEntries', () => {
+    const obj = { a: 1, b: 2, c: 3 }
+
+    it('should return entries of the object', () => {
+      expect(getEntries(obj)).toEqual(Object.entries(obj))
+    })
+    it('should ensure last item if lastKey is passed', () => {
+      expect(getEntries(obj, 'b')[2]).toEqual(['b', 2])
+    })
+    it('should ignore lastKey if the value for it does not exist', () => {
+      expect(getEntries(obj, 'd')).toEqual(Object.entries(obj))
     })
   })
 })

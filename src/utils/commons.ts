@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { v4 } from 'uuid'
-import { IdMap, toMap } from '/@/models'
+import { IdMap, KeyValueMap, toMap } from '/@/models'
 import { getNotDuplicatedName } from '/@/utils/relations'
 
 export function toKeyMap<T extends object>(
@@ -376,4 +376,16 @@ export function shallowEqual(
 
 export function xor(a: any, b: any): boolean {
   return (a || b) && !(a && b)
+}
+
+export function getEntries<T>(map: IdMap<T>, lastKey?: string): KeyValueMap<T> {
+  if (lastKey) {
+    const val = { ...map }
+    const lastValue = map[lastKey]
+    if (lastValue) {
+      delete val[lastKey]
+      return Object.entries(val).concat([[lastKey, lastValue]])
+    }
+  }
+  return Object.entries(map)
 }

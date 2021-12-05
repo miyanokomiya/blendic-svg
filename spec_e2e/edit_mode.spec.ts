@@ -41,9 +41,6 @@ describe('edit bones', () => {
     const screenshot = useScreenshot(page, 'edit_bone')
 
     // Select the Armature
-    await page.click(
-      'text=bonebone Object Edit Pose Weight a: SelectA: Add >> :nth-match(path, 2)'
-    )
     await screenshot('select_armature')
 
     // Move to edit mode

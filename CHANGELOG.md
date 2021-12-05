@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Add new graph if new node is added during no graph selected
+
 ### Fixed
 - Enable keyframe series of constraints to be selected in the timeline panel.
 - Invalid last selected bone in edit mode #254

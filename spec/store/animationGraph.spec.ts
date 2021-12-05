@@ -1,4 +1,5 @@
 import { getAnimationGraph } from '/@/models'
+import * as indexStoreModule from '/@/store/index'
 import { createStore } from '/@/store/animationGraph'
 import type { AnimationGraphStore } from '/@/store/animationGraph'
 import { createGraphNode } from '/@/utils/graphNodes'
@@ -8,7 +9,10 @@ describe('src/store/animationGraph.ts', () => {
   let target: AnimationGraphStore
 
   beforeEach(() => {
-    target = createStore(useHistoryStore())
+    const historyStore = useHistoryStore()
+    const indexStore = indexStoreModule.createStore(historyStore)
+    indexStore.createDefaultEntities()
+    target = createStore(historyStore, indexStore)
     target.initState(
       [
         getAnimationGraph({
@@ -38,14 +42,19 @@ describe('src/store/animationGraph.ts', () => {
   describe('addGraph', () => {
     it('should add new graph, select it and clear nodes selected', () => {
       target.selectNode('scaler')
-      const graph = getAnimationGraph({
+      const graph = {
         id: 'new_graph',
+        name: 'new_name',
         nodes: [],
-      })
+      }
       target.addGraph(graph)
       expect(target.graphs.value).toHaveLength(2)
       expect(target.lastSelectedGraph.value?.id).toBe('new_graph')
       expect(target.selectedNodes.value).toEqual({})
+      target.addGraph({ ...graph, id: undefined })
+      expect(target.graphs.value).toHaveLength(3)
+      expect(target.lastSelectedGraph.value?.id).not.toBeUndefined()
+      expect(target.lastSelectedGraph.value?.name).toBe('new_name.001')
     })
   })
 
@@ -114,6 +123,16 @@ describe('src/store/animationGraph.ts', () => {
   describe('addNode', () => {
     it('should add new node and select it', () => {
       target.addNode('scaler', { id: 'new', data: { value: 10 } })
+      expect(target.nodeMap.value['new']).toEqual(
+        createGraphNode('scaler', { id: 'new', data: { value: 10 } })
+      )
+      expect(target.selectedNodes.value).toEqual({ new: true })
+    })
+    it('should add new graph if no graph is selected', () => {
+      target.selectGraph()
+      expect(target.lastSelectedGraph.value).toBeUndefined()
+      target.addNode('scaler', { id: 'new', data: { value: 10 } })
+      expect(target.lastSelectedGraph.value).not.toBeUndefined()
       expect(target.nodeMap.value['new']).toEqual(
         createGraphNode('scaler', { id: 'new', data: { value: 10 } })
       )

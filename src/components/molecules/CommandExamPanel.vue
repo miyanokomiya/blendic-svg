@@ -21,8 +21,8 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div v-if="availableCommandList.length > 0" class="canvas-command">
     <ul>
       <li v-for="item in availableCommandList" :key="item.command">
-        <span class="command">{{ item.command }}</span
-        >: {{ item.title }}
+        <span v-if="item.command" class="command">{{ item.command }}:</span>
+        <span>{{ item.title }}</span>
       </li>
     </ul>
   </div>
@@ -42,7 +42,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .canvas-command {
   margin-top: 4px;
   text-align: left;
@@ -59,6 +59,7 @@ li {
   align-items: center;
 }
 .command {
+  margin-right: 6px;
   min-width: 12px;
 }
 </style>

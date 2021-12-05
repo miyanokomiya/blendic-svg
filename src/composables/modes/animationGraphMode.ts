@@ -24,6 +24,7 @@ import type {
   EditMovement,
   PopupMenuItem,
   SelectOptions,
+  CommandExam,
 } from '/@/composables/modes/types'
 import { getIsRectHitRectFn, snapGrid } from '/@/utils/geometry'
 import { useMenuList } from '/@/composables/menuList'
@@ -369,7 +370,21 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   }): {
     needLock: boolean
   } {
-    if (!target.value) return notNeedLock
+    if (!target.value) {
+      if (graphStore.targetArmatureId.value) {
+        switch (arg.key) {
+          case 'A':
+            cancel()
+            state.keyDownPosition = arg.position
+            state.command = 'add'
+            return notNeedLock
+          default:
+            return notNeedLock
+        }
+      } else {
+        return notNeedLock
+      }
+    }
 
     switch (arg.key) {
       case 'Escape':
@@ -464,25 +479,38 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     return true
   }
 
-  const availableCommandList = computed(() => {
-    const allways = [
-      { command: 'A', title: 'Add' },
-      { command: 'a', title: 'All Select' },
-    ]
+  const commands: { [key: string]: CommandExam } = {
+    add: { command: 'A', title: 'Add' },
+    selectAll: { command: 'a', title: 'All Select' },
+    delete: { command: 'x', title: 'Delete' },
+    grab: { command: 'g', title: 'Grab' },
+    duplicate: { command: 'D', title: 'Duplicate' },
+    clip: { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
+    paste: { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
+  }
 
-    if (isAnySelected.value) {
+  const availableCommandList = computed<CommandExam[]>(() => {
+    if (!target.value) {
+      if (graphStore.targetArmatureId.value) {
+        return [commands.add]
+      } else {
+        return [{ title: 'Armature Not Selected' }]
+      }
+    } else if (isAnySelected.value) {
       return [
-        ...allways,
-        { command: 'x', title: 'Delete' },
-        { command: 'g', title: 'Grab' },
-        { command: 'D', title: 'Duplicate' },
-        { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
-        { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
+        commands.add,
+        commands.selectAll,
+        commands.delete,
+        commands.grab,
+        commands.duplicate,
+        commands.clip,
+        ...(state.clipboard ? [commands.paste] : []),
       ]
     } else {
       return [
-        ...allways,
-        { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
+        commands.add,
+        commands.selectAll,
+        ...(state.clipboard ? [commands.paste] : []),
       ]
     }
   })

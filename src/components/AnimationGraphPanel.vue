@@ -96,8 +96,7 @@ import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import GraphNode from '/@/components/elements/GraphNode.vue'
 import GraphEdge from '/@/components/elements/GraphEdge.vue'
-import { getAnimationGraph, IdMap, toMap } from '/@/models'
-import { getNotDuplicatedName } from '/@/utils/relations'
+import { IdMap, toMap } from '/@/models'
 import { SelectOptions } from '/@/composables/modes/types'
 import { mapReduce } from '/@/utils/commons'
 import { add, IVec2 } from 'okageo'
@@ -159,15 +158,7 @@ export default defineComponent({
     )
 
     function addGraph() {
-      graphStore.addGraph(
-        getAnimationGraph(
-          {
-            name: getNotDuplicatedName('Graph', allNames.value),
-            armatureId: selectedArmature.value?.id ?? '',
-          },
-          true
-        )
-      )
+      graphStore.addGraph({ armatureId: selectedArmature.value?.id })
     }
 
     const selectedGraphId = computed({

@@ -58,7 +58,7 @@ export interface ToolMenuItem {
   underline?: boolean
 }
 
-export type CommandExam = { command: string; title: string }
+export type CommandExam = { command?: string; title: string }
 
 export type SelectOptions = Pick<MouseOptions, 'shift' | 'ctrl'>
 

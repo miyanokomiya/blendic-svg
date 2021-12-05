@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { computed } from 'vue'
-import { AnimationGraph, IdMap, toMap } from '../models'
+import { AnimationGraph, getAnimationGraph, IdMap, toMap } from '../models'
 import { extractMap, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { useEntities } from '/@/composables/stores/entities'
@@ -32,8 +32,13 @@ import {
   createGraphNode,
   deleteAndDisconnectNodes,
 } from '/@/utils/graphNodes'
+import { getNotDuplicatedName } from '/@/utils/relations'
+import { IndexStore, useStore } from '/@/store'
 
-export function createStore(historyStore: HistoryStore) {
+export function createStore(
+  historyStore: HistoryStore,
+  indexStore: IndexStore
+) {
   const graphEntities = useEntities<AnimationGraph>('Graph')
   const nodeEntities = useEntities<GraphNode>('Node')
 
@@ -70,6 +75,8 @@ export function createStore(historyStore: HistoryStore) {
       : undefined
   )
 
+  const targetArmatureId = indexStore.lastSelectedArmatureId
+
   function initState(
     graphs: AnimationGraph[],
     nodes: GraphNode[],
@@ -99,7 +106,20 @@ export function createStore(historyStore: HistoryStore) {
     ])
   }
 
-  function addGraph(graph: AnimationGraph) {
+  function addGraph(arg: Partial<{ id: string; name: string }> = {}) {
+    if (!indexStore.lastSelectedArmatureId.value) return
+
+    const graph = getAnimationGraph(
+      {
+        id: arg.id,
+        name: getNotDuplicatedName(
+          arg.name ?? 'Graph',
+          graphs.value.map((g) => g.name)
+        ),
+        armatureId: indexStore.lastSelectedArmatureId.value,
+      },
+      !arg.id
+    )
     historyStore.dispatch(graphEntities.createAddAction([graph]), [
       nodeSelectable.createClearAllAction(),
       graphSelectable.createSelectAction(graph.id),
@@ -152,10 +172,17 @@ export function createStore(historyStore: HistoryStore) {
     historyStore.dispatch(nodeSelectable.createSelectAllAction(true))
   }
 
+  /**
+   * Add new node
+   * If no graph is selected, create new graph
+   */
   function addNode<T extends GraphNodeType>(
     type: T,
     arg: Partial<GraphNodes[T]> = {}
   ): GraphNode | undefined {
+    if (!lastSelectedGraphId.value) {
+      addGraph()
+    }
     const graph = lastSelectedGraph.value
     if (!graph) return
 
@@ -253,6 +280,7 @@ export function createStore(historyStore: HistoryStore) {
     nodeMap,
     lastSelectedNode,
     selectedNodes,
+    targetArmatureId,
 
     selectGraph,
     addGraph,
@@ -271,7 +299,7 @@ export function createStore(historyStore: HistoryStore) {
 }
 export type AnimationGraphStore = ReturnType<typeof createStore>
 
-const store = createStore(useHistoryStore())
+const store = createStore(useHistoryStore(), useStore())
 export function useAnimationGraphStore() {
   return store
 }

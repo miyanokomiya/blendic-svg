@@ -530,10 +530,22 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     NODE_SUGGESTION_MENU_OPTIONS_SRC,
     (src) => {
       return useMenuList(() =>
-        src.map(({ label, type, key }) => ({
-          label,
-          exec: () => addAndConnectNode(type, key),
-        }))
+        src.map((option) => {
+          if ('children' in option) {
+            return {
+              label: option.label,
+              children: option.children.map((c) => ({
+                label: c.label,
+                exec: () => addAndConnectNode(c.type, c.key),
+              })),
+            }
+          } else {
+            return {
+              label: option.label,
+              exec: () => addAndConnectNode(option.type, option.key),
+            }
+          }
+        })
       )
     }
   )

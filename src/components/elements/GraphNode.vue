@@ -209,7 +209,6 @@ export default defineComponent({
     const size = computed(() => {
       return helpers.getGraphNodeSize(props.node)
     })
-
     const headOutline = computed(() => {
       return getHeadOutline(size.value)
     })

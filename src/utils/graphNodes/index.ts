@@ -112,6 +112,9 @@ import * as and from './nodes/and'
 import * as or from './nodes/or'
 import * as equal_generics from './nodes/equalGenerics'
 import * as switch_generics from './nodes/switch_generics'
+
+import * as reroute from './nodes/reroute'
+
 import { IdMap } from '/@/models'
 import { extractMap, mapReduce, toList } from '/@/utils/commons'
 
@@ -190,6 +193,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   less_than_or_equal,
   between,
   switch_generics,
+
+  reroute,
 } as const
 
 interface NodeMenuOption {
@@ -304,6 +309,10 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
     ],
   },
   MAKE_PATH_SRC,
+  {
+    label: 'Etc',
+    children: [{ label: 'Reroute', type: 'reroute' }],
+  },
 ]
 
 type NodeSuggestionMenuOptionSrc = { key: string } & NodeMenuOption
@@ -330,6 +339,7 @@ const EQUAL_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
 }
 const GENERICS_SUGGESTIONS: NodeSuggestionMenuOptionSrc[] = [
   { label: 'Switch', type: 'switch_generics', key: 'if_true' },
+  { label: 'Reroute', type: 'reroute', key: 'value' },
 ]
 
 export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {

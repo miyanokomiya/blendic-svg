@@ -273,42 +273,58 @@ export function getGraphNodeDataPosition(node: GraphNode): {
   }, {})
 }
 
-export function getGraphNodeInputsPosition(node: GraphNode): {
+function getGraphNodeInputsPosition(node: GraphNode): {
   [key: string]: GraphNodeEdgeInfo
 } {
   const dataHeight = getGraphNodeDataHeight(node)
   const outputsHeight = getGraphNodeOutputsHeight(node)
+  const base = {
+    x: 0,
+    y:
+      node.type === 'reroute'
+        ? GRAPH_NODE_ROW_HEIGHT / 2
+        : GRAPH_NODE_HEAD_HEIGHT +
+          outputsHeight +
+          dataHeight +
+          GRAPH_NODE_ROW_HEIGHT / 2,
+  }
 
   return getGraphNodeRowsPosition(
     Object.entries(getNodeEdgeTypes(node).inputs).map(([key, type]) => ({
       key,
       type,
     })),
-    {
-      x: 0,
-      y:
-        GRAPH_NODE_HEAD_HEIGHT +
-        outputsHeight +
-        dataHeight +
-        GRAPH_NODE_ROW_HEIGHT / 2,
-    }
+    base
   )
 }
 
-export function getGraphNodeOutputsPosition(node: GraphNode): {
+function getGraphNodeOutputsPosition(node: GraphNode): {
   [key: string]: GraphNodeEdgeInfo
 } {
-  const { width } = getGraphNodeSize(node)
+  const base = {
+    x: getGraphNodeSize(node).width,
+    y:
+      node.type === 'reroute'
+        ? GRAPH_NODE_ROW_HEIGHT / 2
+        : GRAPH_NODE_HEAD_HEIGHT + (GRAPH_NODE_ROW_HEIGHT * 2) / 3,
+  }
+
   return getGraphNodeRowsPosition(
     Object.entries(getNodeEdgeTypes(node).outputs).map(([key, type]) => ({
       key,
       type,
     })),
-    {
-      x: width,
-      y: GRAPH_NODE_HEAD_HEIGHT + (GRAPH_NODE_ROW_HEIGHT * 2) / 3,
-    }
+    base
   )
+}
+
+export function getGraphNodeEdgePosition(node: GraphNode): {
+  inputs: { [key: string]: GraphNodeEdgeInfo }
+  outputs: { [key: string]: GraphNodeEdgeInfo }
+} {
+  const inputs = getGraphNodeInputsPosition(node)
+  const outputs = getGraphNodeOutputsPosition(node)
+  return { inputs, outputs }
 }
 
 function getGraphNodeRowsPosition(

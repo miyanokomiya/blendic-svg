@@ -142,7 +142,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from 'vue'
+import { computed, withDefaults } from 'vue'
 import { useSettings } from '../../composables/settings'
 import { switchClick } from '/@/utils/devices'
 import {
@@ -151,13 +151,61 @@ import {
   ValueType,
 } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
-import { add } from 'okageo'
+import { add, IVec2 } from 'okageo'
 import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
 import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
 import ErrorText from '/@/components/elements/atoms/ErrorText.vue'
 import { mapReduce } from '/@/utils/commons'
 import { getGraphNodeModule } from '/@/utils/graphNodes'
 import { Size } from 'okanvas'
+</script>
+
+<script setup lang="ts">
+const props = withDefaults(
+  defineProps<{
+    node: GraphNode
+    edgePositions?: GraphNodeEdgePositions
+    selected?: boolean
+    errors?: string[]
+  }>(),
+  {
+    edgePositions: () => ({ inputs: {}, outputs: {} }),
+    selected: false,
+    errors: undefined,
+  }
+)
+
+const emit = defineEmits<{
+  (e: 'down-body', id: string, option?: { shift?: boolean }): void
+  (
+    e: 'down-edge',
+    arg:
+      | {
+          type: 'draft-from' | 'draft-to'
+          from: IVec2
+          to: { nodeId: string; key: string }
+        }
+      | {
+          type: 'draft-from' | 'draft-to'
+          from: { nodeId: string; key: string }
+          to: IVec2
+        }
+  ): void
+  (
+    e: 'up-edge',
+    arg: {
+      type: 'input' | 'output'
+      nodeId: string
+      key: string
+    }
+  ): void
+  (
+    e: 'update:data',
+    id: string,
+    data: GraphNode['data'],
+    seriesKey?: string
+  ): void
+}>()
 
 function getHeadOutline(s: Size) {
   const r = 14
@@ -181,134 +229,99 @@ function getOutline(s: Size) {
   }`
 }
 
-export default defineComponent({
-  components: {
-    GraphNodeDataField,
-    GraphNodeInputLabel,
-    ErrorText,
-  },
-  props: {
-    node: {
-      type: Object as PropType<GraphNode>,
-      required: true,
-    },
-    edgePositions: {
-      type: Object as PropType<GraphNodeEdgePositions>,
-      default: () => ({ inputs: {}, outputs: {} }),
-    },
-    selected: { type: Boolean, default: false },
-    errors: {
-      type: Array as PropType<string[] | undefined>,
-      default: undefined,
-    },
-  },
-  emits: ['down-body', 'down-edge', 'up-edge', 'update:data'],
-  setup(props, { emit }) {
-    const { settings } = useSettings()
+const { settings } = useSettings()
 
-    const size = computed(() => {
-      return helpers.getGraphNodeSize(props.node)
-    })
-    const headOutline = computed(() => {
-      return getHeadOutline(size.value)
-    })
-
-    const outline = computed(() => {
-      return getOutline(size.value)
-    })
-
-    const nodeStruct = computed(
-      () => getGraphNodeModule(props.node.type).struct
-    )
-
-    const label = computed(() => nodeStruct.value.label ?? props.node.type)
-    const color = computed(() => nodeStruct.value.color ?? '#fafafa')
-    const textColor = computed(() => nodeStruct.value.textColor ?? '#000')
-
-    const dataPositions = computed(() =>
-      helpers.getGraphNodeDataPosition(props.node)
-    )
-    const dataMap = computed(() => {
-      const dataStruct = nodeStruct.value.data
-      return mapReduce(dataPositions.value, (position, key) => {
-        return {
-          position,
-          type: (dataStruct as any)[key].type as ValueType,
-          value: props.node.data[key],
-        }
-      })
-    })
-
-    function updateData(key: string, val: any, seriesKey?: string) {
-      emit(
-        'update:data',
-        props.node.id,
-        { ...props.node.data, [key]: val },
-        seriesKey
-      )
-    }
-
-    function getInputType(key: string): ValueType {
-      return (nodeStruct.value.inputs as any)[key].type
-    }
-
-    return {
-      GRAPH_NODE_TYPE_COLOR: helpers.GRAPH_NODE_TYPE_COLOR,
-      GRAPH_NODE_ROW_HEIGHT: helpers.GRAPH_NODE_ROW_HEIGHT,
-      label,
-      color,
-      textColor,
-      size,
-      headOutline,
-      outline,
-      outlineStroke: computed(() =>
-        props.errors ? 'red' : props.selected ? settings.selectedColor : '#555'
-      ),
-      outlineStrokeWidth: computed(() =>
-        props.errors ? 6 : props.selected ? 2 : 1
-      ),
-      getInputType,
-      edgeAnchorWidth: computed(() => 60),
-      dataMap,
-      downBody(e: MouseEvent) {
-        switchClick(e, {
-          plain: () => emit('down-body', props.node.id),
-          shift: () => emit('down-body', props.node.id, { shift: true }),
-          ctrl: () => emit('down-body', props.node.id),
-        })
-      },
-      downFromEdge: (key: string) =>
-        emit('down-edge', {
-          type: 'draft-from',
-          from: add(props.node.position, props.edgePositions.inputs[key].p),
-          to: { nodeId: props.node.id, key },
-        }),
-      downToEdge: (key: string) =>
-        emit('down-edge', {
-          type: 'draft-to',
-          from: { nodeId: props.node.id, key },
-          to: add(props.node.position, props.edgePositions.outputs[key].p),
-        }),
-      upFromEdge: (key: string) => {
-        emit('up-edge', { nodeId: props.node.id, type: 'input', key })
-      },
-      upToEdge: (key: string) =>
-        emit('up-edge', { nodeId: props.node.id, type: 'output', key }),
-      updateData,
-    }
-  },
+const size = computed(() => {
+  return helpers.getGraphNodeSize(props.node)
 })
+const headOutline = computed(() => {
+  return getHeadOutline(size.value)
+})
+
+const outline = computed(() => {
+  return getOutline(size.value)
+})
+
+const nodeStruct = computed(() => getGraphNodeModule(props.node.type).struct)
+
+const label = computed(() => nodeStruct.value.label ?? props.node.type)
+const color = computed(() => nodeStruct.value.color ?? '#fafafa')
+const textColor = computed(() => nodeStruct.value.textColor ?? '#000')
+
+const dataPositions = computed(() =>
+  helpers.getGraphNodeDataPosition(props.node)
+)
+const dataMap = computed(() => {
+  const dataStruct = nodeStruct.value.data
+  return mapReduce(dataPositions.value, (position, key) => {
+    return {
+      position,
+      type: (dataStruct as any)[key].type as ValueType,
+      value: props.node.data[key],
+    }
+  })
+})
+
+function updateData(key: string, val: any, seriesKey?: string) {
+  emit(
+    'update:data',
+    props.node.id,
+    { ...props.node.data, [key]: val },
+    seriesKey
+  )
+}
+
+function getInputType(key: string): ValueType {
+  return (nodeStruct.value.inputs as any)[key].type
+}
+
+const GRAPH_NODE_TYPE_COLOR = helpers.GRAPH_NODE_TYPE_COLOR
+const GRAPH_NODE_ROW_HEIGHT = helpers.GRAPH_NODE_ROW_HEIGHT
+
+const outlineStroke = computed(() =>
+  props.errors ? 'red' : props.selected ? settings.selectedColor : '#555'
+)
+const outlineStrokeWidth = computed(() =>
+  props.errors ? 6 : props.selected ? 2 : 1
+)
+const edgeAnchorWidth = 60
+
+function downBody(e: MouseEvent) {
+  switchClick(e, {
+    plain: () => emit('down-body', props.node.id),
+    shift: () => emit('down-body', props.node.id, { shift: true }),
+    ctrl: () => emit('down-body', props.node.id),
+  })
+}
+function downFromEdge(key: string) {
+  emit('down-edge', {
+    type: 'draft-from',
+    from: add(props.node.position, props.edgePositions.inputs[key].p),
+    to: { nodeId: props.node.id, key },
+  })
+}
+function downToEdge(key: string) {
+  emit('down-edge', {
+    type: 'draft-to',
+    from: { nodeId: props.node.id, key },
+    to: add(props.node.position, props.edgePositions.outputs[key].p),
+  })
+}
+function upFromEdge(key: string) {
+  emit('up-edge', { nodeId: props.node.id, type: 'input', key })
+}
+function upToEdge(key: string) {
+  emit('up-edge', { nodeId: props.node.id, type: 'output', key })
+}
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .view-only {
   pointer-events: none;
 }
-.edge-anchor:hover {
-  circle {
-    transition: fill 0.2s;
-    fill: #ffa07a;
-  }
+.edge-anchor:hover circle {
+  transition: fill 0.2s;
+  fill: #ffa07a;
 }
 .error-message {
   background-color: #fff;

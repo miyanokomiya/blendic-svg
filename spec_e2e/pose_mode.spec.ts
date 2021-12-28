@@ -17,28 +17,15 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { Browser, Page } from 'playwright-chromium'
-import { initBrowser, initPage, moveAndClick, useScreenshot } from './utils'
+import { test } from '@playwright/test'
+import { initPage, useScreenshot, moveAndClick } from './utils'
 
-let browser: Browser
-let page: Page
-
-beforeAll(async () => {
-  browser = await initBrowser()
-})
-beforeEach(async () => {
-  page = await initPage(browser)
-})
-afterEach(() => {
-  page!.close()
-})
-afterAll(() => {
-  browser!.close()
-})
-
-describe('posing', () => {
-  it('select -> insert keyframes -> pose -> insert keyframes -> interpolate', async () => {
+test.describe('posing', () => {
+  test('select -> insert keyframes -> pose -> insert keyframes -> interpolate', async ({
+    page,
+  }) => {
     const screenshot = useScreenshot(page, 'posing')
+    await initPage(page)
 
     // Move to pose mode
     await page.hover('.app-canvas-root')

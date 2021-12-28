@@ -201,6 +201,8 @@ export interface GraphNodes {
   less_than_or_equal: GraphNodeLessThanOrEqual
   between: GraphNodeBetween
   switch_generics: GraphNodeSwitchGenerics
+
+  reroute: GraphNodeReroute
 }
 export type GraphNodeType = keyof GraphNodes
 // Note: this union decrease performance too much of type checking and unit test
@@ -753,4 +755,9 @@ export interface GraphNodeSwitchGenerics extends GraphNodeBase {
     if_true: GraphNodeInput<unknown>
     if_false: GraphNodeInput<unknown>
   }
+}
+
+export interface GraphNodeReroute extends GraphNodeBase {
+  type: 'reroute'
+  inputs: { value: GraphNodeInput<any> }
 }

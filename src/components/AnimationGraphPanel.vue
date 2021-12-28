@@ -59,7 +59,8 @@ Copyright (C) 2021, Tomoya Komiyama.
             :to="edge.to"
           />
         </g>
-        <GraphNode
+        <component
+          :is="node.type === 'reroute' ? GraphNodeReroute : GraphNode"
           v-for="node in editedNodeMap"
           :key="node.id"
           :node="node"
@@ -95,15 +96,13 @@ import SelectField from './atoms/SelectField.vue'
 import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import GraphNode from '/@/components/elements/GraphNode.vue'
+import GraphNodeReroute from '/@/components/elements/GraphNodeReroute.vue'
 import GraphEdge from '/@/components/elements/GraphEdge.vue'
 import { IdMap, toMap } from '/@/models'
 import { SelectOptions } from '/@/composables/modes/types'
 import { mapReduce } from '/@/utils/commons'
 import { add, IVec2 } from 'okageo'
-import {
-  getGraphNodeInputsPosition,
-  getGraphNodeOutputsPosition,
-} from '/@/utils/helpers'
+import { getGraphNodeEdgePosition } from '/@/utils/helpers'
 import { GraphNodeEdgePositions } from '/@/models/graphNode'
 import { useElementStore } from '/@/store/element'
 import GraphSideBar from '/@/components/GraphSideBar.vue'
@@ -116,7 +115,6 @@ export default defineComponent({
     SelectField,
     AddIcon,
     DeleteIcon,
-    GraphNode,
     GraphEdge,
     GraphSideBar,
   },
@@ -157,10 +155,6 @@ export default defineComponent({
       })
     )
 
-    function addGraph() {
-      graphStore.addGraph({ armatureId: selectedArmature.value?.id })
-    }
-
     const selectedGraphId = computed({
       get: () => selectedGraph.value?.id ?? '',
       set: (id: string) => graphStore.selectGraph(id),
@@ -182,11 +176,7 @@ export default defineComponent({
     })
 
     const edgePositionMap = computed<IdMap<GraphNodeEdgePositions>>(() => {
-      return mapReduce(editedNodeMap.value, (node) => {
-        const inputsPosition = getGraphNodeInputsPosition(node)
-        const outputsPosition = getGraphNodeOutputsPosition(node)
-        return { inputs: inputsPosition, outputs: outputsPosition }
-      })
+      return mapReduce(editedNodeMap.value, getGraphNodeEdgePosition)
     })
 
     const edgeMap = computed(() => {
@@ -292,11 +282,13 @@ export default defineComponent({
     })
 
     return {
+      GraphNode,
+      GraphNodeReroute,
+
       canvas,
       mode,
 
       selectedArmature,
-      currentGraph,
       editedNodeMap,
       edgePositionMap,
       edgeMap,
@@ -309,7 +301,7 @@ export default defineComponent({
       selectedGraphId,
       graphOptions,
 
-      addGraph,
+      addGraph: () => graphStore.addGraph(),
       deleteGraph: graphStore.deleteGraph,
 
       selectedNodes,

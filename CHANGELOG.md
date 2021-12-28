@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Add new graph if new node is added during no graph selected
+- Add reroute node
 
 ### Fixed
 - Enable keyframe series of constraints to be selected in the timeline panel.

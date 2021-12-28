@@ -9,7 +9,7 @@
     "serve": "vite preview",
     "test": "yarn jest --coverage",
     "test:unit": "yarn jest --config ./spec/jest.config.js",
-    "test:e2e": "yarn jest --config ./spec_e2e/jest.config.js --runInBand",
+    "test:e2e": "yarn playwright test",
     "lint": "yarn eslint --ext vue,ts,js ./*.js ./*.ts ./src ./spec",
     "lint-json": "yarn prettier -c ./*.json",
     "lint:fix": "yarn lint --fix && yarn lint-json -w"
@@ -27,6 +27,7 @@
     "@babel/core": "^7.16.0",
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
+    "@playwright/test": "^1.17.1",
     "@types/jest": "^27.0.3",
     "@types/uuid": "^8.3.3",
     "@typescript-eslint/eslint-plugin": "^5.8.0",

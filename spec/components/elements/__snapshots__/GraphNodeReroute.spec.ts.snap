@@ -1,0 +1,109 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/GraphNodeReroute.vue snapshot initial 1`] = `
+<g
+  title="reroute"
+  transform="translate(0, 0)"
+>
+  <g>
+    <path
+      d="M0,-2 Q9,-2 9,10 T0,22 z"
+      fill="#ddd"
+      stroke="#555"
+      stroke-width="2"
+    />
+  </g>
+  <g
+    transform="translate(10, 2)"
+  >
+    <g
+      class="edge-anchor"
+    >
+      <circle
+        fill="transparent"
+        r="8"
+        stroke="none"
+      />
+    </g>
+    <circle
+      class="view-only"
+      fill="#daa520"
+      r="4.5"
+      stroke="none"
+    />
+  </g>
+  <g
+    transform="translate(1, 2)"
+  >
+    <g
+      class="edge-anchor"
+    >
+      <circle
+        fill="transparent"
+        r="8"
+        stroke="none"
+      />
+    </g>
+    <circle
+      class="view-only"
+      fill="#daa520"
+      r="4.5"
+      stroke="none"
+    />
+  </g>
+</g>
+`;
+
+exports[`src/components/elements/GraphNodeReroute.vue snapshot selected 1`] = `
+<g
+  title="reroute"
+  transform="translate(0, 0)"
+>
+  <g>
+    <path
+      d="M0,-2 Q9,-2 9,10 T0,22 z"
+      fill="#ddd"
+      stroke="orange"
+      stroke-width="3"
+    />
+  </g>
+  <g
+    transform="translate(10, 2)"
+  >
+    <g
+      class="edge-anchor"
+    >
+      <circle
+        fill="transparent"
+        r="8"
+        stroke="none"
+      />
+    </g>
+    <circle
+      class="view-only"
+      fill="#daa520"
+      r="4.5"
+      stroke="none"
+    />
+  </g>
+  <g
+    transform="translate(1, 2)"
+  >
+    <g
+      class="edge-anchor"
+    >
+      <circle
+        fill="transparent"
+        r="8"
+        stroke="none"
+      />
+    </g>
+    <circle
+      class="view-only"
+      fill="#daa520"
+      r="4.5"
+      stroke="none"
+    />
+  </g>
+</g>
+`;

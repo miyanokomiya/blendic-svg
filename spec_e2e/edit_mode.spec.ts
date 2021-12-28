@@ -17,28 +17,13 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { Browser, Page } from 'playwright-chromium'
-import { initBrowser, initPage, moveAndClick, useScreenshot } from './utils'
+import { test } from '@playwright/test'
+import { initPage, useScreenshot, moveAndClick } from './utils'
 
-let browser: Browser
-let page: Page
-
-beforeAll(async () => {
-  browser = await initBrowser()
-})
-beforeEach(async () => {
-  page = await initPage(browser)
-})
-afterEach(() => {
-  page!.close()
-})
-afterAll(() => {
-  browser!.close()
-})
-
-describe('edit bones', () => {
-  it('select -> extrude -> scale -> rotate -> delete', async () => {
+test.describe('edit bones', () => {
+  test('select -> extrude -> scale -> rotate -> delete', async ({ page }) => {
     const screenshot = useScreenshot(page, 'edit_bone')
+    await initPage(page)
 
     // Select the Armature
     await screenshot('select_armature')

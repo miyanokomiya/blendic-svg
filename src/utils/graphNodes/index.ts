@@ -112,6 +112,9 @@ import * as and from './nodes/and'
 import * as or from './nodes/or'
 import * as equal_generics from './nodes/equalGenerics'
 import * as switch_generics from './nodes/switch_generics'
+
+import * as reroute from './nodes/reroute'
+
 import { IdMap } from '/@/models'
 import { extractMap, mapReduce, toList } from '/@/utils/commons'
 
@@ -190,6 +193,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   less_than_or_equal,
   between,
   switch_generics,
+
+  reroute,
 } as const
 
 interface NodeMenuOption {
@@ -304,9 +309,19 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
     ],
   },
   MAKE_PATH_SRC,
+  {
+    label: 'Etc',
+    children: [{ label: 'Reroute', type: 'reroute' }],
+  },
 ]
 
 type NodeSuggestionMenuOptionSrc = { key: string } & NodeMenuOption
+type NodeSuggestionMenuOption =
+  | {
+      label: string
+      children: NodeSuggestionMenuOptionSrc[]
+    }
+  | NodeSuggestionMenuOptionSrc
 
 const ADD_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
   label: '(+)',
@@ -330,10 +345,11 @@ const EQUAL_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
 }
 const GENERICS_SUGGESTIONS: NodeSuggestionMenuOptionSrc[] = [
   { label: 'Switch', type: 'switch_generics', key: 'if_true' },
+  { label: 'Reroute', type: 'reroute', key: 'value' },
 ]
 
 export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
-  [key in GRAPH_VALUE_TYPE_KEY]: NodeSuggestionMenuOptionSrc[]
+  [key in GRAPH_VALUE_TYPE_KEY]: NodeSuggestionMenuOption[]
 } = {
   BOOLEAN: [
     { label: 'Not', type: 'not', key: 'condition' },
@@ -344,19 +360,29 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...GENERICS_SUGGESTIONS,
   ],
   SCALER: [
-    ADD_GENERICS_SUGGESTION,
-    SUB_GENERICS_SUGGESTION,
-    { label: '(x)', type: 'multi_scaler', key: 'a' },
-    { label: '(/)', type: 'divide_scaler', key: 'a' },
-    { label: 'Sin', type: 'sin', key: 'rotate' },
-    { label: 'Cos', type: 'cos', key: 'rotate' },
-    { label: 'Pow', type: 'pow', key: 'x' },
-    EQUAL_GENERICS_SUGGESTION,
-    { label: '(>) Number', type: 'greater_than', key: 'a' },
-    { label: '(>=) Number', type: 'greater_than_or_equal', key: 'a' },
-    { label: '(<) Number', type: 'less_than', key: 'a' },
-    { label: '(<=) Number', type: 'less_than_or_equal', key: 'a' },
-    { label: 'Between', type: 'between', key: 'number' },
+    {
+      label: 'Math',
+      children: [
+        ADD_GENERICS_SUGGESTION,
+        SUB_GENERICS_SUGGESTION,
+        { label: '(x)', type: 'multi_scaler', key: 'a' },
+        { label: '(/)', type: 'divide_scaler', key: 'a' },
+        { label: 'Sin', type: 'sin', key: 'rotate' },
+        { label: 'Cos', type: 'cos', key: 'rotate' },
+        { label: 'Pow', type: 'pow', key: 'x' },
+      ],
+    },
+    {
+      label: 'Boolean',
+      children: [
+        EQUAL_GENERICS_SUGGESTION,
+        { label: '(>) Number', type: 'greater_than', key: 'a' },
+        { label: '(>=) Number', type: 'greater_than_or_equal', key: 'a' },
+        { label: '(<) Number', type: 'less_than', key: 'a' },
+        { label: '(<=) Number', type: 'less_than_or_equal', key: 'a' },
+        { label: 'Between', type: 'between', key: 'number' },
+      ],
+    },
     { label: 'Make Vector2', type: 'make_vector2', key: 'x' },
     { label: 'Make Transform', type: 'make_transform', key: 'rotate' },
     { label: 'Make Color', type: 'make_color', key: 'h' },
@@ -392,17 +418,26 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Set Viewbox', type: 'set_viewbox', key: 'object' },
     { label: 'Hide Object', type: 'hide_object', key: 'object' },
 
-    { label: 'Clone Object', type: 'clone_object', key: 'object' },
     {
-      label: 'Circle Clone Object',
-      type: 'circle_clone_object',
-      key: 'object',
-    },
-    { label: 'Grid Clone Object', type: 'grid_clone_object', key: 'object' },
-    {
-      label: 'Tornado Clone Object',
-      type: 'tornado_clone_object',
-      key: 'object',
+      label: 'Clone',
+      children: [
+        { label: 'Clone Object', type: 'clone_object', key: 'object' },
+        {
+          label: 'Circle Clone Object',
+          type: 'circle_clone_object',
+          key: 'object',
+        },
+        {
+          label: 'Grid Clone Object',
+          type: 'grid_clone_object',
+          key: 'object',
+        },
+        {
+          label: 'Tornado Clone Object',
+          type: 'tornado_clone_object',
+          key: 'object',
+        },
+      ],
     },
     EQUAL_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,

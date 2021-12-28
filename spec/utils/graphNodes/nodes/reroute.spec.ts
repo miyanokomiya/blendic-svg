@@ -17,16 +17,17 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { test, expect } from '@playwright/test'
-import { initPage, useScreenshot } from './utils'
+import * as target from '/@/utils/graphNodes/nodes/reroute'
 
-test.describe('top', () => {
-  test('initial', async ({ page }) => {
-    const screenshot = useScreenshot(page, 'top')
-    await initPage(page)
-    const content = await page.textContent('h3')
-    expect(content).toBe('Project')
-
-    await screenshot('top')
+describe('src/utils/graphNodes/nodes/reroute.ts', () => {
+  describe('computation', () => {
+    it('should return identity input value', () => {
+      expect(
+        target.struct.computation({ value: true }, {} as any, {} as any)
+      ).toEqual({ value: true })
+      expect(
+        target.struct.computation({ value: 10 }, {} as any, {} as any)
+      ).toEqual({ value: 10 })
+    })
   })
 })

@@ -59,7 +59,7 @@ import { add, IVec2 } from 'okageo'
 import { GraphNodeEdgePositions, GraphNodeReroute } from '/@/models/graphNode'
 import { switchClick } from '/@/utils/devices'
 import * as helpers from '/@/utils/helpers'
-import { useSettings } from '../../composables/settings'
+import { useSettings } from '/@/composables/settings'
 
 const { settings } = useSettings()
 </script>

@@ -45,7 +45,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.1.1",
-    "eslint-plugin-vue": "^8.1.1",
+    "eslint-plugin-vue": "^8.2.0",
     "jest": "^27.3.1",
     "playwright-chromium": "^1.16.3",
     "prettier": "^2.5.0",
@@ -54,7 +54,7 @@
     "ts-jest": "^27.0.7",
     "tslib": "^2.3.1",
     "typescript": "^4.5.4",
-    "vite": "^2.6.14",
+    "vite": "^2.7.7",
     "vue3-jest": "^27.0.0-alpha.1"
   }
 }

@@ -146,13 +146,7 @@ export function createStore(historyStore: HistoryStore) {
   }
 
   function createDefaultEntities() {
-    const bone = getBone(
-      {
-        name: 'bone',
-        tail: { x: 200, y: 0 },
-      },
-      true
-    )
+    const bone = getBone({ name: 'bone', tail: { x: 0, y: 100 } }, true)
     const armature = getArmature({
       id: 'initial-armature',
       name: 'armature',
@@ -186,7 +180,7 @@ export function createStore(historyStore: HistoryStore) {
 
   function addArmature(id?: string, boneId?: string) {
     const bone = getBone(
-      { id: boneId, name: 'bone', tail: { x: 200, y: 0 } },
+      { id: boneId, name: 'bone', tail: { x: 0, y: 100 } },
       !boneId
     )
     const armature = getArmature(
@@ -360,7 +354,7 @@ export function createStore(historyStore: HistoryStore) {
               'bone',
               toList(boneMap.value).map((a) => a.name)
             ),
-            tail: { x: 100, y: 0 },
+            tail: { x: 0, y: 100 },
           },
           !id
         ),

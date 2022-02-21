@@ -17,21 +17,30 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ElementNode } from '../models'
+import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
 import { isPlainText } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
-export function makeSvg(svgNode: ElementNode): SVGElement {
-  return makeNode(svgNode) as SVGElement
+export function makeSvg(svgNode: ElementNode, applyId = false): SVGElement {
+  return makeNode(svgNode, applyId) as SVGElement
 }
 
-function makeNode(svgNode: ElementNode | string): SVGElement | string {
+function makeNode(
+  svgNode: ElementNode | string,
+  applyId = false
+): SVGElement | string {
   if (isPlainText(svgNode)) return svgNode
-  return createSVGElement(
+  const elm = createSVGElement(
     svgNode.tag,
     normalizeAttributes(svgNode.attributes),
-    svgNode.children.map(makeNode)
+    svgNode.children.map((c) => makeNode(c, applyId))
   )
+
+  if (applyId) {
+    elm.id = svgNode.id
+  }
+
+  return elm
 }
 
 const SVG_URL = 'http://www.w3.org/2000/svg'
@@ -74,4 +83,72 @@ function appendChildren($el: SVGElement, children: (SVGElement | string)[]) {
     }
   }
   $el.appendChild($fragment)
+}
+
+export function serializeToAnimatedSvg(
+  svgRoot: ElementNode,
+  allElementIds: string[],
+  attributesMapPerFrame: IdMap<ElementNodeAttributes>[],
+  duration: number
+): SVGElement {
+  const svg = makeSvg(svgRoot, true)
+  const style = createSVGElement('style')
+
+  style.innerHTML = allElementIds
+    .map((id) => {
+      return createAnimationStyle(
+        id,
+        attributesMapPerFrame.map((attrMap) => attrMap[id] ?? {}),
+        duration
+      )
+    })
+    .join('')
+
+  svg.appendChild(style)
+  return svg
+}
+
+function createAnimationStyle(
+  id: string,
+  attrsPerFrame: ElementNodeAttributes[],
+  duration: number
+): string {
+  return (
+    createAnimationKeyframes(id, attrsPerFrame) +
+    createAnimationElementStyle(id, duration)
+  )
+}
+
+export function createAnimationKeyframes(
+  id: string,
+  attrsPerFrame: ElementNodeAttributes[]
+): string {
+  const step = 100 / (attrsPerFrame.length - 1)
+  return `@keyframes ${getAnimationName(id)} {${attrsPerFrame
+    .map((a, i) => createAnimationKeyframeItem(a, step * i))
+    .join(' ')}}`
+}
+
+export function createAnimationKeyframeItem(
+  attrs: ElementNodeAttributes,
+  percent: number
+): string {
+  const content = Object.entries(attrs)
+    .map(([key, value]) => `${key}:${value};`)
+    .join('')
+  return `${percent}%{${content}}`
+}
+
+export function createAnimationElementStyle(
+  id: string,
+  duration: number,
+  iteration: number | 'infinite' = 'infinite'
+): string {
+  return `#${id}{animation-name:${getAnimationName(
+    id
+  )};animation-duration:${duration}ms;animation-iteration-count:${iteration};}`
+}
+
+function getAnimationName(id: string): string {
+  return `blendic-keyframes-${id}`
 }

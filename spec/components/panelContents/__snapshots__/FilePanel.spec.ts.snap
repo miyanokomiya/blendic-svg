@@ -61,6 +61,11 @@ exports[`src/components/panelContents/FilePanel.vue snapshot default 1`] = `
     >
       Posed SVG
     </button>
+    <button
+      type="button"
+    >
+      Animated SVG
+    </button>
   </div>
   <h3>
     Version 

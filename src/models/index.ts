@@ -37,7 +37,6 @@ export interface Transform {
 export interface Action {
   id: string
   name: string
-  totalFrame: number
   armatureId: string
   keyframes: string[]
 }
@@ -240,7 +239,6 @@ export function getAction(
   const id = generateId ? v4() : arg.id ?? ''
   return {
     name: '',
-    totalFrame: 60,
     armatureId: '',
     keyframes: [],
     ...arg,

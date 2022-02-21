@@ -179,11 +179,16 @@ export function getGraphObject(
 
 export type SpaceType = 'world' | 'local'
 
+// Avoid number prefixed id HTML and CSS
+function generateElmId(): string {
+  return `elm_${v4()}`
+}
+
 export function getElementNode(
   arg: Partial<ElementNode> = {},
   generateId = false
 ): ElementNode {
-  const id = generateId ? v4() : arg.id ?? ''
+  const id = generateId ? generateElmId() : arg.id ?? ''
   return {
     tag: '',
     attributes: {},
@@ -197,7 +202,7 @@ export function getBElement(
   arg: Partial<BElement> = {},
   generateId = false
 ): BElement {
-  const id = generateId ? v4() : arg.id ?? ''
+  const id = generateId ? generateElmId() : arg.id ?? ''
   return {
     index: 0,
     tag: '',

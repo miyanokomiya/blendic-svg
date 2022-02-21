@@ -168,7 +168,7 @@ describe('utils/svgMaker.ts', () => {
       )
     })
     it('should return empty string if no keyframe exists', () => {
-      expect(createAnimationKeyframes('elm', [{}, {}])).toBe('')
+      expect(createAnimationKeyframes('elm', [{}, undefined, {}])).toBe('')
     })
   })
 
@@ -180,6 +180,7 @@ describe('utils/svgMaker.ts', () => {
     })
     it('should return empty string if no attribute exists', () => {
       expect(createAnimationKeyframeItem({}, 10)).toBe('')
+      expect(createAnimationKeyframeItem(undefined, 10)).toBe('')
     })
   })
 

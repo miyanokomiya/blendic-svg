@@ -50,6 +50,7 @@ import {
   shallowEqual,
   xor,
   getEntries,
+  thinOutSameItems,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -598,6 +599,44 @@ describe('utils/commons.ts', () => {
     })
     it('should ignore lastKey if the value for it does not exist', () => {
       expect(getEntries(obj, 'd')).toEqual(Object.entries(obj))
+    })
+  })
+
+  describe('thinOutSameItems', () => {
+    it('should thin out interval items having the same attrs in a row', () => {
+      expect(thinOutSameItems([...Array(1)].map(() => ({ a: '1' })))).toEqual([
+        { a: '1' },
+      ])
+      expect(thinOutSameItems([...Array(2)].map(() => ({ a: '1' })))).toEqual([
+        { a: '1' },
+        { a: '1' },
+      ])
+      expect(thinOutSameItems([...Array(3)].map(() => ({ a: '1' })))).toEqual([
+        { a: '1' },
+        undefined,
+        { a: '1' },
+      ])
+      expect(thinOutSameItems([...Array(4)].map(() => ({ a: '1' })))).toEqual([
+        { a: '1' },
+        undefined,
+        undefined,
+        { a: '1' },
+      ])
+      expect(thinOutSameItems([{ a: '1' }, { b: '1' }, { a: '1' }])).toEqual([
+        { a: '1' },
+        { b: '1' },
+        { a: '1' },
+      ])
+    })
+    it('should not thin out items different from its sides', () => {
+      expect(thinOutSameItems([{ a: '1' }, { b: '1' }, { a: '1' }])).toEqual([
+        { a: '1' },
+        { b: '1' },
+        { a: '1' },
+      ])
+      expect(
+        thinOutSameItems([{ a: '1' }, { a: '1', b: '1' }, { a: '1' }])
+      ).toEqual([{ a: '1' }, { a: '1', b: '1' }, { a: '1' }])
     })
   })
 })

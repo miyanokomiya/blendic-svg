@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
+import { thinOutSameItems } from '/@/utils/commons'
 import { isPlainText } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
@@ -98,7 +99,9 @@ export function serializeToAnimatedSvg(
     .map((id) => {
       return createAnimationStyle(
         id,
-        attributesMapPerFrame.map((attrMap) => attrMap[id] ?? {}),
+        thinOutSameItems(
+          attributesMapPerFrame.map((attrMap) => attrMap[id] ?? {})
+        ),
         duration
       )
     })
@@ -110,7 +113,7 @@ export function serializeToAnimatedSvg(
 
 function createAnimationStyle(
   id: string,
-  attrsPerFrame: ElementNodeAttributes[],
+  attrsPerFrame: (ElementNodeAttributes | undefined)[],
   duration: number
 ): string {
   const keyframeStyle = createAnimationKeyframes(id, attrsPerFrame)
@@ -121,7 +124,7 @@ function createAnimationStyle(
 
 export function createAnimationKeyframes(
   id: string,
-  attrsPerFrame: ElementNodeAttributes[]
+  attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
   const step = 100 / (attrsPerFrame.length - 1)
   const keyframeValues = attrsPerFrame
@@ -133,9 +136,11 @@ export function createAnimationKeyframes(
 }
 
 export function createAnimationKeyframeItem(
-  attrs: ElementNodeAttributes,
+  attrs: ElementNodeAttributes | undefined,
   percent: number
 ): string {
+  if (!attrs) return ''
+
   const content = Object.entries(attrs)
     .map(([key, value]) => `${key}:${value};`)
     .join('')

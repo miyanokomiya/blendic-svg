@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
+import { thinOutSameItems } from '/@/utils/commons'
 import { isPlainText } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
@@ -98,7 +99,9 @@ export function serializeToAnimatedSvg(
     .map((id) => {
       return createAnimationStyle(
         id,
-        attributesMapPerFrame.map((attrMap) => attrMap[id] ?? {}),
+        thinOutSameItems(
+          attributesMapPerFrame.map((attrMap) => attrMap[id] ?? {})
+        ),
         duration
       )
     })
@@ -110,33 +113,38 @@ export function serializeToAnimatedSvg(
 
 function createAnimationStyle(
   id: string,
-  attrsPerFrame: ElementNodeAttributes[],
+  attrsPerFrame: (ElementNodeAttributes | undefined)[],
   duration: number
 ): string {
-  return (
-    createAnimationKeyframes(id, attrsPerFrame) +
-    createAnimationElementStyle(id, duration)
-  )
+  const keyframeStyle = createAnimationKeyframes(id, attrsPerFrame)
+  return keyframeStyle
+    ? keyframeStyle + createAnimationElementStyle(id, duration)
+    : ''
 }
 
 export function createAnimationKeyframes(
   id: string,
-  attrsPerFrame: ElementNodeAttributes[]
+  attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
   const step = 100 / (attrsPerFrame.length - 1)
-  return `@keyframes ${getAnimationName(id)} {${attrsPerFrame
+  const keyframeValues = attrsPerFrame
     .map((a, i) => createAnimationKeyframeItem(a, step * i))
-    .join(' ')}}`
+    .filter((s) => s)
+  return keyframeValues.length > 0
+    ? `@keyframes ${getAnimationName(id)} {${keyframeValues.join(' ')}}`
+    : ''
 }
 
 export function createAnimationKeyframeItem(
-  attrs: ElementNodeAttributes,
+  attrs: ElementNodeAttributes | undefined,
   percent: number
 ): string {
+  if (!attrs) return ''
+
   const content = Object.entries(attrs)
     .map(([key, value]) => `${key}:${value};`)
     .join('')
-  return `${percent}%{${content}}`
+  return content ? `${percent}%{${content}}` : ''
 }
 
 export function createAnimationElementStyle(

@@ -389,3 +389,24 @@ export function getEntries<T>(map: IdMap<T>, lastKey?: string): KeyValueMap<T> {
   }
   return Object.entries(map)
 }
+
+export function thinOutSameItems<T extends { [key: string]: unknown }>(
+  itemList: T[]
+): (T | undefined)[] {
+  const toBeThinnedIndexes = new Set()
+  let currentInfo: { item: T; from: number } | undefined
+
+  itemList.forEach((item, index) => {
+    if (!currentInfo || !hasSameProps(currentInfo.item, item)) {
+      currentInfo = { item, from: index }
+    } else {
+      if (currentInfo.from + 1 < index) {
+        toBeThinnedIndexes.add(index - 1)
+      }
+    }
+  })
+
+  return itemList.map((item, index) =>
+    toBeThinnedIndexes.has(index) ? undefined : item
+  )
+}

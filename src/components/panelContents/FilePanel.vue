@@ -42,6 +42,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         Baked Action
       </button>
       <button type="button" @click="exportSvg">Posed SVG</button>
+      <button type="button" @click="exportAnimatedSvg">Animated SVG</button>
     </div>
     <h3>Version {{ appVersion }}</h3>
     <teleport to="body">
@@ -115,6 +116,7 @@ export default defineComponent({
         storage.loadSvgFile(isInheritWeight.value)
       },
       exportSvg: storage.bakeSvg,
+      exportAnimatedSvg: storage.bakeAnimatedSvg,
 
       bakeAction: () => storage.bakeAction(exportingActionIds.value),
       selectedActionIds,

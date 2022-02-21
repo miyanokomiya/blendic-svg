@@ -44,7 +44,7 @@ import {
 import { initialize, StorageRoot } from '/@/models/storage'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { toList } from '/@/utils/commons'
-import { makeSvg } from '/@/utils/svgMaker'
+import { makeSvg, serializeToAnimatedSvg } from '/@/utils/svgMaker'
 
 interface BakedData {
   // data format version (not same as app version)
@@ -297,6 +297,39 @@ export function useStorage() {
     )
   }
 
+  function bakeAnimatedSvg() {
+    const actor = elementStore.lastSelectedActor.value
+    if (!actor) return
+
+    const action = animationStore.selectedAction.value
+    if (!action) return
+
+    const graph = graphStore.lastSelectedGraph.value
+
+    const name = [action?.name, graph?.name].filter((n) => !!n).join('_')
+
+    const svgTree = addEssentialSvgAttributes(actor.svgTree)
+
+    const keyframeMap = toMap(animationStore.keyframes.value)
+    const keyframes = action.keyframes.map((id) => keyframeMap[id])
+    const attributesMapPerFrame = bakeKeyframes(
+      getKeyframeMapByTargetId(keyframes),
+      store.boneMap.value,
+      store.constraintMap.value,
+      elementStore.elementMap.value,
+      svgTree,
+      getLastFrame(keyframes)
+    )
+
+    const svgElm = serializeToAnimatedSvg(
+      svgTree,
+      actor.elements,
+      attributesMapPerFrame,
+      action.totalFrame * (1000 / 60)
+    )
+    saveSvg(svgElm.outerHTML, `${name}.svg`)
+  }
+
   return {
     fileSystemEnable,
     loadProjectFile,
@@ -305,6 +338,7 @@ export function useStorage() {
     loadSvgFile,
     bakeAction,
     bakeSvg,
+    bakeAnimatedSvg,
   }
 }
 

@@ -325,7 +325,7 @@ export function useStorage() {
       svgTree,
       actor.elements,
       attributesMapPerFrame,
-      action.totalFrame * (1000 / 60)
+      getLastFrame(keyframes) * (1000 / 60)
     )
     saveSvg(svgElm.outerHTML, `${name}.svg`)
   }

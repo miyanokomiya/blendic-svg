@@ -113,10 +113,10 @@ function createAnimationStyle(
   attrsPerFrame: ElementNodeAttributes[],
   duration: number
 ): string {
-  return (
-    createAnimationKeyframes(id, attrsPerFrame) +
-    createAnimationElementStyle(id, duration)
-  )
+  const keyframeStyle = createAnimationKeyframes(id, attrsPerFrame)
+  return keyframeStyle
+    ? keyframeStyle + createAnimationElementStyle(id, duration)
+    : ''
 }
 
 export function createAnimationKeyframes(
@@ -124,9 +124,12 @@ export function createAnimationKeyframes(
   attrsPerFrame: ElementNodeAttributes[]
 ): string {
   const step = 100 / (attrsPerFrame.length - 1)
-  return `@keyframes ${getAnimationName(id)} {${attrsPerFrame
+  const keyframeValues = attrsPerFrame
     .map((a, i) => createAnimationKeyframeItem(a, step * i))
-    .join(' ')}}`
+    .filter((s) => s)
+  return keyframeValues.length > 0
+    ? `@keyframes ${getAnimationName(id)} {${keyframeValues.join(' ')}}`
+    : ''
 }
 
 export function createAnimationKeyframeItem(
@@ -136,7 +139,7 @@ export function createAnimationKeyframeItem(
   const content = Object.entries(attrs)
     .map(([key, value]) => `${key}:${value};`)
     .join('')
-  return `${percent}%{${content}}`
+  return content ? `${percent}%{${content}}` : ''
 }
 
 export function createAnimationElementStyle(

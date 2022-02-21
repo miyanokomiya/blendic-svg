@@ -119,7 +119,24 @@ describe('utils/svgMaker.ts', () => {
 
       expect(svg).toBeInstanceOf(SVGElement)
       expect(svg.id).toBe('svg_1')
-      expect(svg.getElementsByTagName('style')).toBeTruthy()
+      expect(svg.getElementsByTagName('style')[0].innerHTML).toContain('#svg_1')
+      expect(svg.getElementsByTagName('style')[0].innerHTML).toContain('#g_1')
+    })
+    it('should omit styles for elements not having keyframes', () => {
+      const svg = serializeToAnimatedSvg(
+        getElementNode({
+          id: 'svg_1',
+          tag: 'svg',
+          children: [],
+        }),
+        ['svg_1'],
+        [{ svg_1: {} }, { svg_1: {} }],
+        2000
+      )
+
+      expect(svg.getElementsByTagName('style')[0].innerHTML).not.toContain(
+        '#svg_1'
+      )
     })
   })
 
@@ -137,6 +154,22 @@ describe('utils/svgMaker.ts', () => {
         '@keyframes blendic-keyframes-elm {0%{width:0;} 25%{width:10px;} 50%{width:20px;} 75%{width:30px;} 100%{width:100px;}}'
       )
     })
+    it('should omit empty keyframes', () => {
+      expect(
+        createAnimationKeyframes('elm', [
+          { width: '0' },
+          {},
+          { width: '20px' },
+          {},
+          { width: '100px' },
+        ])
+      ).toBe(
+        '@keyframes blendic-keyframes-elm {0%{width:0;} 50%{width:20px;} 100%{width:100px;}}'
+      )
+    })
+    it('should return empty string if no keyframe exists', () => {
+      expect(createAnimationKeyframes('elm', [{}, {}])).toBe('')
+    })
   })
 
   describe('createAnimationKeyframeItem', () => {
@@ -144,6 +177,9 @@ describe('utils/svgMaker.ts', () => {
       expect(createAnimationKeyframeItem({ width: '100px' }, 10)).toBe(
         '10%{width:100px;}'
       )
+    })
+    it('should return empty string if no attribute exists', () => {
+      expect(createAnimationKeyframeItem({}, 10)).toBe('')
     })
   })
 

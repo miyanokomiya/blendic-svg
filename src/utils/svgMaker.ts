@@ -193,3 +193,67 @@ export function createAnimationElementStyle(
 function getAnimationName(id: string): string {
   return `blendic-keyframes-${id}`
 }
+
+export function mergeSvgTreeList(
+  svgTreeList: ElementNode[]
+): ElementNode | undefined {
+  let currentNode: ElementNode | undefined
+  svgTreeList.forEach((svg) => {
+    if (currentNode) {
+      currentNode = mergeTwoElement(currentNode, svg)
+    } else {
+      currentNode = svg
+    }
+  })
+
+  return currentNode
+}
+
+export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
+  const bItemInfoMap = new Map<string, [number, ElementNode]>()
+  b.children.forEach((c, i) => {
+    if (!isPlainText(c)) {
+      bItemInfoMap.set(c.id, [i, c])
+    }
+  })
+
+  const children: (ElementNode | string)[] = []
+  let currentBIndex = -1
+
+  a.children.forEach((aItem) => {
+    if (isPlainText(aItem)) {
+      children.push(aItem)
+    } else {
+      const bItemInfo = bItemInfoMap.get(aItem.id)
+      if (bItemInfo) {
+        const bIndex = bItemInfo[0]
+        if (bIndex - currentBIndex > 1) {
+          children.push(
+            ...b.children
+              .slice(currentBIndex + 1, bIndex)
+              .filter((c) => !isPlainText(c))
+          )
+        }
+        currentBIndex = bIndex
+        children.push(mergeTwoElement(aItem, bItemInfo[1]))
+      } else {
+        children.push(aItem)
+      }
+    }
+  })
+
+  if (currentBIndex < b.children.length) {
+    children.push(
+      ...b.children
+        .slice(currentBIndex + 1, b.children.length)
+        .filter((c) => !isPlainText(c))
+    )
+  }
+
+  return {
+    id: a.id,
+    tag: a.tag,
+    attributes: a.attributes,
+    children,
+  }
+}

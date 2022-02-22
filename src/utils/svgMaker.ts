@@ -127,24 +127,57 @@ export function createAnimationKeyframes(
   attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
   const step = 100 / (attrsPerFrame.length - 1)
-  const keyframeValues = attrsPerFrame
+  const keyframeValues = completeEdgeAttrs(attrsPerFrame)
     .map((a, i) => createAnimationKeyframeItem(a, step * i))
     .filter((s) => s)
-  return keyframeValues.length > 0
-    ? `@keyframes ${getAnimationName(id)} {${keyframeValues.join(' ')}}`
-    : ''
+
+  if (keyframeValues.length === 0) {
+    return ''
+  }
+
+  return `@keyframes ${getAnimationName(id)} {${keyframeValues.join(' ')}}`
+}
+
+/**
+ * [,,a,b,,] => [a,,a,b,,b]
+ */
+function completeEdgeAttrs(
+  attrsPerFrame: (ElementNodeAttributes | undefined)[]
+): (ElementNodeAttributes | undefined)[] {
+  const clonedList = attrsPerFrame.concat()
+
+  const firstNotEmptyIndex = attrsPerFrame.findIndex(hasSomeAttrs)
+  if (firstNotEmptyIndex > 0) {
+    clonedList[0] = attrsPerFrame[firstNotEmptyIndex]
+  }
+
+  const lastNotEmptyIndex =
+    attrsPerFrame.length -
+    1 -
+    attrsPerFrame.concat().reverse().findIndex(hasSomeAttrs)
+  if (lastNotEmptyIndex < attrsPerFrame.length - 1) {
+    clonedList[attrsPerFrame.length - 1] = attrsPerFrame[lastNotEmptyIndex]
+  }
+
+  return clonedList
+}
+
+function hasSomeAttrs(
+  attrs: ElementNodeAttributes | undefined
+): attrs is ElementNodeAttributes {
+  return !!attrs && Object.keys(attrs).length > 0
 }
 
 export function createAnimationKeyframeItem(
   attrs: ElementNodeAttributes | undefined,
   percent: number
 ): string {
-  if (!attrs) return ''
+  if (!hasSomeAttrs(attrs)) return ''
 
   const content = Object.entries(attrs)
     .map(([key, value]) => `${key}:${value};`)
     .join('')
-  return content ? `${percent}%{${content}}` : ''
+  return `${percent}%{${content}}`
 }
 
 export function createAnimationElementStyle(

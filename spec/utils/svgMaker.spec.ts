@@ -154,7 +154,21 @@ describe('utils/svgMaker.ts', () => {
         '@keyframes blendic-keyframes-elm {0%{width:0;} 25%{width:10px;} 50%{width:20px;} 75%{width:30px;} 100%{width:100px;}}'
       )
     })
-    it('should omit empty keyframes', () => {
+    it('should complete edge keyframes if they are omitted', () => {
+      expect(
+        createAnimationKeyframes('elm', [
+          {},
+          {},
+          { width: '20px' },
+          { width: '30px' },
+          {},
+          {},
+        ])
+      ).toBe(
+        '@keyframes blendic-keyframes-elm {0%{width:20px;} 40%{width:20px;} 60%{width:30px;} 100%{width:30px;}}'
+      )
+    })
+    it('should omit empty keyframes except for edges', () => {
       expect(
         createAnimationKeyframes('elm', [
           { width: '0' },
@@ -168,6 +182,9 @@ describe('utils/svgMaker.ts', () => {
       )
     })
     it('should return empty string if no keyframe exists', () => {
+      expect(createAnimationKeyframes('elm', [])).toBe('')
+      expect(createAnimationKeyframes('elm', [undefined])).toBe('')
+      expect(createAnimationKeyframes('elm', [undefined, undefined])).toBe('')
       expect(createAnimationKeyframes('elm', [{}, undefined, {}])).toBe('')
     })
   })

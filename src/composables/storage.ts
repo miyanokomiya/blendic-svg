@@ -17,7 +17,13 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ElementNode, ElementNodeAttributes, IdMap, toMap } from '../models'
+import {
+  Bone,
+  ElementNode,
+  ElementNodeAttributes,
+  IdMap,
+  toMap,
+} from '../models'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import { useCanvasStore } from '../store/canvas'
@@ -31,20 +37,27 @@ import {
 import {
   cleanActors,
   cleanGraphs,
+  flatElementTree,
   inheritWeight,
   parseFromSvg,
   resolveAnimationGraph,
+  toBElements,
 } from '../utils/elements'
 import {
   addEssentialSvgAttributes,
   bakeKeyframes,
+  getGraphResolvedAttributesMap,
   getGraphResolvedElementTree,
   getPosedElementTree,
 } from '../utils/poseResolver'
 import { initialize, StorageRoot } from '/@/models/storage'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
-import { toList } from '/@/utils/commons'
-import { makeSvg, serializeToAnimatedSvg } from '/@/utils/svgMaker'
+import { mapReduce, toList } from '/@/utils/commons'
+import {
+  makeSvg,
+  mergeSvgTreeList,
+  serializeToAnimatedSvg,
+} from '/@/utils/svgMaker'
 
 interface BakedData {
   // data format version (not same as app version)
@@ -265,69 +278,111 @@ export function useStorage() {
     )
   }
 
+  function getElementNodeAtFrame(
+    currentFrame: number,
+    endFrame: number,
+    posedBones: IdMap<Bone> = {}
+  ): ElementNode {
+    const actor = elementStore.lastSelectedActor.value!
+    const elementMap = elementStore.elementMap.value
+
+    const svgNode = addEssentialSvgAttributes(
+      getPosedElementTree(posedBones, elementMap, actor.svgTree)
+    )
+
+    const graphObjectMap = resolveAnimationGraph(
+      elementMap,
+      { currentFrame, endFrame },
+      graphStore.nodeMap.value
+    )
+
+    return getGraphResolvedElementTree(graphObjectMap, svgNode)
+  }
+
   function bakeSvg() {
     const actor = elementStore.lastSelectedActor.value
     if (!actor) return
 
+    const svgElementNode = getElementNodeAtFrame(
+      animationStore.currentFrame.value,
+      animationStore.endFrame.value,
+      animationStore.currentPosedBones.value
+    )
     const action = animationStore.selectedAction.value
     const graph = graphStore.lastSelectedGraph.value
-
     const name = [action?.name, graph?.name].filter((n) => !!n).join('_')
-
-    const svgNode = addEssentialSvgAttributes(
-      getPosedElementTree(
-        animationStore.currentPosedBones.value,
-        elementStore.elementMap.value,
-        actor.svgTree
-      )
-    )
-
-    const graphObjectMap = resolveAnimationGraph(
-      elementStore.elementMap.value,
-      {
-        currentFrame: animationStore.currentFrame.value,
-        endFrame: animationStore.endFrame.value,
-      },
-      graphStore.nodeMap.value
-    )
-
-    saveSvg(
-      makeSvg(getGraphResolvedElementTree(graphObjectMap, svgNode)).outerHTML,
-      `${name}.svg`
-    )
+    saveSvg(makeSvg(svgElementNode).outerHTML, `${name}.svg`)
   }
 
   function bakeAnimatedSvg() {
     const actor = elementStore.lastSelectedActor.value
     if (!actor) return
 
+    const endFrame = animationStore.endFrame.value
+    const frames = [...Array(endFrame + 1)]
+
+    const svgTreeList = frames.map((_, currentFrame) =>
+      getElementNodeAtFrame(currentFrame, endFrame)
+    )
+    const wholeSvgElementNode = mergeSvgTreeList(svgTreeList)
+    if (!wholeSvgElementNode) return
+
+    const wholeBElementMap = {
+      ...toMap(toBElements(wholeSvgElementNode)),
+      ...elementStore.elementMap.value,
+    }
+
+    const wholeSvgTree = addEssentialSvgAttributes(wholeSvgElementNode)
+
     const action = animationStore.selectedAction.value
-    if (!action) return
-
-    const graph = graphStore.lastSelectedGraph.value
-
-    const name = [action?.name, graph?.name].filter((n) => !!n).join('_')
-
-    const svgTree = addEssentialSvgAttributes(actor.svgTree)
-
     const keyframeMap = toMap(animationStore.keyframes.value)
-    const keyframes = action.keyframes.map((id) => keyframeMap[id])
-    const attributesMapPerFrame = bakeKeyframes(
-      getKeyframeMapByTargetId(keyframes),
+    const attributesMapPerFrameByAction = bakeKeyframes(
+      getKeyframeMapByTargetId(
+        action?.keyframes.map((id) => keyframeMap[id]) ?? []
+      ),
       store.boneMap.value,
       store.constraintMap.value,
-      elementStore.elementMap.value,
-      svgTree,
-      getLastFrame(keyframes)
+      wholeBElementMap,
+      wholeSvgTree,
+      endFrame
     )
 
-    const svgElm = serializeToAnimatedSvg(
-      svgTree,
-      actor.elements,
-      attributesMapPerFrame,
-      getLastFrame(keyframes) * (1000 / 60)
+    const originalAttributesMap = mapReduce(
+      toMap(flatElementTree([wholeSvgElementNode])),
+      (elm) => elm.attributes
     )
-    saveSvg(svgElm.outerHTML, `${name}.svg`)
+
+    const attributesMapPerFrameByGraph = frames.map((_, currentFrame) => {
+      const graphObjectMap = resolveAnimationGraph(
+        wholeBElementMap,
+        { currentFrame, endFrame },
+        graphStore.nodeMap.value
+      )
+
+      const existElements = toMap(flatElementTree([svgTreeList[currentFrame]]))
+      const posedAttrsMap = attributesMapPerFrameByAction[currentFrame]
+      return getGraphResolvedAttributesMap(
+        mapReduce(graphObjectMap, (gobj, id) =>
+          // Set disabled if the element doesn't appear at this frame
+          existElements[id] ? gobj : { ...gobj, disabled: true }
+        ),
+        mapReduce(originalAttributesMap, (attrs, id) => ({
+          ...attrs,
+          ...posedAttrsMap[id],
+        }))
+      )
+    })
+
+    const svgElm = serializeToAnimatedSvg(
+      wholeSvgTree,
+      Object.keys(wholeBElementMap),
+      attributesMapPerFrameByGraph,
+      endFrame * (1000 / 60)
+    )
+
+    const graph = graphStore.lastSelectedGraph.value
+    const name = [action?.name, graph?.name].filter((n) => !!n).join('_')
+    saveSvg(svgElm.outerHTML, `${name}_anim.svg`)
   }
 
   return {

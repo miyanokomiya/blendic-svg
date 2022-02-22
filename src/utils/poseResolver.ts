@@ -301,6 +301,15 @@ export function bakeKeyframe(
   })
 }
 
+export function getGraphResolvedAttributesMap(
+  graphObjectMap: IdMap<GraphObject>,
+  originalAttributesMap: IdMap<ElementNodeAttributes>
+): IdMap<ElementNodeAttributes> {
+  return mapReduce(originalAttributesMap, (attrs, id) =>
+    getGraphResolvedAttributes(graphObjectMap[id], attrs)
+  )
+}
+
 export function getGraphResolvedElementTree(
   graphObjectMap: IdMap<GraphObject>,
   svgTree: ElementNode
@@ -373,6 +382,10 @@ function getGraphResolvedAttributes(
   graphObject: GraphObject,
   nodeAttributes: ElementNodeAttributes
 ): ElementNodeAttributes {
+  if (graphObject.disabled) {
+    return { fill: 'none', stroke: 'none' }
+  }
+
   const ret: ElementNodeAttributes = { ...nodeAttributes }
 
   if (graphObject.transform) {

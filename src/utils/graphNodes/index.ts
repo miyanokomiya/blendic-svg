@@ -690,7 +690,7 @@ export function createGraphNode<T extends GraphNodeType>(
     node.inputs = { ...node.inputs, ...arg.inputs }
   }
   if (generateId) {
-    node.id = v4()
+    node.id = `gn_${v4()}`
   }
   return node
 }

@@ -87,7 +87,7 @@ export function initializeBElements(
   return parsed.map((elm) => ({ ...(oldMap[elm.id] ?? {}), ...elm }))
 }
 
-function toBElements(
+export function toBElements(
   tree: ElementNode | string,
   parentId?: string,
   index = 0

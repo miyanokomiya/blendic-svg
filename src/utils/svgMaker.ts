@@ -139,9 +139,9 @@ export function createAnimationKeyframes(
   id: string,
   attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
-  const step = 100 / (attrsPerFrame.length - 1)
+  const steps = getStepList(attrsPerFrame.length, 100)
   const keyframeValues = completeEdgeAttrs(attrsPerFrame)
-    .map((a, i) => createAnimationKeyframeItem(a, step * i))
+    .map((a, i) => createAnimationKeyframeItem(a, steps[i]))
     .filter((s) => s)
 
   if (keyframeValues.length === 0) {
@@ -247,6 +247,16 @@ export function createAnimationTagsForElement(
     .join('')
 }
 
+function getStepList(length: number, scale = 1): number[] {
+  if (length === 0) return []
+
+  const step = scale / (length - 1)
+  const list = [...Array(length)].map((_, i) => step * i)
+  // Ensure last item to be 100%
+  list[list.length - 1] = scale
+  return list
+}
+
 /**
  * <animateTransform> is not supported (it does not support Affine matrix)
  * => should use CSS to animate `transform`
@@ -255,14 +265,15 @@ function createAnimationTag(
   elementId: string,
   attributeName: string,
   attrPerFrame: (string | undefined)[],
-  duration: number
+  duration: number,
+  iteration: number | 'indefinite' = 'indefinite'
 ): string {
-  const step = 1 / (attrPerFrame.length - 1)
+  const steps = getStepList(attrPerFrame.length)
   const keyTimes: string[] = []
   const values: string[] = []
   attrPerFrame.forEach((attr, i) => {
     if (attr !== undefined) {
-      keyTimes.push(`${step * i}`)
+      keyTimes.push(`${steps[i]}`)
       values.push(`${attr}`)
     }
   })
@@ -270,7 +281,7 @@ function createAnimationTag(
   if (keyTimes.length === 0) return ''
 
   const animateAttrs: string[] = [
-    ['repeatCount', 'indefinite'],
+    ['repeatCount', iteration],
     ['dur', `${duration / 1000}s`],
     ['href', `#${elementId}`],
     ['xlink:href', `#${elementId}`],

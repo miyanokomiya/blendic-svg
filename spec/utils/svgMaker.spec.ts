@@ -385,7 +385,7 @@ describe('utils/svgMaker.ts', () => {
     })
 
     describe('should merge recursively', () => {
-      it('case: a has unique children', () => {
+      it('case: both of them have children', () => {
         expect(
           mergeTwoElement(
             getE({

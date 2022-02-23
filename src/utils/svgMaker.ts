@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
-import { thinOutSameItems } from '/@/utils/commons'
+import { thinOutSameAttributes } from '/@/utils/commons'
 import { isPlainText } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
@@ -99,9 +99,9 @@ export function serializeToAnimatedSvg(
     .map((id) => {
       return createAnimationStyle(
         id,
-        thinOutSameItems(
+        thinOutSameAttributes(
           attributesMapPerFrame.map((attrMap) => attrMap[id] ?? {})
-        ),
+        ) as ElementNodeAttributes[],
         duration
       )
     })

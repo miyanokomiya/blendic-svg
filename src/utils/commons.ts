@@ -390,14 +390,15 @@ export function getEntries<T>(map: IdMap<T>, lastKey?: string): KeyValueMap<T> {
   return Object.entries(map)
 }
 
-export function thinOutSameItems<T extends { [key: string]: unknown }>(
-  itemList: T[]
+export function thinOutSameItems<T>(
+  itemList: T[],
+  checkFn: (a: T, b: T) => boolean = (a, b) => a === b
 ): (T | undefined)[] {
   const toBeThinnedIndexes = new Set()
   let currentInfo: { item: T; from: number } | undefined
 
   itemList.forEach((item, index) => {
-    if (!currentInfo || !hasSameProps(currentInfo.item, item)) {
+    if (!currentInfo || !checkFn(currentInfo.item, item)) {
       currentInfo = { item, from: index }
     } else {
       if (currentInfo.from + 1 < index) {
@@ -409,4 +410,28 @@ export function thinOutSameItems<T extends { [key: string]: unknown }>(
   return itemList.map((item, index) =>
     toBeThinnedIndexes.has(index) ? undefined : item
   )
+}
+
+export function thinOutSameAttributes<T extends { [key: string]: unknown }>(
+  itemList: Partial<T>[]
+): (Partial<T> | undefined)[] {
+  const allKeys: (keyof T)[] = Array.from(
+    new Set(itemList.flatMap((item) => Object.keys(item)))
+  )
+
+  return allKeys
+    .reduce<Partial<T>[]>(
+      (p, key) => {
+        thinOutSameItems(itemList.map((item) => item[key])).forEach(
+          (value, i) => {
+            if (value) {
+              p[i][key] = value
+            }
+          }
+        )
+        return p
+      },
+      itemList.map(() => ({}))
+    )
+    .map((item) => (Object.keys(item).length === 0 ? undefined : item))
 }

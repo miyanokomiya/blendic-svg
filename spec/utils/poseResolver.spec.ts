@@ -53,6 +53,7 @@ import {
   convertGroupUseTree,
   getClonedElementsTree,
   getCreatedElementsTree,
+  getGraphResolvedAttributesMap,
   getGraphResolvedElementTree,
   getInterpolatedBoneMap,
   getNativeDeformMatrix,
@@ -342,6 +343,46 @@ describe('utils/poseResolver.ts', () => {
             ' '
           )
         ).toMatchSnapshot()
+      })
+    })
+  })
+
+  describe('getGraphResolvedAttributesMap', () => {
+    it('should return resolved attributes map', () => {
+      const ret = getGraphResolvedAttributesMap(
+        {
+          a: getGraphObject({
+            elementId: 'a',
+            transform: getTransform({ translate: { x: 1, y: 2 } }),
+          }),
+        },
+        {
+          a: { x: '10', fill: 'red' },
+        }
+      )
+      expect(ret).toEqual({
+        a: {
+          transform: 'matrix(1,0,0,1,1,2)',
+          x: '10',
+          fill: 'red',
+        },
+      })
+    })
+    it('should hide elements with hide = true', () => {
+      const ret = getGraphResolvedAttributesMap(
+        {
+          a: getGraphObject({
+            elementId: 'a',
+            transform: getTransform({ translate: { x: 1, y: 2 } }),
+            disabled: true,
+          }),
+        },
+        {
+          a: { x: '10', fill: 'red' },
+        }
+      )
+      expect(ret).toEqual({
+        a: { fill: 'none', stroke: 'none' },
       })
     })
   })

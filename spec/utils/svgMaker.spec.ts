@@ -23,6 +23,8 @@ import {
   createAnimationKeyframeItem,
   createAnimationKeyframes,
   makeSvg,
+  mergeSvgTreeList,
+  mergeTwoElement,
   serializeToAnimatedSvg,
 } from '/@/utils/svgMaker'
 
@@ -199,6 +201,9 @@ describe('utils/svgMaker.ts', () => {
       expect(createAnimationKeyframeItem({}, 10)).toBe('')
       expect(createAnimationKeyframeItem(undefined, 10)).toBe('')
     })
+    it('should ignore invalid attributes', () => {
+      expect(createAnimationKeyframeItem({ id: 'abc' }, 10)).toBe('')
+    })
   })
 
   describe('createAnimationElementStyle', () => {
@@ -206,6 +211,210 @@ describe('utils/svgMaker.ts', () => {
       expect(createAnimationElementStyle('elm', 2000, 1)).toBe(
         '#elm{animation-name:blendic-keyframes-elm;animation-duration:2000ms;animation-iteration-count:1;}'
       )
+    })
+  })
+
+  describe('mergeSvgTreeList', () => {
+    const getE = getElementNode
+
+    it('should return undefined if the list is empty', () => {
+      expect(mergeSvgTreeList([])).toEqual(undefined)
+    })
+    it('should merge all trees', () => {
+      expect(
+        mergeSvgTreeList([
+          getE({
+            children: [getE({ id: '0' })],
+          }),
+          getE({
+            children: [getE({ id: '1' })],
+          }),
+        ])
+      ).toEqual(
+        getE({
+          children: [getE({ id: '0' }), getE({ id: '1' })],
+        })
+      )
+    })
+  })
+
+  describe('mergeTwoElement', () => {
+    const getE = getElementNode
+
+    it('should apply first element properties expect for children', () => {
+      const a = getE({
+        id: 'a',
+        tag: 'rect',
+        attributes: { class: 'class_a' },
+      })
+      expect(mergeTwoElement(a, getE())).toEqual(a)
+    })
+    describe('should merge children of both elements', () => {
+      it('case: a has unique children', () => {
+        expect(
+          mergeTwoElement(
+            getE({
+              children: [
+                getE({ id: 'a_b_0' }),
+                getE({ id: 'a_0' }),
+                getE({ id: 'a_b_1' }),
+                getE({ id: 'a_1' }),
+              ],
+            }),
+            getE({
+              children: [getE({ id: 'a_b_0' }), getE({ id: 'a_b_1' })],
+            })
+          )
+        ).toEqual(
+          getE({
+            children: [
+              getE({ id: 'a_b_0' }),
+              getE({ id: 'a_0' }),
+              getE({ id: 'a_b_1' }),
+              getE({ id: 'a_1' }),
+            ],
+          })
+        )
+      })
+      it('case: b has unique children', () => {
+        expect(
+          mergeTwoElement(
+            getE({
+              children: [getE({ id: 'a_b_0' }), getE({ id: 'a_b_1' })],
+            }),
+            getE({
+              children: [
+                getE({ id: 'a_b_0' }),
+                getE({ id: 'b_0' }),
+                getE({ id: 'a_b_1' }),
+                getE({ id: 'b_1' }),
+              ],
+            })
+          )
+        ).toEqual(
+          getE({
+            children: [
+              getE({ id: 'a_b_0' }),
+              getE({ id: 'b_0' }),
+              getE({ id: 'a_b_1' }),
+              getE({ id: 'b_1' }),
+            ],
+          })
+        )
+      })
+      it('case: a and b have no children', () => {
+        expect(
+          mergeTwoElement(getE({ children: [] }), getE({ children: [] }))
+        ).toEqual(getE({ children: [] }))
+      })
+      it('case: a has no children', () => {
+        expect(
+          mergeTwoElement(
+            getE({ children: [] }),
+            getE({
+              children: [getE({ id: 'b_0' }), getE({ id: 'b_1' })],
+            })
+          )
+        ).toEqual(
+          getE({
+            children: [getE({ id: 'b_0' }), getE({ id: 'b_1' })],
+          })
+        )
+      })
+      it('case: b has no children', () => {
+        expect(
+          mergeTwoElement(
+            getE({
+              children: [getE({ id: 'a_0' }), getE({ id: 'a_1' })],
+            }),
+            getE({ children: [] })
+          )
+        ).toEqual(
+          getE({
+            children: [getE({ id: 'a_0' }), getE({ id: 'a_1' })],
+          })
+        )
+      })
+    })
+
+    describe('when some children are plain text', () => {
+      it('should pick text children in a', () => {
+        expect(
+          mergeTwoElement(
+            getE({
+              children: [
+                getE({ id: 'a_b_0' }),
+                'a_0',
+                getE({ id: 'a_b_1' }),
+                'a_1',
+              ],
+            }),
+            getE({
+              children: [getE({ id: 'a_b_0' }), getE({ id: 'a_b_1' })],
+            })
+          )
+        ).toEqual(
+          getE({
+            children: [
+              getE({ id: 'a_b_0' }),
+              'a_0',
+              getE({ id: 'a_b_1' }),
+              'a_1',
+            ],
+          })
+        )
+      })
+      it('should ignore text children in b', () => {
+        expect(
+          mergeTwoElement(
+            getE({
+              children: [getE({ id: 'a_b_0' }), getE({ id: 'a_b_1' })],
+            }),
+            getE({
+              children: [
+                getE({ id: 'a_b_0' }),
+                'b_0',
+                getE({ id: 'a_b_1' }),
+                'b_1',
+              ],
+            })
+          )
+        ).toEqual(
+          getE({
+            children: [getE({ id: 'a_b_0' }), getE({ id: 'a_b_1' })],
+          })
+        )
+      })
+    })
+
+    describe('should merge recursively', () => {
+      it('case: both of them have children', () => {
+        expect(
+          mergeTwoElement(
+            getE({
+              children: [
+                getE({ id: 'a_b_0', children: [getE({ id: 'c_0' })] }),
+                getE({ id: 'a_0' }),
+              ],
+            }),
+            getE({
+              children: [
+                getE({ id: 'a_b_0', children: [getE({ id: 'c_1' })] }),
+              ],
+            })
+          )
+        ).toEqual(
+          getE({
+            children: [
+              getE({
+                id: 'a_b_0',
+                children: [getE({ id: 'c_0' }), getE({ id: 'c_1' })],
+              }),
+              getE({ id: 'a_0' }),
+            ],
+          })
+        )
+      })
     })
   })
 })

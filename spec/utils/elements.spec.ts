@@ -37,6 +37,7 @@ import {
   isPlainText,
   parseFromSvg,
   toBElement,
+  toBElements,
 } from '/@/utils/elements'
 
 const svgText_1 = `
@@ -969,6 +970,25 @@ describe('utils/elements.ts', () => {
     it('should return true if elm is string', () => {
       expect(isPlainText('a')).toBe(true)
       expect(isPlainText({} as any)).toBe(false)
+    })
+  })
+
+  describe('toBElements', () => {
+    it('should return BElement list created from ElementNode', () => {
+      expect(
+        toBElements(
+          getElementNode({
+            id: 'a',
+            tag: 'g',
+            children: [getElementNode({ id: 'b', tag: 'rect' })],
+          }),
+          'p',
+          1
+        )
+      ).toEqual([
+        getBElement({ id: 'a', tag: 'g', parentId: 'p', index: 1 }),
+        getBElement({ id: 'b', tag: 'rect', parentId: 'a', index: 0 }),
+      ])
     })
   })
 

@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
-import { thinOutSameItems } from '/@/utils/commons'
+import { thinOutSameAttributes } from '/@/utils/commons'
 import { isPlainText } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
@@ -99,9 +99,9 @@ export function serializeToAnimatedSvg(
     .map((id) => {
       return createAnimationStyle(
         id,
-        thinOutSameItems(
+        thinOutSameAttributes(
           attributesMapPerFrame.map((attrMap) => attrMap[id] ?? {})
-        ),
+        ) as ElementNodeAttributes[],
         duration
       )
     })
@@ -172,9 +172,12 @@ export function createAnimationKeyframeItem(
   attrs: ElementNodeAttributes | undefined,
   percent: number
 ): string {
-  if (!hasSomeAttrs(attrs)) return ''
+  const filteredEntries = Object.entries(attrs ?? {}).filter(([key]) =>
+    validAnimationAttr(key)
+  )
+  if (filteredEntries.length === 0) return ''
 
-  const content = Object.entries(attrs)
+  const content = filteredEntries
     .map(([key, value]) => `${key}:${value};`)
     .join('')
   return `${percent}%{${content}}`
@@ -193,3 +196,113 @@ export function createAnimationElementStyle(
 function getAnimationName(id: string): string {
   return `blendic-keyframes-${id}`
 }
+
+export function mergeSvgTreeList(
+  svgTreeList: ElementNode[]
+): ElementNode | undefined {
+  let currentNode: ElementNode | undefined
+  svgTreeList.forEach((svg) => {
+    if (currentNode) {
+      currentNode = mergeTwoElement(currentNode, svg)
+    } else {
+      currentNode = svg
+    }
+  })
+
+  return currentNode
+}
+
+export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
+  const bItemInfoMap = new Map<string, [number, ElementNode]>()
+  b.children.forEach((c, i) => {
+    if (!isPlainText(c)) {
+      bItemInfoMap.set(c.id, [i, c])
+    }
+  })
+
+  const children: (ElementNode | string)[] = []
+  let currentBIndex = -1
+
+  a.children.forEach((aItem) => {
+    if (isPlainText(aItem)) {
+      children.push(aItem)
+    } else {
+      const bItemInfo = bItemInfoMap.get(aItem.id)
+      if (bItemInfo) {
+        const bIndex = bItemInfo[0]
+        if (bIndex - currentBIndex > 1) {
+          children.push(
+            ...b.children
+              .slice(currentBIndex + 1, bIndex)
+              .filter((c) => !isPlainText(c))
+          )
+        }
+        currentBIndex = bIndex
+        children.push(mergeTwoElement(aItem, bItemInfo[1]))
+      } else {
+        children.push(aItem)
+      }
+    }
+  })
+
+  if (currentBIndex < b.children.length) {
+    children.push(
+      ...b.children
+        .slice(currentBIndex + 1, b.children.length)
+        .filter((c) => !isPlainText(c))
+    )
+  }
+
+  return {
+    id: a.id,
+    tag: a.tag,
+    attributes: a.attributes,
+    children,
+  }
+}
+
+function validAnimationAttr(key: string): boolean {
+  return VALID_ANIMATION_ATTR_KYES.has(key)
+}
+
+const VALID_ANIMATION_ATTR_KYES = new Set([
+  'viewBox',
+  'transform',
+
+  'd',
+  'x',
+  'y',
+  'dx',
+  'dy',
+  'width',
+  'height',
+  'cx',
+  'cy',
+  'r',
+  'rx',
+  'ry',
+  'fx',
+  'fy',
+  'x1',
+  'y1',
+  'x2',
+  'y2',
+  'offset',
+
+  'fill',
+  'fill-opacity',
+  'stroke',
+  'stroke-opacity',
+  'stroke-width',
+  'stroke-dashoffset',
+  'stroke-dasharray',
+
+  'font-size',
+  'text-anchor',
+
+  'dominant-baseline',
+  'gradientUnits',
+  'spreadMethod',
+  'stop-color',
+  'stop-opacity',
+])

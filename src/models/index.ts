@@ -130,6 +130,11 @@ export interface GraphObject {
 
   clone?: boolean
   create?: boolean
+
+  /**
+   * This element should be rendered but not be displayed
+   */
+  disabled?: boolean
 }
 
 export interface GraphObjectAttributes {
@@ -168,7 +173,7 @@ export function getGraphObject(
   arg: Partial<GraphObject> = {},
   generateId = false
 ): GraphObject {
-  const id = generateId ? v4() : arg.id ?? ''
+  const id = generateId ? `go_${v4()}` : arg.id ?? ''
   return {
     index: 0,
     ...arg,

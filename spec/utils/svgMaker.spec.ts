@@ -201,6 +201,9 @@ describe('utils/svgMaker.ts', () => {
       expect(createAnimationKeyframeItem({}, 10)).toBe('')
       expect(createAnimationKeyframeItem(undefined, 10)).toBe('')
     })
+    it('should ignore invalid attributes', () => {
+      expect(createAnimationKeyframeItem({ id: 'abc' }, 10)).toBe('')
+    })
   })
 
   describe('createAnimationElementStyle', () => {

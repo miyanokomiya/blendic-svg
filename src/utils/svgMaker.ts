@@ -172,9 +172,12 @@ export function createAnimationKeyframeItem(
   attrs: ElementNodeAttributes | undefined,
   percent: number
 ): string {
-  if (!hasSomeAttrs(attrs)) return ''
+  const filteredEntries = Object.entries(attrs ?? {}).filter(([key]) =>
+    validAnimationAttr(key)
+  )
+  if (filteredEntries.length === 0) return ''
 
-  const content = Object.entries(attrs)
+  const content = filteredEntries
     .map(([key, value]) => `${key}:${value};`)
     .join('')
   return `${percent}%{${content}}`
@@ -257,3 +260,49 @@ export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
     children,
   }
 }
+
+function validAnimationAttr(key: string): boolean {
+  return VALID_ANIMATION_ATTR_KYES.has(key)
+}
+
+const VALID_ANIMATION_ATTR_KYES = new Set([
+  'viewBox',
+  'transform',
+
+  'd',
+  'x',
+  'y',
+  'dx',
+  'dy',
+  'width',
+  'height',
+  'cx',
+  'cy',
+  'r',
+  'rx',
+  'ry',
+  'fx',
+  'fy',
+  'x1',
+  'y1',
+  'x2',
+  'y2',
+  'offset',
+
+  'fill',
+  'fill-opacity',
+  'stroke',
+  'stroke-opacity',
+  'stroke-width',
+  'stroke-dashoffset',
+  'stroke-dasharray',
+
+  'font-size',
+  'text-anchor',
+
+  'dominant-baseline',
+  'gradientUnits',
+  'spreadMethod',
+  'stop-color',
+  'stop-opacity',
+])

@@ -324,7 +324,7 @@ export function useStorage() {
     const svgTreeList = frames.map((_, currentFrame) =>
       getElementNodeAtFrame(currentFrame, endFrame)
     )
-    const wholeSvgElementNode = mergeSvgTreeList(svgTreeList)
+    const wholeSvgElementNode = mergeSvgTreeList(svgTreeList, true)
     if (!wholeSvgElementNode) return
 
     const wholeBElementMap = {
@@ -359,13 +359,9 @@ export function useStorage() {
         graphStore.nodeMap.value
       )
 
-      const existElements = toMap(flatElementTree([svgTreeList[currentFrame]]))
       const posedAttrsMap = attributesMapPerFrameByAction[currentFrame]
       return getGraphResolvedAttributesMap(
-        mapReduce(graphObjectMap, (gobj, id) =>
-          // Set disabled if the element doesn't appear at this frame
-          existElements[id] ? gobj : { ...gobj, disabled: true }
-        ),
+        graphObjectMap,
         mapReduce(originalAttributesMap, (attrs, id) => ({
           ...attrs,
           ...posedAttrsMap[id],

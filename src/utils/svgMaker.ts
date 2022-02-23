@@ -294,12 +294,13 @@ function createAnimationTag(
 }
 
 export function mergeSvgTreeList(
-  svgTreeList: ElementNode[]
+  svgTreeList: ElementNode[],
+  showOnlyHead = false
 ): ElementNode | undefined {
   let currentNode: ElementNode | undefined
   svgTreeList.forEach((svg) => {
     if (currentNode) {
-      currentNode = mergeTwoElement(currentNode, svg)
+      currentNode = mergeTwoElement(currentNode, svg, showOnlyHead)
     } else {
       currentNode = svg
     }
@@ -308,7 +309,11 @@ export function mergeSvgTreeList(
   return currentNode
 }
 
-export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
+export function mergeTwoElement(
+  a: ElementNode,
+  b: ElementNode,
+  showOnlyHead = false
+): ElementNode {
   const bItemInfoMap = new Map<string, [number, ElementNode]>()
   b.children.forEach((c, i) => {
     if (!isPlainText(c)) {
@@ -330,11 +335,12 @@ export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
           children.push(
             ...b.children
               .slice(currentBIndex + 1, bIndex)
-              .filter((c) => !isPlainText(c))
+              .filter((c): c is ElementNode => !isPlainText(c))
+              .map((c) => (showOnlyHead ? hideElement(c) : c))
           )
         }
         currentBIndex = bIndex
-        children.push(mergeTwoElement(aItem, bItemInfo[1]))
+        children.push(mergeTwoElement(aItem, bItemInfo[1], showOnlyHead))
       } else {
         children.push(aItem)
       }
@@ -345,7 +351,8 @@ export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
     children.push(
       ...b.children
         .slice(currentBIndex + 1, b.children.length)
-        .filter((c) => !isPlainText(c))
+        .filter((c): c is ElementNode => !isPlainText(c))
+        .map((c) => (showOnlyHead ? hideElement(c) : c))
     )
   }
 
@@ -354,6 +361,18 @@ export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
     tag: a.tag,
     attributes: a.attributes,
     children,
+  }
+}
+
+function hideElement(elm: ElementNode): ElementNode {
+  return {
+    ...elm,
+    attributes: {
+      ...elm.attributes,
+      fill: 'none',
+      stroke: 'none',
+    },
+    children: elm.children.map((c) => (isPlainText(c) ? c : hideElement(c))),
   }
 }
 

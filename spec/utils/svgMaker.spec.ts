@@ -435,6 +435,36 @@ describe('utils/svgMaker.ts', () => {
       })
     })
 
+    describe('should merge and show only head SVG if showOnlyHead = true', () => {
+      it('case: b has unique children', () => {
+        expect(
+          mergeTwoElement(
+            getE({
+              children: [getE({ id: 'a_b_0' }), getE({ id: 'a_b_1' })],
+            }),
+            getE({
+              children: [
+                getE({ id: 'a_b_0' }),
+                getE({ id: 'b_0' }),
+                getE({ id: 'a_b_1' }),
+                getE({ id: 'b_1' }),
+              ],
+            }),
+            true
+          )
+        ).toEqual(
+          getE({
+            children: [
+              getE({ id: 'a_b_0' }),
+              getE({ id: 'b_0', attributes: { fill: 'none', stroke: 'none' } }),
+              getE({ id: 'a_b_1' }),
+              getE({ id: 'b_1', attributes: { fill: 'none', stroke: 'none' } }),
+            ],
+          })
+        )
+      })
+    })
+
     describe('when some children are plain text', () => {
       it('should pick text children in a', () => {
         expect(

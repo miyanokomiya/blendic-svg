@@ -384,7 +384,8 @@ function validAnimationAttr(key: string): boolean {
 }
 
 /**
- * It depends on each attribute whether the animation of CSS or SVG works well
+ * Some attributes don't work in CSS animation or SMIL animation.
+ * Since some browsers are not positive to support SMIL, use CSS as much as possible.
  */
 const VALID_ANIMATION_CSS_ATTR_KYES = new Set([
   'transform',
@@ -400,11 +401,7 @@ const VALID_ANIMATION_CSS_ATTR_KYES = new Set([
   'font-size',
   'text-anchor',
   'dominant-baseline',
-])
-const VALID_ANIMATION_ATTR_KYES = new Set([
-  'viewBox',
 
-  'd',
   'x',
   'y',
   'dx',
@@ -422,10 +419,10 @@ const VALID_ANIMATION_ATTR_KYES = new Set([
   'y1',
   'x2',
   'y2',
-  'offset',
 
   'gradientUnits',
   'spreadMethod',
   'stop-color',
   'stop-opacity',
 ])
+const VALID_ANIMATION_ATTR_KYES = new Set(['viewBox', 'd', 'offset'])

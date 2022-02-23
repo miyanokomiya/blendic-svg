@@ -100,69 +100,65 @@ describe('utils/svgMaker.ts', () => {
   })
 
   describe('serializeToAnimatedSvg', () => {
-    describe('should create SVG animate tags', () => {
-      it('except for transform', () => {
-        const svg = serializeToAnimatedSvg(
-          getElementNode({
-            id: 'svg_1',
-            tag: 'svg',
-            children: [
-              getElementNode({
-                id: 'g_1',
-                tag: 'g',
-                children: [],
-              }),
-            ],
-          }),
-          ['svg_1', 'g_1'],
-          [
-            { svg_1: { width: '0', transform: 'mock' }, g_1: { height: '0' } },
-            { svg_1: { width: '100px' }, g_1: { height: '200px' } },
+    it('should create SVG animate tags', () => {
+      const svg = serializeToAnimatedSvg(
+        getElementNode({
+          id: 'svg_1',
+          tag: 'svg',
+          children: [
+            getElementNode({
+              id: 'g_1',
+              tag: 'g',
+              children: [],
+            }),
           ],
-          2000
-        )
+        }),
+        ['svg_1', 'g_1'],
+        [
+          { svg_1: { width: '0', offset: 'mock' }, g_1: { offset: '0' } },
+          { svg_1: { width: '100px' }, g_1: { offset: '1' } },
+        ],
+        2000
+      )
 
-        expect(svg).toBeInstanceOf(SVGElement)
-        expect(svg.id).toBe('svg_1')
-        const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
-        expect(animateG).toBeTruthy()
-        expect(animateG.innerHTML).toContain('#svg_1')
-        expect(animateG.innerHTML).toContain('width')
-        expect(animateG.innerHTML).toContain('#g_1')
-        expect(animateG.innerHTML).not.toContain('transform')
-      })
+      expect(svg).toBeInstanceOf(SVGElement)
+      expect(svg.id).toBe('svg_1')
+      const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
+      expect(animateG).toBeTruthy()
+      expect(animateG.innerHTML).toContain('#svg_1')
+      expect(animateG.innerHTML).not.toContain('width')
+      expect(animateG.innerHTML).toContain('#g_1')
+      expect(animateG.innerHTML).toContain('offset')
     })
 
-    describe('should create animation styles', () => {
-      it('transform', () => {
-        const svg = serializeToAnimatedSvg(
-          getElementNode({
-            id: 'svg_1',
-            tag: 'svg',
-            children: [
-              getElementNode({
-                id: 'g_1',
-                tag: 'g',
-                children: [],
-              }),
-            ],
-          }),
-          ['svg_1', 'g_1'],
-          [
-            { svg_1: { width: '0' }, g_1: { transform: 'm(1,0,0,1,0,0)' } },
-            { svg_1: { width: '100px' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
+    it('should create animation styles', () => {
+      const svg = serializeToAnimatedSvg(
+        getElementNode({
+          id: 'svg_1',
+          tag: 'svg',
+          children: [
+            getElementNode({
+              id: 'g_1',
+              tag: 'g',
+              children: [],
+            }),
           ],
-          2000
-        )
+        }),
+        ['svg_1', 'g_1'],
+        [
+          { svg_1: { offset: '0' }, g_1: { transform: 'm(1,0,0,1,0,0)' } },
+          { svg_1: { offset: '1' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
+        ],
+        2000
+      )
 
-        expect(svg).toBeInstanceOf(SVGElement)
-        expect(svg.id).toBe('svg_1')
-        const style = svg.getElementsByTagName('style')[0]
-        expect(style.innerHTML).not.toContain('#svg_1')
-        expect(style.innerHTML).not.toContain('width')
-        expect(style.innerHTML).toContain('#g_1')
-        expect(style.innerHTML).toContain('transform')
-      })
+      expect(svg).toBeInstanceOf(SVGElement)
+      expect(svg.id).toBe('svg_1')
+      const style = svg.getElementsByTagName('style')[0]
+      expect(style.innerHTML).not.toContain('#svg_1')
+      expect(style.innerHTML).not.toContain('offset')
+      expect(style.innerHTML).toContain('#g_1')
+      expect(style.innerHTML).toContain('transform')
     })
   })
 
@@ -285,8 +281,8 @@ describe('utils/svgMaker.ts', () => {
         createAnimationTagsForElement(
           'elm',
           [
-            { d: 'M0,0', x: '10' },
-            { d: 'M0,4', x: '20' },
+            { d: 'M0,0', offset: '10' },
+            { d: 'M0,4', offset: '20' },
           ],
           1000
         )
@@ -304,7 +300,7 @@ describe('utils/svgMaker.ts', () => {
           `dur="1s"`,
           `href="#elm"`,
           `xlink:href="#elm"`,
-          `attributeName="x"`,
+          `attributeName="offset"`,
           `keyTimes="0;1"`,
           `values="10;20"`,
         ].join(' ')}/>`

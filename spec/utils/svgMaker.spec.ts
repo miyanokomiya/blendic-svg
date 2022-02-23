@@ -22,10 +22,12 @@ import {
   createAnimationElementStyle,
   createAnimationKeyframeItem,
   createAnimationKeyframes,
+  createAnimationTagsForElement,
   makeSvg,
   mergeSvgTreeList,
   mergeTwoElement,
   serializeToAnimatedSvg,
+  completeEdgeAttrs,
 } from '/@/utils/svgMaker'
 
 describe('utils/svgMaker.ts', () => {
@@ -98,7 +100,7 @@ describe('utils/svgMaker.ts', () => {
   })
 
   describe('serializeToAnimatedSvg', () => {
-    it('should create SVG element with animation styles', () => {
+    it('should create SVG animate tags', () => {
       const svg = serializeToAnimatedSvg(
         getElementNode({
           id: 'svg_1',
@@ -113,32 +115,50 @@ describe('utils/svgMaker.ts', () => {
         }),
         ['svg_1', 'g_1'],
         [
-          { svg_1: { width: '0' }, g_1: { height: '0' } },
-          { svg_1: { width: '100px' }, g_1: { height: '200px' } },
+          { svg_1: { width: '0', offset: 'mock' }, g_1: { offset: '0' } },
+          { svg_1: { width: '100px' }, g_1: { offset: '1' } },
         ],
         2000
       )
 
       expect(svg).toBeInstanceOf(SVGElement)
       expect(svg.id).toBe('svg_1')
-      expect(svg.getElementsByTagName('style')[0].innerHTML).toContain('#svg_1')
-      expect(svg.getElementsByTagName('style')[0].innerHTML).toContain('#g_1')
+      const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
+      expect(animateG).toBeTruthy()
+      expect(animateG.innerHTML).toContain('#svg_1')
+      expect(animateG.innerHTML).not.toContain('width')
+      expect(animateG.innerHTML).toContain('#g_1')
+      expect(animateG.innerHTML).toContain('offset')
     })
-    it('should omit styles for elements not having keyframes', () => {
+
+    it('should create animation styles', () => {
       const svg = serializeToAnimatedSvg(
         getElementNode({
           id: 'svg_1',
           tag: 'svg',
-          children: [],
+          children: [
+            getElementNode({
+              id: 'g_1',
+              tag: 'g',
+              children: [],
+            }),
+          ],
         }),
-        ['svg_1'],
-        [{ svg_1: {} }, { svg_1: {} }],
+        ['svg_1', 'g_1'],
+        [
+          { svg_1: { offset: '0' }, g_1: { transform: 'm(1,0,0,1,0,0)' } },
+          { svg_1: { offset: '1' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
+        ],
         2000
       )
 
-      expect(svg.getElementsByTagName('style')[0].innerHTML).not.toContain(
-        '#svg_1'
-      )
+      expect(svg).toBeInstanceOf(SVGElement)
+      expect(svg.id).toBe('svg_1')
+      const style = svg.getElementsByTagName('style')[0]
+      expect(style.innerHTML).not.toContain('#svg_1')
+      expect(style.innerHTML).not.toContain('offset')
+      expect(style.innerHTML).toContain('#g_1')
+      expect(style.innerHTML).toContain('transform')
     })
   })
 
@@ -146,14 +166,14 @@ describe('utils/svgMaker.ts', () => {
     it('should create animation keyframes item', () => {
       expect(
         createAnimationKeyframes('elm', [
-          { width: '0' },
-          { width: '10px' },
-          { width: '20px' },
-          { width: '30px' },
-          { width: '100px' },
+          { transform: '0' },
+          { transform: '10px' },
+          { transform: '20px' },
+          { transform: '30px' },
+          { transform: '100px' },
         ])
       ).toBe(
-        '@keyframes blendic-keyframes-elm {0%{width:0;} 25%{width:10px;} 50%{width:20px;} 75%{width:30px;} 100%{width:100px;}}'
+        '@keyframes blendic-keyframes-elm {0%{transform:0;} 25%{transform:10px;} 50%{transform:20px;} 75%{transform:30px;} 100%{transform:100px;}}'
       )
     })
     it('should complete edge keyframes if they are omitted', () => {
@@ -161,26 +181,26 @@ describe('utils/svgMaker.ts', () => {
         createAnimationKeyframes('elm', [
           {},
           {},
-          { width: '20px' },
-          { width: '30px' },
+          { transform: '20px' },
+          { transform: '30px' },
           {},
           {},
         ])
       ).toBe(
-        '@keyframes blendic-keyframes-elm {0%{width:20px;} 40%{width:20px;} 60%{width:30px;} 100%{width:30px;}}'
+        '@keyframes blendic-keyframes-elm {0%{transform:20px;} 40%{transform:20px;} 60%{transform:30px;} 100%{transform:30px;}}'
       )
     })
     it('should omit empty keyframes except for edges', () => {
       expect(
         createAnimationKeyframes('elm', [
-          { width: '0' },
+          { transform: '0' },
           {},
-          { width: '20px' },
+          { transform: '20px' },
           {},
-          { width: '100px' },
+          { transform: '100px' },
         ])
       ).toBe(
-        '@keyframes blendic-keyframes-elm {0%{width:0;} 50%{width:20px;} 100%{width:100px;}}'
+        '@keyframes blendic-keyframes-elm {0%{transform:0;} 50%{transform:20px;} 100%{transform:100px;}}'
       )
     })
     it('should return empty string if no keyframe exists', () => {
@@ -191,10 +211,23 @@ describe('utils/svgMaker.ts', () => {
     })
   })
 
+  describe('completeEdgeAttrs', () => {
+    it('should complete edge attributes', () => {
+      expect(
+        completeEdgeAttrs([undefined, { x: '1' }, { y: '2' }, undefined])
+      ).toEqual([
+        { x: '1', y: '2' },
+        { x: '1' },
+        { y: '2' },
+        { x: '1', y: '2' },
+      ])
+    })
+  })
+
   describe('createAnimationKeyframeItem', () => {
     it('should create animation keyframes item', () => {
-      expect(createAnimationKeyframeItem({ width: '100px' }, 10)).toBe(
-        '10%{width:100px;}'
+      expect(createAnimationKeyframeItem({ transform: '100px' }, 10)).toBe(
+        '10%{transform:100px;}'
       )
     })
     it('should return empty string if no attribute exists', () => {
@@ -210,6 +243,67 @@ describe('utils/svgMaker.ts', () => {
     it('should create animation style for the element', () => {
       expect(createAnimationElementStyle('elm', 2000, 1)).toBe(
         '#elm{animation-name:blendic-keyframes-elm;animation-duration:2000ms;animation-iteration-count:1;}'
+      )
+    })
+  })
+
+  describe('createAnimationTagsForElement', () => {
+    it('should return empty text if no attributes have animation', () => {
+      expect(createAnimationTagsForElement('elm', [{}, {}], 1000)).toBe('')
+    })
+    it('should create SVG animate tag', () => {
+      expect(
+        createAnimationTagsForElement(
+          'elm',
+          [
+            { d: 'M0,0' },
+            { d: 'M0,1' },
+            { d: 'M0,2' },
+            { d: 'M0,3' },
+            { d: 'M0,4' },
+          ],
+          1000
+        )
+      ).toBe(
+        `<animate ${[
+          `repeatCount="indefinite"`,
+          `dur="1s"`,
+          `href="#elm"`,
+          `xlink:href="#elm"`,
+          `attributeName="d"`,
+          `keyTimes="0;0.25;0.5;0.75;1"`,
+          `values="M0,0;M0,1;M0,2;M0,3;M0,4"`,
+        ].join(' ')}/>`
+      )
+    })
+    it('should create multiple animate tags', () => {
+      expect(
+        createAnimationTagsForElement(
+          'elm',
+          [
+            { d: 'M0,0', offset: '10' },
+            { d: 'M0,4', offset: '20' },
+          ],
+          1000
+        )
+      ).toBe(
+        `<animate ${[
+          `repeatCount="indefinite"`,
+          `dur="1s"`,
+          `href="#elm"`,
+          `xlink:href="#elm"`,
+          `attributeName="d"`,
+          `keyTimes="0;1"`,
+          `values="M0,0;M0,4"`,
+        ].join(' ')}/><animate ${[
+          `repeatCount="indefinite"`,
+          `dur="1s"`,
+          `href="#elm"`,
+          `xlink:href="#elm"`,
+          `attributeName="offset"`,
+          `keyTimes="0;1"`,
+          `values="10;20"`,
+        ].join(' ')}/>`
       )
     })
   })
@@ -332,6 +426,36 @@ describe('utils/svgMaker.ts', () => {
         ).toEqual(
           getE({
             children: [getE({ id: 'a_0' }), getE({ id: 'a_1' })],
+          })
+        )
+      })
+    })
+
+    describe('should merge and show only head SVG if showOnlyHead = true', () => {
+      it('case: b has unique children', () => {
+        expect(
+          mergeTwoElement(
+            getE({
+              children: [getE({ id: 'a_b_0' }), getE({ id: 'a_b_1' })],
+            }),
+            getE({
+              children: [
+                getE({ id: 'a_b_0' }),
+                getE({ id: 'b_0' }),
+                getE({ id: 'a_b_1' }),
+                getE({ id: 'b_1' }),
+              ],
+            }),
+            true
+          )
+        ).toEqual(
+          getE({
+            children: [
+              getE({ id: 'a_b_0' }),
+              getE({ id: 'b_0', attributes: { fill: 'none', stroke: 'none' } }),
+              getE({ id: 'a_b_1' }),
+              getE({ id: 'b_1', attributes: { fill: 'none', stroke: 'none' } }),
+            ],
           })
         )
       })

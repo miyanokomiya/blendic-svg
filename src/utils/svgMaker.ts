@@ -92,21 +92,31 @@ export function serializeToAnimatedSvg(
   attributesMapPerFrame: IdMap<ElementNodeAttributes>[],
   duration: number
 ): SVGElement {
-  const svg = makeSvg(svgRoot, true)
-  const style = createSVGElement('style')
-
-  style.innerHTML = allElementIds
-    .map((id) => {
-      return createAnimationStyle(
+  const g = createSVGElement('g')
+  g.classList.add('blendic-anim-group')
+  g.innerHTML = allElementIds
+    .map((id) =>
+      createAnimationTagsForElement(
         id,
-        thinOutSameAttributes(
-          attributesMapPerFrame.map((attrMap) => attrMap[id] ?? {})
-        ) as ElementNodeAttributes[],
+        attributesMapPerFrame.map((attrMap) => attrMap[id]),
         duration
       )
-    })
+    )
     .join('')
 
+  const style = createSVGElement('style')
+  style.innerHTML = allElementIds
+    .map((id) =>
+      createAnimationStyle(
+        id,
+        attributesMapPerFrame.map((attrMap) => attrMap[id]),
+        duration
+      )
+    )
+    .join('')
+
+  const svg = makeSvg(svgRoot, true)
+  svg.appendChild(g)
   svg.appendChild(style)
   return svg
 }
@@ -116,7 +126,10 @@ function createAnimationStyle(
   attrsPerFrame: (ElementNodeAttributes | undefined)[],
   duration: number
 ): string {
-  const keyframeStyle = createAnimationKeyframes(id, attrsPerFrame)
+  const adjustedAttrsPerFrame = completeEdgeAttrs(
+    thinOutSameAttributes(attrsPerFrame) as ElementNodeAttributes[]
+  )
+  const keyframeStyle = createAnimationKeyframes(id, adjustedAttrsPerFrame)
   return keyframeStyle
     ? keyframeStyle + createAnimationElementStyle(id, duration)
     : ''
@@ -126,9 +139,9 @@ export function createAnimationKeyframes(
   id: string,
   attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
-  const step = 100 / (attrsPerFrame.length - 1)
+  const steps = getStepList(attrsPerFrame.length, 100)
   const keyframeValues = completeEdgeAttrs(attrsPerFrame)
-    .map((a, i) => createAnimationKeyframeItem(a, step * i))
+    .map((a, i) => createAnimationKeyframeItem(a, steps[i]))
     .filter((s) => s)
 
   if (keyframeValues.length === 0) {
@@ -139,33 +152,42 @@ export function createAnimationKeyframes(
 }
 
 /**
- * [,,a,b,,] => [a,,a,b,,b]
+ * [, { x: '1' }, { y: '2' }, ]
+ * => [{ x: '1', y: '2' } ,{ x: '1' } ,{ y: '2' } ,{ x: '1', y: '2' }]
  */
-function completeEdgeAttrs(
+export function completeEdgeAttrs(
   attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): (ElementNodeAttributes | undefined)[] {
+  const allKeys = Array.from(
+    new Set(attrsPerFrame.flatMap((attrs) => (attrs ? Object.keys(attrs) : [])))
+  )
+
+  const head: ElementNodeAttributes = pickAllValuesFromHead(
+    attrsPerFrame,
+    allKeys
+  )
+  const tail: ElementNodeAttributes = pickAllValuesFromHead(
+    attrsPerFrame.concat().reverse(),
+    allKeys
+  )
+
   const clonedList = attrsPerFrame.concat()
-
-  const firstNotEmptyIndex = attrsPerFrame.findIndex(hasSomeAttrs)
-  if (firstNotEmptyIndex > 0) {
-    clonedList[0] = attrsPerFrame[firstNotEmptyIndex]
-  }
-
-  const lastNotEmptyIndex =
-    attrsPerFrame.length -
-    1 -
-    attrsPerFrame.concat().reverse().findIndex(hasSomeAttrs)
-  if (lastNotEmptyIndex < attrsPerFrame.length - 1) {
-    clonedList[attrsPerFrame.length - 1] = attrsPerFrame[lastNotEmptyIndex]
-  }
-
+  clonedList[0] = head
+  clonedList[clonedList.length - 1] = tail
   return clonedList
 }
 
-function hasSomeAttrs(
-  attrs: ElementNodeAttributes | undefined
-): attrs is ElementNodeAttributes {
-  return !!attrs && Object.keys(attrs).length > 0
+function pickAllValuesFromHead(
+  attrsPerFrame: (ElementNodeAttributes | undefined)[],
+  allKeys: string[]
+) {
+  return allKeys.reduce<ElementNodeAttributes>((p, key) => {
+    const hit = attrsPerFrame.find((attrs) => attrs?.[key] !== undefined)
+    if (hit) {
+      p[key] = hit[key]
+    }
+    return p
+  }, {})
 }
 
 export function createAnimationKeyframeItem(
@@ -173,7 +195,7 @@ export function createAnimationKeyframeItem(
   percent: number
 ): string {
   const filteredEntries = Object.entries(attrs ?? {}).filter(([key]) =>
-    validAnimationAttr(key)
+    validAnimationCssAttr(key)
   )
   if (filteredEntries.length === 0) return ''
 
@@ -197,13 +219,88 @@ function getAnimationName(id: string): string {
   return `blendic-keyframes-${id}`
 }
 
+export function createAnimationTagsForElement(
+  elementId: string,
+  attrsPerFrame: (ElementNodeAttributes | undefined)[],
+  duration: number
+): string {
+  const adjustedAttrsPerFrame = completeEdgeAttrs(
+    thinOutSameAttributes(attrsPerFrame) as ElementNodeAttributes[]
+  )
+  const allKeys = Array.from(
+    new Set(
+      adjustedAttrsPerFrame.flatMap((attrs) =>
+        attrs ? Object.keys(attrs) : []
+      )
+    )
+  )
+  return allKeys
+    .filter(validAnimationAttr)
+    .map((key) =>
+      createAnimationTag(
+        elementId,
+        key,
+        adjustedAttrsPerFrame.map((attrs) => attrs?.[key]),
+        duration
+      )
+    )
+    .join('')
+}
+
+function getStepList(length: number, scale = 1): number[] {
+  if (length === 0) return []
+
+  const step = scale / (length - 1)
+  const list = [...Array(length)].map((_, i) => step * i)
+  // Ensure last item to be 100%
+  list[list.length - 1] = scale
+  return list
+}
+
+/**
+ * <animateTransform> is not supported (it does not support Affine matrix)
+ * => should use CSS to animate `transform`
+ */
+function createAnimationTag(
+  elementId: string,
+  attributeName: string,
+  attrPerFrame: (string | undefined)[],
+  duration: number,
+  iteration: number | 'indefinite' = 'indefinite'
+): string {
+  const steps = getStepList(attrPerFrame.length)
+  const keyTimes: string[] = []
+  const values: string[] = []
+  attrPerFrame.forEach((attr, i) => {
+    if (attr !== undefined) {
+      keyTimes.push(`${steps[i]}`)
+      values.push(`${attr}`)
+    }
+  })
+
+  if (keyTimes.length === 0) return ''
+
+  const animateAttrs: string[] = [
+    ['repeatCount', iteration],
+    ['dur', `${duration / 1000}s`],
+    ['href', `#${elementId}`],
+    ['xlink:href', `#${elementId}`],
+    ['attributeName', `${attributeName}`],
+    ['keyTimes', keyTimes.join(';')],
+    ['values', values.join(';')],
+  ].map(([key, value]) => `${key}="${value}"`)
+
+  return `<animate ${animateAttrs.join(' ')}/>`
+}
+
 export function mergeSvgTreeList(
-  svgTreeList: ElementNode[]
+  svgTreeList: ElementNode[],
+  showOnlyHead = false
 ): ElementNode | undefined {
   let currentNode: ElementNode | undefined
   svgTreeList.forEach((svg) => {
     if (currentNode) {
-      currentNode = mergeTwoElement(currentNode, svg)
+      currentNode = mergeTwoElement(currentNode, svg, showOnlyHead)
     } else {
       currentNode = svg
     }
@@ -212,7 +309,11 @@ export function mergeSvgTreeList(
   return currentNode
 }
 
-export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
+export function mergeTwoElement(
+  a: ElementNode,
+  b: ElementNode,
+  showOnlyHead = false
+): ElementNode {
   const bItemInfoMap = new Map<string, [number, ElementNode]>()
   b.children.forEach((c, i) => {
     if (!isPlainText(c)) {
@@ -234,11 +335,12 @@ export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
           children.push(
             ...b.children
               .slice(currentBIndex + 1, bIndex)
-              .filter((c) => !isPlainText(c))
+              .filter((c): c is ElementNode => !isPlainText(c))
+              .map((c) => (showOnlyHead ? hideElement(c) : c))
           )
         }
         currentBIndex = bIndex
-        children.push(mergeTwoElement(aItem, bItemInfo[1]))
+        children.push(mergeTwoElement(aItem, bItemInfo[1], showOnlyHead))
       } else {
         children.push(aItem)
       }
@@ -249,7 +351,8 @@ export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
     children.push(
       ...b.children
         .slice(currentBIndex + 1, b.children.length)
-        .filter((c) => !isPlainText(c))
+        .filter((c): c is ElementNode => !isPlainText(c))
+        .map((c) => (showOnlyHead ? hideElement(c) : c))
     )
   }
 
@@ -261,15 +364,44 @@ export function mergeTwoElement(a: ElementNode, b: ElementNode): ElementNode {
   }
 }
 
+function hideElement(elm: ElementNode): ElementNode {
+  return {
+    ...elm,
+    attributes: {
+      ...elm.attributes,
+      fill: 'none',
+      stroke: 'none',
+    },
+    children: elm.children.map((c) => (isPlainText(c) ? c : hideElement(c))),
+  }
+}
+
+function validAnimationCssAttr(key: string): boolean {
+  return VALID_ANIMATION_CSS_ATTR_KYES.has(key)
+}
 function validAnimationAttr(key: string): boolean {
   return VALID_ANIMATION_ATTR_KYES.has(key)
 }
 
-const VALID_ANIMATION_ATTR_KYES = new Set([
-  'viewBox',
+/**
+ * Some attributes don't work in CSS animation or SMIL animation.
+ * Since some browsers are not positive to support SMIL, use CSS as much as possible.
+ */
+const VALID_ANIMATION_CSS_ATTR_KYES = new Set([
   'transform',
 
-  'd',
+  'fill',
+  'fill-opacity',
+  'stroke',
+  'stroke-opacity',
+  'stroke-width',
+  'stroke-dashoffset',
+  'stroke-dasharray',
+
+  'font-size',
+  'text-anchor',
+  'dominant-baseline',
+
   'x',
   'y',
   'dx',
@@ -287,22 +419,10 @@ const VALID_ANIMATION_ATTR_KYES = new Set([
   'y1',
   'x2',
   'y2',
-  'offset',
 
-  'fill',
-  'fill-opacity',
-  'stroke',
-  'stroke-opacity',
-  'stroke-width',
-  'stroke-dashoffset',
-  'stroke-dasharray',
-
-  'font-size',
-  'text-anchor',
-
-  'dominant-baseline',
   'gradientUnits',
   'spreadMethod',
   'stop-color',
   'stop-opacity',
 ])
+const VALID_ANIMATION_ATTR_KYES = new Set(['viewBox', 'd', 'offset'])

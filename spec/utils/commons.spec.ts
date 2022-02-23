@@ -676,5 +676,10 @@ describe('utils/commons.ts', () => {
         thinOutSameAttributes([...Array(4)].map(() => ({ a: '1' })))
       ).toEqual([{ a: '1' }, undefined, undefined, { a: '1' }])
     })
+    it('should deal undefined items', () => {
+      expect(
+        thinOutSameAttributes([{ a: '1' }, undefined, { a: '1' }])
+      ).toEqual([{ a: '1' }, undefined, { a: '1' }])
+    })
   })
 })

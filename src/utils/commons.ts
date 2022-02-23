@@ -413,16 +413,16 @@ export function thinOutSameItems<T>(
 }
 
 export function thinOutSameAttributes<T extends { [key: string]: unknown }>(
-  itemList: Partial<T>[]
+  itemList: (Partial<T> | undefined)[]
 ): (Partial<T> | undefined)[] {
   const allKeys: (keyof T)[] = Array.from(
-    new Set(itemList.flatMap((item) => Object.keys(item)))
+    new Set(itemList.flatMap((item) => (item ? Object.keys(item) : [])))
   )
 
   return allKeys
     .reduce<Partial<T>[]>(
       (p, key) => {
-        thinOutSameItems(itemList.map((item) => item[key])).forEach(
+        thinOutSameItems(itemList.map((item) => item?.[key])).forEach(
           (value, i) => {
             if (value) {
               p[i][key] = value

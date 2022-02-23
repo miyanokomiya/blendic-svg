@@ -377,7 +377,8 @@ export function useStorage() {
       wholeSvgTree,
       Object.keys(wholeBElementMap),
       attributesMapPerFrameByGraph,
-      endFrame * (1000 / 60)
+      // Reduce round-off error, e.g. endFrame * (1000 / 60)
+      (endFrame * 100) / 6
     )
 
     const graph = graphStore.lastSelectedGraph.value

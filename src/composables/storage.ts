@@ -371,7 +371,6 @@ export function useStorage() {
 
     const svgElm = serializeToAnimatedSvg(
       wholeSvgTree,
-      Object.keys(wholeBElementMap),
       attributesMapPerFrameByGraph,
       // Reduce round-off error, e.g. endFrame * (1000 / 60)
       (endFrame * 100) / 6

@@ -113,7 +113,6 @@ describe('utils/svgMaker.ts', () => {
             }),
           ],
         }),
-        ['svg_1', 'g_1'],
         [
           { svg_1: { width: '0', offset: 'mock' }, g_1: { offset: '0' } },
           { svg_1: { width: '100px' }, g_1: { offset: '1' } },
@@ -144,7 +143,6 @@ describe('utils/svgMaker.ts', () => {
             }),
           ],
         }),
-        ['svg_1', 'g_1'],
         [
           { svg_1: { offset: '0' }, g_1: { transform: 'm(1,0,0,1,0,0)' } },
           { svg_1: { offset: '1' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
@@ -159,6 +157,36 @@ describe('utils/svgMaker.ts', () => {
       expect(style.innerHTML).not.toContain('offset')
       expect(style.innerHTML).toContain('#g_1')
       expect(style.innerHTML).toContain('transform')
+    })
+
+    it('should translate viewBox to transform', () => {
+      const svg = serializeToAnimatedSvg(
+        getElementNode({
+          id: 'svg_1',
+          tag: 'svg',
+          attributes: { viewBox: '0 0 100 100' },
+          children: [
+            getElementNode({
+              id: 'g_1',
+              tag: 'g',
+              children: [],
+            }),
+          ],
+        }),
+        [
+          { svg_1: { viewBox: '0 0 100 100' } },
+          { svg_1: { viewBox: '0 0 50 50' } },
+        ],
+        2000
+      )
+
+      expect(svg).toBeInstanceOf(SVGElement)
+      expect(svg.children[0].id).not.toBe('g_1')
+      expect(svg.children[0].children[0].id).toBe('g_1')
+      const style = svg.getElementsByTagName('style')[0]
+      expect(style.innerHTML).toContain('matrix(2,0,0,2,0,0)')
+      const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
+      expect(animateG.innerHTML).not.toContain('viewBox')
     })
   })
 

@@ -17,9 +17,10 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { affineToTransform } from 'okageo'
 import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
 import { thinOutSameAttributes } from '/@/utils/commons'
-import { isPlainText } from '/@/utils/elements'
+import { isPlainText, parseViewBoxFromStr } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
 export function makeSvg(svgNode: ElementNode, applyId = false): SVGElement {
@@ -86,19 +87,30 @@ function appendChildren($el: SVGElement, children: (SVGElement | string)[]) {
   $el.appendChild($fragment)
 }
 
+const VIEWBOX_G_ID = 'blendic-viewbox-g'
+const ANIM_G_ID = 'blendic-anim-group'
+
 export function serializeToAnimatedSvg(
   svgRoot: ElementNode,
-  allElementIds: string[],
   attributesMapPerFrame: IdMap<ElementNodeAttributes>[],
   duration: number
 ): SVGElement {
-  const g = createSVGElement('g')
-  g.classList.add('blendic-anim-group')
-  g.innerHTML = allElementIds
+  const adjustedSvgRoot = immigrateViewBox(svgRoot)
+  const adjustedAttributesMapPerFrame = immigrateViewBoxPerFrame(
+    adjustedSvgRoot.id,
+    attributesMapPerFrame
+  )
+  const allElementIds = Array.from(
+    new Set(adjustedAttributesMapPerFrame.flatMap((a) => Object.keys(a)))
+  )
+
+  const animG = createSVGElement('g')
+  animG.classList.add(ANIM_G_ID)
+  animG.innerHTML = allElementIds
     .map((id) =>
       createAnimationTagsForElement(
         id,
-        attributesMapPerFrame.map((attrMap) => attrMap[id]),
+        adjustedAttributesMapPerFrame.map((attrMap) => attrMap[id]),
         duration
       )
     )
@@ -109,16 +121,80 @@ export function serializeToAnimatedSvg(
     .map((id) =>
       createAnimationStyle(
         id,
-        attributesMapPerFrame.map((attrMap) => attrMap[id]),
+        adjustedAttributesMapPerFrame.map((attrMap) => attrMap[id]),
         duration
       )
     )
     .join('')
 
-  const svg = makeSvg(svgRoot, true)
-  svg.appendChild(g)
+  const svg = makeSvg(adjustedSvgRoot, true)
+  svg.appendChild(animG)
   svg.appendChild(style)
   return svg
+}
+
+/**
+ * Translate `viewBox` of <svg> to `transform` of <g> in order to use CSS animation
+ * => <g> element is inserted between <svg> and its children
+ */
+function immigrateViewBox(svgRoot: ElementNode): ElementNode {
+  return {
+    ...svgRoot,
+    attributes: {
+      ...svgRoot.attributes,
+      viewBox: `0 0 ${BASE_VIEW_SIZE} ${BASE_VIEW_SIZE}`,
+    },
+    children: [
+      {
+        id: VIEWBOX_G_ID,
+        tag: 'g',
+        attributes: {
+          viewBox: createTransformFromViewbox(svgRoot.attributes.viewBox),
+        },
+        children: svgRoot.children,
+      },
+    ],
+  }
+}
+
+/**
+ * Convert attributes to correspond to `immigrateViewBox`
+ */
+function immigrateViewBoxPerFrame(
+  svgId: string,
+  attributesMapPerFrame: IdMap<ElementNodeAttributes>[]
+) {
+  return attributesMapPerFrame.map((attrsMap) => {
+    const svgAttrs = attrsMap[svgId]
+    return {
+      ...attrsMap,
+      [svgId]: {
+        ...svgAttrs,
+        viewBox: `0 0 ${BASE_VIEW_SIZE} ${BASE_VIEW_SIZE}`,
+      },
+      [VIEWBOX_G_ID]: {
+        transform: createTransformFromViewbox(svgAttrs?.viewBox),
+      } as ElementNodeAttributes,
+    }
+  })
+}
+
+const BASE_VIEW_SIZE = 100
+
+function createTransformFromViewbox(viewBoxStr: string) {
+  const viewBox = parseViewBoxFromStr(viewBoxStr)
+  if (!viewBox) return ''
+
+  const scaleX = viewBox.width / BASE_VIEW_SIZE
+  const scaleY = viewBox.height / BASE_VIEW_SIZE
+  return affineToTransform([
+    1 / scaleX,
+    0,
+    0,
+    1 / scaleY,
+    -viewBox.x / scaleX,
+    -viewBox.y / scaleY,
+  ])
 }
 
 function createAnimationStyle(
@@ -426,4 +502,8 @@ const VALID_ANIMATION_CSS_ATTR_KYES = new Set([
   'stop-color',
   'stop-opacity',
 ])
-const VALID_ANIMATION_ATTR_KYES = new Set(['viewBox', 'd', 'offset'])
+const VALID_ANIMATION_ATTR_KYES = new Set([
+  // 'viewBox',
+  'd',
+  'offset',
+])

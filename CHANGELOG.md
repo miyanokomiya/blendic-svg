@@ -5,9 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.14.0] - 2022-02-23
 ### Added
-- Add new graph if new node is added during no graph selected
-- Add reroute node
+- Add new graph if new node is added during no graph selected.
+- Add reroute node.
+- Add new feature to export animated SVG.  
+Both CSS and SMIL are used.  
+Graph animation can be exported with this SVG.
 
 ### Fixed
 - Enable keyframe series of constraints to be selected in the timeline panel.

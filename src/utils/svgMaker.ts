@@ -386,6 +386,7 @@ function validAnimationAttr(key: string): boolean {
 /**
  * Some attributes don't work in CSS animation or SMIL animation.
  * Since some browsers are not positive to support SMIL, use CSS as much as possible.
+ * https://dev.w3.org/SVG/proposals/css-animation/animation-proposal.html (This is just a proposal)
  */
 const VALID_ANIMATION_CSS_ATTR_KYES = new Set([
   'transform',

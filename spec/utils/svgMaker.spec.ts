@@ -117,7 +117,8 @@ describe('utils/svgMaker.ts', () => {
           { svg_1: { width: '0', offset: 'mock' }, g_1: { offset: '0' } },
           { svg_1: { width: '100px' }, g_1: { offset: '1' } },
         ],
-        2000
+        2000,
+        3
       )
 
       expect(svg).toBeInstanceOf(SVGElement)
@@ -128,6 +129,8 @@ describe('utils/svgMaker.ts', () => {
       expect(animateG.innerHTML).not.toContain('width')
       expect(animateG.innerHTML).toContain('#g_1')
       expect(animateG.innerHTML).toContain('offset')
+      expect(animateG.innerHTML).toContain('repeatCount="3"')
+      expect(animateG.innerHTML).toContain('dur="2s"')
     })
 
     it('should create animation styles', () => {
@@ -147,16 +150,19 @@ describe('utils/svgMaker.ts', () => {
           { svg_1: { offset: '0' }, g_1: { transform: 'm(1,0,0,1,0,0)' } },
           { svg_1: { offset: '1' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
         ],
-        2000
+        2000,
+        3
       )
 
       expect(svg).toBeInstanceOf(SVGElement)
       expect(svg.id).toBe('svg_1')
       const style = svg.getElementsByTagName('style')[0]
-      expect(style.innerHTML).not.toContain('#svg_1')
       expect(style.innerHTML).not.toContain('offset')
       expect(style.innerHTML).toContain('#g_1')
       expect(style.innerHTML).toContain('transform')
+      expect(style.innerHTML).toContain(
+        '#svg_1 * {animation-duration:2s;animation-iteration-count:3;}'
+      )
     })
 
     it('should translate viewBox to transform', () => {
@@ -269,8 +275,8 @@ describe('utils/svgMaker.ts', () => {
 
   describe('createAnimationElementStyle', () => {
     it('should create animation style for the element', () => {
-      expect(createAnimationElementStyle('elm', 2000, 1)).toBe(
-        '#elm{animation-name:blendic-keyframes-elm;animation-duration:2000ms;animation-iteration-count:1;}'
+      expect(createAnimationElementStyle('elm')).toBe(
+        '#elm{animation-name:blendic-keyframes-elm;}'
       )
     })
   })

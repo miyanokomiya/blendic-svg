@@ -93,7 +93,8 @@ const ANIM_G_ID = 'blendic-anim-group'
 export function serializeToAnimatedSvg(
   svgRoot: ElementNode,
   attributesMapPerFrame: IdMap<ElementNodeAttributes>[],
-  duration: number
+  duration: number,
+  iteration: number | 'infinite' = 'infinite'
 ): SVGElement {
   const adjustedSvgRoot = immigrateViewBox(svgRoot)
   const adjustedAttributesMapPerFrame = immigrateViewBoxPerFrame(
@@ -111,21 +112,25 @@ export function serializeToAnimatedSvg(
       createAnimationTagsForElement(
         id,
         adjustedAttributesMapPerFrame.map((attrMap) => attrMap[id]),
-        duration
+        duration,
+        iteration
       )
     )
     .join('')
 
   const style = createSVGElement('style')
-  style.innerHTML = allElementIds
-    .map((id) =>
-      createAnimationStyle(
-        id,
-        adjustedAttributesMapPerFrame.map((attrMap) => attrMap[id]),
-        duration
+  style.innerHTML =
+    allElementIds
+      .map((id) =>
+        createAnimationStyle(
+          id,
+          adjustedAttributesMapPerFrame.map((attrMap) => attrMap[id])
+        )
       )
-    )
-    .join('')
+      .join('') +
+    `#${adjustedSvgRoot.id} * {animation-duration:${
+      duration / 1000
+    }s;animation-iteration-count:${iteration};}`
 
   const svg = makeSvg(adjustedSvgRoot, true)
   svg.appendChild(animG)
@@ -199,16 +204,13 @@ function createTransformFromViewbox(viewBoxStr: string) {
 
 function createAnimationStyle(
   id: string,
-  attrsPerFrame: (ElementNodeAttributes | undefined)[],
-  duration: number
+  attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
   const adjustedAttrsPerFrame = completeEdgeAttrs(
     thinOutSameAttributes(attrsPerFrame) as ElementNodeAttributes[]
   )
   const keyframeStyle = createAnimationKeyframes(id, adjustedAttrsPerFrame)
-  return keyframeStyle
-    ? keyframeStyle + createAnimationElementStyle(id, duration)
-    : ''
+  return keyframeStyle ? keyframeStyle + createAnimationElementStyle(id) : ''
 }
 
 export function createAnimationKeyframes(
@@ -281,14 +283,8 @@ export function createAnimationKeyframeItem(
   return `${percent}%{${content}}`
 }
 
-export function createAnimationElementStyle(
-  id: string,
-  duration: number,
-  iteration: number | 'infinite' = 'infinite'
-): string {
-  return `#${id}{animation-name:${getAnimationName(
-    id
-  )};animation-duration:${duration}ms;animation-iteration-count:${iteration};}`
+export function createAnimationElementStyle(id: string): string {
+  return `#${id}{animation-name:${getAnimationName(id)};}`
 }
 
 function getAnimationName(id: string): string {
@@ -298,7 +294,8 @@ function getAnimationName(id: string): string {
 export function createAnimationTagsForElement(
   elementId: string,
   attrsPerFrame: (ElementNodeAttributes | undefined)[],
-  duration: number
+  duration: number,
+  iteration: number | 'infinite' = 'infinite'
 ): string {
   const adjustedAttrsPerFrame = completeEdgeAttrs(
     thinOutSameAttributes(attrsPerFrame) as ElementNodeAttributes[]
@@ -317,7 +314,8 @@ export function createAnimationTagsForElement(
         elementId,
         key,
         adjustedAttrsPerFrame.map((attrs) => attrs?.[key]),
-        duration
+        duration,
+        iteration
       )
     )
     .join('')
@@ -342,7 +340,7 @@ function createAnimationTag(
   attributeName: string,
   attrPerFrame: (string | undefined)[],
   duration: number,
-  iteration: number | 'indefinite' = 'indefinite'
+  iteration: number | 'infinite' = 'infinite'
 ): string {
   const steps = getStepList(attrPerFrame.length)
   const keyTimes: string[] = []
@@ -357,7 +355,7 @@ function createAnimationTag(
   if (keyTimes.length === 0) return ''
 
   const animateAttrs: string[] = [
-    ['repeatCount', iteration],
+    ['repeatCount', typeof iteration === 'string' ? 'indefinite' : iteration],
     ['dur', `${duration / 1000}s`],
     ['href', `#${elementId}`],
     ['xlink:href', `#${elementId}`],
@@ -463,6 +461,8 @@ function validAnimationAttr(key: string): boolean {
  * Some attributes don't work in CSS animation or SMIL animation.
  * Since some browsers are not positive to support SMIL, use CSS as much as possible.
  * https://dev.w3.org/SVG/proposals/css-animation/animation-proposal.html (This is just a proposal)
+ *
+ * `viewBox` is translated to `transform`. See `immigrateViewBox`
  */
 const VALID_ANIMATION_CSS_ATTR_KYES = new Set([
   'transform',
@@ -502,8 +502,4 @@ const VALID_ANIMATION_CSS_ATTR_KYES = new Set([
   'stop-color',
   'stop-opacity',
 ])
-const VALID_ANIMATION_ATTR_KYES = new Set([
-  // 'viewBox',
-  'd',
-  'offset',
-])
+const VALID_ANIMATION_ATTR_KYES = new Set(['d', 'offset'])

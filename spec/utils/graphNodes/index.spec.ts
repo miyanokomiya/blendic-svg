@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import type {
+import {
   GraphNodeBreakVector2,
   GraphNodeMakeVector2,
   GraphNodeScaler,
@@ -25,6 +25,7 @@ import type {
   GraphNodeGetObject,
   GraphNodeCloneObject,
   GraphNodeSetTransform,
+  GRAPH_VALUE_TYPE,
 } from '/@/models/graphNode'
 import {
   compute,
@@ -51,6 +52,7 @@ import {
   cleanAllEdgeGenerics,
   getUpdatedNodeMapToDisconnectNodeInput,
   getInputTypes,
+  createDefaultUnitValueForGenerics,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -901,6 +903,22 @@ describe('src/utils/graphNodes/index.ts', () => {
     })
   })
 
+  describe('createDefaultUnitValueForGenerics', () => {
+    it('should return default value for each type', () => {
+      expect(
+        createDefaultUnitValueForGenerics(GRAPH_VALUE_TYPE.SCALER)
+      ).toEqual(0)
+      expect(
+        createDefaultUnitValueForGenerics(GRAPH_VALUE_TYPE.VECTOR2)
+      ).toEqual({ x: 0, y: 0 })
+
+      // should cover all types
+      Object.values(GRAPH_VALUE_TYPE).forEach((type) => {
+        expect(() => createDefaultUnitValueForGenerics(type)).not.toThrow()
+      })
+    })
+  })
+
   describe('cleanEdgeGenericsGroupAt', () => {
     it('should clean edge generics group at the item', () => {
       const nodeMap = {
@@ -930,10 +948,12 @@ describe('src/utils/graphNodes/index.ts', () => {
           inputs: {
             if_true: {
               genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
             },
             if_false: {
               from: { id: 'c', key: 'value' },
               genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
             },
           },
         }),
@@ -942,9 +962,11 @@ describe('src/utils/graphNodes/index.ts', () => {
           inputs: {
             if_true: {
               genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
             },
             if_false: {
               genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
             },
           },
         }),
@@ -978,10 +1000,12 @@ describe('src/utils/graphNodes/index.ts', () => {
           inputs: {
             if_true: {
               genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
             },
             if_false: {
               from: { id: 'c', key: 'value' },
               genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
             },
           },
         }),
@@ -990,9 +1014,11 @@ describe('src/utils/graphNodes/index.ts', () => {
           inputs: {
             if_true: {
               genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
             },
             if_false: {
               genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
             },
           },
         }),
@@ -1085,9 +1111,11 @@ describe('src/utils/graphNodes/index.ts', () => {
               if_true: {
                 from: { id: 'b', key: 'x' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),
@@ -1116,10 +1144,12 @@ describe('src/utils/graphNodes/index.ts', () => {
               if_true: {
                 from: { id: 'b', key: 'x' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 from: { id: 'd', key: 'value' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),
@@ -1128,9 +1158,11 @@ describe('src/utils/graphNodes/index.ts', () => {
             inputs: {
               if_true: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),
@@ -1177,10 +1209,12 @@ describe('src/utils/graphNodes/index.ts', () => {
               if_true: {
                 from: { id: 'b', key: 'x' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 from: { id: 'd', key: 'value' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),
@@ -1190,9 +1224,11 @@ describe('src/utils/graphNodes/index.ts', () => {
               if_true: {
                 from: { id: 'a', key: 'value' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),
@@ -1202,9 +1238,11 @@ describe('src/utils/graphNodes/index.ts', () => {
               if_true: {
                 from: { id: 'e', key: 'value' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),
@@ -1213,9 +1251,11 @@ describe('src/utils/graphNodes/index.ts', () => {
             inputs: {
               if_true: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),
@@ -1225,9 +1265,11 @@ describe('src/utils/graphNodes/index.ts', () => {
               if_true: {
                 from: { id: 'e', key: 'value' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),
@@ -1251,9 +1293,11 @@ describe('src/utils/graphNodes/index.ts', () => {
             inputs: {
               if_true: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),
@@ -1302,10 +1346,12 @@ describe('src/utils/graphNodes/index.ts', () => {
               if_true: {
                 from: { id: 'b', key: 'x' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 from: { id: 'd', key: 'value' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),
@@ -1339,9 +1385,11 @@ describe('src/utils/graphNodes/index.ts', () => {
               if_true: {
                 from: { id: 'b', key: 'x' },
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
               if_false: {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
               },
             },
           }),

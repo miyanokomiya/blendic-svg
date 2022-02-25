@@ -18,6 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import {
+  GradientStop,
   GraphNode,
   GraphNodeInput,
   GraphNodeInputs,
@@ -26,6 +27,7 @@ import {
   GraphNodeOutputValues,
   GraphNodes,
   GraphNodeType,
+  GRAPH_VALUE_STRUCT,
   GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
   ValueType,
@@ -115,7 +117,7 @@ import * as switch_generics from './nodes/switch_generics'
 
 import * as reroute from './nodes/reroute'
 
-import { IdMap } from '/@/models'
+import { getTransform, IdMap } from '/@/models'
 import { extractMap, mapReduce, toList } from '/@/utils/commons'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
@@ -917,6 +919,7 @@ export function getOutputType(target: GraphNode, key: string): ValueType {
   const struct = getGraphNodeModule(target.type).struct
   return struct.getOutputType?.(target, key) ?? struct.outputs[key]
 }
+
 function getOutputTypes(target: GraphNode): { [key: string]: ValueType } {
   const struct = getGraphNodeModule(target.type).struct
   return mapReduce(struct.outputs, (_, key) => {
@@ -1064,12 +1067,64 @@ function cleanEdgeGenericsGroupByType(
         ...node,
         inputs: {
           ...node.inputs,
-          [item.key]: { ...input, genericsType: type },
+          [item.key]: {
+            ...input,
+            genericsType: type,
+            value: createDefaultValueForGenerics(type),
+          },
         },
       }
     })
 
   return ret
+}
+
+function createDefaultValueForGenerics(type: ValueType | undefined): unknown {
+  if (!type) return undefined
+
+  switch (type.struct) {
+    case GRAPH_VALUE_STRUCT.UNIT:
+    case GRAPH_VALUE_STRUCT.UNIT_OR_ARRAY:
+      return createDefaultUnitValueForGenerics(type.type)
+    case GRAPH_VALUE_STRUCT.ARRAY:
+      return [createDefaultUnitValueForGenerics(type.type)]
+  }
+}
+
+export function createDefaultUnitValueForGenerics(
+  valueType: GRAPH_VALUE_TYPE_KEY
+) {
+  switch (valueType) {
+    case GRAPH_VALUE_TYPE.SCALER:
+      return 0
+    case GRAPH_VALUE_TYPE.VECTOR2:
+      return { x: 0, y: 0 }
+    case GRAPH_VALUE_TYPE.BOOLEAN:
+      return false
+    case GRAPH_VALUE_TYPE.TRANSFORM:
+    case GRAPH_VALUE_TYPE.COLOR:
+      return getTransform()
+    case GRAPH_VALUE_TYPE.STOP:
+      return getGradientStop()
+    case GRAPH_VALUE_TYPE.TEXT:
+    case GRAPH_VALUE_TYPE.OBJECT:
+    case GRAPH_VALUE_TYPE.D:
+      return ''
+    case GRAPH_VALUE_TYPE.GENERICS:
+      return undefined
+    default: {
+      const strange: never = valueType
+      throw new Error(`Unexpected value type: ${strange}`)
+    }
+  }
+}
+
+function getGradientStop(): GradientStop {
+  return {
+    offset: 0,
+    color: getTransform(),
+    relative: false,
+  }
 }
 
 export function cleanAllEdgeGenerics(nodeMap: GraphNodeMap): GraphNodeMap {

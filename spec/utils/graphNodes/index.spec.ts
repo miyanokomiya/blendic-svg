@@ -50,6 +50,7 @@ import {
   getNodeErrors,
   cleanAllEdgeGenerics,
   getUpdatedNodeMapToDisconnectNodeInput,
+  getInputTypes,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -1354,6 +1355,27 @@ describe('src/utils/graphNodes/index.ts', () => {
           }),
         })
       })
+    })
+  })
+
+  describe('getInputTypes', () => {
+    it('should return input types map', () => {
+      expect(getInputTypes(createGraphNode('multi_scaler', {}))).toEqual({
+        a: UNIT_VALUE_TYPES.SCALER,
+        b: UNIT_VALUE_TYPES.SCALER,
+      })
+    })
+    it('should consider generics type', () => {
+      expect(
+        getInputTypes(
+          createGraphNode('add_generics', {
+            inputs: {
+              a: { genericsType: UNIT_VALUE_TYPES.SCALER },
+              b: { genericsType: UNIT_VALUE_TYPES.SCALER },
+            },
+          })
+        )
+      ).toEqual({ a: UNIT_VALUE_TYPES.SCALER, b: UNIT_VALUE_TYPES.SCALER })
     })
   })
 

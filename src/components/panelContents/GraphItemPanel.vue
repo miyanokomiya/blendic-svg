@@ -67,7 +67,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent } from 'vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
-import { getGraphNodeModule } from '/@/utils/graphNodes'
+import { getGraphNodeModule, getInputTypes } from '/@/utils/graphNodes'
 import { mapReduce } from '/@/utils/commons'
 import GraphNodeDataField from '/@/components/atoms/GraphNodeDataField.vue'
 import { ValueType } from '/@/models/graphNode'
@@ -120,11 +120,11 @@ export default defineComponent({
     }>(() => {
       if (!targetNode.value || !struct.value) return {}
 
-      const inputsStruct = struct.value.inputs
       const inputs = targetNode.value.inputs
+      const types = getInputTypes(targetNode.value)
       return mapReduce(inputs, (value, key) => {
         return {
-          type: (inputsStruct as any)[key].type as ValueType,
+          type: types[key],
           value: value.value,
           disabled: !!value.from,
         }
@@ -135,7 +135,12 @@ export default defineComponent({
 
       graphStore.updateNode(
         targetNode.value.id,
-        { inputs: { ...targetNode.value.inputs, [key]: { value } } },
+        {
+          inputs: {
+            ...targetNode.value.inputs,
+            [key]: { ...targetNode.value.inputs[key], value },
+          },
+        },
         seriesKey
       )
     }

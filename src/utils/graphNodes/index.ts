@@ -900,7 +900,8 @@ function getInputType(target: GraphNode, key: string): ValueType {
     getGraphNodeModule<any>(target.type).struct.inputs[key].type
   )
 }
-function getInputTypes(target: GraphNode): { [key: string]: ValueType } {
+
+export function getInputTypes(target: GraphNode): { [key: string]: ValueType } {
   const struct = getGraphNodeModule<any>(target.type).struct
   return mapReduce(target.inputs, (_, key) => {
     return target.inputs[key].genericsType ?? struct.inputs[key].type

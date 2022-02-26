@@ -30,6 +30,12 @@ import {
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
+const PERCENT_SCALER_TYPE = {
+  type: GRAPH_VALUE_TYPE.SCALER,
+  struct: GRAPH_VALUE_STRUCT.UNIT,
+  scale: 0.1,
+}
+
 export const struct: NodeStruct<GraphNodeMakeColor> = {
   create(arg = {}) {
     return {
@@ -52,19 +58,15 @@ export const struct: NodeStruct<GraphNodeMakeColor> = {
       default: 0,
     },
     s: {
-      type: UNIT_VALUE_TYPES.SCALER,
+      type: PERCENT_SCALER_TYPE,
       default: 0,
     },
     v: {
-      type: UNIT_VALUE_TYPES.SCALER,
+      type: PERCENT_SCALER_TYPE,
       default: 0,
     },
     a: {
-      type: {
-        type: GRAPH_VALUE_TYPE.SCALER,
-        struct: GRAPH_VALUE_STRUCT.UNIT,
-        scale: 0.1,
-      },
+      type: PERCENT_SCALER_TYPE,
       default: 1,
     },
   },

@@ -154,7 +154,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
       transform="translate(1, 2)"
     >
       <g
-        class="edge-anchor"
+        class="view-only"
       >
         <rect
           fill="transparent"
@@ -173,12 +173,13 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
         >
           value
         </text>
-        <circle
-          fill="transparent"
-          r="10"
-          stroke="none"
-        />
       </g>
+      <circle
+        class="edge-anchor"
+        fill="transparent"
+        r="10"
+        stroke="none"
+      />
       <circle
         class="view-only"
         fill="#daa520"
@@ -200,7 +201,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
       transform="translate(1, 2)"
     >
       <g
-        class="edge-anchor"
+        class="view-only"
       >
         <rect
           fill="transparent"
@@ -223,12 +224,13 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
             <!--v-if-->
           </g>
         </g>
-        <circle
-          fill="transparent"
-          r="10"
-          stroke="none"
-        />
       </g>
+      <circle
+        class="edge-anchor"
+        fill="transparent"
+        r="10"
+        stroke="none"
+      />
       <circle
         class="view-only"
         fill="#daa520"

@@ -54,6 +54,7 @@ import {
   toBoneSpaceFn,
   snapAxisGrid,
   snapPlainGrid,
+  gridRound,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -69,6 +70,17 @@ describe('src/utils/geometry.ts', () => {
       [2, 666, 700],
     ])('logRound(%s, %s) => %s', (decimal, val, expected) => {
       expect(logRound(decimal, val)).toBe(expected)
+    })
+  })
+
+  describe('gridRound', () => {
+    it.each([
+      [10, 14, 10],
+      [10, 16, 20],
+      [10, -14, -10],
+      [10, -16, -20],
+    ])('gridRound(%s, %s) => %s', (size, val, expected) => {
+      expect(gridRound(size, val)).toBe(expected)
     })
   })
 

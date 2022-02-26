@@ -42,6 +42,10 @@ export function logRound(log: number, val: number) {
   return Math.round(val * pow) / pow
 }
 
+export function gridRound(size: number, val: number) {
+  return Math.round(val / size) * size
+}
+
 // normalize in (-pi <= r <= pi)
 export function normalizeRad(rad: number): number {
   return circleClamp(-Math.PI, Math.PI, rad)

@@ -26,7 +26,7 @@ import type {
   SelectOptions,
   CommandExam,
 } from '/@/composables/modes/types'
-import { getIsRectHitRectFn, snapGrid } from '/@/utils/geometry'
+import { getIsRectHitRectFn, gridRound } from '/@/utils/geometry'
 import { useMenuList } from '/@/composables/menuList'
 import { AnimationGraphStore } from '/@/store/animationGraph'
 import {
@@ -268,24 +268,27 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
   }
 
-  const editTransforms = computed(() => {
+  const editTransforms = computed<IdMap<Transform>>(() => {
     const editMovement = state.editMovement
     if (!editMovement) return {}
     if (state.dragTarget?.type === 'edge') return {}
 
-    const translate = sub(editMovement.current, editMovement.start)
-    const gridTranslate = editMovement.ctrl
-      ? snapGrid(editMovement.scale, translate)
-      : translate
-    const transform = getTransform({ translate: gridTranslate })
-
-    return Object.keys(selectedNodes.value).reduce<IdMap<Transform>>(
-      (map, id) => {
-        map[id] = transform
-        return map
-      },
-      {}
+    const translate = getGridRoundedPoint(
+      sub(editMovement.current, editMovement.start)
     )
+
+    // Adjust dragged target position along the grid
+    const adjustedTranslate = state.dragTarget
+      ? add(
+          translate,
+          getGridRoundedDiff(
+            selectedNodeMap.value[state.dragTarget.id].position
+          )
+        )
+      : translate
+
+    const transform = getTransform({ translate: adjustedTranslate })
+    return mapReduce(selectedNodes.value, () => transform)
   })
 
   const draftEdgeInfo = computed<DraftGraphEdge | undefined>(() => {
@@ -455,7 +458,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
       cancel()
       return
     }
-    graphStore.addNode(type, { position })
+    graphStore.addNode(type, { position: getGridRoundedPoint(position) })
     cancel()
   }
 
@@ -567,7 +570,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     if (!from) return
 
     const newNode = graphStore.addNode(type, {
-      position: state.keyDownPosition,
+      position: getGridRoundedPoint(state.keyDownPosition),
     })
     if (newNode) {
       updateNodeInput(newNode, key, from.nodeId, from.key)
@@ -661,3 +664,14 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   }
 }
 export type AnimationGraphMode = ReturnType<typeof useAnimationGraphMode>
+
+function getGridRoundedPoint(p: IVec2): IVec2 {
+  return {
+    x: gridRound(10, p.x),
+    y: gridRound(10, p.y),
+  }
+}
+
+function getGridRoundedDiff(p: IVec2): IVec2 {
+  return sub(getGridRoundedPoint(p), p)
+}

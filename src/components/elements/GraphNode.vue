@@ -53,11 +53,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :key="key"
         :transform="`translate(${edge.p.x}, ${edge.p.y})`"
       >
-        <g
-          class="edge-anchor"
-          @mouseup.left.exact="upToEdge(key)"
-          @mousedown.left.exact.prevent="downToEdge(key)"
-        >
+        <g class="view-only">
           <rect
             :x="-edgeAnchorWidth"
             :y="-GRAPH_NODE_ROW_HEIGHT / 2"
@@ -74,8 +70,15 @@ Copyright (C) 2021, Tomoya Komiyama.
             fill="#000"
             >{{ key }}</text
           >
-          <circle r="10" fill="transparent" stroke="none" />
         </g>
+        <circle
+          r="10"
+          fill="transparent"
+          stroke="none"
+          class="edge-anchor"
+          @mouseup.left.exact="upToEdge(key)"
+          @mousedown.left.exact.prevent="downToEdge(key)"
+        />
         <circle
           r="5"
           :fill="GRAPH_NODE_TYPE_COLOR[edge.type.type]"
@@ -106,11 +109,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :key="key"
         :transform="`translate(${edge.p.x}, ${edge.p.y})`"
       >
-        <g
-          class="edge-anchor"
-          @mouseup.left.exact="upFromEdge(key)"
-          @mousedown.left.exact.prevent="downFromEdge(key)"
-        >
+        <g class="view-only">
           <rect
             :y="-GRAPH_NODE_ROW_HEIGHT / 2"
             :width="edgeAnchorWidth"
@@ -125,8 +124,15 @@ Copyright (C) 2021, Tomoya Komiyama.
               :input="node.inputs[key]"
             />
           </g>
-          <circle r="10" fill="transparent" stroke="none" />
         </g>
+        <circle
+          r="10"
+          fill="transparent"
+          stroke="none"
+          class="edge-anchor"
+          @mouseup.left.exact="upFromEdge(key)"
+          @mousedown.left.exact.prevent="downFromEdge(key)"
+        />
         <circle
           r="5"
           :fill="GRAPH_NODE_TYPE_COLOR[edge.type.type]"
@@ -319,7 +325,7 @@ function upToEdge(key: string) {
 .view-only {
   pointer-events: none;
 }
-.edge-anchor:hover circle {
+.edge-anchor:hover {
   transition: fill 0.2s;
   fill: #ffa07a;
 }

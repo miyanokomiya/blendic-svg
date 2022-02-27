@@ -264,22 +264,19 @@ export default defineComponent({
       mode.upNodeEdge(closestEdgeInfo)
     }
 
-    provide('getObjectOptions', () => {
-      if (!currentGraph.value) return []
+    provide<() => { value: string; label: string }[]>(
+      'getObjectOptions',
+      () => {
+        const actor = elementStore.lastSelectedActor.value
+        if (!actor || !currentGraph.value) return []
+        if (actor.armatureId !== currentGraph.value.armatureId) return []
 
-      const nativeElementMap = elementStore.lastSelectedActor.value
-        ? toMap(flatElementTree([elementStore.lastSelectedActor.value.svgTree]))
-        : {}
-
-      const actor = elementStore.actors.value.find(
-        (a) => a.armatureId === currentGraph.value!.armatureId
-      )
-      return (
-        actor?.elements.map((id) => {
+        const nativeElementMap = toMap(flatElementTree([actor.svgTree]))
+        return actor.elements.map((id) => {
           return { value: id, label: getElementLabel(nativeElementMap[id]) }
-        }) ?? []
-      )
-    })
+        })
+      }
+    )
 
     return {
       GraphNode,

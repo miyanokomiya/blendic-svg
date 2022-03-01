@@ -30,6 +30,7 @@ import {
   getKeyframeConstraintSummary,
   getTargetTopMap,
   getGraphNodeRect,
+  truncate,
 } from '/@/utils/helpers'
 
 describe('utils/helpers.ts', () => {
@@ -266,6 +267,14 @@ describe('utils/helpers.ts', () => {
           createGraphNode('make_vector2', { position: { x: 1, y: 2 } })
         )
       ).toEqual({ x: 1, y: 2, width: 140, height: 106 })
+    })
+  })
+
+  describe('truncate', () => {
+    it('should return truncated text', () => {
+      expect(truncate('12', 3)).toBe('12')
+      expect(truncate('123', 3)).toBe('123')
+      expect(truncate('1234', 3)).toBe('123..')
     })
   })
 })

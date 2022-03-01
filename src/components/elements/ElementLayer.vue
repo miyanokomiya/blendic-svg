@@ -49,14 +49,9 @@ import {
   getGraphResolvedElementTree,
   getPosedElementTree,
 } from '/@/utils/poseResolver'
-import {
-  isPlainText,
-  parseViewBoxFromStr,
-  resolveAnimationGraph,
-} from '/@/utils/elements'
+import { isPlainText, parseViewBoxFromStr } from '/@/utils/elements'
 import { useSettings } from '/@/composables/settings'
 import type { CanvasMode, SelectOptions } from '/@/composables/modes/types'
-import { useAnimationStore } from '/@/store/animation'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { useCanvasStore } from '/@/store/canvas'
 import { useStore } from '/@/store'
@@ -81,7 +76,6 @@ export default defineComponent({
   },
   setup(props) {
     const store = useStore()
-    const animationStore = useAnimationStore()
     const graphStore = useAnimationGraphStore()
     const elementStore = useElementStore()
     const canvasStore = useCanvasStore()
@@ -122,19 +116,17 @@ export default defineComponent({
     })
 
     const graphResolvedElement = computed(() => {
-      if (!posedElementRoot.value) return
-      if (!graphEnabled.value) return posedElementRoot.value
+      if (
+        !posedElementRoot.value ||
+        !graphEnabled.value ||
+        !graphStore.resolvedGraph.value
+      )
+        return posedElementRoot.value
 
-      // TODO: for develop try-catch
+      // TODO: try-catch is just for debug
       try {
-        const graphObjectMap = resolveAnimationGraph(
-          elementStore.elementMap.value,
-          {
-            currentFrame: animationStore.currentFrame.value,
-            endFrame: animationStore.endFrame.value,
-          },
-          graphStore.nodeMap.value
-        )
+        const graphObjectMap =
+          graphStore.resolvedGraph.value.context.getObjectMap()
         return getGraphResolvedElementTree(
           graphObjectMap,
           posedElementRoot.value

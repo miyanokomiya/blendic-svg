@@ -18,7 +18,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { computed } from 'vue'
-import { AnimationGraph, getAnimationGraph, IdMap, toMap } from '../models'
+import {
+  AnimationGraph,
+  BElement,
+  getAnimationGraph,
+  IdMap,
+  toMap,
+} from '../models'
 import { extractMap, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { useEntities } from '/@/composables/stores/entities'
@@ -31,13 +37,24 @@ import {
   cleanAllEdgeGenerics,
   createGraphNode,
   deleteAndDisconnectNodes,
+  resolveAllNodes,
 } from '/@/utils/graphNodes'
 import { getNotDuplicatedName } from '/@/utils/relations'
-import { IndexStore, useStore } from '/@/store'
+import { useStore } from '/@/store'
+import { useElementStore } from '/@/store/element'
+import { createGraphNodeContext } from '/@/utils/elements'
+import { useAnimationStore } from '/@/store/animation'
+
+interface StoreContext {
+  getArmatureId: () => string | undefined
+  getCurrentFrame: () => number
+  getEndFrame: () => number
+  getElementMap: (armatureId: string) => IdMap<BElement>
+}
 
 export function createStore(
   historyStore: HistoryStore,
-  indexStore: IndexStore
+  storeContext: StoreContext
 ) {
   const graphEntities = useEntities<AnimationGraph>('Graph')
   const nodeEntities = useEntities<GraphNode>('Node')
@@ -75,7 +92,21 @@ export function createStore(
       : undefined
   )
 
-  const targetArmatureId = indexStore.lastSelectedArmatureId
+  const targetArmatureId = computed(storeContext.getArmatureId)
+
+  const resolvedGraph = computed(() => {
+    if (!lastSelectedGraph.value) return
+
+    const context = createGraphNodeContext(
+      storeContext.getElementMap(lastSelectedGraph.value.armatureId),
+      {
+        currentFrame: storeContext.getCurrentFrame(),
+        endFrame: storeContext.getEndFrame(),
+      }
+    )
+    const resolvedNodeMap = resolveAllNodes(context, nodeMap.value)
+    return { context, nodeMap: resolvedNodeMap }
+  })
 
   function initState(
     graphs: AnimationGraph[],
@@ -107,7 +138,7 @@ export function createStore(
   }
 
   function addGraph(arg: Partial<{ id: string; name: string }> = {}) {
-    if (!indexStore.lastSelectedArmatureId.value) return
+    if (!targetArmatureId.value) return
 
     const graph = getAnimationGraph(
       {
@@ -116,7 +147,7 @@ export function createStore(
           arg.name ?? 'Graph',
           graphs.value.map((g) => g.name)
         ),
-        armatureId: indexStore.lastSelectedArmatureId.value,
+        armatureId: targetArmatureId.value,
       },
       !arg.id
     )
@@ -281,6 +312,7 @@ export function createStore(
     lastSelectedNode,
     selectedNodes,
     targetArmatureId,
+    resolvedGraph,
 
     selectGraph,
     addGraph,
@@ -299,7 +331,17 @@ export function createStore(
 }
 export type AnimationGraphStore = ReturnType<typeof createStore>
 
-const store = createStore(useHistoryStore(), useStore())
+const store = createStore(useHistoryStore(), {
+  getArmatureId: () => useStore().lastSelectedArmatureId.value,
+  getCurrentFrame: () => useAnimationStore().currentFrame.value,
+  getEndFrame: () => useAnimationStore().endFrame.value,
+  getElementMap: (armatureId: string) => {
+    const elementStore = useElementStore()
+    return elementStore.lastSelectedActor.value?.armatureId === armatureId
+      ? elementStore.elementMap.value
+      : {}
+  },
+})
 export function useAnimationGraphStore() {
   return store
 }

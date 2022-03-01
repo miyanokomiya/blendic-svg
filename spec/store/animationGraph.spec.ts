@@ -1,5 +1,4 @@
 import { getAnimationGraph } from '/@/models'
-import * as indexStoreModule from '/@/store/index'
 import { createStore } from '/@/store/animationGraph'
 import type { AnimationGraphStore } from '/@/store/animationGraph'
 import { createGraphNode } from '/@/utils/graphNodes'
@@ -10,9 +9,12 @@ describe('src/store/animationGraph.ts', () => {
 
   beforeEach(() => {
     const historyStore = useHistoryStore()
-    const indexStore = indexStoreModule.createStore(historyStore)
-    indexStore.createDefaultEntities()
-    target = createStore(historyStore, indexStore)
+    target = createStore(historyStore, {
+      getArmatureId: () => 'arm_id',
+      getCurrentFrame: () => 0,
+      getEndFrame: () => 60,
+      getElementMap: () => ({}),
+    })
     target.initState(
       [
         getAnimationGraph({

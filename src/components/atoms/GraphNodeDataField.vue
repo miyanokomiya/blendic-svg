@@ -20,78 +20,90 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div v-if="editableTypes[valueTypeKey]">
     <h5>{{ label }}</h5>
-    <TextInput v-if="disabled" :model-value="modelValue" disabled />
-    <template v-else>
-      <template v-if="valueTypeKey === 'SCALER'">
-        <SelectField
-          v-if="valueEnumKey"
-          :model-value="modelValue"
-          :options="valueEnumOptions"
-          no-placeholder
-          @update:model-value="update"
-        />
-        <SliderInput
-          v-else
-          :step="valueScale"
-          :model-value="modelValue"
-          @update:model-value="update"
-        />
-      </template>
+    <template v-if="valueTypeKey === 'SCALER'">
       <SelectField
-        v-else-if="valueTypeKey === 'OBJECT'"
+        v-if="valueEnumKey"
         :model-value="modelValue"
-        :options="objectOptions"
+        :options="valueEnumOptions"
+        :disabled="disabled"
+        no-placeholder
         @update:model-value="update"
       />
-      <TextInput
-        v-else-if="valueTypeKey === 'TEXT'"
+      <SliderInput
+        v-else
+        :step="valueScale"
         :model-value="modelValue"
-        :options="objectOptions"
+        :disabled="disabled"
         @update:model-value="update"
       />
-      <CheckboxInput
-        v-else-if="valueTypeKey === 'BOOLEAN'"
-        :model-value="modelValue"
-        @update:model-value="update"
-      />
-      <template v-else-if="valueTypeKey === 'VECTOR2'">
-        <InlineField label="x" label-width="20px">
-          <SliderInput
-            :model-value="modelValue.x"
-            :step="valueScale"
-            @update:model-value="
-              (val, seriesKey) => update({ x: val, y: modelValue.y }, seriesKey)
-            "
-          />
-        </InlineField>
-        <InlineField label="y" label-width="20px">
-          <SliderInput
-            :model-value="modelValue.y"
-            :step="valueScale"
-            @update:model-value="
-              (val, seriesKey) => update({ x: modelValue.x, y: val }, seriesKey)
-            "
-          />
-        </InlineField>
-      </template>
-      <div v-else-if="valueTypeKey === 'COLOR'" class="color-block">
-        <button
-          type="button"
-          class="color-button"
-          @click="toggleShowColorPicker"
-        >
-          <ColorRect :hsva="hsva" />
-        </button>
-        <div v-if="showColorPicker" class="color-popup">
-          <ColorPicker
-            class="color-picker"
-            :model-value="hsva"
-            extra-hue
-            @update:model-value="updateByColor"
-          />
-        </div>
-      </div>
     </template>
+    <SelectField
+      v-else-if="valueTypeKey === 'OBJECT'"
+      :model-value="modelValue"
+      :options="objectOptions"
+      :disabled="disabled"
+      @update:model-value="update"
+    />
+    <TextInput
+      v-else-if="valueTypeKey === 'TEXT'"
+      :model-value="modelValue"
+      :options="objectOptions"
+      :disabled="disabled"
+      @update:model-value="update"
+    />
+    <CheckboxInput
+      v-else-if="valueTypeKey === 'BOOLEAN'"
+      :model-value="modelValue"
+      :disabled="disabled"
+      @update:model-value="update"
+    />
+    <template v-else-if="valueTypeKey === 'VECTOR2'">
+      <InlineField label="x" label-width="20px">
+        <SliderInput
+          :model-value="modelValue.x"
+          :step="valueScale"
+          :disabled="disabled"
+          @update:model-value="
+            (val, seriesKey) => update({ x: val, y: modelValue.y }, seriesKey)
+          "
+        />
+      </InlineField>
+      <InlineField label="y" label-width="20px">
+        <SliderInput
+          :model-value="modelValue.y"
+          :step="valueScale"
+          :disabled="disabled"
+          @update:model-value="
+            (val, seriesKey) => update({ x: modelValue.x, y: val }, seriesKey)
+          "
+        />
+      </InlineField>
+    </template>
+    <GraphNodeDataFieldTransform
+      v-else-if="valueTypeKey === 'TRANSFORM'"
+      :model-value="modelValue"
+      :step="valueScale"
+      :disabled="disabled"
+      @update:model-value="update"
+    />
+    <div v-else-if="valueTypeKey === 'COLOR'" class="color-block">
+      <button
+        type="button"
+        class="color-button"
+        :disabled="disabled"
+        @click="toggleShowColorPicker"
+      >
+        <ColorRect :hsva="hsva" />
+      </button>
+      <div v-if="showColorPicker" class="color-popup">
+        <ColorPicker
+          class="color-picker"
+          :model-value="hsva"
+          extra-hue
+          @update:model-value="updateByColor"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -105,6 +117,7 @@ import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
 import ColorRect from '/@/components/atoms/ColorRect.vue'
+import GraphNodeDataFieldTransform from '/@/components/atoms/GraphNodeDataFieldTransform.vue'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { GraphEnumMap, GraphEnumMapKey } from '/@/models/graphNodeEnums'
@@ -116,6 +129,7 @@ const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
   [GRAPH_VALUE_TYPE.OBJECT]: true,
   [GRAPH_VALUE_TYPE.COLOR]: true,
   [GRAPH_VALUE_TYPE.TEXT]: true,
+  [GRAPH_VALUE_TYPE.TRANSFORM]: true,
 }
 
 export default defineComponent({
@@ -127,6 +141,7 @@ export default defineComponent({
     InlineField,
     ColorPicker,
     ColorRect,
+    GraphNodeDataFieldTransform,
   },
   props: {
     modelValue: { type: null, required: true },

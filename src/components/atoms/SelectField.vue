@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <span class="select-root">
-    <select v-model="value">
+    <select v-model="value" :disabled="disabled">
       <option v-if="!noPlaceholder" value="">-- {{ placeholder }} --</option>
       <option
         v-for="option in options"
@@ -49,6 +49,10 @@ const props = defineProps({
     default: 'None',
   },
   noPlaceholder: {
+    type: Boolean,
+    default: false,
+  },
+  disabled: {
     type: Boolean,
     default: false,
   },

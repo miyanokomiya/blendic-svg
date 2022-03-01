@@ -120,13 +120,26 @@ describe('src/components/atoms/GraphNodeDataField.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('incompatible types', () => {
+    it('TRANSFORM', () => {
       const wrapper = mount(Target, {
         props: {
           modelValue: getTransform(),
           label: 'value',
           type: {
             type: GRAPH_VALUE_TYPE.TRANSFORM,
+            struct: GRAPH_VALUE_STRUCT.UNIT,
+          },
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('incompatible types', () => {
+      const wrapper = mount(Target, {
+        props: {
+          modelValue: 'L0,0',
+          label: 'value',
+          type: {
+            type: GRAPH_VALUE_TYPE.D,
             struct: GRAPH_VALUE_STRUCT.UNIT,
           },
         },

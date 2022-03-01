@@ -1,0 +1,354 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/GraphNodeDataFieldTransform.vue snapshot default 1`] = `
+<div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 10px;"
+    >
+      tr
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+       ( 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+       , 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+       ) 
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 10px;"
+    >
+      ro
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 10px;"
+    >
+      sc
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+       ( 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+       , 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+       ) 
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 10px;"
+    >
+      or
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+       ( 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+       , 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          type="text"
+        />
+        <div
+          class="slider-forward"
+        />
+      </div>
+       ) 
+      
+    </div>
+    
+  </div>
+</div>
+`;
+
+exports[`src/components/atoms/GraphNodeDataFieldTransform.vue snapshot disabled 1`] = `
+<div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 10px;"
+    >
+      tr
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+       ( 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          disabled=""
+          type="text"
+        />
+        <!--v-if-->
+      </div>
+       , 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          disabled=""
+          type="text"
+        />
+        <!--v-if-->
+      </div>
+       ) 
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 10px;"
+    >
+      ro
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          disabled=""
+          type="text"
+        />
+        <!--v-if-->
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 10px;"
+    >
+      sc
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+       ( 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          disabled=""
+          type="text"
+        />
+        <!--v-if-->
+      </div>
+       , 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          disabled=""
+          type="text"
+        />
+        <!--v-if-->
+      </div>
+       ) 
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 10px;"
+    >
+      or
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+       ( 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          disabled=""
+          type="text"
+        />
+        <!--v-if-->
+      </div>
+       , 
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          disabled=""
+          type="text"
+        />
+        <!--v-if-->
+      </div>
+       ) 
+      
+    </div>
+    
+  </div>
+</div>
+`;

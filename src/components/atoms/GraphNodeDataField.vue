@@ -79,6 +79,13 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
       </InlineField>
     </template>
+    <GraphNodeDataFieldTransform
+      v-else-if="valueTypeKey === 'TRANSFORM'"
+      :model-value="modelValue"
+      :step="valueScale"
+      :disabled="disabled"
+      @update:model-value="update"
+    />
     <div v-else-if="valueTypeKey === 'COLOR'" class="color-block">
       <button
         type="button"
@@ -110,6 +117,7 @@ import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
 import ColorRect from '/@/components/atoms/ColorRect.vue'
+import GraphNodeDataFieldTransform from '/@/components/atoms/GraphNodeDataFieldTransform.vue'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { GraphEnumMap, GraphEnumMapKey } from '/@/models/graphNodeEnums'
@@ -121,6 +129,7 @@ const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
   [GRAPH_VALUE_TYPE.OBJECT]: true,
   [GRAPH_VALUE_TYPE.COLOR]: true,
   [GRAPH_VALUE_TYPE.TEXT]: true,
+  [GRAPH_VALUE_TYPE.TRANSFORM]: true,
 }
 
 export default defineComponent({
@@ -132,6 +141,7 @@ export default defineComponent({
     InlineField,
     ColorPicker,
     ColorRect,
+    GraphNodeDataFieldTransform,
   },
   props: {
     modelValue: { type: null, required: true },

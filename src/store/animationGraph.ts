@@ -94,7 +94,7 @@ export function createStore(
 
   const targetArmatureId = computed(storeContext.getArmatureId)
 
-  const resolvedGraphContext = computed(() => {
+  const resolvedGraph = computed(() => {
     if (!lastSelectedGraph.value) return
 
     const context = createGraphNodeContext(
@@ -104,8 +104,8 @@ export function createStore(
         endFrame: storeContext.getEndFrame(),
       }
     )
-    resolveAllNodes(context, nodeMap.value)
-    return context
+    const resolvedNodeMap = resolveAllNodes(context, nodeMap.value)
+    return { context, nodeMap: resolvedNodeMap }
   })
 
   function initState(
@@ -312,7 +312,7 @@ export function createStore(
     lastSelectedNode,
     selectedNodes,
     targetArmatureId,
-    resolvedGraphContext,
+    resolvedGraph,
 
     selectGraph,
     addGraph,

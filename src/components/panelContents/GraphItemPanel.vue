@@ -38,17 +38,10 @@ Copyright (C) 2021, Tomoya Komiyama.
         <template v-for="(input, key) in inputsMap" :key="key">
           <BlockField>
             <GraphNodeDataField
-              v-if="input.disabled"
-              :label="key as string"
-              :type="input.type"
-              model-value="connected"
-              disabled
-            />
-            <GraphNodeDataField
-              v-else
               :label="key as string"
               :type="input.type"
               :model-value="input.value"
+              :disabled="input.disabled"
               @update:model-value="
                 (val, seriesKey) => updateInput(key as string, val, seriesKey)
               "
@@ -122,12 +115,16 @@ export default defineComponent({
 
       const inputs = targetNode.value.inputs
       const types = getInputTypes(targetNode.value)
+      const resolvedNodeMap = graphStore.resolvedGraph.value?.nodeMap ?? {}
+
       return mapReduce(inputs, (value, key) => {
-        return {
-          type: types[key],
-          value: value.value,
-          disabled: !!value.from,
-        }
+        return value.from
+          ? {
+              type: types[key],
+              value: resolvedNodeMap[value.from.id]?.[value.from.key] ?? '',
+              disabled: true,
+            }
+          : { type: types[key], value: value.value }
       })
     })
     function updateInput(key: string, value: any, seriesKey?: string) {

@@ -5,7 +5,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot BOOLEAN 1`] = `
   <h5>
     value
   </h5>
-  
   <label
     class=""
   >
@@ -14,7 +13,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot BOOLEAN 1`] = `
     />
     <!--v-if-->
   </label>
-  
 </div>
 `;
 
@@ -23,7 +21,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot COLOR 1`] = `
   <h5>
     value
   </h5>
-  
   <div
     class="color-block"
   >
@@ -38,7 +35,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot COLOR 1`] = `
     </button>
     <!--v-if-->
   </div>
-  
 </div>
 `;
 
@@ -47,7 +43,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot OBJECT 1`] = `
   <h5>
     value
   </h5>
-  
   <span
     class="select-root"
   >
@@ -61,7 +56,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot OBJECT 1`] = `
       
     </select>
   </span>
-  
 </div>
 `;
 
@@ -70,7 +64,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER enum 1`] = 
   <h5>
     value
   </h5>
-  
   
   <span
     class="select-root"
@@ -97,7 +90,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER enum 1`] = 
     </select>
   </span>
   
-  
 </div>
 `;
 
@@ -106,7 +98,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER number 1`] 
   <h5>
     value
   </h5>
-  
   
   <div
     class="slider-wrapper"
@@ -123,7 +114,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot SCALER number 1`] 
     />
   </div>
   
-  
 </div>
 `;
 
@@ -132,7 +122,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot TEXT 1`] = `
   <h5>
     value
   </h5>
-  
   <div
     class="input-wrapper"
     options=""
@@ -144,7 +133,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot TEXT 1`] = `
       class="input-forward"
     />
   </div>
-  
 </div>
 `;
 
@@ -153,7 +141,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot VECTOR2 1`] = `
   <h5>
     value
   </h5>
-  
   
   <div
     class="row-block inline-field"
@@ -218,7 +205,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot VECTOR2 1`] = `
     
   </div>
   
-  
 </div>
 `;
 
@@ -227,15 +213,68 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot disabled 1`] = `
   <h5>
     value
   </h5>
+  
   <div
-    class="input-wrapper"
+    class="row-block inline-field"
   >
-    <input
-      disabled=""
-      type="text"
-    />
-    <!--v-if-->
+    
+    <label
+      style="width: 20px;"
+    >
+      x
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          disabled=""
+          type="text"
+        />
+        <!--v-if-->
+      </div>
+      
+    </div>
+    
   </div>
+  <div
+    class="row-block inline-field"
+  >
+    
+    <label
+      style="width: 20px;"
+    >
+      y
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="slider-wrapper"
+      >
+        <div
+          class="slider-background"
+          style="transform: scaleX(0);"
+        />
+        <input
+          disabled=""
+          type="text"
+        />
+        <!--v-if-->
+      </div>
+      
+    </div>
+    
+  </div>
+  
 </div>
 `;
 

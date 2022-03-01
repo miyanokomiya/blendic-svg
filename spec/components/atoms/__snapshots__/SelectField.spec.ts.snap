@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/SelectField.vue snapshot default 1`] = `
+<span
+  class="select-root"
+>
+  <select>
+    <option
+      value=""
+    >
+      -- None --
+    </option>
+    
+    <option
+      value="0"
+    >
+      a
+    </option>
+    <option
+      value="1"
+    >
+      b
+    </option>
+    
+  </select>
+</span>
+`;
+
+exports[`src/components/atoms/SelectField.vue snapshot disabled 1`] = `
+<span
+  class="select-root"
+>
+  <select
+    disabled=""
+  >
+    <option
+      value=""
+    >
+      -- None --
+    </option>
+    
+    <option
+      value="0"
+    >
+      a
+    </option>
+    <option
+      value="1"
+    >
+      b
+    </option>
+    
+  </select>
+</span>
+`;

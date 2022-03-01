@@ -116,13 +116,17 @@ export default defineComponent({
     })
 
     const graphResolvedElement = computed(() => {
-      if (!posedElementRoot.value) return
-      if (!graphEnabled.value) return posedElementRoot.value
+      if (
+        !posedElementRoot.value ||
+        !graphEnabled.value ||
+        !graphStore.resolvedGraph.value
+      )
+        return posedElementRoot.value
 
       // TODO: try-catch is just for debug
       try {
         const graphObjectMap =
-          graphStore.resolvedGraphContext.value.getObjectMap()
+          graphStore.resolvedGraph.value.context.getObjectMap()
         return getGraphResolvedElementTree(
           graphObjectMap,
           posedElementRoot.value

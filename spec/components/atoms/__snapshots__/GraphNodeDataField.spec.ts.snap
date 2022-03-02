@@ -43,6 +43,7 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot OBJECT 1`] = `
   <h5>
     value
   </h5>
+  
   <span
     class="select-root"
   >
@@ -56,6 +57,7 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot OBJECT 1`] = `
       
     </select>
   </span>
+  
 </div>
 `;
 
@@ -124,7 +126,6 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot TEXT 1`] = `
   </h5>
   <div
     class="input-wrapper"
-    options=""
   >
     <input
       type="text"

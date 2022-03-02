@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { v4 } from 'uuid'
+import { generateUuid } from '/@/utils/random'
 import { IdMap, KeyValueMap, toMap } from '/@/models'
 import { getNotDuplicatedName } from '/@/utils/relations'
 
@@ -242,7 +242,7 @@ export function sumMap(
 export function regenerateIdMap<T extends { id: string }>(
   src: IdMap<T>
 ): IdMap<T> {
-  return toMap(toList(src).map((item) => ({ ...item, id: v4() })))
+  return toMap(toList(src).map((item) => ({ ...item, id: generateUuid() })))
 }
 
 export function pickAnyItem<T>(map: { [key: string]: T }): T | undefined {
@@ -324,7 +324,7 @@ export function uniq<T>(src: T[]): T[] {
 export function resetId<T extends { id: string }>(src: T): T {
   return {
     ...src,
-    id: v4(),
+    id: generateUuid(),
   }
 }
 

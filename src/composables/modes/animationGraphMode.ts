@@ -48,8 +48,8 @@ import {
 } from '/@/utils/graphNodes'
 import { mapFilter, mapReduce, toList } from '/@/utils/commons'
 import { getGraphNodeRect } from '/@/utils/helpers'
-import { v4 } from 'uuid'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
+import { generateUuid } from '/@/utils/random'
 
 export type EditMode = '' | 'grab' | 'add' | 'drag-node' | 'drag-edge'
 
@@ -471,7 +471,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     graphStore.pasteNodes(
       toList(
         duplicateNodes(selectedNodeMap.value, graphStore.nodeMap.value, () =>
-          v4()
+          generateUuid()
         )
       ).map((n) => ({
         ...n,
@@ -621,7 +621,9 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     if (!state.clipboard) return
     graphStore.pasteNodes(
       toList(
-        duplicateNodes(state.clipboard, graphStore.nodeMap.value, () => v4())
+        duplicateNodes(state.clipboard, graphStore.nodeMap.value, () =>
+          generateUuid()
+        )
       ).map((n) => ({
         ...n,
         position: add(n.position, { x: 20, y: 20 }),

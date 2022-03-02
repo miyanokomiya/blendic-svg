@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { IRectangle, IVec2 } from 'okageo'
-import { v4 } from 'uuid'
+import { generateUuid } from '/@/utils/random'
 import { toKeyMap } from '/@/utils/commons'
 
 export type IdMap<T> = {
@@ -102,7 +102,7 @@ export function getAnimationGraph(
   arg: Partial<AnimationGraph> = {},
   generateId = false
 ): AnimationGraph {
-  const id = generateId ? v4() : arg.id ?? ''
+  const id = generateId ? generateUuid() : arg.id ?? ''
   return {
     name: '',
     armatureId: '',
@@ -173,7 +173,7 @@ export function getGraphObject(
   arg: Partial<GraphObject> = {},
   generateId = false
 ): GraphObject {
-  const id = generateId ? `go_${v4()}` : arg.id ?? ''
+  const id = generateId ? `go_${generateUuid()}` : arg.id ?? ''
   return {
     index: 0,
     ...arg,
@@ -185,7 +185,7 @@ export type SpaceType = 'world' | 'local'
 
 // Avoid number prefixed id HTML and CSS
 function generateElmId(): string {
-  return `elm_${v4()}`
+  return `elm_${generateUuid()}`
 }
 
 export function getElementNode(
@@ -216,7 +216,7 @@ export function getBElement(
 }
 
 export function getActor(arg: Partial<Actor> = {}, generateId = false): Actor {
-  const id = generateId ? v4() : arg.id ?? ''
+  const id = generateId ? generateUuid() : arg.id ?? ''
   return {
     armatureId: '',
     svgTree: getElementNode(),
@@ -241,7 +241,7 @@ export function getAction(
   arg: Partial<Action> = {},
   generateId = false
 ): Action {
-  const id = generateId ? v4() : arg.id ?? ''
+  const id = generateId ? generateUuid() : arg.id ?? ''
   return {
     name: '',
     armatureId: '',
@@ -252,7 +252,7 @@ export function getAction(
 }
 
 export function getBone(arg: Partial<Bone> = {}, generateId = false): Bone {
-  const id = generateId ? v4() : arg.id ?? ''
+  const id = generateId ? generateUuid() : arg.id ?? ''
   return {
     name: '',
     transform: getTransform(),
@@ -272,7 +272,7 @@ export function getArmature(
   arg: Partial<Armature> = {},
   generateId = false
 ): Armature {
-  const id = generateId ? v4() : arg.id ?? ''
+  const id = generateId ? generateUuid() : arg.id ?? ''
   return {
     name: '',
     transform: getTransform(),

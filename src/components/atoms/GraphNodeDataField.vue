@@ -82,7 +82,6 @@ Copyright (C) 2021, Tomoya Komiyama.
     <GraphNodeDataFieldTransform
       v-else-if="valueTypeKey === 'TRANSFORM'"
       :model-value="modelValue"
-      :step="valueScale"
       :disabled="disabled"
       @update:model-value="update"
     />

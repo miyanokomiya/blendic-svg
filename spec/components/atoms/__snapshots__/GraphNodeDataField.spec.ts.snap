@@ -141,9 +141,7 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot TRANSFORM 1`] = `
   <h5>
     value
   </h5>
-  <div
-    step="1"
-  >
+  <div>
     <div
       class="row-block inline-field"
     >

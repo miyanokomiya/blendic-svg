@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { v4 } from 'uuid'
+import { generateUuid } from '/@/utils/random'
 import {
   Transform,
   Bone,
@@ -517,7 +517,7 @@ export function immigrateBoneRelations(
     return immigrateConstraints(
       immigratedIdMap,
       src.constraints.map((id) => constraintMap[id]),
-      (src) => (options.resetConstraintId ? v4() : src.id)
+      (src) => (options.resetConstraintId ? generateUuid() : src.id)
     )
   })
 
@@ -543,7 +543,7 @@ export function duplicateBones(
   constraintMap: IdMap<BoneConstraint>,
   names: string[]
 ): { bones: Bone[]; createdConstraints: BoneConstraint[] } {
-  const duplicatedIdMap = mapReduce(srcBones, () => v4())
+  const duplicatedIdMap = mapReduce(srcBones, () => generateUuid())
   const nextIdMap = Object.values(duplicatedIdMap).reduce<{
     [id: string]: boolean
   }>((p, id) => {
@@ -603,7 +603,7 @@ export function symmetrizeBones(
         // override current bone and inherit the id
         symmetrizedIdMap[id] = currentNameIdMap[name]
       } else {
-        symmetrizedIdMap[id] = v4()
+        symmetrizedIdMap[id] = generateUuid()
       }
       symmetrizedNameMap[id] = name
     }
@@ -763,7 +763,7 @@ function reduceUpdateEntities(
 export function subdivideBones(
   boneMap: IdMap<Bone>,
   targetIds: string[],
-  generateId: () => string = v4
+  generateId: () => string = generateUuid
 ): IdMap<Bone> {
   return reduceUpdateEntities(boneMap, {}, targetIds, (p, _, targetId) => {
     return { bones: subdivideBone(p, targetId, generateId), constraints: {} }
@@ -776,7 +776,7 @@ export function subdivideBones(
 export function subdivideBone(
   boneMap: IdMap<Bone>,
   targetId: string,
-  generateId: () => string = v4
+  generateId: () => string = generateUuid
 ): IdMap<Bone> {
   const target = boneMap[targetId]
   if (!target) return boneMap

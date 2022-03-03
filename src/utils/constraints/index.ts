@@ -26,7 +26,7 @@ import * as copyLocation from './copyLocation'
 import * as copyScale from './copyScale'
 import { Bone, IdMap, toMap } from '/@/models'
 import { dropMap, mapFilter, mapReduce, sumReduce } from '/@/utils/commons'
-import { v4 } from 'uuid'
+import { generateUuid } from '/@/utils/random'
 
 export type BoneConstraintType =
   | 'IK'
@@ -155,7 +155,7 @@ export function getConstraint(
   },
   generateId = false
 ): BoneConstraint {
-  const id = generateId ? v4() : src.id ?? ''
+  const id = generateId ? generateUuid() : src.id ?? ''
   return {
     type: src.type,
     name: src?.name ?? '',

@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { v4 } from 'uuid'
+import { generateUuid } from '/@/utils/random'
 import { IVec2 } from 'okageo'
 
 export type KeyframeName = 'bone' | 'constraint'
@@ -108,7 +108,7 @@ export function getKeyframeBone(
   arg: Partial<KeyframeBone> = {},
   generateId = false
 ): KeyframeBone {
-  const id = generateId ? v4() : arg.id ?? ''
+  const id = generateId ? generateUuid() : arg.id ?? ''
   return {
     frame: 0,
     targetId: '',
@@ -127,7 +127,7 @@ export function getKeyframeConstraint(
   arg: Partial<KeyframeConstraint> = {},
   generateId = false
 ): KeyframeConstraint {
-  const id = generateId ? v4() : arg.id ?? ''
+  const id = generateId ? generateUuid() : arg.id ?? ''
   return {
     frame: 0,
     targetId: '',

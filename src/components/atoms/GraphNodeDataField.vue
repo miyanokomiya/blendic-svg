@@ -37,17 +37,18 @@ Copyright (C) 2021, Tomoya Komiyama.
         @update:model-value="update"
       />
     </template>
-    <SelectField
-      v-else-if="valueTypeKey === 'OBJECT'"
-      :model-value="modelValue"
-      :options="objectOptions"
-      :disabled="disabled"
-      @update:model-value="update"
-    />
+    <template v-else-if="valueTypeKey === 'OBJECT'">
+      <TextInput v-if="disabled" :model-value="modelValue" disabled />
+      <SelectField
+        v-else
+        :model-value="modelValue"
+        :options="objectOptions"
+        @update:model-value="update"
+      />
+    </template>
     <TextInput
       v-else-if="valueTypeKey === 'TEXT'"
       :model-value="modelValue"
-      :options="objectOptions"
       :disabled="disabled"
       @update:model-value="update"
     />
@@ -82,7 +83,6 @@ Copyright (C) 2021, Tomoya Komiyama.
     <GraphNodeDataFieldTransform
       v-else-if="valueTypeKey === 'TRANSFORM'"
       :model-value="modelValue"
-      :step="valueScale"
       :disabled="disabled"
       @update:model-value="update"
     />

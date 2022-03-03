@@ -39,7 +39,7 @@ import {
   isSameValueType,
   getGenericsChainAtFn,
 } from '/@/utils/graphNodes/core'
-import { v4 } from 'uuid'
+import { generateUuid } from '/@/utils/random'
 import * as get_frame from './nodes/getFrame'
 import * as scaler from './nodes/scaler'
 import * as make_vector2 from './nodes/makeVector2'
@@ -692,7 +692,7 @@ export function createGraphNode<T extends GraphNodeType>(
     node.inputs = { ...node.inputs, ...arg.inputs }
   }
   if (generateId) {
-    node.id = `gn_${v4()}`
+    node.id = `gn_${generateUuid()}`
   }
   return node
 }

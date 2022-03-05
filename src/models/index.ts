@@ -118,7 +118,7 @@ export interface CustomGraph {
   nodes: string[]
 }
 
-export function getGraphCustomGraph(
+export function getCustomGraph(
   arg: Partial<CustomGraph> = {},
   generateId = false
 ): CustomGraph {

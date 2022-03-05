@@ -25,7 +25,7 @@ import {
   getAnimationGraph,
   IdMap,
   toMap,
-  getGraphCustomGraph,
+  getCustomGraph,
 } from '../models'
 import { extractMap, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
@@ -48,7 +48,7 @@ import { createGraphNodeContext } from '/@/utils/elements'
 import { useAnimationStore } from '/@/store/animation'
 import { useValueStore } from '/@/composables/stores/valueStore'
 
-type CanvasType = 'graph' | 'custom'
+export type GraphType = 'graph' | 'custom'
 
 interface StoreContext {
   getArmatureId: () => string | undefined
@@ -76,7 +76,7 @@ export function createStore(
   )
   // Nodes can belong to both AnimationGraph and CustomGraph
   // => Switch the parent dynamically due to this varibale
-  const graphTypeStore = useValueStore<CanvasType>('Graph Type', () => 'graph')
+  const graphTypeStore = useValueStore<GraphType>('Graph Type', () => 'graph')
 
   historyStore.defineReducers(graphEntities.reducers)
   historyStore.defineReducers(nodeEntities.reducers)
@@ -107,7 +107,7 @@ export function createStore(
   )
 
   const graphType = computed(() => graphTypeStore.state.value)
-  function setCanvasType(canvasType: CanvasType) {
+  function setCanvasType(canvasType: GraphType) {
     historyStore.dispatch(graphTypeStore.createUpdateAction(canvasType))
   }
   function getNodeParentEntity() {
@@ -154,22 +154,31 @@ export function createStore(
 
   function initState(
     graphs: AnimationGraph[],
+    customGraphs: CustomGraph[],
     nodes: GraphNode[],
     graphSelected: [string, true][],
-    nodeSelected: [string, true][]
+    customGraphSelectad: [string, true][],
+    nodeSelected: [string, true][],
+    graphType: GraphType
   ) {
     graphEntities.init(fromEntityList(graphs))
+    customGraphEntities.init(fromEntityList(customGraphs))
     nodeEntities.init(fromEntityList(nodes))
     graphSelectable.restore(graphSelected)
+    customGraphSelectable.restore(customGraphSelectad)
     nodeSelectable.restore(nodeSelected)
+    graphTypeStore.restore(graphType)
   }
 
   function exportState() {
     return {
       graphs: graphs.value,
+      customGraphs: customGraphs.value,
       nodes: toEntityList(nodeEntities.entities.value),
       graphSelected: graphSelectable.createSnapshot(),
+      customGraphSelected: customGraphSelectable.createSnapshot(),
       nodeSelected: nodeSelectable.createSnapshot(),
+      graphType: graphTypeStore.createSnapshot(),
     }
   }
 
@@ -357,7 +366,7 @@ export function createStore(
   }
 
   function addCustomGraph(arg: Partial<{ id: string; name: string }> = {}) {
-    const customGraph = getGraphCustomGraph(
+    const customGraph = getCustomGraph(
       {
         id: arg.id,
         name: getNotDuplicatedName(

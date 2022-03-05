@@ -24,11 +24,13 @@ import {
   getArmature,
   getBElement,
   getBone,
+  getCustomGraph,
   getElementNode,
 } from '/@/models'
 import { getKeyframeBone } from '/@/models/keyframe'
 import {
   initialize,
+  initializeCustomGraph,
   initializeGraph,
   initializeGraphNodes,
 } from '/@/models/storage'
@@ -71,7 +73,11 @@ describe('src/models/storage.ts', () => {
         ],
         elements: [{ id: 'svg' }],
         graphs: [{ id: 'graph', nodes: ['node'] }],
-        nodes: [{ id: 'node', type: 'scaler' }],
+        customGraphs: [{ id: 'custom_graph', nodes: ['a'] }],
+        nodes: [
+          { id: 'node', type: 'scaler' },
+          { id: 'a', type: 'scaler' },
+        ],
       }
       expect(initialize(src as any)).toEqual({
         armatures: [
@@ -118,9 +124,15 @@ describe('src/models/storage.ts', () => {
         elementSelected: [],
 
         graphs: [getAnimationGraph({ id: 'graph', nodes: ['node'] })],
-        nodes: [createGraphNode('scaler', { id: 'node' })],
+        customGraphs: [getCustomGraph({ id: 'custom_graph', nodes: ['a'] })],
+        nodes: [
+          createGraphNode('scaler', { id: 'node' }),
+          createGraphNode('scaler', { id: 'a' }),
+        ],
         graphSelected: [],
+        customGraphSelected: [],
         nodeSelected: [],
+        graphType: 'graph',
       })
     })
   })
@@ -131,6 +143,25 @@ describe('src/models/storage.ts', () => {
       const invalid = createGraphNode('scaler', { id: 'invalid' })
       expect(
         initializeGraph(
+          getAnimationGraph({
+            nodes: [valid.id, invalid.id],
+          }),
+          { [valid.id]: valid }
+        )
+      ).toEqual(
+        getAnimationGraph({
+          nodes: [valid.id],
+        })
+      )
+    })
+  })
+
+  describe('initializeCustomGraph', () => {
+    it('should drop unexisted nodes', () => {
+      const valid = createGraphNode('scaler', { id: 'valid' })
+      const invalid = createGraphNode('scaler', { id: 'invalid' })
+      expect(
+        initializeCustomGraph(
           getAnimationGraph({
             nodes: [valid.id, invalid.id],
           }),

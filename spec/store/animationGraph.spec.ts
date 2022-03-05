@@ -1,4 +1,4 @@
-import { getAnimationGraph } from '/@/models'
+import { getAnimationGraph, getCustomGraph } from '/@/models'
 import { createStore } from '/@/store/animationGraph'
 import type { AnimationGraphStore } from '/@/store/animationGraph'
 import { createGraphNode } from '/@/utils/graphNodes'
@@ -23,11 +23,19 @@ describe('src/store/animationGraph.ts', () => {
         }),
       ],
       [
+        getCustomGraph({
+          id: 'custom',
+          nodes: [],
+        }),
+      ],
+      [
         createGraphNode('scaler', { id: 'scaler' }),
         createGraphNode('make_vector2', { id: 'make_vector2' }),
       ],
       [],
-      []
+      [],
+      [],
+      'graph'
     )
     target.selectGraph('graph')
   })

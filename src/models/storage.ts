@@ -34,9 +34,12 @@ import {
   toMap,
   IdMap,
   BoneSelectedState,
+  CustomGraph,
+  getCustomGraph,
 } from '/@/models'
 import { GraphNodeBase } from '/@/models/graphNode'
 import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
+import { GraphType } from '/@/store/animationGraph'
 import { extractMap, mapReduce } from '/@/utils/commons'
 import { BoneConstraint, getConstraint } from '/@/utils/constraints'
 import { initializeBElements } from '/@/utils/elements'
@@ -65,9 +68,12 @@ export interface StorageRoot {
   elementSelected: [string, true][]
 
   graphs: AnimationGraph[]
+  customGraphs: CustomGraph[]
   nodes: GraphNodeBase[]
   graphSelected: [string, true][]
+  customGraphSelected: [string, true][]
   nodeSelected: [string, true][]
+  graphType: GraphType
 }
 
 export function initialize(src: StorageRoot): StorageRoot {
@@ -82,6 +88,8 @@ export function initialize(src: StorageRoot): StorageRoot {
 
   const nodeMap = toMap(src.nodes ?? [])
   const graphs = src.graphs?.map((g) => initializeGraph(g, nodeMap)) ?? []
+  const customGraphs =
+    src.customGraphs?.map((g) => initializeCustomGraph(g, nodeMap)) ?? []
   const nodes = initializeGraphNodes(src.nodes ?? [])
 
   return {
@@ -109,9 +117,12 @@ export function initialize(src: StorageRoot): StorageRoot {
     elementSelected: src.elementSelected ?? [],
 
     graphs,
+    customGraphs,
     nodes,
     graphSelected: src.graphSelected ?? [],
+    customGraphSelected: src.customGraphSelected ?? [],
     nodeSelected: src.nodeSelected ?? [],
+    graphType: src.graphType ?? 'graph',
   }
 }
 
@@ -144,6 +155,17 @@ export function initializeGraph(
   nodeMap: IdMap<GraphNodeBase>
 ): AnimationGraph {
   const g = getAnimationGraph(graph)
+  return {
+    ...g,
+    nodes: g.nodes.filter((id) => !!nodeMap[id]),
+  }
+}
+
+export function initializeCustomGraph(
+  graph: CustomGraph,
+  nodeMap: IdMap<GraphNodeBase>
+): CustomGraph {
+  const g = getCustomGraph(graph)
   return {
     ...g,
     nodes: g.nodes.filter((id) => !!nodeMap[id]),

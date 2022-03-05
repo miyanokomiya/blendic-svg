@@ -112,6 +112,25 @@ export function getAnimationGraph(
   }
 }
 
+export interface GraphCustomNode {
+  id: string
+  name: string
+  nodes: string[]
+}
+
+export function getGraphCustomNode(
+  arg: Partial<GraphCustomNode> = {},
+  generateId = false
+): GraphCustomNode {
+  const id = generateId ? generateElmId() : arg.id ?? ''
+  return {
+    name: '',
+    nodes: [],
+    ...arg,
+    id,
+  }
+}
+
 export interface GraphObject {
   id: string
 

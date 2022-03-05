@@ -20,6 +20,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="animation-graph-panel-root">
     <div class="top">
+      <div class="select-graph-type">
+        <SelectField
+          :options="canvasTypeOptions"
+          :model-value="canvasType"
+          no-placeholder
+          @update:model-value="setCanvasType"
+        />
+      </div>
       <div class="select-graph">
         <SelectField v-model="selectedGraphId" :options="graphOptions" />
       </div>
@@ -34,7 +42,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           class="add-graph"
           title="Add graph"
           :disabled="!selectedArmature"
-          @click="addGraph"
+          @click="addParentGraph"
         >
           <AddIcon />
         </button>
@@ -42,7 +50,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           class="delete-graph"
           title="Delete graph"
           :disabled="!selectedGraphId"
-          @click="deleteGraph"
+          @click="deleteParentGraph"
         >
           <DeleteIcon />
         </button>
@@ -119,6 +127,11 @@ export default defineComponent({
     GraphSideBar,
   },
   setup() {
+    const canvasTypeOptions = [
+      { value: 'graph', label: 'Graph' },
+      { value: 'custom', label: 'Custom Node' },
+    ]
+
     const store = useStore()
     const elementStore = useElementStore()
     const graphStore = useAnimationGraphStore()
@@ -128,31 +141,57 @@ export default defineComponent({
     const mode = useAnimationGraphMode(graphStore)
 
     const selectedArmature = computed(() => store.lastSelectedArmature.value)
-    const selectedGraph = computed(() => graphStore.lastSelectedGraph.value)
+    const selectedGraph = computed(() => graphStore.parentGraph.value)
 
-    const allNames = computed(() => graphStore.graphs.value.map((g) => g.name))
+    const allNames = computed(() =>
+      graphStore.parentGraphs.value.map((g) => g.name)
+    )
 
     const draftName = ref('')
     watchEffect(() => {
       draftName.value = selectedGraph.value?.name ?? ''
     })
 
+    function addParentGraph() {
+      if (graphStore.graphType.value === 'graph') {
+        graphStore.addGraph()
+      } else {
+        graphStore.addCustomNode()
+      }
+    }
+
+    function deleteParentGraph() {
+      if (graphStore.graphType.value === 'graph') {
+        graphStore.deleteGraph()
+      } else {
+        graphStore.deleteCustomNode()
+      }
+    }
+
     function changeGraphName() {
       if (allNames.value.includes(draftName.value)) {
         draftName.value = selectedGraph.value?.name ?? ''
       } else {
-        graphStore.updateGraph({ name: draftName.value })
+        if (graphStore.graphType.value === 'graph') {
+          graphStore.updateGraph({ name: draftName.value })
+        } else {
+          graphStore.updateCustomNode({ name: draftName.value })
+        }
       }
     }
 
     const graphOptions = computed(() =>
-      graphStore.graphs.value.map((g) => {
-        const valid = selectedArmature.value?.id !== g.armatureId
-        return {
-          value: g.id,
-          label: `${valid ? '(x)' : ''} ${g.name}`,
-        }
-      })
+      graphStore.graphType.value === 'graph'
+        ? graphStore.graphs.value.map((g) => {
+            const valid = selectedArmature.value?.id !== g.armatureId
+            return {
+              value: g.id,
+              label: `${valid ? '(x)' : ''} ${g.name}`,
+            }
+          })
+        : graphStore.customNodes.value.map((g) => {
+            return { value: g.id, label: g.name }
+          })
     )
 
     const selectedGraphId = computed({
@@ -268,7 +307,12 @@ export default defineComponent({
       'getObjectOptions',
       () => {
         const actor = elementStore.lastSelectedActor.value
-        if (!actor || !currentGraph.value) return []
+        if (
+          graphStore.graphType.value !== 'graph' ||
+          !actor ||
+          !currentGraph.value
+        )
+          return []
         if (actor.armatureId !== currentGraph.value.armatureId) return []
 
         const nativeElementMap = toMap(flatElementTree([actor.svgTree]))
@@ -281,6 +325,10 @@ export default defineComponent({
     return {
       GraphNode,
       GraphNodeReroute,
+
+      canvasType: graphStore.graphType,
+      setCanvasType: (val: any) => graphStore.setCanvasType(val),
+      canvasTypeOptions,
 
       canvas,
       mode,
@@ -298,8 +346,8 @@ export default defineComponent({
       selectedGraphId,
       graphOptions,
 
-      addGraph: () => graphStore.addGraph(),
-      deleteGraph: graphStore.deleteGraph,
+      addParentGraph,
+      deleteParentGraph,
 
       selectedNodes,
       downNodeBody,
@@ -325,6 +373,9 @@ export default defineComponent({
   align-items: center;
   > * {
     margin-right: 8px;
+  }
+  .select-graph-type {
+    width: 130px;
   }
   .select-graph {
     width: 160px;

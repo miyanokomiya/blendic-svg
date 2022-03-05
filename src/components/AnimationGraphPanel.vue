@@ -156,7 +156,7 @@ export default defineComponent({
       if (graphStore.graphType.value === 'graph') {
         graphStore.addGraph()
       } else {
-        graphStore.addCustomNode()
+        graphStore.addCustomGraph()
       }
     }
 
@@ -164,7 +164,7 @@ export default defineComponent({
       if (graphStore.graphType.value === 'graph') {
         graphStore.deleteGraph()
       } else {
-        graphStore.deleteCustomNode()
+        graphStore.deleteCustomGraph()
       }
     }
 
@@ -175,7 +175,7 @@ export default defineComponent({
         if (graphStore.graphType.value === 'graph') {
           graphStore.updateGraph({ name: draftName.value })
         } else {
-          graphStore.updateCustomNode({ name: draftName.value })
+          graphStore.updateCustomGraph({ name: draftName.value })
         }
       }
     }
@@ -189,7 +189,7 @@ export default defineComponent({
               label: `${valid ? '(x)' : ''} ${g.name}`,
             }
           })
-        : graphStore.customNodes.value.map((g) => {
+        : graphStore.customGraphs.value.map((g) => {
             return { value: g.id, label: g.name }
           })
     )

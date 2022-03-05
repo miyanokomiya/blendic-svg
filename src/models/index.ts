@@ -112,16 +112,16 @@ export function getAnimationGraph(
   }
 }
 
-export interface GraphCustomNode {
+export interface CustomGraph {
   id: string
   name: string
   nodes: string[]
 }
 
-export function getGraphCustomNode(
-  arg: Partial<GraphCustomNode> = {},
+export function getGraphCustomGraph(
+  arg: Partial<CustomGraph> = {},
   generateId = false
-): GraphCustomNode {
+): CustomGraph {
   const id = generateId ? generateElmId() : arg.id ?? ''
   return {
     name: '',

@@ -39,7 +39,9 @@ export interface GraphEdgeBinder {
 export interface GraphNodeBase {
   id: string
   type: GraphNodeType
-  data: { [key: string]: unknown }
+  data: {
+    [key: string]: unknown | GraphNodeData<unknown>
+  }
   inputs: GraphNodeInputs
   position: IVec2
 }
@@ -56,6 +58,8 @@ export const GRAPH_VALUE_TYPE = {
   STOP: 'STOP',
 
   GENERICS: 'GENERICS',
+
+  INPUT: 'INPUT',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 
@@ -89,6 +93,11 @@ export interface ValueTypeScaler extends ValueTypeBase<'SCALER'> {
 
 interface ValueTypeVector2 extends ValueTypeBase<'VECTOR2'> {
   scale: number
+}
+
+export interface GraphNodeData<T> {
+  value?: T
+  genericsType?: ValueType
 }
 
 export interface GraphNodeInput<T> {
@@ -203,6 +212,11 @@ export interface GraphNodes {
   switch_generics: GraphNodeSwitchGenerics
 
   reroute: GraphNodeReroute
+
+  custom_begin_input: GraphNodeCustomBeginInput
+  custom_input: GraphNodeCustomInput
+  custom_begin_output: GraphNodeCustomBeginOutput
+  custom_output: GraphNodeCustomOutput
 }
 export type GraphNodeType = keyof GraphNodes
 // Note: this union decrease performance too much of type checking and unit test
@@ -760,4 +774,24 @@ export interface GraphNodeSwitchGenerics extends GraphNodeBase {
 export interface GraphNodeReroute extends GraphNodeBase {
   type: 'reroute'
   inputs: { value: GraphNodeInput<any> }
+}
+
+export interface GraphNodeCustomBeginInput extends GraphNodeBase {
+  type: 'custom_begin_input'
+}
+
+export interface GraphNodeCustomInput extends GraphNodeBase {
+  type: 'custom_input'
+  inputs: { input: GraphNodeInput<string> }
+  data: { name: string; default: GraphNodeData<unknown> }
+}
+
+export interface GraphNodeCustomBeginOutput extends GraphNodeBase {
+  type: 'custom_begin_output'
+}
+
+export interface GraphNodeCustomOutput extends GraphNodeBase {
+  type: 'custom_output'
+  inputs: { value: GraphNodeInput<unknown>; output: GraphNodeInput<string> }
+  data: { name: string }
 }

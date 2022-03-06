@@ -53,6 +53,7 @@ import {
   getUpdatedNodeMapToDisconnectNodeInput,
   getInputTypes,
   createDefaultUnitValueForGenerics,
+  getDataTypeAndValue,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -1303,6 +1304,37 @@ describe('src/utils/graphNodes/index.ts', () => {
           }),
         })
       })
+      it('should resolve generics in data field', () => {
+        expect(
+          cleanEdgeGenericsGroupAt(
+            {
+              a: createGraphNode('custom_input', {
+                id: 'a',
+                data: {
+                  name: '',
+                  default: { value: '' },
+                },
+              }),
+              c: createGraphNode('make_vector2', {
+                id: 'c',
+                inputs: {
+                  x: { from: { id: 'a', key: 'value' } },
+                  y: { value: 0 },
+                },
+              }),
+            },
+            { id: 'c', key: 'x' }
+          )
+        ).toEqual({
+          a: createGraphNode('custom_input', {
+            id: 'a',
+            data: {
+              name: '',
+              default: { value: 0, genericsType: UNIT_VALUE_TYPES.SCALER },
+            },
+          }),
+        })
+      })
     })
   })
 
@@ -1401,6 +1433,110 @@ describe('src/utils/graphNodes/index.ts', () => {
               },
             },
           }),
+        })
+      })
+      it('resolve generics of data', () => {
+        expect(
+          cleanAllEdgeGenerics({
+            a: createGraphNode('custom_input', {
+              id: 'a',
+              inputs: {
+                input: {
+                  genericsType: UNIT_VALUE_TYPES.SCALER,
+                },
+              },
+            }),
+            b: createGraphNode('make_vector2', {
+              id: 'b',
+              inputs: {
+                x: { from: { id: 'a', key: 'value' } },
+                y: { value: 2 },
+              },
+            }),
+          })
+        ).toEqual({
+          a: createGraphNode('custom_input', {
+            id: 'a',
+            data: {
+              name: 'input',
+              default: {
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
+              },
+            },
+            inputs: {
+              input: {
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+            },
+          }),
+        })
+      })
+      it('clean generics of data', () => {
+        expect(
+          cleanAllEdgeGenerics({
+            a: createGraphNode('custom_input', {
+              id: 'a',
+              data: {
+                name: 'input',
+                default: {
+                  genericsType: UNIT_VALUE_TYPES.SCALER,
+                  value: 0,
+                },
+              },
+            }),
+          })
+        ).toEqual({
+          a: createGraphNode('custom_input', {
+            id: 'a',
+          }),
+        })
+      })
+    })
+  })
+
+  describe('getDataTypeAndValue', () => {
+    describe('should return type and value of the data field', () => {
+      it('when the node has decided generics data', () => {
+        expect(
+          getDataTypeAndValue(
+            createGraphNode('custom_input', {
+              data: {
+                name: '',
+                default: { genericsType: UNIT_VALUE_TYPES.SCALER, value: 10 },
+              },
+            }),
+            'default'
+          )
+        ).toEqual({
+          type: UNIT_VALUE_TYPES.SCALER,
+          value: 10,
+        })
+      })
+      it('when the node has undecided generics data', () => {
+        expect(
+          getDataTypeAndValue(
+            createGraphNode('custom_input', {
+              data: {
+                name: '',
+                default: {},
+              },
+            }),
+            'default'
+          )
+        ).toEqual({ type: UNIT_VALUE_TYPES.GENERICS, value: {} })
+      })
+      it('when the node does not have generics data', () => {
+        expect(
+          getDataTypeAndValue(
+            createGraphNode('scaler', {
+              data: { value: 20 },
+            }),
+            'value'
+          )
+        ).toEqual({
+          type: UNIT_VALUE_TYPES.SCALER,
+          value: 20,
         })
       })
     })

@@ -26,6 +26,7 @@ import {
   GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
   ValueType,
+  GraphNodeData,
 } from '/@/models/graphNode'
 import { multiPoseTransform } from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
@@ -39,7 +40,9 @@ export interface NodeStruct<T extends GraphNodeBase> {
   data: {
     [key in keyof T['data']]: {
       type: ValueType
-      default: Required<T['data'][key]>
+      default: T['data'][key] extends GraphNodeData<any>
+        ? Required<T['data'][key]>['value']
+        : Required<T['data'][key]>
     }
   }
   inputs: {
@@ -60,7 +63,7 @@ export interface NodeStruct<T extends GraphNodeBase> {
   textColor?: string
   label?: string
   getOutputType?: (self: T, key: string) => ValueType
-  genericsChains?: { key: string; output?: true }[][]
+  genericsChains?: { key: string; output?: true; data?: true }[][]
   getErrors?: (self: T) => string[] | undefined
 }
 
@@ -179,6 +182,7 @@ export interface EdgeChainGroupItem {
   id: string
   key: string
   output?: true
+  data?: true
   type?: ValueType
 }
 

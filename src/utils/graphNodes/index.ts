@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import {
   GradientStop,
   GraphNode,
+  GraphNodeData,
   GraphNodeInput,
   GraphNodeInputs,
   GraphNodeMap,
@@ -38,6 +39,7 @@ import {
   EdgeChainGroupItem,
   isSameValueType,
   getGenericsChainAtFn,
+  UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 import { generateUuid } from '/@/utils/random'
 import * as get_frame from './nodes/getFrame'
@@ -116,6 +118,9 @@ import * as equal_generics from './nodes/equalGenerics'
 import * as switch_generics from './nodes/switch_generics'
 
 import * as reroute from './nodes/reroute'
+
+import * as custom_begin_input from './nodes/customBeginInput'
+import * as custom_input from './nodes/customInput'
 
 import { getTransform, IdMap } from '/@/models'
 import { extractMap, mapReduce, toList } from '/@/utils/commons'
@@ -197,6 +202,9 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   switch_generics,
 
   reroute,
+
+  custom_begin_input,
+  custom_input,
 } as const
 
 interface NodeMenuOption {
@@ -480,6 +488,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
+  INPUT: [{ label: 'Input', type: 'custom_input', key: 'input' }],
 }
 
 export function getGraphNodeModule<T extends GraphNodeType>(
@@ -896,6 +905,29 @@ function isGenericsResolved(genericsType?: ValueType): boolean {
   return !!genericsType && genericsType.type !== GRAPH_VALUE_TYPE.GENERICS
 }
 
+function getDataOriginalType(type: GraphNodeType, key: string): ValueType {
+  const struct = getGraphNodeModule<any>(type).struct
+  return struct.data[key].type
+}
+
+export function getDataTypeAndValue(
+  target: GraphNode,
+  key: string
+): { type: ValueType; value: unknown } {
+  const field = target.data[key] as any
+  return typeof field === 'object' && field.genericsType
+    ? {
+        type: field.genericsType as ValueType,
+        value: field.value,
+      }
+    : {
+        type:
+          getGraphNodeModule<any>(target.type).struct.data[key]?.type ??
+          UNIT_VALUE_TYPES.GENERICS,
+        value: field,
+      }
+}
+
 function getInputType(target: GraphNode, key: string): ValueType {
   return (
     target.inputs[key].genericsType ??
@@ -1048,12 +1080,34 @@ function cleanEdgeGenericsGroupByType(
 ): GraphNodeMap {
   const ret: GraphNodeMap = {}
 
-  group
-    .filter((item) => !item.output)
-    .forEach((item) => {
-      const node = ret[item.id] ?? nodeMap[item.id]
-      if (!node) return
+  group.forEach((item) => {
+    if (item.output) return
 
+    const node = ret[item.id] ?? nodeMap[item.id]
+    if (!node) return
+
+    if (item.data) {
+      if (
+        getDataOriginalType(node.type, item.key).type !==
+        GRAPH_VALUE_TYPE.GENERICS
+      )
+        return
+
+      const data = node.data[item.key]
+      if (isSameValueType((data as GraphNodeData<unknown>)?.genericsType, type))
+        return
+
+      ret[item.id] = {
+        ...node,
+        data: {
+          ...node.data,
+          [item.key]: {
+            genericsType: type,
+            value: createDefaultValueForGenerics(type),
+          },
+        },
+      }
+    } else {
       if (
         getInputOriginalType(node.type, item.key).type !==
         GRAPH_VALUE_TYPE.GENERICS
@@ -1074,7 +1128,8 @@ function cleanEdgeGenericsGroupByType(
           },
         },
       }
-    })
+    }
+  })
 
   return ret
 }
@@ -1109,6 +1164,7 @@ export function createDefaultUnitValueForGenerics(
     case GRAPH_VALUE_TYPE.TEXT:
     case GRAPH_VALUE_TYPE.OBJECT:
     case GRAPH_VALUE_TYPE.D:
+    case GRAPH_VALUE_TYPE.INPUT:
       return ''
     case GRAPH_VALUE_TYPE.GENERICS:
       return undefined

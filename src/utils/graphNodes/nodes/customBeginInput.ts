@@ -40,7 +40,7 @@ export const struct: NodeStruct<GraphNodeCustomBeginInput> = {
     return { input: '' }
   },
   width: 130,
-  color: '#f0f8ff',
-  textColor: '#000',
+  color: '#ff7f50',
+  textColor: '#fff',
   label: 'Begin Input',
 }

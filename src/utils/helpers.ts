@@ -368,6 +368,8 @@ export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
     D: '#00bfff',
     STOP: '#8b008b',
     GENERICS: '#b0c4de',
+    INPUT: '#ff7f50',
+    OUTPUT: '#df7698',
   } as const
 
 export function getInputValuePreviewText(

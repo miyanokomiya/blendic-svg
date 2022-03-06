@@ -40,7 +40,7 @@ export const struct: NodeStruct<GraphNodeCustomBeginOutput> = {
     return { output: '' }
   },
   width: 130,
-  color: '#f0f8ff',
-  textColor: '#000',
+  color: '#df7698',
+  textColor: '#fff',
   label: 'Begin Output',
 }

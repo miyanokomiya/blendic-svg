@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { GraphNodeCustomOutput } from '/@/models/graphNode'
+import { GraphNodeCustomOutput, GRAPH_VALUE_TYPE } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
@@ -45,7 +45,7 @@ export const struct: NodeStruct<GraphNodeCustomOutput> = {
   },
   inputs: {
     output: {
-      type: UNIT_VALUE_TYPES.INPUT,
+      type: UNIT_VALUE_TYPES.OUTPUT,
       default: '',
     },
     value: {
@@ -60,8 +60,20 @@ export const struct: NodeStruct<GraphNodeCustomOutput> = {
     return { output: input.output }
   },
   width: 110,
-  color: '#f0f8ff',
-  textColor: '#000',
+  color: '#df7698',
+  textColor: '#fff',
   label: 'Output',
   genericsChains: [[{ key: 'value' }]],
+  getErrors(self) {
+    const type = self.inputs.value.genericsType
+    if (!type) return
+
+    switch (type.type) {
+      case GRAPH_VALUE_TYPE.INPUT:
+      case GRAPH_VALUE_TYPE.OUTPUT:
+        return ['invalid type to operate']
+      default:
+        return undefined
+    }
+  },
 }

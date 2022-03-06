@@ -162,7 +162,7 @@ import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
 import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
 import ErrorText from '/@/components/elements/atoms/ErrorText.vue'
 import { mapReduce } from '/@/utils/commons'
-import { getGraphNodeModule } from '/@/utils/graphNodes'
+import { getDataTypeAndValue, getGraphNodeModule } from '/@/utils/graphNodes'
 import { Size } from 'okanvas'
 </script>
 
@@ -258,12 +258,10 @@ const dataPositions = computed(() =>
   helpers.getGraphNodeDataPosition(props.node)
 )
 const dataMap = computed(() => {
-  const dataStruct = nodeStruct.value.data
   return mapReduce(dataPositions.value, (position, key) => {
     return {
       position,
-      type: (dataStruct as any)[key].type as ValueType,
-      value: props.node.data[key],
+      ...getDataTypeAndValue(props.node, key),
     }
   })
 })

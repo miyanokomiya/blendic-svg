@@ -107,7 +107,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   const lastSelectedNodeId = computed(
     () => graphStore.lastSelectedNode.value?.id
   )
-  const target = computed(() => graphStore.lastSelectedGraph.value)
+  const target = computed(() => graphStore.parentGraph.value)
   const isAnySelected = computed(() => !!lastSelectedNodeId.value)
 
   const selectedNodeMap = computed(() =>

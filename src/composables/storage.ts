@@ -107,7 +107,6 @@ export function useStorage() {
     const graphs = cleanGraphs(fromGraphStore.graphs)
     const nodes = fromGraphStore.nodes
 
-    console.log(fromGraphStore.graphType)
     const root: StorageRoot = {
       armatures,
       bones,

@@ -107,8 +107,10 @@ export function createStore(
   )
 
   const graphType = computed(() => graphTypeStore.state.value)
-  function setCanvasType(canvasType: GraphType) {
-    historyStore.dispatch(graphTypeStore.createUpdateAction(canvasType))
+  function setGraphType(canvasType: GraphType) {
+    historyStore.dispatch(graphTypeStore.createUpdateAction(canvasType), [
+      nodeSelectable.createClearAllAction(),
+    ])
   }
   function getNodeParentEntity() {
     return graphType.value === 'graph' ? graphEntities : customGraphEntities
@@ -139,10 +141,12 @@ export function createStore(
   const targetArmatureId = computed(storeContext.getArmatureId)
 
   const resolvedGraph = computed(() => {
-    if (!lastSelectedGraph.value) return
+    const parent = getNodeParent()
+    if (!parent) return
 
+    const armatureId = (parent as AnimationGraph)?.armatureId
     const context = createGraphNodeContext(
-      storeContext.getElementMap(lastSelectedGraph.value.armatureId),
+      armatureId ? storeContext.getElementMap(armatureId) : {},
       {
         currentFrame: storeContext.getCurrentFrame(),
         endFrame: storeContext.getEndFrame(),
@@ -233,7 +237,7 @@ export function createStore(
 
   function selectNode(id = '', options?: SelectOptions) {
     if (
-      !lastSelectedGraph.value ||
+      !getNodeParent() ||
       !nodeSelectable.getSelectHistoryDryRun(id, options?.shift)
     )
       return
@@ -366,6 +370,7 @@ export function createStore(
   }
 
   function addCustomGraph(arg: Partial<{ id: string; name: string }> = {}) {
+    const beginInputNode = createGraphNode('custom_begin_input', {}, true)
     const customGraph = getCustomGraph(
       {
         id: arg.id,
@@ -373,10 +378,13 @@ export function createStore(
           arg.name ?? 'Custom',
           customGraphs.value.map((g) => g.name)
         ),
+        nodes: [beginInputNode.id],
       },
       !arg.id
     )
+
     historyStore.dispatch(customGraphEntities.createAddAction([customGraph]), [
+      nodeEntities.createAddAction([beginInputNode]),
       customGraphSelectable.createSelectAction(customGraph.id),
     ])
   }
@@ -406,7 +414,7 @@ export function createStore(
     exportState,
 
     graphType,
-    setCanvasType,
+    setGraphType,
     parentGraphs: computed(() =>
       toEntityList(getNodeParentEntity().entities.value)
     ),

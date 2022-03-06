@@ -27,15 +27,17 @@ Copyright (C) 2021, Tomoya Komiyama.
         :transform="modelValue"
         class="color"
       />
-      <p v-else>{{ modelValue }}</p>
+      <p v-else>{{ valueText }}</p>
     </div>
   </foreignObject>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed, inject } from 'vue'
-import { ValueType } from '/@/models/graphNode'
+import { defineComponent, PropType, computed } from 'vue'
+import { GRAPH_VALUE_TYPE, ValueType } from '/@/models/graphNode'
 import ColorRect from '/@/components/atoms/ColorRect.vue'
+import { IVec2 } from 'okageo'
+import { truncate } from '/@/utils/helpers'
 
 export default defineComponent({
   components: {
@@ -57,12 +59,25 @@ export default defineComponent({
 
     const inputType = computed(() => props.type.type)
 
-    const objectOptions = computed(inject('getObjectOptions', () => []))
+    const valueText = computed(() => {
+      switch (props.type.type) {
+        case GRAPH_VALUE_TYPE.TEXT:
+        case GRAPH_VALUE_TYPE.SCALER:
+        case GRAPH_VALUE_TYPE.BOOLEAN:
+          return truncate(`${props.modelValue}`, 6)
+        case GRAPH_VALUE_TYPE.VECTOR2: {
+          const v = props.modelValue as IVec2
+          return `(${truncate(v.x, 4)},${truncate(v.y, 4)})`
+        }
+        default:
+          return ''
+      }
+    })
 
     return {
       update,
       inputType,
-      objectOptions,
+      valueText,
     }
   },
 })

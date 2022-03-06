@@ -25,7 +25,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :options="canvasTypeOptions"
           :model-value="canvasType"
           no-placeholder
-          @update:model-value="setCanvasType"
+          @update:model-value="setGraphType"
         />
       </div>
       <div class="select-graph">
@@ -327,7 +327,7 @@ export default defineComponent({
       GraphNodeReroute,
 
       canvasType: graphStore.graphType,
-      setCanvasType: (val: any) => graphStore.setCanvasType(val),
+      setGraphType: (val: any) => graphStore.setGraphType(val),
       canvasTypeOptions,
 
       canvas,

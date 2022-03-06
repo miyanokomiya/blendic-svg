@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { getBone, getTransform } from '/@/models'
 import { getKeyframePoint } from '/@/models/keyframe'
 import { getConstraint } from '/@/utils/constraints'
-import { createGraphNode } from '/@/utils/graphNodes'
+import { createGraphNode, getGraphNodeModule } from '/@/utils/graphNodes'
 import {
   parseStyle,
   toStyle,
@@ -264,6 +264,7 @@ describe('utils/helpers.ts', () => {
     it('should return a rect of the node', () => {
       expect(
         getGraphNodeRect(
+          getGraphNodeModule,
           createGraphNode('make_vector2', { position: { x: 1, y: 2 } })
         )
       ).toEqual({ x: 1, y: 2, width: 140, height: 106 })

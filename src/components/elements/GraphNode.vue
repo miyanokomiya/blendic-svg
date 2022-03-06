@@ -162,8 +162,9 @@ import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
 import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
 import ErrorText from '/@/components/elements/atoms/ErrorText.vue'
 import { mapReduce } from '/@/utils/commons'
-import { getDataTypeAndValue, getGraphNodeModule } from '/@/utils/graphNodes'
+import { getDataTypeAndValue } from '/@/utils/graphNodes'
 import { Size } from 'okanvas'
+import { injectGetGraphNodeModuleFn } from '/@/composables/animationGraph'
 </script>
 
 <script setup lang="ts">
@@ -236,9 +237,10 @@ function getOutline(s: Size) {
 }
 
 const { settings } = useSettings()
+const getGraphNodeModule = computed(injectGetGraphNodeModuleFn())
 
 const size = computed(() => {
-  return helpers.getGraphNodeSize(props.node)
+  return helpers.getGraphNodeSize(getGraphNodeModule.value, props.node)
 })
 const headOutline = computed(() => {
   return getHeadOutline(size.value)
@@ -248,20 +250,22 @@ const outline = computed(() => {
   return getOutline(size.value)
 })
 
-const nodeStruct = computed(() => getGraphNodeModule(props.node.type).struct)
+const nodeStruct = computed(
+  () => getGraphNodeModule.value(props.node.type).struct
+)
 
 const label = computed(() => nodeStruct.value.label ?? props.node.type)
 const color = computed(() => nodeStruct.value.color ?? '#fafafa')
 const textColor = computed(() => nodeStruct.value.textColor ?? '#000')
 
 const dataPositions = computed(() =>
-  helpers.getGraphNodeDataPosition(props.node)
+  helpers.getGraphNodeDataPosition(getGraphNodeModule.value, props.node)
 )
 const dataMap = computed(() => {
   return mapReduce(dataPositions.value, (position, key) => {
     return {
       position,
-      ...getDataTypeAndValue(props.node, key),
+      ...getDataTypeAndValue(getGraphNodeModule.value, props.node, key),
     }
   })
 })

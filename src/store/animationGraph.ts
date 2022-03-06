@@ -27,7 +27,7 @@ import {
   toMap,
   getCustomGraph,
 } from '../models'
-import { extractMap, toList } from '../utils/commons'
+import { extractMap, mapReduce, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { useEntities } from '/@/composables/stores/entities'
 import { SelectOptions } from '/@/composables/modes/types'
@@ -35,11 +35,16 @@ import { useItemSelectable } from '/@/composables/stores/selectable'
 import { HistoryStore } from '/@/composables/stores/history'
 import { fromEntityList, toEntityList } from '/@/models/entity'
 import { GraphNode, GraphNodes, GraphNodeType } from '/@/models/graphNode'
+import { NodeModule } from '/@/utils/graphNodes/core'
 import {
   cleanAllEdgeGenerics,
   createGraphNode,
   deleteAndDisconnectNodes,
+  getGraphNodeModule,
+  GetGraphNodeModule,
   resolveAllNodes,
+  NODE_MENU_OPTION,
+  createGraphNodeIncludeCustom,
 } from '/@/utils/graphNodes'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store'
@@ -47,6 +52,7 @@ import { useElementStore } from '/@/store/element'
 import { createGraphNodeContext } from '/@/utils/elements'
 import { useAnimationStore } from '/@/store/animation'
 import { useValueStore } from '/@/composables/stores/valueStore'
+import { createCustomNodeModule } from '/@/utils/graphNodes/customGraph'
 
 export type GraphType = 'graph' | 'custom'
 
@@ -140,6 +146,37 @@ export function createStore(
 
   const targetArmatureId = computed(storeContext.getArmatureId)
 
+  const customModules = computed<IdMap<NodeModule<any>>>(() => {
+    const nodeMap = nodeEntities.entities.value.byId
+    return mapReduce(toMap(customGraphs.value), (customGraph) => {
+      return createCustomNodeModule(
+        customGraph,
+        toMap(customGraph.nodes.map((id) => nodeMap[id]))
+      )
+    })
+  })
+
+  const getGraphNodeModuleFn = computed<() => GetGraphNodeModule>(() => {
+    const fn = (type: GraphNodeType) => {
+      if (customModules.value[type]) {
+        return customModules.value[type]
+      } else {
+        return getGraphNodeModule(type)
+      }
+    }
+    return () => fn
+  })
+
+  const customGraphNodeMenuOptionsSrc = computed<NODE_MENU_OPTION>(() => {
+    return {
+      label: 'Custom',
+      children: customGraphs.value.map((graph) => ({
+        label: graph.name,
+        type: graph.id,
+      })),
+    }
+  })
+
   const resolvedGraph = computed(() => {
     const parent = getNodeParent()
     if (!parent) return
@@ -152,7 +189,11 @@ export function createStore(
         endFrame: storeContext.getEndFrame(),
       }
     )
-    const resolvedNodeMap = resolveAllNodes(context, nodeMap.value)
+    const resolvedNodeMap = resolveAllNodes(
+      getGraphNodeModuleFn.value(),
+      context,
+      nodeMap.value
+    )
     return { context, nodeMap: resolvedNodeMap }
   })
 
@@ -279,7 +320,12 @@ export function createStore(
     const parent = getNodeParent()
     if (!parent) return
 
-    const node = createGraphNode(type, arg, !arg.id)
+    const node = createGraphNodeIncludeCustom(
+      customModules.value,
+      type,
+      arg,
+      !arg.id
+    )
 
     historyStore.dispatch(nodeEntities.createAddAction([node]), [
       getNodeParentEntity().createUpdateAction({
@@ -313,6 +359,7 @@ export function createStore(
     const deleteIds = selectedNodes.value
 
     const deletedInfo = deleteAndDisconnectNodes(
+      getGraphNodeModuleFn.value(),
       toList(nodeMap.value),
       deleteIds
     )
@@ -323,10 +370,13 @@ export function createStore(
       nodeMapByDelete,
       deletedInfo.updatedIds
     )
-    const updatedNodesByClean = cleanAllEdgeGenerics({
-      ...nodeMapByDelete,
-      ...updatedNodesByDisconnect,
-    })
+    const updatedNodesByClean = cleanAllEdgeGenerics(
+      getGraphNodeModuleFn.value(),
+      {
+        ...nodeMapByDelete,
+        ...updatedNodesByDisconnect,
+      }
+    )
 
     const deletedIds = selectedNodes.value
 
@@ -442,6 +492,8 @@ export function createStore(
     lastSelectedNode,
     selectedNodes,
     targetArmatureId,
+    getGraphNodeModuleFn,
+    customGraphNodeMenuOptionsSrc,
     resolvedGraph,
 
     selectGraph,

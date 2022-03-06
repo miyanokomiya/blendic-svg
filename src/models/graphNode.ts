@@ -218,8 +218,12 @@ export interface GraphNodes {
   custom_input: GraphNodeCustomInput
   custom_begin_output: GraphNodeCustomBeginOutput
   custom_output: GraphNodeCustomOutput
+
+  // for custom nodes
+  [custom_id: string]: GraphNodeBase
 }
-export type GraphNodeType = keyof GraphNodes
+// Accept any string for custom nodes
+export type GraphNodeType = keyof GraphNodes | string
 // Note: this union decrease performance too much of type checking and unit test
 // export type GraphNode = GraphNodes[GraphNodeType]
 export type GraphNode = GraphNodeBase

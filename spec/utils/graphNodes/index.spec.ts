@@ -55,6 +55,7 @@ import {
   createDefaultUnitValueForGenerics,
   getDataTypeAndValue,
   updateDataField,
+  getGraphNodeModule,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -105,7 +106,7 @@ describe('src/utils/graphNodes/index.ts', () => {
 
   describe('resolveAllNodes', () => {
     it('make_vector2', () => {
-      expect(resolveAllNodes(context, nodes)).toEqual({
+      expect(resolveAllNodes(getGraphNodeModule, context, nodes)).toEqual({
         scaler1: { value: 1 },
         scaler2: { value: 10 },
         make_vector2: { vector2: { x: 1, y: 10 } },
@@ -147,7 +148,7 @@ describe('src/utils/graphNodes/index.ts', () => {
           position: { x: 0, y: 0 },
         } as GraphNodeSetTransform,
       } as const
-      expect(resolveAllNodes(context, nodes)).toEqual({
+      expect(resolveAllNodes(getGraphNodeModule, context, nodes)).toEqual({
         get_object: { object: 'a' },
         clone_object: { origin: 'a', clone: 'b' },
         set_transform: { object: 'b' },
@@ -159,7 +160,9 @@ describe('src/utils/graphNodes/index.ts', () => {
 
   describe('resolveNode', () => {
     it('make_vector2', () => {
-      expect(resolveNode(context, nodes, {}, 'make_vector2')).toEqual({
+      expect(
+        resolveNode(getGraphNodeModule, context, nodes, {}, 'make_vector2')
+      ).toEqual({
         scaler1: { value: 1 },
         scaler2: { value: 10 },
         make_vector2: { vector2: { x: 1, y: 10 } },
@@ -168,6 +171,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should ignore the circular connections', () => {
       expect(
         resolveNode(
+          getGraphNodeModule,
           context,
           {
             make_vector2: {
@@ -204,6 +208,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should use the value if input references is invalid', () => {
       expect(
         resolveNode(
+          getGraphNodeModule,
           context,
           {
             make_vector2: {
@@ -259,13 +264,27 @@ describe('src/utils/graphNodes/index.ts', () => {
 
   describe('compute', () => {
     it('scaler', () => {
-      expect(compute(context, {}, nodes.scaler1)).toEqual({ value: 1 })
+      expect(compute(getGraphNodeModule, context, {}, nodes.scaler1)).toEqual({
+        value: 1,
+      })
     })
     it('make_vector2', () => {
       const ret: GraphNodeOutputMap = {}
-      ret[nodes.scaler1.id] = compute(context, ret, nodes.scaler1)
-      ret[nodes.scaler2.id] = compute(context, ret, nodes.scaler2)
-      expect(compute(context, ret, nodes.make_vector2)).toEqual({
+      ret[nodes.scaler1.id] = compute(
+        getGraphNodeModule,
+        context,
+        ret,
+        nodes.scaler1
+      )
+      ret[nodes.scaler2.id] = compute(
+        getGraphNodeModule,
+        context,
+        ret,
+        nodes.scaler2
+      )
+      expect(
+        compute(getGraphNodeModule, context, ret, nodes.make_vector2)
+      ).toEqual({
         vector2: { x: 1, y: 10 },
       })
     })
@@ -273,7 +292,9 @@ describe('src/utils/graphNodes/index.ts', () => {
       const ret: GraphNodeOutputMap = {
         make_vector2: { vector2: { x: 1, y: 10 } },
       }
-      expect(compute(context, ret, nodes.break_vector2)).toEqual({
+      expect(
+        compute(getGraphNodeModule, context, ret, nodes.break_vector2)
+      ).toEqual({
         x: 1,
         y: 10,
       })
@@ -281,6 +302,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should use default input value if the connection is invalid', () => {
       expect(
         compute(
+          getGraphNodeModule,
           context,
           {},
           {
@@ -411,6 +433,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should return true if the input and the output are valid combination', () => {
       expect(
         validateConnection(
+          getGraphNodeModule,
           { node: createGraphNode('break_vector2'), key: 'y' },
           { node: createGraphNode('make_vector2'), key: 'x' }
         )
@@ -419,6 +442,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should return false if the input and the output are invalid combination', () => {
       expect(
         validateConnection(
+          getGraphNodeModule,
           { node: createGraphNode('make_vector2'), key: 'vector2' },
           { node: createGraphNode('make_vector2'), key: 'x' }
         )
@@ -429,6 +453,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('should return true if the some edge have generics types', () => {
         expect(
           validateConnection(
+            getGraphNodeModule,
             { node: createGraphNode('break_vector2'), key: 'y' },
             { node: createGraphNode('switch_generics'), key: 'if_true' }
           )
@@ -437,6 +462,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('should return true if the generics types are defined and have valid connection', () => {
         expect(
           validateConnection(
+            getGraphNodeModule,
             { node: createGraphNode('break_vector2'), key: 'y' },
             {
               node: createGraphNode('switch_generics', {
@@ -453,6 +479,7 @@ describe('src/utils/graphNodes/index.ts', () => {
         ).toBe(true)
         expect(
           validateConnection(
+            getGraphNodeModule,
             {
               node: createGraphNode('switch_generics', {
                 inputs: {
@@ -471,6 +498,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('should return false if the generics types are defined and have invalid connection', () => {
         expect(
           validateConnection(
+            getGraphNodeModule,
             { node: createGraphNode('break_vector2'), key: 'y' },
             {
               node: createGraphNode('switch_generics', {
@@ -487,6 +515,7 @@ describe('src/utils/graphNodes/index.ts', () => {
         ).toBe(false)
         expect(
           validateConnection(
+            getGraphNodeModule,
             {
               node: createGraphNode('switch_generics', {
                 inputs: {
@@ -509,6 +538,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should return default input data', () => {
       expect(
         resetInput(
+          getGraphNodeModule,
           createGraphNode('make_vector2', {
             inputs: { x: { from: { id: 'a', key: 'b' } } },
           }),
@@ -523,6 +553,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should keep generics if it is confirmed', () => {
       expect(
         resetInput(
+          getGraphNodeModule,
           createGraphNode('switch_generics', {
             inputs: {
               if_true: {
@@ -556,6 +587,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should duplicate and immigrate target nodes', () => {
       expect(
         duplicateNodes(
+          getGraphNodeModule,
           {
             a: createGraphNode('make_vector2', {
               id: 'a',
@@ -599,6 +631,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should clean generics', () => {
       expect(
         duplicateNodes(
+          getGraphNodeModule,
           {
             a: createGraphNode('switch_generics', {
               id: 'a',
@@ -666,6 +699,7 @@ describe('src/utils/graphNodes/index.ts', () => {
   describe('deleteAndDisconnectNodes', () => {
     it('should delete nodes and their connections', () => {
       const ret = deleteAndDisconnectNodes(
+        getGraphNodeModule,
         [
           createGraphNode('scaler', { id: 'a' }),
           createGraphNode('scaler', { id: 'b' }),
@@ -696,7 +730,12 @@ describe('src/utils/graphNodes/index.ts', () => {
 
   describe('getNodeEdgeTypes', () => {
     it('should return the edge types of the target node', () => {
-      expect(getNodeEdgeTypes(createGraphNode('make_vector2', {}))).toEqual({
+      expect(
+        getNodeEdgeTypes(
+          getGraphNodeModule,
+          createGraphNode('make_vector2', {})
+        )
+      ).toEqual({
         inputs: {
           x: UNIT_VALUE_TYPES.SCALER,
           y: UNIT_VALUE_TYPES.SCALER,
@@ -708,6 +747,7 @@ describe('src/utils/graphNodes/index.ts', () => {
 
       expect(
         getNodeEdgeTypes(
+          getGraphNodeModule,
           createGraphNode('switch_generics', {
             inputs: {
               if_true: { value: 1, genericsType: UNIT_VALUE_TYPES.SCALER },
@@ -725,7 +765,12 @@ describe('src/utils/graphNodes/index.ts', () => {
         },
       })
 
-      expect(getNodeEdgeTypes(createGraphNode('switch_generics', {}))).toEqual({
+      expect(
+        getNodeEdgeTypes(
+          getGraphNodeModule,
+          createGraphNode('switch_generics', {})
+        )
+      ).toEqual({
         inputs: {
           condition: UNIT_VALUE_TYPES.BOOLEAN,
           if_true: UNIT_VALUE_TYPES.GENERICS,
@@ -856,10 +901,15 @@ describe('src/utils/graphNodes/index.ts', () => {
       }
 
       expect(
-        getEdgeChainGroupAt(nodeMap, getAllEdgeConnectionInfo(nodeMap), {
-          id: 'a',
-          key: 'if_true',
-        })
+        getEdgeChainGroupAt(
+          getGraphNodeModule,
+          nodeMap,
+          getAllEdgeConnectionInfo(nodeMap),
+          {
+            id: 'a',
+            key: 'if_true',
+          }
+        )
       ).toEqual([
         { id: 'a', key: 'if_true' },
         { id: 'a', key: 'if_false' },
@@ -887,10 +937,15 @@ describe('src/utils/graphNodes/index.ts', () => {
       }
 
       expect(
-        getEdgeChainGroupAt(nodeMap, getAllEdgeConnectionInfo(nodeMap), {
-          id: 'a',
-          key: 'if_true',
-        })
+        getEdgeChainGroupAt(
+          getGraphNodeModule,
+          nodeMap,
+          getAllEdgeConnectionInfo(nodeMap),
+          {
+            id: 'a',
+            key: 'if_true',
+          }
+        )
       ).toEqual([
         { id: 'a', key: 'if_true' },
         { id: 'a', key: 'if_false' },
@@ -940,7 +995,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       }
 
       expect(
-        cleanEdgeGenericsGroupAt(nodeMap, {
+        cleanEdgeGenericsGroupAt(getGraphNodeModule, nodeMap, {
           id: 'a',
           key: 'if_true',
         })
@@ -992,7 +1047,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       }
 
       expect(
-        cleanEdgeGenericsGroupAt(nodeMap, {
+        cleanEdgeGenericsGroupAt(getGraphNodeModule, nodeMap, {
           id: 'b',
           key: 'x',
         })
@@ -1048,7 +1103,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       }
 
       expect(
-        cleanEdgeGenericsGroupAt(nodeMap, {
+        cleanEdgeGenericsGroupAt(getGraphNodeModule, nodeMap, {
           id: 'a',
           key: 'if_true',
         })
@@ -1083,7 +1138,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       }
 
       expect(
-        cleanEdgeGenericsGroupAt(nodeMap, {
+        cleanEdgeGenericsGroupAt(getGraphNodeModule, nodeMap, {
           id: 'a',
           key: 'if_true',
         })
@@ -1094,6 +1149,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('should clean the target', () => {
         expect(
           cleanEdgeGenericsGroupAt(
+            getGraphNodeModule,
             {
               a: createGraphNode('switch_generics', {
                 id: 'a',
@@ -1126,6 +1182,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('should clean the input nodes connected with the target', () => {
         expect(
           cleanEdgeGenericsGroupAt(
+            getGraphNodeModule,
             {
               a: createGraphNode('switch_generics', {
                 id: 'a',
@@ -1173,6 +1230,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('should clean the other nodes connected with the target', () => {
         expect(
           cleanEdgeGenericsGroupAt(
+            getGraphNodeModule,
             {
               a: createGraphNode('switch_generics', {
                 id: 'a',
@@ -1280,6 +1338,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('should clean the input nodes connected with the target without generics', () => {
         expect(
           cleanEdgeGenericsGroupAt(
+            getGraphNodeModule,
             {
               a: createGraphNode('switch_generics', { id: 'a' }),
               b: createGraphNode('make_vector2', {
@@ -1308,6 +1367,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('should resolve generics in data field', () => {
         expect(
           cleanEdgeGenericsGroupAt(
+            getGraphNodeModule,
             {
               a: createGraphNode('custom_input', {
                 id: 'a',
@@ -1343,7 +1403,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     describe('should clean all edge generics', () => {
       it('one node', () => {
         expect(
-          cleanAllEdgeGenerics({
+          cleanAllEdgeGenerics(getGraphNodeModule, {
             a: createGraphNode('switch_generics', {
               id: 'a',
               inputs: {
@@ -1362,7 +1422,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       })
       it('resolve generics if edge chains include fixed types', () => {
         expect(
-          cleanAllEdgeGenerics({
+          cleanAllEdgeGenerics(getGraphNodeModule, {
             a: createGraphNode('switch_generics', {
               id: 'a',
               inputs: {
@@ -1392,7 +1452,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       })
       it('some independent chains', () => {
         expect(
-          cleanAllEdgeGenerics({
+          cleanAllEdgeGenerics(getGraphNodeModule, {
             a: createGraphNode('switch_generics', {
               id: 'a',
               inputs: {
@@ -1438,7 +1498,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       })
       it('resolve generics of data', () => {
         expect(
-          cleanAllEdgeGenerics({
+          cleanAllEdgeGenerics(getGraphNodeModule, {
             a: createGraphNode('custom_input', {
               id: 'a',
               inputs: {
@@ -1475,7 +1535,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       })
       it('clean generics of data', () => {
         expect(
-          cleanAllEdgeGenerics({
+          cleanAllEdgeGenerics(getGraphNodeModule, {
             a: createGraphNode('custom_input', {
               id: 'a',
               data: {
@@ -1501,6 +1561,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('when the field has generics type', () => {
         expect(
           updateDataField(
+            getGraphNodeModule,
             'custom_input',
             'default',
             {
@@ -1515,7 +1576,9 @@ describe('src/utils/graphNodes/index.ts', () => {
         })
       })
       it('when the field does not have generics type', () => {
-        expect(updateDataField('scaler', 'value', 1, 10)).toEqual(10)
+        expect(
+          updateDataField(getGraphNodeModule, 'scaler', 'value', 1, 10)
+        ).toEqual(10)
       })
     })
   })
@@ -1525,6 +1588,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('when the node has decided generics data', () => {
         expect(
           getDataTypeAndValue(
+            getGraphNodeModule,
             createGraphNode('custom_input', {
               data: {
                 name: '',
@@ -1541,6 +1605,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('when the node has undecided generics data', () => {
         expect(
           getDataTypeAndValue(
+            getGraphNodeModule,
             createGraphNode('custom_input', {
               data: {
                 name: '',
@@ -1554,6 +1619,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('when the node does not have generics data', () => {
         expect(
           getDataTypeAndValue(
+            getGraphNodeModule,
             createGraphNode('scaler', {
               data: { value: 20 },
             }),
@@ -1569,7 +1635,9 @@ describe('src/utils/graphNodes/index.ts', () => {
 
   describe('getInputTypes', () => {
     it('should return input types map', () => {
-      expect(getInputTypes(createGraphNode('multi_scaler', {}))).toEqual({
+      expect(
+        getInputTypes(getGraphNodeModule, createGraphNode('multi_scaler', {}))
+      ).toEqual({
         a: UNIT_VALUE_TYPES.SCALER,
         b: UNIT_VALUE_TYPES.SCALER,
       })
@@ -1577,6 +1645,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should consider generics type', () => {
       expect(
         getInputTypes(
+          getGraphNodeModule,
           createGraphNode('add_generics', {
             inputs: {
               a: { genericsType: UNIT_VALUE_TYPES.SCALER },
@@ -1591,10 +1660,15 @@ describe('src/utils/graphNodes/index.ts', () => {
   describe('getOutputType', () => {
     it('should return the output type of the node', () => {
       expect(
-        getOutputType(createGraphNode('switch_generics'), 'value')
+        getOutputType(
+          getGraphNodeModule,
+          createGraphNode('switch_generics'),
+          'value'
+        )
       ).toEqual(UNIT_VALUE_TYPES.GENERICS)
       expect(
         getOutputType(
+          getGraphNodeModule,
           createGraphNode('switch_generics', {
             inputs: {
               if_true: { genericsType: UNIT_VALUE_TYPES.SCALER },
@@ -1603,16 +1677,20 @@ describe('src/utils/graphNodes/index.ts', () => {
           'value'
         )
       ).toEqual(UNIT_VALUE_TYPES.SCALER)
-      expect(getOutputType(createGraphNode('make_vector2'), 'vector2')).toEqual(
-        UNIT_VALUE_TYPES.VECTOR2
-      )
+      expect(
+        getOutputType(
+          getGraphNodeModule,
+          createGraphNode('make_vector2'),
+          'vector2'
+        )
+      ).toEqual(UNIT_VALUE_TYPES.VECTOR2)
     })
   })
 
   describe('getNodeErrors', () => {
     it('should return errors map for nodes with some errors', () => {
       expect(
-        getNodeErrors({
+        getNodeErrors(getGraphNodeModule, {
           a: createGraphNode('add_generics', {
             id: 'a',
             inputs: { a: { genericsType: UNIT_VALUE_TYPES.OBJECT } },
@@ -1634,11 +1712,12 @@ describe('src/utils/graphNodes/index.ts', () => {
     })
   })
 
-  describe('getNodeMapToDisconnectNodeInput', () => {
+  describe('getUpdatedNodeMapToDisconnectNodeInput', () => {
     describe('should return updated node map to disconnect the input', () => {
       it('when an input type is generics', () => {
         expect(
           getUpdatedNodeMapToDisconnectNodeInput(
+            getGraphNodeModule,
             {
               a: createGraphNode('add_generics', {
                 id: 'a',
@@ -1661,6 +1740,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       it('when an output type is generics', () => {
         expect(
           getUpdatedNodeMapToDisconnectNodeInput(
+            getGraphNodeModule,
             {
               a: createGraphNode('add_generics', {
                 id: 'a',

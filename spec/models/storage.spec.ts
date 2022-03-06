@@ -226,15 +226,12 @@ describe('src/models/storage.ts', () => {
         },
       ])
     })
-    it('should drop invalid nodes', () => {
+    it('should not drop unknown nodes because it may be a custom node', () => {
       expect(
         initializeGraphNodes([
-          {
-            type: 'invalid',
-            inputs: { val: 0 },
-          },
+          { type: 'unknown_custom', inputs: { val: 0 } },
         ] as any)
-      ).toEqual([])
+      ).not.toEqual({ type: 'unknown_custom', inputs: { val: 0 } })
     })
   })
 })

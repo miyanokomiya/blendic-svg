@@ -172,6 +172,7 @@ export function useStorage() {
         root.graphType
       )
     } catch (e) {
+      console.error(e)
       alert('Failed to load: Invalid file.')
     }
   }
@@ -297,6 +298,7 @@ export function useStorage() {
     )
 
     const graphObjectMap = resolveAnimationGraph(
+      graphStore.getGraphNodeModuleFn.value(),
       elementMap,
       { currentFrame, endFrame },
       graphStore.nodeMap.value
@@ -360,6 +362,7 @@ export function useStorage() {
 
     const attributesMapPerFrameByGraph = frames.map((_, currentFrame) => {
       const graphObjectMap = resolveAnimationGraph(
+        graphStore.getGraphNodeModuleFn.value(),
         wholeBElementMap,
         { currentFrame, endFrame },
         graphStore.nodeMap.value

@@ -38,7 +38,7 @@ import { extractMap, mapReduce, toKeyListMap, toList } from './commons'
 import { useCache } from '/@/composables/cache'
 import { GraphNodeMap } from '/@/models/graphNode'
 import { multiPoseTransform } from '/@/utils/armatures'
-import { resolveAllNodes } from '/@/utils/graphNodes'
+import { GetGraphNodeModule, resolveAllNodes } from '/@/utils/graphNodes'
 import { NodeContext } from '/@/utils/graphNodes/core'
 import { TreeNode } from '/@/utils/relations'
 
@@ -426,12 +426,13 @@ export function createGraphNodeContext(
 }
 
 export function resolveAnimationGraph(
+  getGraphNodeModule: GetGraphNodeModule,
   elementMap: IdMap<BElement>,
   frameInfo: { currentFrame: number; endFrame: number },
   graphNodes: GraphNodeMap
 ): IdMap<GraphObject> {
   const context = createGraphNodeContext(elementMap, frameInfo)
-  resolveAllNodes(context, graphNodes)
+  resolveAllNodes(getGraphNodeModule, context, graphNodes)
   return context.getObjectMap()
 }
 

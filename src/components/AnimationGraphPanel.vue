@@ -116,6 +116,7 @@ import { useElementStore } from '/@/store/element'
 import GraphSideBar from '/@/components/GraphSideBar.vue'
 import { flatElementTree, getElementLabel } from '/@/utils/elements'
 import { getNodeErrors } from '/@/utils/graphNodes'
+import { provideGetGraphNodeModuleFn } from '/@/composables/animationGraph'
 
 export default defineComponent({
   components: {
@@ -139,6 +140,11 @@ export default defineComponent({
 
     const canvas = useCanvas()
     const mode = useAnimationGraphMode(graphStore)
+
+    const getGraphNodeModule = computed(() =>
+      graphStore.getGraphNodeModuleFn.value()
+    )
+    provideGetGraphNodeModuleFn(() => getGraphNodeModule.value)
 
     const selectedArmature = computed(() => store.lastSelectedArmature.value)
     const selectedGraph = computed(() => graphStore.parentGraph.value)
@@ -215,7 +221,9 @@ export default defineComponent({
     })
 
     const edgePositionMap = computed<IdMap<GraphNodeEdgePositions>>(() => {
-      return mapReduce(editedNodeMap.value, getGraphNodeEdgePosition)
+      return mapReduce(editedNodeMap.value, (node) =>
+        getGraphNodeEdgePosition(getGraphNodeModule.value, node)
+      )
     })
 
     const edgeMap = computed(() => {
@@ -287,7 +295,7 @@ export default defineComponent({
     })
 
     const nodeErrorMessagesMap = computed<IdMap<string[]>>(() => {
-      return getNodeErrors(graphStore.nodeMap.value)
+      return getNodeErrors(getGraphNodeModule.value, graphStore.nodeMap.value)
     })
 
     function updateNodeData(id: string, data: any, seriesKey?: string) {

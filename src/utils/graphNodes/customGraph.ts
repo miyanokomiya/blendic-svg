@@ -20,6 +20,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 import { CustomGraph, IdMap } from '/@/models'
 import {
   GraphNode,
+  GraphNodeBase,
   GraphNodeCustomBeginInput,
   GraphNodeCustomBeginOutput,
   GraphNodeCustomInput,
@@ -27,7 +28,7 @@ import {
   GraphNodeOutputMap,
   GraphNodeOutputValues,
 } from '/@/models/graphNode'
-import { toList } from '/@/utils/commons'
+import { mapReduce, toList } from '/@/utils/commons'
 import { resolveAllNodes } from '/@/utils/graphNodes'
 import {
   NodeModule,
@@ -45,17 +46,26 @@ export function createCustomNodeModule(
 
   return {
     struct: {
-      create: (arg = {}) => ({
-        ...arg,
-        type: `cg_${customGraph.id}`,
-      }),
+      create: (arg = {}) =>
+        ({
+          ...arg,
+          type: customGraph.id,
+          data: {},
+          inputs: mapReduce(inputs, (input) => ({
+            value: input.default,
+          })),
+        } as GraphNodeBase),
       data: {},
       inputs,
       outputs,
-      computation: (inputs, _self, context) => {
+      computation: (inputs, _self, context, getGraphNodeModule) => {
         return stubOutputNodes(
           customInterface.outputNodes,
-          resolveAllNodes(context, stubInputNodes(innerNodeMap, inputs))
+          resolveAllNodes(
+            getGraphNodeModule!,
+            context,
+            stubInputNodes(innerNodeMap, inputs)
+          )
         )
       },
       width: 200,
@@ -189,13 +199,16 @@ function stubInputNodes(
   innerNodeMap: IdMap<GraphNode>,
   inputs: { [key: string]: any }
 ): IdMap<GraphNode> {
-  const stubbedNodes = toList(inputs).reduce<IdMap<GraphNode>>(
-    (p, input, key) => {
+  const stubbedNodes = Object.entries(inputs).reduce<IdMap<GraphNode>>(
+    (p, [key, input]) => {
       const inputNode = innerNodeMap[key]
       if (inputNode) {
         p[inputNode.id] = {
           ...inputNode,
-          data: { ...inputNode.data, default: input },
+          data: {
+            ...inputNode.data,
+            default: { ...(inputNode.data.default as any), value: input },
+          },
         }
       }
       return p

@@ -36,8 +36,8 @@ export const struct: NodeStruct<GraphNodeCustomBeginInput> = {
   outputs: {
     input: UNIT_VALUE_TYPES.INPUT,
   },
-  computation() {
-    return { input: '' }
+  computation(_, self) {
+    return { input: self.id }
   },
   width: 130,
   color: '#ff7f50',

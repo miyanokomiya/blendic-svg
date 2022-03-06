@@ -62,13 +62,13 @@ import BlockField from '/@/components/atoms/BlockField.vue'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import {
   getDataTypeAndValue,
-  getGraphNodeModule,
   getInputTypes,
   updateDataField,
 } from '/@/utils/graphNodes'
 import { mapReduce } from '/@/utils/commons'
 import GraphNodeDataField from '/@/components/atoms/GraphNodeDataField.vue'
 import { ValueType } from '/@/models/graphNode'
+import { injectGetGraphNodeModuleFn } from '/@/composables/animationGraph'
 
 interface DataInfo {
   type: ValueType
@@ -85,9 +85,10 @@ export default defineComponent({
     const graphStore = useAnimationGraphStore()
     const targetNode = graphStore.lastSelectedNode
 
+    const getGraphNodeModule = computed(injectGetGraphNodeModuleFn())
     const struct = computed(() => {
       if (!targetNode.value) return
-      return getGraphNodeModule(targetNode.value.type).struct
+      return getGraphNodeModule.value(targetNode.value.type).struct
     })
 
     const dataMap = computed<{
@@ -95,7 +96,9 @@ export default defineComponent({
     }>(() => {
       const node = targetNode.value
       if (!node || !struct.value) return {}
-      return mapReduce(node.data, (_, key) => getDataTypeAndValue(node, key))
+      return mapReduce(node.data, (_, key) =>
+        getDataTypeAndValue(getGraphNodeModule.value, node, key)
+      )
     })
     function updateData(key: string, val: any, seriesKey?: string) {
       const node = targetNode.value
@@ -106,7 +109,13 @@ export default defineComponent({
         {
           data: {
             ...node.data,
-            [key]: updateDataField(node.type, key, node.data[key], val),
+            [key]: updateDataField(
+              getGraphNodeModule.value,
+              node.type,
+              key,
+              node.data[key],
+              val
+            ),
           },
         },
         seriesKey
@@ -119,7 +128,7 @@ export default defineComponent({
       if (!targetNode.value || !struct.value) return {}
 
       const inputs = targetNode.value.inputs
-      const types = getInputTypes(targetNode.value)
+      const types = getInputTypes(getGraphNodeModule.value, targetNode.value)
       const resolvedNodeMap = graphStore.resolvedGraph.value?.nodeMap ?? {}
 
       return mapReduce(inputs, (value, key) => {

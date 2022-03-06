@@ -18,7 +18,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { getCustomGraph } from '/@/models'
-import { createGraphNode } from '/@/utils/graphNodes'
+import { createGraphNode, getGraphNodeModule } from '/@/utils/graphNodes'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
 import { createCustomNodeModule } from '/@/utils/graphNodes/customGraph'
 
@@ -232,7 +232,9 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
           }
         )
 
-        expect(struct.computation({ input_0: 10 }, {}, {} as any)).toEqual({
+        expect(
+          struct.computation({ input_0: 10 }, {}, {} as any, getGraphNodeModule)
+        ).toEqual({
           output_0: { x: 10, y: 20 },
         })
       })

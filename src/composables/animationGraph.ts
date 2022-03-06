@@ -14,33 +14,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 
-Copyright (C) 2022, Tomoya Komiyama.
+Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { GraphNodeCustomBeginOutput } from '/@/models/graphNode'
-import {
-  createBaseNode,
-  NodeStruct,
-  UNIT_VALUE_TYPES,
-} from '/@/utils/graphNodes/core'
+import { provide, inject } from 'vue'
+import { GetGraphNodeModule, getGraphNodeModule } from '/@/utils/graphNodes'
 
-export const struct: NodeStruct<GraphNodeCustomBeginOutput> = {
-  create(arg = {}) {
-    return {
-      ...createBaseNode(arg),
-      type: 'custom_begin_output',
-    } as GraphNodeCustomBeginOutput
-  },
-  data: {},
-  inputs: {},
-  outputs: {
-    output: UNIT_VALUE_TYPES.OUTPUT,
-  },
-  computation(_, self) {
-    return { output: self.id }
-  },
-  width: 130,
-  color: '#df7698',
-  textColor: '#fff',
-  label: 'Begin Output',
+const GET_GRAPH_NODE_MODULE_FN = Symbol()
+
+export function provideGetGraphNodeModuleFn(
+  getGraphNodeModuleFn: () => GetGraphNodeModule
+) {
+  provide(GET_GRAPH_NODE_MODULE_FN, getGraphNodeModuleFn)
+}
+
+export function injectGetGraphNodeModuleFn() {
+  return inject<() => GetGraphNodeModule>(
+    GET_GRAPH_NODE_MODULE_FN,
+    () => getGraphNodeModule
+  )
 }

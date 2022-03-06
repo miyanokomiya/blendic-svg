@@ -173,7 +173,10 @@ export function initializeCustomGraph(
 }
 
 function initializeGraphNode(node: GraphNodeBase): GraphNodeBase {
-  const struct = getGraphNodeModule<any>(node.type).struct
+  const struct = getGraphNodeModule<any>(node.type)?.struct
+  // custom nodes don't have static struct
+  if (!struct) return node
+
   const model = struct.create()
   return {
     ...model,
@@ -187,7 +190,6 @@ export function initializeGraphNodes(nodes: GraphNodeBase[]): GraphNodeBase[] {
   return nodes.filter(isValidGraphNodeType).map(initializeGraphNode)
 }
 
-function isValidGraphNodeType(node: GraphNodeBase): boolean {
-  const module = getGraphNodeModule(node.type)
-  return !!module
+function isValidGraphNodeType(_node: GraphNodeBase): boolean {
+  return true
 }

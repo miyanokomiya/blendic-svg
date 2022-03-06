@@ -32,7 +32,7 @@ import { getGraphValueEnumKey } from '/@/models/graphNodeEnums'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { BoneConstraint } from '/@/utils/constraints'
-import { getGraphNodeModule, getNodeEdgeTypes } from '/@/utils/graphNodes'
+import { GetGraphNodeModule, getNodeEdgeTypes } from '/@/utils/graphNodes'
 import { NodeStruct } from '/@/utils/graphNodes/core'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
@@ -207,26 +207,35 @@ export function getTargetTopMap(
 export const GRAPH_NODE_HEAD_HEIGHT = 30
 export const GRAPH_NODE_ROW_HEIGHT = 20
 
-export function getGraphNodeRect(node: GraphNode): IRectangle {
+export function getGraphNodeRect(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNode
+): IRectangle {
   return {
     x: node.position.x,
     y: node.position.y,
-    ...getGraphNodeSize(node),
+    ...getGraphNodeSize(getGraphNodeModule, node),
   }
 }
 
-export function getGraphNodeSize(node: GraphNode): Size {
-  const dataHeight = getGraphNodeDataHeight(node)
-  const inputsHeight = getGraphNodeInputsHeight(node)
-  const outputsHeight = getGraphNodeOutputsHeight(node)
+export function getGraphNodeSize(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNode
+): Size {
+  const dataHeight = getGraphNodeDataHeight(getGraphNodeModule, node)
+  const inputsHeight = getGraphNodeInputsHeight(getGraphNodeModule, node)
+  const outputsHeight = getGraphNodeOutputsHeight(getGraphNodeModule, node)
 
   return {
-    width: getGraphNodeWidth(node),
+    width: getGraphNodeWidth(getGraphNodeModule, node),
     height: GRAPH_NODE_HEAD_HEIGHT + outputsHeight + dataHeight + inputsHeight,
   }
 }
 
-function getGraphNodeDataHeight(node: GraphNode): number {
+function getGraphNodeDataHeight(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNode
+): number {
   const module = getGraphNodeModule(node.type)
   const values = Object.values(module.struct.data)
   return values.length === 0
@@ -236,12 +245,18 @@ function getGraphNodeDataHeight(node: GraphNode): number {
       }, 0)
 }
 
-function getGraphNodeWidth(node: GraphNode): number {
+function getGraphNodeWidth(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNode
+): number {
   const module = getGraphNodeModule(node.type)
   return module.struct.width
 }
 
-function getGraphNodeInputsHeight(node: GraphNode): number {
+function getGraphNodeInputsHeight(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNode
+): number {
   const module = getGraphNodeModule(node.type)
   const length = Object.keys(module.struct.inputs).length
   return length === 0
@@ -249,7 +264,10 @@ function getGraphNodeInputsHeight(node: GraphNode): number {
     : GRAPH_NODE_ROW_HEIGHT * (0.3 + Object.keys(module.struct.inputs).length)
 }
 
-function getGraphNodeOutputsHeight(node: GraphNode): number {
+function getGraphNodeOutputsHeight(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNode
+): number {
   const module = getGraphNodeModule(node.type)
   const length = Object.keys(module.struct.outputs).length
   return length === 0
@@ -257,10 +275,13 @@ function getGraphNodeOutputsHeight(node: GraphNode): number {
     : GRAPH_NODE_ROW_HEIGHT * (0.5 + Object.keys(module.struct.outputs).length)
 }
 
-export function getGraphNodeDataPosition(node: GraphNode): {
+export function getGraphNodeDataPosition(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNode
+): {
   [key in keyof NodeStruct<GraphNode>['data']]?: IVec2
 } {
-  const outputsHeight = getGraphNodeOutputsHeight(node)
+  const outputsHeight = getGraphNodeOutputsHeight(getGraphNodeModule, node)
   const module = getGraphNodeModule(node.type)
   let current = GRAPH_NODE_HEAD_HEIGHT + outputsHeight
 
@@ -273,11 +294,14 @@ export function getGraphNodeDataPosition(node: GraphNode): {
   }, {})
 }
 
-function getGraphNodeInputsPosition(node: GraphNode): {
+function getGraphNodeInputsPosition(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNode
+): {
   [key: string]: GraphNodeEdgeInfo
 } {
-  const dataHeight = getGraphNodeDataHeight(node)
-  const outputsHeight = getGraphNodeOutputsHeight(node)
+  const dataHeight = getGraphNodeDataHeight(getGraphNodeModule, node)
+  const outputsHeight = getGraphNodeOutputsHeight(getGraphNodeModule, node)
   const base = {
     x: 0,
     y:
@@ -290,19 +314,24 @@ function getGraphNodeInputsPosition(node: GraphNode): {
   }
 
   return getGraphNodeRowsPosition(
-    Object.entries(getNodeEdgeTypes(node).inputs).map(([key, type]) => ({
-      key,
-      type,
-    })),
+    Object.entries(getNodeEdgeTypes(getGraphNodeModule, node).inputs).map(
+      ([key, type]) => ({
+        key,
+        type,
+      })
+    ),
     base
   )
 }
 
-function getGraphNodeOutputsPosition(node: GraphNode): {
+function getGraphNodeOutputsPosition(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNode
+): {
   [key: string]: GraphNodeEdgeInfo
 } {
   const base = {
-    x: getGraphNodeSize(node).width,
+    x: getGraphNodeSize(getGraphNodeModule, node).width,
     y:
       node.type === 'reroute'
         ? GRAPH_NODE_ROW_HEIGHT / 2
@@ -310,20 +339,25 @@ function getGraphNodeOutputsPosition(node: GraphNode): {
   }
 
   return getGraphNodeRowsPosition(
-    Object.entries(getNodeEdgeTypes(node).outputs).map(([key, type]) => ({
-      key,
-      type,
-    })),
+    Object.entries(getNodeEdgeTypes(getGraphNodeModule, node).outputs).map(
+      ([key, type]) => ({
+        key,
+        type,
+      })
+    ),
     base
   )
 }
 
-export function getGraphNodeEdgePosition(node: GraphNode): {
+export function getGraphNodeEdgePosition(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNode
+): {
   inputs: { [key: string]: GraphNodeEdgeInfo }
   outputs: { [key: string]: GraphNodeEdgeInfo }
 } {
-  const inputs = getGraphNodeInputsPosition(node)
-  const outputs = getGraphNodeOutputsPosition(node)
+  const inputs = getGraphNodeInputsPosition(getGraphNodeModule, node)
+  const outputs = getGraphNodeOutputsPosition(getGraphNodeModule, node)
   return { inputs, outputs }
 }
 

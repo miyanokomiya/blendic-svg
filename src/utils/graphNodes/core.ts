@@ -27,6 +27,7 @@ import {
   GRAPH_VALUE_TYPE_KEY,
   ValueType,
   GraphNodeData,
+  GraphNodeType,
 } from '/@/models/graphNode'
 import { multiPoseTransform } from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
@@ -56,7 +57,9 @@ export interface NodeStruct<T extends GraphNodeBase> {
       [key in keyof T['inputs']]: Required<T['inputs'][key]>['value']
     },
     self: T,
-    context: NodeContext<unknown>
+    context: NodeContext<unknown>,
+    // TODO: Remove `?`
+    getGraphNodeModule?: (type: GraphNodeType) => NodeModule<any>
   ) => { [key in keyof NodeStruct<T>['outputs']]: unknown }
   width: number
   color?: string

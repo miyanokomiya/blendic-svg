@@ -68,7 +68,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             text-anchor="end"
             font-size="14"
             fill="#000"
-            >{{ key }}</text
+            >{{ edge.label }}</text
           >
         </g>
         <circle
@@ -119,7 +119,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           />
           <g transform="translate(10, 0)">
             <GraphNodeInputLabel
-              :input-key="key"
+              :input-key="edge.label"
               :type="getInputType(key)"
               :input="node.inputs[key]"
             />

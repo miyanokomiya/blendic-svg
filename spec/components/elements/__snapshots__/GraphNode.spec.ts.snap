@@ -171,7 +171,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
           text-anchor="end"
           x="-10"
         >
-          value
+          label_value
         </text>
       </g>
       <circle
@@ -219,7 +219,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
               fill="#000"
               font-size="14"
             >
-              x (0)
+              label_x (0)
             </text>
             <!--v-if-->
           </g>

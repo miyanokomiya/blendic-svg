@@ -124,6 +124,7 @@ export interface GraphNodeOutputMap {
 export interface GraphNodeEdgeInfo {
   p: IVec2
   type: ValueType
+  label: string
 }
 
 export interface GraphNodeEdgePositions {

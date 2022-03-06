@@ -38,7 +38,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <template v-for="(input, key) in inputsMap" :key="key">
           <BlockField>
             <GraphNodeDataField
-              :label="key as string"
+              :label="input.label"
               :type="input.type"
               :model-value="input.value"
               :disabled="input.disabled"
@@ -73,6 +73,7 @@ import { injectGetGraphNodeModuleFn } from '/@/composables/animationGraph'
 interface DataInfo {
   type: ValueType
   value: unknown
+  label: string
   disabled?: boolean
 }
 
@@ -96,9 +97,10 @@ export default defineComponent({
     }>(() => {
       const node = targetNode.value
       if (!node || !struct.value) return {}
-      return mapReduce(node.data, (_, key) =>
-        getDataTypeAndValue(getGraphNodeModule.value, node, key)
-      )
+      return mapReduce(node.data, (_, key) => ({
+        ...getDataTypeAndValue(getGraphNodeModule.value, node, key),
+        label: key,
+      }))
     })
     function updateData(key: string, val: any, seriesKey?: string) {
       const node = targetNode.value
@@ -130,15 +132,18 @@ export default defineComponent({
       const inputs = targetNode.value.inputs
       const types = getInputTypes(getGraphNodeModule.value, targetNode.value)
       const resolvedNodeMap = graphStore.resolvedGraph.value?.nodeMap ?? {}
+      struct.value.inputs
 
       return mapReduce(inputs, (value, key) => {
+        const label = struct.value?.inputs[key]?.label ?? key
         return value.from
           ? {
               type: types[key],
               value: resolvedNodeMap[value.from.id]?.[value.from.key] ?? '',
               disabled: true,
+              label,
             }
-          : { type: types[key], value: value.value }
+          : { type: types[key], value: value.value, label }
       })
     })
     function updateInput(key: string, value: any, seriesKey?: string) {

@@ -314,6 +314,7 @@ function getGraphNodeInputsPosition(
   }
 
   return getGraphNodeRowsPosition(
+    getGraphNodeModule(node.type).struct,
     Object.entries(getNodeEdgeTypes(getGraphNodeModule, node).inputs).map(
       ([key, type]) => ({
         key,
@@ -339,13 +340,15 @@ function getGraphNodeOutputsPosition(
   }
 
   return getGraphNodeRowsPosition(
+    getGraphNodeModule(node.type).struct,
     Object.entries(getNodeEdgeTypes(getGraphNodeModule, node).outputs).map(
       ([key, type]) => ({
         key,
         type,
       })
     ),
-    base
+    base,
+    true
   )
 }
 
@@ -362,8 +365,10 @@ export function getGraphNodeEdgePosition(
 }
 
 function getGraphNodeRowsPosition(
+  struct: NodeStruct<any>,
   rows: { key: string; type: ValueType }[],
-  margin: IVec2 = { x: 0, y: 0 }
+  margin: IVec2 = { x: 0, y: 0 },
+  output = false
 ): {
   [key: string]: GraphNodeEdgeInfo
 } {
@@ -372,6 +377,9 @@ function getGraphNodeRowsPosition(
       p[key] = {
         p: add(margin, { x: 0, y: GRAPH_NODE_ROW_HEIGHT * i }),
         type,
+        label:
+          (output ? struct.outputs[key].label : struct.inputs[key].label) ??
+          key,
       }
       return p
     },

@@ -68,7 +68,9 @@ export function createCustomNodeModule(
           )
         )
       },
-      width: 200,
+      width: 140,
+      color: '#ff6347',
+      textColor: '#fff',
       label: `${customGraph.name}`,
     },
   }

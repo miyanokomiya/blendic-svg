@@ -56,6 +56,7 @@ import {
   getDataTypeAndValue,
   updateDataField,
   getGraphNodeModule,
+  isUniqueEssentialNodeForCustomGraph,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -696,6 +697,18 @@ describe('src/utils/graphNodes/index.ts', () => {
     })
   })
 
+  describe('isUniqueEssentialNodeForCustomGraph', () => {
+    it('should return true if the node is unique and essential for the custom graph', () => {
+      expect(isUniqueEssentialNodeForCustomGraph('custom_begin_input')).toBe(
+        true
+      )
+      expect(isUniqueEssentialNodeForCustomGraph('custom_begin_output')).toBe(
+        true
+      )
+      expect(isUniqueEssentialNodeForCustomGraph('custom_input')).toBe(false)
+    })
+  })
+
   describe('deleteAndDisconnectNodes', () => {
     it('should delete nodes and their connections', () => {
       const ret = deleteAndDisconnectNodes(
@@ -725,6 +738,22 @@ describe('src/utils/graphNodes/index.ts', () => {
         }),
       ])
       expect(ret.updatedIds).toEqual({ c: true })
+    })
+    it('should not delete essential nodes', () => {
+      const ret = deleteAndDisconnectNodes(
+        getGraphNodeModule,
+        [
+          createGraphNode('custom_begin_input', { id: 'a' }),
+          createGraphNode('custom_begin_output', { id: 'b' }),
+        ],
+        { a: true, b: true }
+      )
+
+      expect(ret.nodes).toEqual([
+        createGraphNode('custom_begin_input', { id: 'a' }),
+        createGraphNode('custom_begin_output', { id: 'b' }),
+      ])
+      expect(ret.updatedIds).toEqual({})
     })
   })
 

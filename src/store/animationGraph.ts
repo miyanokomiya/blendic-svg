@@ -27,7 +27,7 @@ import {
   toMap,
   getCustomGraph,
 } from '../models'
-import { extractMap, mapReduce, toList } from '../utils/commons'
+import { dropMap, extractMap, mapReduce, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { useEntities } from '/@/composables/stores/entities'
 import { SelectOptions } from '/@/composables/modes/types'
@@ -45,6 +45,7 @@ import {
   resolveAllNodes,
   NODE_MENU_OPTION,
   createGraphNodeIncludeCustom,
+  isUniqueEssentialNodeForCustomGraph,
 } from '/@/utils/graphNodes'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store'
@@ -340,15 +341,18 @@ export function createStore(
 
   function pasteNodes(nodes: GraphNode[]) {
     const parent = getNodeParent()
-    if (!parent || nodes.length === 0) return
+    const filteredNodes = nodes.filter(
+      (n) => !isUniqueEssentialNodeForCustomGraph(n.type)
+    )
+    if (!parent || filteredNodes.length === 0) return
 
-    historyStore.dispatch(nodeEntities.createAddAction(nodes), [
+    historyStore.dispatch(nodeEntities.createAddAction(filteredNodes), [
       getNodeParentEntity().createUpdateAction({
         [parent.id]: {
-          nodes: parent.nodes.concat(nodes.map((n) => n.id)),
+          nodes: parent.nodes.concat(filteredNodes.map((n) => n.id)),
         },
       }),
-      nodeSelectable.createMultiSelectAction(nodes.map((n) => n.id)),
+      nodeSelectable.createMultiSelectAction(filteredNodes.map((n) => n.id)),
     ])
   }
 
@@ -356,12 +360,10 @@ export function createStore(
     const parent = getNodeParent()
     if (!parent) return
 
-    const deleteIds = selectedNodes.value
-
     const deletedInfo = deleteAndDisconnectNodes(
       getGraphNodeModuleFn.value(),
       toList(nodeMap.value),
-      deleteIds
+      selectedNodes.value
     )
 
     const nodeMapByDelete = toMap(deletedInfo.nodes)
@@ -378,7 +380,7 @@ export function createStore(
       }
     )
 
-    const deletedIds = selectedNodes.value
+    const deletedIds = dropMap(selectedNodes.value, nodeMapByDelete)
 
     historyStore.dispatch(
       nodeEntities.createDeleteAction(Object.keys(deletedIds)),

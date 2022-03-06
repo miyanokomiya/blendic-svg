@@ -848,6 +848,12 @@ function immigrateInputs(
   })
 }
 
+export function isUniqueEssentialNodeForCustomGraph(
+  type: GraphNodeType
+): boolean {
+  return type === 'custom_begin_input' || type === 'custom_begin_output'
+}
+
 export function deleteAndDisconnectNodes(
   getGraphNodeModule: GetGraphNodeModule,
   nodes: GraphNode[],
@@ -856,7 +862,9 @@ export function deleteAndDisconnectNodes(
   const updatedIds: IdMap<boolean> = {}
 
   const nextNodes = nodes
-    .filter((n) => !targetIds[n.id])
+    .filter(
+      (n) => !targetIds[n.id] || isUniqueEssentialNodeForCustomGraph(n.type)
+    )
     .map((n) => {
       return {
         ...n,

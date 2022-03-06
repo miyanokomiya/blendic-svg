@@ -49,6 +49,7 @@ export const struct: NodeStruct<GraphNodeReroute> = {
     return { value: inputs.value }
   },
   width: 18,
+  label: '',
   getOutputType(self) {
     return (
       pickNotGenericsType([self.inputs.value.genericsType]) ??

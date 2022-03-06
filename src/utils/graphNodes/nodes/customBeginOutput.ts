@@ -17,30 +17,30 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { GraphNodeCustomBeginInput } from '/@/models/graphNode'
+import { GraphNodeCustomBeginOutput } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeCustomBeginInput> = {
+export const struct: NodeStruct<GraphNodeCustomBeginOutput> = {
   create(arg = {}) {
     return {
       ...createBaseNode(arg),
-      type: 'custom_begin_input',
-    } as GraphNodeCustomBeginInput
+      type: 'custom_begin_output',
+    } as GraphNodeCustomBeginOutput
   },
   data: {},
   inputs: {},
   outputs: {
-    input: UNIT_VALUE_TYPES.INPUT,
+    output: UNIT_VALUE_TYPES.OUTPUT,
   },
   computation() {
-    return { input: '' }
+    return { output: '' }
   },
   width: 130,
   color: '#f0f8ff',
   textColor: '#000',
-  label: 'Begin Input',
+  label: 'Begin Output',
 }

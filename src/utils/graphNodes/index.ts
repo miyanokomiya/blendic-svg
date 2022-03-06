@@ -121,6 +121,8 @@ import * as reroute from './nodes/reroute'
 
 import * as custom_begin_input from './nodes/customBeginInput'
 import * as custom_input from './nodes/customInput'
+import * as custom_begin_output from './nodes/customBeginOutput'
+import * as custom_output from './nodes/customOutput'
 
 import { getTransform, IdMap } from '/@/models'
 import { extractMap, mapReduce, toList } from '/@/utils/commons'
@@ -205,6 +207,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
 
   custom_begin_input,
   custom_input,
+  custom_begin_output,
+  custom_output,
 } as const
 
 interface NodeMenuOption {
@@ -489,6 +493,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     ...GENERICS_SUGGESTIONS,
   ],
   INPUT: [{ label: 'Input', type: 'custom_input', key: 'input' }],
+  OUTPUT: [{ label: 'Output', type: 'custom_output', key: 'output' }],
 }
 
 export function getGraphNodeModule<T extends GraphNodeType>(
@@ -1183,6 +1188,7 @@ export function createDefaultUnitValueForGenerics(
     case GRAPH_VALUE_TYPE.OBJECT:
     case GRAPH_VALUE_TYPE.D:
     case GRAPH_VALUE_TYPE.INPUT:
+    case GRAPH_VALUE_TYPE.OUTPUT:
       return ''
     case GRAPH_VALUE_TYPE.GENERICS:
       return undefined

@@ -17,30 +17,14 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { GraphNodeCustomBeginInput } from '/@/models/graphNode'
-import {
-  createBaseNode,
-  NodeStruct,
-  UNIT_VALUE_TYPES,
-} from '/@/utils/graphNodes/core'
+import * as target from '/@/utils/graphNodes/nodes/customBeginOutput'
 
-export const struct: NodeStruct<GraphNodeCustomBeginInput> = {
-  create(arg = {}) {
-    return {
-      ...createBaseNode(arg),
-      type: 'custom_begin_input',
-    } as GraphNodeCustomBeginInput
-  },
-  data: {},
-  inputs: {},
-  outputs: {
-    input: UNIT_VALUE_TYPES.INPUT,
-  },
-  computation() {
-    return { input: '' }
-  },
-  width: 130,
-  color: '#f0f8ff',
-  textColor: '#000',
-  label: 'Begin Input',
-}
+describe('src/utils/graphNodes/nodes/customBeginOutput.ts', () => {
+  describe('computation', () => {
+    it('should return output values', () => {
+      expect(
+        target.struct.computation({}, target.struct.create(), {} as any)
+      ).toEqual({ output: '' })
+    })
+  })
+})

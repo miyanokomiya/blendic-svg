@@ -17,30 +17,51 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { GraphNodeCustomBeginInput } from '/@/models/graphNode'
+import { GraphNodeCustomOutput } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeCustomBeginInput> = {
+export const struct: NodeStruct<GraphNodeCustomOutput> = {
   create(arg = {}) {
     return {
-      ...createBaseNode(arg),
-      type: 'custom_begin_input',
-    } as GraphNodeCustomBeginInput
+      ...createBaseNode({
+        data: {
+          name: 'output',
+        },
+        inputs: { output: { value: '' }, value: { value: undefined } },
+        ...arg,
+      }),
+      type: 'custom_output',
+    } as GraphNodeCustomOutput
   },
-  data: {},
-  inputs: {},
+  data: {
+    name: {
+      type: UNIT_VALUE_TYPES.TEXT,
+      default: 'output',
+    },
+  },
+  inputs: {
+    output: {
+      type: UNIT_VALUE_TYPES.INPUT,
+      default: '',
+    },
+    value: {
+      type: UNIT_VALUE_TYPES.GENERICS,
+      default: undefined,
+    },
+  },
   outputs: {
-    input: UNIT_VALUE_TYPES.INPUT,
+    output: UNIT_VALUE_TYPES.OUTPUT,
   },
-  computation() {
-    return { input: '' }
+  computation(input) {
+    return { output: input.output }
   },
-  width: 130,
+  width: 110,
   color: '#f0f8ff',
   textColor: '#000',
-  label: 'Begin Input',
+  label: 'Output',
+  genericsChains: [[{ key: 'value' }]],
 }

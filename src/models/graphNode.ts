@@ -60,6 +60,7 @@ export const GRAPH_VALUE_TYPE = {
   GENERICS: 'GENERICS',
 
   INPUT: 'INPUT',
+  OUTPUT: 'OUTPUT',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 

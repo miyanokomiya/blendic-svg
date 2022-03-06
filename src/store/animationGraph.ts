@@ -370,7 +370,20 @@ export function createStore(
   }
 
   function addCustomGraph(arg: Partial<{ id: string; name: string }> = {}) {
-    const beginInputNode = createGraphNode('custom_begin_input', {}, true)
+    const beginInputNode = createGraphNode(
+      'custom_begin_input',
+      {
+        position: { x: -200, y: 0 },
+      },
+      true
+    )
+    const beginOutputNode = createGraphNode(
+      'custom_begin_output',
+      {
+        position: { x: 200, y: 0 },
+      },
+      true
+    )
     const customGraph = getCustomGraph(
       {
         id: arg.id,
@@ -378,13 +391,13 @@ export function createStore(
           arg.name ?? 'Custom',
           customGraphs.value.map((g) => g.name)
         ),
-        nodes: [beginInputNode.id],
+        nodes: [beginInputNode.id, beginOutputNode.id],
       },
       !arg.id
     )
 
     historyStore.dispatch(customGraphEntities.createAddAction([customGraph]), [
-      nodeEntities.createAddAction([beginInputNode]),
+      nodeEntities.createAddAction([beginInputNode, beginOutputNode]),
       customGraphSelectable.createSelectAction(customGraph.id),
     ])
   }

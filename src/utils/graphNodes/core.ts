@@ -46,11 +46,11 @@ export interface NodeStruct<T extends GraphNodeBase> {
     }
   }
   inputs: {
-    [key in keyof T['inputs']]: { type: ValueType } & {
+    [key in keyof T['inputs']]: { type: ValueType; label?: string } & {
       default: Required<T['inputs'][key]>['value']
     }
   }
-  outputs: { [key: string]: ValueType }
+  outputs: { [key: string]: ValueType & { label?: string } }
   computation: (
     inputs: {
       [key in keyof T['inputs']]: Required<T['inputs'][key]>['value']

@@ -99,5 +99,143 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         expect(struct.inputs).toEqual({})
       })
     })
+
+    describe('outputs', () => {
+      it('should craete outputs struct', () => {
+        const beginOutputNode = createGraphNode('custom_begin_output', {
+          id: 'begin',
+        })
+        const outputNode0 = createGraphNode('custom_output', {
+          id: 'output_0',
+          data: { name: 'name_0' },
+          inputs: {
+            output: { from: { id: 'begin', key: 'output' } },
+            value: {
+              from: { id: 'begin', key: 'output' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        })
+        const outputNode1 = createGraphNode('custom_output', {
+          id: 'output_1',
+          data: { name: 'name_1' },
+          inputs: { output: { from: { id: 'output_0', key: 'output' } } },
+        })
+
+        const { struct } = createCustomNodeModule(
+          getCustomGraph({
+            nodes: [beginOutputNode.id, outputNode1.id, outputNode0.id],
+          }),
+          {
+            [beginOutputNode.id]: beginOutputNode,
+            [outputNode1.id]: outputNode1,
+            [outputNode0.id]: outputNode0,
+          }
+        )
+
+        expect(struct.outputs).toEqual({
+          output_0: {
+            ...UNIT_VALUE_TYPES.SCALER,
+            label: 'name_0',
+          },
+          output_1: {
+            ...UNIT_VALUE_TYPES.GENERICS,
+            label: 'name_1',
+          },
+        })
+      })
+      it('should ignore unconnected output nodes', () => {
+        const beginOutputNode = createGraphNode('custom_begin_output', {
+          id: 'begin',
+        })
+        const outputNode0 = createGraphNode('custom_output', {
+          id: 'output_0',
+          data: { name: 'name_0' },
+          inputs: { output: {} },
+        })
+        const outputNode1 = createGraphNode('custom_output', {
+          id: 'output_1',
+          data: { name: 'name_1' },
+          inputs: { output: {} },
+        })
+
+        const { struct } = createCustomNodeModule(
+          getCustomGraph({
+            nodes: [beginOutputNode.id, outputNode1.id, outputNode0.id],
+          }),
+          {
+            [beginOutputNode.id]: beginOutputNode,
+            [outputNode1.id]: outputNode1,
+            [outputNode0.id]: outputNode0,
+          }
+        )
+
+        expect(struct.outputs).toEqual({})
+      })
+    })
+
+    describe('computation', () => {
+      it('should craete computation struct', () => {
+        const beginInputNode = createGraphNode('custom_begin_input', {
+          id: 'begin_input',
+        })
+        const inputNode0 = createGraphNode('custom_input', {
+          id: 'input_0',
+          data: {
+            name: 'input_0',
+            default: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 10,
+            },
+          },
+          inputs: { input: { from: { id: 'begin_input', key: 'input' } } },
+        })
+        const beginOutputNode = createGraphNode('custom_begin_output', {
+          id: 'begin_output',
+        })
+        const outputNode0 = createGraphNode('custom_output', {
+          id: 'output_0',
+          data: { name: 'name_0' },
+          inputs: {
+            output: { from: { id: 'begin_output', key: 'output' } },
+            value: {
+              from: { id: 'make_vector2', key: 'vector2' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        })
+
+        const makeVector2Node = createGraphNode('make_vector2', {
+          id: 'make_vector2',
+          inputs: {
+            x: { from: { id: 'input_0', key: 'value' } },
+            y: { value: 20 },
+          },
+        })
+
+        const { struct } = createCustomNodeModule(
+          getCustomGraph({
+            nodes: [
+              beginInputNode.id,
+              inputNode0.id,
+              beginOutputNode.id,
+              outputNode0.id,
+              makeVector2Node.id,
+            ],
+          }),
+          {
+            [beginInputNode.id]: beginInputNode,
+            [inputNode0.id]: inputNode0,
+            [beginOutputNode.id]: beginOutputNode,
+            [outputNode0.id]: outputNode0,
+            [makeVector2Node.id]: makeVector2Node,
+          }
+        )
+
+        expect(struct.computation({ input_0: 10 }, {}, {} as any)).toEqual({
+          output_0: { x: 10, y: 20 },
+        })
+      })
+    })
   })
 })

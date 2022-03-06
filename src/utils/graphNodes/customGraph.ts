@@ -24,8 +24,11 @@ import {
   GraphNodeCustomBeginOutput,
   GraphNodeCustomInput,
   GraphNodeCustomOutput,
+  GraphNodeOutputMap,
+  GraphNodeOutputValues,
 } from '/@/models/graphNode'
 import { toList } from '/@/utils/commons'
+import { resolveAllNodes } from '/@/utils/graphNodes'
 import {
   NodeModule,
   NodeStruct,
@@ -38,6 +41,7 @@ export function createCustomNodeModule(
 ): NodeModule<any> {
   const customInterface = getCustomInterfaceNode(customGraph, innerNodeMap)
   const inputs = createInputsStruct(customInterface)
+  const outputs = createOutputsStruct(customInterface)
 
   return {
     struct: {
@@ -47,9 +51,12 @@ export function createCustomNodeModule(
       }),
       data: {},
       inputs,
-      outputs: {},
-      computation: () => {
-        return {}
+      outputs,
+      computation: (inputs, _self, context) => {
+        return stubOutputNodes(
+          customInterface.outputNodes,
+          resolveAllNodes(context, stubInputNodes(innerNodeMap, inputs))
+        )
       },
       width: 200,
       label: `${customGraph.name}`,
@@ -110,7 +117,7 @@ function createInputsStruct({
 >): NodeStruct<any>['inputs'] {
   if (!beginInputNode) return {}
 
-  const inputMap = toList(inputNodes).reduce<{ [fromId: string]: string }>(
+  const chainMap = toList(inputNodes).reduce<{ [from: string]: string }>(
     (p, node) => {
       if (node.inputs.input.from) {
         p[node.inputs.input.from.id] = node.id
@@ -120,14 +127,9 @@ function createInputsStruct({
     {}
   )
 
-  const inputIds = []
-  let lastId: string | undefined = inputMap[beginInputNode.id]
-  while (lastId) {
-    inputIds.push(lastId)
-    lastId = inputMap[lastId]
-  }
-
-  return inputIds.reduce<NodeStruct<any>['inputs']>((inputs, id) => {
+  return getIdChain(chainMap, beginInputNode.id).reduce<
+    NodeStruct<any>['inputs']
+  >((inputs, id) => {
     const node = inputNodes[id]
     inputs[id] = {
       label: node.data.name,
@@ -136,4 +138,88 @@ function createInputsStruct({
     }
     return inputs
   }, {})
+}
+
+function createOutputsStruct({
+  beginOutputNode,
+  outputNodes,
+}: Pick<
+  CustomInterface,
+  'beginOutputNode' | 'outputNodes'
+>): NodeStruct<any>['outputs'] {
+  if (!beginOutputNode) return {}
+
+  const chainMap = toList(outputNodes).reduce<{ [from: string]: string }>(
+    (p, node) => {
+      if (node.inputs.output.from) {
+        p[node.inputs.output.from.id] = node.id
+      }
+      return p
+    },
+    {}
+  )
+
+  return getIdChain(chainMap, beginOutputNode.id).reduce<
+    NodeStruct<any>['outputs']
+  >((outputs, id) => {
+    const node = outputNodes[id]
+    outputs[id] = {
+      ...(node.inputs.value.genericsType ?? UNIT_VALUE_TYPES.GENERICS),
+      label: node.data.name,
+    }
+    return outputs
+  }, {})
+}
+
+function getIdChain(
+  chainMap: { [from: string]: string },
+  from: string
+): string[] {
+  const ids = []
+  let lastId: string | undefined = chainMap[from]
+  while (lastId) {
+    ids.push(lastId)
+    lastId = chainMap[lastId]
+  }
+
+  return ids
+}
+
+function stubInputNodes(
+  innerNodeMap: IdMap<GraphNode>,
+  inputs: { [key: string]: any }
+): IdMap<GraphNode> {
+  const stubbedNodes = toList(inputs).reduce<IdMap<GraphNode>>(
+    (p, input, key) => {
+      const inputNode = innerNodeMap[key]
+      if (inputNode) {
+        p[inputNode.id] = {
+          ...inputNode,
+          data: { ...inputNode.data, default: input },
+        }
+      }
+      return p
+    },
+    {}
+  )
+  return { ...innerNodeMap, ...stubbedNodes }
+}
+
+function stubOutputNodes(
+  outputNodeMap: IdMap<GraphNodeCustomOutput>,
+  nodeOutputValueMap: GraphNodeOutputMap
+): GraphNodeOutputValues {
+  return toList(outputNodeMap).reduce<GraphNodeOutputValues>(
+    (p, outputNode) => {
+      if (outputNode.inputs.value.from) {
+        const connectedValues =
+          nodeOutputValueMap[outputNode.inputs.value.from.id]
+        if (connectedValues) {
+          p[outputNode.id] = connectedValues[outputNode.inputs.value.from.key]
+        }
+      }
+      return p
+    },
+    {}
+  )
 }

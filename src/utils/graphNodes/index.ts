@@ -1046,11 +1046,15 @@ function getInputOriginalType(
 }
 
 export function getOutputType(
-  nodeStruct: NodeStruct<any>,
+  nodeStruct: NodeStruct<any> | undefined,
   target: GraphNode,
   key: string
 ): ValueType {
-  return nodeStruct.getOutputType?.(target, key) ?? nodeStruct.outputs[key]
+  return (
+    nodeStruct?.getOutputType?.(target, key) ??
+    nodeStruct?.outputs[key] ??
+    UNIT_VALUE_TYPES.UNKNOWN
+  )
 }
 
 function getOutputTypes(

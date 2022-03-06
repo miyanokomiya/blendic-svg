@@ -222,22 +222,21 @@ export function getGraphNodeSize(
   getGraphNodeModule: GetGraphNodeModule,
   node: GraphNode
 ): Size {
-  const dataHeight = getGraphNodeDataHeight(getGraphNodeModule, node)
-  const inputsHeight = getGraphNodeInputsHeight(getGraphNodeModule, node)
-  const outputsHeight = getGraphNodeOutputsHeight(getGraphNodeModule, node)
+  const nodeModule = getGraphNodeModule(node.type)
+  if (!nodeModule) return { width: 100, height: 40 }
+
+  const dataHeight = getGraphNodeDataHeight(nodeModule.struct)
+  const inputsHeight = getGraphNodeInputsHeight(nodeModule.struct)
+  const outputsHeight = getGraphNodeOutputsHeight(nodeModule.struct)
 
   return {
-    width: getGraphNodeWidth(getGraphNodeModule, node),
+    width: nodeModule.struct.width,
     height: GRAPH_NODE_HEAD_HEIGHT + outputsHeight + dataHeight + inputsHeight,
   }
 }
 
-function getGraphNodeDataHeight(
-  getGraphNodeModule: GetGraphNodeModule,
-  node: GraphNode
-): number {
-  const module = getGraphNodeModule(node.type)
-  const values = Object.values(module.struct.data)
+function getGraphNodeDataHeight(nodeStruct: NodeStruct<any>): number {
+  const values = Object.values(nodeStruct.data)
   return values.length === 0
     ? 0
     : values.reduce<number>((p, d) => {
@@ -245,34 +244,18 @@ function getGraphNodeDataHeight(
       }, 0)
 }
 
-function getGraphNodeWidth(
-  getGraphNodeModule: GetGraphNodeModule,
-  node: GraphNode
-): number {
-  const module = getGraphNodeModule(node.type)
-  return module.struct.width
-}
-
-function getGraphNodeInputsHeight(
-  getGraphNodeModule: GetGraphNodeModule,
-  node: GraphNode
-): number {
-  const module = getGraphNodeModule(node.type)
-  const length = Object.keys(module.struct.inputs).length
+function getGraphNodeInputsHeight(nodeStruct: NodeStruct<any>): number {
+  const length = Object.keys(nodeStruct.inputs).length
   return length === 0
     ? 0
-    : GRAPH_NODE_ROW_HEIGHT * (0.3 + Object.keys(module.struct.inputs).length)
+    : GRAPH_NODE_ROW_HEIGHT * (0.3 + Object.keys(nodeStruct.inputs).length)
 }
 
-function getGraphNodeOutputsHeight(
-  getGraphNodeModule: GetGraphNodeModule,
-  node: GraphNode
-): number {
-  const module = getGraphNodeModule(node.type)
-  const length = Object.keys(module.struct.outputs).length
+function getGraphNodeOutputsHeight(nodeStruct: NodeStruct<any>): number {
+  const length = Object.keys(nodeStruct.outputs).length
   return length === 0
     ? 0
-    : GRAPH_NODE_ROW_HEIGHT * (0.5 + Object.keys(module.struct.outputs).length)
+    : GRAPH_NODE_ROW_HEIGHT * (0.5 + Object.keys(nodeStruct.outputs).length)
 }
 
 export function getGraphNodeDataPosition(
@@ -281,11 +264,13 @@ export function getGraphNodeDataPosition(
 ): {
   [key in keyof NodeStruct<GraphNode>['data']]?: IVec2
 } {
-  const outputsHeight = getGraphNodeOutputsHeight(getGraphNodeModule, node)
-  const module = getGraphNodeModule(node.type)
+  const nodeModule = getGraphNodeModule(node.type)
+  if (!nodeModule) return {}
+
+  const outputsHeight = getGraphNodeOutputsHeight(nodeModule.struct)
   let current = GRAPH_NODE_HEAD_HEIGHT + outputsHeight
 
-  return Object.entries(module.struct.data).reduce<{
+  return Object.entries(nodeModule.struct.data).reduce<{
     [key: string]: IVec2
   }>((p, [key, d]) => {
     p[key] = { x: 8, y: current }
@@ -300,8 +285,11 @@ function getGraphNodeInputsPosition(
 ): {
   [key: string]: GraphNodeEdgeInfo
 } {
-  const dataHeight = getGraphNodeDataHeight(getGraphNodeModule, node)
-  const outputsHeight = getGraphNodeOutputsHeight(getGraphNodeModule, node)
+  const nodeModule = getGraphNodeModule(node.type)
+  if (!nodeModule) return {}
+
+  const dataHeight = getGraphNodeDataHeight(nodeModule.struct)
+  const outputsHeight = getGraphNodeOutputsHeight(nodeModule.struct)
   const base = {
     x: 0,
     y:
@@ -314,7 +302,7 @@ function getGraphNodeInputsPosition(
   }
 
   return getGraphNodeRowsPosition(
-    getGraphNodeModule(node.type).struct,
+    nodeModule.struct,
     Object.entries(getNodeEdgeTypes(getGraphNodeModule, node).inputs).map(
       ([key, type]) => ({
         key,
@@ -331,6 +319,9 @@ function getGraphNodeOutputsPosition(
 ): {
   [key: string]: GraphNodeEdgeInfo
 } {
+  const nodeModule = getGraphNodeModule(node.type)
+  if (!nodeModule) return {}
+
   const base = {
     x: getGraphNodeSize(getGraphNodeModule, node).width,
     y:
@@ -340,7 +331,7 @@ function getGraphNodeOutputsPosition(
   }
 
   return getGraphNodeRowsPosition(
-    getGraphNodeModule(node.type).struct,
+    nodeModule.struct,
     Object.entries(getNodeEdgeTypes(getGraphNodeModule, node).outputs).map(
       ([key, type]) => ({
         key,
@@ -378,7 +369,7 @@ function getGraphNodeRowsPosition(
         p: add(margin, { x: 0, y: GRAPH_NODE_ROW_HEIGHT * i }),
         type,
         label:
-          (output ? struct.outputs[key].label : struct.inputs[key].label) ??
+          (output ? struct.outputs[key]?.label : struct.inputs[key]?.label) ??
           key,
       }
       return p

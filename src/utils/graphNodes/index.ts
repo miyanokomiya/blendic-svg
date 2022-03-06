@@ -757,9 +757,13 @@ export function validateConnection(
     key: string
   }
 ): boolean {
+  const toModule = getGraphNodeModule(to.node.type)
+  const fromModule = getGraphNodeModule(from.node.type)
+  if (!fromModule || !toModule) return false
+
   return canConnectValueType(
-    getInputType(getGraphNodeModule, to.node, to.key),
-    getOutputType(getGraphNodeModule, from.node, from.key)
+    getInputType(toModule.struct, to.node, to.key),
+    getOutputType(fromModule.struct, from.node, from.key)
   )
 }
 
@@ -879,9 +883,12 @@ export function getNodeEdgeTypes(
   inputs: { [key: string]: ValueType }
   outputs: { [key: string]: ValueType }
 } {
+  const nodeModule = getGraphNodeModule(target.type)
+  if (!nodeModule) return { inputs: {}, outputs: {} }
+
   return {
-    inputs: getInputTypes(getGraphNodeModule, target),
-    outputs: getOutputTypes(getGraphNodeModule, target),
+    inputs: getInputTypes(nodeModule.struct, target),
+    outputs: getOutputTypes(nodeModule.struct, target),
   }
 }
 
@@ -1002,23 +1009,19 @@ export function getDataTypeAndValue(
 }
 
 function getInputType(
-  getGraphNodeModule: GetGraphNodeModule,
+  nodeStruct: NodeStruct<any>,
   target: GraphNode,
   key: string
 ): ValueType {
-  return (
-    target.inputs[key].genericsType ??
-    getGraphNodeModule(target.type).struct.inputs[key].type
-  )
+  return target.inputs[key].genericsType ?? nodeStruct.inputs[key]?.type
 }
 
 export function getInputTypes(
-  getGraphNodeModule: GetGraphNodeModule,
+  nodeStruct: NodeStruct<any>,
   target: GraphNode
 ): { [key: string]: ValueType } {
-  const struct = getGraphNodeModule(target.type).struct
   return mapReduce(target.inputs, (_, key) => {
-    return target.inputs[key].genericsType ?? struct.inputs[key].type
+    return target.inputs[key].genericsType ?? nodeStruct.inputs[key]?.type
   })
 }
 
@@ -1032,21 +1035,19 @@ function getInputOriginalType(
 }
 
 export function getOutputType(
-  getGraphNodeModule: GetGraphNodeModule,
+  nodeStruct: NodeStruct<any>,
   target: GraphNode,
   key: string
 ): ValueType {
-  const struct = getGraphNodeModule(target.type).struct
-  return struct.getOutputType?.(target, key) ?? struct.outputs[key]
+  return nodeStruct.getOutputType?.(target, key) ?? nodeStruct.outputs[key]
 }
 
 function getOutputTypes(
-  getGraphNodeModule: GetGraphNodeModule,
+  nodeStruct: NodeStruct<any>,
   target: GraphNode
 ): { [key: string]: ValueType } {
-  const struct = getGraphNodeModule(target.type).struct
-  return mapReduce(struct.outputs, (_, key) => {
-    return struct.getOutputType?.(target, key) ?? struct.outputs[key]
+  return mapReduce(nodeStruct.outputs, (_, key) => {
+    return nodeStruct.getOutputType?.(target, key) ?? nodeStruct.outputs[key]
   })
 }
 
@@ -1105,17 +1106,19 @@ function _getEdgeChainGroupAt(
 
   if (context.isDoneItem(item)) return []
 
-  const struct = getGraphNodeModule(target.type).struct
-  const group = getGenericsChainAtFn(target.id, struct.genericsChains ?? [])(
-    item.key,
-    item.output
-  ) ?? [
+  const nodeModule = getGraphNodeModule(target.type)
+  if (!nodeModule) return []
+
+  const group = getGenericsChainAtFn(
+    target.id,
+    nodeModule.struct.genericsChains ?? []
+  )(item.key, item.output) ?? [
     // this edge has fixed type
     {
       ...item,
       type: item.output
-        ? getOutputType(getGraphNodeModule, target, item.key)
-        : getInputType(getGraphNodeModule, target, item.key),
+        ? getOutputType(nodeModule.struct, target, item.key)
+        : getInputType(nodeModule.struct, target, item.key),
     },
   ]
   group.forEach(context.saveDoneItem)

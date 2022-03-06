@@ -1636,7 +1636,10 @@ describe('src/utils/graphNodes/index.ts', () => {
   describe('getInputTypes', () => {
     it('should return input types map', () => {
       expect(
-        getInputTypes(getGraphNodeModule, createGraphNode('multi_scaler', {}))
+        getInputTypes(
+          getGraphNodeModule('multi_scaler').struct,
+          createGraphNode('multi_scaler', {})
+        )
       ).toEqual({
         a: UNIT_VALUE_TYPES.SCALER,
         b: UNIT_VALUE_TYPES.SCALER,
@@ -1645,7 +1648,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should consider generics type', () => {
       expect(
         getInputTypes(
-          getGraphNodeModule,
+          getGraphNodeModule('multi_scaler').struct,
           createGraphNode('add_generics', {
             inputs: {
               a: { genericsType: UNIT_VALUE_TYPES.SCALER },
@@ -1661,14 +1664,14 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should return the output type of the node', () => {
       expect(
         getOutputType(
-          getGraphNodeModule,
+          getGraphNodeModule('switch_generics').struct,
           createGraphNode('switch_generics'),
           'value'
         )
       ).toEqual(UNIT_VALUE_TYPES.GENERICS)
       expect(
         getOutputType(
-          getGraphNodeModule,
+          getGraphNodeModule('switch_generics').struct,
           createGraphNode('switch_generics', {
             inputs: {
               if_true: { genericsType: UNIT_VALUE_TYPES.SCALER },
@@ -1679,7 +1682,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       ).toEqual(UNIT_VALUE_TYPES.SCALER)
       expect(
         getOutputType(
-          getGraphNodeModule,
+          getGraphNodeModule('make_vector2').struct,
           createGraphNode('make_vector2'),
           'vector2'
         )

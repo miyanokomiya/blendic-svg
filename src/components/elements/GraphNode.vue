@@ -280,7 +280,7 @@ function updateData(key: string, val: any, seriesKey?: string) {
 }
 
 function getInputType(key: string): ValueType {
-  return (nodeStruct.value.inputs as any)[key].type
+  return (nodeStruct.value.inputs as any)[key]?.type
 }
 
 const GRAPH_NODE_TYPE_COLOR = helpers.GRAPH_NODE_TYPE_COLOR

@@ -253,7 +253,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
             const from = state.dragTarget.draftGraphEdge.from
             const node = graphStore.nodeMap.value[from.nodeId]
             state.nodeSuggestion = getOutputType(
-              graphStore.getGraphNodeModuleFn.value(),
+              graphStore.getGraphNodeModuleFn.value()(node.type).struct,
               node,
               from.key
             ).type

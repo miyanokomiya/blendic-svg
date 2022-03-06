@@ -910,20 +910,38 @@ function getDataOriginalType(type: GraphNodeType, key: string): ValueType {
   return struct.data[key].type
 }
 
+function isGenericsDataField(nodeType: GraphNodeType, key: string): boolean {
+  const struct = getGraphNodeModule<any>(nodeType).struct
+  return struct.data[key].type.type === GRAPH_VALUE_TYPE.GENERICS
+}
+
+export function updateDataField(
+  nodeType: GraphNodeType,
+  key: string,
+  old: unknown | GraphNodeData<unknown>,
+  nextValue: unknown
+): unknown | GraphNodeData<unknown> {
+  return isGenericsDataField(nodeType, key)
+    ? {
+        ...(old as GraphNodeData<unknown>),
+        value: nextValue,
+      }
+    : nextValue
+}
+
 export function getDataTypeAndValue(
   target: GraphNode,
   key: string
 ): { type: ValueType; value: unknown } {
   const field = target.data[key] as any
-  return typeof field === 'object' && field.genericsType
+  const struct = getGraphNodeModule<any>(target.type).struct
+  return isGenericsDataField(target.type, key)
     ? {
-        type: field.genericsType as ValueType,
+        type: (field.genericsType as ValueType) ?? struct.data[key]?.type,
         value: field.value,
       }
     : {
-        type:
-          getGraphNodeModule<any>(target.type).struct.data[key]?.type ??
-          UNIT_VALUE_TYPES.GENERICS,
+        type: struct.data[key]?.type ?? UNIT_VALUE_TYPES.GENERICS,
         value: field,
       }
 }

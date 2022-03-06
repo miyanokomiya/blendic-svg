@@ -60,7 +60,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent } from 'vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
-import { getGraphNodeModule, getInputTypes } from '/@/utils/graphNodes'
+import {
+  getDataTypeAndValue,
+  getGraphNodeModule,
+  getInputTypes,
+  updateDataField,
+} from '/@/utils/graphNodes'
 import { mapReduce } from '/@/utils/commons'
 import GraphNodeDataField from '/@/components/atoms/GraphNodeDataField.vue'
 import { ValueType } from '/@/models/graphNode'
@@ -88,22 +93,22 @@ export default defineComponent({
     const dataMap = computed<{
       [key: string]: DataInfo
     }>(() => {
-      if (!targetNode.value || !struct.value) return {}
-
-      const dataStruct = struct.value.data
-      return mapReduce(targetNode.value.data, (value, key) => {
-        return {
-          type: (dataStruct as any)[key].type as ValueType,
-          value,
-        }
-      })
+      const node = targetNode.value
+      if (!node || !struct.value) return {}
+      return mapReduce(node.data, (_, key) => getDataTypeAndValue(node, key))
     })
     function updateData(key: string, val: any, seriesKey?: string) {
-      if (!targetNode.value) return
+      const node = targetNode.value
+      if (!node) return
 
       graphStore.updateNode(
-        targetNode.value.id,
-        { data: { ...targetNode.value.data, [key]: val } },
+        node.id,
+        {
+          data: {
+            ...node.data,
+            [key]: updateDataField(node.type, key, node.data[key], val),
+          },
+        },
         seriesKey
       )
     }

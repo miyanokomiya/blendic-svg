@@ -54,6 +54,7 @@ import {
   getInputTypes,
   createDefaultUnitValueForGenerics,
   getDataTypeAndValue,
+  updateDataField,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -1495,6 +1496,30 @@ describe('src/utils/graphNodes/index.ts', () => {
     })
   })
 
+  describe('updateDataField', () => {
+    describe('should update data field', () => {
+      it('when the field has generics type', () => {
+        expect(
+          updateDataField(
+            'custom_input',
+            'default',
+            {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
+            },
+            10
+          )
+        ).toEqual({
+          genericsType: UNIT_VALUE_TYPES.SCALER,
+          value: 10,
+        })
+      })
+      it('when the field does not have generics type', () => {
+        expect(updateDataField('scaler', 'value', 1, 10)).toEqual(10)
+      })
+    })
+  })
+
   describe('getDataTypeAndValue', () => {
     describe('should return type and value of the data field', () => {
       it('when the node has decided generics data', () => {
@@ -1524,7 +1549,7 @@ describe('src/utils/graphNodes/index.ts', () => {
             }),
             'default'
           )
-        ).toEqual({ type: UNIT_VALUE_TYPES.GENERICS, value: {} })
+        ).toEqual({ type: UNIT_VALUE_TYPES.GENERICS, value: undefined })
       })
       it('when the node does not have generics data', () => {
         expect(

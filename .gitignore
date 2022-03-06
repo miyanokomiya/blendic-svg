@@ -7,3 +7,5 @@ dist-ssr
 yarn-error.log
 coverage
 __screenshot__
+
+.vim

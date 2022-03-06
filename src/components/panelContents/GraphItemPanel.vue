@@ -89,7 +89,7 @@ export default defineComponent({
     const getGraphNodeModule = computed(injectGetGraphNodeModuleFn())
     const struct = computed(() => {
       if (!targetNode.value) return
-      return getGraphNodeModule.value(targetNode.value.type).struct
+      return getGraphNodeModule.value(targetNode.value.type)?.struct
     })
 
     const dataMap = computed<{
@@ -130,7 +130,10 @@ export default defineComponent({
       if (!targetNode.value || !struct.value) return {}
 
       const inputs = targetNode.value.inputs
-      const types = getInputTypes(getGraphNodeModule.value, targetNode.value)
+      const types = getInputTypes(
+        getGraphNodeModule.value(targetNode.value.type)?.struct,
+        targetNode.value
+      )
       const resolvedNodeMap = graphStore.resolvedGraph.value?.nodeMap ?? {}
       struct.value.inputs
 

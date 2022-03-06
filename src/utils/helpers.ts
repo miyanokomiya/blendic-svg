@@ -33,7 +33,7 @@ import { posedHsva } from '/@/utils/attributesResolver'
 import { hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { BoneConstraint } from '/@/utils/constraints'
 import { GetGraphNodeModule, getNodeEdgeTypes } from '/@/utils/graphNodes'
-import { NodeStruct } from '/@/utils/graphNodes/core'
+import { NodeStruct, NodeModule } from '/@/utils/graphNodes/core'
 
 function getScaleText(scale: IVec2, origin: IVec2): string {
   if (scale.x === 1 && scale.y === 1) return ''
@@ -222,16 +222,23 @@ export function getGraphNodeSize(
   getGraphNodeModule: GetGraphNodeModule,
   node: GraphNode
 ): Size {
+  const inputsHeight = getGraphNodeInputsHeight(Object.keys(node.inputs).length)
+
   const nodeModule = getGraphNodeModule(node.type)
-  if (!nodeModule) return { width: 100, height: 40 }
+  if (!nodeModule) {
+    return { width: 100, height: GRAPH_NODE_HEAD_HEIGHT + inputsHeight }
+  }
 
   const dataHeight = getGraphNodeDataHeight(nodeModule.struct)
-  const inputsHeight = getGraphNodeInputsHeight(nodeModule.struct)
-  const outputsHeight = getGraphNodeOutputsHeight(nodeModule.struct)
+  const outputsHeight = getGraphNodeOutputsHeight(
+    Object.keys(nodeModule.struct.outputs).length
+  )
 
   return {
     width: nodeModule.struct.width,
-    height: GRAPH_NODE_HEAD_HEIGHT + outputsHeight + dataHeight + inputsHeight,
+    height:
+      GRAPH_NODE_HEAD_HEIGHT +
+      Math.max(outputsHeight + dataHeight + inputsHeight, 20),
   }
 }
 
@@ -244,18 +251,12 @@ function getGraphNodeDataHeight(nodeStruct: NodeStruct<any>): number {
       }, 0)
 }
 
-function getGraphNodeInputsHeight(nodeStruct: NodeStruct<any>): number {
-  const length = Object.keys(nodeStruct.inputs).length
-  return length === 0
-    ? 0
-    : GRAPH_NODE_ROW_HEIGHT * (0.3 + Object.keys(nodeStruct.inputs).length)
+function getGraphNodeInputsHeight(count: number): number {
+  return count === 0 ? 0 : GRAPH_NODE_ROW_HEIGHT * (0.3 + count)
 }
 
-function getGraphNodeOutputsHeight(nodeStruct: NodeStruct<any>): number {
-  const length = Object.keys(nodeStruct.outputs).length
-  return length === 0
-    ? 0
-    : GRAPH_NODE_ROW_HEIGHT * (0.5 + Object.keys(nodeStruct.outputs).length)
+function getGraphNodeOutputsHeight(count: number): number {
+  return count === 0 ? 0 : GRAPH_NODE_ROW_HEIGHT * (0.5 + count)
 }
 
 export function getGraphNodeDataPosition(
@@ -267,7 +268,9 @@ export function getGraphNodeDataPosition(
   const nodeModule = getGraphNodeModule(node.type)
   if (!nodeModule) return {}
 
-  const outputsHeight = getGraphNodeOutputsHeight(nodeModule.struct)
+  const outputsHeight = getGraphNodeOutputsHeight(
+    Object.keys(nodeModule.struct.outputs).length
+  )
   let current = GRAPH_NODE_HEAD_HEIGHT + outputsHeight
 
   return Object.entries(nodeModule.struct.data).reduce<{
@@ -285,11 +288,12 @@ function getGraphNodeInputsPosition(
 ): {
   [key: string]: GraphNodeEdgeInfo
 } {
-  const nodeModule = getGraphNodeModule(node.type)
-  if (!nodeModule) return {}
+  const nodeModule: NodeModule<any> | undefined = getGraphNodeModule(node.type)
 
-  const dataHeight = getGraphNodeDataHeight(nodeModule.struct)
-  const outputsHeight = getGraphNodeOutputsHeight(nodeModule.struct)
+  const dataHeight = nodeModule ? getGraphNodeDataHeight(nodeModule.struct) : 0
+  const outputsHeight = nodeModule
+    ? getGraphNodeOutputsHeight(Object.keys(nodeModule.struct.outputs).length)
+    : 0
   const base = {
     x: 0,
     y:
@@ -302,7 +306,7 @@ function getGraphNodeInputsPosition(
   }
 
   return getGraphNodeRowsPosition(
-    nodeModule.struct,
+    nodeModule?.struct,
     Object.entries(getNodeEdgeTypes(getGraphNodeModule, node).inputs).map(
       ([key, type]) => ({
         key,
@@ -356,7 +360,7 @@ export function getGraphNodeEdgePosition(
 }
 
 function getGraphNodeRowsPosition(
-  struct: NodeStruct<any>,
+  struct: NodeStruct<any> | undefined,
   rows: { key: string; type: ValueType }[],
   margin: IVec2 = { x: 0, y: 0 },
   output = false
@@ -368,14 +372,24 @@ function getGraphNodeRowsPosition(
       p[key] = {
         p: add(margin, { x: 0, y: GRAPH_NODE_ROW_HEIGHT * i }),
         type,
-        label:
-          (output ? struct.outputs[key]?.label : struct.inputs[key]?.label) ??
-          key,
+        label: getLabelFromStruct(struct, key, output) ?? key,
       }
       return p
     },
     {}
   )
+}
+
+function getLabelFromStruct(
+  struct: NodeStruct<any> | undefined,
+  key: string,
+  output = false
+): string | undefined {
+  if (output) {
+    return struct?.outputs[key] ? struct.outputs[key].label : 'UNKNOWN'
+  } else {
+    return struct?.inputs[key] ? struct.inputs[key].label : 'UNKNOWN'
+  }
 }
 
 function getGraphNodeDataUnitHeight(
@@ -403,6 +417,7 @@ export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
     GENERICS: '#b0c4de',
     INPUT: '#ff7f50',
     OUTPUT: '#df7698',
+    UNKNOWN: '#fff',
   } as const
 
 export function getInputValuePreviewText(

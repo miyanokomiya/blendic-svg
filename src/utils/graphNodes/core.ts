@@ -59,12 +59,12 @@ export interface NodeStruct<T extends GraphNodeBase> {
     self: T,
     context: NodeContext<unknown>,
     // TODO: Remove `?`
-    getGraphNodeModule?: (type: GraphNodeType) => NodeModule<any>
+    getGraphNodeModule?: (type: GraphNodeType) => NodeModule<any> | undefined
   ) => { [key in keyof NodeStruct<T>['outputs']]: unknown }
   width: number
   color?: string
   textColor?: string
-  label?: string
+  label: string
   getOutputType?: (self: T, key: string) => ValueType
   genericsChains?: { key: string; output?: true; data?: true }[][]
   getErrors?: (self: T) => string[] | undefined

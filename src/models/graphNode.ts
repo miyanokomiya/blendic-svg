@@ -61,6 +61,8 @@ export const GRAPH_VALUE_TYPE = {
 
   INPUT: 'INPUT',
   OUTPUT: 'OUTPUT',
+
+  UNKNOWN: 'UNKNOWN',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 

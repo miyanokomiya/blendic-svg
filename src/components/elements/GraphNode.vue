@@ -120,7 +120,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           <g transform="translate(10, 0)">
             <GraphNodeInputLabel
               :input-key="edge.label"
-              :type="getInputType(key)"
+              :type="inputTypeMap[key]"
               :input="node.inputs[key]"
             />
           </g>
@@ -151,18 +151,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, withDefaults } from 'vue'
 import { useSettings } from '../../composables/settings'
 import { switchClick } from '/@/utils/devices'
-import {
-  GraphNode,
-  GraphNodeEdgePositions,
-  ValueType,
-} from '/@/models/graphNode'
+import { GraphNode, GraphNodeEdgePositions } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
 import { add, IVec2 } from 'okageo'
 import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
 import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
 import ErrorText from '/@/components/elements/atoms/ErrorText.vue'
 import { mapReduce } from '/@/utils/commons'
-import { getDataTypeAndValue } from '/@/utils/graphNodes'
+import { getDataTypeAndValue, getInputTypes } from '/@/utils/graphNodes'
 import { Size } from 'okanvas'
 import { injectGetGraphNodeModuleFn } from '/@/composables/animationGraph'
 </script>
@@ -251,12 +247,12 @@ const outline = computed(() => {
 })
 
 const nodeStruct = computed(
-  () => getGraphNodeModule.value(props.node.type).struct
+  () => getGraphNodeModule.value(props.node.type)?.struct
 )
 
-const label = computed(() => nodeStruct.value.label ?? props.node.type)
-const color = computed(() => nodeStruct.value.color ?? '#fafafa')
-const textColor = computed(() => nodeStruct.value.textColor ?? '#000')
+const label = computed(() => nodeStruct.value?.label ?? 'Unknown')
+const color = computed(() => nodeStruct.value?.color ?? '#ccc')
+const textColor = computed(() => nodeStruct.value?.textColor ?? '#ff0000')
 
 const dataPositions = computed(() =>
   helpers.getGraphNodeDataPosition(getGraphNodeModule.value, props.node)
@@ -279,9 +275,9 @@ function updateData(key: string, val: any, seriesKey?: string) {
   )
 }
 
-function getInputType(key: string): ValueType {
-  return (nodeStruct.value.inputs as any)[key]?.type
-}
+const inputTypeMap = computed(() => {
+  return getInputTypes(nodeStruct.value, props.node)
+})
 
 const GRAPH_NODE_TYPE_COLOR = helpers.GRAPH_NODE_TYPE_COLOR
 const GRAPH_NODE_ROW_HEIGHT = helpers.GRAPH_NODE_ROW_HEIGHT

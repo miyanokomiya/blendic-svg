@@ -201,8 +201,14 @@ export default defineComponent({
     )
 
     const selectedGraphId = computed({
-      get: () => selectedGraph.value?.id ?? '',
-      set: (id: string) => graphStore.selectGraph(id),
+      get: () =>
+        (graphStore.graphType.value === 'graph'
+          ? graphStore.lastSelectedGraph.value?.id
+          : graphStore.lastSelectedCustomGraph.value?.id) ?? '',
+      set: (id: string) =>
+        graphStore.graphType.value === 'graph'
+          ? graphStore.selectGraph(id)
+          : graphStore.selectCustomGraph(id),
     })
 
     const selectedNodes = graphStore.selectedNodes

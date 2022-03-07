@@ -168,14 +168,18 @@ export function createStore(
     return () => fn
   })
 
-  const customGraphNodeMenuOptionsSrc = computed<NODE_MENU_OPTION>(() => {
-    return {
-      label: 'Custom',
-      children: customGraphs.value.map((graph) => ({
-        label: graph.name,
-        type: graph.id,
-      })),
-    }
+  const customGraphNodeMenuOptionsSrc = computed<NODE_MENU_OPTION[]>(() => {
+    return graphType.value === 'graph'
+      ? [
+          {
+            label: 'Custom',
+            children: customGraphs.value.map((graph) => ({
+              label: graph.name,
+              type: graph.id,
+            })),
+          },
+        ]
+      : []
   })
 
   const resolvedGraph = computed(() => {
@@ -460,7 +464,11 @@ export function createStore(
 
     historyStore.dispatch(
       customGraphEntities.createDeleteAction([customGraph.id]),
-      [customGraphSelectable.createClearAllAction()]
+      [
+        nodeEntities.createDeleteAction(customGraph.nodes),
+        nodeSelectable.createClearAllAction(),
+        customGraphSelectable.createClearAllAction(),
+      ]
     )
   }
 
@@ -489,6 +497,7 @@ export function createStore(
     lastSelectedGraph,
 
     customGraphs,
+    lastSelectedCustomGraph,
 
     nodeMap,
     lastSelectedNode,

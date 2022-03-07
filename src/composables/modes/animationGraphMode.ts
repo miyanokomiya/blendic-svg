@@ -534,9 +534,9 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   })
 
   const addMenuList = useMenuList(() =>
-    NODE_MENU_OPTIONS_SRC.concat([
-      graphStore.customGraphNodeMenuOptionsSrc.value,
-    ]).map(({ label, children }) => ({
+    NODE_MENU_OPTIONS_SRC.concat(
+      graphStore.customGraphNodeMenuOptionsSrc.value
+    ).map(({ label, children }) => ({
       label,
       children: children.map(({ label, type }) => ({
         label,

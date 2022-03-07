@@ -58,6 +58,7 @@ import {
   getGraphNodeModule,
   isUniqueEssentialNodeForCustomGraph,
   isInterfaceChanged,
+  _getUpdatedNodeMapToChangeNodeStruct,
   getUpdatedNodeMapToChangeNodeStruct,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
@@ -1812,62 +1813,6 @@ describe('src/utils/graphNodes/index.ts', () => {
     })
   })
 
-  describe('isInterfaceChanged', () => {
-    it('should return undefined if nothing is changed', () => {
-      expect(
-        isInterfaceChanged(
-          {
-            inputs: {
-              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
-            },
-            outputs: {
-              aa: UNIT_VALUE_TYPES.SCALER,
-            },
-          },
-          {
-            inputs: {
-              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
-            },
-            outputs: {
-              aa: UNIT_VALUE_TYPES.SCALER,
-            },
-          }
-        )
-      ).toEqual(undefined)
-    })
-    it('should return interface map contains changed keys', () => {
-      expect(
-        isInterfaceChanged(
-          {
-            inputs: {
-              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
-              b: { type: UNIT_VALUE_TYPES.OBJECT, default: 'obj' },
-              c: { type: UNIT_VALUE_TYPES.BOOLEAN, default: false },
-            },
-            outputs: {
-              aa: UNIT_VALUE_TYPES.SCALER,
-              bb: UNIT_VALUE_TYPES.OBJECT,
-              cc: UNIT_VALUE_TYPES.VECTOR2,
-            },
-          },
-          {
-            inputs: {
-              a: { type: UNIT_VALUE_TYPES.TEXT, default: 'txt' },
-              c: { type: UNIT_VALUE_TYPES.BOOLEAN, default: true },
-            },
-            outputs: {
-              aa: UNIT_VALUE_TYPES.SCALER,
-              bb: UNIT_VALUE_TYPES.VECTOR2,
-            },
-          }
-        )
-      ).toEqual({
-        inputs: { a: true, b: true },
-        outputs: { bb: true, cc: true },
-      })
-    })
-  })
-
   describe('getUpdatedNodeMapToChangeNodeStruct', () => {
     const nodeMap = {
       a: createGraphNode('multi_scaler', { id: 'a' }),
@@ -1875,9 +1820,9 @@ describe('src/utils/graphNodes/index.ts', () => {
         id: 'b',
         inputs: { x: { from: { id: 'a', key: 'value' } } },
       }),
-      c: createGraphNode('multi_scaler', {
+      c: createGraphNode('break_vector2', {
         id: 'c',
-        inputs: { a: { from: { id: 'b', key: 'vector2' } } },
+        inputs: { vector2: { from: { id: 'b', key: 'vector2' } } },
       }),
     }
 
@@ -1886,7 +1831,8 @@ describe('src/utils/graphNodes/index.ts', () => {
         getUpdatedNodeMapToChangeNodeStruct(
           getGraphNodeModule,
           nodeMap,
-          'make_vector2'
+          'make_vector2',
+          getGraphNodeModule('make_vector2').struct
         )
       ).toEqual({})
     })
@@ -1897,8 +1843,11 @@ describe('src/utils/graphNodes/index.ts', () => {
           nodeMap,
           'make_vector2',
           {
-            inputs: { x: true },
-            outputs: {},
+            ...getGraphNodeModule('make_vector2').struct,
+            inputs: {
+              ...getGraphNodeModule('make_vector2').struct.inputs,
+              x: { type: UNIT_VALUE_TYPES.BOOLEAN, default: false },
+            },
           }
         )
       ).toEqual({
@@ -1912,12 +1861,15 @@ describe('src/utils/graphNodes/index.ts', () => {
           nodeMap,
           'make_vector2',
           {
-            inputs: {},
-            outputs: { vector2: true },
+            ...getGraphNodeModule('make_vector2').struct,
+            outputs: {
+              ...getGraphNodeModule('make_vector2').struct.outputs,
+              vector2: UNIT_VALUE_TYPES.BOOLEAN,
+            },
           }
         )
       ).toEqual({
-        c: createGraphNode('multi_scaler', { id: 'c' }),
+        c: createGraphNode('break_vector2', { id: 'c' }),
       })
     })
   })

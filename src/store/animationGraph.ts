@@ -26,6 +26,7 @@ import {
   IdMap,
   toMap,
   getCustomGraph,
+  mergeMap,
 } from '../models'
 import { dropMap, extractMap, mapReduce, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
@@ -46,6 +47,7 @@ import {
   NODE_MENU_OPTION,
   createGraphNodeIncludeCustom,
   isUniqueEssentialNodeForCustomGraph,
+  getUpdatedNodeMapToChangeNodeStruct,
 } from '/@/utils/graphNodes'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store'
@@ -386,21 +388,52 @@ export function createStore(
 
     const deletedIds = dropMap(selectedNodes.value, nodeMapByDelete)
 
-    historyStore.dispatch(
-      nodeEntities.createDeleteAction(Object.keys(deletedIds)),
-      [
-        nodeEntities.createUpdateAction({
-          ...updatedNodesByDisconnect,
-          ...updatedNodesByClean,
-        }),
-        getNodeParentEntity().createUpdateAction({
-          [parent.id]: {
-            nodes: parent.nodes.filter((id) => !deletedIds[id]),
-          },
-        }),
-        nodeSelectable.createClearAllAction(),
-      ]
-    )
+    if (graphType.value === 'custom' && lastSelectedCustomGraph.value) {
+      // Clean custom nodes related to this custom graph
+      const nextNodeMap = {
+        ...dropMap(nodeMap.value, deletedIds),
+        ...updatedNodesByDisconnect,
+        ...updatedNodesByClean,
+      }
+      const updatedNodeMap = getUpdatedNodeMapToChangeNodeStruct(
+        getGraphNodeModuleFn.value(),
+        { ...nodeEntities.entities.value.byId, ...nextNodeMap },
+        lastSelectedCustomGraph.value.id,
+        createCustomNodeModule(
+          { ...lastSelectedCustomGraph.value, nodes: Object.keys(nextNodeMap) },
+          nextNodeMap
+        ).struct
+      )
+
+      historyStore.dispatch(
+        nodeEntities.createDeleteAction(Object.keys(deletedIds)),
+        [
+          nodeEntities.createUpdateAction(updatedNodeMap),
+          getNodeParentEntity().createUpdateAction({
+            [parent.id]: {
+              nodes: parent.nodes.filter((id) => !deletedIds[id]),
+            },
+          }),
+          nodeSelectable.createClearAllAction(),
+        ]
+      )
+    } else {
+      historyStore.dispatch(
+        nodeEntities.createDeleteAction(Object.keys(deletedIds)),
+        [
+          nodeEntities.createUpdateAction({
+            ...updatedNodesByDisconnect,
+            ...updatedNodesByClean,
+          }),
+          getNodeParentEntity().createUpdateAction({
+            [parent.id]: {
+              nodes: parent.nodes.filter((id) => !deletedIds[id]),
+            },
+          }),
+          nodeSelectable.createClearAllAction(),
+        ]
+      )
+    }
   }
 
   function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
@@ -416,7 +449,28 @@ export function createStore(
     const parent = getNodeParent()
     if (!parent) return
 
-    historyStore.dispatch(nodeEntities.createUpdateAction(val))
+    if (graphType.value === 'custom' && lastSelectedCustomGraph.value) {
+      // Clean custom nodes related to this custom graph
+      const nextNodeMap = mergeMap(nodeMap.value, val) as IdMap<GraphNode>
+      const updatedNodeMap = getUpdatedNodeMapToChangeNodeStruct(
+        getGraphNodeModuleFn.value(),
+        { ...nodeEntities.entities.value.byId, ...nextNodeMap },
+        lastSelectedCustomGraph.value.id,
+        createCustomNodeModule(
+          { ...lastSelectedCustomGraph.value, nodes: Object.keys(nextNodeMap) },
+          nextNodeMap
+        ).struct
+      )
+
+      historyStore.dispatch(
+        nodeEntities.createUpdateAction({
+          ...val,
+          ...updatedNodeMap,
+        })
+      )
+    } else {
+      historyStore.dispatch(nodeEntities.createUpdateAction(val))
+    }
   }
 
   function selectCustomGraph(id = '') {

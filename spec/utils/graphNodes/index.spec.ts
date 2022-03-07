@@ -57,8 +57,6 @@ import {
   updateDataField,
   getGraphNodeModule,
   isUniqueEssentialNodeForCustomGraph,
-  isInterfaceChanged,
-  _getUpdatedNodeMapToChangeNodeStruct,
   getUpdatedNodeMapToChangeNodeStruct,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
@@ -542,7 +540,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should return default input data', () => {
       expect(
         resetInput(
-          getGraphNodeModule,
+          getGraphNodeModule('make_vector2').struct,
           createGraphNode('make_vector2', {
             inputs: { x: { from: { id: 'a', key: 'b' } } },
           }),
@@ -557,7 +555,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should keep generics if it is confirmed', () => {
       expect(
         resetInput(
-          getGraphNodeModule,
+          getGraphNodeModule('switch_generics').struct,
           createGraphNode('switch_generics', {
             inputs: {
               if_true: {
@@ -588,7 +586,7 @@ describe('src/utils/graphNodes/index.ts', () => {
     it('should delete the input if its struct is not found', () => {
       expect(
         resetInput(
-          getGraphNodeModule,
+          getGraphNodeModule('make_vector2').struct,
           createGraphNode('make_vector2', {
             inputs: { unknown: { from: { id: 'a', key: 'b' } } } as any,
           }),
@@ -1851,7 +1849,30 @@ describe('src/utils/graphNodes/index.ts', () => {
           }
         )
       ).toEqual({
-        b: createGraphNode('make_vector2', { id: 'b' }),
+        b: createGraphNode('make_vector2', {
+          id: 'b',
+          inputs: { x: { value: false } as any },
+        }),
+      })
+    })
+    it('should disconnect and delete input edges with updated interface', () => {
+      expect(
+        getUpdatedNodeMapToChangeNodeStruct(
+          getGraphNodeModule,
+          nodeMap,
+          'make_vector2',
+          {
+            ...getGraphNodeModule('make_vector2').struct,
+            inputs: {
+              y: getGraphNodeModule('make_vector2').struct.inputs.y,
+            },
+          }
+        )
+      ).toEqual({
+        b: {
+          ...createGraphNode('make_vector2', { id: 'b' }),
+          inputs: { y: createGraphNode('make_vector2', { id: 'b' }).inputs.y },
+        },
       })
     })
     it('should disconnect output edges with updated interface', () => {

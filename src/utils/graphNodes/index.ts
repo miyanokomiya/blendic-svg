@@ -776,14 +776,13 @@ function canConnectValueType(a: ValueType, b: ValueType): boolean {
 }
 
 export function resetInput(
-  getGraphNodeModule: GetGraphNodeModule,
+  nodeStruct: Pick<NodeStruct<any>, 'inputs'> | undefined,
   node: GraphNode,
   key: string
 ): GraphNode {
   const current = node.inputs[key]
-  const nodeModule = getGraphNodeModule(node.type)
 
-  const inputStruct = nodeModule?.struct.inputs[key]
+  const inputStruct = nodeStruct?.inputs[key]
   if (!inputStruct) {
     const inputs = { ...node.inputs }
     delete inputs[key]
@@ -1417,7 +1416,11 @@ export function getUpdatedNodeMapToDisconnectNodeInput(
 ): GraphNodeMap {
   const node = nodeMap[nodeId]
 
-  const updated = resetInput(getGraphNodeModule, node, inputKey)
+  const updated = resetInput(
+    getGraphNodeModule(node.type)?.struct,
+    node,
+    inputKey
+  )
   const currentInput = node.inputs[inputKey]
 
   // clean generics
@@ -1489,14 +1492,14 @@ export function getUpdatedNodeMapToChangeNodeStruct(
     return Object.keys(node.inputs).reduce((n, key) => {
       if (
         isSameValueType(
-          nextStruct.inputs[key].type,
+          nextStruct.inputs[key]?.type,
           getInputType(currentStruct, n, key)
         )
       )
         return n
 
       updatedIdSet.add(node.id)
-      return resetInput(getGraphNodeModule, n, key)
+      return resetInput(nextStruct, n, key)
     }, node)
   })
 
@@ -1518,7 +1521,7 @@ export function getUpdatedNodeMapToChangeNodeStruct(
           return n
 
         updatedIdSet.add(n.id)
-        return resetInput(getGraphNodeModule, n, key)
+        return resetInput(nodeStruct, n, key)
       }, node)
     }
   )

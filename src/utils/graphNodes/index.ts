@@ -783,9 +783,14 @@ export function resetInput(
   const current = node.inputs[key]
   const nodeModule = getGraphNodeModule(node.type)
 
-  const nextInput: GraphNodeInput<any> = {
-    value: nodeModule?.struct.inputs[key]?.default,
+  const inputStruct = nodeModule?.struct.inputs[key]
+  if (!inputStruct) {
+    const inputs = { ...node.inputs }
+    delete inputs[key]
+    return { ...node, inputs }
   }
+
+  const nextInput: GraphNodeInput<any> = { value: inputStruct.default }
 
   // keep generics if it is confirmed
   if (current.genericsType) {
@@ -1462,5 +1467,90 @@ export function cleanNode(
     ...node,
     inputs: mapFilter(node.inputs, (_, key) => !unknownInputSet.has(key)),
     data: mapFilter(node.data, (_, key) => !unknownDataSet.has(key)),
+  }
+}
+
+interface NodeStructChangedInfo {
+  inputs: { [key: string]: true }
+  outputs: { [key: string]: true }
+}
+
+export function isInterfaceChanged(
+  prevStruct: Pick<NodeStruct<any>, 'inputs' | 'outputs'>,
+  nextStruct: Pick<NodeStruct<any>, 'inputs' | 'outputs'>
+): NodeStructChangedInfo | undefined {
+  const ret = {
+    inputs: Object.entries(prevStruct.inputs).reduce<{ [key: string]: true }>(
+      (p, [key, input]) => {
+        const next = nextStruct.inputs[key]
+        if (!next || !isSameValueType(input.type, next.type)) {
+          p[key] = true
+        }
+        return p
+      },
+      {}
+    ),
+    outputs: Object.entries(prevStruct.outputs).reduce<{ [key: string]: true }>(
+      (p, [key, output]) => {
+        const next = nextStruct.outputs[key]
+        if (!next || !isSameValueType(output, next)) {
+          p[key] = true
+        }
+        return p
+      },
+      {}
+    ),
+  }
+  return Object.keys(ret.inputs).length > 0 ||
+    Object.keys(ret.outputs).length > 0
+    ? ret
+    : undefined
+}
+
+/**
+ * returns only updated nodes
+ */
+export function getUpdatedNodeMapToChangeNodeStruct(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: GraphNodeMap,
+  nodeType: GraphNodeType,
+  changedInterface?: NodeStructChangedInfo
+): GraphNodeMap {
+  if (!changedInterface) return {}
+
+  const targetTypeNodeMap = mapFilter(nodeMap, (node) => node.type === nodeType)
+  const updatedIdSet = new Set<string>()
+
+  const inputCleanedMap =
+    Object.keys(changedInterface.inputs).length > 0
+      ? mapReduce(targetTypeNodeMap, (node) => {
+          updatedIdSet.add(node.id)
+          return Object.keys(changedInterface.inputs).reduce(
+            (n, key) => resetInput(getGraphNodeModule, n, key),
+            node
+          )
+        })
+      : targetTypeNodeMap
+
+  const outputCleanedMap =
+    Object.keys(changedInterface.outputs).length > 0
+      ? mapReduce({ ...nodeMap, ...inputCleanedMap }, (node) => {
+          return Object.entries(node.inputs).reduce((n, [key, input]) => {
+            if (
+              !input.from ||
+              !targetTypeNodeMap[input.from.id] ||
+              !changedInterface.outputs[input.from.key]
+            )
+              return n
+
+            updatedIdSet.add(n.id)
+            return resetInput(getGraphNodeModule, n, key)
+          }, node)
+        })
+      : { ...nodeMap, ...inputCleanedMap }
+
+  return {
+    ...mapFilter(outputCleanedMap, (_, id) => updatedIdSet.has(id)),
+    ...cleanAllEdgeGenerics(getGraphNodeModule, outputCleanedMap),
   }
 }

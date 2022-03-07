@@ -57,6 +57,8 @@ import {
   updateDataField,
   getGraphNodeModule,
   isUniqueEssentialNodeForCustomGraph,
+  isInterfaceChanged,
+  getUpdatedNodeMapToChangeNodeStruct,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -581,6 +583,17 @@ describe('src/utils/graphNodes/index.ts', () => {
           },
         })
       )
+    })
+    it('should delete the input if its struct is not found', () => {
+      expect(
+        resetInput(
+          getGraphNodeModule,
+          createGraphNode('make_vector2', {
+            inputs: { unknown: { from: { id: 'a', key: 'b' } } } as any,
+          }),
+          'unknown'
+        )
+      ).toEqual(createGraphNode('make_vector2'))
     })
   })
 
@@ -1795,6 +1808,116 @@ describe('src/utils/graphNodes/index.ts', () => {
           a: createGraphNode('add_generics', { id: 'a' }),
           b: createGraphNode('make_vector2', { id: 'b' }),
         })
+      })
+    })
+  })
+
+  describe('isInterfaceChanged', () => {
+    it('should return undefined if nothing is changed', () => {
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+            },
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+            },
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+            },
+          }
+        )
+      ).toEqual(undefined)
+    })
+    it('should return interface map contains changed keys', () => {
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+              b: { type: UNIT_VALUE_TYPES.OBJECT, default: 'obj' },
+              c: { type: UNIT_VALUE_TYPES.BOOLEAN, default: false },
+            },
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+              bb: UNIT_VALUE_TYPES.OBJECT,
+              cc: UNIT_VALUE_TYPES.VECTOR2,
+            },
+          },
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.TEXT, default: 'txt' },
+              c: { type: UNIT_VALUE_TYPES.BOOLEAN, default: true },
+            },
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+              bb: UNIT_VALUE_TYPES.VECTOR2,
+            },
+          }
+        )
+      ).toEqual({
+        inputs: { a: true, b: true },
+        outputs: { bb: true, cc: true },
+      })
+    })
+  })
+
+  describe('getUpdatedNodeMapToChangeNodeStruct', () => {
+    const nodeMap = {
+      a: createGraphNode('multi_scaler', { id: 'a' }),
+      b: createGraphNode('make_vector2', {
+        id: 'b',
+        inputs: { x: { from: { id: 'a', key: 'value' } } },
+      }),
+      c: createGraphNode('multi_scaler', {
+        id: 'c',
+        inputs: { a: { from: { id: 'b', key: 'vector2' } } },
+      }),
+    }
+
+    it('should do nothing if no interface changed', () => {
+      expect(
+        getUpdatedNodeMapToChangeNodeStruct(
+          getGraphNodeModule,
+          nodeMap,
+          'make_vector2'
+        )
+      ).toEqual({})
+    })
+    it('should disconnect input edges with updated interface', () => {
+      expect(
+        getUpdatedNodeMapToChangeNodeStruct(
+          getGraphNodeModule,
+          nodeMap,
+          'make_vector2',
+          {
+            inputs: { x: true },
+            outputs: {},
+          }
+        )
+      ).toEqual({
+        b: createGraphNode('make_vector2', { id: 'b' }),
+      })
+    })
+    it('should disconnect output edges with updated interface', () => {
+      expect(
+        getUpdatedNodeMapToChangeNodeStruct(
+          getGraphNodeModule,
+          nodeMap,
+          'make_vector2',
+          {
+            inputs: {},
+            outputs: { vector2: true },
+          }
+        )
+      ).toEqual({
+        c: createGraphNode('multi_scaler', { id: 'c' }),
       })
     })
   })

@@ -58,6 +58,7 @@ import {
   isUniqueEssentialNodeForCustomGraph,
   getUpdatedNodeMapToChangeNodeStruct,
   isInterfaceChanged,
+  completeNodeMap,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -2006,6 +2007,33 @@ describe('src/utils/graphNodes/index.ts', () => {
           }
         )
       ).toEqual(true)
+    })
+  })
+
+  describe('completeNodeMap', () => {
+    it('should complete input fields if each node has some errors', () => {
+      expect(
+        completeNodeMap(
+          getGraphNodeModule,
+          {
+            a: createGraphNode('make_vector2', {
+              id: 'a',
+              inputs: {
+                x: { from: { id: 'b', key: 'value' } },
+                y: { value: 10 },
+              },
+            }),
+            b: createGraphNode('make_transform', { id: 'b' }),
+          },
+          { a: true }
+        )
+      ).toEqual({
+        a: createGraphNode('make_vector2', {
+          id: 'a',
+          inputs: { x: { value: 0 }, y: { value: 10 } },
+        }),
+        b: createGraphNode('make_transform', { id: 'b' }),
+      })
     })
   })
 })

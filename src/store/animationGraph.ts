@@ -55,6 +55,7 @@ import {
   getUpdatedNodeMapToChangeNodeStruct,
   isInterfaceChanged,
   getNodeErrors,
+  completeNodeMap,
 } from '/@/utils/graphNodes'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store'
@@ -195,6 +196,15 @@ export function createStore(
     return getNodeErrors(getGraphNodeModuleFn.value(), nodeMap.value)
   })
 
+  // These nodes are completed invalid input fields as default value
+  const completedNodeMap = computed(() => {
+    return completeNodeMap(
+      getGraphNodeModuleFn.value(),
+      nodeMap.value,
+      nodeErrorMessagesMap.value
+    )
+  })
+
   const resolvedGraph = computed(() => {
     const parent = getNodeParent()
     if (!parent) return
@@ -210,7 +220,7 @@ export function createStore(
     const resolvedNodeMap = resolveAllNodes(
       getGraphNodeModuleFn.value(),
       context,
-      nodeMap.value
+      completedNodeMap.value
     )
     return { context, nodeMap: resolvedNodeMap }
   })
@@ -593,6 +603,7 @@ export function createStore(
     getGraphNodeModuleFn,
     customGraphNodeMenuOptionsSrc,
     nodeErrorMessagesMap,
+    completedNodeMap,
     resolvedGraph,
 
     selectGraph,

@@ -1570,3 +1570,27 @@ export function isInterfaceChanged(
     })
   )
 }
+
+/**
+ * Complete input values if each node has some errors
+ */
+export function completeNodeMap(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: GraphNodeMap,
+  errorIdMap: { [id: string]: unknown }
+): GraphNodeMap {
+  return mapReduce(nodeMap, (node) => {
+    if (!errorIdMap[node.id]) return node
+
+    const struct = getGraphNodeModule(node.type)?.struct
+    if (!struct) return node
+
+    const validKeyMap = validateNode(getGraphNodeModule, nodeMap, node.id)
+    return {
+      ...node,
+      inputs: mapReduce(node.inputs, (input, key) =>
+        validKeyMap[key] ? input : { value: struct.inputs[key]?.default }
+      ),
+    }
+  })
+}

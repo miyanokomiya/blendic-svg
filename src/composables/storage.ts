@@ -301,7 +301,7 @@ export function useStorage() {
       graphStore.getGraphNodeModuleFn.value(),
       elementMap,
       { currentFrame, endFrame },
-      graphStore.nodeMap.value
+      graphStore.completedNodeMap.value
     )
 
     return getGraphResolvedElementTree(graphObjectMap, svgNode)
@@ -365,7 +365,7 @@ export function useStorage() {
         graphStore.getGraphNodeModuleFn.value(),
         wholeBElementMap,
         { currentFrame, endFrame },
-        graphStore.nodeMap.value
+        graphStore.completedNodeMap.value
       )
 
       const posedAttrsMap = attributesMapPerFrameByAction[currentFrame]

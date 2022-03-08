@@ -720,17 +720,6 @@ export function validateNode(
   }, {})
 }
 
-export function validateInput<T extends GraphNodeInputs>(
-  nodeMap: GraphNodeMap,
-  inputs: T,
-  key: string
-): boolean {
-  const input = inputs[key]
-  if (input.value !== undefined) return true
-  if (input.from && nodeMap[input.from.id]) return true
-  return false
-}
-
 export function createGraphNodeIncludeCustom<T extends GraphNodeType>(
   customModules: { [key in GraphNodeType]: NodeModule<any> },
   type: T,

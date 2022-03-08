@@ -32,7 +32,6 @@ import {
   getInputFromIds,
   resolveNode,
   resolveAllNodes,
-  validateInput,
   validateNode,
   validateAllNodes,
   validateConnection,
@@ -463,43 +462,6 @@ describe('src/utils/graphNodes/index.ts', () => {
           )
         ).toEqual({ a: false, b: true })
       })
-    })
-  })
-
-  describe('validateInput', () => {
-    const node = {
-      id: 'node',
-      type: 'scaler',
-      data: { value: 1 },
-      inputs: {},
-      position: { x: 0, y: 0 },
-    } as const
-
-    it('should return true if value is defined', () => {
-      expect(
-        validateInput({ node }, { x: { value: 0 }, y: { value: 0 } }, 'x')
-      ).toBe(true)
-    })
-    it('should return true if from relation is valid', () => {
-      expect(
-        validateInput(
-          { node },
-          { x: { from: { id: 'node', key: 'value' } }, y: { value: 0 } },
-          'x'
-        )
-      ).toBe(true)
-    })
-    it('should return false if from relation is invalid', () => {
-      expect(validateInput({ node }, { x: {}, y: { value: 0 } }, 'x')).toBe(
-        false
-      )
-      expect(
-        validateInput(
-          { node },
-          { x: { from: { id: 'invalid', key: 'value' } }, y: { value: 0 } },
-          'x'
-        )
-      ).toBe(false)
     })
   })
 

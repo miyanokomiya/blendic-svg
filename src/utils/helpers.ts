@@ -386,9 +386,9 @@ function getLabelFromStruct(
   output = false
 ): string | undefined {
   if (output) {
-    return struct?.outputs[key]?.label ?? 'UNKNOWN'
+    return struct?.outputs[key] ? struct.outputs[key].label : 'UNKNOWN'
   } else {
-    return struct?.inputs[key]?.label ?? 'UNKNOWN'
+    return struct?.inputs[key] ? struct.inputs[key].label : 'UNKNOWN'
   }
 }
 

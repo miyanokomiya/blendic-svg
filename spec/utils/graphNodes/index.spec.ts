@@ -365,33 +365,104 @@ describe('src/utils/graphNodes/index.ts', () => {
   })
 
   describe('validateAllNodes', () => {
-    const node = {
-      id: 'node',
-      type: 'make_vector2',
-      data: {},
-      inputs: { x: { value: 1 }, y: {} },
-      position: { x: 0, y: 0 },
-    } as const
-
     it('should return validated map of all nodes', () => {
-      expect(validateAllNodes({ node, node2: node })).toEqual({
-        node: { x: true, y: false },
-        node2: { x: true, y: false },
+      expect(
+        validateAllNodes(getGraphNodeModule, {
+          a: createGraphNode('make_vector2', { id: 'a' }),
+          b: createGraphNode('make_vector2', { id: 'b' }),
+        })
+      ).toEqual({
+        a: { x: true, y: true },
+        b: { x: true, y: true },
       })
     })
   })
 
   describe('validateNode', () => {
-    const node = {
-      id: 'node',
-      type: 'make_vector2',
-      data: {},
-      inputs: { x: { value: 1 }, y: {} },
-      position: { x: 0, y: 0 },
-    } as const
-
-    it('should return validated map of inputs', () => {
-      expect(validateNode({ node }, 'node')).toEqual({ x: true, y: false })
+    describe('should return validated map of inputs', () => {
+      it('not connected => true', () => {
+        expect(
+          validateNode(
+            getGraphNodeModule,
+            {
+              a: createGraphNode('make_vector2', {
+                id: 'a',
+                inputs: { x: {} },
+              }),
+            },
+            'a'
+          )
+        ).toEqual({ x: true, y: true })
+      })
+      it('connected node not found => false', () => {
+        expect(
+          validateNode(
+            getGraphNodeModule,
+            {
+              a: createGraphNode('make_vector2', {
+                id: 'a',
+                inputs: { x: { from: { id: 'b', key: 'value' } } },
+              }),
+            },
+            'a'
+          )
+        ).toEqual({ x: false, y: true })
+      })
+      it('invalid connected type => false', () => {
+        expect(
+          validateNode(
+            getGraphNodeModule,
+            {
+              a: createGraphNode('multi_scaler', {
+                id: 'a',
+                inputs: {
+                  a: { from: { id: 'c', key: 'vector2' } },
+                  b: { from: { id: 'b', key: 'value' } },
+                },
+              }),
+              b: createGraphNode('scaler', { id: 'b' }),
+              c: createGraphNode('make_vector2', { id: 'c' }),
+            },
+            'a'
+          )
+        ).toEqual({ a: false, b: true })
+      })
+      it('consider generics interface', () => {
+        expect(
+          validateNode(
+            getGraphNodeModule,
+            {
+              a: createGraphNode('add_generics', {
+                id: 'a',
+                inputs: {
+                  a: {
+                    from: { id: 'b', key: 'value' },
+                    genericsType: UNIT_VALUE_TYPES.TEXT,
+                  },
+                  b: {
+                    from: { id: 'b', key: 'value' },
+                    genericsType: UNIT_VALUE_TYPES.SCALER,
+                  },
+                },
+              }),
+              b: createGraphNode('add_generics', {
+                id: 'b',
+                inputs: {
+                  a: {
+                    from: { id: 'c', key: 'value' },
+                    genericsType: UNIT_VALUE_TYPES.SCALER,
+                  },
+                  b: {
+                    from: { id: 'c', key: 'value' },
+                    genericsType: UNIT_VALUE_TYPES.SCALER,
+                  },
+                },
+              }),
+            },
+            'a'
+          )
+        ).toEqual({ a: false, b: true })
+      })
     })
   })
 
@@ -962,7 +1033,7 @@ describe('src/utils/graphNodes/index.ts', () => {
         { id: 'b', key: 'x', type: UNIT_VALUE_TYPES.SCALER },
       ])
     })
-    it('should be able to handle circular refs', () => {
+    it('should be able to handle Circular refs', () => {
       const nodeMap = {
         a: createGraphNode('switch_generics', {
           id: 'a',
@@ -1163,7 +1234,7 @@ describe('src/utils/graphNodes/index.ts', () => {
         }),
       })
     })
-    it('should be able to handle circular refs', () => {
+    it('should be able to handle Circular refs', () => {
       const nodeMap = {
         a: createGraphNode('switch_generics', {
           id: 'a',
@@ -1748,11 +1819,16 @@ describe('src/utils/graphNodes/index.ts', () => {
             id: 'c',
             inputs: { rotate: { from: { id: 'b', key: 'value' } } },
           }),
+          d: createGraphNode('cos', {
+            id: 'd',
+            inputs: { rotate: { from: { id: 'z', key: 'value' } } },
+          }),
         })
       ).toEqual({
         a: ['invalid type to operate'],
-        b: ['circular connection is found'],
-        c: ['circular connection is found'],
+        b: ['Circular connection is found'],
+        c: ['Circular connection is found'],
+        d: ['Invalid input: rotate'],
       })
     })
   })

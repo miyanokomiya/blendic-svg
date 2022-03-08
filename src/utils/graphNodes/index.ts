@@ -666,18 +666,22 @@ export function getInputFromIds(inputs: GraphNodeInputs): string[] {
     .filter((id): id is string => !!id)
 }
 
-export function validateAllNodes(nodeMap: GraphNodeMap): {
+export function validateAllNodes(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: GraphNodeMap
+): {
   [id: string]: { [key: string]: boolean }
 } {
   return Object.keys(nodeMap).reduce<{
     [id: string]: { [key: string]: boolean }
   }>((p, id) => {
-    p[id] = validateNode(nodeMap, id)
+    p[id] = validateNode(getGraphNodeModule, nodeMap, id)
     return p
   }, {})
 }
 
 export function validateNode(
+  getGraphNodeModule: GetGraphNodeModule,
   nodeMap: GraphNodeMap,
   targetId: string
 ): {
@@ -686,10 +690,32 @@ export function validateNode(
   const target = nodeMap[targetId]
   if (!target) return {}
 
+  const inputStruct = getGraphNodeModule(target.type)?.struct
+
   return Object.keys(target.inputs).reduce<{
     [key: string]: boolean
   }>((p: any, key) => {
-    p[key] = validateInput(nodeMap, target.inputs, key)
+    const input = target.inputs[key]
+    if (!input.from) {
+      // not connected
+      p[key] = true
+    } else if (!nodeMap[input.from.id]) {
+      // connected but the target not found
+      p[key] = false
+    } else {
+      const outputStruct = getGraphNodeModule(
+        nodeMap[input.from.id].type
+      )?.struct
+
+      if (inputStruct && outputStruct) {
+        p[key] = isSameValueType(
+          getInputType(inputStruct, target, key),
+          getOutputType(outputStruct, nodeMap[input.from.id], input.from.key)
+        )
+      } else {
+        p[key] = false
+      }
+    }
     return p
   }, {})
 }
@@ -1395,10 +1421,18 @@ export function getNodeErrors(
   const circularRefIds = getAllCircularRefIds(nodeMap)
 
   return toList(nodeMap).reduce<IdMap<string[]>>((p, node) => {
-    const errors = [
-      ...(getGraphNodeModule(node.type)?.struct.getErrors?.(node) ?? []),
-      ...(circularRefIds[node.id] ? ['circular connection is found'] : []),
-    ]
+    const struct = getGraphNodeModule(node.type)?.struct
+    const errors = struct
+      ? [
+          ...(struct.getErrors?.(node) ?? []),
+          ...Object.entries(validateNode(getGraphNodeModule, nodeMap, node.id))
+            .filter(([_, v]) => !v)
+            .map(
+              ([key]) => `Invalid input: ${struct.inputs[key]?.label ?? key}`
+            ),
+          ...(circularRefIds[node.id] ? ['Circular connection is found'] : []),
+        ]
+      : ['Unknown node']
 
     if (errors.length > 0) {
       p[node.id] = errors

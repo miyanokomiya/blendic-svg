@@ -115,7 +115,6 @@ import { GraphNodeEdgePositions } from '/@/models/graphNode'
 import { useElementStore } from '/@/store/element'
 import GraphSideBar from '/@/components/GraphSideBar.vue'
 import { flatElementTree, getElementLabel } from '/@/utils/elements'
-import { getNodeErrors } from '/@/utils/graphNodes'
 import { provideGetGraphNodeModuleFn } from '/@/composables/animationGraph'
 
 export default defineComponent({
@@ -300,10 +299,6 @@ export default defineComponent({
       }
     })
 
-    const nodeErrorMessagesMap = computed<IdMap<string[]>>(() => {
-      return getNodeErrors(getGraphNodeModule.value, graphStore.nodeMap.value)
-    })
-
     function updateNodeData(id: string, data: any, seriesKey?: string) {
       const node = graphStore.nodeMap.value[id]
       graphStore.updateNode(id, { ...node, data }, seriesKey)
@@ -352,7 +347,7 @@ export default defineComponent({
       edgePositionMap,
       edgeMap,
       draftEdge,
-      nodeErrorMessagesMap,
+      nodeErrorMessagesMap: graphStore.nodeErrorMessagesMap,
 
       draftName,
       changeGraphName,

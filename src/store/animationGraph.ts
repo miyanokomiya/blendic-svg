@@ -35,7 +35,12 @@ import { SelectOptions } from '/@/composables/modes/types'
 import { useItemSelectable } from '/@/composables/stores/selectable'
 import { HistoryStore } from '/@/composables/stores/history'
 import { fromEntityList, toEntityList } from '/@/models/entity'
-import { GraphNode, GraphNodes, GraphNodeType } from '/@/models/graphNode'
+import {
+  GraphNode,
+  GraphNodeBase,
+  GraphNodes,
+  GraphNodeType,
+} from '/@/models/graphNode'
 import { NodeModule } from '/@/utils/graphNodes/core'
 import {
   cleanAllEdgeGenerics,
@@ -49,6 +54,7 @@ import {
   isUniqueEssentialNodeForCustomGraph,
   getUpdatedNodeMapToChangeNodeStruct,
   isInterfaceChanged,
+  getNodeErrors,
 } from '/@/utils/graphNodes'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store'
@@ -183,6 +189,10 @@ export function createStore(
           },
         ]
       : []
+  })
+
+  const nodeErrorMessagesMap = computed<IdMap<string[]>>(() => {
+    return getNodeErrors(getGraphNodeModuleFn.value(), nodeMap.value)
   })
 
   const resolvedGraph = computed(() => {
@@ -582,6 +592,7 @@ export function createStore(
     targetArmatureId,
     getGraphNodeModuleFn,
     customGraphNodeMenuOptionsSrc,
+    nodeErrorMessagesMap,
     resolvedGraph,
 
     selectGraph,

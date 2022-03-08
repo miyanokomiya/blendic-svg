@@ -1531,3 +1531,19 @@ export function getUpdatedNodeMapToChangeNodeStruct(
     ...cleanAllEdgeGenerics(getGraphNodeModule, outputCleanedMap),
   }
 }
+
+export function isInterfaceChanged(
+  prevStruct: Pick<NodeStruct<any>, 'inputs' | 'outputs'>,
+  nextStruct: Pick<NodeStruct<any>, 'inputs' | 'outputs'>
+): boolean {
+  return (
+    Object.entries(prevStruct.inputs).some(([key, input]) => {
+      const next = nextStruct.inputs[key]
+      return !next || !isSameValueType(input.type, next.type)
+    }) ||
+    Object.entries(prevStruct.outputs).some(([key, output]) => {
+      const next = nextStruct.outputs[key]
+      return !next || !isSameValueType(output, next)
+    })
+  )
+}

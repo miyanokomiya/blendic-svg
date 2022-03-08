@@ -58,6 +58,7 @@ import {
   getGraphNodeModule,
   isUniqueEssentialNodeForCustomGraph,
   getUpdatedNodeMapToChangeNodeStruct,
+  isInterfaceChanged,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -1892,6 +1893,81 @@ describe('src/utils/graphNodes/index.ts', () => {
       ).toEqual({
         c: createGraphNode('break_vector2', { id: 'c' }),
       })
+    })
+  })
+
+  describe('isInterfaceChanged', () => {
+    it('should return false if nothing is changed', () => {
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+            },
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+            },
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+            },
+          }
+        )
+      ).toEqual(false)
+    })
+    it('should return true if some inputs are changed', () => {
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+              b: { type: UNIT_VALUE_TYPES.OBJECT, default: 'obj' },
+              c: { type: UNIT_VALUE_TYPES.BOOLEAN, default: false },
+            },
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.TEXT, default: 'txt' },
+              c: { type: UNIT_VALUE_TYPES.BOOLEAN, default: true },
+            },
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+            },
+          }
+        )
+      ).toEqual(true)
+    })
+    it('should return true if some outputs are changed', () => {
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+            },
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+              bb: UNIT_VALUE_TYPES.OBJECT,
+              cc: UNIT_VALUE_TYPES.VECTOR2,
+            },
+          },
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+            },
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+              bb: UNIT_VALUE_TYPES.VECTOR2,
+            },
+          }
+        )
+      ).toEqual(true)
     })
   })
 })

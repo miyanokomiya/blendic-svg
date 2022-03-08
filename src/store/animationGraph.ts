@@ -48,6 +48,7 @@ import {
   createGraphNodeIncludeCustom,
   isUniqueEssentialNodeForCustomGraph,
   getUpdatedNodeMapToChangeNodeStruct,
+  isInterfaceChanged,
 } from '/@/utils/graphNodes'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store'
@@ -387,24 +388,12 @@ export function createStore(
     )
 
     const deletedIds = dropMap(selectedNodes.value, nodeMapByDelete)
+    const nextGraphNodeMap = {
+      ...updatedNodesByDisconnect,
+      ...updatedNodesByClean,
+    }
 
-    if (graphType.value === 'custom' && lastSelectedCustomGraph.value) {
-      // Clean custom nodes related to this custom graph
-      const nextNodeMap = {
-        ...dropMap(nodeMap.value, deletedIds),
-        ...updatedNodesByDisconnect,
-        ...updatedNodesByClean,
-      }
-      const updatedNodeMap = getUpdatedNodeMapToChangeNodeStruct(
-        getGraphNodeModuleFn.value(),
-        { ...nodeEntities.entities.value.byId, ...nextNodeMap },
-        lastSelectedCustomGraph.value.id,
-        createCustomNodeModule(
-          { ...lastSelectedCustomGraph.value, nodes: Object.keys(nextNodeMap) },
-          nextNodeMap
-        ).struct
-      )
-
+    const execDispatch = (updatedNodeMap: IdMap<GraphNodeBase>) => {
       historyStore.dispatch(
         nodeEntities.createDeleteAction(Object.keys(deletedIds)),
         [
@@ -417,25 +406,48 @@ export function createStore(
           nodeSelectable.createClearAllAction(),
         ]
       )
+    }
+
+    if (graphType.value === 'custom' && lastSelectedCustomGraph.value) {
+      // Clean custom nodes related to this custom graph
+      const nextNodeMap = {
+        ...dropMap(nodeMap.value, deletedIds),
+        ...nextGraphNodeMap,
+      }
+      const nextStruct = createCustomNodeModule(
+        { ...lastSelectedCustomGraph.value, nodes: Object.keys(nextNodeMap) },
+        nextNodeMap
+      ).struct
+
+      if (
+        isInterfaceChanged(
+          customModules.value[lastSelectedCustomGraph.value.id].struct,
+          nextStruct
+        )
+      ) {
+        const updatedNodeMap = getUpdatedNodeMapToChangeNodeStruct(
+          getGraphNodeModuleFn.value(),
+          {
+            ...dropMap(nodeEntities.entities.value.byId, deletedIds),
+            ...nextNodeMap,
+          },
+          lastSelectedCustomGraph.value.id,
+          nextStruct
+        )
+
+        execDispatch(updatedNodeMap)
+      } else {
+        execDispatch(nextGraphNodeMap)
+      }
     } else {
-      historyStore.dispatch(
-        nodeEntities.createDeleteAction(Object.keys(deletedIds)),
-        [
-          nodeEntities.createUpdateAction({
-            ...updatedNodesByDisconnect,
-            ...updatedNodesByClean,
-          }),
-          getNodeParentEntity().createUpdateAction({
-            [parent.id]: {
-              nodes: parent.nodes.filter((id) => !deletedIds[id]),
-            },
-          }),
-          nodeSelectable.createClearAllAction(),
-        ]
-      )
+      execDispatch(nextGraphNodeMap)
     }
   }
 
+  /**
+   * This method can be used only when the node's interface is never changed
+   * e.g. When the field value of data or inputs is changed
+   */
   function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
     const parent = getNodeParent()
     if (!parent) return
@@ -452,22 +464,33 @@ export function createStore(
     if (graphType.value === 'custom' && lastSelectedCustomGraph.value) {
       // Clean custom nodes related to this custom graph
       const nextNodeMap = mergeMap(nodeMap.value, val) as IdMap<GraphNode>
-      const updatedNodeMap = getUpdatedNodeMapToChangeNodeStruct(
-        getGraphNodeModuleFn.value(),
-        { ...nodeEntities.entities.value.byId, ...nextNodeMap },
-        lastSelectedCustomGraph.value.id,
-        createCustomNodeModule(
-          { ...lastSelectedCustomGraph.value, nodes: Object.keys(nextNodeMap) },
-          nextNodeMap
-        ).struct
-      )
+      const nextStruct = createCustomNodeModule(
+        lastSelectedCustomGraph.value,
+        nextNodeMap
+      ).struct
 
-      historyStore.dispatch(
-        nodeEntities.createUpdateAction({
-          ...val,
-          ...updatedNodeMap,
-        })
-      )
+      if (
+        isInterfaceChanged(
+          customModules.value[lastSelectedCustomGraph.value.id].struct,
+          nextStruct
+        )
+      ) {
+        const updatedNodeMap = getUpdatedNodeMapToChangeNodeStruct(
+          getGraphNodeModuleFn.value(),
+          { ...nodeEntities.entities.value.byId, ...nextNodeMap },
+          lastSelectedCustomGraph.value.id,
+          nextStruct
+        )
+
+        historyStore.dispatch(
+          nodeEntities.createUpdateAction({
+            ...val,
+            ...updatedNodeMap,
+          })
+        )
+      } else {
+        historyStore.dispatch(nodeEntities.createUpdateAction(val))
+      }
     } else {
       historyStore.dispatch(nodeEntities.createUpdateAction(val))
     }

@@ -804,12 +804,13 @@ export function resetInput(
     return { ...node, inputs }
   }
 
-  const nextInput: GraphNodeInput<any> = { value: inputStruct.default }
-
-  // keep generics if it is confirmed
-  if (current.genericsType) {
-    nextInput.genericsType = current.genericsType
-  }
+  const nextInput: GraphNodeInput<any> = current.genericsType
+    ? {
+        // keep generics if it is confirmed
+        genericsType: current.genericsType,
+        value: createDefaultValueForGenerics(current.genericsType),
+      }
+    : { value: inputStruct.default }
 
   const updated: GraphNode = {
     ...node,

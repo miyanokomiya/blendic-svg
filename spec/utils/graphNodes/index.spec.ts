@@ -598,6 +598,7 @@ describe('src/utils/graphNodes/index.ts', () => {
                 genericsType: UNIT_VALUE_TYPES.SCALER,
               },
               if_false: {
+                value: 10,
                 genericsType: UNIT_VALUE_TYPES.SCALER,
               },
             },
@@ -608,10 +609,11 @@ describe('src/utils/graphNodes/index.ts', () => {
         createGraphNode('switch_generics', {
           inputs: {
             if_true: {
-              value: undefined,
+              value: 0,
               genericsType: UNIT_VALUE_TYPES.SCALER,
             },
             if_false: {
+              value: 10,
               genericsType: UNIT_VALUE_TYPES.SCALER,
             },
           },
@@ -1808,7 +1810,7 @@ describe('src/utils/graphNodes/index.ts', () => {
                 inputs: {
                   a: {
                     from: { id: 'b', key: 'vector2' },
-                    genericsType: UNIT_VALUE_TYPES.OBJECT,
+                    genericsType: UNIT_VALUE_TYPES.VECTOR2,
                   },
                 },
               }),
@@ -1819,6 +1821,45 @@ describe('src/utils/graphNodes/index.ts', () => {
           )
         ).toEqual({
           a: createGraphNode('add_generics', { id: 'a' }),
+        })
+      })
+      it('when disconnect input stil has decided generics type', () => {
+        expect(
+          getUpdatedNodeMapToDisconnectNodeInput(
+            getGraphNodeModule,
+            {
+              a: createGraphNode('add_generics', {
+                id: 'a',
+                inputs: {
+                  a: {
+                    from: { id: 'b', key: 'x' },
+                    genericsType: UNIT_VALUE_TYPES.SCALER,
+                  },
+                  b: {
+                    from: { id: 'b', key: 'x' },
+                    genericsType: UNIT_VALUE_TYPES.SCALER,
+                  },
+                },
+              }),
+              b: createGraphNode('break_vector2', { id: 'b' }),
+            },
+            'a',
+            'a'
+          )
+        ).toEqual({
+          a: createGraphNode('add_generics', {
+            id: 'a',
+            inputs: {
+              a: {
+                value: 0,
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+              b: {
+                from: { id: 'b', key: 'x' },
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+            },
+          }),
         })
       })
       it('when an output type is generics', () => {

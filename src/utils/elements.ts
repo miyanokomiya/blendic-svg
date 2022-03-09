@@ -295,11 +295,12 @@ export function createGraphNodeContext(
     const src = graphElementMap[objectId]
     if (!src) return
 
+    const id = arg.id ? getNewId(arg.id) : undefined
     // set 'create: true' if the target is created object
     // set 'clone: true' if the target has native element
     const cloned = getGraphObject(
-      src.create ? { ...src, ...arg } : { ...src, ...arg, clone: true },
-      !arg.id
+      src.create ? { ...src, ...arg, id } : { ...src, ...arg, id, clone: true },
+      !id
     )
     return cloned
   }
@@ -326,6 +327,12 @@ export function createGraphNodeContext(
       // immigrate cloned parent
       return { ...c, parent: clonedMapBySrcId[c.parent].id }
     })
+  }
+
+  const namespaces: string[] = []
+
+  function getNewId(id = ''): string {
+    return namespaces.length > 0 ? `${namespaces.join('-')}-${id}` : id
   }
 
   return {
@@ -394,11 +401,13 @@ export function createGraphNodeContext(
       const src = graphElementMap[objectId]
       if (!src) return ''
 
+      const id = arg.id ? getNewId(arg.id) : undefined
       const parent = src.parent
       const index = parent ? getChildrenSize(parent) : 0
       const group = getGraphObject(
         {
           ...arg,
+          id,
           tag: 'g',
           elementId: src.elementId,
           clone: false,
@@ -406,21 +415,28 @@ export function createGraphNodeContext(
           index,
           parent,
         },
-        !arg.id
+        !id
       )
       addElement(group)
       return group.id
     },
     createObject(tag, arg = {}) {
+      const id = arg.id ? getNewId(arg.id) : undefined
       const parent = arg.parent
       const index = parent ? getChildrenSize(parent) : 0
       // genereate new id if it has not been set
       const created = getGraphObject(
-        { ...arg, tag, create: true, index },
-        !arg.id
+        { ...arg, id, tag, create: true, index },
+        !id
       )
       addElement(created)
       return created.id
+    },
+    beginNamespace<T>(name: string, operation: () => T): T {
+      namespaces.push(name)
+      const result = operation()
+      namespaces.pop()
+      return result
     },
   }
 }

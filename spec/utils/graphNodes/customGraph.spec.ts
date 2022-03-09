@@ -232,8 +232,15 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
           }
         )
 
+        const beginNamespace = (_: any, val: any) => val()
+
         expect(
-          struct.computation({ input_0: 10 }, {}, {} as any, getGraphNodeModule)
+          struct.computation(
+            { input_0: 10 },
+            { id: 'a' } as any,
+            { beginNamespace } as any,
+            getGraphNodeModule
+          )
         ).toEqual({
           output_0: { x: 10, y: 20 },
         })

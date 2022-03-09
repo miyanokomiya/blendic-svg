@@ -763,6 +763,17 @@ describe('utils/elements.ts', () => {
           },
         })
       })
+      it('apply namespace', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a', tag: 'g' }) },
+          frameInfo
+        )
+        const id = context.beginNamespace('name', () =>
+          context.cloneObject('a', {}, 'pre')
+        )
+        expect(id).toEqual(`name-pre_clone_0`)
+      })
+
       describe('when the target has children', () => {
         it('should clone nested created children', () => {
           const context = createGraphNodeContext({}, frameInfo)
@@ -905,6 +916,16 @@ describe('utils/elements.ts', () => {
         expect(ret['c'].index).toBe(1)
         expect(ret['d'].index).toBe(2)
       })
+      it('apply namespace', () => {
+        const context = createGraphNodeContext(
+          { a: getBElement({ id: 'a', tag: 'g' }) },
+          frameInfo
+        )
+        const id = context.beginNamespace('name', () =>
+          context.createCloneGroupObject('a', { id: 'aaa' })
+        )
+        expect(id).toEqual(`name-aaa`)
+      })
     })
 
     describe('should return a context to createObject', () => {
@@ -920,6 +941,13 @@ describe('utils/elements.ts', () => {
           index: 0,
           attributes: { x: 10 },
         })
+      })
+      it('apply namespace', () => {
+        const context = createGraphNodeContext({}, frameInfo)
+        const id = context.beginNamespace('name', () =>
+          context.createObject('rect', { id: 'a' })
+        )
+        expect(id).toEqual(`name-a`)
       })
       it('extends id if it has been set', () => {
         const context = createGraphNodeContext({}, frameInfo)

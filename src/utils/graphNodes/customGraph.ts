@@ -39,7 +39,7 @@ import {
 export function createCustomNodeModule(
   customGraph: CustomGraph,
   innerNodeMap: IdMap<GraphNode>
-): NodeModule<any> {
+): NodeModule<GraphNode> {
   const customInterface = getCustomInterfaceNode(customGraph, innerNodeMap)
   const inputs = createInputsStruct(customInterface)
   const outputs = createOutputsStruct(customInterface)
@@ -58,15 +58,17 @@ export function createCustomNodeModule(
       data: {},
       inputs,
       outputs,
-      computation: (inputs, _self, context, getGraphNodeModule) => {
-        return stubOutputNodes(
-          customInterface.outputNodes,
-          resolveAllNodes(
-            getGraphNodeModule!,
-            context,
-            stubInputNodes(innerNodeMap, inputs)
+      computation: (inputs, self, context, getGraphNodeModule) => {
+        return context.beginNamespace(self.id, () => {
+          return stubOutputNodes(
+            customInterface.outputNodes,
+            resolveAllNodes(
+              getGraphNodeModule!,
+              context,
+              stubInputNodes(innerNodeMap, inputs)
+            )
           )
-        )
+        })
       },
       width: 140,
       color: '#ff6347',

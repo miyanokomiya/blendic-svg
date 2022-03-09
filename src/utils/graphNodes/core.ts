@@ -91,6 +91,7 @@ export interface NodeContext<T> {
   cloneObject: (objectId: string, arg?: Partial<T>, idPref?: string) => string
   createCloneGroupObject: (objectId: string, arg?: Partial<T>) => string
   createObject: (tag: string, arg?: Partial<T>) => string
+  beginNamespace: <T>(prefix: string, operation: () => T) => T
 }
 
 export function createBaseNode(

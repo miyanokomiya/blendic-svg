@@ -254,8 +254,8 @@ export function createGraphNodeContext(
     return toKeyListMap(toList(graphElementMap), 'parent')
   })
 
-  function getChildrenSize(id: string): number {
-    const children = mapByParentCache.getValue()[id]
+  function getChildrenSize(parentId: string): number {
+    const children = mapByParentCache.getValue()[parentId]
     if (!children) return 0
     return children.length
   }
@@ -369,6 +369,27 @@ export function createGraphNodeContext(
       graphElementMap[objectId].attributes = replace
         ? attributes
         : { ...graphElementMap[objectId].attributes, ...attributes }
+    },
+    setParent(objectId, parentId) {
+      if (!graphElementMap[objectId]) return
+
+      const oldParentId = graphElementMap[objectId].parent
+      graphElementMap[objectId].index = getChildrenSize(parentId)
+      graphElementMap[objectId].parent = parentId
+
+      if (oldParentId) {
+        // Clean indexes of children in the old parent
+        const oldParentChildren = mapByParentCache
+          .getValue()
+          [oldParentId].filter((c) => c.id !== objectId)
+        if (oldParentId === parentId) {
+          oldParentChildren.push(graphElementMap[objectId])
+        }
+        oldParentChildren.forEach((c, index) => {
+          c.index = index
+        })
+      }
+      mapByParentCache.update()
     },
     getFrameInfo() {
       return frameInfo

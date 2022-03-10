@@ -81,6 +81,7 @@ import * as set_stroke from './nodes/setStroke'
 import * as set_stroke_length from './nodes/setStrokeLength'
 import * as set_gradient from './nodes/setGradient'
 import * as set_viewbox from './nodes/setViewbox'
+import * as set_parent from './nodes/setParent'
 import * as hide_object from './nodes/hideObject'
 
 import * as clone_object from './nodes/cloneObject'
@@ -167,6 +168,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   set_stroke_length,
   set_gradient,
   set_viewbox,
+  set_parent,
   hide_object,
 
   clone_object,
@@ -303,6 +305,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Set Stroke Length', type: 'set_stroke_length' },
       { label: 'Set Gradient', type: 'set_gradient' },
       { label: 'Set Viewbox', type: 'set_viewbox' },
+      { label: 'Set Parent', type: 'set_parent' },
       { label: 'Hide Object', type: 'hide_object' },
 
       { label: 'Clone Object', type: 'clone_object' },
@@ -432,6 +435,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     { label: 'Set Stroke Length', type: 'set_stroke_length', key: 'object' },
     { label: 'Set Gradient', type: 'set_gradient', key: 'object' },
     { label: 'Set Viewbox', type: 'set_viewbox', key: 'object' },
+    { label: 'Set Parent', type: 'set_parent', key: 'object' },
     { label: 'Hide Object', type: 'hide_object', key: 'object' },
 
     {

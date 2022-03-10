@@ -647,6 +647,68 @@ describe('utils/elements.ts', () => {
         })
       })
     })
+
+    describe('setParent', () => {
+      it('should set parent and set proper index', () => {
+        const context = createGraphNodeContext(
+          {
+            a: getBElement({ id: 'a', tag: 'g' }),
+            b: getBElement({ id: 'b', tag: 'g' }),
+            c: getBElement({ id: 'c', tag: 'g' }),
+            parent: getBElement({ id: 'parent', tag: 'g' }),
+          },
+          frameInfo
+        )
+        context.setParent('a', 'parent')
+        expect(context.getObjectMap().a.parent).toBe('parent')
+        expect(context.getObjectMap().a.index).toBe(0)
+        context.setParent('b', 'parent')
+        expect(context.getObjectMap().b.parent).toBe('parent')
+        expect(context.getObjectMap().b.index).toBe(1)
+        context.setParent('c', 'parent')
+        expect(context.getObjectMap().c.parent).toBe('parent')
+        expect(context.getObjectMap().c.index).toBe(2)
+        context.setParent('b', 'parent')
+        expect(context.getObjectMap().a.index).toBe(0)
+        expect(context.getObjectMap().c.index).toBe(1)
+        expect(context.getObjectMap().b.index).toBe(2)
+      })
+      it('should set parent and clean index', () => {
+        const context = createGraphNodeContext(
+          {
+            old: getBElement({ id: 'old', tag: 'g' }),
+            a: getBElement({ id: 'a', tag: 'g', parentId: 'old', index: 0 }),
+            c: getBElement({ id: 'c', tag: 'g', parentId: 'old', index: 1 }),
+            parent: getBElement({ id: 'parent', tag: 'g' }),
+            b: getBElement({ id: 'b', tag: 'g', parentId: 'parent', index: 0 }),
+          },
+          frameInfo
+        )
+        context.setParent('a', 'parent')
+        expect(context.getObjectMap().a.parent).toBe('parent')
+        expect(context.getObjectMap().a.index).toBe(1)
+        expect(context.getObjectMap().c.parent).toBe('old')
+        expect(context.getObjectMap().c.index).toBe(0)
+      })
+      it('should arrange to the last if the same parent is set', () => {
+        const context = createGraphNodeContext(
+          {
+            a: getBElement({ id: 'a', tag: 'g', parentId: 'old', index: 0 }),
+            b: getBElement({ id: 'b', tag: 'g', parentId: 'parent', index: 0 }),
+            c: getBElement({ id: 'c', tag: 'g', parentId: 'old', index: 1 }),
+            old: getBElement({ id: 'old', tag: 'g' }),
+            parent: getBElement({ id: 'parent', tag: 'g' }),
+          },
+          frameInfo
+        )
+        context.setParent('a', 'old')
+        expect(context.getObjectMap().a.parent).toBe('old')
+        expect(context.getObjectMap().a.index).toBe(1)
+        expect(context.getObjectMap().c.parent).toBe('old')
+        expect(context.getObjectMap().c.index).toBe(0)
+      })
+    })
+
     it('should return a context to getFrameInfo', () => {
       const context = createGraphNodeContext(
         { a: getBElement({ id: 'a' }) },

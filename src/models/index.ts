@@ -112,6 +112,25 @@ export function getAnimationGraph(
   }
 }
 
+export interface CustomGraph {
+  id: string
+  name: string
+  nodes: string[]
+}
+
+export function getCustomGraph(
+  arg: Partial<CustomGraph> = {},
+  generateId = false
+): CustomGraph {
+  const id = generateId ? generateUuid() : arg.id ?? ''
+  return {
+    name: '',
+    nodes: [],
+    ...arg,
+    id,
+  }
+}
+
 export interface GraphObject {
   id: string
 
@@ -173,7 +192,7 @@ export function getGraphObject(
   arg: Partial<GraphObject> = {},
   generateId = false
 ): GraphObject {
-  const id = generateId ? `go_${generateUuid()}` : arg.id ?? ''
+  const id = generateId ? generateUuid() : arg.id ?? ''
   return {
     index: 0,
     ...arg,
@@ -183,16 +202,11 @@ export function getGraphObject(
 
 export type SpaceType = 'world' | 'local'
 
-// Avoid number prefixed id HTML and CSS
-function generateElmId(): string {
-  return `elm_${generateUuid()}`
-}
-
 export function getElementNode(
   arg: Partial<ElementNode> = {},
   generateId = false
 ): ElementNode {
-  const id = generateId ? generateElmId() : arg.id ?? ''
+  const id = generateId ? generateUuid() : arg.id ?? ''
   return {
     tag: '',
     attributes: {},
@@ -206,7 +220,7 @@ export function getBElement(
   arg: Partial<BElement> = {},
   generateId = false
 ): BElement {
-  const id = generateId ? generateElmId() : arg.id ?? ''
+  const id = generateId ? generateUuid() : arg.id ?? ''
   return {
     index: 0,
     tag: '',

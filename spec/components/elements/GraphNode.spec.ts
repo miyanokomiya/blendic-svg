@@ -36,6 +36,7 @@ describe('src/components/elements/GraphNode.vue', () => {
                   type: GRAPH_VALUE_TYPE.VECTOR2,
                   struct: GRAPH_VALUE_STRUCT.UNIT,
                 },
+                label: 'label_x',
               },
             },
             outputs: {
@@ -45,6 +46,7 @@ describe('src/components/elements/GraphNode.vue', () => {
                   type: GRAPH_VALUE_TYPE.VECTOR2,
                   struct: GRAPH_VALUE_STRUCT.UNIT,
                 },
+                label: 'label_value',
               },
             },
           },

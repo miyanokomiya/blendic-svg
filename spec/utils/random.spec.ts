@@ -5,5 +5,8 @@ describe('src/utils/random.ts', () => {
     it('should return uuid', () => {
       expect(generateUuid()).not.toBe(generateUuid())
     })
+    it('should avoid number prefix', () => {
+      expect(/^[0-9]/.test(generateUuid())).toBe(false)
+    })
   })
 })

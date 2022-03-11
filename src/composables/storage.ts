@@ -128,9 +128,12 @@ export function useStorage() {
       elementSelected: fromElementStore.elementSelected,
 
       graphs,
+      customGraphs: fromGraphStore.customGraphs,
       nodes,
       graphSelected: fromGraphStore.graphSelected,
+      customGraphSelected: fromGraphStore.customGraphSelected,
       nodeSelected: fromGraphStore.nodeSelected,
+      graphType: fromGraphStore.graphType,
     }
     return JSON.stringify(root)
   }
@@ -161,11 +164,15 @@ export function useStorage() {
       )
       graphStore.initState(
         root.graphs,
+        root.customGraphs,
         root.nodes,
         root.graphSelected,
-        root.nodeSelected
+        root.customGraphSelected,
+        root.nodeSelected,
+        root.graphType
       )
     } catch (e) {
+      console.error(e)
       alert('Failed to load: Invalid file.')
     }
   }
@@ -291,9 +298,10 @@ export function useStorage() {
     )
 
     const graphObjectMap = resolveAnimationGraph(
+      graphStore.getGraphNodeModuleFn.value(),
       elementMap,
       { currentFrame, endFrame },
-      graphStore.nodeMap.value
+      graphStore.completedNodeMap.value
     )
 
     return getGraphResolvedElementTree(graphObjectMap, svgNode)
@@ -354,9 +362,10 @@ export function useStorage() {
 
     const attributesMapPerFrameByGraph = frames.map((_, currentFrame) => {
       const graphObjectMap = resolveAnimationGraph(
+        graphStore.getGraphNodeModuleFn.value(),
         wholeBElementMap,
         { currentFrame, endFrame },
-        graphStore.nodeMap.value
+        graphStore.completedNodeMap.value
       )
 
       const posedAttrsMap = attributesMapPerFrameByAction[currentFrame]

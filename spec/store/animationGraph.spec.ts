@@ -1,4 +1,4 @@
-import { getAnimationGraph } from '/@/models'
+import { getAnimationGraph, getCustomGraph } from '/@/models'
 import { createStore } from '/@/store/animationGraph'
 import type { AnimationGraphStore } from '/@/store/animationGraph'
 import { createGraphNode } from '/@/utils/graphNodes'
@@ -23,13 +23,23 @@ describe('src/store/animationGraph.ts', () => {
         }),
       ],
       [
+        getCustomGraph({
+          id: 'custom',
+          nodes: ['custom_scaler'],
+        }),
+      ],
+      [
         createGraphNode('scaler', { id: 'scaler' }),
         createGraphNode('make_vector2', { id: 'make_vector2' }),
+        createGraphNode('scaler', { id: 'custom_scaler' }),
       ],
       [],
-      []
+      [],
+      [],
+      'graph'
     )
     target.selectGraph('graph')
+    target.selectCustomGraph('custom')
   })
 
   describe('selectGraph', () => {
@@ -71,7 +81,7 @@ describe('src/store/animationGraph.ts', () => {
     it('should delete current graph and clear all selected', () => {
       target.deleteGraph()
       expect(target.exportState().graphs).toHaveLength(0)
-      expect(target.exportState().nodes).toHaveLength(0)
+      expect(target.exportState().nodes).toHaveLength(1)
       expect(target.lastSelectedGraph.value).toBeUndefined()
       expect(target.selectedNodes.value).toEqual({})
     })
@@ -183,6 +193,61 @@ describe('src/store/animationGraph.ts', () => {
       expect(target.nodeMap.value['scaler']).toEqual(
         createGraphNode('scaler', { id: 'scaler', data: { value: 10 } })
       )
+    })
+  })
+
+  describe('setGraphType', () => {
+    it('should set graph type', () => {
+      target.setGraphType('custom')
+      expect(target.graphType.value).toBe('custom')
+      target.setGraphType('graph')
+      expect(target.graphType.value).toBe('graph')
+    })
+  })
+
+  describe('customGraphNodeMenuOptionsSrc', () => {
+    it('should return custom items when current graph mode is graph', () => {
+      target.setGraphType('graph')
+      expect(target.customGraphNodeMenuOptionsSrc.value).toHaveLength(1)
+      target.setGraphType('custom')
+      expect(target.customGraphNodeMenuOptionsSrc.value).toHaveLength(0)
+    })
+  })
+
+  describe('addCustomGraph', () => {
+    it('should add new custom graph, select it and clear nodes selected', () => {
+      target.selectNode('scaler')
+      const graph = {
+        id: 'new_graph',
+        name: 'new_name',
+        nodes: [],
+      }
+      target.setGraphType('custom')
+      target.addCustomGraph(graph)
+      expect(target.customGraphs.value).toHaveLength(2)
+      expect(target.lastSelectedCustomGraph.value?.id).toBe('new_graph')
+      expect(target.selectedNodes.value).toEqual({})
+      target.addCustomGraph({ ...graph, id: undefined })
+      expect(target.customGraphs.value).toHaveLength(3)
+    })
+  })
+
+  describe('updateCustomGraph', () => {
+    it('should update current graph', () => {
+      target.setGraphType('custom')
+      target.updateCustomGraph({ name: 'updated' })
+      expect(target.lastSelectedCustomGraph.value?.name).toBe('updated')
+    })
+  })
+
+  describe('deleteCustomGraph', () => {
+    it('should delete current graph and clear all selected', () => {
+      target.setGraphType('custom')
+      target.deleteCustomGraph()
+      expect(target.exportState().customGraphs).toHaveLength(0)
+      expect(target.exportState().nodes).toHaveLength(2)
+      expect(target.lastSelectedCustomGraph.value).toBeUndefined()
+      expect(target.selectedNodes.value).toEqual({})
     })
   })
 })

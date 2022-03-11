@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.15.0] - 2022-03-11
+### Added
+- Add new graph node to clone a object with new parent group
+- Add custom graph
+
 ## [0.14.0] - 2022-02-23
 ### Added
 - Add new graph if new node is added during no graph selected.

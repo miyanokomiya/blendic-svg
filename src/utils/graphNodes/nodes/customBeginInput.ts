@@ -14,47 +14,33 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 
-Copyright (C) 2021, Tomoya Komiyama.
+Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { GraphNodeReroute } from '/@/models/graphNode'
+import { GraphNodeCustomBeginInput } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
-  pickNotGenericsType,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
-export const struct: NodeStruct<GraphNodeReroute> = {
+export const struct: NodeStruct<GraphNodeCustomBeginInput> = {
   create(arg = {}) {
     return {
-      ...createBaseNode({
-        inputs: { value: { value: undefined } },
-        ...arg,
-      }),
-      type: 'reroute',
-    } as GraphNodeReroute
+      ...createBaseNode(arg),
+      type: 'custom_begin_input',
+    } as GraphNodeCustomBeginInput
   },
   data: {},
-  inputs: {
-    value: {
-      type: UNIT_VALUE_TYPES.GENERICS,
-      default: undefined,
-    },
-  },
+  inputs: {},
   outputs: {
-    value: UNIT_VALUE_TYPES.GENERICS,
+    input: UNIT_VALUE_TYPES.INPUT,
   },
-  computation(inputs) {
-    return { value: inputs.value }
+  computation(_, self) {
+    return { input: self.id }
   },
-  width: 18,
-  label: '',
-  getOutputType(self) {
-    return (
-      pickNotGenericsType([self.inputs.value.genericsType]) ??
-      UNIT_VALUE_TYPES.GENERICS
-    )
-  },
-  genericsChains: [[{ key: 'value' }, { key: 'value', output: true }]],
+  width: 130,
+  color: '#ff7f50',
+  textColor: '#fff',
+  label: 'Begin Input',
 }

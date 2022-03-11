@@ -133,8 +133,8 @@ export function serializeToAnimatedSvg(
     }s;animation-iteration-count:${iteration};}`
 
   const svg = makeSvg(adjustedSvgRoot, true)
-  svg.appendChild(animG)
-  svg.appendChild(style)
+  svg.prepend(animG)
+  svg.prepend(style)
   return svg
 }
 

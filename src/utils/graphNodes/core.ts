@@ -26,6 +26,8 @@ import {
   GRAPH_VALUE_TYPE,
   GRAPH_VALUE_TYPE_KEY,
   ValueType,
+  GraphNodeData,
+  GraphNodeType,
 } from '/@/models/graphNode'
 import { multiPoseTransform } from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
@@ -39,28 +41,32 @@ export interface NodeStruct<T extends GraphNodeBase> {
   data: {
     [key in keyof T['data']]: {
       type: ValueType
-      default: Required<T['data'][key]>
+      default: T['data'][key] extends GraphNodeData<any>
+        ? Required<T['data'][key]>['value']
+        : Required<T['data'][key]>
     }
   }
   inputs: {
-    [key in keyof T['inputs']]: { type: ValueType } & {
+    [key in keyof T['inputs']]: { type: ValueType; label?: string } & {
       default: Required<T['inputs'][key]>['value']
     }
   }
-  outputs: { [key: string]: ValueType }
+  outputs: { [key: string]: ValueType & { label?: string } }
   computation: (
     inputs: {
       [key in keyof T['inputs']]: Required<T['inputs'][key]>['value']
     },
     self: T,
-    context: NodeContext<unknown>
+    context: NodeContext<unknown>,
+    // TODO: Remove `?`
+    getGraphNodeModule?: (type: GraphNodeType) => NodeModule<any> | undefined
   ) => { [key in keyof NodeStruct<T>['outputs']]: unknown }
   width: number
   color?: string
   textColor?: string
-  label?: string
+  label: string
   getOutputType?: (self: T, key: string) => ValueType
-  genericsChains?: { key: string; output?: true }[][]
+  genericsChains?: { key: string; output?: true; data?: true }[][]
   getErrors?: (self: T) => string[] | undefined
 }
 
@@ -85,6 +91,7 @@ export interface NodeContext<T> {
   cloneObject: (objectId: string, arg?: Partial<T>, idPref?: string) => string
   createCloneGroupObject: (objectId: string, arg?: Partial<T>) => string
   createObject: (tag: string, arg?: Partial<T>) => string
+  beginNamespace: <T>(prefix: string, operation: () => T) => T
 }
 
 export function createBaseNode(
@@ -179,6 +186,7 @@ export interface EdgeChainGroupItem {
   id: string
   key: string
   output?: true
+  data?: true
   type?: ValueType
 }
 
@@ -204,11 +212,11 @@ export function cloneListFn(
   targetId: string,
   parentGroupId: string,
   fix_rotate = false
-): (transforms: Transform[]) => void {
+): (transforms: Transform[]) => string[] {
   const originTransform = context.getTransform(targetId)
 
   return (transforms) =>
-    transforms.forEach((transform, i) => {
+    transforms.map((transform, i) => {
       const clone = context.cloneObject(
         targetId,
         { parent: parentGroupId },
@@ -223,6 +231,7 @@ export function cloneListFn(
         // inherits original transform
         originTransform ? multiPoseTransform(originTransform, t) : t
       )
+      return clone
     })
 }
 

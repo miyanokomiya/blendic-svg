@@ -20,6 +20,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 import {
   GradientStop,
   GraphNode,
+  GraphNodeBase,
+  GraphNodeData,
   GraphNodeInput,
   GraphNodeInputs,
   GraphNodeMap,
@@ -38,6 +40,8 @@ import {
   EdgeChainGroupItem,
   isSameValueType,
   getGenericsChainAtFn,
+  UNIT_VALUE_TYPES,
+  NodeStruct,
 } from '/@/utils/graphNodes/core'
 import { generateUuid } from '/@/utils/random'
 import * as get_frame from './nodes/getFrame'
@@ -80,6 +84,7 @@ import * as set_viewbox from './nodes/setViewbox'
 import * as hide_object from './nodes/hideObject'
 
 import * as clone_object from './nodes/cloneObject'
+import * as group_clone_object from './nodes/groupCloneObject'
 import * as circle_clone_object from './nodes/circleCloneObject'
 import * as grid_clone_object from './nodes/gridCloneObject'
 import * as tornado_clone_object from './nodes/tornadoCloneObject'
@@ -117,8 +122,13 @@ import * as switch_generics from './nodes/switch_generics'
 
 import * as reroute from './nodes/reroute'
 
+import * as custom_begin_input from './nodes/customBeginInput'
+import * as custom_input from './nodes/customInput'
+import * as custom_begin_output from './nodes/customBeginOutput'
+import * as custom_output from './nodes/customOutput'
+
 import { getTransform, IdMap } from '/@/models'
-import { extractMap, mapReduce, toList } from '/@/utils/commons'
+import { extractMap, mapFilter, mapReduce, toList } from '/@/utils/commons'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -161,6 +171,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   hide_object,
 
   clone_object,
+  group_clone_object,
   circle_clone_object,
   grid_clone_object,
   tornado_clone_object,
@@ -197,14 +208,19 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   switch_generics,
 
   reroute,
+
+  custom_begin_input,
+  custom_input,
+  custom_begin_output,
+  custom_output,
 } as const
 
-interface NodeMenuOption {
+export interface NodeMenuOption {
   label: string
   type: GraphNodeType
 }
 
-interface NODE_MENU_OPTION {
+export interface NODE_MENU_OPTION {
   label: string
   children: NodeMenuOption[]
 }
@@ -292,6 +308,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Hide Object', type: 'hide_object' },
 
       { label: 'Clone Object', type: 'clone_object' },
+      { label: 'Group Clone Object', type: 'group_clone_object' },
       { label: 'Circle Clone Object', type: 'circle_clone_object' },
       { label: 'Grid Clone Object', type: 'grid_clone_object' },
       { label: 'Tornado Clone Object', type: 'tornado_clone_object' },
@@ -425,6 +442,11 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
       children: [
         { label: 'Clone Object', type: 'clone_object', key: 'object' },
         {
+          label: 'Group Clone Object',
+          type: 'group_clone_object',
+          key: 'object',
+        },
+        {
           label: 'Circle Clone Object',
           type: 'circle_clone_object',
           key: 'object',
@@ -480,6 +502,13 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
     LERP_GENERICS_SUGGESTION,
     ...GENERICS_SUGGESTIONS,
   ],
+  INPUT: [{ label: 'Input', type: 'custom_input', key: 'input' }],
+  OUTPUT: [{ label: 'Output', type: 'custom_output', key: 'output' }],
+  UNKNOWN: [],
+}
+
+export interface GetGraphNodeModule {
+  (type: GraphNodeType): NodeModule<GraphNodes[GraphNodeType]> | undefined
 }
 
 export function getGraphNodeModule<T extends GraphNodeType>(
@@ -489,6 +518,7 @@ export function getGraphNodeModule<T extends GraphNodeType>(
 }
 
 export function resolveAllNodes<T>(
+  getGraphNodeModule: GetGraphNodeModule,
   context: NodeContext<T>,
   nodeMap: GraphNodeMap
 ): GraphNodeOutputMap {
@@ -496,12 +526,13 @@ export function resolveAllNodes<T>(
     if (p[id]) return p
     return {
       ...p,
-      ...resolveNode<T>(context, nodeMap, p, id, {}),
+      ...resolveNode<T>(getGraphNodeModule, context, nodeMap, p, id, {}),
     }
   }, {})
 }
 
 export function resolveNode<T>(
+  getGraphNodeModule: GetGraphNodeModule,
   context: NodeContext<T>,
   nodeMap: GraphNodeMap,
   outputMap: GraphNodeOutputMap,
@@ -522,12 +553,12 @@ export function resolveNode<T>(
   }
 
   const fromOutputMap = getInputFromIds(target.inputs ?? {}).reduce((p, id) => {
-    return resolveNode(context, nodeMap, p, id, nextPathMap)
+    return resolveNode(getGraphNodeModule, context, nodeMap, p, id, nextPathMap)
   }, outputMap)
 
   return {
     ...fromOutputMap,
-    [targetId]: compute<T>(context, fromOutputMap, target),
+    [targetId]: compute<T>(getGraphNodeModule, context, fromOutputMap, target),
   }
 }
 
@@ -578,11 +609,14 @@ function getCircularRefIds(
 }
 
 export function compute<T>(
+  getGraphNodeModule: GetGraphNodeModule,
   context: NodeContext<T>,
   outputMap: GraphNodeOutputMap,
   target: GraphNode
 ): GraphNodeOutputValues {
-  const struct = getGraphNodeModule(target.type).struct
+  const struct = getGraphNodeModule(target.type)?.struct
+  if (!struct) return outputMap
+
   const inputs = getInputs(outputMap, target.inputs)
   return struct.computation(
     mapReduce(inputs, (val, key) => {
@@ -591,7 +625,8 @@ export function compute<T>(
       return (struct.inputs as any)[key].default
     }),
     target,
-    context
+    context,
+    getGraphNodeModule
   )
 }
 
@@ -639,18 +674,22 @@ export function getInputFromIds(inputs: GraphNodeInputs): string[] {
     .filter((id): id is string => !!id)
 }
 
-export function validateAllNodes(nodeMap: GraphNodeMap): {
+export function validateAllNodes(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: GraphNodeMap
+): {
   [id: string]: { [key: string]: boolean }
 } {
   return Object.keys(nodeMap).reduce<{
     [id: string]: { [key: string]: boolean }
   }>((p, id) => {
-    p[id] = validateNode(nodeMap, id)
+    p[id] = validateNode(getGraphNodeModule, nodeMap, id)
     return p
   }, {})
 }
 
 export function validateNode(
+  getGraphNodeModule: GetGraphNodeModule,
   nodeMap: GraphNodeMap,
   targetId: string
 ): {
@@ -659,23 +698,49 @@ export function validateNode(
   const target = nodeMap[targetId]
   if (!target) return {}
 
+  const inputStruct = getGraphNodeModule(target.type)?.struct
+
   return Object.keys(target.inputs).reduce<{
     [key: string]: boolean
   }>((p: any, key) => {
-    p[key] = validateInput(nodeMap, target.inputs, key)
+    const input = target.inputs[key]
+    if (!input.from) {
+      // not connected
+      p[key] = true
+    } else if (!nodeMap[input.from.id]) {
+      // connected but the target not found
+      p[key] = false
+    } else {
+      const outputStruct = getGraphNodeModule(
+        nodeMap[input.from.id].type
+      )?.struct
+
+      if (inputStruct && outputStruct) {
+        p[key] = isSameValueType(
+          getInputType(inputStruct, target, key),
+          getOutputType(outputStruct, nodeMap[input.from.id], input.from.key)
+        )
+      } else {
+        p[key] = false
+      }
+    }
     return p
   }, {})
 }
 
-export function validateInput<T extends GraphNodeInputs>(
-  nodeMap: GraphNodeMap,
-  inputs: T,
-  key: string
-): boolean {
-  const input = inputs[key]
-  if (input.value !== undefined) return true
-  if (input.from && nodeMap[input.from.id]) return true
-  return false
+export function createGraphNodeIncludeCustom<T extends GraphNodeType>(
+  customModules: { [key in GraphNodeType]: NodeModule<any> },
+  type: T,
+  arg: Partial<Omit<GraphNodes[T], 'inputs'>> & {
+    inputs?: Partial<GraphNodes[T]['inputs']>
+  } = {},
+  generateId = false
+) {
+  return _createGraphNode(
+    customModules[type] ? customModules[type] : NODE_MODULES[type],
+    arg,
+    generateId
+  )
 }
 
 export function createGraphNode<T extends GraphNodeType>(
@@ -685,9 +750,19 @@ export function createGraphNode<T extends GraphNodeType>(
   } = {},
   generateId = false
 ): GraphNodes[T] {
+  return _createGraphNode(NODE_MODULES[type], arg, generateId)
+}
+
+function _createGraphNode(
+  module: NodeModule<any>,
+  arg: Partial<Omit<GraphNodeBase, 'inputs'>> & {
+    inputs?: Partial<GraphNodeBase['inputs']>
+  } = {},
+  generateId = false
+): GraphNodeBase {
   // enable to override partial inputs
   const { inputs, ...others } = arg
-  const node = NODE_MODULES[type].struct.create(others)
+  const node = module.struct.create(others)
   if (inputs) {
     node.inputs = { ...node.inputs, ...arg.inputs }
   }
@@ -698,6 +773,7 @@ export function createGraphNode<T extends GraphNodeType>(
 }
 
 export function validateConnection(
+  getGraphNodeModule: GetGraphNodeModule,
   from: {
     node: GraphNode
     key: string
@@ -707,9 +783,13 @@ export function validateConnection(
     key: string
   }
 ): boolean {
+  const toModule = getGraphNodeModule(to.node.type)
+  const fromModule = getGraphNodeModule(from.node.type)
+  if (!fromModule || !toModule) return false
+
   return canConnectValueType(
-    getInputType(to.node, to.key),
-    getOutputType(from.node, from.key)
+    getInputType(toModule.struct, to.node, to.key),
+    getOutputType(fromModule.struct, from.node, from.key)
   )
 }
 
@@ -718,16 +798,27 @@ function canConnectValueType(a: ValueType, b: ValueType): boolean {
   return isSameValueType(a, b)
 }
 
-export function resetInput(node: GraphNode, key: string): GraphNode {
+export function resetInput(
+  nodeStruct: Pick<NodeStruct<any>, 'inputs'> | undefined,
+  node: GraphNode,
+  key: string
+): GraphNode {
   const current = node.inputs[key]
-  const struct = getGraphNodeModule<any>(node.type).struct
 
-  const nextInput: GraphNodeInput<any> = { value: struct.inputs[key].default }
-
-  // keep generics if it is confirmed
-  if (current.genericsType) {
-    nextInput.genericsType = current.genericsType
+  const inputStruct = nodeStruct?.inputs[key]
+  if (!inputStruct) {
+    const inputs = { ...node.inputs }
+    delete inputs[key]
+    return { ...node, inputs }
   }
+
+  const nextInput: GraphNodeInput<any> = current.genericsType
+    ? {
+        // keep generics if it is confirmed
+        genericsType: current.genericsType,
+        value: createDefaultValueForGenerics(current.genericsType),
+      }
+    : { value: inputStruct.default }
 
   const updated: GraphNode = {
     ...node,
@@ -738,6 +829,7 @@ export function resetInput(node: GraphNode, key: string): GraphNode {
 }
 
 export function duplicateNodes(
+  getGraphNodeModule: GetGraphNodeModule,
   targetNodeMap: GraphNodeMap,
   currentNodeMap: GraphNodeMap = {},
   getId: (src: { id: string }) => string = (src) => src.id
@@ -746,7 +838,7 @@ export function duplicateNodes(
     mapReduce(targetNodeMap, getId),
     targetNodeMap
   )
-  const updatedMap = cleanAllEdgeGenerics({
+  const updatedMap = cleanAllEdgeGenerics(getGraphNodeModule, {
     ...currentNodeMap,
     ...duplicatedMap,
   })
@@ -784,18 +876,23 @@ function immigrateInputs(
   })
 }
 
-function getInputDefaultValue(type: GraphNodeType, key: string): unknown {
-  return (getGraphNodeModule(type).struct.inputs as any)[key].default
+export function isUniqueEssentialNodeForCustomGraph(
+  type: GraphNodeType
+): boolean {
+  return type === 'custom_begin_input' || type === 'custom_begin_output'
 }
 
 export function deleteAndDisconnectNodes(
+  getGraphNodeModule: GetGraphNodeModule,
   nodes: GraphNode[],
   targetIds: IdMap<boolean>
 ): { nodes: GraphNode[]; updatedIds: IdMap<boolean> } {
   const updatedIds: IdMap<boolean> = {}
 
   const nextNodes = nodes
-    .filter((n) => !targetIds[n.id])
+    .filter(
+      (n) => !targetIds[n.id] || isUniqueEssentialNodeForCustomGraph(n.type)
+    )
     .map((n) => {
       return {
         ...n,
@@ -806,7 +903,11 @@ export function deleteAndDisconnectNodes(
 
           // delete this connection
           updatedIds[n.id] = true
-          return { value: getInputDefaultValue(n.type, key) }
+          return {
+            value:
+              getGraphNodeModule(n.type)?.struct.inputs[key].default ??
+              undefined,
+          }
         }),
       }
     })
@@ -814,11 +915,18 @@ export function deleteAndDisconnectNodes(
   return { nodes: nextNodes, updatedIds }
 }
 
-export function getNodeEdgeTypes(target: GraphNode): {
+export function getNodeEdgeTypes(
+  getGraphNodeModule: GetGraphNodeModule,
+  target: GraphNode
+): {
   inputs: { [key: string]: ValueType }
   outputs: { [key: string]: ValueType }
 } {
-  return { inputs: getInputTypes(target), outputs: getOutputTypes(target) }
+  const nodeModule = getGraphNodeModule(target.type)
+  return {
+    inputs: getInputTypes(nodeModule?.struct, target),
+    outputs: getOutputTypes(nodeModule?.struct, target),
+  }
 }
 
 // this function do connect only and does not resolve generics
@@ -896,38 +1004,110 @@ function isGenericsResolved(genericsType?: ValueType): boolean {
   return !!genericsType && genericsType.type !== GRAPH_VALUE_TYPE.GENERICS
 }
 
-function getInputType(target: GraphNode, key: string): ValueType {
+function isGenericsDataField(
+  struct: NodeStruct<any> | undefined,
+  key: string
+): boolean {
+  return !!struct && struct.data[key].type.type === GRAPH_VALUE_TYPE.GENERICS
+}
+
+export function updateDataField(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeType: GraphNodeType,
+  key: string,
+  old: unknown | GraphNodeData<unknown>,
+  nextValue: unknown
+): unknown | GraphNodeData<unknown> {
+  return isGenericsDataField(getGraphNodeModule(nodeType)?.struct, key)
+    ? {
+        ...(old as GraphNodeData<unknown>),
+        value: nextValue,
+      }
+    : nextValue
+}
+
+export function getDataTypeAndValue(
+  getGraphNodeModule: GetGraphNodeModule,
+  target: GraphNode,
+  key: string
+): { type: ValueType; value: unknown } {
+  const field = target.data[key] as any
+  const struct = getGraphNodeModule(target.type)?.struct
+  return isGenericsDataField(struct, key)
+    ? {
+        type:
+          (field.genericsType as ValueType) ??
+          struct?.data[key]?.type ??
+          UNIT_VALUE_TYPES.UNKNOWN,
+        value: field.value,
+      }
+    : {
+        type: struct?.data[key]?.type ?? UNIT_VALUE_TYPES.UNKNOWN,
+        value: field,
+      }
+}
+
+function getInputType(
+  nodeStruct: NodeStruct<any>,
+  target: GraphNode,
+  key: string
+): ValueType {
   return (
     target.inputs[key].genericsType ??
-    getGraphNodeModule<any>(target.type).struct.inputs[key].type
+    nodeStruct.inputs[key]?.type ??
+    UNIT_VALUE_TYPES.UNKNOWN
   )
 }
 
-export function getInputTypes(target: GraphNode): { [key: string]: ValueType } {
-  const struct = getGraphNodeModule<any>(target.type).struct
+export function getInputTypes(
+  nodeStruct: NodeStruct<any> | undefined,
+  target: GraphNode
+): { [key: string]: ValueType } {
   return mapReduce(target.inputs, (_, key) => {
-    return target.inputs[key].genericsType ?? struct.inputs[key].type
+    return (
+      target.inputs[key].genericsType ??
+      nodeStruct?.inputs[key]?.type ??
+      UNIT_VALUE_TYPES.UNKNOWN
+    )
   })
 }
 
-function getInputOriginalType(type: GraphNodeType, key: string): ValueType {
-  const struct = getGraphNodeModule<any>(type).struct
-  return struct.inputs[key].type
+function getInputOriginalType(
+  getGraphNodeModule: GetGraphNodeModule,
+  type: GraphNodeType,
+  key: string
+): ValueType {
+  const nodeModule = getGraphNodeModule(type)
+  return nodeModule?.struct.inputs[key]?.type ?? UNIT_VALUE_TYPES.UNKNOWN
 }
 
-export function getOutputType(target: GraphNode, key: string): ValueType {
-  const struct = getGraphNodeModule(target.type).struct
-  return struct.getOutputType?.(target, key) ?? struct.outputs[key]
+export function getOutputType(
+  nodeStruct: NodeStruct<any> | undefined,
+  target: GraphNode,
+  key: string
+): ValueType {
+  return (
+    nodeStruct?.getOutputType?.(target, key) ??
+    nodeStruct?.outputs[key] ??
+    UNIT_VALUE_TYPES.UNKNOWN
+  )
 }
 
-function getOutputTypes(target: GraphNode): { [key: string]: ValueType } {
-  const struct = getGraphNodeModule(target.type).struct
-  return mapReduce(struct.outputs, (_, key) => {
-    return struct.getOutputType?.(target, key) ?? struct.outputs[key]
-  })
+function getOutputTypes(
+  nodeStruct: NodeStruct<any> | undefined,
+  target: GraphNode
+): { [key: string]: ValueType } {
+  return nodeStruct
+    ? mapReduce(nodeStruct.outputs, (_, key) => {
+        return (
+          nodeStruct.getOutputType?.(target, key) ?? nodeStruct.outputs[key]
+        )
+      })
+    : {}
 }
 
 export function getEdgeChainGroupAt(
+  getGraphNodeModule: GetGraphNodeModule,
   nodeMap: GraphNodeMap,
   allEdgeConnectionInfo: AllEdgeConnectionInfo,
   item: EdgeChainGroupItem
@@ -954,13 +1134,20 @@ export function getEdgeChainGroupAt(
     }
   }
 
-  return _getEdgeChainGroupAt(nodeMap, allEdgeConnectionInfo, item, {
-    saveDoneItem,
-    isDoneItem,
-  })
+  return _getEdgeChainGroupAt(
+    getGraphNodeModule,
+    nodeMap,
+    allEdgeConnectionInfo,
+    item,
+    {
+      saveDoneItem,
+      isDoneItem,
+    }
+  )
 }
 
 function _getEdgeChainGroupAt(
+  getGraphNodeModule: GetGraphNodeModule,
   nodeMap: GraphNodeMap,
   allEdgeConnectionInfo: AllEdgeConnectionInfo,
   item: EdgeChainGroupItem,
@@ -974,17 +1161,19 @@ function _getEdgeChainGroupAt(
 
   if (context.isDoneItem(item)) return []
 
-  const struct = getGraphNodeModule(target.type).struct
-  const group = getGenericsChainAtFn(target.id, struct.genericsChains ?? [])(
-    item.key,
-    item.output
-  ) ?? [
+  const nodeModule = getGraphNodeModule(target.type)
+  if (!nodeModule) return []
+
+  const group = getGenericsChainAtFn(
+    target.id,
+    nodeModule.struct.genericsChains ?? []
+  )(item.key, item.output) ?? [
     // this edge has fixed type
     {
       ...item,
       type: item.output
-        ? getOutputType(target, item.key)
-        : getInputType(target, item.key),
+        ? getOutputType(nodeModule.struct, target, item.key)
+        : getInputType(nodeModule.struct, target, item.key),
     },
   ]
   group.forEach(context.saveDoneItem)
@@ -1015,6 +1204,7 @@ function _getEdgeChainGroupAt(
         .filter((nextItem) => !context.isDoneItem(nextItem))
         .flatMap((nextItem) => {
           return _getEdgeChainGroupAt(
+            getGraphNodeModule,
             nodeMap,
             allEdgeConnectionInfo,
             nextItem,
@@ -1032,30 +1222,59 @@ function findNotResolvedGenericsType(
 }
 
 export function cleanEdgeGenericsGroupAt(
+  getGraphNodeModule: GetGraphNodeModule,
   nodeMap: GraphNodeMap,
   item: EdgeChainGroupItem
 ): GraphNodeMap {
   const allEdgeConnectionInfo = getAllEdgeConnectionInfo(nodeMap)
-  const group = getEdgeChainGroupAt(nodeMap, allEdgeConnectionInfo, item)
+  const group = getEdgeChainGroupAt(
+    getGraphNodeModule,
+    nodeMap,
+    allEdgeConnectionInfo,
+    item
+  )
   const type = findNotResolvedGenericsType(group)
-  return cleanEdgeGenericsGroupByType(nodeMap, group, type)
+  return cleanEdgeGenericsGroupByType(getGraphNodeModule, nodeMap, group, type)
 }
 
 function cleanEdgeGenericsGroupByType(
+  getGraphNodeModule: GetGraphNodeModule,
   nodeMap: GraphNodeMap,
   group: EdgeChainGroupItem[],
   type: ValueType | undefined
 ): GraphNodeMap {
   const ret: GraphNodeMap = {}
 
-  group
-    .filter((item) => !item.output)
-    .forEach((item) => {
-      const node = ret[item.id] ?? nodeMap[item.id]
-      if (!node) return
+  group.forEach((item) => {
+    if (item.output) return
 
+    const node = ret[item.id] ?? nodeMap[item.id]
+    if (!node) return
+
+    if (item.data) {
       if (
-        getInputOriginalType(node.type, item.key).type !==
+        getGraphNodeModule(node.type)?.struct.data[item.key]?.type.type !==
+        GRAPH_VALUE_TYPE.GENERICS
+      )
+        return
+
+      const data = node.data[item.key]
+      if (isSameValueType((data as GraphNodeData<unknown>)?.genericsType, type))
+        return
+
+      ret[item.id] = {
+        ...node,
+        data: {
+          ...node.data,
+          [item.key]: {
+            genericsType: type,
+            value: createDefaultValueForGenerics(type),
+          },
+        },
+      }
+    } else {
+      if (
+        getInputOriginalType(getGraphNodeModule, node.type, item.key).type !==
         GRAPH_VALUE_TYPE.GENERICS
       )
         return
@@ -1074,7 +1293,8 @@ function cleanEdgeGenericsGroupByType(
           },
         },
       }
-    })
+    }
+  })
 
   return ret
 }
@@ -1109,8 +1329,11 @@ export function createDefaultUnitValueForGenerics(
     case GRAPH_VALUE_TYPE.TEXT:
     case GRAPH_VALUE_TYPE.OBJECT:
     case GRAPH_VALUE_TYPE.D:
+    case GRAPH_VALUE_TYPE.INPUT:
+    case GRAPH_VALUE_TYPE.OUTPUT:
       return ''
     case GRAPH_VALUE_TYPE.GENERICS:
+    case GRAPH_VALUE_TYPE.UNKNOWN:
       return undefined
     default: {
       const strange: never = valueType
@@ -1127,7 +1350,10 @@ function getGradientStop(): GradientStop {
   }
 }
 
-export function cleanAllEdgeGenerics(nodeMap: GraphNodeMap): GraphNodeMap {
+export function cleanAllEdgeGenerics(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: GraphNodeMap
+): GraphNodeMap {
   const allEdgeConnectionInfo = getAllEdgeConnectionInfo(nodeMap)
 
   const doneMap: IdMap<{
@@ -1142,8 +1368,8 @@ export function cleanAllEdgeGenerics(nodeMap: GraphNodeMap): GraphNodeMap {
   const updatedIdMap: IdMap<true> = {}
 
   const nextMap = toList(nodeMap).reduce((p, target) => {
-    const struct = getGraphNodeModule(target.type).struct
-    if (!struct.genericsChains) return p
+    const struct = getGraphNodeModule(target.type)?.struct
+    if (!struct?.genericsChains) return p
 
     const chains = struct.genericsChains
     return chains
@@ -1155,7 +1381,12 @@ export function cleanAllEdgeGenerics(nodeMap: GraphNodeMap): GraphNodeMap {
         if (item.output && !!doneMap[target.id]?.outputs[item.key]) return q
         if (doneMap[target.id]?.inputs[item.key]) return q
 
-        const group = getEdgeChainGroupAt(q, allEdgeConnectionInfo, item)
+        const group = getEdgeChainGroupAt(
+          getGraphNodeModule,
+          q,
+          allEdgeConnectionInfo,
+          item
+        )
 
         group.forEach((c) => {
           doneMap[c.id] ??= { inputs: {}, outputs: {} }
@@ -1167,7 +1398,12 @@ export function cleanAllEdgeGenerics(nodeMap: GraphNodeMap): GraphNodeMap {
         })
 
         const type = findNotResolvedGenericsType(group)
-        const updated = cleanEdgeGenericsGroupByType(q, group, type)
+        const updated = cleanEdgeGenericsGroupByType(
+          getGraphNodeModule,
+          q,
+          group,
+          type
+        )
         toList(updated).forEach((n) => (updatedIdMap[n.id] = true))
         return { ...q, ...updated }
       }, p)
@@ -1176,14 +1412,25 @@ export function cleanAllEdgeGenerics(nodeMap: GraphNodeMap): GraphNodeMap {
   return extractMap(nextMap, updatedIdMap)
 }
 
-export function getNodeErrors(nodeMap: GraphNodeMap): IdMap<string[]> {
+export function getNodeErrors(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: GraphNodeMap
+): IdMap<string[]> {
   const circularRefIds = getAllCircularRefIds(nodeMap)
 
   return toList(nodeMap).reduce<IdMap<string[]>>((p, node) => {
-    const errors = [
-      ...(getGraphNodeModule<any>(node.type).struct.getErrors?.(node) ?? []),
-      ...(circularRefIds[node.id] ? ['circular connection is found'] : []),
-    ]
+    const struct = getGraphNodeModule(node.type)?.struct
+    const errors = struct
+      ? [
+          ...(struct.getErrors?.(node) ?? []),
+          ...Object.entries(validateNode(getGraphNodeModule, nodeMap, node.id))
+            .filter(([_, v]) => !v)
+            .map(
+              ([key]) => `Invalid input: ${struct.inputs[key]?.label ?? key}`
+            ),
+          ...(circularRefIds[node.id] ? ['Circular connection is found'] : []),
+        ]
+      : ['Unknown node']
 
     if (errors.length > 0) {
       p[node.id] = errors
@@ -1194,22 +1441,29 @@ export function getNodeErrors(nodeMap: GraphNodeMap): IdMap<string[]> {
 }
 
 export function getUpdatedNodeMapToDisconnectNodeInput(
+  getGraphNodeModule: GetGraphNodeModule,
   nodeMap: GraphNodeMap,
   nodeId: string,
   inputKey: string
 ): GraphNodeMap {
   const node = nodeMap[nodeId]
 
-  const updated = resetInput(node, inputKey)
+  const updated = resetInput(
+    getGraphNodeModule(node.type)?.struct,
+    node,
+    inputKey
+  )
   const currentInput = node.inputs[inputKey]
 
   // clean generics
   const updatedMapByDisconnectInput = cleanEdgeGenericsGroupAt(
+    getGraphNodeModule,
     { ...nodeMap, [updated.id]: updated },
     { id: updated.id, key: inputKey }
   )
   const updatedMapByDisconnectOutput = currentInput?.from
     ? cleanEdgeGenericsGroupAt(
+        getGraphNodeModule,
         {
           ...nodeMap,
           [updated.id]: updated,
@@ -1224,4 +1478,128 @@ export function getUpdatedNodeMapToDisconnectNodeInput(
     ...updatedMapByDisconnectInput,
     ...updatedMapByDisconnectOutput,
   }
+}
+
+export function cleanNode(
+  getGraphNodeModule: GetGraphNodeModule,
+  node: GraphNodeBase
+): GraphNodeBase | undefined {
+  const nodeModule = getGraphNodeModule(node.type)
+  if (!nodeModule) return
+
+  const unknownInputs = Object.keys(node.inputs).filter(
+    (key) => !nodeModule.struct.inputs[key]
+  )
+  const unknownData = Object.keys(node.data).filter(
+    (key) => !nodeModule.struct.data[key]
+  )
+
+  if (unknownInputs.length === 0 && unknownData.length === 0) return node
+
+  const unknownInputSet = new Set(unknownInputs)
+  const unknownDataSet = new Set(unknownData)
+  return {
+    ...node,
+    inputs: mapFilter(node.inputs, (_, key) => !unknownInputSet.has(key)),
+    data: mapFilter(node.data, (_, key) => !unknownDataSet.has(key)),
+  }
+}
+
+/**
+ * returns only updated nodes
+ */
+export function getUpdatedNodeMapToChangeNodeStruct(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: GraphNodeMap,
+  nodeType: GraphNodeType,
+  nextStruct: Pick<NodeStruct<any>, 'inputs' | 'outputs'>
+): GraphNodeMap {
+  const currentStruct = getGraphNodeModule(nodeType)?.struct
+  if (!currentStruct) return {}
+
+  const targetTypeNodeMap = mapFilter(nodeMap, (node) => node.type === nodeType)
+  const updatedIdSet = new Set<string>()
+
+  const inputCleanedMap = mapReduce(targetTypeNodeMap, (node) => {
+    return Object.keys(node.inputs).reduce((n, key) => {
+      if (
+        isSameValueType(
+          nextStruct.inputs[key]?.type,
+          getInputType(currentStruct, n, key)
+        )
+      )
+        return n
+
+      updatedIdSet.add(node.id)
+      return resetInput(nextStruct, n, key)
+    }, node)
+  })
+
+  const outputCleanedMap = mapReduce(
+    { ...nodeMap, ...inputCleanedMap },
+    (node) => {
+      const nodeStruct = getGraphNodeModule(node.type)?.struct
+      if (!nodeStruct) return node
+
+      return Object.entries(node.inputs).reduce((n, [key, input]) => {
+        if (
+          !input.from ||
+          !targetTypeNodeMap[input.from.id] ||
+          isSameValueType(
+            nextStruct.outputs[input.from.key],
+            getInputType(nodeStruct, n, key)
+          )
+        )
+          return n
+
+        updatedIdSet.add(n.id)
+        return resetInput(nodeStruct, n, key)
+      }, node)
+    }
+  )
+
+  return {
+    ...mapFilter(outputCleanedMap, (_, id) => updatedIdSet.has(id)),
+    ...cleanAllEdgeGenerics(getGraphNodeModule, outputCleanedMap),
+  }
+}
+
+export function isInterfaceChanged(
+  prevStruct: Pick<NodeStruct<any>, 'inputs' | 'outputs'>,
+  nextStruct: Pick<NodeStruct<any>, 'inputs' | 'outputs'>
+): boolean {
+  return (
+    Object.entries(prevStruct.inputs).some(([key, input]) => {
+      const next = nextStruct.inputs[key]
+      return !next || !isSameValueType(input.type, next.type)
+    }) ||
+    Object.entries(prevStruct.outputs).some(([key, output]) => {
+      const next = nextStruct.outputs[key]
+      return !next || !isSameValueType(output, next)
+    })
+  )
+}
+
+/**
+ * Complete input values if each node has some errors
+ */
+export function completeNodeMap(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: GraphNodeMap,
+  errorIdMap: { [id: string]: unknown }
+): GraphNodeMap {
+  return mapReduce(nodeMap, (node) => {
+    if (!errorIdMap[node.id]) return node
+
+    const struct = getGraphNodeModule(node.type)?.struct
+    if (!struct) return node
+
+    const validKeyMap = validateNode(getGraphNodeModule, nodeMap, node.id)
+    return {
+      ...node,
+      inputs: mapReduce(node.inputs, (input, key) =>
+        validKeyMap[key] ? input : { value: struct.inputs[key]?.default }
+      ),
+    }
+  })
 }

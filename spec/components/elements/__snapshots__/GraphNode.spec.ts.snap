@@ -23,7 +23,7 @@ exports[`src/components/elements/GraphNode.vue snapshot has errors 1`] = `
     <text
       class="view-only"
       dominant-baseline="text-before-edge"
-      fill="#000"
+      fill="#ff0000"
       font-size="16"
       x="8"
       y="3"
@@ -140,7 +140,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
     <text
       class="view-only"
       dominant-baseline="text-before-edge"
-      fill="#000"
+      fill="#ff0000"
       font-size="16"
       x="8"
       y="3"
@@ -171,7 +171,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
           text-anchor="end"
           x="-10"
         >
-          value
+          label_value
         </text>
       </g>
       <circle
@@ -219,7 +219,7 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
               fill="#000"
               font-size="14"
             >
-              x (0)
+              label_x (0)
             </text>
             <!--v-if-->
           </g>
@@ -267,7 +267,7 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
     <text
       class="view-only"
       dominant-baseline="text-before-edge"
-      fill="#000"
+      fill="#ff0000"
       font-size="16"
       x="8"
       y="3"
@@ -316,7 +316,7 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
     <text
       class="view-only"
       dominant-baseline="text-before-edge"
-      fill="#000"
+      fill="#ff0000"
       font-size="16"
       x="8"
       y="3"

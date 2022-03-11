@@ -123,6 +123,7 @@ describe('utils/svgMaker.ts', () => {
 
       expect(svg).toBeInstanceOf(SVGElement)
       expect(svg.id).toBe('svg_1')
+      expect(svg.children[0].tagName.toLowerCase()).toBe('style')
       const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
       expect(animateG).toBeTruthy()
       expect(animateG.innerHTML).toContain('#svg_1')
@@ -187,8 +188,8 @@ describe('utils/svgMaker.ts', () => {
       )
 
       expect(svg).toBeInstanceOf(SVGElement)
-      expect(svg.children[0].id).not.toBe('g_1')
-      expect(svg.children[0].children[0].id).toBe('g_1')
+      expect(svg.children[2].id).not.toBe('g_1')
+      expect(svg.children[2].children[0].id).toBe('g_1')
       const style = svg.getElementsByTagName('style')[0]
       expect(style.innerHTML).toContain('matrix(2,0,0,2,0,0)')
       const animateG = svg.getElementsByClassName('blendic-anim-group')[0]

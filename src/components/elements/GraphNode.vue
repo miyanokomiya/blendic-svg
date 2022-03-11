@@ -68,7 +68,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             text-anchor="end"
             font-size="14"
             fill="#000"
-            >{{ key }}</text
+            >{{ edge.label }}</text
           >
         </g>
         <circle
@@ -119,8 +119,8 @@ Copyright (C) 2021, Tomoya Komiyama.
           />
           <g transform="translate(10, 0)">
             <GraphNodeInputLabel
-              :input-key="key"
-              :type="getInputType(key)"
+              :input-key="edge.label"
+              :type="inputTypeMap[key]"
               :input="node.inputs[key]"
             />
           </g>
@@ -151,19 +151,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, withDefaults } from 'vue'
 import { useSettings } from '../../composables/settings'
 import { switchClick } from '/@/utils/devices'
-import {
-  GraphNode,
-  GraphNodeEdgePositions,
-  ValueType,
-} from '/@/models/graphNode'
+import { GraphNode, GraphNodeEdgePositions } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
 import { add, IVec2 } from 'okageo'
 import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
 import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
 import ErrorText from '/@/components/elements/atoms/ErrorText.vue'
 import { mapReduce } from '/@/utils/commons'
-import { getGraphNodeModule } from '/@/utils/graphNodes'
+import { getDataTypeAndValue, getInputTypes } from '/@/utils/graphNodes'
 import { Size } from 'okanvas'
+import { injectGetGraphNodeModuleFn } from '/@/composables/animationGraph'
 </script>
 
 <script setup lang="ts">
@@ -236,9 +233,10 @@ function getOutline(s: Size) {
 }
 
 const { settings } = useSettings()
+const getGraphNodeModule = computed(injectGetGraphNodeModuleFn())
 
 const size = computed(() => {
-  return helpers.getGraphNodeSize(props.node)
+  return helpers.getGraphNodeSize(getGraphNodeModule.value, props.node)
 })
 const headOutline = computed(() => {
   return getHeadOutline(size.value)
@@ -248,22 +246,22 @@ const outline = computed(() => {
   return getOutline(size.value)
 })
 
-const nodeStruct = computed(() => getGraphNodeModule(props.node.type).struct)
+const nodeStruct = computed(
+  () => getGraphNodeModule.value(props.node.type)?.struct
+)
 
-const label = computed(() => nodeStruct.value.label ?? props.node.type)
-const color = computed(() => nodeStruct.value.color ?? '#fafafa')
-const textColor = computed(() => nodeStruct.value.textColor ?? '#000')
+const label = computed(() => nodeStruct.value?.label ?? 'Unknown')
+const color = computed(() => nodeStruct.value?.color ?? '#ccc')
+const textColor = computed(() => nodeStruct.value?.textColor ?? '#ff0000')
 
 const dataPositions = computed(() =>
-  helpers.getGraphNodeDataPosition(props.node)
+  helpers.getGraphNodeDataPosition(getGraphNodeModule.value, props.node)
 )
 const dataMap = computed(() => {
-  const dataStruct = nodeStruct.value.data
   return mapReduce(dataPositions.value, (position, key) => {
     return {
       position,
-      type: (dataStruct as any)[key].type as ValueType,
-      value: props.node.data[key],
+      ...getDataTypeAndValue(getGraphNodeModule.value, props.node, key),
     }
   })
 })
@@ -277,9 +275,9 @@ function updateData(key: string, val: any, seriesKey?: string) {
   )
 }
 
-function getInputType(key: string): ValueType {
-  return (nodeStruct.value.inputs as any)[key].type
-}
+const inputTypeMap = computed(() => {
+  return getInputTypes(nodeStruct.value, props.node)
+})
 
 const GRAPH_NODE_TYPE_COLOR = helpers.GRAPH_NODE_TYPE_COLOR
 const GRAPH_NODE_ROW_HEIGHT = helpers.GRAPH_NODE_ROW_HEIGHT

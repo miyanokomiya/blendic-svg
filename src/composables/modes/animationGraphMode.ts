@@ -107,11 +107,15 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   const lastSelectedNodeId = computed(
     () => graphStore.lastSelectedNode.value?.id
   )
-  const target = computed(() => graphStore.lastSelectedGraph.value)
+  const target = computed(() => graphStore.parentGraph.value)
   const isAnySelected = computed(() => !!lastSelectedNodeId.value)
 
   const selectedNodeMap = computed(() =>
     mapReduce(selectedNodes.value, (_, id) => graphStore.nodeMap.value[id])
+  )
+
+  const getGraphNodeModule = computed(() =>
+    graphStore.getGraphNodeModuleFn.value()
   )
 
   function cancel() {
@@ -152,6 +156,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         const toNode = graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
         const toKey = state.closestEdgeInfo.key
         return validateConnection(
+          graphStore.getGraphNodeModuleFn.value(),
           { node: fromNode, key: fromKey },
           { node: toNode, key: toKey }
         )
@@ -165,6 +170,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         const toNode = graphStore.nodeMap.value[to.nodeId]
         const toKey = to.key
         return validateConnection(
+          graphStore.getGraphNodeModuleFn.value(),
           { node: fromNode, key: fromKey },
           { node: toNode, key: toKey }
         )
@@ -189,6 +195,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     graphStore.updateNodes({
       [updated.id]: updated,
       ...cleanEdgeGenericsGroupAt(
+        graphStore.getGraphNodeModuleFn.value(),
         { ...graphStore.nodeMap.value, [updated.id]: updated },
         { id: updated.id, key: inputKey }
       ),
@@ -198,6 +205,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   function disconnectNodeInput(nodeId: string, inputKey: string) {
     graphStore.updateNodes(
       getUpdatedNodeMapToDisconnectNodeInput(
+        graphStore.getGraphNodeModuleFn.value(),
         graphStore.nodeMap.value,
         nodeId,
         inputKey
@@ -244,7 +252,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
             // save the edge type and suggest relational nodes
             const from = state.dragTarget.draftGraphEdge.from
             const node = graphStore.nodeMap.value[from.nodeId]
-            state.nodeSuggestion = getOutputType(node, from.key).type
+            state.nodeSuggestion = getOutputType(
+              graphStore.getGraphNodeModuleFn.value()(node.type)?.struct,
+              node,
+              from.key
+            ).type
             state.keyDownPosition = state.editMovement!.current
             state.command = 'add'
           } else {
@@ -349,7 +361,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     graphStore.selectNodes(
       mapReduce(
         mapFilter(graphStore.nodeMap.value, (node) =>
-          checkFn(getGraphNodeRect(node))
+          checkFn(getGraphNodeRect(getGraphNodeModule.value, node))
         ),
         () => true
       ),
@@ -470,8 +482,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
 
     graphStore.pasteNodes(
       toList(
-        duplicateNodes(selectedNodeMap.value, graphStore.nodeMap.value, () =>
-          generateUuid()
+        duplicateNodes(
+          graphStore.getGraphNodeModuleFn.value(),
+          selectedNodeMap.value,
+          graphStore.nodeMap.value,
+          () => generateUuid()
         )
       ).map((n) => ({
         ...n,
@@ -519,7 +534,9 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   })
 
   const addMenuList = useMenuList(() =>
-    NODE_MENU_OPTIONS_SRC.map(({ label, children }) => ({
+    NODE_MENU_OPTIONS_SRC.concat(
+      graphStore.customGraphNodeMenuOptionsSrc.value
+    ).map(({ label, children }) => ({
       label,
       children: children.map(({ label, type }) => ({
         label,
@@ -621,8 +638,11 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     if (!state.clipboard) return
     graphStore.pasteNodes(
       toList(
-        duplicateNodes(state.clipboard, graphStore.nodeMap.value, () =>
-          generateUuid()
+        duplicateNodes(
+          graphStore.getGraphNodeModuleFn.value(),
+          state.clipboard,
+          graphStore.nodeMap.value,
+          () => generateUuid()
         )
       ).map((n) => ({
         ...n,

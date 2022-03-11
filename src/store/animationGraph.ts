@@ -20,30 +20,52 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed } from 'vue'
 import {
   AnimationGraph,
+  CustomGraph,
   BElement,
   getAnimationGraph,
   IdMap,
   toMap,
+  getCustomGraph,
+  mergeMap,
 } from '../models'
-import { extractMap, toList } from '../utils/commons'
+import { dropMap, extractMap, mapReduce, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { useEntities } from '/@/composables/stores/entities'
 import { SelectOptions } from '/@/composables/modes/types'
 import { useItemSelectable } from '/@/composables/stores/selectable'
 import { HistoryStore } from '/@/composables/stores/history'
 import { fromEntityList, toEntityList } from '/@/models/entity'
-import { GraphNode, GraphNodes, GraphNodeType } from '/@/models/graphNode'
+import {
+  GraphNode,
+  GraphNodeBase,
+  GraphNodes,
+  GraphNodeType,
+} from '/@/models/graphNode'
+import { NodeModule } from '/@/utils/graphNodes/core'
 import {
   cleanAllEdgeGenerics,
   createGraphNode,
   deleteAndDisconnectNodes,
+  getGraphNodeModule,
+  GetGraphNodeModule,
   resolveAllNodes,
+  NODE_MENU_OPTION,
+  createGraphNodeIncludeCustom,
+  isUniqueEssentialNodeForCustomGraph,
+  getUpdatedNodeMapToChangeNodeStruct,
+  isInterfaceChanged,
+  getNodeErrors,
+  completeNodeMap,
 } from '/@/utils/graphNodes'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store'
 import { useElementStore } from '/@/store/element'
 import { createGraphNodeContext } from '/@/utils/elements'
 import { useAnimationStore } from '/@/store/animation'
+import { useValueStore } from '/@/composables/stores/valueStore'
+import { createCustomNodeModule } from '/@/utils/graphNodes/customGraph'
+
+export type GraphType = 'graph' | 'custom'
 
 interface StoreContext {
   getArmatureId: () => string | undefined
@@ -58,17 +80,28 @@ export function createStore(
 ) {
   const graphEntities = useEntities<AnimationGraph>('Graph')
   const nodeEntities = useEntities<GraphNode>('Node')
+  const customGraphEntities = useEntities<CustomGraph>('CustomGraph')
 
   const graphSelectable = useItemSelectable(
     'Graph',
     () => graphEntities.entities.value.byId
   )
   const nodeSelectable = useItemSelectable('Node', () => nodeMap.value)
+  const customGraphSelectable = useItemSelectable(
+    'CustomGraph',
+    () => customGraphEntities.entities.value.byId
+  )
+  // Nodes can belong to both AnimationGraph and CustomGraph
+  // => Switch the parent dynamically due to this varibale
+  const graphTypeStore = useValueStore<GraphType>('Graph Type', () => 'graph')
 
   historyStore.defineReducers(graphEntities.reducers)
   historyStore.defineReducers(nodeEntities.reducers)
+  historyStore.defineReducers(customGraphEntities.reducers)
   historyStore.defineReducers(graphSelectable.reducers)
   historyStore.defineReducers(nodeSelectable.reducers)
+  historyStore.defineReducers(customGraphSelectable.reducers)
+  historyStore.defineReducers(graphTypeStore.reducers)
 
   const graphs = computed(() => toEntityList(graphEntities.entities.value))
   const lastSelectedGraphId = graphSelectable.lastSelectedId
@@ -78,11 +111,41 @@ export function createStore(
       : undefined
   )
 
+  const customGraphs = computed(() =>
+    toEntityList(customGraphEntities.entities.value)
+  )
+  const lastSelectedCustomGraphId = customGraphSelectable.lastSelectedId
+  const lastSelectedCustomGraph = computed(() =>
+    customGraphSelectable.lastSelectedId.value
+      ? customGraphEntities.entities.value.byId[
+          customGraphSelectable.lastSelectedId.value
+        ]
+      : undefined
+  )
+
+  const graphType = computed(() => graphTypeStore.state.value)
+  function setGraphType(canvasType: GraphType) {
+    historyStore.dispatch(graphTypeStore.createUpdateAction(canvasType), [
+      nodeSelectable.createClearAllAction(),
+    ])
+  }
+  function getNodeParentEntity() {
+    return graphType.value === 'graph' ? graphEntities : customGraphEntities
+  }
+  function getNodeParentSelectable() {
+    return graphType.value === 'graph' ? graphSelectable : customGraphSelectable
+  }
+  function getNodeParent() {
+    const id = getNodeParentSelectable().lastSelectedId.value
+    return id ? getNodeParentEntity().entities.value.byId[id] : undefined
+  }
+
   const nodeMap = computed(() => {
-    if (!lastSelectedGraph.value) return {}
+    const parent = getNodeParent()
+    if (!parent) return {}
 
     const nodeById = nodeEntities.entities.value.byId
-    return toMap(lastSelectedGraph.value.nodes.map((id) => nodeById[id]))
+    return toMap(parent.nodes.map((id) => nodeById[id]))
   })
   const selectedNodes = nodeSelectable.selectedMap
   const lastSelectedNodeId = nodeSelectable.lastSelectedId
@@ -94,38 +157,101 @@ export function createStore(
 
   const targetArmatureId = computed(storeContext.getArmatureId)
 
-  const resolvedGraph = computed(() => {
-    if (!lastSelectedGraph.value) return
+  const customModules = computed<IdMap<NodeModule<any>>>(() => {
+    const nodeMap = nodeEntities.entities.value.byId
+    return mapReduce(toMap(customGraphs.value), (customGraph) => {
+      return createCustomNodeModule(
+        customGraph,
+        toMap(customGraph.nodes.map((id) => nodeMap[id]))
+      )
+    })
+  })
 
+  const getGraphNodeModuleFn = computed<() => GetGraphNodeModule>(() => {
+    const fn = (type: GraphNodeType) => {
+      if (customModules.value[type]) {
+        return customModules.value[type]
+      } else {
+        return getGraphNodeModule(type)
+      }
+    }
+    return () => fn
+  })
+
+  const customGraphNodeMenuOptionsSrc = computed<NODE_MENU_OPTION[]>(() => {
+    return graphType.value === 'graph'
+      ? [
+          {
+            label: 'Custom',
+            children: customGraphs.value.map((graph) => ({
+              label: graph.name,
+              type: graph.id,
+            })),
+          },
+        ]
+      : []
+  })
+
+  const nodeErrorMessagesMap = computed<IdMap<string[]>>(() => {
+    return getNodeErrors(getGraphNodeModuleFn.value(), nodeMap.value)
+  })
+
+  // These nodes are completed invalid input fields as default value
+  const completedNodeMap = computed(() => {
+    return completeNodeMap(
+      getGraphNodeModuleFn.value(),
+      nodeMap.value,
+      nodeErrorMessagesMap.value
+    )
+  })
+
+  const resolvedGraph = computed(() => {
+    const parent = getNodeParent()
+    if (!parent) return
+
+    const armatureId = (parent as AnimationGraph)?.armatureId
     const context = createGraphNodeContext(
-      storeContext.getElementMap(lastSelectedGraph.value.armatureId),
+      armatureId ? storeContext.getElementMap(armatureId) : {},
       {
         currentFrame: storeContext.getCurrentFrame(),
         endFrame: storeContext.getEndFrame(),
       }
     )
-    const resolvedNodeMap = resolveAllNodes(context, nodeMap.value)
+    const resolvedNodeMap = resolveAllNodes(
+      getGraphNodeModuleFn.value(),
+      context,
+      completedNodeMap.value
+    )
     return { context, nodeMap: resolvedNodeMap }
   })
 
   function initState(
     graphs: AnimationGraph[],
+    customGraphs: CustomGraph[],
     nodes: GraphNode[],
     graphSelected: [string, true][],
-    nodeSelected: [string, true][]
+    customGraphSelectad: [string, true][],
+    nodeSelected: [string, true][],
+    graphType: GraphType
   ) {
     graphEntities.init(fromEntityList(graphs))
+    customGraphEntities.init(fromEntityList(customGraphs))
     nodeEntities.init(fromEntityList(nodes))
     graphSelectable.restore(graphSelected)
+    customGraphSelectable.restore(customGraphSelectad)
     nodeSelectable.restore(nodeSelected)
+    graphTypeStore.restore(graphType)
   }
 
   function exportState() {
     return {
       graphs: graphs.value,
+      customGraphs: customGraphs.value,
       nodes: toEntityList(nodeEntities.entities.value),
       graphSelected: graphSelectable.createSnapshot(),
+      customGraphSelected: customGraphSelectable.createSnapshot(),
       nodeSelected: nodeSelectable.createSnapshot(),
+      graphType: graphTypeStore.createSnapshot(),
     }
   }
 
@@ -180,7 +306,7 @@ export function createStore(
 
   function selectNode(id = '', options?: SelectOptions) {
     if (
-      !lastSelectedGraph.value ||
+      !getNodeParent() ||
       !nodeSelectable.getSelectHistoryDryRun(id, options?.shift)
     )
       return
@@ -211,18 +337,28 @@ export function createStore(
     type: T,
     arg: Partial<GraphNodes[T]> = {}
   ): GraphNode | undefined {
-    if (!lastSelectedGraphId.value) {
-      addGraph()
+    if (!getNodeParent()) {
+      if (graphType.value === 'graph') {
+        addGraph()
+      } else {
+        addCustomGraph()
+      }
     }
-    const graph = lastSelectedGraph.value
-    if (!graph) return
 
-    const node = createGraphNode(type, arg, !arg.id)
+    const parent = getNodeParent()
+    if (!parent) return
+
+    const node = createGraphNodeIncludeCustom(
+      customModules.value,
+      type,
+      arg,
+      !arg.id
+    )
 
     historyStore.dispatch(nodeEntities.createAddAction([node]), [
-      graphEntities.createUpdateAction({
-        [graph.id]: {
-          nodes: [...graph.nodes, node.id],
+      getNodeParentEntity().createUpdateAction({
+        [parent.id]: {
+          nodes: [...parent.nodes, node.id],
         },
       }),
       nodeSelectable.createSelectAction(node.id),
@@ -231,27 +367,30 @@ export function createStore(
   }
 
   function pasteNodes(nodes: GraphNode[]) {
-    const graph = lastSelectedGraph.value
-    if (!graph || nodes.length === 0) return
+    const parent = getNodeParent()
+    const filteredNodes = nodes.filter(
+      (n) => !isUniqueEssentialNodeForCustomGraph(n.type)
+    )
+    if (!parent || filteredNodes.length === 0) return
 
-    historyStore.dispatch(nodeEntities.createAddAction(nodes), [
-      graphEntities.createUpdateAction({
-        [graph.id]: {
-          nodes: graph.nodes.concat(nodes.map((n) => n.id)),
+    historyStore.dispatch(nodeEntities.createAddAction(filteredNodes), [
+      getNodeParentEntity().createUpdateAction({
+        [parent.id]: {
+          nodes: parent.nodes.concat(filteredNodes.map((n) => n.id)),
         },
       }),
-      nodeSelectable.createMultiSelectAction(nodes.map((n) => n.id)),
+      nodeSelectable.createMultiSelectAction(filteredNodes.map((n) => n.id)),
     ])
   }
 
   function deleteNodes() {
-    if (!lastSelectedGraph.value) return
-
-    const deleteIds = selectedNodes.value
+    const parent = getNodeParent()
+    if (!parent) return
 
     const deletedInfo = deleteAndDisconnectNodes(
+      getGraphNodeModuleFn.value(),
       toList(nodeMap.value),
-      deleteIds
+      selectedNodes.value
     )
 
     const nodeMapByDelete = toMap(deletedInfo.nodes)
@@ -260,35 +399,78 @@ export function createStore(
       nodeMapByDelete,
       deletedInfo.updatedIds
     )
-    const updatedNodesByClean = cleanAllEdgeGenerics({
-      ...nodeMapByDelete,
-      ...updatedNodesByDisconnect,
-    })
-
-    const graph = lastSelectedGraph.value
-    if (!graph) return
-
-    const deletedIds = selectedNodes.value
-
-    historyStore.dispatch(
-      nodeEntities.createDeleteAction(Object.keys(deletedIds)),
-      [
-        nodeEntities.createUpdateAction({
-          ...updatedNodesByDisconnect,
-          ...updatedNodesByClean,
-        }),
-        graphEntities.createUpdateAction({
-          [graph.id]: {
-            nodes: graph.nodes.filter((id) => !deletedIds[id]),
-          },
-        }),
-        nodeSelectable.createClearAllAction(),
-      ]
+    const updatedNodesByClean = cleanAllEdgeGenerics(
+      getGraphNodeModuleFn.value(),
+      {
+        ...nodeMapByDelete,
+        ...updatedNodesByDisconnect,
+      }
     )
+
+    const deletedIds = dropMap(selectedNodes.value, nodeMapByDelete)
+    const nextGraphNodeMap = {
+      ...updatedNodesByDisconnect,
+      ...updatedNodesByClean,
+    }
+
+    const execDispatch = (updatedNodeMap: IdMap<GraphNodeBase>) => {
+      historyStore.dispatch(
+        nodeEntities.createDeleteAction(Object.keys(deletedIds)),
+        [
+          nodeEntities.createUpdateAction(updatedNodeMap),
+          getNodeParentEntity().createUpdateAction({
+            [parent.id]: {
+              nodes: parent.nodes.filter((id) => !deletedIds[id]),
+            },
+          }),
+          nodeSelectable.createClearAllAction(),
+        ]
+      )
+    }
+
+    if (graphType.value === 'custom' && lastSelectedCustomGraph.value) {
+      // Clean custom nodes related to this custom graph
+      const nextNodeMap = {
+        ...dropMap(nodeMap.value, deletedIds),
+        ...nextGraphNodeMap,
+      }
+      const nextStruct = createCustomNodeModule(
+        { ...lastSelectedCustomGraph.value, nodes: Object.keys(nextNodeMap) },
+        nextNodeMap
+      ).struct
+
+      if (
+        isInterfaceChanged(
+          customModules.value[lastSelectedCustomGraph.value.id].struct,
+          nextStruct
+        )
+      ) {
+        const updatedNodeMap = getUpdatedNodeMapToChangeNodeStruct(
+          getGraphNodeModuleFn.value(),
+          {
+            ...dropMap(nodeEntities.entities.value.byId, deletedIds),
+            ...nextNodeMap,
+          },
+          lastSelectedCustomGraph.value.id,
+          nextStruct
+        )
+
+        execDispatch(updatedNodeMap)
+      } else {
+        execDispatch(nextGraphNodeMap)
+      }
+    } else {
+      execDispatch(nextGraphNodeMap)
+    }
   }
 
+  /**
+   * This method can be used only when the node's interface is never changed
+   * e.g. When the field value of data or inputs is changed
+   */
   function updateNode(id: string, val: Partial<GraphNode>, seriesKey?: string) {
-    if (!lastSelectedGraph.value) return
+    const parent = getNodeParent()
+    if (!parent) return
 
     historyStore.dispatch(
       nodeEntities.createUpdateAction({ [id]: val }, seriesKey)
@@ -296,22 +478,132 @@ export function createStore(
   }
 
   function updateNodes(val: IdMap<Partial<GraphNode>>) {
-    if (!lastSelectedGraph.value) return
+    const parent = getNodeParent()
+    if (!parent) return
 
-    historyStore.dispatch(nodeEntities.createUpdateAction(val))
+    if (graphType.value === 'custom' && lastSelectedCustomGraph.value) {
+      // Clean custom nodes related to this custom graph
+      const nextNodeMap = mergeMap(nodeMap.value, val) as IdMap<GraphNode>
+      const nextStruct = createCustomNodeModule(
+        lastSelectedCustomGraph.value,
+        nextNodeMap
+      ).struct
+
+      if (
+        isInterfaceChanged(
+          customModules.value[lastSelectedCustomGraph.value.id].struct,
+          nextStruct
+        )
+      ) {
+        const updatedNodeMap = getUpdatedNodeMapToChangeNodeStruct(
+          getGraphNodeModuleFn.value(),
+          { ...nodeEntities.entities.value.byId, ...nextNodeMap },
+          lastSelectedCustomGraph.value.id,
+          nextStruct
+        )
+
+        historyStore.dispatch(
+          nodeEntities.createUpdateAction({
+            ...val,
+            ...updatedNodeMap,
+          })
+        )
+      } else {
+        historyStore.dispatch(nodeEntities.createUpdateAction(val))
+      }
+    } else {
+      historyStore.dispatch(nodeEntities.createUpdateAction(val))
+    }
+  }
+
+  function selectCustomGraph(id = '') {
+    if (!customGraphSelectable.getSelectHistoryDryRun(id)) return
+
+    historyStore.dispatch(customGraphSelectable.createSelectAction(id))
+  }
+
+  function addCustomGraph(arg: Partial<{ id: string; name: string }> = {}) {
+    const beginInputNode = createGraphNode(
+      'custom_begin_input',
+      {
+        position: { x: -200, y: 0 },
+      },
+      true
+    )
+    const beginOutputNode = createGraphNode(
+      'custom_begin_output',
+      {
+        position: { x: 200, y: 0 },
+      },
+      true
+    )
+    const customGraph = getCustomGraph(
+      {
+        id: arg.id,
+        name: getNotDuplicatedName(
+          arg.name ?? 'Custom',
+          customGraphs.value.map((g) => g.name)
+        ),
+        nodes: [beginInputNode.id, beginOutputNode.id],
+      },
+      !arg.id
+    )
+
+    historyStore.dispatch(customGraphEntities.createAddAction([customGraph]), [
+      nodeEntities.createAddAction([beginInputNode, beginOutputNode]),
+      customGraphSelectable.createSelectAction(customGraph.id),
+    ])
+  }
+
+  function deleteCustomGraph() {
+    const customGraph = lastSelectedCustomGraph.value
+    if (!customGraph) return
+
+    historyStore.dispatch(
+      customGraphEntities.createDeleteAction([customGraph.id]),
+      [
+        nodeEntities.createDeleteAction(customGraph.nodes),
+        nodeSelectable.createClearAllAction(),
+        customGraphSelectable.createClearAllAction(),
+      ]
+    )
+  }
+
+  function updateCustomGraph(customGraph: Partial<CustomGraph>) {
+    if (!lastSelectedCustomGraphId.value) return
+
+    historyStore.dispatch(
+      customGraphEntities.createUpdateAction({
+        [lastSelectedCustomGraphId.value]: customGraph,
+      })
+    )
   }
 
   return {
     initState,
     exportState,
 
+    graphType,
+    setGraphType,
+    parentGraphs: computed(() =>
+      toEntityList(getNodeParentEntity().entities.value)
+    ),
+    parentGraph: computed(getNodeParent),
+
     graphs,
     lastSelectedGraph,
+
+    customGraphs,
+    lastSelectedCustomGraph,
 
     nodeMap,
     lastSelectedNode,
     selectedNodes,
     targetArmatureId,
+    getGraphNodeModuleFn,
+    customGraphNodeMenuOptionsSrc,
+    nodeErrorMessagesMap,
+    completedNodeMap,
     resolvedGraph,
 
     selectGraph,
@@ -327,6 +619,11 @@ export function createStore(
     pasteNodes,
     updateNode,
     updateNodes,
+
+    selectCustomGraph,
+    addCustomGraph,
+    deleteCustomGraph,
+    updateCustomGraph,
   }
 }
 export type AnimationGraphStore = ReturnType<typeof createStore>

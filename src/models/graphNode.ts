@@ -39,7 +39,9 @@ export interface GraphEdgeBinder {
 export interface GraphNodeBase {
   id: string
   type: GraphNodeType
-  data: { [key: string]: unknown }
+  data: {
+    [key: string]: unknown | GraphNodeData<unknown>
+  }
   inputs: GraphNodeInputs
   position: IVec2
 }
@@ -56,6 +58,11 @@ export const GRAPH_VALUE_TYPE = {
   STOP: 'STOP',
 
   GENERICS: 'GENERICS',
+
+  INPUT: 'INPUT',
+  OUTPUT: 'OUTPUT',
+
+  UNKNOWN: 'UNKNOWN',
 } as const
 export type GRAPH_VALUE_TYPE_KEY = keyof typeof GRAPH_VALUE_TYPE
 
@@ -91,6 +98,11 @@ interface ValueTypeVector2 extends ValueTypeBase<'VECTOR2'> {
   scale: number
 }
 
+export interface GraphNodeData<T> {
+  value?: T
+  genericsType?: ValueType
+}
+
 export interface GraphNodeInput<T> {
   from?: { id: string; key: string }
   value?: T
@@ -114,6 +126,7 @@ export interface GraphNodeOutputMap {
 export interface GraphNodeEdgeInfo {
   p: IVec2
   type: ValueType
+  label: string
 }
 
 export interface GraphNodeEdgePositions {
@@ -149,6 +162,7 @@ export interface GraphNodes {
   set_viewbox: GraphNodeSetViewbox
 
   clone_object: GraphNodeCloneObject
+  group_clone_object: GraphNodeGroupCloneObject
   circle_clone_object: GraphNodeCircleCloneObject
   grid_clone_object: GraphNodeGridCloneObject
   tornado_clone_object: GraphNodeTornadoCloneObject
@@ -203,8 +217,17 @@ export interface GraphNodes {
   switch_generics: GraphNodeSwitchGenerics
 
   reroute: GraphNodeReroute
+
+  custom_begin_input: GraphNodeCustomBeginInput
+  custom_input: GraphNodeCustomInput
+  custom_begin_output: GraphNodeCustomBeginOutput
+  custom_output: GraphNodeCustomOutput
+
+  // for custom nodes
+  [custom_id: string]: GraphNodeBase
 }
-export type GraphNodeType = keyof GraphNodes
+// Accept any string for custom nodes
+export type GraphNodeType = keyof GraphNodes | string
 // Note: this union decrease performance too much of type checking and unit test
 // export type GraphNode = GraphNodes[GraphNodeType]
 export type GraphNode = GraphNodeBase
@@ -334,6 +357,13 @@ export interface GraphNodeHideObject extends GraphNodeBase {
 
 export interface GraphNodeCloneObject extends GraphNodeBase {
   type: 'clone_object'
+  inputs: {
+    object: GraphNodeInput<string>
+  }
+}
+
+export interface GraphNodeGroupCloneObject extends GraphNodeBase {
+  type: 'group_clone_object'
   inputs: {
     object: GraphNodeInput<string>
   }
@@ -760,4 +790,24 @@ export interface GraphNodeSwitchGenerics extends GraphNodeBase {
 export interface GraphNodeReroute extends GraphNodeBase {
   type: 'reroute'
   inputs: { value: GraphNodeInput<any> }
+}
+
+export interface GraphNodeCustomBeginInput extends GraphNodeBase {
+  type: 'custom_begin_input'
+}
+
+export interface GraphNodeCustomInput extends GraphNodeBase {
+  type: 'custom_input'
+  inputs: { input: GraphNodeInput<string> }
+  data: { name: string; default: GraphNodeData<unknown> }
+}
+
+export interface GraphNodeCustomBeginOutput extends GraphNodeBase {
+  type: 'custom_begin_output'
+}
+
+export interface GraphNodeCustomOutput extends GraphNodeBase {
+  type: 'custom_output'
+  inputs: { value: GraphNodeInput<unknown>; output: GraphNodeInput<string> }
+  data: { name: string }
 }

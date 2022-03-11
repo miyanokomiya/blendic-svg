@@ -38,7 +38,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <template v-for="(input, key) in inputsMap" :key="key">
           <BlockField>
             <GraphNodeDataField
-              :label="key as string"
+              :label="input.label"
               :type="input.type"
               :model-value="input.value"
               :disabled="input.disabled"
@@ -60,14 +60,20 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { computed, defineComponent } from 'vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
-import { getGraphNodeModule, getInputTypes } from '/@/utils/graphNodes'
+import {
+  getDataTypeAndValue,
+  getInputTypes,
+  updateDataField,
+} from '/@/utils/graphNodes'
 import { mapReduce } from '/@/utils/commons'
 import GraphNodeDataField from '/@/components/atoms/GraphNodeDataField.vue'
 import { ValueType } from '/@/models/graphNode'
+import { injectGetGraphNodeModuleFn } from '/@/composables/animationGraph'
 
 interface DataInfo {
   type: ValueType
   value: unknown
+  label: string
   disabled?: boolean
 }
 
@@ -80,30 +86,40 @@ export default defineComponent({
     const graphStore = useAnimationGraphStore()
     const targetNode = graphStore.lastSelectedNode
 
+    const getGraphNodeModule = computed(injectGetGraphNodeModuleFn())
     const struct = computed(() => {
       if (!targetNode.value) return
-      return getGraphNodeModule(targetNode.value.type).struct
+      return getGraphNodeModule.value(targetNode.value.type)?.struct
     })
 
     const dataMap = computed<{
       [key: string]: DataInfo
     }>(() => {
-      if (!targetNode.value || !struct.value) return {}
-
-      const dataStruct = struct.value.data
-      return mapReduce(targetNode.value.data, (value, key) => {
-        return {
-          type: (dataStruct as any)[key].type as ValueType,
-          value,
-        }
-      })
+      const node = targetNode.value
+      if (!node || !struct.value) return {}
+      return mapReduce(node.data, (_, key) => ({
+        ...getDataTypeAndValue(getGraphNodeModule.value, node, key),
+        label: key,
+      }))
     })
     function updateData(key: string, val: any, seriesKey?: string) {
-      if (!targetNode.value) return
+      const node = targetNode.value
+      if (!node) return
 
       graphStore.updateNode(
-        targetNode.value.id,
-        { data: { ...targetNode.value.data, [key]: val } },
+        node.id,
+        {
+          data: {
+            ...node.data,
+            [key]: updateDataField(
+              getGraphNodeModule.value,
+              node.type,
+              key,
+              node.data[key],
+              val
+            ),
+          },
+        },
         seriesKey
       )
     }
@@ -114,17 +130,23 @@ export default defineComponent({
       if (!targetNode.value || !struct.value) return {}
 
       const inputs = targetNode.value.inputs
-      const types = getInputTypes(targetNode.value)
+      const types = getInputTypes(
+        getGraphNodeModule.value(targetNode.value.type)?.struct,
+        targetNode.value
+      )
       const resolvedNodeMap = graphStore.resolvedGraph.value?.nodeMap ?? {}
+      struct.value.inputs
 
       return mapReduce(inputs, (value, key) => {
+        const label = struct.value?.inputs[key]?.label ?? key
         return value.from
           ? {
               type: types[key],
               value: resolvedNodeMap[value.from.id]?.[value.from.key] ?? '',
               disabled: true,
+              label,
             }
-          : { type: types[key], value: value.value }
+          : { type: types[key], value: value.value, label }
       })
     })
     function updateInput(key: string, value: any, seriesKey?: string) {

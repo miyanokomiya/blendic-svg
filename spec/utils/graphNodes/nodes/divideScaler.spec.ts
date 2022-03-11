@@ -26,5 +26,10 @@ describe('src/utils/graphNodes/nodes/divideScaler.ts', () => {
         target.struct.computation({ a: 10, b: 2 }, {} as any, {} as any)
       ).toEqual({ value: 5 })
     })
+    it('should avoid division by zero', () => {
+      expect(
+        target.struct.computation({ a: 10, b: 0 }, {} as any, {} as any)
+      ).toEqual({ value: 10 })
+    })
   })
 })

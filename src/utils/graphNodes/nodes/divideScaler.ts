@@ -49,7 +49,9 @@ export const struct: NodeStruct<GraphNodeDivideScaler> = {
     value: UNIT_VALUE_TYPES.SCALER,
   },
   computation(inputs) {
-    return { value: inputs.a / inputs.b }
+    // Avoid division by zero
+    // => return unreliable value
+    return { value: inputs.a / (inputs.b === 0 ? 1 : inputs.b) }
   },
   width: 100,
   color: '#4169e1',

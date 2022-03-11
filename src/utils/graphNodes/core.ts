@@ -84,7 +84,6 @@ export interface NodeContext<T> {
     attributes: GraphObjectAttributes,
     replace?: boolean
   ) => void
-  setParent: (objectId: string, parentId: string | string) => void
   getFrameInfo: () => { currentFrame: number; endFrame: number }
   getObjectMap: () => { [id: string]: T }
   getChildId: (id: string, index: number) => string | undefined

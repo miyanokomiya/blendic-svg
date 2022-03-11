@@ -160,7 +160,6 @@ export interface GraphNodes {
   set_stroke_length: GraphNodeSetStrokeLength
   hide_object: GraphNodeHideObject
   set_viewbox: GraphNodeSetViewbox
-  set_parent: GraphNodeSetViewbox
 
   clone_object: GraphNodeCloneObject
   circle_clone_object: GraphNodeCircleCloneObject
@@ -410,14 +409,6 @@ export interface GraphNodeSetViewbox extends GraphNodeBase {
     y: GraphNodeInput<number>
     width: GraphNodeInput<number>
     height: GraphNodeInput<number>
-  }
-}
-
-export interface GraphNodeSetParent extends GraphNodeBase {
-  type: 'set_parent'
-  inputs: {
-    parent: GraphNodeInput<string>
-    object: GraphNodeInput<string>
   }
 }
 

@@ -114,7 +114,9 @@ describe('src/utils/graphNodes/index.ts', () => {
       const context = getContext()
       const fn = cloneListFn(context as any, 'a', 'group')
 
-      fn([getTransform({ rotate: 10 }), getTransform({ rotate: 20 })])
+      expect(
+        fn([getTransform({ rotate: 10 }), getTransform({ rotate: 20 })])
+      ).toEqual(['group_0', 'group_1'])
       expect(context.cloneObject).toHaveBeenNthCalledWith(
         1,
         'a',

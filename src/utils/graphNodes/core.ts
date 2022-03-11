@@ -212,11 +212,11 @@ export function cloneListFn(
   targetId: string,
   parentGroupId: string,
   fix_rotate = false
-): (transforms: Transform[]) => void {
+): (transforms: Transform[]) => string[] {
   const originTransform = context.getTransform(targetId)
 
   return (transforms) =>
-    transforms.forEach((transform, i) => {
+    transforms.map((transform, i) => {
       const clone = context.cloneObject(
         targetId,
         { parent: parentGroupId },
@@ -231,6 +231,7 @@ export function cloneListFn(
         // inherits original transform
         originTransform ? multiPoseTransform(originTransform, t) : t
       )
+      return clone
     })
 }
 

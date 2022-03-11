@@ -84,6 +84,7 @@ import * as set_viewbox from './nodes/setViewbox'
 import * as hide_object from './nodes/hideObject'
 
 import * as clone_object from './nodes/cloneObject'
+import * as group_clone_object from './nodes/groupCloneObject'
 import * as circle_clone_object from './nodes/circleCloneObject'
 import * as grid_clone_object from './nodes/gridCloneObject'
 import * as tornado_clone_object from './nodes/tornadoCloneObject'
@@ -170,6 +171,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   hide_object,
 
   clone_object,
+  group_clone_object,
   circle_clone_object,
   grid_clone_object,
   tornado_clone_object,
@@ -306,6 +308,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Hide Object', type: 'hide_object' },
 
       { label: 'Clone Object', type: 'clone_object' },
+      { label: 'Group Clone Object', type: 'group_clone_object' },
       { label: 'Circle Clone Object', type: 'circle_clone_object' },
       { label: 'Grid Clone Object', type: 'grid_clone_object' },
       { label: 'Tornado Clone Object', type: 'tornado_clone_object' },
@@ -438,6 +441,11 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
       label: 'Clone',
       children: [
         { label: 'Clone Object', type: 'clone_object', key: 'object' },
+        {
+          label: 'Group Clone Object',
+          type: 'group_clone_object',
+          key: 'object',
+        },
         {
           label: 'Circle Clone Object',
           type: 'circle_clone_object',

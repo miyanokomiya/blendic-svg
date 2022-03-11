@@ -162,6 +162,7 @@ export interface GraphNodes {
   set_viewbox: GraphNodeSetViewbox
 
   clone_object: GraphNodeCloneObject
+  group_clone_object: GraphNodeGroupCloneObject
   circle_clone_object: GraphNodeCircleCloneObject
   grid_clone_object: GraphNodeGridCloneObject
   tornado_clone_object: GraphNodeTornadoCloneObject
@@ -356,6 +357,13 @@ export interface GraphNodeHideObject extends GraphNodeBase {
 
 export interface GraphNodeCloneObject extends GraphNodeBase {
   type: 'clone_object'
+  inputs: {
+    object: GraphNodeInput<string>
+  }
+}
+
+export interface GraphNodeGroupCloneObject extends GraphNodeBase {
+  type: 'group_clone_object'
   inputs: {
     object: GraphNodeInput<string>
   }

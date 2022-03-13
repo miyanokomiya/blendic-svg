@@ -23,7 +23,7 @@
     "vue": "^3.2.26"
   },
   "devDependencies": {
-    "@babel/core": "^7.16.7",
+    "@babel/core": "^7.17.5",
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-typescript": "^7.16.7",
     "@playwright/test": "^1.19.2",

@@ -29,7 +29,7 @@
     "@playwright/test": "^1.19.2",
     "@swc/core": "^1.2.143",
     "@swc/jest": "^0.2.20",
-    "@types/jest": "^27.4.0",
+    "@types/jest": "^27.4.1",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.11.0",

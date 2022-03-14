@@ -11,6 +11,7 @@ describe('src/store/animationGraph.ts', () => {
     const historyStore = useHistoryStore()
     target = createStore(historyStore, {
       getArmatureId: () => 'arm_id',
+      getPosedBoneMap: () => ({}),
       getCurrentFrame: () => 0,
       getEndFrame: () => 60,
       getElementMap: () => ({}),

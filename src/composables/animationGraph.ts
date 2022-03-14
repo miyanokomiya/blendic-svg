@@ -21,6 +21,8 @@ import { provide, inject } from 'vue'
 import { GetGraphNodeModule, getGraphNodeModule } from '/@/utils/graphNodes'
 
 const GET_GRAPH_NODE_MODULE_FN = Symbol()
+const GET_OBJECT_OPTIONS_FN = Symbol()
+const GET_BONE_OPTIONS_FN = Symbol()
 
 export function provideGetGraphNodeModuleFn(
   getGraphNodeModuleFn: () => GetGraphNodeModule
@@ -32,5 +34,31 @@ export function injectGetGraphNodeModuleFn() {
   return inject<() => GetGraphNodeModule>(
     GET_GRAPH_NODE_MODULE_FN,
     () => getGraphNodeModule
+  )
+}
+
+export function provideGetObjectOptions(
+  getOptionsFn: () => { value: string; label: string }[]
+) {
+  provide(GET_OBJECT_OPTIONS_FN, getOptionsFn)
+}
+
+export function injectGetObjectOptions() {
+  return inject<() => { value: string; label: string }[]>(
+    GET_OBJECT_OPTIONS_FN,
+    () => []
+  )
+}
+
+export function provideGetBoneOptions(
+  getOptionsFn: () => { value: string; label: string }[]
+) {
+  provide(GET_BONE_OPTIONS_FN, getOptionsFn)
+}
+
+export function injectGetBoneOptions() {
+  return inject<() => { value: string; label: string }[]>(
+    GET_BONE_OPTIONS_FN,
+    () => []
   )
 }

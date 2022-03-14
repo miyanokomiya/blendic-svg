@@ -50,10 +50,12 @@ export const GRAPH_VALUE_TYPE = {
   BOOLEAN: 'BOOLEAN',
   SCALER: 'SCALER',
   VECTOR2: 'VECTOR2',
-  OBJECT: 'OBJECT',
   TRANSFORM: 'TRANSFORM',
   COLOR: 'COLOR',
   TEXT: 'TEXT',
+
+  BONE: 'BONE',
+  OBJECT: 'OBJECT',
   D: 'D',
   STOP: 'STOP',
 
@@ -149,6 +151,7 @@ export interface GraphNodes {
   make_color: GraphNodeMakeColor
   break_color: GraphNodeBreakColor
 
+  get_bone: GraphNodeGetBone
   get_object: GraphNodeGetObject
   get_child: GraphNodeGetChild
   get_transform: GraphNodeGetTransform
@@ -284,6 +287,11 @@ export interface GraphNodeBreakColor extends GraphNodeBase {
 
 export interface GraphNodeGetFrame extends GraphNodeBase {
   type: 'get_frame'
+}
+
+export interface GraphNodeGetBone extends GraphNodeBase {
+  type: 'get_bone'
+  data: { bone: string }
 }
 
 export interface GraphNodeGetObject extends GraphNodeBase {

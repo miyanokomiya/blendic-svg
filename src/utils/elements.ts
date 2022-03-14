@@ -243,6 +243,7 @@ function toGraphObject(e: BElement): GraphObject {
 
 export function createGraphNodeContext(
   elementMap: IdMap<BElement>,
+  boneMap: IdMap<{ id: string; transform: Transform }>,
   frameInfo: { currentFrame: number; endFrame: number }
 ): NodeContext<GraphObject> {
   const graphElementMap: IdMap<GraphObject> = mapReduce(
@@ -373,6 +374,9 @@ export function createGraphNodeContext(
     getFrameInfo() {
       return frameInfo
     },
+    getBoneMap() {
+      return boneMap
+    },
     getObjectMap() {
       return graphElementMap
     },
@@ -444,10 +448,11 @@ export function createGraphNodeContext(
 export function resolveAnimationGraph(
   getGraphNodeModule: GetGraphNodeModule,
   elementMap: IdMap<BElement>,
+  boneMap: IdMap<{ id: string; transform: Transform }>,
   frameInfo: { currentFrame: number; endFrame: number },
   graphNodes: GraphNodeMap
 ): IdMap<GraphObject> {
-  const context = createGraphNodeContext(elementMap, frameInfo)
+  const context = createGraphNodeContext(elementMap, boneMap, frameInfo)
   resolveAllNodes(getGraphNodeModule, context, graphNodes)
   return context.getObjectMap()
 }

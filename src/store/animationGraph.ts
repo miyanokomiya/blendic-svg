@@ -212,6 +212,8 @@ export function createStore(
     const armatureId = (parent as AnimationGraph)?.armatureId
     const context = createGraphNodeContext(
       armatureId ? storeContext.getElementMap(armatureId) : {},
+      // TODO
+      {},
       {
         currentFrame: storeContext.getCurrentFrame(),
         endFrame: storeContext.getEndFrame(),

@@ -70,6 +70,7 @@ import * as lerp_generics from './nodes/lerpGenerics'
 import * as clamp from './nodes/clamp'
 import * as round_trip from './nodes/roundTrip'
 
+import * as get_bone from './nodes/getBone'
 import * as get_object from './nodes/getObject'
 import * as get_child from './nodes/getChild'
 import * as get_transform from './nodes/getTransform'
@@ -157,6 +158,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   clamp,
   round_trip,
 
+  get_bone,
   get_object,
   get_child,
   get_transform,
@@ -294,6 +296,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
   {
     label: 'Object',
     children: [
+      { label: 'Get Bone', type: 'get_bone' },
       { label: 'Get Object', type: 'get_object' },
       { label: 'Get Child', type: 'get_child' },
       { label: 'Get Transform', type: 'get_transform' },
@@ -504,6 +507,7 @@ export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
   ],
   INPUT: [{ label: 'Input', type: 'custom_input', key: 'input' }],
   OUTPUT: [{ label: 'Output', type: 'custom_output', key: 'output' }],
+  BONE: [],
   UNKNOWN: [],
 }
 
@@ -1327,6 +1331,7 @@ export function createDefaultUnitValueForGenerics(
     case GRAPH_VALUE_TYPE.STOP:
       return getGradientStop()
     case GRAPH_VALUE_TYPE.TEXT:
+    case GRAPH_VALUE_TYPE.BONE:
     case GRAPH_VALUE_TYPE.OBJECT:
     case GRAPH_VALUE_TYPE.D:
     case GRAPH_VALUE_TYPE.INPUT:

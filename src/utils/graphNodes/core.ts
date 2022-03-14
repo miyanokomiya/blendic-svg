@@ -85,6 +85,7 @@ export interface NodeContext<T> {
     replace?: boolean
   ) => void
   getFrameInfo: () => { currentFrame: number; endFrame: number }
+  getBoneMap: () => { [id: string]: { id: string; transform: Transform } }
   getObjectMap: () => { [id: string]: T }
   getChildId: (id: string, index: number) => string | undefined
   getChildrenSize: (id: string) => number

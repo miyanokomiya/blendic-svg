@@ -14,25 +14,31 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 
-Copyright (C) 2021, Tomoya Komiyama.
+Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import type { GraphNodeGetObject } from '/@/models/graphNode'
-import * as target from '/@/utils/graphNodes/nodes/getObject'
+import { getTransform } from '/@/models'
+import type { GraphNodeGetBone } from '/@/models/graphNode'
+import * as target from '/@/utils/graphNodes/nodes/getBone'
 
-describe('src/utils/graphNodes/nodes/getObject.ts', () => {
-  const node: GraphNodeGetObject = {
+describe('src/utils/graphNodes/nodes/getBone.ts', () => {
+  const node: GraphNodeGetBone = {
     id: 'node',
-    type: 'get_object',
-    data: { object: 'a' },
+    type: 'get_bone',
+    data: { bone: 'a' },
     inputs: {},
     position: { x: 0, y: 0 },
   }
 
   describe('computation', () => {
-    it('should return object id of data', () => {
-      expect(target.struct.computation({}, node, {} as any)).toEqual({
-        object: 'a',
+    it('should return bone properties', () => {
+      const getBoneMap = jest.fn().mockReturnValue({
+        a: { transform: getTransform({ rotate: 10 }) },
+      })
+      expect(
+        target.struct.computation({}, node, { getBoneMap } as any)
+      ).toEqual({
+        transform: getTransform({ rotate: 10 }),
       })
     })
   })

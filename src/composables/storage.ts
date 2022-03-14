@@ -118,6 +118,8 @@ export function useStorage() {
 
       canvasMode,
 
+      currentFrame: exportedAnimation.currentFrame,
+      endFrame: exportedAnimation.endFrame,
       actions,
       keyframes,
       actionSelected: exportedAnimation.actionSelected,
@@ -152,6 +154,8 @@ export function useStorage() {
       )
       canvasStore.initState(root.canvasMode)
       animationStore.initState(
+        root.currentFrame,
+        root.endFrame,
         root.actions,
         root.keyframes,
         root.actionSelected,

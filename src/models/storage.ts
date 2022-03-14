@@ -56,6 +56,8 @@ export interface StorageRoot {
 
   canvasMode: CanvasMode
 
+  currentFrame: number
+  endFrame: number
   actions: Action[]
   keyframes: KeyframeBase[]
   actionSelected: [string, true][]
@@ -101,6 +103,8 @@ export function initialize(src: StorageRoot): StorageRoot {
 
     canvasMode: src.canvasMode ?? 'object',
 
+    currentFrame: src.currentFrame ?? 0,
+    endFrame: src.endFrame ?? 60,
     actions: src.actions.map(initializeAction),
     keyframes: src.actions.flatMap((a) =>
       keyframeMapByActionId[a.id].map(initializeKeyframe)

@@ -57,6 +57,8 @@ describe('src/models/storage.ts', () => {
         constraints: [
           { id: 'ik', type: 'IK', name: 'IK.001', option: { targetId: 'a' } },
         ],
+        currentFrame: 10,
+        endFrame: 20,
         actions: [
           {
             id: 'act',
@@ -106,6 +108,8 @@ describe('src/models/storage.ts', () => {
 
         canvasMode: 'object',
 
+        currentFrame: 10,
+        endFrame: 20,
         actions: [getAction({ id: 'act', keyframes: ['key'] })],
         keyframes: [getKeyframeBone({ id: 'key' })],
         actionSelected: [],

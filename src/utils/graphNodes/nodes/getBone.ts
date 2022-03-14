@@ -49,7 +49,7 @@ export const struct: NodeStruct<GraphNodeGetBone> = {
   computation(_inputs, self, context): { transform: Transform } {
     return {
       transform:
-        context.getBoneMap()[self.data.bone]?.transform ?? getTransform(),
+        context.getBoneSummary(self.data.bone)?.transform ?? getTransform(),
     }
   },
   width: 120,

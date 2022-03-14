@@ -32,11 +32,11 @@ describe('src/utils/graphNodes/nodes/getBone.ts', () => {
 
   describe('computation', () => {
     it('should return bone properties', () => {
-      const getBoneMap = jest.fn().mockReturnValue({
-        a: { transform: getTransform({ rotate: 10 }) },
+      const getBoneSummary = jest.fn().mockReturnValue({
+        transform: getTransform({ rotate: 10 }),
       })
       expect(
-        target.struct.computation({}, node, { getBoneMap } as any)
+        target.struct.computation({}, node, { getBoneSummary } as any)
       ).toEqual({
         transform: getTransform({ rotate: 10 }),
       })

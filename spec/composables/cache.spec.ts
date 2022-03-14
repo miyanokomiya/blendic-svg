@@ -20,7 +20,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { ref } from '@vue/reactivity'
 import { nextTick } from '@vue/runtime-core'
 import { shallowMount } from '@vue/test-utils'
-import { useCache, useKeysCache, useMapCache } from '/@/composables/cache'
+import {
+  useCache,
+  useJITMap,
+  useKeysCache,
+  useMapCache,
+} from '/@/composables/cache'
 
 describe('src/composables/cache.ts', () => {
   describe('useKeysCache', () => {
@@ -120,6 +125,29 @@ describe('src/composables/cache.ts', () => {
       expect(cache.getValue(1)).toBe(20)
       expect(cache.getValue(2)).toBe(20)
       expect(cache.getValue(3)).toBe(60)
+    })
+  })
+
+  describe('useJITMap', () => {
+    it('should return generated value', () => {
+      const cache = useJITMap({ a: 2, b: 3 }, (v: number) => v * v)
+      expect(cache.getValue('a')).toBe(4)
+      expect(cache.getValue('b')).toBe(9)
+    })
+    it('should avoid duplicated execution for the same key', () => {
+      let count = 0
+      const cache = useJITMap({ a: 2, b: 3 }, (v: number) => {
+        count++
+        return v * v
+      })
+      cache.getValue('a')
+      expect(count).toBe(1)
+      cache.getValue('a')
+      expect(count).toBe(1)
+      cache.getValue('b')
+      expect(count).toBe(2)
+      cache.getValue('b')
+      expect(count).toBe(2)
     })
   })
 })

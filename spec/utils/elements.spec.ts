@@ -455,23 +455,24 @@ describe('utils/elements.ts', () => {
       context.setTransform('a', getTransform({ rotate: 50 }))
     })
 
-    describe('getBone', () => {
-      it('should return a context to get summaries of bones', () => {
+    describe('getBoneSummary', () => {
+      it('should return a context to get a summary of the bone', () => {
         const boneMap = {
           b: getBone({
             id: 'b',
-            tail: { x: 0, y: 10 },
-            transform: getTransform({ scale: { x: 2, y: 1 } }),
+            head: { x: 2, y: 4 },
+            tail: { x: 2, y: 14 },
+            transform: getTransform({ scale: { x: 2, y: 3 } }),
           }),
         }
         const context = createGraphNodeContext({}, boneMap, frameInfo)
-        expect(context.getBoneMap()).toEqual({
-          b: {
-            id: 'b',
-            transform: {
-              ...getTransform({ scale: { x: 2, y: 1 } }),
-            },
-          },
+        expect(context.getBoneSummary('b')).toEqual({
+          id: 'b',
+          transform: getTransform({
+            translate: { x: 2, y: 4 },
+            rotate: 0,
+            scale: { x: 2, y: 3 },
+          }),
         })
       })
     })

@@ -73,6 +73,7 @@ export interface NodeStruct<T extends GraphNodeBase> {
 export interface GraphBoneSummary {
   id: string
   transform: Transform
+  height: number
 }
 
 export interface NodeContext<T> {

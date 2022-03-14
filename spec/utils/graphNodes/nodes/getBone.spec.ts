@@ -34,12 +34,17 @@ describe('src/utils/graphNodes/nodes/getBone.ts', () => {
     it('should return bone properties', () => {
       const getBoneSummary = jest.fn().mockReturnValue({
         transform: getTransform({ rotate: 10 }),
+        height: 8,
       })
       expect(
         target.struct.computation({}, node, { getBoneSummary } as any)
-      ).toEqual({
-        transform: getTransform({ rotate: 10 }),
-      })
+      ).toEqual({ transform: getTransform({ rotate: 10 }), height: 8 })
+    })
+    it('should return mock value when the bone does not exist', () => {
+      const getBoneSummary = jest.fn().mockReturnValue(undefined)
+      expect(
+        target.struct.computation({}, node, { getBoneSummary } as any)
+      ).toEqual({ transform: getTransform(), height: 0 })
     })
   })
 })

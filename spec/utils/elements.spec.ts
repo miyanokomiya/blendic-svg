@@ -473,6 +473,7 @@ describe('utils/elements.ts', () => {
             rotate: 0,
             scale: { x: 2, y: 3 },
           }),
+          height: 10,
         })
       })
     })

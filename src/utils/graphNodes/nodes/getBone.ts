@@ -45,12 +45,19 @@ export const struct: NodeStruct<GraphNodeGetBone> = {
   inputs: {},
   outputs: {
     transform: UNIT_VALUE_TYPES.TRANSFORM,
+    height: UNIT_VALUE_TYPES.SCALER,
   },
-  computation(_inputs, self, context): { transform: Transform } {
-    return {
-      transform:
-        context.getBoneSummary(self.data.bone)?.transform ?? getTransform(),
-    }
+  computation(
+    _inputs,
+    self,
+    context
+  ): { transform: Transform; height: number } {
+    return (
+      context.getBoneSummary(self.data.bone) ?? {
+        transform: getTransform(),
+        height: 0,
+      }
+    )
   },
   width: 120,
   color: '#dc143c',

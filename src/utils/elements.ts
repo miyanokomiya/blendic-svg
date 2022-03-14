@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IRectangle } from 'okageo'
+import { getDistance, IRectangle } from 'okageo'
 import {
   Actor,
   GraphObject,
@@ -250,8 +250,11 @@ function toGraphBoneSummary(bone: Bone): GraphBoneSummary {
     transform: getTransform({
       translate: posed.head,
       rotate: (getBoneXRadian(posed) * 180) / Math.PI,
+      // Use origin scale
       scale: bone.transform.scale,
     }),
+    // Use original height
+    height: getDistance(bone.head, bone.tail),
   }
 }
 

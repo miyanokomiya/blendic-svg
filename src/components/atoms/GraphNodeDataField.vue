@@ -37,6 +37,15 @@ Copyright (C) 2021, Tomoya Komiyama.
         @update:model-value="update"
       />
     </template>
+    <template v-else-if="valueTypeKey === 'BONE'">
+      <TextInput v-if="disabled" :model-value="modelValue" disabled />
+      <SelectField
+        v-else
+        :model-value="modelValue"
+        :options="boneOptions"
+        @update:model-value="update"
+      />
+    </template>
     <template v-else-if="valueTypeKey === 'OBJECT'">
       <TextInput v-if="disabled" :model-value="modelValue" disabled />
       <SelectField
@@ -108,7 +117,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed, inject } from 'vue'
+import { defineComponent, PropType, ref, computed } from 'vue'
 import { GRAPH_VALUE_TYPE, ValueType } from '/@/models/graphNode'
 import TextInput from '/@/components/atoms/TextInput.vue'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
@@ -121,11 +130,16 @@ import GraphNodeDataFieldTransform from '/@/components/atoms/GraphNodeDataFieldT
 import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { GraphEnumMap, GraphEnumMapKey } from '/@/models/graphNodeEnums'
+import {
+  injectGetBoneOptions,
+  injectGetObjectOptions,
+} from '/@/composables/animationGraph'
 
 const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
   [GRAPH_VALUE_TYPE.BOOLEAN]: true,
   [GRAPH_VALUE_TYPE.SCALER]: true,
   [GRAPH_VALUE_TYPE.VECTOR2]: true,
+  [GRAPH_VALUE_TYPE.BONE]: true,
   [GRAPH_VALUE_TYPE.OBJECT]: true,
   [GRAPH_VALUE_TYPE.COLOR]: true,
   [GRAPH_VALUE_TYPE.TEXT]: true,
@@ -158,7 +172,8 @@ export default defineComponent({
       emit('update:model-value', val, seriesKey)
     }
 
-    const objectOptions = computed(inject('getObjectOptions', () => []))
+    const objectOptions = computed(injectGetObjectOptions())
+    const boneOptions = computed(injectGetBoneOptions())
 
     const showColorPicker = ref(false)
     function toggleShowColorPicker() {
@@ -189,6 +204,7 @@ export default defineComponent({
       editableTypes,
       update,
       objectOptions,
+      boneOptions,
       valueEnumOptions,
       valueTypeKey,
       valueScale,

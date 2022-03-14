@@ -42,7 +42,9 @@ describe('src/store/animation.ts', () => {
         keyframes: ['k_0'],
       })
       const keyframe = getKeyframeBone({ id: 'k_0' })
-      target.initState([action], [keyframe], [], [], [])
+      target.initState(10, 80, [action], [keyframe], [], [], [])
+      expect(target.currentFrame.value).toBe(10)
+      expect(target.endFrame.value).toBe(80)
       expect(target.actions.value.map((a) => a.id)).toEqual(['ac'])
       expect(target.keyframes.value.map((k) => k.id)).toEqual([])
       target.selectAction('ac')

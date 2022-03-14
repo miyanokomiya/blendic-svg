@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IRectangle } from 'okageo'
+import { getDistance, IRectangle } from 'okageo'
 import {
   Actor,
   GraphObject,
@@ -27,6 +27,7 @@ import {
   getActor,
   getBElement,
   getElementNode,
+  getTransform,
   getGraphObject,
   IdMap,
   toMap,
@@ -35,11 +36,12 @@ import {
   Bone,
 } from '../models'
 import { extractMap, mapReduce, toKeyListMap, toList } from './commons'
-import { useCache } from '/@/composables/cache'
+import { useCache, useJITMap } from '/@/composables/cache'
 import { GraphNodeMap } from '/@/models/graphNode'
-import { multiPoseTransform } from '/@/utils/armatures'
+import { multiPoseTransform, posedTransform } from '/@/utils/armatures'
+import { getBoneXRadian } from '/@/utils/geometry'
 import { GetGraphNodeModule, resolveAllNodes } from '/@/utils/graphNodes'
-import { NodeContext } from '/@/utils/graphNodes/core'
+import { GraphBoneSummary, NodeContext } from '/@/utils/graphNodes/core'
 import { TreeNode } from '/@/utils/relations'
 
 export function getPlainSvgTree(): ElementNode {
@@ -241,14 +243,32 @@ function toGraphObject(e: BElement): GraphObject {
   })
 }
 
+function toGraphBoneSummary(bone: Bone): GraphBoneSummary {
+  const posed = posedTransform(bone, [bone.transform])
+  return {
+    id: posed.id,
+    transform: getTransform({
+      translate: posed.head,
+      rotate: (getBoneXRadian(posed) * 180) / Math.PI,
+      // Use origin scale
+      scale: bone.transform.scale,
+    }),
+    // Use original height
+    height: getDistance(bone.head, bone.tail),
+  }
+}
+
 export function createGraphNodeContext(
   elementMap: IdMap<BElement>,
+  boneMap: IdMap<Bone>,
   frameInfo: { currentFrame: number; endFrame: number }
 ): NodeContext<GraphObject> {
   const graphElementMap: IdMap<GraphObject> = mapReduce(
     elementMap,
     toGraphObject
   )
+
+  const boneSummaryMap = useJITMap(boneMap, toGraphBoneSummary)
 
   const mapByParentCache = useCache(() => {
     return toKeyListMap(toList(graphElementMap), 'parent')
@@ -373,6 +393,9 @@ export function createGraphNodeContext(
     getFrameInfo() {
       return frameInfo
     },
+    getBoneSummary(id: string) {
+      return boneSummaryMap.getValue(id)
+    },
     getObjectMap() {
       return graphElementMap
     },
@@ -444,10 +467,11 @@ export function createGraphNodeContext(
 export function resolveAnimationGraph(
   getGraphNodeModule: GetGraphNodeModule,
   elementMap: IdMap<BElement>,
+  boneMap: IdMap<Bone>,
   frameInfo: { currentFrame: number; endFrame: number },
   graphNodes: GraphNodeMap
 ): IdMap<GraphObject> {
-  const context = createGraphNodeContext(elementMap, frameInfo)
+  const context = createGraphNodeContext(elementMap, boneMap, frameInfo)
   resolveAllNodes(getGraphNodeModule, context, graphNodes)
   return context.getObjectMap()
 }

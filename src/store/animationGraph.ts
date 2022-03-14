@@ -22,6 +22,7 @@ import {
   AnimationGraph,
   CustomGraph,
   BElement,
+  Bone,
   getAnimationGraph,
   IdMap,
   toMap,
@@ -64,11 +65,13 @@ import { createGraphNodeContext } from '/@/utils/elements'
 import { useAnimationStore } from '/@/store/animation'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import { createCustomNodeModule } from '/@/utils/graphNodes/customGraph'
+import { useCanvasStore } from '/@/store/canvas'
 
 export type GraphType = 'graph' | 'custom'
 
 interface StoreContext {
   getArmatureId: () => string | undefined
+  getPosedBoneMap: () => IdMap<Bone>
   getCurrentFrame: () => number
   getEndFrame: () => number
   getElementMap: (armatureId: string) => IdMap<BElement>
@@ -212,6 +215,7 @@ export function createStore(
     const armatureId = (parent as AnimationGraph)?.armatureId
     const context = createGraphNodeContext(
       armatureId ? storeContext.getElementMap(armatureId) : {},
+      storeContext.getPosedBoneMap(),
       {
         currentFrame: storeContext.getCurrentFrame(),
         endFrame: storeContext.getEndFrame(),
@@ -630,6 +634,7 @@ export type AnimationGraphStore = ReturnType<typeof createStore>
 
 const store = createStore(useHistoryStore(), {
   getArmatureId: () => useStore().lastSelectedArmatureId.value,
+  getPosedBoneMap: () => useCanvasStore().posedBoneMap.value,
   getCurrentFrame: () => useAnimationStore().currentFrame.value,
   getEndFrame: () => useAnimationStore().endFrame.value,
   getElementMap: (armatureId: string) => {

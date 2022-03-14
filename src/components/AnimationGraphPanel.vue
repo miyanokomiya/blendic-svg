@@ -90,7 +90,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, watchEffect, computed, ref, provide } from 'vue'
+import { defineComponent, watchEffect, computed, ref } from 'vue'
 import { useCanvas } from '/@/composables/canvas'
 import {
   ClosestEdgeInfo,
@@ -115,7 +115,11 @@ import { GraphNodeEdgePositions } from '/@/models/graphNode'
 import { useElementStore } from '/@/store/element'
 import GraphSideBar from '/@/components/GraphSideBar.vue'
 import { flatElementTree, getElementLabel } from '/@/utils/elements'
-import { provideGetGraphNodeModuleFn } from '/@/composables/animationGraph'
+import {
+  provideGetBoneOptions,
+  provideGetGraphNodeModuleFn,
+  provideGetObjectOptions,
+} from '/@/composables/animationGraph'
 
 export default defineComponent({
   components: {
@@ -312,24 +316,36 @@ export default defineComponent({
       mode.upNodeEdge(closestEdgeInfo)
     }
 
-    provide<() => { value: string; label: string }[]>(
-      'getObjectOptions',
-      () => {
-        const actor = elementStore.lastSelectedActor.value
-        if (
-          graphStore.graphType.value !== 'graph' ||
-          !actor ||
-          !currentGraph.value
-        )
-          return []
-        if (actor.armatureId !== currentGraph.value.armatureId) return []
+    provideGetObjectOptions(() => {
+      const actor = elementStore.lastSelectedActor.value
+      if (
+        graphStore.graphType.value !== 'graph' ||
+        !actor ||
+        !currentGraph.value
+      )
+        return []
+      if (actor.armatureId !== currentGraph.value.armatureId) return []
 
-        const nativeElementMap = toMap(flatElementTree([actor.svgTree]))
-        return actor.elements.map((id) => {
-          return { value: id, label: getElementLabel(nativeElementMap[id]) }
-        })
-      }
-    )
+      const nativeElementMap = toMap(flatElementTree([actor.svgTree]))
+      return actor.elements.map((id) => {
+        return { value: id, label: getElementLabel(nativeElementMap[id]) }
+      })
+    })
+
+    provideGetBoneOptions(() => {
+      const armature = store.lastSelectedArmature.value
+      if (
+        graphStore.graphType.value !== 'graph' ||
+        !armature ||
+        !currentGraph.value
+      )
+        return []
+      if (armature.id !== currentGraph.value.armatureId) return []
+
+      return Object.values(store.boneMap.value).map((bone) => {
+        return { value: bone.id, label: bone.name }
+      })
+    })
 
     return {
       GraphNode,

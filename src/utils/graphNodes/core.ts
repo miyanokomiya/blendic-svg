@@ -70,6 +70,12 @@ export interface NodeStruct<T extends GraphNodeBase> {
   getErrors?: (self: T) => string[] | undefined
 }
 
+export interface GraphBoneSummary {
+  id: string
+  transform: Transform
+  height: number
+}
+
 export interface NodeContext<T> {
   setTransform: (
     objectId: string,
@@ -85,6 +91,7 @@ export interface NodeContext<T> {
     replace?: boolean
   ) => void
   getFrameInfo: () => { currentFrame: number; endFrame: number }
+  getBoneSummary: (id: string) => GraphBoneSummary
   getObjectMap: () => { [id: string]: T }
   getChildId: (id: string, index: number) => string | undefined
   getChildrenSize: (id: string) => number

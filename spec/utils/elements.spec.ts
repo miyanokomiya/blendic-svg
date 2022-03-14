@@ -440,6 +440,7 @@ describe('utils/elements.ts', () => {
     it('should store objects from elements', () => {
       const context = createGraphNodeContext(
         { a: getBElement({ id: 'a', tag: 'g', parentId: 'p', index: 2 }) },
+        {},
         frameInfo
       )
       expect(context.getObjectMap()).toEqual({
@@ -454,10 +455,34 @@ describe('utils/elements.ts', () => {
       context.setTransform('a', getTransform({ rotate: 50 }))
     })
 
+    describe('getBoneSummary', () => {
+      it('should return a context to get a summary of the bone', () => {
+        const boneMap = {
+          b: getBone({
+            id: 'b',
+            head: { x: 2, y: 4 },
+            tail: { x: 2, y: 14 },
+            transform: getTransform({ scale: { x: 2, y: 3 } }),
+          }),
+        }
+        const context = createGraphNodeContext({}, boneMap, frameInfo)
+        expect(context.getBoneSummary('b')).toEqual({
+          id: 'b',
+          transform: getTransform({
+            translate: { x: 2, y: 4 },
+            rotate: 0,
+            scale: { x: 2, y: 3 },
+          }),
+          height: 10,
+        })
+      })
+    })
+
     describe('should return a context to setTransform', () => {
       it('to replace transform', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g' }) },
+          {},
           frameInfo
         )
         context.setTransform('a', getTransform({ rotate: 20 }))
@@ -484,6 +509,7 @@ describe('utils/elements.ts', () => {
       it('to fodl transform if inhefit is true', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g' }) },
+          {},
           frameInfo
         )
         context.setTransform('a', getTransform({ rotate: 20 }))
@@ -502,6 +528,7 @@ describe('utils/elements.ts', () => {
     it('should return a context to getTransform', () => {
       const context = createGraphNodeContext(
         { a: getBElement({ id: 'a' }) },
+        {},
         frameInfo
       )
       context.setTransform('a', getTransform({ rotate: 20 }))
@@ -511,6 +538,7 @@ describe('utils/elements.ts', () => {
       it('to set fill', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g' }) },
+          {},
           frameInfo
         )
         context.setFill('a', getTransform({ rotate: 20 }))
@@ -535,7 +563,7 @@ describe('utils/elements.ts', () => {
         })
       })
       it('to set fill recursively', () => {
-        const context = createGraphNodeContext({}, frameInfo)
+        const context = createGraphNodeContext({}, {}, frameInfo)
         const g1 = context.createObject('g')
         const rect1 = context.createObject('rect', { parent: g1 })
         context.setFill(g1, getTransform({ rotate: 20 }))
@@ -563,6 +591,7 @@ describe('utils/elements.ts', () => {
       it('to set stroke', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g' }) },
+          {},
           frameInfo
         )
         context.setStroke('a', getTransform({ rotate: 20 }))
@@ -587,7 +616,7 @@ describe('utils/elements.ts', () => {
         })
       })
       it('to set fill recursively', () => {
-        const context = createGraphNodeContext({}, frameInfo)
+        const context = createGraphNodeContext({}, {}, frameInfo)
         const g1 = context.createObject('g')
         const rect1 = context.createObject('rect', { parent: g1 })
         context.setStroke(g1, getTransform({ rotate: 20 }))
@@ -615,6 +644,7 @@ describe('utils/elements.ts', () => {
       it('should add attributes', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g' }) },
+          {},
           frameInfo
         )
         context.setAttributes('a', { x: 10 })
@@ -632,6 +662,7 @@ describe('utils/elements.ts', () => {
       it('should replace attributes if replace = true', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g' }) },
+          {},
           frameInfo
         )
         context.setAttributes('a', { x: 10 })
@@ -650,6 +681,7 @@ describe('utils/elements.ts', () => {
     it('should return a context to getFrameInfo', () => {
       const context = createGraphNodeContext(
         { a: getBElement({ id: 'a' }) },
+        {},
         { currentFrame: 10, endFrame: 20 }
       )
       expect(context.getFrameInfo()).toEqual({ currentFrame: 10, endFrame: 20 })
@@ -664,6 +696,7 @@ describe('utils/elements.ts', () => {
             c: getBElement({ id: 'c', tag: 'g', parentId: 'a' }),
             d: getBElement({ id: 'd', tag: 'g', parentId: 'a' }),
           },
+          {},
           frameInfo
         )
         expect(context.getChildId('a', -1)).toBe(undefined)
@@ -683,6 +716,7 @@ describe('utils/elements.ts', () => {
             c: getBElement({ id: 'c', tag: 'g', parentId: 'a' }),
             d: getBElement({ id: 'd', tag: 'g', parentId: 'a' }),
           },
+          {},
           frameInfo
         )
         expect(context.getChildrenSize('a')).toBe(3)
@@ -695,6 +729,7 @@ describe('utils/elements.ts', () => {
       it('should return a context to cloneObject', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g', parentId: 'svg' }) },
+          {},
           frameInfo
         )
         context.setTransform('a', getTransform({ rotate: 20 }))
@@ -722,7 +757,7 @@ describe('utils/elements.ts', () => {
         })
       })
       it('should clone a target with create = true if the target has create = true', () => {
-        const context = createGraphNodeContext({}, frameInfo)
+        const context = createGraphNodeContext({}, {}, frameInfo)
         const createdId = context.createObject('rect', {
           attributes: { x: 10 },
         })
@@ -747,6 +782,7 @@ describe('utils/elements.ts', () => {
       it('should set id pref', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g' }) },
+          {},
           frameInfo
         )
         context.cloneObject('a', {}, 'pre')
@@ -766,6 +802,7 @@ describe('utils/elements.ts', () => {
       it('apply namespace', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g' }) },
+          {},
           frameInfo
         )
         const id = context.beginNamespace('name', () =>
@@ -776,7 +813,7 @@ describe('utils/elements.ts', () => {
 
       describe('when the target has children', () => {
         it('should clone nested created children', () => {
-          const context = createGraphNodeContext({}, frameInfo)
+          const context = createGraphNodeContext({}, {}, frameInfo)
           const created1 = context.createObject('g', { tag: 'g' })
           const created2 = context.createObject('g', {
             tag: 'g',
@@ -804,7 +841,7 @@ describe('utils/elements.ts', () => {
           })
         })
         it('should clone nested cloned children', () => {
-          const context = createGraphNodeContext({}, frameInfo)
+          const context = createGraphNodeContext({}, {}, frameInfo)
 
           const parent = context.createObject('g', { parent: 'svg' })
           const child1 = context.createObject('g', { parent })
@@ -848,7 +885,7 @@ describe('utils/elements.ts', () => {
           })
         })
         it('should set id pref', () => {
-          const context = createGraphNodeContext({}, frameInfo)
+          const context = createGraphNodeContext({}, {}, frameInfo)
 
           const parent = context.createObject('g', { parent: 'svg' })
           const child1 = context.createObject('g', { parent })
@@ -883,6 +920,7 @@ describe('utils/elements.ts', () => {
       it('to create group object for cloning', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g' }) },
+          {},
           frameInfo
         )
         const id = context.createCloneGroupObject('a', { id: 'b' })
@@ -907,6 +945,7 @@ describe('utils/elements.ts', () => {
             a: getBElement({ id: 'a', tag: 'g' }),
             b: getBElement({ id: 'b', tag: 'g', parentId: 'a' }),
           },
+          {},
           frameInfo
         )
         context.createCloneGroupObject('b', { id: 'c' })
@@ -919,6 +958,7 @@ describe('utils/elements.ts', () => {
       it('apply namespace', () => {
         const context = createGraphNodeContext(
           { a: getBElement({ id: 'a', tag: 'g' }) },
+          {},
           frameInfo
         )
         const id = context.beginNamespace('name', () =>
@@ -930,7 +970,7 @@ describe('utils/elements.ts', () => {
 
     describe('should return a context to createObject', () => {
       it('to create new object', () => {
-        const context = createGraphNodeContext({}, frameInfo)
+        const context = createGraphNodeContext({}, {}, frameInfo)
         const id = context.createObject('rect', { attributes: { x: 10 } })
         const ret = context.getObjectMap()
 
@@ -943,14 +983,14 @@ describe('utils/elements.ts', () => {
         })
       })
       it('apply namespace', () => {
-        const context = createGraphNodeContext({}, frameInfo)
+        const context = createGraphNodeContext({}, {}, frameInfo)
         const id = context.beginNamespace('name', () =>
           context.createObject('rect', { id: 'a' })
         )
         expect(id).toEqual(`name-a`)
       })
       it('extends id if it has been set', () => {
-        const context = createGraphNodeContext({}, frameInfo)
+        const context = createGraphNodeContext({}, {}, frameInfo)
         context.createObject('rect', { id: 'a' })
         const ret = context.getObjectMap()
 
@@ -962,7 +1002,7 @@ describe('utils/elements.ts', () => {
         })
       })
       it('let new object have last index', () => {
-        const context = createGraphNodeContext({}, frameInfo)
+        const context = createGraphNodeContext({}, {}, frameInfo)
         context.createObject('g', { id: 'parent' })
         context.createObject('g', { id: '1', parent: 'parent' })
         context.createObject('g', { id: '2', parent: 'parent' })

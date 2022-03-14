@@ -1,5 +1,28 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`src/components/atoms/GraphNodeDataField.vue snapshot BONE 1`] = `
+<div>
+  <h5>
+    value
+  </h5>
+  
+  <span
+    class="select-root"
+  >
+    <select>
+      <option
+        value=""
+      >
+        -- None --
+      </option>
+      
+      
+    </select>
+  </span>
+  
+</div>
+`;
+
 exports[`src/components/atoms/GraphNodeDataField.vue snapshot BOOLEAN 1`] = `
 <div>
   <h5>

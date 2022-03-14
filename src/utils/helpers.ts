@@ -409,6 +409,7 @@ export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
     SCALER: '#555',
     VECTOR2: '#daa520',
     TRANSFORM: '#a0522d',
+    BONE: '#4b0082',
     OBJECT: '#ee82ee',
     COLOR: '#32cd32',
     TEXT: '#808000',

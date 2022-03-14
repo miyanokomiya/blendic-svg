@@ -38,6 +38,8 @@ import { GRAPH_VALUE_TYPE, ValueType } from '/@/models/graphNode'
 import ColorRect from '/@/components/atoms/ColorRect.vue'
 import { IVec2 } from 'okageo'
 import { truncate } from '/@/utils/helpers'
+import { injectGetBoneOptions } from '/@/composables/animationGraph'
+import { toKeyMap } from '/@/utils/commons'
 
 export default defineComponent({
   components: {
@@ -59,12 +61,20 @@ export default defineComponent({
 
     const inputType = computed(() => props.type.type)
 
+    const boneOptions = computed(() => {
+      return toKeyMap(injectGetBoneOptions()(), 'value')
+    })
+
     const valueText = computed(() => {
       switch (props.type.type) {
         case GRAPH_VALUE_TYPE.TEXT:
         case GRAPH_VALUE_TYPE.SCALER:
         case GRAPH_VALUE_TYPE.BOOLEAN:
           return truncate(`${props.modelValue}`, 6)
+        case GRAPH_VALUE_TYPE.BONE: {
+          const name = boneOptions.value[props.modelValue]?.label ?? ''
+          return truncate(`${name}`, 10)
+        }
         case GRAPH_VALUE_TYPE.VECTOR2: {
           const v = props.modelValue as IVec2
           return `(${truncate(v.x, 4)},${truncate(v.y, 4)})`

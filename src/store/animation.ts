@@ -187,12 +187,16 @@ export function createStore(
   })
 
   function initState(
+    initialCurrentFrame: number,
+    initialEndFrame: number,
     initActions: Action[],
     initKeyframes: KeyframeBase[],
     actionSelected: [string, true][],
     initKeyframeState: [string, KeyframeSelectedState][],
     inittargetPropsState: [string, TargetPropsState][]
   ) {
+    animationFrameStore.setPlaying('pause')
+    animationFrameStore.restore(initialCurrentFrame, initialEndFrame)
     actionEntities.init(fromEntityList(initActions))
     keyframeEntities.init(fromEntityList(initKeyframes))
     actionSelectable.restore(actionSelected)
@@ -204,6 +208,8 @@ export function createStore(
 
   function exportState() {
     return {
+      currentFrame: animationFrameStore.currentFrame.value,
+      endFrame: animationFrameStore.endFrame.value,
       actions: actions.value,
       keyframes: toEntityList(keyframeEntities.entities.value),
       actionSelected: actionSelectable.createSnapshot(),

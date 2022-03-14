@@ -68,10 +68,23 @@ describe('src/components/atoms/GraphNodeDataField.vue', () => {
         expect(wrapper.vm.valueScale).toBe(0.2)
       })
     })
+    it('BONE', () => {
+      const wrapper = mount(Target, {
+        props: {
+          modelValue: 'bone',
+          label: 'value',
+          type: {
+            type: GRAPH_VALUE_TYPE.BONE,
+            struct: GRAPH_VALUE_STRUCT.UNIT,
+          },
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
     it('OBJECT', () => {
       const wrapper = mount(Target, {
         props: {
-          modelValue: 123,
+          modelValue: 'obj',
           label: 'value',
           type: {
             type: GRAPH_VALUE_TYPE.OBJECT,

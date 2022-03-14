@@ -17,14 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import {
-  computed,
-  ComputedRef,
-  onBeforeUpdate,
-  Ref,
-  ref,
-  toRaw,
-} from '@vue/runtime-core'
+import { computed, ComputedRef, onBeforeUpdate, Ref, ref, toRaw } from 'vue'
 
 export function useKeysCache<T>(
   getKeyMap: () => { [key: string]: unknown },
@@ -105,4 +98,30 @@ export function useMapCache<K, T>(
   }
 
   return { getValue, clear }
+}
+
+export function useJITMap<T, K>(
+  src: { [key: string]: T },
+  fn: (v: T) => K
+): {
+  getValue: (key: string) => K
+  clear: () => void
+} {
+  let map: { [key: string]: K } = {}
+
+  function getValue(key: string) {
+    if (!(key in map)) {
+      map[key] = fn(src[key])
+    }
+    return map[key]
+  }
+
+  function clear() {
+    map = {}
+  }
+
+  return {
+    getValue,
+    clear,
+  }
 }

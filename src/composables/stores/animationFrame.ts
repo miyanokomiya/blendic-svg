@@ -29,11 +29,19 @@ import {
 } from '/@/utils/animations'
 import * as okahistory from 'okahistory'
 
-export function useAnimationFrameStore() {
-  const currentFrame = useValueStore('Frame', () => 0)
-  const endFrame = useValueStore('End Frame', () => 60)
+export function useAnimationFrameStore(
+  initialCurrentFrame = 0,
+  initialEndFrame = 60
+) {
+  const currentFrame = useValueStore('Frame', () => initialCurrentFrame)
+  const endFrame = useValueStore('End Frame', () => initialEndFrame)
 
   const playing = ref<PlayState>('pause')
+
+  function restore(initialCurrentFrame = 0, initialEndFrame = 60) {
+    currentFrame.restore(initialCurrentFrame)
+    endFrame.restore(initialEndFrame)
+  }
 
   function setPlaying(val: PlayState) {
     playing.value = val
@@ -86,6 +94,8 @@ export function useAnimationFrameStore() {
   return {
     currentFrame: currentFrame.state,
     endFrame: endFrame.state,
+
+    restore,
 
     createUpdateCurrentFrameAction: currentFrame.createUpdateAction,
     createUpdateEndFrameAction: endFrame.createUpdateAction,

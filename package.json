@@ -18,7 +18,7 @@
     "okahistory": "^0.0.8",
     "okanvas": "^0.0.4",
     "okaselect": "^0.0.11",
-    "ress": "^4.0.0",
+    "ress": "^5.0.2",
     "uuid": "^8.3.2",
     "vue": "^3.2.26"
   },
@@ -27,7 +27,7 @@
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-typescript": "^7.16.7",
     "@playwright/test": "^1.19.2",
-    "@swc/core": "^1.2.143",
+    "@swc/core": "^1.2.155",
     "@swc/jest": "^0.2.20",
     "@types/jest": "^27.4.1",
     "@types/uuid": "^8.3.4",

@@ -14,7 +14,7 @@
     "lint:fix": "yarn lint --fix && yarn lint-json -w"
   },
   "dependencies": {
-    "okageo": "^2.0.13",
+    "okageo": "^3.0.0",
     "okahistory": "^0.0.8",
     "okanvas": "^0.0.4",
     "okaselect": "^0.0.11",

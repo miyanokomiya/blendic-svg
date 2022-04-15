@@ -370,11 +370,15 @@ export function createStore(
     return node
   }
 
+  function canAddThisNode(node: Pick<GraphNode, 'type'>): boolean {
+    if (isUniqueEssentialNodeForCustomGraph(node.type)) return false
+    // TODO: Consider custom graph in other custom graph
+    return !!getGraphNodeModule(node.type) || graphType.value === 'graph'
+  }
+
   function pasteNodes(nodes: GraphNode[]) {
     const parent = getNodeParent()
-    const filteredNodes = nodes.filter(
-      (n) => !isUniqueEssentialNodeForCustomGraph(n.type)
-    )
+    const filteredNodes = nodes.filter((n) => canAddThisNode(n))
     if (!parent || filteredNodes.length === 0) return
 
     historyStore.dispatch(nodeEntities.createAddAction(filteredNodes), [

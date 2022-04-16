@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { reactive, computed, watch } from 'vue'
 import { add, IRectangle, isSame, IVec2, sub } from 'okageo'
-import { Transform, getTransform, IdMap } from '/@/models/index'
+import { Transform, getTransform, IdMap, toMap } from '/@/models/index'
 import type {
   EditMovement,
   PopupMenuItem,
@@ -45,11 +45,17 @@ import {
   NODE_SUGGESTION_MENU_OPTIONS_SRC,
   updateInputConnection,
   validateConnection,
+  isolateNodes,
 } from '/@/utils/graphNodes'
 import { mapFilter, mapReduce, toList } from '/@/utils/commons'
 import { getGraphNodeRect } from '/@/utils/helpers'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { generateUuid } from '/@/utils/random'
+import {
+  StringItem,
+  useClipboard,
+  useClipboardSerializer,
+} from '/@/composables/clipboard'
 
 export type EditMode = '' | 'grab' | 'add' | 'drag-node' | 'drag-edge'
 
@@ -80,7 +86,6 @@ interface EdgeInfo {
 interface State {
   command: EditMode
   editMovement: EditMovement | undefined
-  clipboard: IdMap<GraphNode> | undefined
   keyDownPosition: IVec2
   dragTarget:
     | { type: 'node'; id: string }
@@ -97,7 +102,6 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   const state = reactive<State>({
     command: '',
     editMovement: undefined,
-    clipboard: undefined,
     keyDownPosition: { x: 0, y: 0 },
     dragTarget: undefined,
     closestEdgeInfo: undefined,
@@ -116,6 +120,52 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
 
   const getGraphNodeModule = computed(() =>
     graphStore.getGraphNodeModuleFn.value()
+  )
+
+  const clipboardSerializer = useClipboardSerializer<
+    'graph-nodes',
+    IdMap<GraphNode>
+  >('graph-nodes')
+
+  const clipboard = useClipboard(
+    () => {
+      return {
+        'text/plain': clipboardSerializer.serialize(
+          toMap(
+            isolateNodes(
+              graphStore.getGraphNodeModuleFn.value(),
+              toList(selectedNodeMap.value)
+            ).nodes
+          )
+        ),
+      }
+    },
+    async (items) => {
+      const item = items.find((i) => i.kind === 'string') as
+        | StringItem
+        | undefined
+      if (!item) return
+
+      const text: any = await item.getAsString()
+      const availableNodes = mapFilter(
+        clipboardSerializer.deserialize(text),
+        (n) => !!graphStore.getGraphNodeModuleFn.value()(n.type)
+      )
+
+      graphStore.pasteNodes(
+        toList(
+          duplicateNodes(
+            graphStore.getGraphNodeModuleFn.value(),
+            availableNodes,
+            graphStore.nodeMap.value,
+            () => generateUuid()
+          )
+        ).map((n) => ({
+          ...n,
+          position: add(n.position, { x: 20, y: 20 }),
+        }))
+      )
+    }
   )
 
   function cancel() {
@@ -430,15 +480,9 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
           return notNeedLock
         }
       case 'c':
-        if (arg.ctrl) {
-          cancel()
-          clip()
-        }
-        return notNeedLock
       case 'v':
         if (arg.ctrl) {
           cancel()
-          paste()
         }
         return notNeedLock
       default:
@@ -522,14 +566,10 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
         commands.grab,
         commands.duplicate,
         commands.clip,
-        ...(state.clipboard ? [commands.paste] : []),
+        commands.paste,
       ]
     } else {
-      return [
-        commands.add,
-        commands.selectAll,
-        ...(state.clipboard ? [commands.paste] : []),
-      ]
+      return [commands.add, commands.selectAll, commands.paste]
     }
   })
 
@@ -630,28 +670,10 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     }
   }
 
-  function clip() {
-    state.clipboard = { ...selectedNodeMap.value }
-  }
-
-  function paste() {
-    if (!state.clipboard) return
-    graphStore.pasteNodes(
-      toList(
-        duplicateNodes(
-          graphStore.getGraphNodeModuleFn.value(),
-          state.clipboard,
-          graphStore.nodeMap.value,
-          () => generateUuid()
-        )
-      ).map((n) => ({
-        ...n,
-        position: add(n.position, { x: 20, y: 20 }),
-      }))
-    )
-  }
-
   return {
+    onCopy: clipboard.onCopy,
+    onPaste: clipboard.onPaste,
+
     command: computed(() => state.command),
     keyDownPosition: computed(() => state.keyDownPosition),
 
@@ -679,8 +701,6 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     execDelete,
     execAddNode,
     insert: () => {},
-    clip,
-    paste,
     availableCommandList,
     popupMenuList,
   }

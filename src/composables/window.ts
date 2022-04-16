@@ -68,7 +68,7 @@ export interface PointerMovement extends MouseOptions {
 export function usePointerLock(handlers: {
   onGlobalMove?: (arg: PointerMovement) => void
   onMove: (arg: PointerMovement) => void
-  onUp?: () => void
+  onUp?: (e: MouseEvent) => void
   onEscape?: () => void
 }) {
   let locked = false
@@ -111,14 +111,16 @@ export function usePointerLock(handlers: {
   })
 
   function exitPointerLock() {
-    document.exitPointerLock()
     locked = false
     current.value = undefined
+    document.exitPointerLock()
   }
 
-  useGlobalMouseup(() => {
-    exitPointerLock()
-    handlers.onUp?.()
+  useGlobalMouseup((e) => {
+    if (locked) {
+      exitPointerLock()
+      handlers.onUp?.(e)
+    }
   })
 
   function onPointerlockchange() {

@@ -128,7 +128,7 @@ import * as custom_input from './nodes/customInput'
 import * as custom_begin_output from './nodes/customBeginOutput'
 import * as custom_output from './nodes/customOutput'
 
-import { getTransform, IdMap } from '/@/models'
+import { getTransform, IdMap, toMap } from '/@/models'
 import { extractMap, mapFilter, mapReduce, toList } from '/@/utils/commons'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
@@ -808,14 +808,29 @@ export function resetInput(
   key: string
 ): GraphNode {
   const current = node.inputs[key]
-
-  const inputStruct = nodeStruct?.inputs[key]
-  if (!inputStruct) {
+  const nextInput = resetInputValue(nodeStruct?.inputs[key], current)
+  if (!nextInput) {
     const inputs = { ...node.inputs }
     delete inputs[key]
     return { ...node, inputs }
   }
 
+  const updated: GraphNode = {
+    ...node,
+    inputs: { ...node.inputs, [key]: nextInput },
+  }
+  return updated
+}
+
+export function resetInputValue(
+  inputStruct: NodeStruct<any>['inputs']['any'] | undefined,
+  input: GraphNodeInput<any>
+): GraphNodeInput<any> | undefined {
+  if (!inputStruct) {
+    return undefined
+  }
+
+  const current = input
   const nextInput: GraphNodeInput<any> = current.genericsType
     ? {
         // keep generics if it is confirmed
@@ -824,12 +839,7 @@ export function resetInput(
       }
     : { value: inputStruct.default }
 
-  const updated: GraphNode = {
-    ...node,
-    inputs: { ...node.inputs, [key]: nextInput },
-  }
-
-  return updated
+  return nextInput
 }
 
 export function duplicateNodes(
@@ -886,6 +896,14 @@ export function isUniqueEssentialNodeForCustomGraph(
   return type === 'custom_begin_input' || type === 'custom_begin_output'
 }
 
+export function isExclusiveNodeForCustomGraph(type: GraphNodeType): boolean {
+  return (
+    isUniqueEssentialNodeForCustomGraph(type) ||
+    type === 'custom_input' ||
+    type === 'custom_output'
+  )
+}
+
 export function deleteAndDisconnectNodes(
   getGraphNodeModule: GetGraphNodeModule,
   nodes: GraphNode[],
@@ -917,6 +935,45 @@ export function deleteAndDisconnectNodes(
     })
 
   return { nodes: nextNodes, updatedIds }
+}
+
+export function isolateNodes(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodes: GraphNode[]
+): { nodes: GraphNode[]; updatedIds: IdMap<boolean> } {
+  const idSet = new Set(nodes.map((n) => n.id))
+  const updatedIds: IdMap<boolean> = {}
+
+  const nextNodes = nodes.map((n) => {
+    const inputs = Object.entries(n.inputs).reduce<GraphNodeInputs>(
+      (inputs, [key, input]) => {
+        if (!input.from || idSet.has(input.from.id)) {
+          inputs[key] = input
+          return inputs
+        }
+
+        // delete this connection
+        updatedIds[n.id] = true
+        const nextInput = resetInputValue(
+          getGraphNodeModule(n.type)?.struct.inputs[key],
+          input
+        )
+        if (nextInput) {
+          inputs[key] = nextInput
+        }
+        return inputs
+      },
+      {}
+    )
+    return { ...n, inputs }
+  })
+
+  const updated = cleanAllEdgeGenerics(getGraphNodeModule, toMap(nextNodes))
+
+  return {
+    nodes: nextNodes.map((n) => updated[n.id] ?? n),
+    updatedIds: { ...updatedIds, ...mapReduce(updated, () => true) },
+  }
 }
 
 export function getNodeEdgeTypes(

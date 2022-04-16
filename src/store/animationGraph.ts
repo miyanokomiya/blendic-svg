@@ -53,6 +53,7 @@ import {
   NODE_MENU_OPTION,
   createGraphNodeIncludeCustom,
   isUniqueEssentialNodeForCustomGraph,
+  isExclusiveNodeForCustomGraph,
   getUpdatedNodeMapToChangeNodeStruct,
   isInterfaceChanged,
   getNodeErrors,
@@ -370,11 +371,21 @@ export function createStore(
     return node
   }
 
+  function canAddThisNode(node: Pick<GraphNode, 'type'>): boolean {
+    if (graphType.value === 'graph') {
+      return !isExclusiveNodeForCustomGraph(node.type)
+    } else {
+      // TODO: Consider custom graph in other custom graph
+      return (
+        !!getGraphNodeModule(node.type) &&
+        !isUniqueEssentialNodeForCustomGraph(node.type)
+      )
+    }
+  }
+
   function pasteNodes(nodes: GraphNode[]) {
     const parent = getNodeParent()
-    const filteredNodes = nodes.filter(
-      (n) => !isUniqueEssentialNodeForCustomGraph(n.type)
-    )
+    const filteredNodes = nodes.filter((n) => canAddThisNode(n))
     if (!parent || filteredNodes.length === 0) return
 
     historyStore.dispatch(nodeEntities.createAddAction(filteredNodes), [

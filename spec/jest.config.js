@@ -1,6 +1,7 @@
 const { compilerOptions } = require('../tsconfig')
 
 module.exports = {
+  setupFiles: ['./setup.js'],
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/../'],
   modulePaths: ['<rootDir>/../'],

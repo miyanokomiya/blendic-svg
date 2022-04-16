@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/FocusableBlock.vue snapshot defalut 1`] = `
+<div
+  tabindex="-1"
+>
+  
+  
+</div>
+`;

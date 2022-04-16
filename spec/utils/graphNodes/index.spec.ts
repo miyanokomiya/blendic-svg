@@ -56,9 +56,11 @@ import {
   updateDataField,
   getGraphNodeModule,
   isUniqueEssentialNodeForCustomGraph,
+  isExclusiveNodeForCustomGraph,
   getUpdatedNodeMapToChangeNodeStruct,
   isInterfaceChanged,
   completeNodeMap,
+  isolateNodes,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -758,6 +760,17 @@ describe('src/utils/graphNodes/index.ts', () => {
     })
   })
 
+  describe('isCustomGraphExclusiveNode', () => {
+    it('should return true if the node is exclusive for the custom graph', () => {
+      expect(isExclusiveNodeForCustomGraph('custom_begin_input')).toBe(true)
+      expect(isExclusiveNodeForCustomGraph('custom_begin_output')).toBe(true)
+      expect(isExclusiveNodeForCustomGraph('custom_input')).toBe(true)
+      expect(isExclusiveNodeForCustomGraph('custom_output')).toBe(true)
+      expect(isExclusiveNodeForCustomGraph('custom_out')).toBe(false)
+      expect(isExclusiveNodeForCustomGraph('scaler')).toBe(false)
+    })
+  })
+
   describe('deleteAndDisconnectNodes', () => {
     it('should delete nodes and their connections', () => {
       const ret = deleteAndDisconnectNodes(
@@ -803,6 +816,56 @@ describe('src/utils/graphNodes/index.ts', () => {
         createGraphNode('custom_begin_output', { id: 'b' }),
       ])
       expect(ret.updatedIds).toEqual({})
+    })
+  })
+
+  describe('isolateNodes', () => {
+    const a = createGraphNode('scaler', { id: 'a' })
+    const b = createGraphNode('scaler', { id: 'b' })
+    const c = createGraphNode('make_vector2', {
+      id: 'c',
+      inputs: {
+        x: { from: { id: 'a', key: 'value' } },
+        y: { from: { id: 'b', key: 'value' } },
+      },
+    })
+    const d = createGraphNode('add_generics', {
+      id: 'd',
+      inputs: {
+        a: {
+          value: 0,
+          genericsType: UNIT_VALUE_TYPES.SCALER,
+          from: { id: 'a', key: 'value' },
+        },
+        b: { value: 10, genericsType: UNIT_VALUE_TYPES.SCALER },
+      },
+    })
+
+    it('should keep inputs connected to relevant nodes', () => {
+      const ret = isolateNodes(getGraphNodeModule, [a, b, c, d])
+      expect(ret.nodes).toEqual([a, b, c, d])
+      expect(ret.updatedIds).toEqual({})
+    })
+    it('should reset inputs connected to irrelevant nodes', () => {
+      const ret = isolateNodes(getGraphNodeModule, [b, c, d])
+      expect(ret.nodes).toEqual([
+        b,
+        {
+          ...c,
+          inputs: {
+            x: { value: 0 },
+            y: { from: { id: 'b', key: 'value' } },
+          },
+        },
+        {
+          ...d,
+          inputs: {
+            a: { value: undefined },
+            b: { value: undefined },
+          },
+        },
+      ])
+      expect(ret.updatedIds).toEqual({ c: true, d: true })
     })
   })
 

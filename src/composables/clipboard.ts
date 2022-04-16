@@ -98,17 +98,10 @@ function getAsFile(item: DataTransferItem): Promise<File> {
   }
 }
 
-export function generateClipboardData<T extends string, K>(type: T, data: K) {
-  return {
-    app: 'blendic-svg',
-    appVersion: process.env.APP_VERSION ?? 'dev',
-    type,
-    data,
-  }
-}
+const APP_ID = 'blendic-svg'
 
 interface ClipboardData<T extends string, K> {
-  app: 'blendic-svg'
+  app: typeof APP_ID
   appVersion: string
   type: T
   data: K
@@ -123,8 +116,8 @@ export function useClipboardSerializer<T extends string, K>(
   return {
     serialize(data: K): string {
       return JSON.stringify({
-        app: 'blendic-svg',
-        appVersion: process.env.APP_VERSION ?? 'dev',
+        app: APP_ID,
+        appVersion: process.env.APP_VERSION,
         type,
         data,
       })
@@ -134,7 +127,7 @@ export function useClipboardSerializer<T extends string, K>(
      */
     deserialize(text: string) {
       const json = JSON.parse(text) as ClipboardData<T, K>
-      if (json.app !== 'blendic-svg' || json.type !== type)
+      if (json.app !== APP_ID || json.type !== type)
         throw new Error('Invalid data')
 
       return json.data

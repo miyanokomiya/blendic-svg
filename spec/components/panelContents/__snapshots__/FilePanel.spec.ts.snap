@@ -68,7 +68,7 @@ exports[`src/components/panelContents/FilePanel.vue snapshot default 1`] = `
     </button>
   </div>
   <h3>
-    Version 
+    Version test
   </h3>
   <!--teleport start-->
   <!--teleport end-->

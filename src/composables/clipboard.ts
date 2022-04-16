@@ -18,7 +18,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 interface CopyDataSet {
-  'text/plain': string
+  'text/plain'?: string
   [key: string]: any
 }
 

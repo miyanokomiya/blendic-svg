@@ -19,48 +19,47 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div ref="wrapper" class="timeline-canvas-root">
-    <svg
-      ref="svg"
-      tabindex="-1"
-      xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="none"
-      font-family="sans-serif"
-      :viewBox="viewBox"
-      :width="viewSize.width"
-      :height="viewSize.height"
-      @wheel.prevent="wheel"
-      @click.right.prevent
-      @mouseup.right.prevent="escape"
-      @mouseenter="focus"
-      @mousemove.prevent="mousemoveNative"
-      @mousedown.left.prevent="downLeft"
-      @mouseup.left.prevent="upLeft"
-      @mousedown.middle.prevent="downMiddle"
-      @mouseup.middle.prevent="upMiddle"
-      @keydown.prevent="editKeyDown"
-    >
-      <DotBackground
-        :x="viewCanvasRect.x"
-        :y="viewCanvasRect.y"
-        :width="viewCanvasRect.width"
-        :height="viewCanvasRect.height"
-        :size="40"
-        class="view-only"
-      />
-      <g :stroke-width="2 * scale" stroke="#000">
-        <line x1="-20" x2="20" />
-        <line y1="-20" y2="20" />
-      </g>
-      <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
-      <SelectRectangle
-        v-if="dragRectangle"
-        :x="dragRectangle.x"
-        :y="dragRectangle.y"
-        :width="dragRectangle.width"
-        :height="dragRectangle.height"
-        class="view-only"
-      />
-    </svg>
+    <FocusableBlock @keydown="editKeyDown" @copy="onCopy" @paste="onPaste">
+      <svg
+        ref="svg"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="none"
+        font-family="sans-serif"
+        :viewBox="viewBox"
+        :width="viewSize.width"
+        :height="viewSize.height"
+        @wheel.prevent="wheel"
+        @click.right.prevent
+        @mouseup.right.prevent="escape"
+        @mousemove.prevent="mousemoveNative"
+        @mousedown.left.prevent="downLeft"
+        @mouseup.left.prevent="upLeft"
+        @mousedown.middle.prevent="downMiddle"
+        @mouseup.middle.prevent="upMiddle"
+      >
+        <DotBackground
+          :x="viewCanvasRect.x"
+          :y="viewCanvasRect.y"
+          :width="viewCanvasRect.width"
+          :height="viewCanvasRect.height"
+          :size="40"
+          class="view-only"
+        />
+        <g :stroke-width="2 * scale" stroke="#000">
+          <line x1="-20" x2="20" />
+          <line y1="-20" y2="20" />
+        </g>
+        <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
+        <SelectRectangle
+          v-if="dragRectangle"
+          :x="dragRectangle.x"
+          :y="dragRectangle.y"
+          :width="dragRectangle.width"
+          :height="dragRectangle.height"
+          class="view-only"
+        />
+      </svg>
+    </FocusableBlock>
     <CommandExamPanel
       class="command-exam-panel"
       :available-command-list="availableCommandList"
@@ -88,6 +87,7 @@ import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import DotBackground from '/@/components/elements/atoms/DotBackground.vue'
 import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
+import FocusableBlock from '/@/components/atoms/FocusableBlock.vue'
 import { useCanvasElement } from '/@/composables/canvasElement'
 
 export default defineComponent({
@@ -96,6 +96,7 @@ export default defineComponent({
     CommandExamPanel,
     DotBackground,
     SelectRectangle,
+    FocusableBlock,
   },
   props: {
     canvas: {
@@ -155,6 +156,11 @@ export default defineComponent({
     const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
     const pointerLock = usePointerLock({
       onMove: throttleMousemove,
+      onUp: (e) => {
+        if (e.button === 0) {
+          props.mode.upLeft({ empty: e.target === svg.value })
+        }
+      },
       onGlobalMove: (arg) => {
         const p = removeRootPosition(arg.p)
         if (!p) return
@@ -182,6 +188,9 @@ export default defineComponent({
     }
 
     return {
+      onCopy: (e: ClipboardEvent) => props.mode.onCopy(e),
+      onPaste: (e: ClipboardEvent) => props.mode.onPaste(e),
+
       scale: computed(() => props.canvas.scale.value),
       viewOrigin: computed(() => props.canvas.viewOrigin.value),
       viewSize: computed(() => props.canvas.viewSize.value),
@@ -258,14 +267,13 @@ export default defineComponent({
         () => props.mode.availableCommandList.value
       ),
       popupMenuListPosition,
-      focus: () => svg.value?.focus(),
       dragRectangle: computed(() => props.canvas.dragRectangle.value),
     }
   },
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .timeline-canvas-root {
   position: relative;
   height: 100%;
@@ -273,9 +281,6 @@ export default defineComponent({
 svg {
   background-color: #aaa;
   border: solid 1px black;
-  user-select: none;
-  outline: none;
-  overflow-anchor: none;
 }
 .command-exam-panel {
   position: absolute;

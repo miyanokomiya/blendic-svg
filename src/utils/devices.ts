@@ -52,3 +52,22 @@ export function getMouseOptions(e: MouseEvent): MouseOptions {
     ctrl: isCtrlOrMeta(e),
   }
 }
+
+/**
+ * When "key" is capital case, "shift" is true
+ */
+export type KeyOptions = { shift?: boolean; ctrl?: boolean; key: string }
+
+export function getKeyOptions(e: KeyboardEvent): KeyOptions {
+  return {
+    key: e.key,
+    shift: e.shiftKey,
+    ctrl: isCtrlOrMeta(e),
+  }
+}
+
+export function isCopyPasteKeyevent(option: KeyOptions): boolean {
+  return (
+    !option.shift && !!option.ctrl && (option.key === 'v' || option.key === 'c')
+  )
+}

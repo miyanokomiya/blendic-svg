@@ -154,32 +154,44 @@ describe('src/store/animationGraph.ts', () => {
   })
 
   describe('canAddThisNode', () => {
-    it('should return true if the node is a common node', () => {
-      target.pasteNodes([createGraphNode('scaler', { id: 'a' })])
-      expect(target.nodeMap.value['a']).not.toBeUndefined()
-    })
-    it('should return true if current graph is a normal graph', () => {
-      target.setGraphType('graph')
-      target.pasteNodes([createGraphNode('scaler', { id: 'a' })])
-      expect(target.nodeMap.value['a']).not.toBeUndefined()
-      target.pasteNodes([
-        { ...createGraphNode('scaler', { id: 'b' }), type: 'custom' },
-      ])
-      expect(target.nodeMap.value['b']).not.toBeUndefined()
+    describe('when current graph is normal', () => {
+      it('should return true if the node is not exclusive for custom graph', () => {
+        target.setGraphType('graph')
+        target.pasteNodes([createGraphNode('scaler', { id: 'a' })])
+        expect(target.nodeMap.value['a']).not.toBeUndefined()
+
+        target.pasteNodes([
+          { ...createGraphNode('scaler', { id: 'b' }), type: 'custom' },
+        ])
+        expect(target.nodeMap.value['b']).not.toBeUndefined()
+      })
+      it('should return false if the node is exclusive for custom graph', () => {
+        target.setGraphType('graph')
+        target.pasteNodes([
+          { ...createGraphNode('scaler', { id: 'b' }), type: 'custom_input' },
+        ])
+        expect(target.nodeMap.value['b']).toBeUndefined()
+      })
     })
 
-    it('should return false if current graph is a custom graph and the node is a custom graph', () => {
-      target.setGraphType('custom')
-      target.pasteNodes([createGraphNode('scaler', { id: 'a' })])
-      expect(target.nodeMap.value['a']).not.toBeUndefined()
-      target.pasteNodes([
-        { ...createGraphNode('scaler', { id: 'b' }), type: 'custom' },
-      ])
-      expect(target.nodeMap.value['b']).toBeUndefined()
-    })
-    it('should return false if the node is unique node for a custom graph', () => {
-      target.pasteNodes([createGraphNode('custom_begin_input', { id: 'a' })])
-      expect(target.nodeMap.value['a']).toBeUndefined()
+    describe('when current graph is normal', () => {
+      it('should return true if the node is common node', () => {
+        target.pasteNodes([createGraphNode('scaler', { id: 'a' })])
+        expect(target.nodeMap.value['a']).not.toBeUndefined()
+      })
+      it('should return false if the node is custom graph', () => {
+        target.setGraphType('custom')
+        target.pasteNodes([createGraphNode('scaler', { id: 'a' })])
+        expect(target.nodeMap.value['a']).not.toBeUndefined()
+        target.pasteNodes([
+          { ...createGraphNode('scaler', { id: 'b' }), type: 'custom' },
+        ])
+        expect(target.nodeMap.value['b']).toBeUndefined()
+      })
+      it('should return false if the node is unique node for custom graph', () => {
+        target.pasteNodes([createGraphNode('custom_begin_input', { id: 'a' })])
+        expect(target.nodeMap.value['a']).toBeUndefined()
+      })
     })
   })
 

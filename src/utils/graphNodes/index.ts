@@ -896,6 +896,14 @@ export function isUniqueEssentialNodeForCustomGraph(
   return type === 'custom_begin_input' || type === 'custom_begin_output'
 }
 
+export function isExclusiveNodeForCustomGraph(type: GraphNodeType): boolean {
+  return (
+    isUniqueEssentialNodeForCustomGraph(type) ||
+    type === 'custom_input' ||
+    type === 'custom_output'
+  )
+}
+
 export function deleteAndDisconnectNodes(
   getGraphNodeModule: GetGraphNodeModule,
   nodes: GraphNode[],

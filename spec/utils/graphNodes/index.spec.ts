@@ -56,6 +56,7 @@ import {
   updateDataField,
   getGraphNodeModule,
   isUniqueEssentialNodeForCustomGraph,
+  isExclusiveNodeForCustomGraph,
   getUpdatedNodeMapToChangeNodeStruct,
   isInterfaceChanged,
   completeNodeMap,
@@ -756,6 +757,17 @@ describe('src/utils/graphNodes/index.ts', () => {
         true
       )
       expect(isUniqueEssentialNodeForCustomGraph('custom_input')).toBe(false)
+    })
+  })
+
+  describe('isCustomGraphExclusiveNode', () => {
+    it('should return true if the node is exclusive for the custom graph', () => {
+      expect(isExclusiveNodeForCustomGraph('custom_begin_input')).toBe(true)
+      expect(isExclusiveNodeForCustomGraph('custom_begin_output')).toBe(true)
+      expect(isExclusiveNodeForCustomGraph('custom_input')).toBe(true)
+      expect(isExclusiveNodeForCustomGraph('custom_output')).toBe(true)
+      expect(isExclusiveNodeForCustomGraph('custom_out')).toBe(false)
+      expect(isExclusiveNodeForCustomGraph('scaler')).toBe(false)
     })
   })
 

@@ -6,7 +6,7 @@ import {
 describe('src/composables/modeStates/core.ts', () => {
   function getMockState(arg: Partial<ModeStateBase> = {}): ModeStateBase {
     return {
-      label: 'test state',
+      getLabel: () => 'test state',
       onStart: jest.fn(),
       onEnd: jest.fn(),
       handleEvent: jest.fn(),
@@ -17,7 +17,7 @@ describe('src/composables/modeStates/core.ts', () => {
   describe('useModeStateMachine', () => {
     describe('handleEvent', () => {
       it('should handle the event via current state', async () => {
-        const current = getMockState({ label: 'current' })
+        const current = getMockState({ getLabel: () => 'current' })
         const sm = useModeStateMachine(() => current)
 
         expect(sm.getStateSummary().label).toBe('current')
@@ -27,10 +27,10 @@ describe('src/composables/modeStates/core.ts', () => {
       })
       it('should switch next state if current state returns it', async () => {
         const current = getMockState({
-          label: 'current',
+          getLabel: () => 'current',
           handleEvent: jest
             .fn()
-            .mockResolvedValue(getMockState({ label: 'next' })),
+            .mockResolvedValue(getMockState({ getLabel: () => 'next' })),
         })
         const sm = useModeStateMachine(() => current)
 

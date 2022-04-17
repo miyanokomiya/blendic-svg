@@ -1,12 +1,19 @@
-export interface ModeStateEventBase {
+import { IVec2 } from 'okageo'
+
+export interface ModeStateEvent {
   name: string
+  nativeEvent: Event
 }
 
 export interface ModeStateBase {
-  label: string
+  getLabel: () => string
   onStart: () => Promise<void>
   onEnd: () => Promise<void>
-  handleEvent: (e: ModeStateEventBase) => Promise<ModeStateBase | undefined>
+  handleEvent: (e: ModeStateEvent) => Promise<ModeStateBase | void>
+}
+
+export interface ModeStateContextBase {
+  getPoint: (nativeEvent: Event) => IVec2
 }
 
 export function useModeStateMachine(getInitialState: () => ModeStateBase) {
@@ -14,11 +21,11 @@ export function useModeStateMachine(getInitialState: () => ModeStateBase) {
 
   function getStateSummary() {
     return {
-      label: currentState.label,
+      label: currentState.getLabel(),
     }
   }
 
-  async function handleEvent(event: ModeStateEventBase): Promise<void> {
+  async function handleEvent(event: ModeStateEvent): Promise<void> {
     const nextState = await currentState.handleEvent(event)
     if (nextState) {
       await switchState(nextState)

@@ -1,23 +1,27 @@
-import { IVec2 } from 'okageo'
+import type { EditMovement } from '/@/composables/modes/types'
+import type { KeyOptions, MouseOptions } from '/@/utils/devices'
 
-export interface ModeStateEvent {
-  name: string
-  nativeEvent: Event
-}
-
-export interface ModeStateBase {
+export interface ModeStateBase<Context> {
   getLabel: () => string
-  onStart: () => Promise<void>
-  onEnd: () => Promise<void>
-  handleEvent: (e: ModeStateEvent) => Promise<ModeStateBase | void>
+  shouldRequestPointerLock?: boolean
+  onStart: (getContext: () => Context) => Promise<void>
+  onEnd: (getContext: () => Context) => Promise<void>
+  handleEvent: (
+    getContext: () => Context,
+    e: ModeStateEvent
+  ) => Promise<(() => ModeStateBase<Context>) | void>
 }
 
 export interface ModeStateContextBase {
-  getPoint: (nativeEvent: Event) => IVec2
+  getTimestamp: () => number
 }
 
-export function useModeStateMachine(getInitialState: () => ModeStateBase) {
-  let currentState: ModeStateBase = getInitialState()
+export function useModeStateMachine<Context>(
+  getContext: () => ModeStateContextBase & Context,
+  getInitialState: () => ModeStateBase<Context>
+) {
+  let currentState: ModeStateBase<Context> = getInitialState()
+  currentState.onStart(getContext)
 
   function getStateSummary() {
     return {
@@ -26,15 +30,31 @@ export function useModeStateMachine(getInitialState: () => ModeStateBase) {
   }
 
   async function handleEvent(event: ModeStateEvent): Promise<void> {
-    const nextState = await currentState.handleEvent(event)
-    if (nextState) {
-      await switchState(nextState)
+    const getNextState = await currentState.handleEvent(getContext, event)
+    if (getNextState) {
+      await switchState(getContext, getNextState())
     }
   }
 
-  async function switchState(nextState: ModeStateBase): Promise<void> {
-    await currentState.onEnd()
-    await nextState.onStart()
+  async function switchState(
+    getContext: () => ModeStateContextBase & Context,
+    nextState: ModeStateBase<Context>
+  ): Promise<void> {
+    await currentState.onEnd(getContext)
+
+    if (
+      currentState.shouldRequestPointerLock &&
+      !nextState.shouldRequestPointerLock
+    ) {
+      getContext().exitPointerLock()
+    } else if (
+      !currentState.shouldRequestPointerLock &&
+      nextState.shouldRequestPointerLock
+    ) {
+      getContext().requestPointerLock()
+    }
+
+    await nextState.onStart(getContext)
     currentState = nextState
   }
 
@@ -42,4 +62,56 @@ export function useModeStateMachine(getInitialState: () => ModeStateBase) {
     getStateSummary,
     handleEvent,
   }
+}
+
+export interface ModeStateContextBase {
+  requestPointerLock: () => void
+  exitPointerLock: () => void
+}
+
+export type ModeStateEvent =
+  | PointerMoveEvent
+  | PointerDragEvent
+  | PointerDownEvent
+  | PointerUpEvent
+  | KeyDownEvent
+
+export interface ModeStateEventBase {
+  type: string
+}
+
+interface EventTarget {
+  type: string
+  id: string
+}
+
+interface PointerMoveEvent extends ModeStateEventBase {
+  type: 'pointermove'
+  data: EditMovement
+}
+
+interface PointerDragEvent extends ModeStateEventBase {
+  type: 'pointerdrag'
+  data: EditMovement
+}
+
+interface PointerDownEvent extends ModeStateEventBase {
+  type: 'pointerdown'
+  target: EventTarget
+  data: {
+    options: MouseOptions
+  }
+}
+
+interface PointerUpEvent extends ModeStateEventBase {
+  type: 'pointerup'
+  target: EventTarget
+  data: {
+    options: MouseOptions
+  }
+}
+
+interface KeyDownEvent extends ModeStateEventBase {
+  type: 'keydown'
+  data: KeyOptions
 }

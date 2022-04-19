@@ -79,10 +79,14 @@ export type ModeStateEvent =
 export interface ModeStateEventBase {
   type: string
 }
+export interface ModeStateEventWithTarget extends ModeStateEventBase {
+  target: ModeEventTarget
+}
 
-interface EventTarget {
+export interface ModeEventTarget {
   type: string
   id: string
+  data?: { [key: string]: string }
 }
 
 interface PointerMoveEvent extends ModeStateEventBase {
@@ -95,17 +99,17 @@ interface PointerDragEvent extends ModeStateEventBase {
   data: EditMovement
 }
 
-interface PointerDownEvent extends ModeStateEventBase {
+interface PointerDownEvent extends ModeStateEventWithTarget {
   type: 'pointerdown'
-  target: EventTarget
+  target: ModeEventTarget
   data: {
     options: MouseOptions
   }
 }
 
-interface PointerUpEvent extends ModeStateEventBase {
+interface PointerUpEvent extends ModeStateEventWithTarget {
   type: 'pointerup'
-  target: EventTarget
+  target: ModeEventTarget
   data: {
     options: MouseOptions
   }

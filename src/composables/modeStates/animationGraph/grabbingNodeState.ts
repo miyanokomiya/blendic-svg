@@ -2,17 +2,13 @@ import type { AnimationGraphState } from '/@/composables/modeStates/animationGra
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import { getEditedNodeMap } from '/@/composables/modeStates/animationGraph/utils'
 
-export function useMovingNodeState(options: {
-  nodeId: string
-}): AnimationGraphState {
-  let startedAt = 0
-
+export function useGrabbingNodeState(): AnimationGraphState {
   return {
-    getLabel: () => 'MovingNodeState',
+    getLabel: () => 'GrabbingNodeState',
+    shouldRequestPointerLock: true,
     onStart: (getCtx) => {
       const ctx = getCtx()
       ctx.setEditMovement()
-      startedAt = ctx.getTimestamp()
       return Promise.resolve()
     },
     onEnd: () => Promise.resolve(),
@@ -21,20 +17,15 @@ export function useMovingNodeState(options: {
 
       switch (event.type) {
         case 'pointermove':
-          if (ctx.getEditMovement() || ctx.getTimestamp() - startedAt > 100) {
-            ctx.setEditMovement(event.data)
-          }
+          ctx.setEditMovement(event.data)
           return
         case 'pointerup': {
           if (event.data.options.button === 0) {
             const editMovement = ctx.getEditMovement()
-            if (editMovement) {
+            const nodeId = ctx.getLastSelectedNodeId()
+            if (editMovement && nodeId) {
               ctx.updateNodes(
-                getEditedNodeMap(
-                  ctx.getSelectedNodeMap(),
-                  options.nodeId,
-                  editMovement
-                )
+                getEditedNodeMap(ctx.getSelectedNodeMap(), nodeId, editMovement)
               )
             }
           }

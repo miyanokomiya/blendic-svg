@@ -1,18 +1,25 @@
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
 import { useMovingNodeState } from '/@/composables/modeStates/animationGraph/movingNodeState'
+import { useGrabbingNodeState } from '/@/composables/modeStates/animationGraph/grabbingNodeState'
 
 export function useDefaultState(): AnimationGraphState {
   return {
     getLabel: () => 'DefaultState',
     onStart: () => Promise.resolve(),
     onEnd: () => Promise.resolve(),
-    handleEvent: async (_, event) => {
+    handleEvent: async (getCtx, event) => {
+      const ctx = getCtx()
+
       switch (event.type) {
         case 'pointerdown':
           switch (event.target.type) {
-            case 'node-body':
-              // TODO: MovingState
-              return useMovingNodeState
+            case 'node-body': {
+              const nodeId = event.target.id
+              if (!ctx.getSelectedNodeMap()[nodeId]) {
+                ctx.selectedNodes({ nodeId: true })
+              }
+              return () => useMovingNodeState({ nodeId })
+            }
             case 'node-edge':
               // TODO: ConnectingState
               return useDefaultState
@@ -24,10 +31,12 @@ export function useDefaultState(): AnimationGraphState {
               // TODO: Show menu list
               return
             case 'a':
-              // TODO: SelectedState
-              return useDefaultState
-            case 'v':
-              break
+              ctx.selectAllNode()
+              return
+            case 'g':
+              return ctx.getLastSelectedNodeId()
+                ? useGrabbingNodeState
+                : undefined
           }
           return
       }

@@ -32,13 +32,13 @@ export function useAddingNewNodeState(options: {
           break
         case 'keydown':
           switch (event.data.key) {
-            case 'escape':
+            case 'Escape':
               return useDefaultState
           }
           return
         case 'popupmenu': {
           const key = event.data.key
-          ctx.addNode(key, options.point)
+          ctx.addNode(key, { position: options.point })
           return useDefaultState
         }
       }

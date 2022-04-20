@@ -1,3 +1,4 @@
+import { IVec2 } from 'okageo'
 import type { EditMovement } from '/@/composables/modes/types'
 import type { KeyOptions, MouseOptions } from '/@/utils/devices'
 
@@ -10,10 +11,6 @@ export interface ModeStateBase<Context> {
     getContext: () => Context,
     e: ModeStateEvent
   ) => Promise<(() => ModeStateBase<Context>) | void>
-}
-
-export interface ModeStateContextBase {
-  getTimestamp: () => number
 }
 
 export function useModeStateMachine<Context>(
@@ -40,6 +37,7 @@ export function useModeStateMachine<Context>(
     getContext: () => ModeStateContextBase & Context,
     nextState: ModeStateBase<Context>
   ): Promise<void> {
+    console.log(nextState.getLabel())
     await currentState.onEnd(getContext)
 
     if (
@@ -67,6 +65,7 @@ export function useModeStateMachine<Context>(
 export interface ModeStateContextBase {
   requestPointerLock: () => void
   exitPointerLock: () => void
+  getTimestamp: () => number
 }
 
 export type ModeStateEvent =
@@ -119,6 +118,7 @@ interface PointerUpEvent extends ModeStateEventWithTarget {
 interface KeyDownEvent extends ModeStateEventBase {
   type: 'keydown'
   data: KeyOptions
+  point?: IVec2
 }
 
 interface PopupMenuEvent extends ModeStateEventBase {

@@ -1,23 +1,26 @@
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
-import { getEditedNodeMap } from '/@/composables/modeStates/animationGraph/utils'
+import {
+  getEditedNodeMap,
+  getGridRoundedEditMovement,
+} from '/@/composables/modeStates/animationGraph/utils'
 
 export function useGrabbingNodeState(): AnimationGraphState {
   return {
     getLabel: () => 'GrabbingNodeState',
     shouldRequestPointerLock: true,
-    onStart: (getCtx) => {
+    onStart: async (getCtx) => {
       const ctx = getCtx()
-      ctx.setEditMovement()
-      return Promise.resolve()
+      ctx.startEditMovement()
     },
-    onEnd: () => Promise.resolve(),
+    onEnd: async () => {},
     handleEvent: async (getCtx, event) => {
       const ctx = getCtx()
 
+      console.log(event.type)
       switch (event.type) {
         case 'pointermove':
-          ctx.setEditMovement(event.data)
+          ctx.setEditMovement(getGridRoundedEditMovement(event.data))
           return
         case 'pointerup': {
           if (event.data.options.button === 0) {
@@ -34,7 +37,7 @@ export function useGrabbingNodeState(): AnimationGraphState {
         }
         case 'keydown':
           switch (event.data.key) {
-            case 'escape':
+            case 'Escape':
               ctx.setEditMovement()
               return useDefaultState
           }

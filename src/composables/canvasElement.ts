@@ -25,8 +25,8 @@ import { useWindow } from '/@/composables/window'
 export function useCanvasElement(
   getCanvas: () => ReturnType<typeof useCanvas>
 ) {
-  const svg = ref<SVGElement>()
-  const wrapper = ref<SVGElement>()
+  const svg = ref<Element>()
+  const wrapper = ref<Element>()
 
   const windowState = useWindow()
   onMounted(adjustSvgSize)

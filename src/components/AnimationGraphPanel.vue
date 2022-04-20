@@ -58,7 +58,16 @@ Copyright (C) 2021, Tomoya Komiyama.
       <p>(!!Experimental!!)</p>
     </div>
     <div class="main">
-      <AnimationGraphCanvas class="canvas" :canvas="canvas" :mode="mode">
+      <AnimationGraphCanvas
+        ref="canvasRef"
+        class="canvas"
+        :canvas="canvas"
+        @mousedown="handleDownEvent"
+        @mouseup="handleUpEvent"
+        @mousemove="handleNativeMoveEvent"
+        @keydown="handleKeydownEvent"
+        @update:data="updateNodeData"
+      >
         <g v-for="(edgeMapOfNode, id) in edgeMap" :key="id">
           <GraphEdge
             v-for="(edge, key) in edgeMapOfNode"
@@ -75,10 +84,6 @@ Copyright (C) 2021, Tomoya Komiyama.
           :edge-positions="edgePositionMap[node.id]"
           :selected="selectedNodes[node.id]"
           :errors="nodeErrorMessagesMap[node.id]"
-          @down-body="downNodeBody"
-          @down-edge="downNodeEdge"
-          @up-edge="upNodeEdge"
-          @update:data="updateNodeData"
         />
         <g v-if="draftEdge">
           <GraphEdge :from="draftEdge.from" :to="draftEdge.to" selected />
@@ -92,11 +97,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { defineComponent, watchEffect, computed, ref } from 'vue'
 import { useCanvas } from '/@/composables/canvas'
-import {
-  ClosestEdgeInfo,
-  DraftGraphEdge,
-  useAnimationGraphMode,
-} from '/@/composables/modes/animationGraphMode'
+import { useAnimationGraphMode } from '/@/composables/modes/animationGraphMode'
 import { useStore } from '/@/store'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import AnimationGraphCanvas from '/@/components/AnimationGraphCanvas.vue'
@@ -107,9 +108,8 @@ import GraphNode from '/@/components/elements/GraphNode.vue'
 import GraphNodeReroute from '/@/components/elements/GraphNodeReroute.vue'
 import GraphEdge from '/@/components/elements/GraphEdge.vue'
 import { IdMap, toMap } from '/@/models'
-import { SelectOptions } from '/@/composables/modes/types'
 import { mapReduce } from '/@/utils/commons'
-import { add, IVec2 } from 'okageo'
+import { add, IVec2, sub } from 'okageo'
 import { getGraphNodeEdgePosition } from '/@/utils/helpers'
 import { GraphNodeEdgePositions } from '/@/models/graphNode'
 import { useElementStore } from '/@/store/element'
@@ -120,6 +120,10 @@ import {
   provideGetGraphNodeModuleFn,
   provideGetObjectOptions,
 } from '/@/composables/animationGraph'
+import { parseEventTarget } from '/@/composables/modeStates/animationGraph/utils'
+import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
+import { useThrottle } from '/@/composables/throttle'
+import { PointerMovement, usePointerLock } from '../composables/window'
 
 export default defineComponent({
   components: {
@@ -141,8 +145,41 @@ export default defineComponent({
     const graphStore = useAnimationGraphStore()
     const currentGraph = computed(() => graphStore.lastSelectedGraph.value)
 
+    const canvasRef = ref<typeof AnimationGraphCanvas>()
+
     const canvas = useCanvas()
-    const mode = useAnimationGraphMode(graphStore)
+    const throttleMousemove = useThrottle(handleMoveEvent, 1000 / 60, true)
+    const pointerLock = usePointerLock({
+      onMove: throttleMousemove,
+      onGlobalMove: (arg) => {
+        if (!canvasRef.value?.svg) return
+        const svgRect = canvasRef.value.svg.getBoundingClientRect()
+        const p = add(arg.p, { x: svgRect.left, y: svgRect.top })
+        if (!p) return
+        canvas.setMousePoint(p)
+      },
+      onEscape: () => {
+        // TODO
+      },
+    })
+
+    const mode = useAnimationGraphMode({
+      graphStore,
+      requestPointerLock: () => {
+        if (!canvasRef.value?.svg) return
+        pointerLock.requestPointerLockFromElement(canvasRef.value.svg)
+      },
+      exitPointerLock: pointerLock.exitPointerLock,
+      startEditMovement: () => {
+        canvas.setEditStartPoint(canvas.mousePoint.value)
+        graphStore.setEditMovement({
+          start: canvas.viewToCanvas(canvas.mousePoint.value),
+          current: canvas.viewToCanvas(canvas.mousePoint.value),
+          ctrl: false,
+          scale: canvas.scale.value,
+        })
+      },
+    })
 
     const getGraphNodeModule = computed(() =>
       graphStore.getGraphNodeModuleFn.value()
@@ -216,16 +253,16 @@ export default defineComponent({
 
     const selectedNodes = graphStore.selectedNodes
 
-    function downNodeBody(id: string, options?: SelectOptions) {
-      mode.downNodeBody(id, options)
-    }
-
     const editedNodeMap = computed(() => {
+      const editMovement = graphStore.editMovement.value
+      if (!editMovement) return graphStore.nodeMap.value
+
+      const translate = sub(editMovement.current, editMovement.start)
+      const selectedMap = selectedNodes.value
       return mapReduce(graphStore.nodeMap.value, (n, id) => {
-        return {
-          ...n,
-          position: add(n.position, mode.getEditTransforms(id).translate),
-        }
+        return selectedMap[id]
+          ? { ...n, position: add(n.position, translate) }
+          : n
       })
     })
 
@@ -237,10 +274,10 @@ export default defineComponent({
 
     const edgeMap = computed(() => {
       const draftToInfo =
-        mode.draftEdgeInfo.value?.type === 'draft-from'
+        graphStore.draftEdge.value?.type === 'draft-from'
           ? {
-              id: mode.draftEdgeInfo.value.to.nodeId,
-              key: mode.draftEdgeInfo.value.to.key,
+              id: graphStore.draftEdge.value.to.nodeId,
+              key: graphStore.draftEdge.value.to.key,
             }
           : undefined
 
@@ -278,25 +315,25 @@ export default defineComponent({
     })
 
     const draftEdge = computed<{ from: IVec2; to: IVec2 } | undefined>(() => {
-      if (!mode.draftEdgeInfo.value) return undefined
+      if (!graphStore.draftEdge.value) return undefined
 
-      if (mode.draftEdgeInfo.value.type === 'draft-to') {
+      if (graphStore.draftEdge.value.type === 'draft-to') {
         return {
           from: add(
-            editedNodeMap.value[mode.draftEdgeInfo.value.from.nodeId].position,
-            edgePositionMap.value[mode.draftEdgeInfo.value.from.nodeId].outputs[
-              mode.draftEdgeInfo.value.from.key
-            ].p
+            editedNodeMap.value[graphStore.draftEdge.value.from.nodeId]
+              .position,
+            edgePositionMap.value[graphStore.draftEdge.value.from.nodeId]
+              .outputs[graphStore.draftEdge.value.from.key].p
           ),
-          to: mode.draftEdgeInfo.value.to,
+          to: graphStore.draftEdge.value.to,
         }
       } else {
         return {
-          from: mode.draftEdgeInfo.value.from,
+          from: graphStore.draftEdge.value.from,
           to: add(
-            editedNodeMap.value[mode.draftEdgeInfo.value.to.nodeId].position,
-            edgePositionMap.value[mode.draftEdgeInfo.value.to.nodeId].inputs[
-              mode.draftEdgeInfo.value.to.key
+            editedNodeMap.value[graphStore.draftEdge.value.to.nodeId].position,
+            edgePositionMap.value[graphStore.draftEdge.value.to.nodeId].inputs[
+              graphStore.draftEdge.value.to.key
             ].p
           ),
         }
@@ -306,14 +343,6 @@ export default defineComponent({
     function updateNodeData(id: string, data: any, seriesKey?: string) {
       const node = graphStore.nodeMap.value[id]
       graphStore.updateNode(id, { ...node, data }, seriesKey)
-    }
-
-    function downNodeEdge(draftGraphEdge: DraftGraphEdge) {
-      mode.downNodeEdge(draftGraphEdge)
-    }
-
-    function upNodeEdge(closestEdgeInfo: ClosestEdgeInfo) {
-      mode.upNodeEdge(closestEdgeInfo)
     }
 
     provideGetObjectOptions(() => {
@@ -347,16 +376,85 @@ export default defineComponent({
       })
     })
 
+    function handleDownEvent(e: MouseEvent) {
+      if (e.button === 0) {
+        canvas.downLeft()
+      } else if (e.button === 1) {
+        canvas.downMiddle()
+      }
+
+      mode.sm.handleEvent({
+        type: 'pointerdown',
+        target: parseEventTarget(e),
+        data: { options: getMouseOptions(e) },
+      } as any)
+    }
+    function handleUpEvent(e: MouseEvent) {
+      if (e.button === 0) {
+        canvas.upLeft()
+      } else if (e.button === 1) {
+        canvas.upMiddle()
+      }
+
+      mode.sm.handleEvent({
+        type: 'pointerup',
+        target: parseEventTarget(e),
+        data: { options: getMouseOptions(e) },
+      } as any)
+    }
+    function handleMoveEvent(e: PointerMovement) {
+      if (canvas.viewMovingInfo.value) {
+        canvas.viewMove()
+        return
+      }
+
+      if (!canvas.editStartPoint.value) return
+      mode.sm.handleEvent({
+        type: 'pointermove',
+        data: {
+          start: canvas.viewToCanvas(canvas.editStartPoint.value),
+          current: canvas.viewToCanvas(canvas.mousePoint.value),
+          ctrl: e.ctrl,
+          scale: canvas.scale.value,
+        },
+      } as any)
+    }
+    function handleNativeMoveEvent(e: MouseEvent) {
+      if (canvas.dragInfo.value) {
+        mode.sm.handleEvent({
+          type: 'pointerdrag',
+          data: {
+            start: canvas.viewToCanvas(canvas.dragInfo.value.downAt),
+            current: canvas.viewToCanvas(canvas.mousePoint.value),
+            ctrl: isCtrlOrMeta(e),
+            scale: canvas.scale.value,
+          },
+        } as any)
+      }
+    }
+    function handleKeydownEvent(e: KeyboardEvent) {
+      mode.sm.handleEvent({
+        type: 'keydown',
+        data: getKeyOptions(e),
+        point: canvas.viewToCanvas(canvas.mousePoint.value),
+      } as any)
+    }
+
     return {
       GraphNode,
       GraphNodeReroute,
+
+      canvasRef,
 
       canvasType: graphStore.graphType,
       setGraphType: (val: any) => graphStore.setGraphType(val),
       canvasTypeOptions,
 
       canvas,
-      mode,
+      handleDownEvent,
+      handleUpEvent,
+      handleNativeMoveEvent,
+      handleKeydownEvent,
 
       selectedArmature,
       editedNodeMap,
@@ -375,9 +473,6 @@ export default defineComponent({
       deleteParentGraph,
 
       selectedNodes,
-      downNodeBody,
-      downNodeEdge,
-      upNodeEdge,
       updateNodeData,
     }
   },

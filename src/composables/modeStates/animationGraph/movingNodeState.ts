@@ -1,6 +1,9 @@
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
-import { getEditedNodeMap } from '/@/composables/modeStates/animationGraph/utils'
+import {
+  getEditedNodeMap,
+  getGridRoundedEditMovement,
+} from '/@/composables/modeStates/animationGraph/utils'
 
 export function useMovingNodeState(options: {
   nodeId: string
@@ -20,9 +23,9 @@ export function useMovingNodeState(options: {
       const ctx = getCtx()
 
       switch (event.type) {
-        case 'pointermove':
-          if (ctx.getEditMovement() || ctx.getTimestamp() - startedAt > 100) {
-            ctx.setEditMovement(event.data)
+        case 'pointerdrag':
+          if (ctx.getTimestamp() - startedAt > 100) {
+            ctx.setEditMovement(getGridRoundedEditMovement(event.data))
           }
           return
         case 'pointerup': {

@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   AnimationGraph,
   CustomGraph,
@@ -32,7 +32,7 @@ import {
 import { dropMap, extractMap, mapReduce, toList } from '../utils/commons'
 import { useHistoryStore } from './history'
 import { useEntities } from '/@/composables/stores/entities'
-import { SelectOptions } from '/@/composables/modes/types'
+import { EditMovement, SelectOptions } from '/@/composables/modes/types'
 import { useItemSelectable } from '/@/composables/stores/selectable'
 import { HistoryStore } from '/@/composables/stores/history'
 import { fromEntityList, toEntityList } from '/@/models/entity'
@@ -67,6 +67,7 @@ import { useAnimationStore } from '/@/store/animation'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import { createCustomNodeModule } from '/@/utils/graphNodes/customGraph'
 import { useCanvasStore } from '/@/store/canvas'
+import { DraftGraphEdge } from '/@/composables/modeStates/animationGraph/core'
 
 export type GraphType = 'graph' | 'custom'
 
@@ -594,6 +595,9 @@ export function createStore(
     )
   }
 
+  const editMovement = ref<EditMovement>()
+  const draftEdge = ref<DraftGraphEdge>()
+
   return {
     initState,
     exportState,
@@ -639,6 +643,16 @@ export function createStore(
     addCustomGraph,
     deleteCustomGraph,
     updateCustomGraph,
+
+    editMovement: computed(() => editMovement.value),
+    setEditMovement: (val?: EditMovement) => {
+      console.log(val)
+      editMovement.value = val
+    },
+    draftEdge: computed(() => draftEdge.value),
+    setDraftEdge: (val?: DraftGraphEdge) => {
+      draftEdge.value = val
+    },
   }
 }
 export type AnimationGraphStore = ReturnType<typeof createStore>

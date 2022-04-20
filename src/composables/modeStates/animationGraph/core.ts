@@ -25,9 +25,10 @@ export interface AnimationGraphStateContext extends ModeStateContextBase {
   selectedNodes: (ids: IdMap<boolean>, options?: SelectOptions) => void
   selectAllNode: () => void
   deleteNodes: () => void
-  addNode: (type: GraphNodeType, position: IVec2) => void
+  addNode: (type: GraphNodeType, arg?: Partial<GraphNode>) => void
   getEditMovement: () => EditMovement | undefined
   setEditMovement: (val?: EditMovement) => void
+  startEditMovement: () => void
   getDraftEdge: () => DraftGraphEdge | undefined
   setDraftEdge: (val?: DraftGraphEdge) => void
 

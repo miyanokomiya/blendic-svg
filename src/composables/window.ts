@@ -146,6 +146,16 @@ export function usePointerLock(handlers: {
       ;(e.target as Element).requestPointerLock()
       locked = true
     },
+    requestPointerLockFromElement(
+      target: Element,
+      motion: PointerType = 'move'
+    ) {
+      base = globalCurrent.value
+      motionRef.value = motion
+      current.value = globalCurrent.value
+      target.requestPointerLock()
+      locked = true
+    },
     exitPointerLock,
   }
 }

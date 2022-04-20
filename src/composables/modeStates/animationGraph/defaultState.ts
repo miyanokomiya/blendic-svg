@@ -1,6 +1,7 @@
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
 import { useMovingNodeState } from '/@/composables/modeStates/animationGraph/movingNodeState'
 import { useGrabbingNodeState } from '/@/composables/modeStates/animationGraph/grabbingNodeState'
+import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
 
 export function useDefaultState(): AnimationGraphState {
   return {
@@ -13,12 +14,17 @@ export function useDefaultState(): AnimationGraphState {
       switch (event.type) {
         case 'pointerdown':
           switch (event.target.type) {
+            case 'empty': {
+              ctx.selectedNodes({}, event.data.options)
+              return
+            }
             case 'node-body': {
-              const nodeId = event.target.id
-              if (!ctx.getSelectedNodeMap()[nodeId]) {
-                ctx.selectedNodes({ nodeId: true }, event.data.options)
+              const nodeId = event.target.data?.['node_id']
+              if (nodeId) {
+                ctx.selectedNodes({ [nodeId]: true }, event.data.options)
+                return () => useMovingNodeState({ nodeId })
               }
-              return () => useMovingNodeState({ nodeId })
+              return
             }
             case 'node-edge':
               // TODO: ConnectingState
@@ -27,9 +33,10 @@ export function useDefaultState(): AnimationGraphState {
           return
         case 'keydown':
           switch (event.data.key) {
-            case 'A':
-              // TODO: Show menu list
-              return
+            case 'A': {
+              const point = event.point
+              return point ? () => useAddingNewNodeState({ point }) : undefined
+            }
             case 'a':
               ctx.selectAllNode()
               return

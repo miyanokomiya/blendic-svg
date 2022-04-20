@@ -29,11 +29,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         :width="viewSize.width"
         :height="viewSize.height"
         @wheel.prevent="wheel"
-        @click.right.prevent
-        @mouseup.right.prevent="escape"
-        @mousemove.prevent="mousemoveNative"
-        @mousedown.left.prevent="downLeft"
-        @mouseup.left.prevent="upLeft"
         @mousedown.middle.prevent="downMiddle"
         @mouseup.middle.prevent="upMiddle"
       >
@@ -77,12 +72,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, onMounted, computed, PropType } from 'vue'
-import { PointerMovement, usePointerLock } from '../composables/window'
+import { defineComponent, onMounted, computed, PropType } from 'vue'
 import { provideScale, useCanvas } from '../composables/canvas'
-import { useThrottle } from '/@/composables/throttle'
-import { getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
-import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import DotBackground from '/@/components/elements/atoms/DotBackground.vue'
@@ -103,14 +94,12 @@ export default defineComponent({
       type: Object as PropType<ReturnType<typeof useCanvas>>,
       required: true,
     },
-    mode: {
-      type: Object as PropType<AnimationGraphMode>,
-      required: true,
-    },
   },
-  setup(props) {
-    const { wrapper, svg, addRootPosition, removeRootPosition } =
-      useCanvasElement(() => props.canvas)
+  emits: ['keydown'],
+  setup(props, { emit }) {
+    const { wrapper, svg, addRootPosition } = useCanvasElement(
+      () => props.canvas
+    )
 
     provideScale(() => props.canvas.scale.value)
 
@@ -118,78 +107,17 @@ export default defineComponent({
       props.canvas.adjustToCenter()
     })
 
-    const popupMenuList = computed(() => props.mode.popupMenuList.value)
+    const popupMenuList = computed(() => [])
     const popupMenuListPosition = computed(() => {
-      return addRootPosition(
-        props.canvas.canvasToView(props.mode.keyDownPosition.value)
-      )
+      return addRootPosition(props.canvas.canvasToView({ x: 0, y: 0 }))
     })
-
-    const isDownEmpty = ref(false)
-
-    function mousemoveNative(e: MouseEvent) {
-      if (!props.canvas.dragInfo.value) return
-
-      props.mode.drag({
-        start: props.canvas.viewToCanvas(props.canvas.dragInfo.value.downAt),
-        current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-        ctrl: isCtrlOrMeta(e),
-        scale: props.canvas.scale.value,
-      })
-    }
-
-    function mousemove(arg: PointerMovement) {
-      if (props.canvas.viewMovingInfo.value) {
-        props.canvas.viewMove()
-        return
-      }
-
-      if (props.canvas.editStartPoint.value) {
-        props.mode.mousemove({
-          start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
-          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-          ctrl: arg.ctrl ?? false,
-          scale: props.canvas.scale.value,
-        })
-      }
-    }
-    const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
-    const pointerLock = usePointerLock({
-      onMove: throttleMousemove,
-      onUp: (e) => {
-        if (e.button === 0) {
-          props.mode.upLeft({ empty: e.target === svg.value })
-        }
-      },
-      onGlobalMove: (arg) => {
-        const p = removeRootPosition(arg.p)
-        if (!p) return
-        props.canvas.setMousePoint(p)
-      },
-      onEscape: () => {
-        // continue displaying the popup menu even if the canvas is scrolled by middle dragging
-        // FIXME: want to improve this branch
-        if (props.mode.command.value === 'add') return
-        escape()
-      },
-    })
-
-    watch(
-      () => props.mode.command.value,
-      (to) => {
-        if (to === '') {
-          pointerLock.exitPointerLock()
-        }
-      }
-    )
-
-    function escape() {
-      props.mode.cancel()
-    }
 
     return {
-      onCopy: (e: ClipboardEvent) => props.mode.onCopy(e),
-      onPaste: (e: ClipboardEvent) => props.mode.onPaste(e),
+      editKeyDown: (e: KeyboardEvent) => {
+        emit('keydown', e)
+      },
+      onCopy: (_e: ClipboardEvent) => {},
+      onPaste: (_e: ClipboardEvent) => {},
 
       scale: computed(() => props.canvas.scale.value),
       viewOrigin: computed(() => props.canvas.viewOrigin.value),
@@ -198,74 +126,16 @@ export default defineComponent({
       viewCanvasRect: computed(() => props.canvas.viewCanvasRect.value),
       popupMenuList,
 
-      mousemoveNative,
       wheel: props.canvas.wheel,
-      downLeft: (e: MouseEvent) => {
-        isDownEmpty.value = e.target === svg.value
-
-        if (isDownEmpty.value && props.mode.command.value) return
-
-        if (isDownEmpty.value) {
-          props.canvas.downLeft('rect-select')
-        } else {
-          props.canvas.downLeft()
-        }
-
-        const current = props.canvas.viewToCanvas(props.canvas.mousePoint.value)
-        props.mode.drag({
-          current,
-          start: current,
-          ctrl: isCtrlOrMeta(e),
-          scale: props.canvas.scale.value,
-        })
-      },
-      upLeft: (e: MouseEvent) => {
-        if (
-          props.canvas.dragRectangle.value &&
-          props.canvas.isValidDragRectangle.value
-        ) {
-          props.mode.rectSelect(
-            props.canvas.dragRectangle.value,
-            getMouseOptions(e)
-          )
-        } else if (e.target === svg.value && isDownEmpty.value) {
-          props.mode.clickEmpty()
-        } else {
-          props.mode.clickAny()
-        }
-
-        props.canvas.upLeft()
-        props.mode.upLeft({ empty: e.target === svg.value })
-        isDownEmpty.value = false
-      },
-      downMiddle: (e: MouseEvent) => {
+      downMiddle: () => {
         props.canvas.downMiddle()
-        pointerLock.requestPointerLock(e)
       },
       upMiddle: () => {
         props.canvas.upMiddle()
-        pointerLock.exitPointerLock()
       },
-      escape,
-      editKeyDown: (e: KeyboardEvent) => {
-        const { needLock } = props.mode.execKey({
-          key: e.key,
-          position: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-          shift: e.shiftKey,
-          ctrl: isCtrlOrMeta(e),
-        })
-
-        if (needLock) {
-          pointerLock.requestPointerLock(e)
-          props.canvas.setEditStartPoint(props.canvas.mousePoint.value)
-        }
-      },
-
       wrapper,
       svg,
-      availableCommandList: computed(
-        () => props.mode.availableCommandList.value
-      ),
+      availableCommandList: computed(() => []),
       popupMenuListPosition,
       dragRectangle: computed(() => props.canvas.dragRectangle.value),
     }

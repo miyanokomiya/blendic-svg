@@ -16,7 +16,7 @@ export function useDefaultState(): AnimationGraphState {
             case 'node-body': {
               const nodeId = event.target.id
               if (!ctx.getSelectedNodeMap()[nodeId]) {
-                ctx.selectedNodes({ nodeId: true })
+                ctx.selectedNodes({ nodeId: true }, event.data.options)
               }
               return () => useMovingNodeState({ nodeId })
             }

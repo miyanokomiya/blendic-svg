@@ -1,5 +1,9 @@
 import { IVec2 } from 'okageo'
-import { EditMovement, SelectOptions } from '/@/composables/modes/types'
+import {
+  EditMovement,
+  PopupMenuItem,
+  SelectOptions,
+} from '/@/composables/modes/types'
 import type {
   ModeStateBase,
   ModeStateContextBase,
@@ -10,7 +14,7 @@ import {
   GraphNode,
   GraphNodeType,
 } from '/@/models/graphNode'
-import { GetGraphNodeModule } from '/@/utils/graphNodes'
+import { GetGraphNodeModule, NODE_MENU_OPTION } from '/@/utils/graphNodes'
 
 export interface AnimationGraphStateContext extends ModeStateContextBase {
   getGraphNodeModule: GetGraphNodeModule
@@ -26,6 +30,9 @@ export interface AnimationGraphStateContext extends ModeStateContextBase {
   setEditMovement: (val?: EditMovement) => void
   getDraftEdge: () => DraftGraphEdge | undefined
   setDraftEdge: (val?: DraftGraphEdge) => void
+
+  setPopupMenuList: (val?: { items: PopupMenuItem[]; point: IVec2 }) => void
+  getNodeItemList: () => NODE_MENU_OPTION[]
 }
 
 export interface AnimationGraphState

@@ -75,6 +75,7 @@ export type ModeStateEvent =
   | PointerDownEvent
   | PointerUpEvent
   | KeyDownEvent
+  | PopupMenuEvent
 
 export interface ModeStateEventBase {
   type: string
@@ -118,4 +119,11 @@ interface PointerUpEvent extends ModeStateEventWithTarget {
 interface KeyDownEvent extends ModeStateEventBase {
   type: 'keydown'
   data: KeyOptions
+}
+
+interface PopupMenuEvent extends ModeStateEventBase {
+  type: 'popupmenu'
+  data: {
+    key: string
+  }
 }

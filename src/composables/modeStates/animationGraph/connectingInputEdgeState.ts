@@ -37,22 +37,24 @@ export function useConnectingInputEdgeState(options: {
           })
           return
         case 'pointerup':
-          if (
-            event.data.options.button === 0 &&
-            event.target.type === 'edge-output'
-          ) {
-            const nodeMap = ctx.getNodeMap()
-            const closest = parseEdgeInfo(event.target)
-            ctx.updateNodes(
-              updateNodeInput(
-                ctx.getGraphNodeModule,
-                nodeMap,
-                nodeMap[closest.id],
-                closest.key,
-                options.nodeId,
-                options.inputKey
+          if (event.data.options.button === 0) {
+            if (event.target.type === 'empty') {
+              // TODO: Move to "AddingNewNodeState"
+              ctx.getDraftEdge()?.to
+            } else if (event.target.type === 'edge-output') {
+              const nodeMap = ctx.getNodeMap()
+              const closest = parseEdgeInfo(event.target)
+              ctx.updateNodes(
+                updateNodeInput(
+                  ctx.getGraphNodeModule,
+                  nodeMap,
+                  nodeMap[closest.id],
+                  closest.key,
+                  options.nodeId,
+                  options.inputKey
+                )
               )
-            )
+            }
           }
           return useDefaultState
         case 'keydown':

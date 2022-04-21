@@ -18,12 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { add, IVec2, sub } from 'okageo'
+import { Size } from 'okanvas'
 import { ref, watch, onMounted } from 'vue'
-import { useCanvas } from '/@/composables/canvas'
 import { useWindow } from '/@/composables/window'
 
 export function useCanvasElement(
-  getCanvas: () => ReturnType<typeof useCanvas>
+  getCanvas: () => { setViewSize: (size: Size) => void }
 ) {
   const svg = ref<Element>()
   const wrapper = ref<Element>()

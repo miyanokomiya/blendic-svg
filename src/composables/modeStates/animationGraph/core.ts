@@ -1,4 +1,5 @@
 import { IVec2 } from 'okageo'
+import { Rectangle } from 'okanvas'
 import {
   EditMovement,
   PopupMenuItem,
@@ -22,18 +23,24 @@ export interface AnimationGraphStateContext extends ModeStateContextBase {
   updateNodes: (val: IdMap<Partial<GraphNode>>) => void
   getSelectedNodeMap: () => IdMap<GraphNode>
   getLastSelectedNodeId: () => string | undefined
-  selectedNodes: (ids: IdMap<boolean>, options?: SelectOptions) => void
+  selectNodes: (ids: IdMap<boolean>, options?: SelectOptions) => void
   selectAllNode: () => void
   deleteNodes: () => void
   addNode: (type: GraphNodeType, arg?: Partial<GraphNode>) => void
   getEditMovement: () => EditMovement | undefined
   setEditMovement: (val?: EditMovement) => void
-  startEditMovement: () => void
   getDraftEdge: () => DraftGraphEdge | undefined
   setDraftEdge: (val?: DraftGraphEdge) => void
 
+  startEditMovement: () => void
+  startDragging: () => void
+
   setPopupMenuList: (val?: { items: PopupMenuItem[]; point: IVec2 }) => void
   getNodeItemList: () => NODE_MENU_OPTION[]
+
+  panView: (val: EditMovement) => void
+  setRectangleDragging: (val?: boolean) => void
+  getDraggedRectangle: () => Rectangle | undefined
 }
 
 export interface AnimationGraphState

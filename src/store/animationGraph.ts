@@ -646,7 +646,6 @@ export function createStore(
 
     editMovement: computed(() => editMovement.value),
     setEditMovement: (val?: EditMovement) => {
-      console.log(val)
       editMovement.value = val
     },
     draftEdge: computed(() => draftEdge.value),

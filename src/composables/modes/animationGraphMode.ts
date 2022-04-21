@@ -22,12 +22,20 @@ import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaul
 import { AnimationGraphStateContext } from '/@/composables/modeStates/animationGraph/core'
 import { AnimationGraphStore } from '/@/store/animationGraph'
 import { mapReduce } from '/@/utils/commons'
+import { EditMovement } from '/@/composables/modes/types'
+import { Rectangle } from 'okanvas'
 
 export function useAnimationGraphMode(options: {
   graphStore: AnimationGraphStore
   requestPointerLock: () => void
   exitPointerLock: () => void
+
   startEditMovement: () => void
+  startDragging: () => void
+
+  panView: (val: EditMovement) => void
+  setRectangleDragging: (val?: boolean) => void
+  getDraggedRectangle: () => Rectangle | undefined
 }) {
   const graphStore = options.graphStore
 
@@ -44,18 +52,24 @@ export function useAnimationGraphMode(options: {
         (_, id) => graphStore.nodeMap.value[id]
       ),
     getLastSelectedNodeId: () => graphStore.lastSelectedNode.value?.id,
-    selectedNodes: graphStore.selectNodes,
+    selectNodes: graphStore.selectNodes,
     selectAllNode: graphStore.selectAllNode,
     deleteNodes: graphStore.deleteNodes,
     addNode: graphStore.addNode,
     getEditMovement: () => graphStore.editMovement.value,
     setEditMovement: graphStore.setEditMovement,
-    startEditMovement: options.startEditMovement,
     getDraftEdge: () => graphStore.draftEdge.value,
     setDraftEdge: graphStore.setDraftEdge,
 
+    startEditMovement: options.startEditMovement,
+    startDragging: options.startDragging,
+
     setPopupMenuList: () => {},
     getNodeItemList: () => [],
+
+    panView: options.panView,
+    setRectangleDragging: options.setRectangleDragging,
+    getDraggedRectangle: options.getDraggedRectangle,
   }
   const sm = useModeStateMachine(() => context, useDefaultState)
   return { sm }

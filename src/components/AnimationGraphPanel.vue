@@ -62,10 +62,6 @@ Copyright (C) 2021, Tomoya Komiyama.
         ref="canvasRef"
         class="canvas"
         :canvas="canvas"
-        @mousedown="handleDownEvent"
-        @mouseup="handleUpEvent"
-        @mousemove="handleNativeMoveEvent"
-        @keydown="handleKeydownEvent"
         @update:data="updateNodeData"
       >
         <g v-for="(edgeMapOfNode, id) in edgeMap" :key="id">
@@ -96,8 +92,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, watchEffect, computed, ref } from 'vue'
-import { useCanvas } from '/@/composables/canvas'
-import { useAnimationGraphMode } from '/@/composables/modes/animationGraphMode'
+import { useSvgCanvas } from '/@/composables/canvas'
 import { useStore } from '/@/store'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import AnimationGraphCanvas from '/@/components/AnimationGraphCanvas.vue'
@@ -120,10 +115,6 @@ import {
   provideGetGraphNodeModuleFn,
   provideGetObjectOptions,
 } from '/@/composables/animationGraph'
-import { parseEventTarget } from '/@/composables/modeStates/animationGraph/utils'
-import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
-import { useThrottle } from '/@/composables/throttle'
-import { PointerMovement, usePointerLock } from '../composables/window'
 
 export default defineComponent({
   components: {
@@ -147,39 +138,7 @@ export default defineComponent({
 
     const canvasRef = ref<typeof AnimationGraphCanvas>()
 
-    const canvas = useCanvas()
-    const throttleMousemove = useThrottle(handleMoveEvent, 1000 / 60, true)
-    const pointerLock = usePointerLock({
-      onMove: throttleMousemove,
-      onGlobalMove: (arg) => {
-        if (!canvasRef.value?.svg) return
-        const svgRect = canvasRef.value.svg.getBoundingClientRect()
-        const p = add(arg.p, { x: svgRect.left, y: svgRect.top })
-        if (!p) return
-        canvas.setMousePoint(p)
-      },
-      onEscape: () => {
-        // TODO
-      },
-    })
-
-    const mode = useAnimationGraphMode({
-      graphStore,
-      requestPointerLock: () => {
-        if (!canvasRef.value?.svg) return
-        pointerLock.requestPointerLockFromElement(canvasRef.value.svg)
-      },
-      exitPointerLock: pointerLock.exitPointerLock,
-      startEditMovement: () => {
-        canvas.setEditStartPoint(canvas.mousePoint.value)
-        graphStore.setEditMovement({
-          start: canvas.viewToCanvas(canvas.mousePoint.value),
-          current: canvas.viewToCanvas(canvas.mousePoint.value),
-          ctrl: false,
-          scale: canvas.scale.value,
-        })
-      },
-    })
+    const canvas = useSvgCanvas()
 
     const getGraphNodeModule = computed(() =>
       graphStore.getGraphNodeModuleFn.value()
@@ -376,70 +335,6 @@ export default defineComponent({
       })
     })
 
-    function handleDownEvent(e: MouseEvent) {
-      if (e.button === 0) {
-        canvas.downLeft()
-      } else if (e.button === 1) {
-        canvas.downMiddle()
-      }
-
-      mode.sm.handleEvent({
-        type: 'pointerdown',
-        target: parseEventTarget(e),
-        data: { options: getMouseOptions(e) },
-      } as any)
-    }
-    function handleUpEvent(e: MouseEvent) {
-      if (e.button === 0) {
-        canvas.upLeft()
-      } else if (e.button === 1) {
-        canvas.upMiddle()
-      }
-
-      mode.sm.handleEvent({
-        type: 'pointerup',
-        target: parseEventTarget(e),
-        data: { options: getMouseOptions(e) },
-      } as any)
-    }
-    function handleMoveEvent(e: PointerMovement) {
-      if (canvas.viewMovingInfo.value) {
-        canvas.viewMove()
-        return
-      }
-
-      if (!canvas.editStartPoint.value) return
-      mode.sm.handleEvent({
-        type: 'pointermove',
-        data: {
-          start: canvas.viewToCanvas(canvas.editStartPoint.value),
-          current: canvas.viewToCanvas(canvas.mousePoint.value),
-          ctrl: e.ctrl,
-          scale: canvas.scale.value,
-        },
-      } as any)
-    }
-    function handleNativeMoveEvent(e: MouseEvent) {
-      if (canvas.dragInfo.value) {
-        mode.sm.handleEvent({
-          type: 'pointerdrag',
-          data: {
-            start: canvas.viewToCanvas(canvas.dragInfo.value.downAt),
-            current: canvas.viewToCanvas(canvas.mousePoint.value),
-            ctrl: isCtrlOrMeta(e),
-            scale: canvas.scale.value,
-          },
-        } as any)
-      }
-    }
-    function handleKeydownEvent(e: KeyboardEvent) {
-      mode.sm.handleEvent({
-        type: 'keydown',
-        data: getKeyOptions(e),
-        point: canvas.viewToCanvas(canvas.mousePoint.value),
-      } as any)
-    }
-
     return {
       GraphNode,
       GraphNodeReroute,
@@ -451,10 +346,6 @@ export default defineComponent({
       canvasTypeOptions,
 
       canvas,
-      handleDownEvent,
-      handleUpEvent,
-      handleNativeMoveEvent,
-      handleKeydownEvent,
 
       selectedArmature,
       editedNodeMap,

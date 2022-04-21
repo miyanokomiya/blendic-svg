@@ -14,7 +14,8 @@ export function useMovingNodeState(options: {
     getLabel: () => 'MovingNodeState',
     onStart: (getCtx) => {
       const ctx = getCtx()
-      ctx.setEditMovement()
+      ctx.startEditMovement()
+      ctx.startDragging()
       startedAt = ctx.getTimestamp()
       return Promise.resolve()
     },

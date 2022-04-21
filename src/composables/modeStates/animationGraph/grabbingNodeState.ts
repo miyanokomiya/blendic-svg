@@ -17,7 +17,6 @@ export function useGrabbingNodeState(): AnimationGraphState {
     handleEvent: async (getCtx, event) => {
       const ctx = getCtx()
 
-      console.log(event.type)
       switch (event.type) {
         case 'pointermove':
           ctx.setEditMovement(getGridRoundedEditMovement(event.data))

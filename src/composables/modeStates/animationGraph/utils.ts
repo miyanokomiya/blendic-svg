@@ -105,7 +105,7 @@ const emptyTarget = {
   type: 'empty',
 }
 
-export function parseEventTarget(event: Event): ModeEventTarget | undefined {
+export function parseEventTarget(event: Event): ModeEventTarget {
   if (!event.target) return emptyTarget
   const target = findClosestAnchorElement(event.target as SVGElement)
   if (!target) return emptyTarget

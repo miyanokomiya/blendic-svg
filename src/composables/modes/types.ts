@@ -37,7 +37,7 @@ export type EditMode =
 export type EditMovement = {
   current: IVec2
   start: IVec2
-  ctrl: boolean
+  ctrl?: boolean
   scale: number
 }
 

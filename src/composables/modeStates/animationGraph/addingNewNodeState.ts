@@ -14,7 +14,10 @@ export function useAddingNewNodeState(options: {
         .getNodeItemList()
         .map(({ label, children }) => ({
           label,
-          children: children.map(({ label, type }) => ({ label, key: type })),
+          children: children.map(({ label, type }) => ({
+            label,
+            key: type as string,
+          })),
         }))
       ctx.setPopupMenuList({ point: options.point, items })
     },

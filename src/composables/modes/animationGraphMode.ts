@@ -22,8 +22,10 @@ import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaul
 import { AnimationGraphStateContext } from '/@/composables/modeStates/animationGraph/core'
 import { AnimationGraphStore } from '/@/store/animationGraph'
 import { mapReduce } from '/@/utils/commons'
-import { EditMovement } from '/@/composables/modes/types'
+import { EditMovement, PopupMenuItem } from '/@/composables/modes/types'
 import { Rectangle } from 'okanvas'
+import { IVec2 } from 'okageo'
+import { NODE_MENU_OPTION } from '/@/utils/graphNodes'
 
 export function useAnimationGraphMode(options: {
   graphStore: AnimationGraphStore
@@ -36,6 +38,9 @@ export function useAnimationGraphMode(options: {
   panView: (val: EditMovement) => void
   setRectangleDragging: (val?: boolean) => void
   getDraggedRectangle: () => Rectangle | undefined
+
+  setPopupMenuList: (val?: { items: PopupMenuItem[]; point: IVec2 }) => void
+  getNodeItemList: () => NODE_MENU_OPTION[]
 }) {
   const graphStore = options.graphStore
 
@@ -64,8 +69,8 @@ export function useAnimationGraphMode(options: {
     startEditMovement: options.startEditMovement,
     startDragging: options.startDragging,
 
-    setPopupMenuList: () => {},
-    getNodeItemList: () => [],
+    setPopupMenuList: options.setPopupMenuList,
+    getNodeItemList: options.getNodeItemList,
 
     panView: options.panView,
     setRectangleDragging: options.setRectangleDragging,

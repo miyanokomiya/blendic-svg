@@ -65,9 +65,9 @@ Copyright (C) 2021, Tomoya Komiyama.
       :available-command-list="availableCommandList"
     />
     <PopupMenuList
-      v-if="popupMenuList.length > 0 && popupMenuListPosition"
+      v-if="popupMenuItems.length > 0 && popupMenuListPosition"
       class="popup-menu-list"
-      :popup-menu-list="popupMenuList"
+      :popup-menu-list="popupMenuItems"
       :style="{
         left: `${popupMenuListPosition.x - 20}px`,
         top: `${popupMenuListPosition.y - 10}px`,
@@ -77,7 +77,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, computed, PropType } from 'vue'
+import { defineComponent, onMounted, computed, PropType, ref } from 'vue'
 import { provideScale, useSvgCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
@@ -91,6 +91,10 @@ import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { parseEventTarget } from '/@/composables/modeStates/animationGraph/utils'
 import { PointerMovement, usePointerLock } from '/@/composables/window'
 import { useThrottle } from '/@/composables/throttle'
+import { PopupMenuItem } from '/@/composables/modes/types'
+import { IVec2 } from 'okageo'
+import { useMenuList } from '/@/composables/menuList'
+import { NODE_MENU_OPTIONS_SRC } from '/@/utils/graphNodes'
 
 export default defineComponent({
   components: {
@@ -116,9 +120,11 @@ export default defineComponent({
       props.canvas.adjustToCenter()
     })
 
-    const popupMenuList = computed(() => [])
+    const popupMenuInfo = ref<{ items: PopupMenuItem[]; point: IVec2 }>()
     const popupMenuListPosition = computed(() => {
-      return addRootPosition(props.canvas.canvasToView({ x: 0, y: 0 }))
+      return popupMenuInfo.value
+        ? addRootPosition(props.canvas.canvasToView(popupMenuInfo.value.point))
+        : undefined
     })
 
     const throttleMousemove = useThrottle(handleMoveEvent, 1000 / 60, true)
@@ -138,6 +144,17 @@ export default defineComponent({
         } as any)
       },
     })
+
+    const popupMenuList = useMenuList(
+      () =>
+        popupMenuInfo.value?.items.map(({ label, children }) => ({
+          label,
+          children: children?.map(({ label, key }) => ({
+            label,
+            exec: key ? () => handlePopupmenuEvent(key as string) : undefined,
+          })),
+        })) ?? []
+    )
 
     const graphStore = useAnimationGraphStore()
     const mode = useAnimationGraphMode({
@@ -163,6 +180,11 @@ export default defineComponent({
       panView: (val) => props.canvas.viewMove(val),
       setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
       getDraggedRectangle: () => props.canvas.draggedRectangle.value,
+      setPopupMenuList: (val) => (popupMenuInfo.value = val),
+      getNodeItemList: () =>
+        NODE_MENU_OPTIONS_SRC.concat(
+          graphStore.customGraphNodeMenuOptionsSrc.value
+        ),
     })
 
     function handleDownEvent(e: MouseEvent) {
@@ -212,6 +234,9 @@ export default defineComponent({
         point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
       })
     }
+    function handlePopupmenuEvent(key: string) {
+      mode.sm.handleEvent({ type: 'popupmenu', data: { key } })
+    }
 
     return {
       wrapper,
@@ -222,7 +247,7 @@ export default defineComponent({
       viewSize: computed(() => props.canvas.viewSize.value),
       viewBox: computed(() => props.canvas.viewBox.value),
       viewCanvasRect: computed(() => props.canvas.viewCanvasRect.value),
-      popupMenuList,
+      popupMenuItems: computed(() => popupMenuList.list.value),
 
       availableCommandList: computed(() => []),
       popupMenuListPosition,

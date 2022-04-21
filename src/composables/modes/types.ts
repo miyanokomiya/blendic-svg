@@ -43,6 +43,7 @@ export type EditMovement = {
 
 export interface PopupMenuItem {
   label: string
+  key?: string
   exec?: () => void
   children?: PopupMenuItem[]
 }

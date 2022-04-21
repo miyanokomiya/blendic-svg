@@ -112,6 +112,7 @@ export function usePointerLock(handlers: {
 
   function exitPointerLock() {
     current.value = undefined
+    locked = false
     document.exitPointerLock()
   }
 
@@ -124,8 +125,8 @@ export function usePointerLock(handlers: {
 
   function onPointerlockchange() {
     if (locked && !document.pointerLockElement) {
-      handlers.onEscape?.()
       locked = false
+      handlers.onEscape?.()
     }
   }
 

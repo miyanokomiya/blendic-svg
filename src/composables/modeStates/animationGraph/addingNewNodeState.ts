@@ -2,6 +2,7 @@ import { IVec2 } from 'okageo'
 import { PopupMenuItem } from '/@/composables/modes/types'
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
+import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
 
 export function useAddingNewNodeState(options: {
   point: IVec2
@@ -28,6 +29,15 @@ export function useAddingNewNodeState(options: {
       const ctx = getCtx()
 
       switch (event.type) {
+        case 'pointerdown':
+          switch (event.data.options.button) {
+            case 1:
+              return {
+                getState: usePanningState,
+                type: 'stack-resume',
+              }
+          }
+          return
         case 'pointerup':
           if (event.data.options.button !== 1) {
             return useDefaultState

@@ -1,5 +1,4 @@
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
-import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 
 export function usePanningState(): AnimationGraphState {
   return {
@@ -15,7 +14,7 @@ export function usePanningState(): AnimationGraphState {
           ctx.panView(event.data)
           return
         case 'pointerup':
-          return useDefaultState
+          return { type: 'break' }
       }
     },
   }

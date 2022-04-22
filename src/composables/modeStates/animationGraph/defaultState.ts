@@ -41,7 +41,6 @@ export function useDefaultState(): AnimationGraphState {
     onStart: async (getCtx) => {
       updateCommandExams(getCtx())
     },
-    onEnd: async () => {},
     handleEvent: async (getCtx, event) => {
       const ctx = getCtx()
 

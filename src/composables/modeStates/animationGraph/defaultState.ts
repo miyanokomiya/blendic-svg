@@ -37,94 +37,96 @@ import { duplicateNodes } from '/@/utils/graphNodes'
 import { add } from 'okageo'
 
 export function useDefaultState(): AnimationGraphState {
-  return {
-    getLabel: () => 'DefaultState',
-    onStart: async (ctx) => {
-      updateCommandExams(ctx)
-    },
-    handleEvent: async (ctx, event) => {
-      switch (event.type) {
-        case 'pointerdown':
-          switch (event.data.options.button) {
-            case 0:
-              switch (event.target.type) {
-                case 'empty': {
-                  ctx.selectNodes({}, event.data.options)
-                  updateCommandExams(ctx)
-                  return useRectangleSelectingState
-                }
-                case 'node-body': {
-                  const nodeId = event.target.data?.['node_id']
-                  if (nodeId) {
-                    ctx.selectNodes({ [nodeId]: true }, event.data.options)
-                    updateCommandExams(ctx)
-                    return () => useMovingNodeState({ nodeId })
-                  }
-                  return
-                }
-                case 'node-edge-input': {
-                  const edgeInfo = parseEdgeInfo(event.target)
-                  return () =>
-                    useConnectingInputEdgeState({
-                      nodeId: edgeInfo.id,
-                      inputKey: edgeInfo.key,
-                      point: event.data.point,
-                    })
-                }
-                case 'node-edge-output': {
-                  const edgeInfo = parseEdgeInfo(event.target)
-                  return () =>
-                    useConnectingOutputEdgeState({
-                      nodeId: edgeInfo.id,
-                      outputKey: edgeInfo.key,
-                      point: event.data.point,
-                    })
-                }
+  return state
+}
+
+const state: AnimationGraphState = {
+  getLabel: () => 'DefaultState',
+  onStart: async (ctx) => {
+    updateCommandExams(ctx)
+  },
+  handleEvent: async (ctx, event) => {
+    switch (event.type) {
+      case 'pointerdown':
+        switch (event.data.options.button) {
+          case 0:
+            switch (event.target.type) {
+              case 'empty': {
+                ctx.selectNodes({}, event.data.options)
+                updateCommandExams(ctx)
+                return useRectangleSelectingState
               }
-              return
-            case 1:
-              return usePanningState
-          }
-          return
-        case 'keydown':
-          switch (event.data.key) {
-            case 'A': {
-              const point = event.point
-              return point ? () => useAddingNewNodeState({ point }) : undefined
+              case 'node-body': {
+                const nodeId = event.target.data?.['node_id']
+                if (nodeId) {
+                  ctx.selectNodes({ [nodeId]: true }, event.data.options)
+                  updateCommandExams(ctx)
+                  return () => useMovingNodeState({ nodeId })
+                }
+                return
+              }
+              case 'node-edge-input': {
+                const edgeInfo = parseEdgeInfo(event.target)
+                return () =>
+                  useConnectingInputEdgeState({
+                    nodeId: edgeInfo.id,
+                    inputKey: edgeInfo.key,
+                    point: event.data.point,
+                  })
+              }
+              case 'node-edge-output': {
+                const edgeInfo = parseEdgeInfo(event.target)
+                return () =>
+                  useConnectingOutputEdgeState({
+                    nodeId: edgeInfo.id,
+                    outputKey: edgeInfo.key,
+                    point: event.data.point,
+                  })
+              }
             }
-            case 'a':
-              ctx.selectAllNode()
-              updateCommandExams(ctx)
-              return
-            case 'g':
-              return ctx.getLastSelectedNodeId()
-                ? useGrabbingNodeState
-                : undefined
-            case 'D':
-              ctx.pasteNodes(
-                toList(
-                  duplicateNodes(
-                    ctx.getGraphNodeModule,
-                    ctx.getSelectedNodeMap(),
-                    ctx.getNodeMap(),
-                    ctx.generateUuid
-                  )
-                ).map((n) => ({
-                  ...n,
-                  position: add(n.position, { x: 20, y: 20 }),
-                }))
-              )
-              updateCommandExams(ctx)
-              return useGrabbingNodeState
-            case 'x':
-              updateCommandExams(ctx)
-              ctx.deleteNodes()
-              return
+            return
+          case 1:
+            return usePanningState
+        }
+        return
+      case 'keydown':
+        switch (event.data.key) {
+          case 'A': {
+            const point = event.point
+            return point ? () => useAddingNewNodeState({ point }) : undefined
           }
-          return
-      }
-    },
-  }
+          case 'a':
+            ctx.selectAllNode()
+            updateCommandExams(ctx)
+            return
+          case 'g':
+            return ctx.getLastSelectedNodeId()
+              ? useGrabbingNodeState
+              : undefined
+          case 'D':
+            ctx.pasteNodes(
+              toList(
+                duplicateNodes(
+                  ctx.getGraphNodeModule,
+                  ctx.getSelectedNodeMap(),
+                  ctx.getNodeMap(),
+                  ctx.generateUuid
+                )
+              ).map((n) => ({
+                ...n,
+                position: add(n.position, { x: 20, y: 20 }),
+              }))
+            )
+            updateCommandExams(ctx)
+            return useGrabbingNodeState
+          case 'x':
+            updateCommandExams(ctx)
+            ctx.deleteNodes()
+            return
+        }
+        return
+    }
+  },
 }
 
 function updateCommandExams(ctx: AnimationGraphStateContext) {

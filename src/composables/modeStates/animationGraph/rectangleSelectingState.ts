@@ -24,41 +24,43 @@ import { getIsRectHitRectFn } from '/@/utils/geometry'
 import { getGraphNodeRect } from '/@/utils/helpers'
 
 export function useRectangleSelectingState(): AnimationGraphState {
-  return {
-    getLabel: () => 'RectangleSelectingState',
-    onStart: async (ctx) => {
-      ctx.startDragging()
-      ctx.setRectangleDragging(true)
-    },
-    onEnd: async (ctx) => {
-      ctx.setRectangleDragging()
-    },
-    handleEvent: async (ctx, event) => {
-      switch (event.type) {
-        case 'pointerup': {
-          const rect = ctx.getDraggedRectangle()
-          console.log(rect)
-          if (rect) {
-            const checkFn = getIsRectHitRectFn(rect)
-            ctx.selectNodes(
-              mapReduce(
-                mapFilter(ctx.getNodeMap(), (node) =>
-                  checkFn(getGraphNodeRect(ctx.getGraphNodeModule, node))
-                ),
-                () => true
+  return state
+}
+
+const state: AnimationGraphState = {
+  getLabel: () => 'RectangleSelectingState',
+  onStart: async (ctx) => {
+    ctx.startDragging()
+    ctx.setRectangleDragging(true)
+  },
+  onEnd: async (ctx) => {
+    ctx.setRectangleDragging()
+  },
+  handleEvent: async (ctx, event) => {
+    switch (event.type) {
+      case 'pointerup': {
+        const rect = ctx.getDraggedRectangle()
+        console.log(rect)
+        if (rect) {
+          const checkFn = getIsRectHitRectFn(rect)
+          ctx.selectNodes(
+            mapReduce(
+              mapFilter(ctx.getNodeMap(), (node) =>
+                checkFn(getGraphNodeRect(ctx.getGraphNodeModule, node))
               ),
-              event.data.options
-            )
-          }
-          return useDefaultState
+              () => true
+            ),
+            event.data.options
+          )
         }
-        case 'keydown':
-          switch (event.data.key) {
-            case 'escape':
-              return useDefaultState
-          }
-          return
+        return useDefaultState
       }
-    },
-  }
+      case 'keydown':
+        switch (event.data.key) {
+          case 'escape':
+            return useDefaultState
+        }
+        return
+    }
+  },
 }

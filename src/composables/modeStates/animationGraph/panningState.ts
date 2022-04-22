@@ -20,17 +20,19 @@ Copyright (C) 2022, Tomoya Komiyama.
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
 
 export function usePanningState(): AnimationGraphState {
-  return {
-    getLabel: () => 'PanningState',
-    shouldRequestPointerLock: true,
-    handleEvent: async (ctx, event) => {
-      switch (event.type) {
-        case 'pointermove':
-          ctx.panView(event.data)
-          return
-        case 'pointerup':
-          return { type: 'break' }
-      }
-    },
-  }
+  return state
+}
+
+const state: AnimationGraphState = {
+  getLabel: () => 'PanningState',
+  shouldRequestPointerLock: true,
+  handleEvent: async (ctx, event) => {
+    switch (event.type) {
+      case 'pointermove':
+        ctx.panView(event.data)
+        return
+      case 'pointerup':
+        return { type: 'break' }
+    }
+  },
 }

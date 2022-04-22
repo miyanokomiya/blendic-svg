@@ -25,38 +25,40 @@ import {
 } from '/@/composables/modeStates/animationGraph/utils'
 
 export function useGrabbingNodeState(): AnimationGraphState {
-  return {
-    getLabel: () => 'GrabbingNodeState',
-    shouldRequestPointerLock: true,
-    onStart: async (ctx) => {
-      ctx.startEditMovement()
-    },
-    handleEvent: async (ctx, event) => {
-      switch (event.type) {
-        case 'pointermove':
-          ctx.setEditMovement(getGridRoundedEditMovement(event.data))
-          return
-        case 'pointerup': {
-          if (event.data.options.button === 0) {
-            const editMovement = ctx.getEditMovement()
-            const nodeId = ctx.getLastSelectedNodeId()
-            if (editMovement && nodeId) {
-              ctx.updateNodes(
-                getEditedNodeMap(ctx.getSelectedNodeMap(), nodeId, editMovement)
-              )
-            }
+  return state
+}
+
+const state: AnimationGraphState = {
+  getLabel: () => 'GrabbingNodeState',
+  shouldRequestPointerLock: true,
+  onStart: async (ctx) => {
+    ctx.startEditMovement()
+  },
+  handleEvent: async (ctx, event) => {
+    switch (event.type) {
+      case 'pointermove':
+        ctx.setEditMovement(getGridRoundedEditMovement(event.data))
+        return
+      case 'pointerup': {
+        if (event.data.options.button === 0) {
+          const editMovement = ctx.getEditMovement()
+          const nodeId = ctx.getLastSelectedNodeId()
+          if (editMovement && nodeId) {
+            ctx.updateNodes(
+              getEditedNodeMap(ctx.getSelectedNodeMap(), nodeId, editMovement)
+            )
           }
-          ctx.setEditMovement()
-          return useDefaultState
         }
-        case 'keydown':
-          switch (event.data.key) {
-            case 'Escape':
-              ctx.setEditMovement()
-              return useDefaultState
-          }
-          return
+        ctx.setEditMovement()
+        return useDefaultState
       }
-    },
-  }
+      case 'keydown':
+        switch (event.data.key) {
+          case 'Escape':
+            ctx.setEditMovement()
+            return useDefaultState
+        }
+        return
+    }
+  },
 }

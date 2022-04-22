@@ -25,6 +25,9 @@ import { usePanningState } from '/@/composables/modeStates/animationGraph/pannin
 import { useRectangleSelectingState } from '/@/composables/modeStates/animationGraph/rectangleSelectingState'
 import { useConnectingInputEdgeState } from '/@/composables/modeStates/animationGraph/connectingInputEdgeState'
 import { parseEdgeInfo } from '/@/composables/modeStates/animationGraph/utils'
+import { toList } from '/@/utils/commons'
+import { duplicateNodes } from '/@/utils/graphNodes'
+import { add } from 'okageo'
 
 export function useDefaultState(): AnimationGraphState {
   return {
@@ -79,6 +82,21 @@ export function useDefaultState(): AnimationGraphState {
               return ctx.getLastSelectedNodeId()
                 ? useGrabbingNodeState
                 : undefined
+            case 'D':
+              ctx.pasteNodes(
+                toList(
+                  duplicateNodes(
+                    ctx.getGraphNodeModule,
+                    ctx.getSelectedNodeMap(),
+                    ctx.getNodeMap(),
+                    ctx.generateUuid
+                  )
+                ).map((n) => ({
+                  ...n,
+                  position: add(n.position, { x: 20, y: 20 }),
+                }))
+              )
+              return useGrabbingNodeState
           }
           return
       }

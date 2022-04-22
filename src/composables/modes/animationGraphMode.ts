@@ -26,6 +26,7 @@ import { EditMovement, PopupMenuItem } from '/@/composables/modes/types'
 import { Rectangle } from 'okanvas'
 import { IVec2 } from 'okageo'
 import { NODE_MENU_OPTION } from '/@/utils/graphNodes'
+import { generateUuid } from '/@/utils/random'
 
 export function useAnimationGraphMode(options: {
   graphStore: AnimationGraphStore
@@ -45,6 +46,7 @@ export function useAnimationGraphMode(options: {
   const graphStore = options.graphStore
 
   const context: AnimationGraphStateContext = {
+    generateUuid: generateUuid,
     requestPointerLock: options.requestPointerLock,
     exitPointerLock: options.exitPointerLock,
     getTimestamp: () => Date.now(),
@@ -61,6 +63,7 @@ export function useAnimationGraphMode(options: {
     selectAllNode: graphStore.selectAllNode,
     deleteNodes: graphStore.deleteNodes,
     addNode: graphStore.addNode,
+    pasteNodes: graphStore.pasteNodes,
     getEditMovement: () => graphStore.editMovement.value,
     setEditMovement: graphStore.setEditMovement,
     getDraftEdge: () => graphStore.draftEdge.value,

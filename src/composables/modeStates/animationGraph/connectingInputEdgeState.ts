@@ -24,6 +24,7 @@ import {
   parseEdgeInfo,
   updateNodeInput,
 } from '/@/composables/modeStates/animationGraph/utils'
+import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
 
 export function useConnectingInputEdgeState(options: {
   nodeId: string
@@ -32,45 +33,50 @@ export function useConnectingInputEdgeState(options: {
 }): AnimationGraphState {
   return {
     getLabel: () => 'ConnectingInputEdgeState',
-    onStart: (getCtx) => {
-      getCtx().setDraftEdge({
-        type: 'draft-to',
-        from: { nodeId: options.nodeId, key: options.inputKey },
-        to: options.point,
+    onStart: async (getCtx) => {
+      const ctx = getCtx()
+      ctx.startDragging()
+      ctx.setDraftEdge({
+        type: 'draft-from',
+        to: { nodeId: options.nodeId, key: options.inputKey },
+        from: options.point,
       })
-      return Promise.resolve()
     },
-    onEnd: (getCtx) => {
+    onEnd: async (getCtx) => {
       getCtx().setDraftEdge()
-      return Promise.resolve()
     },
     handleEvent: async (getCtx, event) => {
       const ctx = getCtx()
 
       switch (event.type) {
-        case 'pointermove':
+        case 'pointerdrag':
           ctx.setDraftEdge({
-            type: 'draft-to',
-            from: { nodeId: options.nodeId, key: options.inputKey },
-            to: event.data.current,
+            type: 'draft-from',
+            to: { nodeId: options.nodeId, key: options.inputKey },
+            from: event.data.current,
           })
           return
         case 'pointerup':
           if (event.data.options.button === 0) {
             if (event.target.type === 'empty') {
-              // TODO: Move to "AddingNewNodeState"
-              ctx.getDraftEdge()?.to
-            } else if (event.target.type === 'edge-output') {
+              const draftEdge = ctx.getDraftEdge()
+              if (draftEdge?.type === 'draft-from') {
+                return () =>
+                  useAddingNewNodeState({
+                    point: draftEdge.from,
+                  })
+              }
+            } else if (event.target.type === 'node-edge-output') {
               const nodeMap = ctx.getNodeMap()
               const closest = parseEdgeInfo(event.target)
               ctx.updateNodes(
                 updateNodeInput(
                   ctx.getGraphNodeModule,
                   nodeMap,
-                  nodeMap[closest.id],
-                  closest.key,
-                  options.nodeId,
-                  options.inputKey
+                  nodeMap[options.nodeId],
+                  options.inputKey,
+                  closest.id,
+                  closest.key
                 )
               )
             }

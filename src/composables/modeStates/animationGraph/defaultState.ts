@@ -23,6 +23,8 @@ import { useGrabbingNodeState } from '/@/composables/modeStates/animationGraph/g
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
 import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
 import { useRectangleSelectingState } from '/@/composables/modeStates/animationGraph/rectangleSelectingState'
+import { useConnectingInputEdgeState } from '/@/composables/modeStates/animationGraph/connectingInputEdgeState'
+import { parseEdgeInfo } from '/@/composables/modeStates/animationGraph/utils'
 
 export function useDefaultState(): AnimationGraphState {
   return {
@@ -49,9 +51,15 @@ export function useDefaultState(): AnimationGraphState {
                   }
                   return
                 }
-                case 'node-edge':
-                  // TODO: ConnectingState
-                  return useDefaultState
+                case 'node-edge-input': {
+                  const edgeInfo = parseEdgeInfo(event.target)
+                  return () =>
+                    useConnectingInputEdgeState({
+                      nodeId: edgeInfo.id,
+                      inputKey: edgeInfo.key,
+                      point: event.data.point,
+                    })
+                }
               }
               return
             case 1:

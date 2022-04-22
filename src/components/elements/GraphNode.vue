@@ -128,8 +128,8 @@ Copyright (C) 2021, Tomoya Komiyama.
         </g>
         <circle
           data-type="node-edge-input"
-          :data-node-id="node.id"
-          :data-edge-key="key"
+          :data-node_id="node.id"
+          :data-edge_key="key"
           r="10"
           fill="transparent"
           stroke="none"

@@ -191,7 +191,10 @@ export default defineComponent({
       mode.sm.handleEvent({
         type: 'pointerdown',
         target: parseEventTarget(e),
-        data: { options: getMouseOptions(e) },
+        data: {
+          point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          options: getMouseOptions(e),
+        },
       })
     }
     function handleUpEvent(e: MouseEvent) {

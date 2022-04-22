@@ -175,6 +175,7 @@ interface PointerDownEvent extends ModeStateEventWithTarget {
   type: 'pointerdown'
   target: ModeEventTarget
   data: {
+    point: IVec2
     options: MouseOptions
   }
 }

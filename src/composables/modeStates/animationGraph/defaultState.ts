@@ -38,12 +38,10 @@ import { add } from 'okageo'
 export function useDefaultState(): AnimationGraphState {
   return {
     getLabel: () => 'DefaultState',
-    onStart: async (getCtx) => {
-      updateCommandExams(getCtx())
+    onStart: async (ctx) => {
+      updateCommandExams(ctx)
     },
-    handleEvent: async (getCtx, event) => {
-      const ctx = getCtx()
-
+    handleEvent: async (ctx, event) => {
       switch (event.type) {
         case 'pointerdown':
           switch (event.data.options.button) {

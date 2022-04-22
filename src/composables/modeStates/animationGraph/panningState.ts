@@ -23,11 +23,7 @@ export function usePanningState(): AnimationGraphState {
   return {
     getLabel: () => 'PanningState',
     shouldRequestPointerLock: true,
-    onStart: async () => {},
-    onEnd: async () => {},
-    handleEvent: async (getCtx, event) => {
-      const ctx = getCtx()
-
+    handleEvent: async (ctx, event) => {
       switch (event.type) {
         case 'pointermove':
           ctx.panView(event.data)

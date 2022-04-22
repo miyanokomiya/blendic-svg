@@ -50,7 +50,7 @@ export function useAnimationGraphMode(options: {
 }) {
   const graphStore = options.graphStore
 
-  const context: AnimationGraphStateContext = {
+  const ctx: AnimationGraphStateContext = {
     generateUuid: generateUuid,
     requestPointerLock: options.requestPointerLock,
     exitPointerLock: options.exitPointerLock,
@@ -86,7 +86,7 @@ export function useAnimationGraphMode(options: {
 
     setCommandExams: options.setCommandExams,
   }
-  const sm = useModeStateMachine(() => context, useDefaultState)
+  const sm = useModeStateMachine(ctx, useDefaultState)
   return { sm }
 }
 export type AnimationGraphMode = ReturnType<typeof useAnimationGraphMode>

@@ -35,8 +35,7 @@ export function useConnectingInputEdgeState(options: {
 }): AnimationGraphState {
   return {
     getLabel: () => 'ConnectingInputEdgeState',
-    onStart: async (getCtx) => {
-      const ctx = getCtx()
+    onStart: async (ctx) => {
       ctx.startDragging()
       ctx.setDraftEdge({
         type: 'draft-from',
@@ -44,12 +43,10 @@ export function useConnectingInputEdgeState(options: {
         from: options.point,
       })
     },
-    onEnd: async (getCtx) => {
-      getCtx().setDraftEdge()
+    onEnd: async (ctx) => {
+      ctx.setDraftEdge()
     },
-    handleEvent: async (getCtx, event) => {
-      const ctx = getCtx()
-
+    handleEvent: async (ctx, event) => {
       switch (event.type) {
         case 'pointerdown':
           switch (event.data.options.button) {

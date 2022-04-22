@@ -31,17 +31,13 @@ export function useMovingNodeState(options: {
 
   return {
     getLabel: () => 'MovingNodeState',
-    onStart: (getCtx) => {
-      const ctx = getCtx()
+    onStart: (ctx) => {
       ctx.startEditMovement()
       ctx.startDragging()
       startedAt = ctx.getTimestamp()
       return Promise.resolve()
     },
-    onEnd: () => Promise.resolve(),
-    handleEvent: async (getCtx, event) => {
-      const ctx = getCtx()
-
+    handleEvent: async (ctx, event) => {
       switch (event.type) {
         case 'pointerdrag':
           if (ctx.getTimestamp() - startedAt > 100) {

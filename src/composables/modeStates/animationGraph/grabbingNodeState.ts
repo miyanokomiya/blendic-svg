@@ -28,14 +28,10 @@ export function useGrabbingNodeState(): AnimationGraphState {
   return {
     getLabel: () => 'GrabbingNodeState',
     shouldRequestPointerLock: true,
-    onStart: async (getCtx) => {
-      const ctx = getCtx()
+    onStart: async (ctx) => {
       ctx.startEditMovement()
     },
-    onEnd: async () => {},
-    handleEvent: async (getCtx, event) => {
-      const ctx = getCtx()
-
+    handleEvent: async (ctx, event) => {
       switch (event.type) {
         case 'pointermove':
           ctx.setEditMovement(getGridRoundedEditMovement(event.data))

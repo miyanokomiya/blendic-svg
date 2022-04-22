@@ -26,10 +26,10 @@ type TransitionType = 'break' | 'stack-restart' | 'stack-resume'
 export interface ModeStateBase<C> {
   getLabel: () => string
   shouldRequestPointerLock?: boolean
-  onStart?: (getContext: () => C) => Promise<void>
-  onEnd?: (getContext: () => C) => Promise<void>
+  onStart?: (ctx: C) => Promise<void>
+  onEnd?: (ctx: C) => Promise<void>
   handleEvent: (
-    getContext: () => C,
+    ctx: C,
     e: ModeStateEvent
   ) => Promise<
     | (() => ModeStateBase<C>)
@@ -45,14 +45,14 @@ type StateStackItem<C> = {
 }
 
 export function useModeStateMachine<C>(
-  getContext: () => ModeStateContextBase & C,
+  ctx: ModeStateContextBase & C,
   getInitialState: () => ModeStateBase<C>
 ) {
   const stateStack: StateStackItem<C>[] = [{ state: getInitialState() }]
   function getCurrentState(): StateStackItem<C> {
     return stateStack[stateStack.length - 1]
   }
-  getCurrentState().state.onStart?.(getContext)
+  getCurrentState().state.onStart?.(ctx)
 
   function getStateSummary() {
     return {
@@ -61,21 +61,21 @@ export function useModeStateMachine<C>(
   }
 
   async function handleEvent(event: ModeStateEvent): Promise<void> {
-    const ret = await getCurrentState().state.handleEvent(getContext, event)
+    const ret = await getCurrentState().state.handleEvent(ctx, event)
     if (ret) {
       if (typeof ret === 'function') {
-        await switchState(getContext, ret())
+        await switchState(ctx, ret())
       } else if (ret.type !== 'break') {
-        await switchState(getContext, ret.getState(), ret.type)
+        await switchState(ctx, ret.getState(), ret.type)
       } else {
-        await breakState(getContext)
+        await breakState(ctx)
       }
     }
   }
 
-  async function breakState(getContext: () => ModeStateContextBase & C) {
+  async function breakState(ctx: ModeStateContextBase & C) {
     const current = getCurrentState()
-    await current.state.onEnd?.(getContext)
+    await current.state.onEnd?.(ctx)
 
     stateStack.pop()
     if (stateStack.length === 0) {
@@ -84,13 +84,13 @@ export function useModeStateMachine<C>(
 
     const next = getCurrentState()
     if (current.type !== 'stack-resume') {
-      await next.state.onStart?.(getContext)
+      await next.state.onStart?.(ctx)
     }
     console.log('break', next.state.getLabel())
   }
 
   async function switchState(
-    getContext: () => ModeStateContextBase & C,
+    ctx: ModeStateContextBase & C,
     nextState: ModeStateBase<C>,
     type?: Exclude<TransitionType, 'break'>
   ): Promise<void> {
@@ -101,31 +101,31 @@ export function useModeStateMachine<C>(
       current.state.shouldRequestPointerLock &&
       !nextState.shouldRequestPointerLock
     ) {
-      getContext().exitPointerLock()
+      ctx.exitPointerLock()
     } else if (
       !current.state.shouldRequestPointerLock &&
       nextState.shouldRequestPointerLock
     ) {
-      getContext().requestPointerLock()
+      ctx.requestPointerLock()
     }
 
     const nextItem = { state: nextState, type }
 
     switch (type) {
       case 'stack-restart':
-        await current.state.onEnd?.(getContext)
+        await current.state.onEnd?.(ctx)
         stateStack.push(nextItem)
         break
       case 'stack-resume':
         stateStack.push(nextItem)
         break
       default:
-        await current.state.onEnd?.(getContext)
+        await current.state.onEnd?.(ctx)
         stateStack[stateStack.length - 1] = { ...nextItem, type: current.type }
         break
     }
 
-    await nextState.onStart?.(getContext)
+    await nextState.onStart?.(ctx)
   }
 
   return {

@@ -26,17 +26,14 @@ import { getGraphNodeRect } from '/@/utils/helpers'
 export function useRectangleSelectingState(): AnimationGraphState {
   return {
     getLabel: () => 'RectangleSelectingState',
-    onStart: async (getCtx) => {
-      const ctx = getCtx()
+    onStart: async (ctx) => {
       ctx.startDragging()
       ctx.setRectangleDragging(true)
     },
-    onEnd: async (getCtx) => {
-      getCtx().setRectangleDragging()
+    onEnd: async (ctx) => {
+      ctx.setRectangleDragging()
     },
-    handleEvent: async (getCtx, event) => {
-      const ctx = getCtx()
-
+    handleEvent: async (ctx, event) => {
       switch (event.type) {
         case 'pointerup': {
           const rect = ctx.getDraggedRectangle()

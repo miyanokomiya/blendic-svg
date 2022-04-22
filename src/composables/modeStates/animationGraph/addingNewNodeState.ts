@@ -31,9 +31,7 @@ export function useAddingNewNodeState(options: {
 }): AnimationGraphState {
   return {
     getLabel: () => 'AddingNewNodeState',
-    onStart: async (getCtx) => {
-      const ctx = getCtx()
-
+    onStart: async (ctx) => {
       if (options.connect) {
         const struct = ctx.getGraphNodeModule(
           ctx.getNodeMap()[options.connect.nodeId].type
@@ -67,12 +65,10 @@ export function useAddingNewNodeState(options: {
         ctx.setPopupMenuList({ point: options.point, items })
       }
     },
-    onEnd: async (getCtx) => {
-      getCtx().setPopupMenuList()
+    onEnd: async (ctx) => {
+      ctx.setPopupMenuList()
     },
-    handleEvent: async (getCtx, event) => {
-      const ctx = getCtx()
-
+    handleEvent: async (ctx, event) => {
       switch (event.type) {
         case 'pointerdown':
           switch (event.data.options.button) {

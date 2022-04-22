@@ -16,15 +16,11 @@ describe('src/composables/modeStates/core.ts', () => {
     }
   }
 
-  function getCtx() {
-    return {}
-  }
-
   describe('useModeStateMachine', () => {
     describe('handleEvent', () => {
       it('should handle the event via current state', async () => {
         const current = getMockState({ getLabel: () => 'current' })
-        const sm = useModeStateMachine(getCtx, () => current)
+        const sm = useModeStateMachine({}, () => current)
 
         expect(sm.getStateSummary().label).toBe('current')
         await sm.handleEvent({ type: 'test' } as any)
@@ -42,7 +38,7 @@ describe('src/composables/modeStates/core.ts', () => {
             .fn()
             .mockResolvedValue(() => getMockState({ getLabel: () => 'next' })),
         })
-        const sm = useModeStateMachine(getCtx, () => current)
+        const sm = useModeStateMachine({}, () => current)
 
         expect(sm.getStateSummary().label).toBe('current')
         await sm.handleEvent({ type: 'test' } as any)
@@ -69,7 +65,7 @@ describe('src/composables/modeStates/core.ts', () => {
             type: 'stack-restart',
           }),
         })
-        const sm = useModeStateMachine(getCtx, () => current)
+        const sm = useModeStateMachine({}, () => current)
 
         expect(current.onStart).toHaveBeenCalledTimes(1)
         expect(sm.getStateSummary().label).toBe('0')
@@ -97,7 +93,7 @@ describe('src/composables/modeStates/core.ts', () => {
             type: 'stack-resume',
           }),
         })
-        const sm = useModeStateMachine(getCtx, () => current)
+        const sm = useModeStateMachine({}, () => current)
 
         expect(current.onStart).toHaveBeenCalledTimes(1)
         expect(sm.getStateSummary().label).toBe('0')

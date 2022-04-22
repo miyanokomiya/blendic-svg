@@ -435,3 +435,7 @@ export function thinOutSameAttributes<T extends { [key: string]: unknown }>(
     )
     .map((item) => (Object.keys(item).length === 0 ? undefined : item))
 }
+
+export function isNotNullish(v: any): v is Exclude<typeof v, undefined | null> {
+  return v != null
+}

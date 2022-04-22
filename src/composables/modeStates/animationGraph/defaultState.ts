@@ -97,6 +97,9 @@ export function useDefaultState(): AnimationGraphState {
                 }))
               )
               return useGrabbingNodeState
+            case 'x':
+              ctx.deleteNodes()
+              return
           }
           return
       }

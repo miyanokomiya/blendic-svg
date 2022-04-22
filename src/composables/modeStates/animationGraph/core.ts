@@ -37,6 +37,7 @@ import {
 import { GetGraphNodeModule, NODE_MENU_OPTION } from '/@/utils/graphNodes'
 
 export interface AnimationGraphStateContext extends ModeStateContextBase {
+  generateUuid: () => string
   getGraphNodeModule: GetGraphNodeModule
   getNodeMap: () => IdMap<GraphNode>
   updateNodes: (val: IdMap<Partial<GraphNode>>) => void
@@ -49,6 +50,7 @@ export interface AnimationGraphStateContext extends ModeStateContextBase {
     type: GraphNodeType,
     arg?: Partial<GraphNode>
   ) => GraphNode | undefined
+  pasteNodes: (val: GraphNode[]) => void
   getEditMovement: () => EditMovement | undefined
   setEditMovement: (val?: EditMovement) => void
   getDraftEdge: () => DraftGraphEdge | undefined

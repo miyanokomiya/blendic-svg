@@ -91,7 +91,7 @@ import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { parseEventTarget } from '/@/composables/modeStates/animationGraph/utils'
 import { PointerMovement, usePointerLock } from '/@/composables/window'
 import { useThrottle } from '/@/composables/throttle'
-import { PopupMenuItem } from '/@/composables/modes/types'
+import { CommandExam, PopupMenuItem } from '/@/composables/modes/types'
 import { IVec2 } from 'okageo'
 import { useMenuList } from '/@/composables/menuList'
 import { NODE_MENU_OPTIONS_SRC } from '/@/utils/graphNodes'
@@ -156,6 +156,8 @@ export default defineComponent({
         })) ?? []
     )
 
+    const commandExams = ref<CommandExam[]>()
+
     const graphStore = useAnimationGraphStore()
     const mode = useAnimationGraphMode({
       graphStore,
@@ -185,6 +187,7 @@ export default defineComponent({
         NODE_MENU_OPTIONS_SRC.concat(
           graphStore.customGraphNodeMenuOptionsSrc.value
         ),
+      setCommandExams: (val) => (commandExams.value = val),
     })
 
     function handleDownEvent(e: MouseEvent) {
@@ -252,7 +255,7 @@ export default defineComponent({
       viewCanvasRect: computed(() => props.canvas.viewCanvasRect.value),
       popupMenuItems: computed(() => popupMenuList.list.value),
 
-      availableCommandList: computed(() => []),
+      availableCommandList: computed(() => commandExams.value ?? []),
       popupMenuListPosition,
       draggedRectangle: computed(() => props.canvas.draggedRectangle.value),
 

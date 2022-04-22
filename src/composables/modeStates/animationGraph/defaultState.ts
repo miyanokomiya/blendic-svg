@@ -17,14 +17,20 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
+import type {
+  AnimationGraphState,
+  AnimationGraphStateContext,
+} from '/@/composables/modeStates/animationGraph/core'
 import { useMovingNodeState } from '/@/composables/modeStates/animationGraph/movingNodeState'
 import { useGrabbingNodeState } from '/@/composables/modeStates/animationGraph/grabbingNodeState'
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
 import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
 import { useRectangleSelectingState } from '/@/composables/modeStates/animationGraph/rectangleSelectingState'
 import { useConnectingInputEdgeState } from '/@/composables/modeStates/animationGraph/connectingInputEdgeState'
-import { parseEdgeInfo } from '/@/composables/modeStates/animationGraph/utils'
+import {
+  COMMAND_EXAM_SRC,
+  parseEdgeInfo,
+} from '/@/composables/modeStates/animationGraph/utils'
 import { toList } from '/@/utils/commons'
 import { duplicateNodes } from '/@/utils/graphNodes'
 import { add } from 'okageo'
@@ -32,8 +38,12 @@ import { add } from 'okageo'
 export function useDefaultState(): AnimationGraphState {
   return {
     getLabel: () => 'DefaultState',
-    onStart: () => Promise.resolve(),
-    onEnd: () => Promise.resolve(),
+    onStart: async (getCtx) => {
+      updateCommandExams(getCtx())
+    },
+    onEnd: async (getCtx) => {
+      getCtx().setCommandExams()
+    },
     handleEvent: async (getCtx, event) => {
       const ctx = getCtx()
 
@@ -44,12 +54,14 @@ export function useDefaultState(): AnimationGraphState {
               switch (event.target.type) {
                 case 'empty': {
                   ctx.selectNodes({}, event.data.options)
+                  updateCommandExams(ctx)
                   return useRectangleSelectingState
                 }
                 case 'node-body': {
                   const nodeId = event.target.data?.['node_id']
                   if (nodeId) {
                     ctx.selectNodes({ [nodeId]: true }, event.data.options)
+                    updateCommandExams(ctx)
                     return () => useMovingNodeState({ nodeId })
                   }
                   return
@@ -77,6 +89,7 @@ export function useDefaultState(): AnimationGraphState {
             }
             case 'a':
               ctx.selectAllNode()
+              updateCommandExams(ctx)
               return
             case 'g':
               return ctx.getLastSelectedNodeId()
@@ -96,8 +109,10 @@ export function useDefaultState(): AnimationGraphState {
                   position: add(n.position, { x: 20, y: 20 }),
                 }))
               )
+              updateCommandExams(ctx)
               return useGrabbingNodeState
             case 'x':
+              updateCommandExams(ctx)
               ctx.deleteNodes()
               return
           }
@@ -105,4 +120,21 @@ export function useDefaultState(): AnimationGraphState {
       }
     },
   }
+}
+
+function updateCommandExams(ctx: AnimationGraphStateContext) {
+  const selected = ctx.getLastSelectedNodeId()
+  ctx.setCommandExams([
+    COMMAND_EXAM_SRC.add,
+    COMMAND_EXAM_SRC.selectAll,
+    ...(selected
+      ? [
+          COMMAND_EXAM_SRC.delete,
+          COMMAND_EXAM_SRC.grab,
+          COMMAND_EXAM_SRC.duplicate,
+          COMMAND_EXAM_SRC.clip,
+        ]
+      : []),
+    COMMAND_EXAM_SRC.paste,
+  ])
 }

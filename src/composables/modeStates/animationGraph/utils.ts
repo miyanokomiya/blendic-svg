@@ -18,11 +18,12 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { add, IVec2, sub } from 'okageo'
-import { EditMovement } from '/@/composables/modes/types'
+import { CommandExam, EditMovement } from '/@/composables/modes/types'
 import { ModeEventTarget } from '/@/composables/modeStates/core'
 import { getTransform, IdMap, Transform } from '/@/models'
 import { GraphNode } from '/@/models/graphNode'
 import { mapReduce } from '/@/utils/commons'
+import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { gridRound } from '/@/utils/geometry'
 import {
   cleanEdgeGenericsGroupAt,
@@ -147,3 +148,13 @@ function findClosestAnchorElement(elm: SVGElement): SVGElement | undefined {
   const closest = elm.closest('[data-type]')
   return closest ? (closest as SVGElement) : undefined
 }
+
+export const COMMAND_EXAM_SRC = {
+  add: { command: 'A', title: 'Add' } as CommandExam,
+  selectAll: { command: 'a', title: 'All Select' },
+  delete: { command: 'x', title: 'Delete' },
+  grab: { command: 'g', title: 'Grab' },
+  duplicate: { command: 'D', title: 'Duplicate' },
+  clip: { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
+  paste: { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
+} as const

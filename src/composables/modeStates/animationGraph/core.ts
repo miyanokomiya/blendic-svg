@@ -20,6 +20,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 import { IVec2 } from 'okageo'
 import { Rectangle } from 'okanvas'
 import {
+  CommandExam,
   EditMovement,
   PopupMenuItem,
   SelectOptions,
@@ -65,6 +66,8 @@ export interface AnimationGraphStateContext extends ModeStateContextBase {
   panView: (val: EditMovement) => void
   setRectangleDragging: (val?: boolean) => void
   getDraggedRectangle: () => Rectangle | undefined
+
+  setCommandExams: (exams?: CommandExam[]) => void
 }
 
 export interface AnimationGraphState

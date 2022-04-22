@@ -22,7 +22,11 @@ import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaul
 import { AnimationGraphStateContext } from '/@/composables/modeStates/animationGraph/core'
 import { AnimationGraphStore } from '/@/store/animationGraph'
 import { mapReduce } from '/@/utils/commons'
-import { EditMovement, PopupMenuItem } from '/@/composables/modes/types'
+import {
+  CommandExam,
+  EditMovement,
+  PopupMenuItem,
+} from '/@/composables/modes/types'
 import { Rectangle } from 'okanvas'
 import { IVec2 } from 'okageo'
 import { NODE_MENU_OPTION } from '/@/utils/graphNodes'
@@ -42,6 +46,7 @@ export function useAnimationGraphMode(options: {
 
   setPopupMenuList: (val?: { items: PopupMenuItem[]; point: IVec2 }) => void
   getNodeItemList: () => NODE_MENU_OPTION[]
+  setCommandExams: (exams?: CommandExam[]) => void
 }) {
   const graphStore = options.graphStore
 
@@ -78,6 +83,8 @@ export function useAnimationGraphMode(options: {
     panView: options.panView,
     setRectangleDragging: options.setRectangleDragging,
     getDraggedRectangle: options.getDraggedRectangle,
+
+    setCommandExams: options.setCommandExams,
   }
   const sm = useModeStateMachine(() => context, useDefaultState)
   return { sm }

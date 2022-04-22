@@ -25,6 +25,7 @@ import {
   updateNodeInput,
 } from '/@/composables/modeStates/animationGraph/utils'
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
+import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
 
 export function useConnectingInputEdgeState(options: {
   nodeId: string
@@ -49,6 +50,15 @@ export function useConnectingInputEdgeState(options: {
       const ctx = getCtx()
 
       switch (event.type) {
+        case 'pointerdown':
+          switch (event.data.options.button) {
+            case 1:
+              return {
+                getState: usePanningState,
+                type: 'stack-restart',
+              }
+          }
+          return
         case 'pointerdrag':
           ctx.setDraftEdge({
             type: 'draft-from',

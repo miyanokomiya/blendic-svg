@@ -27,6 +27,7 @@ import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/
 import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
 import { useRectangleSelectingState } from '/@/composables/modeStates/animationGraph/rectangleSelectingState'
 import { useConnectingInputEdgeState } from '/@/composables/modeStates/animationGraph/connectingInputEdgeState'
+import { useConnectingOutputEdgeState } from '/@/composables/modeStates/animationGraph/connectingOutputEdgeState'
 import {
   COMMAND_EXAM_SRC,
   parseEdgeInfo,
@@ -67,6 +68,15 @@ export function useDefaultState(): AnimationGraphState {
                     useConnectingInputEdgeState({
                       nodeId: edgeInfo.id,
                       inputKey: edgeInfo.key,
+                      point: event.data.point,
+                    })
+                }
+                case 'node-edge-output': {
+                  const edgeInfo = parseEdgeInfo(event.target)
+                  return () =>
+                    useConnectingOutputEdgeState({
+                      nodeId: edgeInfo.id,
+                      outputKey: edgeInfo.key,
                       point: event.data.point,
                     })
                 }

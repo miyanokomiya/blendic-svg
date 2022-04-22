@@ -18,14 +18,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div v-if="availableCommandList.length > 0" class="canvas-command">
-    <ul>
-      <li v-for="item in availableCommandList" :key="item.command">
-        <span v-if="item.command" class="command">{{ item.command }}:</span>
-        <span>{{ item.title }}</span>
-      </li>
-    </ul>
-  </div>
+  <Transition>
+    <div v-if="availableCommandList.length > 0" class="canvas-command">
+      <ul>
+        <li v-for="item in availableCommandList" :key="item.command">
+          <span v-if="item.command" class="command">{{ item.command }}:</span>
+          <span>{{ item.title }}</span>
+        </li>
+      </ul>
+    </div>
+  </Transition>
 </template>
 
 <script lang="ts">
@@ -61,5 +63,14 @@ li {
 .command {
   margin-right: 6px;
   min-width: 12px;
+}
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
 }
 </style>

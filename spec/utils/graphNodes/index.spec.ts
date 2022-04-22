@@ -29,6 +29,7 @@ import {
 } from '/@/models/graphNode'
 import {
   compute,
+  getNodeSuggestionMenuOptions,
   getInputFromIds,
   resolveNode,
   resolveAllNodes,
@@ -108,6 +109,40 @@ describe('src/utils/graphNodes/index.ts', () => {
       position: { x: 0, y: 0 },
     } as GraphNodeBreakVector2,
   } as const
+
+  describe('getNodeSuggestionMenuOptions', () => {
+    it('should return suggested node options', () => {
+      const src = [
+        {
+          label: 'test',
+          children: [
+            { label: 'a', type: 'break_vector2' },
+            { label: 'b', type: 'make_transform' },
+            { label: 'c', type: 'sin' },
+          ],
+        },
+        {
+          label: 'nothing',
+          children: [{ label: 'd', type: 'make_color' }],
+        },
+      ]
+      expect(
+        getNodeSuggestionMenuOptions(
+          getGraphNodeModule,
+          src,
+          UNIT_VALUE_TYPES.SCALER
+        )
+      ).toEqual([
+        {
+          label: 'test',
+          children: [
+            { label: 'a', type: 'break_vector2', key: 'x' },
+            { label: 'c', type: 'sin', key: 'value' },
+          ],
+        },
+      ])
+    })
+  })
 
   describe('resolveAllNodes', () => {
     it('make_vector2', () => {

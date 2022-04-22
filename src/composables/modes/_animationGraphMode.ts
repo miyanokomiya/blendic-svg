@@ -42,7 +42,6 @@ import {
   getUpdatedNodeMapToDisconnectNodeInput,
   getOutputType,
   NODE_MENU_OPTIONS_SRC,
-  NODE_SUGGESTION_MENU_OPTIONS_SRC,
   updateInputConnection,
   validateConnection,
   isolateNodes,
@@ -586,58 +585,7 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   )
   watch(() => state.command, addMenuList.clearOpened)
 
-  const addAndConnectMenuList = mapReduce(
-    NODE_SUGGESTION_MENU_OPTIONS_SRC,
-    (src) => {
-      return useMenuList(() =>
-        src.map((option) => {
-          if ('children' in option) {
-            return {
-              label: option.label,
-              children: option.children.map((c) => ({
-                label: c.label,
-                exec: () => addAndConnectNode(c.type, c.key),
-              })),
-            }
-          } else {
-            return {
-              label: option.label,
-              exec: () => addAndConnectNode(option.type, option.key),
-            }
-          }
-        })
-      )
-    }
-  )
-
-  const draftEdgeFrom = computed(() => {
-    if (
-      state.dragTarget?.type !== 'edge' ||
-      state.dragTarget.draftGraphEdge.type === 'draft-from'
-    )
-      return
-
-    return state.dragTarget.draftGraphEdge.from
-  })
-
-  // add new node and connect draft edge to it
-  // FIXME: two histories are created by this operation
-  function addAndConnectNode(type: GraphNodeType, key: string) {
-    const from = draftEdgeFrom.value
-    if (!from) return
-
-    const newNode = graphStore.addNode(type, {
-      position: getGridRoundedPoint(state.keyDownPosition),
-    })
-    if (newNode) {
-      updateNodeInput(newNode, key, from.nodeId, from.key)
-    }
-    cancel()
-  }
-
   const popupToAddMenuList = computed<PopupMenuItem[]>(() => {
-    if (state.nodeSuggestion)
-      return addAndConnectMenuList[state.nodeSuggestion].list.value
     return addMenuList.list.value
   })
 

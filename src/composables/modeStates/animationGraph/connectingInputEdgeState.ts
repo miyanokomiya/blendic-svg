@@ -74,6 +74,10 @@ export function useConnectingInputEdgeState(options: {
                 return () =>
                   useAddingNewNodeState({
                     point: draftEdge.from,
+                    connect: {
+                      nodeId: draftEdge.to.nodeId,
+                      inputKey: draftEdge.to.key,
+                    },
                   })
               }
             } else if (event.target.type === 'node-edge-output') {

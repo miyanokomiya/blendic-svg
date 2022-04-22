@@ -3,6 +3,7 @@
 exports[`src/components/elements/GraphEdge.vue snapshot initial 1`] = `
 <g
   class="view-only"
+  data-type="edge"
 >
   <path
     d="M6,2 C25,2 -14,20 5,20"
@@ -17,6 +18,7 @@ exports[`src/components/elements/GraphEdge.vue snapshot initial 1`] = `
 exports[`src/components/elements/GraphEdge.vue snapshot selected 1`] = `
 <g
   class="view-only"
+  data-type="edge"
 >
   <path
     d="M6,2 C25,2 -14,20 5,20"

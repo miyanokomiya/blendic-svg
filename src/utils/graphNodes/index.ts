@@ -337,178 +337,35 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
   },
 ]
 
+export function getNodeSuggestionMenuOptions(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeOptions: NODE_MENU_OPTION[],
+  valueType: ValueType
+): NodeSuggestionMenuOption[] {
+  return nodeOptions
+    .map((src) => {
+      const items = src.children
+        .map((item) => {
+          const struct = getGraphNodeModule(item.type)?.struct
+          if (!struct) return
+          const edge = Object.entries(struct.outputs).find(([, value]) =>
+            isSameValueType(valueType, value)
+          )
+          return edge ? { ...item, key: edge[0] } : undefined
+        })
+        .filter((v): v is Exclude<typeof v, undefined> => !!v)
+
+      return items.length > 0
+        ? { label: src.label, children: items }
+        : undefined
+    })
+    .filter((v): v is Exclude<typeof v, undefined> => !!v)
+}
+
 type NodeSuggestionMenuOptionSrc = { key: string } & NodeMenuOption
-type NodeSuggestionMenuOption =
-  | {
-      label: string
-      children: NodeSuggestionMenuOptionSrc[]
-    }
-  | NodeSuggestionMenuOptionSrc
-
-const ADD_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
-  label: '(+)',
-  type: 'add_generics',
-  key: 'a',
-}
-const SUB_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
-  label: '(-)',
-  type: 'sub_generics',
-  key: 'a',
-}
-const LERP_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
-  label: 'Lerp',
-  type: 'lerp_generics',
-  key: 'a',
-}
-const EQUAL_GENERICS_SUGGESTION: NodeSuggestionMenuOptionSrc = {
-  label: '(=)',
-  type: 'equal_generics',
-  key: 'a',
-}
-const GENERICS_SUGGESTIONS: NodeSuggestionMenuOptionSrc[] = [
-  { label: 'Switch', type: 'switch_generics', key: 'if_true' },
-  { label: 'Reroute', type: 'reroute', key: 'value' },
-]
-
-export const NODE_SUGGESTION_MENU_OPTIONS_SRC: {
-  [key in GRAPH_VALUE_TYPE_KEY]: NodeSuggestionMenuOption[]
-} = {
-  BOOLEAN: [
-    { label: 'Not', type: 'not', key: 'condition' },
-    { label: 'And', type: 'and', key: 'a' },
-    { label: 'Or', type: 'or', key: 'a' },
-    EQUAL_GENERICS_SUGGESTION,
-    { label: 'Switch Condition', type: 'switch_generics', key: 'condition' },
-    ...GENERICS_SUGGESTIONS,
-  ],
-  SCALER: [
-    {
-      label: 'Math',
-      children: [
-        ADD_GENERICS_SUGGESTION,
-        SUB_GENERICS_SUGGESTION,
-        { label: '(x)', type: 'multi_scaler', key: 'a' },
-        { label: '(/)', type: 'divide_scaler', key: 'a' },
-        { label: 'Sin', type: 'sin', key: 'rotate' },
-        { label: 'Cos', type: 'cos', key: 'rotate' },
-        { label: 'Pow', type: 'pow', key: 'x' },
-      ],
-    },
-    {
-      label: 'Boolean',
-      children: [
-        EQUAL_GENERICS_SUGGESTION,
-        { label: '(>) Number', type: 'greater_than', key: 'a' },
-        { label: '(>=) Number', type: 'greater_than_or_equal', key: 'a' },
-        { label: '(<) Number', type: 'less_than', key: 'a' },
-        { label: '(<=) Number', type: 'less_than_or_equal', key: 'a' },
-        { label: 'Between', type: 'between', key: 'number' },
-      ],
-    },
-    { label: 'Make Vector2', type: 'make_vector2', key: 'x' },
-    { label: 'Make Transform', type: 'make_transform', key: 'rotate' },
-    { label: 'Make Color', type: 'make_color', key: 'h' },
-    { label: 'Polar Coord', type: 'polar_coord', key: 'rotate' },
-    { label: 'Clamp', type: 'clamp', key: 'number' },
-    { label: 'Round Trip', type: 'round_trip', key: 'number' },
-    LERP_GENERICS_SUGGESTION,
-    ...GENERICS_SUGGESTIONS,
-  ],
-  VECTOR2: [
-    ADD_GENERICS_SUGGESTION,
-    SUB_GENERICS_SUGGESTION,
-    { label: 'Scale Vector2', type: 'scale_vector2', key: 'vector2' },
-    { label: 'Distance', type: 'distance', key: 'a' },
-    { label: 'Rotate Vector2', type: 'rotate_vector2', key: 'vector2' },
-    { label: 'Break Vector2', type: 'break_vector2', key: 'vector2' },
-    { label: 'Invert Polar Coord', type: 'invert_polar_coord', key: 'vector2' },
-    { label: 'Make Transform', type: 'make_transform', key: 'translate' },
-    EQUAL_GENERICS_SUGGESTION,
-    LERP_GENERICS_SUGGESTION,
-    ...GENERICS_SUGGESTIONS,
-  ],
-  OBJECT: [
-    { label: 'Get Child', type: 'get_child', key: 'object' },
-    { label: 'Get Transform', type: 'get_transform', key: 'object' },
-
-    { label: 'Set Transform', type: 'set_transform', key: 'object' },
-    { label: 'Add Transform', type: 'add_transform', key: 'object' },
-    { label: 'Set Fill', type: 'set_fill', key: 'object' },
-    { label: 'Set Stroke', type: 'set_stroke', key: 'object' },
-    { label: 'Set Stroke Length', type: 'set_stroke_length', key: 'object' },
-    { label: 'Set Gradient', type: 'set_gradient', key: 'object' },
-    { label: 'Set Viewbox', type: 'set_viewbox', key: 'object' },
-    { label: 'Hide Object', type: 'hide_object', key: 'object' },
-
-    {
-      label: 'Clone',
-      children: [
-        { label: 'Clone Object', type: 'clone_object', key: 'object' },
-        {
-          label: 'Group Clone Object',
-          type: 'group_clone_object',
-          key: 'object',
-        },
-        {
-          label: 'Circle Clone Object',
-          type: 'circle_clone_object',
-          key: 'object',
-        },
-        {
-          label: 'Grid Clone Object',
-          type: 'grid_clone_object',
-          key: 'object',
-        },
-        {
-          label: 'Tornado Clone Object',
-          type: 'tornado_clone_object',
-          key: 'object',
-        },
-      ],
-    },
-    EQUAL_GENERICS_SUGGESTION,
-    ...GENERICS_SUGGESTIONS,
-  ],
-  TRANSFORM: [
-    ADD_GENERICS_SUGGESTION,
-    SUB_GENERICS_SUGGESTION,
-    { label: 'Break Transform', type: 'break_transform', key: 'transform' },
-    LERP_GENERICS_SUGGESTION,
-    ...GENERICS_SUGGESTIONS,
-  ],
-  COLOR: [
-    { label: 'Break Color', type: 'break_color', key: 'color' },
-    ADD_GENERICS_SUGGESTION,
-    LERP_GENERICS_SUGGESTION,
-    ...GENERICS_SUGGESTIONS,
-  ],
-  TEXT: [
-    { label: 'Text', type: 'create_object_text', key: 'text' },
-    ADD_GENERICS_SUGGESTION,
-    EQUAL_GENERICS_SUGGESTION,
-    ...GENERICS_SUGGESTIONS,
-  ],
-  D: [
-    ...MAKE_PATH_SRC.children.map((c) => ({ ...c, key: 'd' })),
-    { label: 'Create Path', type: 'create_object_path', key: 'd' },
-    ADD_GENERICS_SUGGESTION,
-    ...GENERICS_SUGGESTIONS,
-  ],
-  STOP: [
-    { label: 'Gradient Stop', type: 'make_stop', key: 'stop' },
-    { label: 'Linear Gradient', type: 'create_linear_gradient', key: 'stop' },
-    { label: 'Radial Gradient', type: 'create_radial_gradient', key: 'stop' },
-  ],
-  GENERICS: [
-    ADD_GENERICS_SUGGESTION,
-    SUB_GENERICS_SUGGESTION,
-    LERP_GENERICS_SUGGESTION,
-    ...GENERICS_SUGGESTIONS,
-  ],
-  INPUT: [{ label: 'Input', type: 'custom_input', key: 'input' }],
-  OUTPUT: [{ label: 'Output', type: 'custom_output', key: 'output' }],
-  BONE: [],
-  UNKNOWN: [],
+type NodeSuggestionMenuOption = {
+  label: string
+  children: NodeSuggestionMenuOptionSrc[]
 }
 
 export interface GetGraphNodeModule {
@@ -1108,14 +965,14 @@ export function getDataTypeAndValue(
       }
 }
 
-function getInputType(
-  nodeStruct: NodeStruct<any>,
+export function getInputType(
+  nodeStruct: NodeStruct<any> | undefined,
   target: GraphNode,
   key: string
 ): ValueType {
   return (
     target.inputs[key].genericsType ??
-    nodeStruct.inputs[key]?.type ??
+    nodeStruct?.inputs[key]?.type ??
     UNIT_VALUE_TYPES.UNKNOWN
   )
 }
@@ -1125,11 +982,7 @@ export function getInputTypes(
   target: GraphNode
 ): { [key: string]: ValueType } {
   return mapReduce(target.inputs, (_, key) => {
-    return (
-      target.inputs[key].genericsType ??
-      nodeStruct?.inputs[key]?.type ??
-      UNIT_VALUE_TYPES.UNKNOWN
-    )
+    return getInputType(nodeStruct, target, key)
   })
 }
 

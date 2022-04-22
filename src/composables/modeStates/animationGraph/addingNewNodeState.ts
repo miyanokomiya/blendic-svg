@@ -22,24 +22,50 @@ import { PopupMenuItem } from '/@/composables/modes/types'
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
+import { updateNodeInput } from '/@/composables/modeStates/animationGraph/utils'
+import { getInputType, getNodeSuggestionMenuOptions } from '/@/utils/graphNodes'
 
 export function useAddingNewNodeState(options: {
   point: IVec2
+  connect?: { nodeId: string; inputKey: string }
 }): AnimationGraphState {
   return {
     getLabel: () => 'AddingNewNodeState',
     onStart: async (getCtx) => {
       const ctx = getCtx()
-      const items: PopupMenuItem[] = ctx
-        .getNodeItemList()
-        .map(({ label, children }) => ({
-          label,
-          children: children.map(({ label, type }) => ({
+
+      if (options.connect) {
+        const struct = ctx.getGraphNodeModule(
+          ctx.getNodeMap()[options.connect.nodeId].type
+        )?.struct
+        const node = ctx.getNodeMap()[options.connect.nodeId]
+        const suggestions = getNodeSuggestionMenuOptions(
+          ctx.getGraphNodeModule,
+          ctx.getNodeItemList(),
+          getInputType(struct, node, options.connect.inputKey)
+        )
+        const items: PopupMenuItem[] = suggestions.map(
+          ({ label, children }) => ({
             label,
-            key: type as string,
-          })),
-        }))
-      ctx.setPopupMenuList({ point: options.point, items })
+            children: children.map(({ label, type, key }) => ({
+              label,
+              key: `${type}.${key}`,
+            })),
+          })
+        )
+        ctx.setPopupMenuList({ point: options.point, items })
+      } else {
+        const items: PopupMenuItem[] = ctx
+          .getNodeItemList()
+          .map(({ label, children }) => ({
+            label,
+            children: children.map(({ label, type }) => ({
+              label,
+              key: type as string,
+            })),
+          }))
+        ctx.setPopupMenuList({ point: options.point, items })
+      }
     },
     onEnd: async (getCtx) => {
       getCtx().setPopupMenuList()
@@ -69,8 +95,21 @@ export function useAddingNewNodeState(options: {
           }
           return
         case 'popupmenu': {
-          const key = event.data.key
-          ctx.addNode(key, { position: options.point })
+          const [type, key] = event.data.key.split('.')
+          const node = ctx.addNode(type, { position: options.point })
+          if (node && options.connect && key) {
+            const nodeMap = ctx.getNodeMap()
+            ctx.updateNodes(
+              updateNodeInput(
+                ctx.getGraphNodeModule,
+                nodeMap,
+                nodeMap[options.connect.nodeId],
+                options.connect.inputKey,
+                node.id,
+                key
+              )
+            )
+          }
           return useDefaultState
         }
       }

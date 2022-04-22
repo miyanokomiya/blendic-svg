@@ -91,7 +91,7 @@ export interface NodeContext<T> {
     replace?: boolean
   ) => void
   getFrameInfo: () => { currentFrame: number; endFrame: number }
-  getBoneSummary: (id: string) => GraphBoneSummary
+  getBoneSummary: (id: string) => GraphBoneSummary | undefined
   getObjectMap: () => { [id: string]: T }
   getChildId: (id: string, index: number) => string | undefined
   getChildrenSize: (id: string) => number

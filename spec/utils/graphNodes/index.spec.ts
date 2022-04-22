@@ -111,21 +111,22 @@ describe('src/utils/graphNodes/index.ts', () => {
   } as const
 
   describe('getNodeSuggestionMenuOptions', () => {
+    const src = [
+      {
+        label: 'test',
+        children: [
+          { label: 'a', type: 'break_vector2' },
+          { label: 'b', type: 'make_transform' },
+          { label: 'c', type: 'sin' },
+        ],
+      },
+      {
+        label: 'nothing',
+        children: [{ label: 'd', type: 'make_path_m' }],
+      },
+    ]
+
     it('should return suggested node options', () => {
-      const src = [
-        {
-          label: 'test',
-          children: [
-            { label: 'a', type: 'break_vector2' },
-            { label: 'b', type: 'make_transform' },
-            { label: 'c', type: 'sin' },
-          ],
-        },
-        {
-          label: 'nothing',
-          children: [{ label: 'd', type: 'make_color' }],
-        },
-      ]
       expect(
         getNodeSuggestionMenuOptions(
           getGraphNodeModule,
@@ -138,6 +139,24 @@ describe('src/utils/graphNodes/index.ts', () => {
           children: [
             { label: 'a', type: 'break_vector2', key: 'x' },
             { label: 'c', type: 'sin', key: 'value' },
+          ],
+        },
+      ])
+    })
+    it('should return suggested node options for output edge', () => {
+      expect(
+        getNodeSuggestionMenuOptions(
+          getGraphNodeModule,
+          src,
+          UNIT_VALUE_TYPES.SCALER,
+          true
+        )
+      ).toEqual([
+        {
+          label: 'test',
+          children: [
+            { label: 'b', type: 'make_transform', key: 'rotate' },
+            { label: 'c', type: 'sin', key: 'rotate' },
           ],
         },
       ])

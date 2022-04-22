@@ -19,51 +19,31 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 import { IVec2 } from 'okageo'
 import { PopupMenuItem } from '/@/composables/modes/types'
-import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
+import type {
+  AnimationGraphState,
+  AnimationGraphStateContext,
+} from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
 import { updateNodeInput } from '/@/composables/modeStates/animationGraph/utils'
-import { getInputType, getNodeSuggestionMenuOptions } from '/@/utils/graphNodes'
+import {
+  getInputType,
+  getNodeSuggestionMenuOptions,
+  getOutputType,
+} from '/@/utils/graphNodes'
 
-export function useAddingNewNodeState(options: {
+type Option = {
   point: IVec2
-  connect?: { nodeId: string; inputKey: string }
-}): AnimationGraphState {
+  connect?:
+    | { nodeId: string; inputKey: string }
+    | { nodeId: string; outputKey: string }
+}
+
+export function useAddingNewNodeState(options: Option): AnimationGraphState {
   return {
     getLabel: () => 'AddingNewNodeState',
     onStart: async (ctx) => {
-      if (options.connect) {
-        const struct = ctx.getGraphNodeModule(
-          ctx.getNodeMap()[options.connect.nodeId].type
-        )?.struct
-        const node = ctx.getNodeMap()[options.connect.nodeId]
-        const suggestions = getNodeSuggestionMenuOptions(
-          ctx.getGraphNodeModule,
-          ctx.getNodeItemList(),
-          getInputType(struct, node, options.connect.inputKey)
-        )
-        const items: PopupMenuItem[] = suggestions.map(
-          ({ label, children }) => ({
-            label,
-            children: children.map(({ label, type, key }) => ({
-              label,
-              key: `${type}.${key}`,
-            })),
-          })
-        )
-        ctx.setPopupMenuList({ point: options.point, items })
-      } else {
-        const items: PopupMenuItem[] = ctx
-          .getNodeItemList()
-          .map(({ label, children }) => ({
-            label,
-            children: children.map(({ label, type }) => ({
-              label,
-              key: type as string,
-            })),
-          }))
-        ctx.setPopupMenuList({ point: options.point, items })
-      }
+      setupPopupMenuListForEdge(ctx, options)
     },
     onEnd: async (ctx) => {
       ctx.setPopupMenuList()
@@ -95,20 +75,77 @@ export function useAddingNewNodeState(options: {
           const node = ctx.addNode(type, { position: options.point })
           if (node && options.connect && key) {
             const nodeMap = ctx.getNodeMap()
-            ctx.updateNodes(
-              updateNodeInput(
-                ctx.getGraphNodeModule,
-                nodeMap,
-                nodeMap[options.connect.nodeId],
-                options.connect.inputKey,
-                node.id,
-                key
+            if ('inputKey' in options.connect) {
+              ctx.updateNodes(
+                updateNodeInput(
+                  ctx.getGraphNodeModule,
+                  nodeMap,
+                  nodeMap[options.connect.nodeId],
+                  options.connect.inputKey,
+                  node.id,
+                  key
+                )
               )
-            )
+            } else {
+              ctx.updateNodes(
+                updateNodeInput(
+                  ctx.getGraphNodeModule,
+                  nodeMap,
+                  nodeMap[node.id],
+                  key,
+                  options.connect.nodeId,
+                  options.connect.outputKey
+                )
+              )
+            }
           }
           return useDefaultState
         }
       }
     },
+  }
+}
+
+async function setupPopupMenuListForEdge(
+  ctx: AnimationGraphStateContext,
+  options: Option
+) {
+  if (options.connect) {
+    const struct = ctx.getGraphNodeModule(
+      ctx.getNodeMap()[options.connect.nodeId].type
+    )?.struct
+    const node = ctx.getNodeMap()[options.connect.nodeId]
+    const suggestions =
+      'inputKey' in options.connect
+        ? getNodeSuggestionMenuOptions(
+            ctx.getGraphNodeModule,
+            ctx.getNodeItemList(),
+            getInputType(struct, node, options.connect.inputKey)
+          )
+        : getNodeSuggestionMenuOptions(
+            ctx.getGraphNodeModule,
+            ctx.getNodeItemList(),
+            getOutputType(struct, node, options.connect.outputKey),
+            true
+          )
+    const items: PopupMenuItem[] = suggestions.map(({ label, children }) => ({
+      label,
+      children: children.map(({ label, type, key }) => ({
+        label,
+        key: `${type}.${key}`,
+      })),
+    }))
+    ctx.setPopupMenuList({ point: options.point, items })
+  } else {
+    const items: PopupMenuItem[] = ctx
+      .getNodeItemList()
+      .map(({ label, children }) => ({
+        label,
+        children: children.map(({ label, type }) => ({
+          label,
+          key: type as string,
+        })),
+      }))
+    ctx.setPopupMenuList({ point: options.point, items })
   }
 }

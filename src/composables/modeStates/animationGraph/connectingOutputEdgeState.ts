@@ -26,7 +26,6 @@ import {
 } from '/@/composables/modeStates/animationGraph/utils'
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
 import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
-import { getUpdatedNodeMapToDisconnectNodeInput } from '/@/utils/graphNodes'
 
 export function useConnectingOutputEdgeState(options: {
   nodeId: string
@@ -69,6 +68,14 @@ export function useConnectingOutputEdgeState(options: {
             if (event.target.type === 'empty') {
               const draftEdge = ctx.getDraftEdge()
               if (draftEdge?.type === 'draft-to') {
+                return () =>
+                  useAddingNewNodeState({
+                    point: draftEdge.to,
+                    connect: {
+                      nodeId: draftEdge.from.nodeId,
+                      outputKey: draftEdge.from.key,
+                    },
+                  })
               }
             } else if (event.target.type === 'node-edge-input') {
               const nodeMap = ctx.getNodeMap()

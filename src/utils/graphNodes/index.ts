@@ -129,7 +129,13 @@ import * as custom_begin_output from './nodes/customBeginOutput'
 import * as custom_output from './nodes/customOutput'
 
 import { getTransform, IdMap, toMap } from '/@/models'
-import { extractMap, mapFilter, mapReduce, toList } from '/@/utils/commons'
+import {
+  extractMap,
+  isNotNullish,
+  mapFilter,
+  mapReduce,
+  toList,
+} from '/@/utils/commons'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -340,7 +346,8 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
 export function getNodeSuggestionMenuOptions(
   getGraphNodeModule: GetGraphNodeModule,
   nodeOptions: NODE_MENU_OPTION[],
-  valueType: ValueType
+  valueType: ValueType,
+  forOutput = false
 ): NodeSuggestionMenuOption[] {
   return nodeOptions
     .map((src) => {
@@ -348,18 +355,22 @@ export function getNodeSuggestionMenuOptions(
         .map((item) => {
           const struct = getGraphNodeModule(item.type)?.struct
           if (!struct) return
-          const edge = Object.entries(struct.outputs).find(([, value]) =>
-            isSameValueType(valueType, value)
-          )
+          const edge = forOutput
+            ? Object.entries(struct.inputs).find(([, input]) =>
+                isSameValueType(valueType, input.type)
+              )
+            : Object.entries(struct.outputs).find(([, value]) =>
+                isSameValueType(valueType, value)
+              )
           return edge ? { ...item, key: edge[0] } : undefined
         })
-        .filter((v): v is Exclude<typeof v, undefined> => !!v)
+        .filter(isNotNullish)
 
       return items.length > 0
         ? { label: src.label, children: items }
         : undefined
     })
-    .filter((v): v is Exclude<typeof v, undefined> => !!v)
+    .filter(isNotNullish)
 }
 
 type NodeSuggestionMenuOptionSrc = { key: string } & NodeMenuOption

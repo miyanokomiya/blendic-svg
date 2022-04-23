@@ -111,55 +111,153 @@ describe('src/utils/graphNodes/index.ts', () => {
   } as const
 
   describe('getNodeSuggestionMenuOptions', () => {
-    const src = [
-      {
-        label: 'test',
-        children: [
-          { label: 'a', type: 'break_vector2' },
-          { label: 'b', type: 'make_transform' },
-          { label: 'c', type: 'sin' },
-        ],
-      },
-      {
-        label: 'nothing',
-        children: [{ label: 'd', type: 'make_path_m' }],
-      },
-    ]
+    describe('should return suggested node options', () => {
+      const src = [
+        {
+          label: 'test',
+          children: [
+            { label: 'a', type: 'break_vector2' },
+            { label: 'b', type: 'make_transform' },
+            { label: 'c', type: 'sin' },
+          ],
+        },
+        {
+          label: 'nothing',
+          children: [{ label: 'd', type: 'make_path_m' }],
+        },
+      ]
 
-    it('should return suggested node options', () => {
-      expect(
-        getNodeSuggestionMenuOptions(
-          getGraphNodeModule,
-          src,
-          UNIT_VALUE_TYPES.SCALER
-        )
-      ).toEqual([
-        {
-          label: 'test',
-          children: [
-            { label: 'a', type: 'break_vector2', key: 'x' },
-            { label: 'c', type: 'sin', key: 'value' },
-          ],
-        },
-      ])
+      it('for input edge', () => {
+        expect(
+          getNodeSuggestionMenuOptions(
+            getGraphNodeModule,
+            src,
+            UNIT_VALUE_TYPES.SCALER
+          )
+        ).toEqual([
+          {
+            label: 'test',
+            children: [
+              { label: 'a', type: 'break_vector2', key: 'x' },
+              { label: 'c', type: 'sin', key: 'value' },
+            ],
+          },
+        ])
+      })
+      it('for output edge', () => {
+        expect(
+          getNodeSuggestionMenuOptions(
+            getGraphNodeModule,
+            src,
+            UNIT_VALUE_TYPES.SCALER,
+            true
+          )
+        ).toEqual([
+          {
+            label: 'test',
+            children: [
+              { label: 'b', type: 'make_transform', key: 'rotate' },
+              { label: 'c', type: 'sin', key: 'rotate' },
+            ],
+          },
+        ])
+      })
     })
-    it('should return suggested node options for output edge', () => {
-      expect(
-        getNodeSuggestionMenuOptions(
-          getGraphNodeModule,
-          src,
-          UNIT_VALUE_TYPES.SCALER,
-          true
-        )
-      ).toEqual([
+
+    describe('should include generics edges less prioritized than other types', () => {
+      const src = [
+        {
+          label: 'gene',
+          children: [
+            { label: 'add', type: 'add_generics' },
+            { label: 'switch', type: 'switch_generics' },
+          ],
+        },
+      ]
+
+      it('for input edge', () => {
+        expect(
+          getNodeSuggestionMenuOptions(
+            getGraphNodeModule,
+            src,
+            UNIT_VALUE_TYPES.BOOLEAN
+          )
+        ).toEqual([
+          {
+            label: 'gene',
+            children: [
+              { label: 'add', type: 'add_generics', key: 'value' },
+              { label: 'switch', type: 'switch_generics', key: 'value' },
+            ],
+          },
+        ])
+      })
+      it('for output edge', () => {
+        expect(
+          getNodeSuggestionMenuOptions(
+            getGraphNodeModule,
+            src,
+            UNIT_VALUE_TYPES.BOOLEAN,
+            true
+          )
+        ).toEqual([
+          {
+            label: 'gene',
+            children: [
+              { label: 'add', type: 'add_generics', key: 'a' },
+              { label: 'switch', type: 'switch_generics', key: 'condition' },
+            ],
+          },
+        ])
+      })
+    })
+
+    describe('should include other types for generics edges', () => {
+      const src = [
         {
           label: 'test',
           children: [
-            { label: 'b', type: 'make_transform', key: 'rotate' },
-            { label: 'c', type: 'sin', key: 'rotate' },
+            { label: 'add', type: 'add_generics' },
+            { label: 'sin', type: 'sin' },
           ],
         },
-      ])
+      ]
+
+      it('for input edge', () => {
+        expect(
+          getNodeSuggestionMenuOptions(
+            getGraphNodeModule,
+            src,
+            UNIT_VALUE_TYPES.GENERICS
+          )
+        ).toEqual([
+          {
+            label: 'test',
+            children: [
+              { label: 'add', type: 'add_generics', key: 'value' },
+              { label: 'sin', type: 'sin', key: 'value' },
+            ],
+          },
+        ])
+      })
+      it('for output edge', () => {
+        expect(
+          getNodeSuggestionMenuOptions(
+            getGraphNodeModule,
+            src,
+            UNIT_VALUE_TYPES.GENERICS,
+            true
+          )
+        ).toEqual([
+          {
+            label: 'test',
+            children: [
+              { label: 'add', type: 'add_generics', key: 'a' },
+              { label: 'sin', type: 'sin', key: 'rotate' },
+            ],
+          },
+        ])
+      })
     })
   })
 

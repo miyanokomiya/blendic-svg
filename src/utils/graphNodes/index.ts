@@ -349,20 +349,25 @@ export function getNodeSuggestionMenuOptions(
   valueType: ValueType,
   forOutput = false
 ): NodeSuggestionMenuOption[] {
+  const isGenericsType = isSameValueType(valueType, UNIT_VALUE_TYPES.GENERICS)
+
   return nodeOptions
     .map((src) => {
       const items = src.children
         .map((item) => {
           const struct = getGraphNodeModule(item.type)?.struct
           if (!struct) return
-          const edge = forOutput
-            ? Object.entries(struct.inputs).find(([, input]) =>
-                isSameValueType(valueType, input.type)
-              )
-            : Object.entries(struct.outputs).find(([, value]) =>
-                isSameValueType(valueType, value)
-              )
-          return edge ? { ...item, key: edge[0] } : undefined
+
+          // Prioritize the same type rather than generics types
+          // When the target type is generics, allow to pick any type with the worst priority
+          const edgeKey = forOutput
+            ? findInputKeyByValueType(struct, valueType) ??
+              findInputKeyByValueType(struct, UNIT_VALUE_TYPES.GENERICS) ??
+              (isGenericsType ? Object.keys(struct.inputs)[0] : undefined)
+            : findOutputKeyByValueType(struct, valueType) ??
+              findOutputKeyByValueType(struct, UNIT_VALUE_TYPES.GENERICS) ??
+              (isGenericsType ? Object.keys(struct.outputs)[0] : undefined)
+          return edgeKey ? { ...item, key: edgeKey } : undefined
         })
         .filter(isNotNullish)
 
@@ -371,6 +376,26 @@ export function getNodeSuggestionMenuOptions(
         : undefined
     })
     .filter(isNotNullish)
+}
+
+function findOutputKeyByValueType(
+  struct: NodeStruct<any>,
+  targetType: ValueType
+): string | undefined {
+  const hit = Object.entries(struct.outputs).find(([, valueType]) =>
+    isSameValueType(valueType, targetType)
+  )
+  return hit ? hit[0] : undefined
+}
+
+function findInputKeyByValueType(
+  struct: NodeStruct<any>,
+  targetType: ValueType
+): string | undefined {
+  const hit = Object.entries(struct.inputs).find(([, input]) =>
+    isSameValueType(input.type, targetType)
+  )
+  return hit ? hit[0] : undefined
 }
 
 type NodeSuggestionMenuOptionSrc = { key: string } & NodeMenuOption

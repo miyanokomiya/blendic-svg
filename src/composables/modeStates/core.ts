@@ -147,6 +147,8 @@ export type ModeStateEvent =
   | PointerUpEvent
   | KeyDownEvent
   | PopupMenuEvent
+  | CopyEvent
+  | PasteEvent
 
 export interface ModeStateEventBase {
   type: string
@@ -199,4 +201,14 @@ interface PopupMenuEvent extends ModeStateEventBase {
   data: {
     key: string
   }
+}
+
+interface CopyEvent extends ModeStateEventBase {
+  type: 'copy'
+  nativeEvent: ClipboardEvent
+}
+
+interface PasteEvent extends ModeStateEventBase {
+  type: 'paste'
+  nativeEvent: ClipboardEvent
 }

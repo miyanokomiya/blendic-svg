@@ -18,16 +18,24 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { add, IVec2, sub } from 'okageo'
+import {
+  StringItem,
+  useClipboard,
+  useClipboardSerializer,
+} from '/@/composables/clipboard'
 import { CommandExam, EditMovement } from '/@/composables/modes/types'
+import { AnimationGraphStateContext } from '/@/composables/modeStates/animationGraph/core'
 import { ModeEventTarget } from '/@/composables/modeStates/core'
-import { getTransform, IdMap, Transform } from '/@/models'
+import { getTransform, IdMap, toMap, Transform } from '/@/models'
 import { GraphNode } from '/@/models/graphNode'
-import { mapReduce } from '/@/utils/commons'
+import { mapFilter, mapReduce, toList } from '/@/utils/commons'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { gridRound } from '/@/utils/geometry'
 import {
   cleanEdgeGenericsGroupAt,
+  duplicateNodes,
   GetGraphNodeModule,
+  isolateNodes,
   updateInputConnection,
   validateConnection,
 } from '/@/utils/graphNodes'
@@ -180,5 +188,52 @@ export function validDraftConnection(
       { node: fromNode, key: outputKey },
       { node: toNode, key: inputKey }
     )
+  )
+}
+
+const clipboardSerializer = useClipboardSerializer<
+  'graph-nodes',
+  IdMap<GraphNode>
+>('graph-nodes')
+export function useGraphNodeClipboard(ctx: AnimationGraphStateContext) {
+  return useClipboard(
+    () => {
+      return {
+        'text/plain': clipboardSerializer.serialize(
+          toMap(
+            isolateNodes(
+              ctx.getGraphNodeModule,
+              toList(ctx.getSelectedNodeMap())
+            ).nodes
+          )
+        ),
+      }
+    },
+    async (items) => {
+      const item = items.find((i) => i.kind === 'string') as
+        | StringItem
+        | undefined
+      if (!item) return
+
+      const text: any = await item.getAsString()
+      const availableNodes = mapFilter(
+        clipboardSerializer.deserialize(text),
+        (n) => !!ctx.getGraphNodeModule(n.type)
+      )
+
+      ctx.pasteNodes(
+        toList(
+          duplicateNodes(
+            ctx.getGraphNodeModule,
+            availableNodes,
+            ctx.getNodeMap(),
+            ctx.generateUuid
+          )
+        ).map((n) => ({
+          ...n,
+          position: add(n.position, { x: 20, y: 20 }),
+        }))
+      )
+    }
   )
 }

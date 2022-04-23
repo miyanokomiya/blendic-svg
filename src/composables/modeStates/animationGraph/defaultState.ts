@@ -31,6 +31,7 @@ import { useConnectingOutputEdgeState } from '/@/composables/modeStates/animatio
 import {
   COMMAND_EXAM_SRC,
   parseEdgeInfo,
+  useGraphNodeClipboard,
 } from '/@/composables/modeStates/animationGraph/utils'
 import { toList } from '/@/utils/commons'
 import { duplicateNodes } from '/@/utils/graphNodes'
@@ -125,6 +126,16 @@ const state: AnimationGraphState = {
             return
         }
         return
+      case 'copy': {
+        const clipboard = useGraphNodeClipboard(ctx)
+        clipboard.onCopy(event.nativeEvent)
+        return
+      }
+      case 'paste': {
+        const clipboard = useGraphNodeClipboard(ctx)
+        clipboard.onPaste(event.nativeEvent)
+        return
+      }
     }
   },
 }

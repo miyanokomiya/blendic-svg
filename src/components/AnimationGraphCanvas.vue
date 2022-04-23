@@ -243,6 +243,12 @@ export default defineComponent({
     function handlePopupmenuEvent(key: string) {
       mode.sm.handleEvent({ type: 'popupmenu', data: { key } })
     }
+    function handleCopyEvent(e: ClipboardEvent) {
+      mode.sm.handleEvent({ type: 'copy', nativeEvent: e })
+    }
+    function handlePasteEvent(e: ClipboardEvent) {
+      mode.sm.handleEvent({ type: 'paste', nativeEvent: e })
+    }
 
     return {
       wrapper,
@@ -259,8 +265,8 @@ export default defineComponent({
       popupMenuListPosition,
       draggedRectangle: computed(() => props.canvas.draggedRectangle.value),
 
-      onCopy: (_e: ClipboardEvent) => {},
-      onPaste: (_e: ClipboardEvent) => {},
+      onCopy: handleCopyEvent,
+      onPaste: handlePasteEvent,
       wheel: props.canvas.wheel,
       handleDownEvent,
       handleUpEvent,

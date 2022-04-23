@@ -36,6 +36,10 @@ import {
 import { toList } from '/@/utils/commons'
 import { duplicateNodes } from '/@/utils/graphNodes'
 import { add } from 'okageo'
+import {
+  PointerDownEvent,
+  TransitionValue,
+} from '/@/composables/modeStates/core'
 
 export function useDefaultState(): AnimationGraphState {
   return state
@@ -52,45 +56,14 @@ const state: AnimationGraphState = {
         switch (event.data.options.button) {
           case 0:
             switch (event.target.type) {
-              case 'empty': {
-                ctx.selectNodes({}, event.data.options)
-                updateCommandExams(ctx)
-                return useRectangleSelectingState
-              }
-              case 'node-body': {
-                const nodeId = event.target.data?.['node_id']
-                if (nodeId) {
-                  if (event.data.options.shift) {
-                    ctx.selectNodes({ [nodeId]: true }, event.data.options)
-                    updateCommandExams(ctx)
-                  } else {
-                    if (!ctx.getSelectedNodeMap()[nodeId]) {
-                      ctx.selectNodes({ [nodeId]: true }, event.data.options)
-                      updateCommandExams(ctx)
-                    }
-                    return () => useMovingNodeState({ nodeId })
-                  }
-                }
-                return
-              }
-              case 'node-edge-input': {
-                const edgeInfo = parseEdgeInfo(event.target)
-                return () =>
-                  useConnectingInputEdgeState({
-                    nodeId: edgeInfo.id,
-                    inputKey: edgeInfo.key,
-                    point: event.data.point,
-                  })
-              }
-              case 'node-edge-output': {
-                const edgeInfo = parseEdgeInfo(event.target)
-                return () =>
-                  useConnectingOutputEdgeState({
-                    nodeId: edgeInfo.id,
-                    outputKey: edgeInfo.key,
-                    point: event.data.point,
-                  })
-              }
+              case 'empty':
+                return onDownEmpty(ctx, event)
+              case 'node-body':
+                return onDownNodeBody(ctx, event)
+              case 'node-edge-input':
+                return onDownEdgeInput(event)
+              case 'node-edge-output':
+                return onDownEdgeOutput(event)
             }
             return
           case 1:
@@ -112,21 +85,7 @@ const state: AnimationGraphState = {
               ? useGrabbingNodeState
               : undefined
           case 'D':
-            ctx.pasteNodes(
-              toList(
-                duplicateNodes(
-                  ctx.getGraphNodeModule,
-                  ctx.getSelectedNodeMap(),
-                  ctx.getNodeMap(),
-                  ctx.generateUuid
-                )
-              ).map((n) => ({
-                ...n,
-                position: add(n.position, { x: 20, y: 20 }),
-              }))
-            )
-            updateCommandExams(ctx)
-            return useGrabbingNodeState
+            return onDuplicate(ctx)
           case 'x':
             updateCommandExams(ctx)
             ctx.deleteNodes()
@@ -162,4 +121,75 @@ function updateCommandExams(ctx: AnimationGraphStateContext) {
       : []),
     COMMAND_EXAM_SRC.paste,
   ])
+}
+
+function onDownEmpty(
+  ctx: AnimationGraphStateContext,
+  event: PointerDownEvent
+): TransitionValue<AnimationGraphStateContext> {
+  ctx.selectNodes({}, event.data.options)
+  updateCommandExams(ctx)
+  return useRectangleSelectingState
+}
+
+function onDownNodeBody(
+  ctx: AnimationGraphStateContext,
+  event: PointerDownEvent
+): TransitionValue<AnimationGraphStateContext> {
+  const nodeId = event.target.data?.['node_id']
+  if (nodeId) {
+    if (event.data.options.shift) {
+      ctx.selectNodes({ [nodeId]: true }, event.data.options)
+      updateCommandExams(ctx)
+    } else {
+      if (!ctx.getSelectedNodeMap()[nodeId]) {
+        ctx.selectNodes({ [nodeId]: true }, event.data.options)
+        updateCommandExams(ctx)
+      }
+      return () => useMovingNodeState({ nodeId })
+    }
+  }
+}
+
+function onDownEdgeInput(
+  event: PointerDownEvent
+): TransitionValue<AnimationGraphStateContext> {
+  const edgeInfo = parseEdgeInfo(event.target)
+  return () =>
+    useConnectingInputEdgeState({
+      nodeId: edgeInfo.id,
+      inputKey: edgeInfo.key,
+      point: event.data.point,
+    })
+}
+
+function onDownEdgeOutput(
+  event: PointerDownEvent
+): TransitionValue<AnimationGraphStateContext> {
+  const edgeInfo = parseEdgeInfo(event.target)
+  return () =>
+    useConnectingOutputEdgeState({
+      nodeId: edgeInfo.id,
+      outputKey: edgeInfo.key,
+      point: event.data.point,
+    })
+}
+
+function onDuplicate(
+  ctx: AnimationGraphStateContext
+): TransitionValue<AnimationGraphStateContext> {
+  ctx.pasteNodes(
+    toList(
+      duplicateNodes(
+        ctx.getGraphNodeModule,
+        ctx.getSelectedNodeMap(),
+        ctx.getNodeMap(),
+        ctx.generateUuid
+      )
+    ).map((n) => ({
+      ...n,
+      position: add(n.position, { x: 20, y: 20 }),
+    }))
+  )
+  return useGrabbingNodeState
 }

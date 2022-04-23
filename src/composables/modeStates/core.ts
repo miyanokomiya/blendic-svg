@@ -23,20 +23,18 @@ import type { KeyOptions, MouseOptions } from '/@/utils/devices'
 
 type TransitionType = 'break' | 'stack-restart' | 'stack-resume'
 
+export type TransitionValue<C> =
+  | (() => ModeStateBase<C>)
+  | { getState: () => ModeStateBase<C>; type: TransitionType }
+  | { type: 'break' }
+  | void
+
 export interface ModeStateBase<C> {
   getLabel: () => string
   shouldRequestPointerLock?: boolean
   onStart?: (ctx: C) => Promise<void>
   onEnd?: (ctx: C) => Promise<void>
-  handleEvent: (
-    ctx: C,
-    e: ModeStateEvent
-  ) => Promise<
-    | (() => ModeStateBase<C>)
-    | { getState: () => ModeStateBase<C>; type: TransitionType }
-    | { type: 'break' }
-    | void
-  >
+  handleEvent: (ctx: C, e: ModeStateEvent) => Promise<TransitionValue<C>>
 }
 
 type StateStackItem<C> = {
@@ -163,17 +161,17 @@ export interface ModeEventTarget {
   data?: { [key: string]: string }
 }
 
-interface PointerMoveEvent extends ModeStateEventBase {
+export interface PointerMoveEvent extends ModeStateEventBase {
   type: 'pointermove'
   data: EditMovement
 }
 
-interface PointerDragEvent extends ModeStateEventBase {
+export interface PointerDragEvent extends ModeStateEventBase {
   type: 'pointerdrag'
   data: EditMovement
 }
 
-interface PointerDownEvent extends ModeStateEventWithTarget {
+export interface PointerDownEvent extends ModeStateEventWithTarget {
   type: 'pointerdown'
   target: ModeEventTarget
   data: {
@@ -182,7 +180,7 @@ interface PointerDownEvent extends ModeStateEventWithTarget {
   }
 }
 
-interface PointerUpEvent extends ModeStateEventWithTarget {
+export interface PointerUpEvent extends ModeStateEventWithTarget {
   type: 'pointerup'
   target: ModeEventTarget
   data: {
@@ -190,25 +188,25 @@ interface PointerUpEvent extends ModeStateEventWithTarget {
   }
 }
 
-interface KeyDownEvent extends ModeStateEventBase {
+export interface KeyDownEvent extends ModeStateEventBase {
   type: 'keydown'
   data: KeyOptions
   point?: IVec2
 }
 
-interface PopupMenuEvent extends ModeStateEventBase {
+export interface PopupMenuEvent extends ModeStateEventBase {
   type: 'popupmenu'
   data: {
     key: string
   }
 }
 
-interface CopyEvent extends ModeStateEventBase {
+export interface CopyEvent extends ModeStateEventBase {
   type: 'copy'
   nativeEvent: ClipboardEvent
 }
 
-interface PasteEvent extends ModeStateEventBase {
+export interface PasteEvent extends ModeStateEventBase {
   type: 'paste'
   nativeEvent: ClipboardEvent
 }

@@ -26,6 +26,7 @@ import type {
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
 import { updateNodeInput } from '/@/composables/modeStates/animationGraph/utils'
+import { PopupMenuEvent, TransitionValue } from '/@/composables/modeStates/core'
 import {
   getInputType,
   getNodeSuggestionMenuOptions,
@@ -67,29 +68,7 @@ export function useAddingNewNodeState(options: Options): AnimationGraphState {
           }
           return
         case 'popupmenu': {
-          const [type, key] = event.data.key.split('.')
-          const node = ctx.addNode(type, { position: options.point })
-
-          const draft = ctx.getDraftEdge()
-          if (node && draft && key) {
-            const nodeMap = ctx.getNodeMap()
-            const [inputId, inputKey, outputId, outputKey] =
-              draft.type === 'draft-input'
-                ? [node.id, key, draft.output.nodeId, draft.output.key]
-                : [draft.input.nodeId, draft.input.key, node.id, key]
-
-            ctx.updateNodes(
-              updateNodeInput(
-                ctx.getGraphNodeModule,
-                nodeMap,
-                inputId,
-                inputKey,
-                outputId,
-                outputKey
-              )
-            )
-          }
-          return useDefaultState
+          return onSelectNewNode(ctx, event, options)
         }
       }
     },
@@ -138,4 +117,34 @@ async function setupPopupMenuListForEdge(
       }))
     ctx.setPopupMenuList({ point: options.point, items })
   }
+}
+
+function onSelectNewNode(
+  ctx: AnimationGraphStateContext,
+  event: PopupMenuEvent,
+  options: Options
+): TransitionValue<AnimationGraphStateContext> {
+  const [type, key] = event.data.key.split('.')
+  const node = ctx.addNode(type, { position: options.point })
+
+  const draft = ctx.getDraftEdge()
+  if (node && draft && key) {
+    const nodeMap = ctx.getNodeMap()
+    const [inputId, inputKey, outputId, outputKey] =
+      draft.type === 'draft-input'
+        ? [node.id, key, draft.output.nodeId, draft.output.key]
+        : [draft.input.nodeId, draft.input.key, node.id, key]
+
+    ctx.updateNodes(
+      updateNodeInput(
+        ctx.getGraphNodeModule,
+        nodeMap,
+        inputId,
+        inputKey,
+        outputId,
+        outputKey
+      )
+    )
+  }
+  return useDefaultState
 }

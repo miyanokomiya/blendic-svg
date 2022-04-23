@@ -125,15 +125,23 @@ function onSelectNewNode(
   options: Options
 ): TransitionValue<AnimationGraphStateContext> {
   const [type, key] = event.data.key.split('.')
-  const node = ctx.addNode(type, { position: options.point })
-
+  const struct = ctx.getGraphNodeModule(type)?.struct
   const draft = ctx.getDraftEdge()
+  if (!struct) return useDefaultState
+
+  const isDraftInput = draft && draft.type === 'draft-input'
+  // Adjust the position (no exact criteria)
+  const position = isDraftInput
+    ? { x: options.point.x, y: options.point.y - 10 }
+    : { x: options.point.x - struct.width, y: options.point.y - 10 }
+  const node = ctx.addNode(type, { position })
+
   if (node && draft && key) {
+    // Connect draft edge to created node
     const nodeMap = ctx.getNodeMap()
-    const [inputId, inputKey, outputId, outputKey] =
-      draft.type === 'draft-input'
-        ? [node.id, key, draft.output.nodeId, draft.output.key]
-        : [draft.input.nodeId, draft.input.key, node.id, key]
+    const [inputId, inputKey, outputId, outputKey] = isDraftInput
+      ? [node.id, key, draft.output.nodeId, draft.output.key]
+      : [draft.input.nodeId, draft.input.key, node.id, key]
 
     ctx.updateNodes(
       updateNodeInput(

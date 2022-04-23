@@ -60,9 +60,16 @@ const state: AnimationGraphState = {
               case 'node-body': {
                 const nodeId = event.target.data?.['node_id']
                 if (nodeId) {
-                  ctx.selectNodes({ [nodeId]: true }, event.data.options)
-                  updateCommandExams(ctx)
-                  return () => useMovingNodeState({ nodeId })
+                  if (event.data.options.shift) {
+                    ctx.selectNodes({ [nodeId]: true }, event.data.options)
+                    updateCommandExams(ctx)
+                  } else {
+                    if (!ctx.getSelectedNodeMap()[nodeId]) {
+                      ctx.selectNodes({ [nodeId]: true }, event.data.options)
+                      updateCommandExams(ctx)
+                    }
+                    return () => useMovingNodeState({ nodeId })
+                  }
                 }
                 return
               }

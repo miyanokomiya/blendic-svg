@@ -82,7 +82,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :errors="nodeErrorMessagesMap[node.id]"
         />
         <g v-if="draftEdge">
-          <GraphEdge :from="draftEdge.from" :to="draftEdge.to" selected />
+          <GraphEdge :from="draftEdge.output" :to="draftEdge.input" selected />
         </g>
       </AnimationGraphCanvas>
       <GraphSideBar class="side-bar" />
@@ -233,10 +233,10 @@ export default defineComponent({
 
     const edgeMap = computed(() => {
       const draftToInfo =
-        graphStore.draftEdge.value?.type === 'draft-from'
+        graphStore.draftEdge.value?.type === 'draft-output'
           ? {
-              id: graphStore.draftEdge.value.to.nodeId,
-              key: graphStore.draftEdge.value.to.key,
+              id: graphStore.draftEdge.value.input.nodeId,
+              key: graphStore.draftEdge.value.input.key,
             }
           : undefined
 
@@ -273,31 +273,33 @@ export default defineComponent({
       })
     })
 
-    const draftEdge = computed<{ from: IVec2; to: IVec2 } | undefined>(() => {
-      if (!graphStore.draftEdge.value) return undefined
+    const draftEdge = computed<{ output: IVec2; input: IVec2 } | undefined>(
+      () => {
+        if (!graphStore.draftEdge.value) return undefined
 
-      if (graphStore.draftEdge.value.type === 'draft-to') {
-        return {
-          from: add(
-            editedNodeMap.value[graphStore.draftEdge.value.from.nodeId]
-              .position,
-            edgePositionMap.value[graphStore.draftEdge.value.from.nodeId]
-              .outputs[graphStore.draftEdge.value.from.key].p
-          ),
-          to: graphStore.draftEdge.value.to,
-        }
-      } else {
-        return {
-          from: graphStore.draftEdge.value.from,
-          to: add(
-            editedNodeMap.value[graphStore.draftEdge.value.to.nodeId].position,
-            edgePositionMap.value[graphStore.draftEdge.value.to.nodeId].inputs[
-              graphStore.draftEdge.value.to.key
-            ].p
-          ),
+        if (graphStore.draftEdge.value.type === 'draft-input') {
+          return {
+            output: add(
+              editedNodeMap.value[graphStore.draftEdge.value.output.nodeId]
+                .position,
+              edgePositionMap.value[graphStore.draftEdge.value.output.nodeId]
+                .outputs[graphStore.draftEdge.value.output.key].p
+            ),
+            input: graphStore.draftEdge.value.input,
+          }
+        } else {
+          return {
+            output: graphStore.draftEdge.value.output,
+            input: add(
+              editedNodeMap.value[graphStore.draftEdge.value.input.nodeId]
+                .position,
+              edgePositionMap.value[graphStore.draftEdge.value.input.nodeId]
+                .inputs[graphStore.draftEdge.value.input.key].p
+            ),
+          }
         }
       }
-    })
+    )
 
     function updateNodeData(id: string, data: any, seriesKey?: string) {
       const node = graphStore.nodeMap.value[id]

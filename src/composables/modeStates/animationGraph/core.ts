@@ -75,12 +75,12 @@ export interface AnimationGraphState
 
 export type DraftGraphEdge =
   | {
-      type: 'draft-to'
-      from: GraphEdgeConnection
-      to: IVec2
+      type: 'draft-input'
+      output: GraphEdgeConnection
+      input: IVec2
     }
   | {
-      type: 'draft-from'
-      from: IVec2
-      to: GraphEdgeConnection
+      type: 'draft-output'
+      output: IVec2
+      input: GraphEdgeConnection
     }

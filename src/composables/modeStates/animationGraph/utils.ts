@@ -89,14 +89,16 @@ export function getGridRoundedDiff(p: IVec2): IVec2 {
 export function updateNodeInput(
   getGraphNodeModule: GetGraphNodeModule,
   nodeMap: IdMap<GraphNode>,
-  toNode: GraphNode,
+  inputId: string,
   inputKey: string,
-  targetId: string,
-  targetKey: string
+  outputId: string,
+  outputKey: string
 ): IdMap<GraphNode> {
+  if (!nodeMap[outputId] || !nodeMap[inputId]) return {}
+
   const updated = updateInputConnection(
-    { node: nodeMap[targetId], key: targetKey },
-    { node: toNode, key: inputKey }
+    { node: nodeMap[outputId], key: outputKey },
+    { node: nodeMap[inputId], key: inputKey }
   )
   if (!updated) return {}
 

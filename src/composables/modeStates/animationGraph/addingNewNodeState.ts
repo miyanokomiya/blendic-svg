@@ -73,29 +73,20 @@ export function useAddingNewNodeState(options: Options): AnimationGraphState {
           const draft = ctx.getDraftEdge()
           if (node && draft && key) {
             const nodeMap = ctx.getNodeMap()
-            if (draft.type === 'draft-to') {
-              ctx.updateNodes(
-                updateNodeInput(
-                  ctx.getGraphNodeModule,
-                  nodeMap,
-                  nodeMap[node.id],
-                  key,
-                  draft.from.nodeId,
-                  draft.from.key
-                )
+            const [inputId, inputKey, outputId, outputKey] =
+              draft.type === 'draft-input'
+                ? [node.id, key, draft.output.nodeId, draft.output.key]
+                : [draft.input.nodeId, draft.input.key, node.id, key]
+            ctx.updateNodes(
+              updateNodeInput(
+                ctx.getGraphNodeModule,
+                nodeMap,
+                inputId,
+                inputKey,
+                outputId,
+                outputKey
               )
-            } else {
-              ctx.updateNodes(
-                updateNodeInput(
-                  ctx.getGraphNodeModule,
-                  nodeMap,
-                  nodeMap[draft.to.nodeId],
-                  draft.to.key,
-                  node.id,
-                  key
-                )
-              )
-            }
+            )
           }
           return useDefaultState
         }
@@ -110,9 +101,10 @@ async function setupPopupMenuListForEdge(
 ) {
   const draft = ctx.getDraftEdge()
   if (draft) {
-    const forOutput = draft.type === 'draft-to'
-    const edge = forOutput ? draft.from : draft.to
-    const point = forOutput ? draft.to : draft.from
+    const forOutput = draft.type === 'draft-input'
+    const [edge, point] = forOutput
+      ? [draft.output, draft.input]
+      : [draft.input, draft.output]
     const struct = ctx.getGraphNodeModule(
       ctx.getNodeMap()[edge.nodeId].type
     )?.struct

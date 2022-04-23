@@ -37,9 +37,9 @@ export function useConnectingOutputEdgeState(options: {
     onStart: async (ctx) => {
       ctx.startDragging()
       ctx.setDraftEdge({
-        type: 'draft-to',
-        from: { nodeId: options.nodeId, key: options.outputKey },
-        to: options.point,
+        type: 'draft-input',
+        output: { nodeId: options.nodeId, key: options.outputKey },
+        input: options.point,
       })
     },
     handleEvent: async (ctx, event) => {
@@ -55,17 +55,17 @@ export function useConnectingOutputEdgeState(options: {
           return
         case 'pointerdrag':
           ctx.setDraftEdge({
-            type: 'draft-to',
-            from: { nodeId: options.nodeId, key: options.outputKey },
-            to: event.data.current,
+            type: 'draft-input',
+            output: { nodeId: options.nodeId, key: options.outputKey },
+            input: event.data.current,
           })
           return
         case 'pointerup':
           if (event.data.options.button === 0) {
             if (event.target.type === 'empty') {
               const draftEdge = ctx.getDraftEdge()
-              if (draftEdge?.type === 'draft-to') {
-                return () => useAddingNewNodeState({ point: draftEdge.to })
+              if (draftEdge?.type === 'draft-input') {
+                return () => useAddingNewNodeState({ point: draftEdge.input })
               }
             } else if (event.target.type === 'node-edge-input') {
               const nodeMap = ctx.getNodeMap()
@@ -74,7 +74,7 @@ export function useConnectingOutputEdgeState(options: {
                 updateNodeInput(
                   ctx.getGraphNodeModule,
                   nodeMap,
-                  nodeMap[closest.id],
+                  closest.id,
                   closest.key,
                   options.nodeId,
                   options.outputKey

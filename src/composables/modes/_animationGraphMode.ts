@@ -17,22 +17,15 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive, computed, watch } from 'vue'
-import { add, IRectangle, isSame, IVec2, sub } from 'okageo'
+import { reactive, computed } from 'vue'
+import { add, isSame, IVec2, sub } from 'okageo'
 import { Transform, getTransform, IdMap, toMap } from '/@/models/index'
-import type {
-  EditMovement,
-  PopupMenuItem,
-  SelectOptions,
-  CommandExam,
-} from '/@/composables/modes/types'
-import { getIsRectHitRectFn, gridRound } from '/@/utils/geometry'
-import { useMenuList } from '/@/composables/menuList'
+import type { EditMovement } from '/@/composables/modes/types'
+import { gridRound } from '/@/utils/geometry'
 import { AnimationGraphStore } from '/@/store/animationGraph'
 import {
   GraphEdgeConnection,
   GraphNode,
-  GraphNodeType,
   GraphNodeInput,
   GRAPH_VALUE_TYPE_KEY,
 } from '/@/models/graphNode'
@@ -41,14 +34,10 @@ import {
   duplicateNodes,
   getUpdatedNodeMapToDisconnectNodeInput,
   getOutputType,
-  NODE_MENU_OPTIONS_SRC,
   updateInputConnection,
-  validateConnection,
   isolateNodes,
 } from '/@/utils/graphNodes'
 import { mapFilter, mapReduce, toList } from '/@/utils/commons'
-import { getGraphNodeRect } from '/@/utils/helpers'
-import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { generateUuid } from '/@/utils/random'
 import {
   StringItem,
@@ -94,9 +83,6 @@ interface State {
   nodeSuggestion: GRAPH_VALUE_TYPE_KEY | undefined
 }
 
-const notNeedLock = { needLock: false }
-const needLock = { needLock: true }
-
 export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
   const state = reactive<State>({
     command: '',
@@ -115,10 +101,6 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
 
   const selectedNodeMap = computed(() =>
     mapReduce(selectedNodes.value, (_, id) => graphStore.nodeMap.value[id])
-  )
-
-  const getGraphNodeModule = computed(() =>
-    graphStore.getGraphNodeModuleFn.value()
   )
 
   const clipboardSerializer = useClipboardSerializer<
@@ -188,46 +170,6 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
       graphStore.selectNode()
     }
   }
-
-  const isValidDraftConnection = computed(() => {
-    if (
-      state.command === 'drag-edge' &&
-      state.dragTarget?.type === 'edge' &&
-      state.closestEdgeInfo
-    ) {
-      if (state.dragTarget.draftGraphEdge.type === 'draft-to') {
-        if (state.closestEdgeInfo.type === 'output') return false
-
-        const from = state.dragTarget.draftGraphEdge.from
-        const fromNode = graphStore.nodeMap.value[from.nodeId]
-        const fromKey = from.key
-
-        const toNode = graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
-        const toKey = state.closestEdgeInfo.key
-        return validateConnection(
-          graphStore.getGraphNodeModuleFn.value(),
-          { node: fromNode, key: fromKey },
-          { node: toNode, key: toKey }
-        )
-      } else {
-        if (state.closestEdgeInfo.type === 'input') return false
-
-        const fromNode = graphStore.nodeMap.value[state.closestEdgeInfo.nodeId]
-        const fromKey = state.closestEdgeInfo.key
-
-        const to = state.dragTarget.draftGraphEdge.to
-        const toNode = graphStore.nodeMap.value[to.nodeId]
-        const toKey = to.key
-        return validateConnection(
-          graphStore.getGraphNodeModuleFn.value(),
-          { node: fromNode, key: fromKey },
-          { node: toNode, key: toKey }
-        )
-      }
-    }
-
-    return false
-  })
 
   function updateNodeInput(
     node: GraphNode,
@@ -352,20 +294,6 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     return mapReduce(selectedNodes.value, () => transform)
   })
 
-  const draftEdgeInfo = computed<DraftGraphEdge | undefined>(() => {
-    if (!state.editMovement || state.dragTarget?.type !== 'edge')
-      return undefined
-    return state.dragTarget.draftGraphEdge.type === 'draft-to'
-      ? {
-          ...state.dragTarget.draftGraphEdge,
-          to: state.editMovement.current,
-        }
-      : {
-          ...state.dragTarget.draftGraphEdge,
-          from: state.editMovement.current,
-        }
-  })
-
   const editedNodeMap = computed<IdMap<GraphNode>>(() => {
     if (!target.value) return {}
     return Object.keys(editTransforms.value).reduce<IdMap<GraphNode>>(
@@ -396,228 +324,6 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     state.closestEdgeInfo = undefined
   }
 
-  function select(id: string, options?: SelectOptions) {
-    if (state.command) {
-      completeEdit()
-      return
-    }
-
-    graphStore.selectNode(id, options)
-  }
-
-  function rectSelect(rect: IRectangle, options?: SelectOptions) {
-    const checkFn = getIsRectHitRectFn(rect)
-    graphStore.selectNodes(
-      mapReduce(
-        mapFilter(graphStore.nodeMap.value, (node) =>
-          checkFn(getGraphNodeRect(getGraphNodeModule.value, node))
-        ),
-        () => true
-      ),
-      options
-    )
-  }
-
-  function selectAll() {
-    if (state.command) {
-      cancel()
-      return
-    }
-    graphStore.selectAllNode()
-  }
-
-  function execKey(arg: {
-    key: string
-    position: IVec2
-    shift?: boolean
-    ctrl?: boolean
-  }): {
-    needLock: boolean
-  } {
-    if (!target.value) {
-      if (graphStore.targetArmatureId.value) {
-        switch (arg.key) {
-          case 'A':
-            cancel()
-            state.keyDownPosition = arg.position
-            state.command = 'add'
-            return notNeedLock
-          default:
-            return notNeedLock
-        }
-      } else {
-        return notNeedLock
-      }
-    }
-
-    switch (arg.key) {
-      case 'Escape':
-        cancel()
-        return notNeedLock
-      case 'A':
-        cancel()
-        state.keyDownPosition = arg.position
-        state.command = 'add'
-        return notNeedLock
-      case 'a':
-        cancel()
-        selectAll()
-        return notNeedLock
-      case 'x':
-        cancel()
-        execDelete()
-        return notNeedLock
-      case 'g':
-        cancel()
-        state.keyDownPosition = arg.position
-        state.command = 'grab'
-        return needLock
-      case 'D':
-        if (duplicate()) {
-          return needLock
-        } else {
-          return notNeedLock
-        }
-      case 'c':
-      case 'v':
-        if (arg.ctrl) {
-          cancel()
-        }
-        return notNeedLock
-      default:
-        return notNeedLock
-    }
-  }
-
-  function mousemove(arg: EditMovement) {
-    if (state.command) {
-      state.editMovement = arg
-    }
-  }
-
-  function drag(arg: EditMovement) {
-    if (state.dragTarget) {
-      state.editMovement = arg
-    }
-  }
-
-  function execDelete() {
-    if (state.command) {
-      cancel()
-    }
-    graphStore.deleteNodes()
-  }
-
-  function execAddNode(type: GraphNodeType, position: IVec2) {
-    if (state.command && state.command !== 'add') {
-      cancel()
-      return
-    }
-    graphStore.addNode(type, { position: getGridRoundedPoint(position) })
-    cancel()
-  }
-
-  function duplicate(): boolean {
-    if (state.command) {
-      cancel()
-      return false
-    }
-
-    graphStore.pasteNodes(
-      toList(
-        duplicateNodes(
-          graphStore.getGraphNodeModuleFn.value(),
-          selectedNodeMap.value,
-          graphStore.nodeMap.value,
-          () => generateUuid()
-        )
-      ).map((n) => ({
-        ...n,
-        position: add(n.position, { x: 20, y: 20 }),
-      }))
-    )
-    setEditMode('grab')
-    return true
-  }
-
-  const commands: { [key: string]: CommandExam } = {
-    add: { command: 'A', title: 'Add' },
-    selectAll: { command: 'a', title: 'All Select' },
-    delete: { command: 'x', title: 'Delete' },
-    grab: { command: 'g', title: 'Grab' },
-    duplicate: { command: 'D', title: 'Duplicate' },
-    clip: { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
-    paste: { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
-  }
-
-  const availableCommandList = computed<CommandExam[]>(() => {
-    if (!target.value) {
-      if (graphStore.targetArmatureId.value) {
-        return [commands.add]
-      } else {
-        return [{ title: 'Armature Not Selected' }]
-      }
-    } else if (isAnySelected.value) {
-      return [
-        commands.add,
-        commands.selectAll,
-        commands.delete,
-        commands.grab,
-        commands.duplicate,
-        commands.clip,
-        commands.paste,
-      ]
-    } else {
-      return [commands.add, commands.selectAll, commands.paste]
-    }
-  })
-
-  const addMenuList = useMenuList(() =>
-    NODE_MENU_OPTIONS_SRC.concat(
-      graphStore.customGraphNodeMenuOptionsSrc.value
-    ).map(({ label, children }) => ({
-      label,
-      children: children.map(({ label, type }) => ({
-        label,
-        exec: () => execAddNode(type, state.keyDownPosition),
-      })),
-    }))
-  )
-  watch(() => state.command, addMenuList.clearOpened)
-
-  const popupToAddMenuList = computed<PopupMenuItem[]>(() => {
-    return addMenuList.list.value
-  })
-
-  const popupMenuList = computed<PopupMenuItem[]>(() => {
-    switch (state.command) {
-      case 'add':
-        return popupToAddMenuList.value
-      default:
-        return []
-    }
-  })
-
-  function downNodeBody(id: string, options?: SelectOptions) {
-    // select the target if it has not been selected yet
-    if (!selectedNodes.value[id]) {
-      select(id, options)
-    }
-    state.dragTarget = { type: 'node', id }
-    state.command = 'drag-node'
-  }
-
-  function downNodeEdge(draftGraphEdge: DraftGraphEdge) {
-    state.dragTarget = { type: 'edge', draftGraphEdge }
-    state.command = 'drag-edge'
-  }
-
-  function upNodeEdge(closestEdgeInfo: ClosestEdgeInfo) {
-    if (state.command === 'drag-edge') {
-      state.closestEdgeInfo = closestEdgeInfo
-    }
-  }
-
   return {
     onCopy: clipboard.onCopy,
     onPaste: clipboard.onPaste,
@@ -631,26 +337,10 @@ export function useAnimationGraphMode(graphStore: AnimationGraphStore) {
     end: () => cancel(),
     cancel,
     setEditMode,
-    select,
-    rectSelect,
 
-    downNodeBody,
-    downNodeEdge,
-    upNodeEdge,
-    draftEdgeInfo,
-
-    execKey,
-    mousemove,
-    drag,
     clickAny,
     clickEmpty,
     upLeft,
-
-    execDelete,
-    execAddNode,
-    insert: () => {},
-    availableCommandList,
-    popupMenuList,
   }
 }
 export type AnimationGraphMode = ReturnType<typeof useAnimationGraphMode>

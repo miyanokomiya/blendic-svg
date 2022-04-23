@@ -77,6 +77,7 @@ export function useAddingNewNodeState(options: Options): AnimationGraphState {
               draft.type === 'draft-input'
                 ? [node.id, key, draft.output.nodeId, draft.output.key]
                 : [draft.input.nodeId, draft.input.key, node.id, key]
+
             ctx.updateNodes(
               updateNodeInput(
                 ctx.getGraphNodeModule,

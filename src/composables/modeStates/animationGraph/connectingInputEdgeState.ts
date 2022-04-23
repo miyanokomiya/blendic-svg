@@ -23,6 +23,7 @@ import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaul
 import {
   parseEdgeInfo,
   updateNodeInput,
+  validDraftConnection,
 } from '/@/composables/modeStates/animationGraph/utils'
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
 import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
@@ -85,16 +86,27 @@ export function useConnectingInputEdgeState(options: {
             } else if (event.target.type === 'node-edge-output') {
               const nodeMap = ctx.getNodeMap()
               const closest = parseEdgeInfo(event.target)
-              ctx.updateNodes(
-                updateNodeInput(
+              if (
+                validDraftConnection(
                   ctx.getGraphNodeModule,
-                  nodeMap,
+                  ctx.getNodeMap(),
                   options.nodeId,
                   options.inputKey,
                   closest.id,
                   closest.key
                 )
-              )
+              ) {
+                ctx.updateNodes(
+                  updateNodeInput(
+                    ctx.getGraphNodeModule,
+                    nodeMap,
+                    options.nodeId,
+                    options.inputKey,
+                    closest.id,
+                    closest.key
+                  )
+                )
+              }
             }
           }
           ctx.setDraftEdge()

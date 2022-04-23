@@ -29,6 +29,7 @@ import {
   cleanEdgeGenericsGroupAt,
   GetGraphNodeModule,
   updateInputConnection,
+  validateConnection,
 } from '/@/utils/graphNodes'
 
 export function getEditedNodeMap(
@@ -160,3 +161,24 @@ export const COMMAND_EXAM_SRC = {
   clip: { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
   paste: { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
 } as const
+
+export function validDraftConnection(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: IdMap<GraphNode>,
+  inputId: string,
+  inputKey: string,
+  outputId: string,
+  outputKey: string
+): boolean {
+  const fromNode = nodeMap[outputId]
+  const toNode = nodeMap[inputId]
+  return (
+    fromNode &&
+    toNode &&
+    validateConnection(
+      getGraphNodeModule,
+      { node: fromNode, key: outputKey },
+      { node: toNode, key: inputKey }
+    )
+  )
+}

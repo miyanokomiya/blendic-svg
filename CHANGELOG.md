@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Add new graph node to get a bone summary
+- Show new node suggestions during modifying output edge
 
 ### Changed
 - Use native clipborad API in the animation graph canvas
+
+### Refactor
+- Rewrite animation graph mode as state pattern
 
 ## [0.15.0] - 2022-03-11
 ### Added

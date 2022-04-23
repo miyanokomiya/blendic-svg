@@ -45,7 +45,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :size="40"
           class="view-only"
         />
-        <g :stroke-width="2 * scale" stroke="#000">
+        <g stroke-width="2" stroke-dasharray="3" stroke="#000">
           <line x1="-20" x2="20" />
           <line y1="-20" y2="20" />
         </g>

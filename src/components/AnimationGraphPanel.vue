@@ -58,12 +58,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <p>(!!Experimental!!)</p>
     </div>
     <div class="main">
-      <AnimationGraphCanvas
-        ref="canvasRef"
-        class="canvas"
-        :canvas="canvas"
-        @update:data="updateNodeData"
-      >
+      <AnimationGraphCanvas class="canvas" :canvas="canvas">
         <g v-for="(edgeMapOfNode, id) in edgeMap" :key="id">
           <GraphEdge
             v-for="(edge, key) in edgeMapOfNode"
@@ -135,8 +130,6 @@ export default defineComponent({
     const elementStore = useElementStore()
     const graphStore = useAnimationGraphStore()
     const currentGraph = computed(() => graphStore.lastSelectedGraph.value)
-
-    const canvasRef = ref<typeof AnimationGraphCanvas>()
 
     const canvas = useSvgCanvas()
 
@@ -301,11 +294,6 @@ export default defineComponent({
       }
     )
 
-    function updateNodeData(id: string, data: any, seriesKey?: string) {
-      const node = graphStore.nodeMap.value[id]
-      graphStore.updateNode(id, { ...node, data }, seriesKey)
-    }
-
     provideGetObjectOptions(() => {
       const actor = elementStore.lastSelectedActor.value
       if (
@@ -341,12 +329,9 @@ export default defineComponent({
       GraphNode,
       GraphNodeReroute,
 
-      canvasRef,
-
       canvasType: graphStore.graphType,
       setGraphType: (val: any) => graphStore.setGraphType(val),
       canvasTypeOptions,
-
       canvas,
 
       selectedArmature,
@@ -366,7 +351,6 @@ export default defineComponent({
       deleteParentGraph,
 
       selectedNodes,
-      updateNodeData,
     }
   },
 })

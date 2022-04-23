@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g class="view-only">
+  <g class="view-only" data-type="edge">
     <path :d="pathD" :stroke="stroke" :stroke-width="2.5 * scale" fill="none" />
     <g v-if="selected" fill="none" :stroke="selectedColor" stroke-width="5">
       <circle :cx="from.x" :cy="from.y" r="7" />

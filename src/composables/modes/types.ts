@@ -37,12 +37,13 @@ export type EditMode =
 export type EditMovement = {
   current: IVec2
   start: IVec2
-  ctrl: boolean
+  ctrl?: boolean
   scale: number
 }
 
 export interface PopupMenuItem {
   label: string
+  key?: string
   exec?: () => void
   children?: PopupMenuItem[]
 }

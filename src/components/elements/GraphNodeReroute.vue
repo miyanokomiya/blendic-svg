@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     :title="node.type"
     :transform="`translate(${node.position.x}, ${node.position.y})`"
   >
-    <g @mousedown.left="downBody">
+    <g data-type="node-body" :data-node_id="node.id">
       <path
         :d="outline"
         :stroke="outlineStroke"
@@ -33,8 +33,9 @@ Copyright (C) 2021, Tomoya Komiyama.
     <g :transform="`translate(${outputEdge.p.x}, ${outputEdge.p.y})`">
       <g
         class="edge-anchor"
-        @mouseup.left.exact="upToEdge"
-        @mousedown.left.exact.prevent="downToEdge"
+        data-type="node-edge-output"
+        :data-node_id="node.id"
+        data-edge_key="value"
       >
         <circle r="8" fill="transparent" stroke="none" />
       </g>
@@ -43,8 +44,9 @@ Copyright (C) 2021, Tomoya Komiyama.
     <g :transform="`translate(${inputEdge.p.x}, ${inputEdge.p.y})`">
       <g
         class="edge-anchor"
-        @mouseup.left.exact="upFromEdge"
-        @mousedown.left.exact.prevent="downFromEdge"
+        data-type="node-edge-input"
+        :data-node_id="node.id"
+        data-edge_key="value"
       >
         <circle r="8" fill="transparent" stroke="none" />
       </g>
@@ -55,9 +57,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed, withDefaults } from 'vue'
-import { add, IVec2 } from 'okageo'
 import { GraphNodeEdgePositions, GraphNodeReroute } from '/@/models/graphNode'
-import { switchClick } from '/@/utils/devices'
 import * as helpers from '/@/utils/helpers'
 import { useSettings } from '/@/composables/settings'
 
@@ -99,61 +99,6 @@ const outlineStroke = computed(() =>
 const outlineStrokeWidth = computed(() =>
   props.errors ? 6 : props.selected ? 3 : 2
 )
-
-const emits = defineEmits<{
-  (e: 'down-body', id: string, option?: { shift?: boolean }): void
-  (
-    e: 'down-edge',
-    arg:
-      | {
-          type: 'draft-from' | 'draft-to'
-          from: IVec2
-          to: { nodeId: string; key: string }
-        }
-      | {
-          type: 'draft-from' | 'draft-to'
-          from: { nodeId: string; key: string }
-          to: IVec2
-        }
-  ): void
-  (
-    e: 'up-edge',
-    arg: {
-      type: 'input' | 'output'
-      nodeId: string
-      key: string
-    }
-  ): void
-}>()
-
-function downBody(e: MouseEvent) {
-  switchClick(e, {
-    plain: () => emits('down-body', props.node.id),
-    shift: () => emits('down-body', props.node.id, { shift: true }),
-    ctrl: () => emits('down-body', props.node.id),
-  })
-}
-
-function downFromEdge() {
-  emits('down-edge', {
-    type: 'draft-from',
-    from: add(props.node.position, props.edgePositions.inputs.value.p),
-    to: { nodeId: props.node.id, key: 'value' },
-  })
-}
-function downToEdge() {
-  emits('down-edge', {
-    type: 'draft-to',
-    from: { nodeId: props.node.id, key: 'value' },
-    to: add(props.node.position, props.edgePositions.outputs.value.p),
-  })
-}
-function upFromEdge() {
-  emits('up-edge', { nodeId: props.node.id, type: 'input', key: 'value' })
-}
-function upToEdge() {
-  emits('up-edge', { nodeId: props.node.id, type: 'output', key: 'value' })
-}
 </script>
 
 <style scoped>

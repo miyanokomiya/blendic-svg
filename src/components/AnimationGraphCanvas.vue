@@ -18,8 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div ref="wrapper" class="timeline-canvas-root">
-    <FocusableBlock @keydown="editKeyDown" @copy="onCopy" @paste="onPaste">
+  <div ref="wrapper" class="graph-canvas-root">
+    <FocusableBlock
+      @keydown="handleKeydownEvent"
+      @copy="onCopy"
+      @paste="onPaste"
+    >
       <svg
         ref="svg"
         xmlns="http://www.w3.org/2000/svg"
@@ -29,13 +33,9 @@ Copyright (C) 2021, Tomoya Komiyama.
         :width="viewSize.width"
         :height="viewSize.height"
         @wheel.prevent="wheel"
-        @click.right.prevent
-        @mouseup.right.prevent="escape"
-        @mousemove.prevent="mousemoveNative"
-        @mousedown.left.prevent="downLeft"
-        @mouseup.left.prevent="upLeft"
-        @mousedown.middle.prevent="downMiddle"
-        @mouseup.middle.prevent="upMiddle"
+        @mousedown.prevent="handleDownEvent"
+        @mouseup.prevent="handleUpEvent"
+        @mousemove="handleNativeMoveEvent"
       >
         <DotBackground
           :x="viewCanvasRect.x"
@@ -45,17 +45,17 @@ Copyright (C) 2021, Tomoya Komiyama.
           :size="40"
           class="view-only"
         />
-        <g :stroke-width="2 * scale" stroke="#000">
+        <g stroke-width="2" stroke-dasharray="3" stroke="#000">
           <line x1="-20" x2="20" />
           <line y1="-20" y2="20" />
         </g>
         <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
         <SelectRectangle
-          v-if="dragRectangle"
-          :x="dragRectangle.x"
-          :y="dragRectangle.y"
-          :width="dragRectangle.width"
-          :height="dragRectangle.height"
+          v-if="draggedRectangle"
+          :x="draggedRectangle.x"
+          :y="draggedRectangle.y"
+          :width="draggedRectangle.width"
+          :height="draggedRectangle.height"
           class="view-only"
         />
       </svg>
@@ -65,9 +65,9 @@ Copyright (C) 2021, Tomoya Komiyama.
       :available-command-list="availableCommandList"
     />
     <PopupMenuList
-      v-if="popupMenuList.length > 0 && popupMenuListPosition"
+      v-if="popupMenuItems.length > 0 && popupMenuListPosition"
       class="popup-menu-list"
-      :popup-menu-list="popupMenuList"
+      :popup-menu-list="popupMenuItems"
       :style="{
         left: `${popupMenuListPosition.x - 20}px`,
         top: `${popupMenuListPosition.y - 10}px`,
@@ -77,18 +77,24 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watch, onMounted, computed, PropType } from 'vue'
-import { PointerMovement, usePointerLock } from '../composables/window'
-import { provideScale, useCanvas } from '../composables/canvas'
-import { useThrottle } from '/@/composables/throttle'
-import { getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
-import { AnimationGraphMode } from '/@/composables/modes/animationGraphMode'
+import { defineComponent, onMounted, computed, PropType, ref } from 'vue'
+import { provideScale, useSvgCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import DotBackground from '/@/components/elements/atoms/DotBackground.vue'
 import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
 import FocusableBlock from '/@/components/atoms/FocusableBlock.vue'
 import { useCanvasElement } from '/@/composables/canvasElement'
+import { useAnimationGraphMode } from '/@/composables/modes/animationGraphMode'
+import { useAnimationGraphStore } from '/@/store/animationGraph'
+import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
+import { parseEventTarget } from '/@/composables/modeStates/animationGraph/utils'
+import { PointerMovement, usePointerLock } from '/@/composables/window'
+import { useThrottle } from '/@/composables/throttle'
+import { CommandExam, PopupMenuItem } from '/@/composables/modes/types'
+import { IVec2 } from 'okageo'
+import { useMenuList } from '/@/composables/menuList'
+import { NODE_MENU_OPTIONS_SRC } from '/@/utils/graphNodes'
 
 export default defineComponent({
   components: {
@@ -100,11 +106,7 @@ export default defineComponent({
   },
   props: {
     canvas: {
-      type: Object as PropType<ReturnType<typeof useCanvas>>,
-      required: true,
-    },
-    mode: {
-      type: Object as PropType<AnimationGraphMode>,
+      type: Object as PropType<ReturnType<typeof useSvgCanvas>>,
       required: true,
     },
   },
@@ -118,163 +120,165 @@ export default defineComponent({
       props.canvas.adjustToCenter()
     })
 
-    const popupMenuList = computed(() => props.mode.popupMenuList.value)
+    const popupMenuInfo = ref<{ items: PopupMenuItem[]; point: IVec2 }>()
     const popupMenuListPosition = computed(() => {
-      return addRootPosition(
-        props.canvas.canvasToView(props.mode.keyDownPosition.value)
-      )
+      return popupMenuInfo.value
+        ? addRootPosition(props.canvas.canvasToView(popupMenuInfo.value.point))
+        : undefined
     })
 
-    const isDownEmpty = ref(false)
-
-    function mousemoveNative(e: MouseEvent) {
-      if (!props.canvas.dragInfo.value) return
-
-      props.mode.drag({
-        start: props.canvas.viewToCanvas(props.canvas.dragInfo.value.downAt),
-        current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-        ctrl: isCtrlOrMeta(e),
-        scale: props.canvas.scale.value,
-      })
-    }
-
-    function mousemove(arg: PointerMovement) {
-      if (props.canvas.viewMovingInfo.value) {
-        props.canvas.viewMove()
-        return
-      }
-
-      if (props.canvas.editStartPoint.value) {
-        props.mode.mousemove({
-          start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
-          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-          ctrl: arg.ctrl ?? false,
-          scale: props.canvas.scale.value,
-        })
-      }
-    }
-    const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
+    const throttleMousemove = useThrottle(handleMoveEvent, 1000 / 60, true)
     const pointerLock = usePointerLock({
       onMove: throttleMousemove,
-      onUp: (e) => {
-        if (e.button === 0) {
-          props.mode.upLeft({ empty: e.target === svg.value })
-        }
-      },
       onGlobalMove: (arg) => {
+        if (!svg.value) return
         const p = removeRootPosition(arg.p)
         if (!p) return
         props.canvas.setMousePoint(p)
       },
       onEscape: () => {
-        // continue displaying the popup menu even if the canvas is scrolled by middle dragging
-        // FIXME: want to improve this branch
-        if (props.mode.command.value === 'add') return
-        escape()
+        mode.sm.handleEvent({
+          type: 'keydown',
+          data: { key: 'Escape' },
+          point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+        } as any)
       },
     })
 
-    watch(
-      () => props.mode.command.value,
-      (to) => {
-        if (to === '') {
-          pointerLock.exitPointerLock()
-        }
-      }
+    const popupMenuList = useMenuList(
+      () =>
+        popupMenuInfo.value?.items.map(({ label, children }) => ({
+          label,
+          children: children?.map(({ label, key }) => ({
+            label,
+            exec: key ? () => handlePopupmenuEvent(key as string) : undefined,
+          })),
+        })) ?? []
     )
 
-    function escape() {
-      props.mode.cancel()
+    const commandExams = ref<CommandExam[]>()
+
+    const graphStore = useAnimationGraphStore()
+    const mode = useAnimationGraphMode({
+      graphStore,
+      requestPointerLock: () => {
+        if (!svg.value) return
+        props.canvas.startMoving()
+        pointerLock.requestPointerLockFromElement(svg.value)
+      },
+      exitPointerLock: () => {
+        pointerLock.exitPointerLock()
+        props.canvas.endMoving()
+      },
+      startEditMovement: () => {
+        graphStore.setEditMovement({
+          start: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          ctrl: false,
+          scale: props.canvas.scale.value,
+        })
+      },
+      startDragging: () => props.canvas.startDragging(),
+      panView: (val) => props.canvas.viewMove(val),
+      setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
+      getDraggedRectangle: () => props.canvas.draggedRectangle.value,
+      setPopupMenuList: (val) => (popupMenuInfo.value = val),
+      getNodeItemList: () =>
+        NODE_MENU_OPTIONS_SRC.concat(
+          graphStore.customGraphNodeMenuOptionsSrc.value
+        ),
+      setCommandExams: (val) => (commandExams.value = val),
+    })
+
+    function handleDownEvent(e: MouseEvent) {
+      mode.sm.handleEvent({
+        type: 'pointerdown',
+        target: parseEventTarget(e),
+        data: {
+          point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          options: getMouseOptions(e),
+        },
+      })
+    }
+    function handleUpEvent(e: MouseEvent) {
+      props.canvas.endMoving()
+      mode.sm.handleEvent({
+        type: 'pointerup',
+        target: parseEventTarget(e),
+        data: { options: getMouseOptions(e) },
+      })
+    }
+    function handleMoveEvent(e: PointerMovement) {
+      if (!props.canvas.editStartPoint.value) return
+      mode.sm.handleEvent({
+        type: 'pointermove',
+        data: {
+          start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
+          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          ctrl: e.ctrl,
+          scale: props.canvas.scale.value,
+        },
+      })
+    }
+    function handleNativeMoveEvent(e: MouseEvent) {
+      if (props.canvas.dragged.value && props.canvas.editStartPoint.value) {
+        mode.sm.handleEvent({
+          type: 'pointerdrag',
+          data: {
+            start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
+            current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+            ctrl: isCtrlOrMeta(e),
+            scale: props.canvas.scale.value,
+          },
+        })
+      }
+    }
+    function handleKeydownEvent(e: KeyboardEvent) {
+      mode.sm.handleEvent({
+        type: 'keydown',
+        data: getKeyOptions(e),
+        point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+      })
+    }
+    function handlePopupmenuEvent(key: string) {
+      mode.sm.handleEvent({ type: 'popupmenu', data: { key } })
+    }
+    function handleCopyEvent(e: ClipboardEvent) {
+      mode.sm.handleEvent({ type: 'copy', nativeEvent: e })
+    }
+    function handlePasteEvent(e: ClipboardEvent) {
+      mode.sm.handleEvent({ type: 'paste', nativeEvent: e })
     }
 
     return {
-      onCopy: (e: ClipboardEvent) => props.mode.onCopy(e),
-      onPaste: (e: ClipboardEvent) => props.mode.onPaste(e),
+      wrapper,
+      svg,
 
       scale: computed(() => props.canvas.scale.value),
       viewOrigin: computed(() => props.canvas.viewOrigin.value),
       viewSize: computed(() => props.canvas.viewSize.value),
       viewBox: computed(() => props.canvas.viewBox.value),
       viewCanvasRect: computed(() => props.canvas.viewCanvasRect.value),
-      popupMenuList,
+      popupMenuItems: computed(() => popupMenuList.list.value),
 
-      mousemoveNative,
-      wheel: props.canvas.wheel,
-      downLeft: (e: MouseEvent) => {
-        isDownEmpty.value = e.target === svg.value
-
-        if (isDownEmpty.value && props.mode.command.value) return
-
-        if (isDownEmpty.value) {
-          props.canvas.downLeft('rect-select')
-        } else {
-          props.canvas.downLeft()
-        }
-
-        const current = props.canvas.viewToCanvas(props.canvas.mousePoint.value)
-        props.mode.drag({
-          current,
-          start: current,
-          ctrl: isCtrlOrMeta(e),
-          scale: props.canvas.scale.value,
-        })
-      },
-      upLeft: (e: MouseEvent) => {
-        if (
-          props.canvas.dragRectangle.value &&
-          props.canvas.isValidDragRectangle.value
-        ) {
-          props.mode.rectSelect(
-            props.canvas.dragRectangle.value,
-            getMouseOptions(e)
-          )
-        } else if (e.target === svg.value && isDownEmpty.value) {
-          props.mode.clickEmpty()
-        } else {
-          props.mode.clickAny()
-        }
-
-        props.canvas.upLeft()
-        props.mode.upLeft({ empty: e.target === svg.value })
-        isDownEmpty.value = false
-      },
-      downMiddle: (e: MouseEvent) => {
-        props.canvas.downMiddle()
-        pointerLock.requestPointerLock(e)
-      },
-      upMiddle: () => {
-        props.canvas.upMiddle()
-        pointerLock.exitPointerLock()
-      },
-      escape,
-      editKeyDown: (e: KeyboardEvent) => {
-        const { needLock } = props.mode.execKey({
-          key: e.key,
-          position: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-          shift: e.shiftKey,
-          ctrl: isCtrlOrMeta(e),
-        })
-
-        if (needLock) {
-          pointerLock.requestPointerLock(e)
-          props.canvas.setEditStartPoint(props.canvas.mousePoint.value)
-        }
-      },
-
-      wrapper,
-      svg,
-      availableCommandList: computed(
-        () => props.mode.availableCommandList.value
-      ),
+      availableCommandList: computed(() => commandExams.value ?? []),
       popupMenuListPosition,
-      dragRectangle: computed(() => props.canvas.dragRectangle.value),
+      draggedRectangle: computed(() => props.canvas.draggedRectangle.value),
+
+      onCopy: handleCopyEvent,
+      onPaste: handlePasteEvent,
+      wheel: props.canvas.wheel,
+      handleDownEvent,
+      handleUpEvent,
+      handleNativeMoveEvent,
+      handleKeydownEvent,
     }
   },
 })
 </script>
 
 <style scoped>
-.timeline-canvas-root {
+.graph-canvas-root {
   position: relative;
   height: 100%;
 }

@@ -52,6 +52,7 @@ import {
   getEntries,
   thinOutSameItems,
   thinOutSameAttributes,
+  isNotNullish,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -680,6 +681,19 @@ describe('utils/commons.ts', () => {
       expect(
         thinOutSameAttributes([{ a: '1' }, undefined, { a: '1' }])
       ).toEqual([{ a: '1' }, undefined, { a: '1' }])
+    })
+  })
+
+  describe('isNotFalsy', () => {
+    it('should return true if the value is not falsy', () => {
+      expect(isNotNullish(null)).toBe(false)
+      expect(isNotNullish(undefined)).toBe(false)
+
+      expect(isNotNullish(false)).toBe(true)
+      expect(isNotNullish(true)).toBe(true)
+      expect(isNotNullish('')).toBe(true)
+      expect(isNotNullish(0)).toBe(true)
+      expect(isNotNullish({})).toBe(true)
     })
   })
 })

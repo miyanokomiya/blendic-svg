@@ -58,7 +58,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       <p>(!!Experimental!!)</p>
     </div>
     <div class="main">
-      <AnimationGraphCanvas class="canvas" :canvas="canvas" :mode="mode">
+      <AnimationGraphCanvas class="canvas" :canvas="canvas">
         <g v-for="(edgeMapOfNode, id) in edgeMap" :key="id">
           <GraphEdge
             v-for="(edge, key) in edgeMapOfNode"
@@ -75,13 +75,9 @@ Copyright (C) 2021, Tomoya Komiyama.
           :edge-positions="edgePositionMap[node.id]"
           :selected="selectedNodes[node.id]"
           :errors="nodeErrorMessagesMap[node.id]"
-          @down-body="downNodeBody"
-          @down-edge="downNodeEdge"
-          @up-edge="upNodeEdge"
-          @update:data="updateNodeData"
         />
         <g v-if="draftEdge">
-          <GraphEdge :from="draftEdge.from" :to="draftEdge.to" selected />
+          <GraphEdge :from="draftEdge.output" :to="draftEdge.input" selected />
         </g>
       </AnimationGraphCanvas>
       <GraphSideBar class="side-bar" />
@@ -91,12 +87,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, watchEffect, computed, ref } from 'vue'
-import { useCanvas } from '/@/composables/canvas'
-import {
-  ClosestEdgeInfo,
-  DraftGraphEdge,
-  useAnimationGraphMode,
-} from '/@/composables/modes/animationGraphMode'
+import { useSvgCanvas } from '/@/composables/canvas'
 import { useStore } from '/@/store'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import AnimationGraphCanvas from '/@/components/AnimationGraphCanvas.vue'
@@ -107,9 +98,8 @@ import GraphNode from '/@/components/elements/GraphNode.vue'
 import GraphNodeReroute from '/@/components/elements/GraphNodeReroute.vue'
 import GraphEdge from '/@/components/elements/GraphEdge.vue'
 import { IdMap, toMap } from '/@/models'
-import { SelectOptions } from '/@/composables/modes/types'
 import { mapReduce } from '/@/utils/commons'
-import { add, IVec2 } from 'okageo'
+import { add, IVec2, sub } from 'okageo'
 import { getGraphNodeEdgePosition } from '/@/utils/helpers'
 import { GraphNodeEdgePositions } from '/@/models/graphNode'
 import { useElementStore } from '/@/store/element'
@@ -141,8 +131,7 @@ export default defineComponent({
     const graphStore = useAnimationGraphStore()
     const currentGraph = computed(() => graphStore.lastSelectedGraph.value)
 
-    const canvas = useCanvas()
-    const mode = useAnimationGraphMode(graphStore)
+    const canvas = useSvgCanvas()
 
     const getGraphNodeModule = computed(() =>
       graphStore.getGraphNodeModuleFn.value()
@@ -216,16 +205,16 @@ export default defineComponent({
 
     const selectedNodes = graphStore.selectedNodes
 
-    function downNodeBody(id: string, options?: SelectOptions) {
-      mode.downNodeBody(id, options)
-    }
-
     const editedNodeMap = computed(() => {
+      const editMovement = graphStore.editMovement.value
+      if (!editMovement) return graphStore.nodeMap.value
+
+      const translate = sub(editMovement.current, editMovement.start)
+      const selectedMap = selectedNodes.value
       return mapReduce(graphStore.nodeMap.value, (n, id) => {
-        return {
-          ...n,
-          position: add(n.position, mode.getEditTransforms(id).translate),
-        }
+        return selectedMap[id]
+          ? { ...n, position: add(n.position, translate) }
+          : n
       })
     })
 
@@ -237,10 +226,10 @@ export default defineComponent({
 
     const edgeMap = computed(() => {
       const draftToInfo =
-        mode.draftEdgeInfo.value?.type === 'draft-from'
+        graphStore.draftEdge.value?.type === 'draft-output'
           ? {
-              id: mode.draftEdgeInfo.value.to.nodeId,
-              key: mode.draftEdgeInfo.value.to.key,
+              id: graphStore.draftEdge.value.input.nodeId,
+              key: graphStore.draftEdge.value.input.key,
             }
           : undefined
 
@@ -277,44 +266,33 @@ export default defineComponent({
       })
     })
 
-    const draftEdge = computed<{ from: IVec2; to: IVec2 } | undefined>(() => {
-      if (!mode.draftEdgeInfo.value) return undefined
+    const draftEdge = computed<{ output: IVec2; input: IVec2 } | undefined>(
+      () => {
+        if (!graphStore.draftEdge.value) return undefined
 
-      if (mode.draftEdgeInfo.value.type === 'draft-to') {
-        return {
-          from: add(
-            editedNodeMap.value[mode.draftEdgeInfo.value.from.nodeId].position,
-            edgePositionMap.value[mode.draftEdgeInfo.value.from.nodeId].outputs[
-              mode.draftEdgeInfo.value.from.key
-            ].p
-          ),
-          to: mode.draftEdgeInfo.value.to,
-        }
-      } else {
-        return {
-          from: mode.draftEdgeInfo.value.from,
-          to: add(
-            editedNodeMap.value[mode.draftEdgeInfo.value.to.nodeId].position,
-            edgePositionMap.value[mode.draftEdgeInfo.value.to.nodeId].inputs[
-              mode.draftEdgeInfo.value.to.key
-            ].p
-          ),
+        if (graphStore.draftEdge.value.type === 'draft-input') {
+          return {
+            output: add(
+              editedNodeMap.value[graphStore.draftEdge.value.output.nodeId]
+                .position,
+              edgePositionMap.value[graphStore.draftEdge.value.output.nodeId]
+                .outputs[graphStore.draftEdge.value.output.key].p
+            ),
+            input: graphStore.draftEdge.value.input,
+          }
+        } else {
+          return {
+            output: graphStore.draftEdge.value.output,
+            input: add(
+              editedNodeMap.value[graphStore.draftEdge.value.input.nodeId]
+                .position,
+              edgePositionMap.value[graphStore.draftEdge.value.input.nodeId]
+                .inputs[graphStore.draftEdge.value.input.key].p
+            ),
+          }
         }
       }
-    })
-
-    function updateNodeData(id: string, data: any, seriesKey?: string) {
-      const node = graphStore.nodeMap.value[id]
-      graphStore.updateNode(id, { ...node, data }, seriesKey)
-    }
-
-    function downNodeEdge(draftGraphEdge: DraftGraphEdge) {
-      mode.downNodeEdge(draftGraphEdge)
-    }
-
-    function upNodeEdge(closestEdgeInfo: ClosestEdgeInfo) {
-      mode.upNodeEdge(closestEdgeInfo)
-    }
+    )
 
     provideGetObjectOptions(() => {
       const actor = elementStore.lastSelectedActor.value
@@ -354,9 +332,7 @@ export default defineComponent({
       canvasType: graphStore.graphType,
       setGraphType: (val: any) => graphStore.setGraphType(val),
       canvasTypeOptions,
-
       canvas,
-      mode,
 
       selectedArmature,
       editedNodeMap,
@@ -375,10 +351,6 @@ export default defineComponent({
       deleteParentGraph,
 
       selectedNodes,
-      downNodeBody,
-      downNodeEdge,
-      upNodeEdge,
-      updateNodeData,
     }
   },
 })

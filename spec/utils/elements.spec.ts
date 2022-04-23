@@ -475,6 +475,7 @@ describe('utils/elements.ts', () => {
           }),
           height: 10,
         })
+        expect(context.getBoneSummary('unknown')).toEqual(undefined)
       })
     })
 

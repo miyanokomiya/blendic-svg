@@ -44,12 +44,13 @@ export function switchClick(
   }
 }
 
-export type MouseOptions = { shift?: boolean; ctrl?: boolean }
+export type MouseOptions = { shift?: boolean; ctrl?: boolean; button: number }
 
 export function getMouseOptions(e: MouseEvent): MouseOptions {
   return {
     shift: e.shiftKey,
     ctrl: isCtrlOrMeta(e),
+    button: e.button,
   }
 }
 

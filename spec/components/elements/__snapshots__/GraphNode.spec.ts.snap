@@ -5,7 +5,10 @@ exports[`src/components/elements/GraphNode.vue snapshot has errors 1`] = `
   title="scaler"
   transform="translate(0, 0)"
 >
-  <g>
+  <g
+    data-node_id=""
+    data-type="node-body"
+  >
     <path
       d="M0,30 L0,100 A8,8 0 0 0 8,108 L112,108 A8,8 0 0 0 120,100 L120,30"
       fill="#fafafa"
@@ -122,7 +125,10 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
   title="make_vector2"
   transform="translate(0, 0)"
 >
-  <g>
+  <g
+    data-node_id=""
+    data-type="node-body"
+  >
     <path
       d="M0,30 L0,98 A8,8 0 0 0 8,106 L132,106 A8,8 0 0 0 140,98 L140,30"
       fill="#fafafa"
@@ -176,6 +182,9 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
       </g>
       <circle
         class="edge-anchor"
+        data-edge_key="value"
+        data-node_id=""
+        data-type="node-edge-output"
         fill="transparent"
         r="10"
         stroke="none"
@@ -227,6 +236,9 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
       </g>
       <circle
         class="edge-anchor"
+        data-edge_key="x"
+        data-node_id=""
+        data-type="node-edge-input"
         fill="transparent"
         r="10"
         stroke="none"
@@ -249,7 +261,10 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
   title="make_vector2"
   transform="translate(0, 0)"
 >
-  <g>
+  <g
+    data-node_id=""
+    data-type="node-body"
+  >
     <path
       d="M0,30 L0,98 A8,8 0 0 0 8,106 L132,106 A8,8 0 0 0 140,98 L140,30"
       fill="#fafafa"
@@ -298,7 +313,10 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
   title="scaler"
   transform="translate(0, 0)"
 >
-  <g>
+  <g
+    data-node_id=""
+    data-type="node-body"
+  >
     <path
       d="M0,30 L0,100 A8,8 0 0 0 8,108 L112,108 A8,8 0 0 0 120,100 L120,30"
       fill="#fafafa"

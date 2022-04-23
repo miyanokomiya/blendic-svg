@@ -111,8 +111,8 @@ export function usePointerLock(handlers: {
   })
 
   function exitPointerLock() {
-    locked = false
     current.value = undefined
+    locked = false
     document.exitPointerLock()
   }
 
@@ -124,7 +124,8 @@ export function usePointerLock(handlers: {
   })
 
   function onPointerlockchange() {
-    if (!document.pointerLockElement) {
+    if (locked && !document.pointerLockElement) {
+      locked = false
       handlers.onEscape?.()
     }
   }
@@ -144,6 +145,16 @@ export function usePointerLock(handlers: {
       current.value = globalCurrent.value
       e.preventDefault()
       ;(e.target as Element).requestPointerLock()
+      locked = true
+    },
+    requestPointerLockFromElement(
+      target: Element,
+      motion: PointerType = 'move'
+    ) {
+      base = globalCurrent.value
+      motionRef.value = motion
+      current.value = globalCurrent.value
+      target.requestPointerLock()
       locked = true
     },
     exitPointerLock,

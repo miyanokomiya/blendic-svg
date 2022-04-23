@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     :title="node.type"
     :transform="`translate(${node.position.x}, ${node.position.y})`"
   >
-    <g @mousedown.left="downBody">
+    <g data-type="node-body" :data-node_id="node.id">
       <path
         :d="outline"
         :stroke="outlineStroke"
@@ -72,12 +72,13 @@ Copyright (C) 2021, Tomoya Komiyama.
           >
         </g>
         <circle
+          data-type="node-edge-output"
+          :data-node_id="node.id"
+          :data-edge_key="key"
           r="10"
           fill="transparent"
           stroke="none"
           class="edge-anchor"
-          @mouseup.left.exact="upToEdge(key)"
-          @mousedown.left.exact.prevent="downToEdge(key)"
         />
         <circle
           r="5"
@@ -126,12 +127,13 @@ Copyright (C) 2021, Tomoya Komiyama.
           </g>
         </g>
         <circle
+          data-type="node-edge-input"
+          :data-node_id="node.id"
+          :data-edge_key="key"
           r="10"
           fill="transparent"
           stroke="none"
           class="edge-anchor"
-          @mouseup.left.exact="upFromEdge(key)"
-          @mousedown.left.exact.prevent="downFromEdge(key)"
         />
         <circle
           r="5"
@@ -150,10 +152,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { computed, withDefaults } from 'vue'
 import { useSettings } from '../../composables/settings'
-import { switchClick } from '/@/utils/devices'
 import { GraphNode, GraphNodeEdgePositions } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
-import { add, IVec2 } from 'okageo'
 import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
 import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
 import ErrorText from '/@/components/elements/atoms/ErrorText.vue'
@@ -179,29 +179,6 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'down-body', id: string, option?: { shift?: boolean }): void
-  (
-    e: 'down-edge',
-    arg:
-      | {
-          type: 'draft-from' | 'draft-to'
-          from: IVec2
-          to: { nodeId: string; key: string }
-        }
-      | {
-          type: 'draft-from' | 'draft-to'
-          from: { nodeId: string; key: string }
-          to: IVec2
-        }
-  ): void
-  (
-    e: 'up-edge',
-    arg: {
-      type: 'input' | 'output'
-      nodeId: string
-      key: string
-    }
-  ): void
   (
     e: 'update:data',
     id: string,
@@ -289,34 +266,6 @@ const outlineStrokeWidth = computed(() =>
   props.errors ? 6 : props.selected ? 2 : 1
 )
 const edgeAnchorWidth = 60
-
-function downBody(e: MouseEvent) {
-  switchClick(e, {
-    plain: () => emit('down-body', props.node.id),
-    shift: () => emit('down-body', props.node.id, { shift: true }),
-    ctrl: () => emit('down-body', props.node.id),
-  })
-}
-function downFromEdge(key: string) {
-  emit('down-edge', {
-    type: 'draft-from',
-    from: add(props.node.position, props.edgePositions.inputs[key].p),
-    to: { nodeId: props.node.id, key },
-  })
-}
-function downToEdge(key: string) {
-  emit('down-edge', {
-    type: 'draft-to',
-    from: { nodeId: props.node.id, key },
-    to: add(props.node.position, props.edgePositions.outputs[key].p),
-  })
-}
-function upFromEdge(key: string) {
-  emit('up-edge', { nodeId: props.node.id, type: 'input', key })
-}
-function upToEdge(key: string) {
-  emit('up-edge', { nodeId: props.node.id, type: 'output', key })
-}
 </script>
 
 <style scoped>

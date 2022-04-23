@@ -5,7 +5,10 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot initial 1`] = `
   title="reroute"
   transform="translate(0, 0)"
 >
-  <g>
+  <g
+    data-node_id=""
+    data-type="node-body"
+  >
     <path
       d="M0,-2 Q9,-2 9,10 T0,22 z"
       fill="#ddd"
@@ -18,6 +21,9 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot initial 1`] = `
   >
     <g
       class="edge-anchor"
+      data-edge_key="value"
+      data-node_id=""
+      data-type="node-edge-output"
     >
       <circle
         fill="transparent"
@@ -37,6 +43,9 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot initial 1`] = `
   >
     <g
       class="edge-anchor"
+      data-edge_key="value"
+      data-node_id=""
+      data-type="node-edge-input"
     >
       <circle
         fill="transparent"
@@ -59,7 +68,10 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot selected 1`] = `
   title="reroute"
   transform="translate(0, 0)"
 >
-  <g>
+  <g
+    data-node_id=""
+    data-type="node-body"
+  >
     <path
       d="M0,-2 Q9,-2 9,10 T0,22 z"
       fill="#ddd"
@@ -72,6 +84,9 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot selected 1`] = `
   >
     <g
       class="edge-anchor"
+      data-edge_key="value"
+      data-node_id=""
+      data-type="node-edge-output"
     >
       <circle
         fill="transparent"
@@ -91,6 +106,9 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot selected 1`] = `
   >
     <g
       class="edge-anchor"
+      data-edge_key="value"
+      data-node_id=""
+      data-type="node-edge-input"
     >
       <circle
         fill="transparent"

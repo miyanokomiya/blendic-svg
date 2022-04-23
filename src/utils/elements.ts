@@ -243,7 +243,8 @@ function toGraphObject(e: BElement): GraphObject {
   })
 }
 
-function toGraphBoneSummary(bone: Bone): GraphBoneSummary {
+function toGraphBoneSummary(bone?: Bone): GraphBoneSummary | undefined {
+  if (!bone) return
   const posed = posedTransform(bone, [bone.transform])
   return {
     id: posed.id,

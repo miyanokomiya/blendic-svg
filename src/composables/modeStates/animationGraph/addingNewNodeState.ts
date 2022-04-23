@@ -32,20 +32,16 @@ import {
   getOutputType,
 } from '/@/utils/graphNodes'
 
-type Option = {
-  point: IVec2
-  connect?:
-    | { nodeId: string; inputKey: string }
-    | { nodeId: string; outputKey: string }
-}
+type Options = { point: IVec2 }
 
-export function useAddingNewNodeState(options: Option): AnimationGraphState {
+export function useAddingNewNodeState(options: Options): AnimationGraphState {
   return {
     getLabel: () => 'AddingNewNodeState',
     onStart: async (ctx) => {
       setupPopupMenuListForEdge(ctx, options)
     },
     onEnd: async (ctx) => {
+      ctx.setDraftEdge()
       ctx.setPopupMenuList()
     },
     handleEvent: async (ctx, event) => {
@@ -73,17 +69,19 @@ export function useAddingNewNodeState(options: Option): AnimationGraphState {
         case 'popupmenu': {
           const [type, key] = event.data.key.split('.')
           const node = ctx.addNode(type, { position: options.point })
-          if (node && options.connect && key) {
+
+          const draft = ctx.getDraftEdge()
+          if (node && draft && key) {
             const nodeMap = ctx.getNodeMap()
-            if ('inputKey' in options.connect) {
+            if (draft.type === 'draft-to') {
               ctx.updateNodes(
                 updateNodeInput(
                   ctx.getGraphNodeModule,
                   nodeMap,
-                  nodeMap[options.connect.nodeId],
-                  options.connect.inputKey,
-                  node.id,
-                  key
+                  nodeMap[node.id],
+                  key,
+                  draft.from.nodeId,
+                  draft.from.key
                 )
               )
             } else {
@@ -91,10 +89,10 @@ export function useAddingNewNodeState(options: Option): AnimationGraphState {
                 updateNodeInput(
                   ctx.getGraphNodeModule,
                   nodeMap,
-                  nodeMap[node.id],
-                  key,
-                  options.connect.nodeId,
-                  options.connect.outputKey
+                  nodeMap[draft.to.nodeId],
+                  draft.to.key,
+                  node.id,
+                  key
                 )
               )
             }
@@ -108,26 +106,25 @@ export function useAddingNewNodeState(options: Option): AnimationGraphState {
 
 async function setupPopupMenuListForEdge(
   ctx: AnimationGraphStateContext,
-  options: Option
+  options: Options
 ) {
-  if (options.connect) {
+  const draft = ctx.getDraftEdge()
+  if (draft) {
+    const forOutput = draft.type === 'draft-to'
+    const edge = forOutput ? draft.from : draft.to
+    const point = forOutput ? draft.to : draft.from
     const struct = ctx.getGraphNodeModule(
-      ctx.getNodeMap()[options.connect.nodeId].type
+      ctx.getNodeMap()[edge.nodeId].type
     )?.struct
-    const node = ctx.getNodeMap()[options.connect.nodeId]
-    const suggestions =
-      'inputKey' in options.connect
-        ? getNodeSuggestionMenuOptions(
-            ctx.getGraphNodeModule,
-            ctx.getNodeItemList(),
-            getInputType(struct, node, options.connect.inputKey)
-          )
-        : getNodeSuggestionMenuOptions(
-            ctx.getGraphNodeModule,
-            ctx.getNodeItemList(),
-            getOutputType(struct, node, options.connect.outputKey),
-            true
-          )
+    const node = ctx.getNodeMap()[edge.nodeId]
+    const suggestions = getNodeSuggestionMenuOptions(
+      ctx.getGraphNodeModule,
+      ctx.getNodeItemList(),
+      forOutput
+        ? getOutputType(struct, node, edge.key)
+        : getInputType(struct, node, edge.key),
+      forOutput
+    )
     const items: PopupMenuItem[] = suggestions.map(({ label, children }) => ({
       label,
       children: children.map(({ label, type, key }) => ({
@@ -135,7 +132,7 @@ async function setupPopupMenuListForEdge(
         key: `${type}.${key}`,
       })),
     }))
-    ctx.setPopupMenuList({ point: options.point, items })
+    ctx.setPopupMenuList({ point, items })
   } else {
     const items: PopupMenuItem[] = ctx
       .getNodeItemList()

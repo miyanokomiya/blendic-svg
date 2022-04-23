@@ -43,9 +43,6 @@ export function useConnectingInputEdgeState(options: {
         from: options.point,
       })
     },
-    onEnd: async (ctx) => {
-      ctx.setDraftEdge()
-    },
     handleEvent: async (ctx, event) => {
       switch (event.type) {
         case 'pointerdown':
@@ -81,14 +78,7 @@ export function useConnectingInputEdgeState(options: {
                     )
                   )
                 } else {
-                  return () =>
-                    useAddingNewNodeState({
-                      point: draftEdge.from,
-                      connect: {
-                        nodeId: draftEdge.to.nodeId,
-                        inputKey: draftEdge.to.key,
-                      },
-                    })
+                  return () => useAddingNewNodeState({ point: draftEdge.from })
                 }
               }
             } else if (event.target.type === 'node-edge-output') {
@@ -106,10 +96,12 @@ export function useConnectingInputEdgeState(options: {
               )
             }
           }
+          ctx.setDraftEdge()
           return useDefaultState
         case 'keydown':
           switch (event.data.key) {
             case 'escape':
+              ctx.setDraftEdge()
               return useDefaultState
           }
           return

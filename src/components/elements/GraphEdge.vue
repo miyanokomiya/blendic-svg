@@ -43,43 +43,46 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from 'vue'
-import { useSettings } from '../../composables/settings'
+import { withDefaults, computed } from 'vue'
 import { IVec2 } from 'okageo'
+import { useSettings } from '/@/composables/settings'
 import { injectScale } from '/@/composables/canvas'
+</script>
 
-export default defineComponent({
-  props: {
-    from: { type: Object as PropType<IVec2>, required: true },
-    to: { type: Object as PropType<IVec2>, required: true },
-    selected: { type: Boolean, default: false },
-    inputId: { type: String, default: undefined },
-    inputKey: { type: String, default: undefined },
-    outputId: { type: String, default: undefined },
-    outputKey: { type: String, default: undefined },
-  },
-  setup(props) {
-    const { settings } = useSettings()
+<script setup lang="ts">
+const props = withDefaults(
+  defineProps<{
+    from: IVec2
+    to: IVec2
+    selected?: boolean
+    inputId?: string
+    inputKey?: string
+    outputId?: string
+    outputKey?: string
+  }>(),
+  {
+    selected: false,
+    inputId: undefined,
+    inputKey: undefined,
+    outputId: undefined,
+    outputKey: undefined,
+  }
+)
 
-    const pathD = computed(() => {
-      const xD = Math.sqrt(Math.abs(props.from.x - props.to.x)) * 8
-      return `M${props.from.x + 5},${props.from.y} C${props.from.x + xD},${
-        props.from.y
-      } ${props.to.x - xD},${props.to.y} ${props.to.x - 5},${props.to.y}`
-    })
-
-    const scale = computed(injectScale())
-
-    return {
-      scale,
-      pathD,
-      selectedColor: computed(() => settings.selectedColor),
-      stroke: computed(() =>
-        props.selected ? settings.selectedColor : '#888'
-      ),
-    }
-  },
+const pathD = computed(() => {
+  const xD = Math.sqrt(Math.abs(props.from.x - props.to.x)) * 8
+  return `M${props.from.x + 5},${props.from.y} C${props.from.x + xD},${
+    props.from.y
+  } ${props.to.x - xD},${props.to.y} ${props.to.x - 5},${props.to.y}`
 })
+
+const { settings } = useSettings()
+const scale = computed(injectScale())
+
+const selectedColor = computed(() => settings.selectedColor)
+const stroke = computed(() =>
+  props.selected ? settings.selectedColor : '#888'
+)
 </script>
 
 <style scoped>

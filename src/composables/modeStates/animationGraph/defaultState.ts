@@ -31,6 +31,7 @@ import { useConnectingOutputEdgeState } from '/@/composables/modeStates/animatio
 import {
   COMMAND_EXAM_SRC,
   parseEdgeInfo,
+  parseNodeEdgeInfo,
   useGraphNodeClipboard,
 } from '/@/composables/modeStates/animationGraph/utils'
 import { toList } from '/@/utils/commons'
@@ -64,6 +65,12 @@ const state: AnimationGraphState = {
                 return onDownEdgeInput(event)
               case 'node-edge-output':
                 return onDownEdgeOutput(event)
+              case 'edge':
+                return () =>
+                  useAddingNewNodeState({
+                    point: event.data.point,
+                    insertion: parseEdgeInfo(event.target),
+                  })
             }
             return
           case 1:
@@ -154,7 +161,7 @@ function onDownNodeBody(
 function onDownEdgeInput(
   event: PointerDownEvent
 ): TransitionValue<AnimationGraphStateContext> {
-  const edgeInfo = parseEdgeInfo(event.target)
+  const edgeInfo = parseNodeEdgeInfo(event.target)
   return () =>
     useConnectingInputEdgeState({
       nodeId: edgeInfo.id,
@@ -166,7 +173,7 @@ function onDownEdgeInput(
 function onDownEdgeOutput(
   event: PointerDownEvent
 ): TransitionValue<AnimationGraphStateContext> {
-  const edgeInfo = parseEdgeInfo(event.target)
+  const edgeInfo = parseNodeEdgeInfo(event.target)
   return () =>
     useConnectingOutputEdgeState({
       nodeId: edgeInfo.id,

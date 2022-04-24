@@ -18,8 +18,23 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g class="view-only" data-type="edge">
-    <path :d="pathD" :stroke="stroke" :stroke-width="2.5 * scale" fill="none" />
+  <g
+    class="edge"
+    :class="{ selected }"
+    data-type="edge"
+    :data-input_id="inputId"
+    :data-input_key="inputKey"
+    :data-output_id="outputId"
+    :data-output_key="outputKey"
+  >
+    <path :d="pathD" :stroke="stroke" :stroke-width="3 * scale" fill="none" />
+    <path
+      class="highlight"
+      :d="pathD"
+      :stroke="stroke"
+      :stroke-width="9 * scale"
+      fill="none"
+    />
     <g v-if="selected" fill="none" :stroke="selectedColor" stroke-width="5">
       <circle :cx="from.x" :cy="from.y" r="7" />
       <circle :cx="to.x" :cy="to.y" r="7" />
@@ -38,6 +53,10 @@ export default defineComponent({
     from: { type: Object as PropType<IVec2>, required: true },
     to: { type: Object as PropType<IVec2>, required: true },
     selected: { type: Boolean, default: false },
+    inputId: { type: String, default: undefined },
+    inputKey: { type: String, default: undefined },
+    outputId: { type: String, default: undefined },
+    outputKey: { type: String, default: undefined },
   },
   setup(props) {
     const { settings } = useSettings()
@@ -63,8 +82,12 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
-.view-only {
-  pointer-events: none;
+<style scoped>
+.edge.selected .highlight,
+.edge:not(:hover) .highlight {
+  display: none;
+}
+.highlight {
+  cursor: pointer;
 }
 </style>

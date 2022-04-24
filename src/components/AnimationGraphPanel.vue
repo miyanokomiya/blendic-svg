@@ -65,6 +65,10 @@ Copyright (C) 2021, Tomoya Komiyama.
             :key="key"
             :from="edge.from"
             :to="edge.to"
+            :input-id="edge.inputId"
+            :input-key="edge.inputKey"
+            :output-id="edge.outputId"
+            :output-key="edge.outputKey"
           />
         </g>
         <component
@@ -110,6 +114,15 @@ import {
   provideGetGraphNodeModuleFn,
   provideGetObjectOptions,
 } from '/@/composables/animationGraph'
+
+type EdgeSummary = {
+  from: IVec2
+  to: IVec2
+  inputId: string
+  inputKey: string
+  outputId: string
+  outputKey: string
+}
 
 export default defineComponent({
   components: {
@@ -224,7 +237,7 @@ export default defineComponent({
       )
     })
 
-    const edgeMap = computed(() => {
+    const edgeMap = computed<IdMap<IdMap<EdgeSummary>>>(() => {
       const draftToInfo =
         graphStore.draftEdge.value?.type === 'draft-output'
           ? {
@@ -237,32 +250,37 @@ export default defineComponent({
 
       return mapReduce(allNodes, (node) => {
         const inputsPositions = edgePositionMap.value[node.id].inputs
-        return Object.entries(node.inputs).reduce<{
-          [key: string]: { from: IVec2; to: IVec2 }
-        }>((p, [key, input]) => {
-          if (
-            !input.from ||
-            !edgePositionMap.value[input.from.id] ||
-            !edgePositionMap.value[input.from.id].outputs[input.from.key]
-          )
-            return p
+        return Object.entries(node.inputs).reduce<IdMap<EdgeSummary>>(
+          (p, [key, input]) => {
+            if (
+              !input.from ||
+              !edgePositionMap.value[input.from.id] ||
+              !edgePositionMap.value[input.from.id].outputs[input.from.key]
+            )
+              return p
 
-          if (
-            draftToInfo &&
-            draftToInfo.id === node.id &&
-            draftToInfo.key === key
-          )
-            return p
+            if (
+              draftToInfo &&
+              draftToInfo.id === node.id &&
+              draftToInfo.key === key
+            )
+              return p
 
-          p[key] = {
-            from: add(
-              allNodes[input.from.id].position,
-              edgePositionMap.value[input.from.id].outputs[input.from.key].p
-            ),
-            to: add(node.position, inputsPositions[key].p),
-          }
-          return p
-        }, {})
+            p[key] = {
+              from: add(
+                allNodes[input.from.id].position,
+                edgePositionMap.value[input.from.id].outputs[input.from.key].p
+              ),
+              to: add(node.position, inputsPositions[key].p),
+              inputId: node.id,
+              inputKey: key,
+              outputId: input.from.id,
+              outputKey: input.from.key,
+            }
+            return p
+          },
+          {}
+        )
       })
     })
 

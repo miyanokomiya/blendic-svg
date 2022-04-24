@@ -2,14 +2,21 @@
 
 exports[`src/components/elements/GraphEdge.vue snapshot initial 1`] = `
 <g
-  class="view-only"
+  class="edge"
   data-type="edge"
 >
   <path
     d="M6,2 C25,2 -14,20 5,20"
     fill="none"
     stroke="#888"
-    stroke-width="2.5"
+    stroke-width="3"
+  />
+  <path
+    class="highlight"
+    d="M6,2 C25,2 -14,20 5,20"
+    fill="none"
+    stroke="#888"
+    stroke-width="9"
   />
   <!--v-if-->
 </g>
@@ -17,14 +24,21 @@ exports[`src/components/elements/GraphEdge.vue snapshot initial 1`] = `
 
 exports[`src/components/elements/GraphEdge.vue snapshot selected 1`] = `
 <g
-  class="view-only"
+  class="edge selected"
   data-type="edge"
 >
   <path
     d="M6,2 C25,2 -14,20 5,20"
     fill="none"
     stroke="orange"
-    stroke-width="2.5"
+    stroke-width="3"
+  />
+  <path
+    class="highlight"
+    d="M6,2 C25,2 -14,20 5,20"
+    fill="none"
+    stroke="orange"
+    stroke-width="9"
   />
   <g
     fill="none"

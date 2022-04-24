@@ -121,14 +121,29 @@ export function updateNodeInput(
   }
 }
 
-export function parseEdgeInfo(target: ModeEventTarget): {
+export function parseNodeEdgeInfo(target: ModeEventTarget): {
   key: string
   id: string
 } {
   const id = target.data?.['node_id']
   const key = target.data?.['edge_key']
-  if (!id || !key) throw new Error('Invalid edge data.')
+  if (!id || !key) throw new Error('Invalid node edge data.')
   return { id, key }
+}
+
+export function parseEdgeInfo(target: ModeEventTarget): {
+  inputId: string
+  inputKey: string
+  outputId: string
+  outputKey: string
+} {
+  const inputId = target.data?.['input_id']
+  const inputKey = target.data?.['input_key']
+  const outputId = target.data?.['output_id']
+  const outputKey = target.data?.['output_key']
+  if (!inputId || !inputKey || !outputId || !outputKey)
+    throw new Error('Invalid edge data.')
+  return { inputId, inputKey, outputId, outputKey }
 }
 
 const emptyTarget = {

@@ -149,9 +149,11 @@ export default defineComponent({
       () =>
         popupMenuInfo.value?.items.map(({ label, children }) => ({
           label,
-          children: children?.map(({ label, key }) => ({
+          children: children?.map(({ label, key, data }) => ({
             label,
-            exec: key ? () => handlePopupmenuEvent(key as string) : undefined,
+            exec: key
+              ? () => handlePopupmenuEvent(key as string, data)
+              : undefined,
           })),
         })) ?? []
     )
@@ -240,8 +242,11 @@ export default defineComponent({
         point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
       })
     }
-    function handlePopupmenuEvent(key: string) {
-      mode.sm.handleEvent({ type: 'popupmenu', data: { key } })
+    function handlePopupmenuEvent(
+      key: string,
+      data: { [key: string]: string } = {}
+    ) {
+      mode.sm.handleEvent({ type: 'popupmenu', data: { key, ...data } })
     }
     function handleCopyEvent(e: ClipboardEvent) {
       mode.sm.handleEvent({ type: 'copy', nativeEvent: e })

@@ -196,9 +196,7 @@ export interface KeyDownEvent extends ModeStateEventBase {
 
 export interface PopupMenuEvent extends ModeStateEventBase {
   type: 'popupmenu'
-  data: {
-    key: string
-  }
+  data: { key: string } & { [key: string]: string }
 }
 
 export interface CopyEvent extends ModeStateEventBase {

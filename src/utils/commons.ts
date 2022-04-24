@@ -439,3 +439,11 @@ export function thinOutSameAttributes<T extends { [key: string]: unknown }>(
 export function isNotNullish(v: any): v is Exclude<typeof v, undefined | null> {
   return v != null
 }
+
+export function dropNullishItem<T>(obj: {
+  [key: string]: T | undefined | null
+}): { [key: string]: Exclude<T, undefined | null> } {
+  return mapFilter(obj, isNotNullish) as {
+    [key: string]: Exclude<T, undefined | null>
+  }
+}

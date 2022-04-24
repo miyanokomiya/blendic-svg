@@ -184,6 +184,7 @@ export interface PointerUpEvent extends ModeStateEventWithTarget {
   type: 'pointerup'
   target: ModeEventTarget
   data: {
+    point: IVec2
     options: MouseOptions
   }
 }

@@ -53,6 +53,7 @@ import {
   thinOutSameItems,
   thinOutSameAttributes,
   isNotNullish,
+  dropNullishItem,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -694,6 +695,18 @@ describe('utils/commons.ts', () => {
       expect(isNotNullish('')).toBe(true)
       expect(isNotNullish(0)).toBe(true)
       expect(isNotNullish({})).toBe(true)
+    })
+  })
+
+  describe('dropNullishItem', () => {
+    it('should drop nullish items', () => {
+      expect(
+        dropNullishItem({ a: 1, b: undefined, c: 0, d: '', f: null })
+      ).toEqual({
+        a: 1,
+        c: 0,
+        d: '',
+      })
     })
   })
 })

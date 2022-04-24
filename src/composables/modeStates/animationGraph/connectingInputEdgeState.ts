@@ -21,7 +21,7 @@ import { IVec2 } from 'okageo'
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import {
-  parseEdgeInfo,
+  parseNodeEdgeInfo,
   updateNodeInput,
   validDraftConnection,
 } from '/@/composables/modeStates/animationGraph/utils'
@@ -85,7 +85,7 @@ export function useConnectingInputEdgeState(options: {
               }
             } else if (event.target.type === 'node-edge-output') {
               const nodeMap = ctx.getNodeMap()
-              const closest = parseEdgeInfo(event.target)
+              const closest = parseNodeEdgeInfo(event.target)
               if (
                 validDraftConnection(
                   ctx.getGraphNodeModule,

@@ -18,8 +18,23 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g class="view-only" data-type="edge">
-    <path :d="pathD" :stroke="stroke" :stroke-width="2.5 * scale" fill="none" />
+  <g
+    class="edge"
+    :class="{ selected }"
+    data-type="edge"
+    :data-input_id="inputId"
+    :data-input_key="inputKey"
+    :data-output_id="outputId"
+    :data-output_key="outputKey"
+  >
+    <path :d="pathD" :stroke="stroke" :stroke-width="3 * scale" fill="none" />
+    <path
+      class="highlight"
+      :d="pathD"
+      :stroke="stroke"
+      :stroke-width="9 * scale"
+      fill="none"
+    />
     <g v-if="selected" fill="none" :stroke="selectedColor" stroke-width="5">
       <circle :cx="from.x" :cy="from.y" r="7" />
       <circle :cx="to.x" :cy="to.y" r="7" />
@@ -28,43 +43,54 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from 'vue'
-import { useSettings } from '../../composables/settings'
+import { withDefaults, computed } from 'vue'
 import { IVec2 } from 'okageo'
+import { useSettings } from '/@/composables/settings'
 import { injectScale } from '/@/composables/canvas'
-
-export default defineComponent({
-  props: {
-    from: { type: Object as PropType<IVec2>, required: true },
-    to: { type: Object as PropType<IVec2>, required: true },
-    selected: { type: Boolean, default: false },
-  },
-  setup(props) {
-    const { settings } = useSettings()
-
-    const pathD = computed(() => {
-      const xD = Math.sqrt(Math.abs(props.from.x - props.to.x)) * 8
-      return `M${props.from.x + 5},${props.from.y} C${props.from.x + xD},${
-        props.from.y
-      } ${props.to.x - xD},${props.to.y} ${props.to.x - 5},${props.to.y}`
-    })
-
-    const scale = computed(injectScale())
-
-    return {
-      scale,
-      pathD,
-      selectedColor: computed(() => settings.selectedColor),
-      stroke: computed(() =>
-        props.selected ? settings.selectedColor : '#888'
-      ),
-    }
-  },
-})
 </script>
 
-<style lang="scss" scoped>
-.view-only {
-  pointer-events: none;
+<script setup lang="ts">
+const props = withDefaults(
+  defineProps<{
+    from: IVec2
+    to: IVec2
+    selected?: boolean
+    inputId?: string
+    inputKey?: string
+    outputId?: string
+    outputKey?: string
+  }>(),
+  {
+    selected: false,
+    inputId: undefined,
+    inputKey: undefined,
+    outputId: undefined,
+    outputKey: undefined,
+  }
+)
+
+const pathD = computed(() => {
+  const xD = Math.sqrt(Math.abs(props.from.x - props.to.x)) * 8
+  return `M${props.from.x + 5},${props.from.y} C${props.from.x + xD},${
+    props.from.y
+  } ${props.to.x - xD},${props.to.y} ${props.to.x - 5},${props.to.y}`
+})
+
+const { settings } = useSettings()
+const scale = computed(injectScale())
+
+const selectedColor = computed(() => settings.selectedColor)
+const stroke = computed(() =>
+  props.selected ? settings.selectedColor : '#888'
+)
+</script>
+
+<style scoped>
+.edge.selected .highlight,
+.edge:not(:hover) .highlight {
+  display: none;
+}
+.highlight {
+  cursor: pointer;
 }
 </style>

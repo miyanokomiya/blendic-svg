@@ -27,19 +27,33 @@ import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaul
 import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
 import { updateNodeInput } from '/@/composables/modeStates/animationGraph/utils'
 import { PopupMenuEvent, TransitionValue } from '/@/composables/modeStates/core'
+import { dropNullishItem } from '/@/utils/commons'
 import {
   getInputType,
+  getInsertingNodeSuggestionMenuOptions,
   getNodeSuggestionMenuOptions,
   getOutputType,
 } from '/@/utils/graphNodes'
 
-type Options = { point: IVec2 }
+type Options = {
+  point: IVec2
+  insertion?: Insertion
+}
+
+type Insertion = {
+  inputId: string
+  inputKey: string
+  outputId: string
+  outputKey: string
+}
 
 export function useAddingNewNodeState(options: Options): AnimationGraphState {
   return {
     getLabel: () => 'AddingNewNodeState',
     onStart: async (ctx) => {
-      setupPopupMenuListForEdge(ctx, options)
+      options.insertion
+        ? setupPopupMenuListForInsertion(ctx, options)
+        : setupPopupMenuListForEdge(ctx, options)
     },
     onEnd: async (ctx) => {
       ctx.setDraftEdge()
@@ -68,55 +82,101 @@ export function useAddingNewNodeState(options: Options): AnimationGraphState {
           }
           return
         case 'popupmenu': {
-          return onSelectNewNode(ctx, event, options)
+          return options.insertion
+            ? onSelectNewNodeToInsert(ctx, event, options)
+            : onSelectNewNode(ctx, event, options)
         }
       }
     },
   }
 }
 
-async function setupPopupMenuListForEdge(
+function setupPopupMenuListForEdge(
   ctx: AnimationGraphStateContext,
   options: Options
 ) {
   const draft = ctx.getDraftEdge()
-  if (draft) {
-    const forOutput = draft.type === 'draft-input'
-    const [edge, point] = forOutput
-      ? [draft.output, draft.input]
-      : [draft.input, draft.output]
-    const struct = ctx.getGraphNodeModule(
-      ctx.getNodeMap()[edge.nodeId].type
-    )?.struct
-    const node = ctx.getNodeMap()[edge.nodeId]
-    const suggestions = getNodeSuggestionMenuOptions(
-      ctx.getGraphNodeModule,
-      ctx.getNodeItemList(),
-      forOutput
-        ? getOutputType(struct, node, edge.key)
-        : getInputType(struct, node, edge.key),
-      forOutput
-    )
-    const items: PopupMenuItem[] = suggestions.map(({ label, children }) => ({
+  if (!draft) {
+    setupPopupMenuListForUnconnected(ctx, options)
+    return
+  }
+
+  const forOutput = draft.type === 'draft-input'
+  const [edge, point] = forOutput
+    ? [draft.output, draft.input]
+    : [draft.input, draft.output]
+  const struct = ctx.getGraphNodeModule(
+    ctx.getNodeMap()[edge.nodeId].type
+  )?.struct
+  const node = ctx.getNodeMap()[edge.nodeId]
+  const suggestions = getNodeSuggestionMenuOptions(
+    ctx.getGraphNodeModule,
+    ctx.getNodeItemList(),
+    forOutput
+      ? getOutputType(struct, node, edge.key)
+      : getInputType(struct, node, edge.key),
+    forOutput
+  )
+  const items: PopupMenuItem[] = suggestions.map(({ label, children }) => ({
+    label,
+    children: children.map((o) => ({
+      label: o.label,
+      key: `${o.type}`,
+      data: dropNullishItem({ inputKey: o.inputKey, outputKey: o.outputKey }),
+    })),
+  }))
+  ctx.setPopupMenuList({ point, items })
+}
+
+function setupPopupMenuListForUnconnected(
+  ctx: AnimationGraphStateContext,
+  options: Options
+) {
+  const items: PopupMenuItem[] = ctx
+    .getNodeItemList()
+    .map(({ label, children }) => ({
       label,
-      children: children.map(({ label, type, key }) => ({
+      children: children.map(({ label, type }) => ({
         label,
-        key: `${type}.${key}`,
+        key: type as string,
       })),
     }))
-    ctx.setPopupMenuList({ point, items })
-  } else {
-    const items: PopupMenuItem[] = ctx
-      .getNodeItemList()
-      .map(({ label, children }) => ({
-        label,
-        children: children.map(({ label, type }) => ({
-          label,
-          key: type as string,
-        })),
-      }))
-    ctx.setPopupMenuList({ point: options.point, items })
+  ctx.setPopupMenuList({ point: options.point, items })
+}
+
+function setupPopupMenuListForInsertion(
+  ctx: AnimationGraphStateContext,
+  options: Options
+) {
+  const insertion = options.insertion
+  if (!insertion) {
+    setupPopupMenuListForUnconnected(ctx, options)
+    return
   }
+
+  const nodeMap = ctx.getNodeMap()
+  const inputNode = nodeMap[insertion.inputId]
+  const outputNode = nodeMap[insertion.outputId]
+  if (!inputNode || !outputNode) return
+
+  const inputStruct = ctx.getGraphNodeModule(inputNode.type)?.struct
+  const outputStruct = ctx.getGraphNodeModule(outputNode.type)?.struct
+
+  const suggestions = getInsertingNodeSuggestionMenuOptions(
+    ctx.getGraphNodeModule,
+    ctx.getNodeItemList(),
+    getOutputType(outputStruct, outputNode, insertion.outputKey),
+    getInputType(inputStruct, inputNode, insertion.inputKey)
+  )
+  const items: PopupMenuItem[] = suggestions.map(({ label, children }) => ({
+    label,
+    children: children.map((o) => ({
+      label: o.label,
+      key: `${o.type}`,
+      data: dropNullishItem({ inputKey: o.inputKey, outputKey: o.outputKey }),
+    })),
+  }))
+  ctx.setPopupMenuList({ point: options.point, items })
 }
 
 function onSelectNewNode(
@@ -124,7 +184,7 @@ function onSelectNewNode(
   event: PopupMenuEvent,
   options: Options
 ): TransitionValue<AnimationGraphStateContext> {
-  const [type, key] = event.data.key.split('.')
+  const type = event.data.key
   const struct = ctx.getGraphNodeModule(type)?.struct
   const draft = ctx.getDraftEdge()
   if (!struct) return useDefaultState
@@ -135,24 +195,75 @@ function onSelectNewNode(
     ? { x: options.point.x, y: options.point.y - 10 }
     : { x: options.point.x - struct.width, y: options.point.y - 10 }
   const node = ctx.addNode(type, { position })
+  if (!node || !draft) return useDefaultState
 
-  if (node && draft && key) {
-    // Connect draft edge to created node
-    const nodeMap = ctx.getNodeMap()
-    const [inputId, inputKey, outputId, outputKey] = isDraftInput
-      ? [node.id, key, draft.output.nodeId, draft.output.key]
-      : [draft.input.nodeId, draft.input.key, node.id, key]
-
+  // Connect draft edge to created node
+  const { inputKey, outputKey } = event.data
+  if (isDraftInput && inputKey) {
     ctx.updateNodes(
       updateNodeInput(
         ctx.getGraphNodeModule,
-        nodeMap,
-        inputId,
+        ctx.getNodeMap(),
+        node.id,
         inputKey,
-        outputId,
+        draft.output.nodeId,
+        draft.output.key
+      )
+    )
+  } else if (!isDraftInput && outputKey) {
+    ctx.updateNodes(
+      updateNodeInput(
+        ctx.getGraphNodeModule,
+        ctx.getNodeMap(),
+        draft.input.nodeId,
+        draft.input.key,
+        node.id,
         outputKey
       )
     )
   }
+
+  return useDefaultState
+}
+
+function onSelectNewNodeToInsert(
+  ctx: AnimationGraphStateContext,
+  event: PopupMenuEvent,
+  options: Options
+): TransitionValue<AnimationGraphStateContext> {
+  const type = event.data.key
+  const struct = ctx.getGraphNodeModule(type)?.struct
+  if (!struct) return useDefaultState
+
+  // Adjust the position (no exact criteria)
+  const position = {
+    x: options.point.x - struct.width / 2,
+    y: options.point.y - 10,
+  }
+  const node = ctx.addNode(type, { position })
+  if (!node || !options.insertion) return useDefaultState
+
+  const { inputKey, outputKey } = event.data
+  const nodeMap = ctx.getNodeMap()
+
+  const inputProcessed = updateNodeInput(
+    ctx.getGraphNodeModule,
+    nodeMap,
+    node.id,
+    inputKey,
+    options.insertion.outputId,
+    options.insertion.outputKey
+  )
+
+  const outputProcessed = updateNodeInput(
+    ctx.getGraphNodeModule,
+    { ...nodeMap, ...inputProcessed },
+    options.insertion.inputId,
+    options.insertion.inputKey,
+    node.id,
+    outputKey
+  )
+
+  ctx.updateNodes({ ...inputProcessed, ...outputProcessed })
   return useDefaultState
 }

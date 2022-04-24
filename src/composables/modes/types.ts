@@ -45,6 +45,7 @@ export interface PopupMenuItem {
   label: string
   key?: string
   exec?: () => void
+  data?: { [key: string]: string }
   children?: PopupMenuItem[]
 }
 

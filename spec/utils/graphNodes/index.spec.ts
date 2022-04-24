@@ -29,6 +29,7 @@ import {
 } from '/@/models/graphNode'
 import {
   compute,
+  getInsertingNodeSuggestionMenuOptions,
   getNodeSuggestionMenuOptions,
   getInputFromIds,
   resolveNode,
@@ -110,6 +111,43 @@ describe('src/utils/graphNodes/index.ts', () => {
     } as GraphNodeBreakVector2,
   } as const
 
+  describe('getInsertingNodeSuggestionMenuOptions', () => {
+    it('should return relevant suggestions to insert', () => {
+      const src = [
+        {
+          label: 'test',
+          children: [
+            { label: 'a', type: 'break_vector2' },
+            { label: 'b', type: 'make_transform' },
+            { label: 'c', type: 'sin' },
+            { label: 'd', type: 'make_vector2' },
+          ],
+        },
+      ]
+
+      expect(
+        getInsertingNodeSuggestionMenuOptions(
+          getGraphNodeModule,
+          src,
+          UNIT_VALUE_TYPES.SCALER,
+          UNIT_VALUE_TYPES.VECTOR2
+        )
+      ).toEqual([
+        {
+          label: 'test',
+          children: [
+            {
+              label: 'd',
+              type: 'make_vector2',
+              inputKey: 'x',
+              outputKey: 'vector2',
+            },
+          ],
+        },
+      ])
+    })
+  })
+
   describe('getNodeSuggestionMenuOptions', () => {
     describe('should return suggested node options', () => {
       const src = [
@@ -138,8 +176,8 @@ describe('src/utils/graphNodes/index.ts', () => {
           {
             label: 'test',
             children: [
-              { label: 'a', type: 'break_vector2', key: 'x' },
-              { label: 'c', type: 'sin', key: 'value' },
+              { label: 'a', type: 'break_vector2', outputKey: 'x' },
+              { label: 'c', type: 'sin', outputKey: 'value' },
             ],
           },
         ])
@@ -156,8 +194,8 @@ describe('src/utils/graphNodes/index.ts', () => {
           {
             label: 'test',
             children: [
-              { label: 'b', type: 'make_transform', key: 'rotate' },
-              { label: 'c', type: 'sin', key: 'rotate' },
+              { label: 'b', type: 'make_transform', inputKey: 'rotate' },
+              { label: 'c', type: 'sin', inputKey: 'rotate' },
             ],
           },
         ])
@@ -186,8 +224,8 @@ describe('src/utils/graphNodes/index.ts', () => {
           {
             label: 'gene',
             children: [
-              { label: 'add', type: 'add_generics', key: 'value' },
-              { label: 'switch', type: 'switch_generics', key: 'value' },
+              { label: 'add', type: 'add_generics', outputKey: 'value' },
+              { label: 'switch', type: 'switch_generics', outputKey: 'value' },
             ],
           },
         ])
@@ -204,8 +242,12 @@ describe('src/utils/graphNodes/index.ts', () => {
           {
             label: 'gene',
             children: [
-              { label: 'add', type: 'add_generics', key: 'a' },
-              { label: 'switch', type: 'switch_generics', key: 'condition' },
+              { label: 'add', type: 'add_generics', inputKey: 'a' },
+              {
+                label: 'switch',
+                type: 'switch_generics',
+                inputKey: 'condition',
+              },
             ],
           },
         ])
@@ -234,8 +276,8 @@ describe('src/utils/graphNodes/index.ts', () => {
           {
             label: 'test',
             children: [
-              { label: 'add', type: 'add_generics', key: 'value' },
-              { label: 'sin', type: 'sin', key: 'value' },
+              { label: 'add', type: 'add_generics', outputKey: 'value' },
+              { label: 'sin', type: 'sin', outputKey: 'value' },
             ],
           },
         ])
@@ -252,8 +294,8 @@ describe('src/utils/graphNodes/index.ts', () => {
           {
             label: 'test',
             children: [
-              { label: 'add', type: 'add_generics', key: 'a' },
-              { label: 'sin', type: 'sin', key: 'rotate' },
+              { label: 'add', type: 'add_generics', inputKey: 'a' },
+              { label: 'sin', type: 'sin', inputKey: 'rotate' },
             ],
           },
         ])

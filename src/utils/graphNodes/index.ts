@@ -343,9 +343,28 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
   },
 ]
 
-export function getNodeSuggestionMenuOptions(
+export function getInsertingNodeSuggestionMenuOptions(
   getGraphNodeModule: GetGraphNodeModule,
   nodeOptions: NODE_MENU_OPTION[],
+  inputValueType: ValueType,
+  outputValueType: ValueType
+): NodeSuggestionMenuOption[] {
+  const inputOptions = getNodeSuggestionMenuOptions(
+    getGraphNodeModule,
+    nodeOptions,
+    inputValueType,
+    true
+  )
+  return getNodeSuggestionMenuOptions(
+    getGraphNodeModule,
+    inputOptions,
+    outputValueType
+  )
+}
+
+export function getNodeSuggestionMenuOptions(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeOptions: NodeSuggestionMenuOption[],
   valueType: ValueType,
   forOutput = false
 ): NodeSuggestionMenuOption[] {
@@ -354,20 +373,25 @@ export function getNodeSuggestionMenuOptions(
   return nodeOptions
     .map((src) => {
       const items = src.children
-        .map((item) => {
+        .map<NodeSuggestionMenuOptionSrc | undefined>((item) => {
           const struct = getGraphNodeModule(item.type)?.struct
           if (!struct) return
 
           // Prioritize the same type rather than generics types
           // When the target type is generics, allow to pick any type with the worst priority
-          const edgeKey = forOutput
-            ? findInputKeyByValueType(struct, valueType) ??
+          if (forOutput) {
+            const edgeKey =
+              findInputKeyByValueType(struct, valueType) ??
               findInputKeyByValueType(struct, UNIT_VALUE_TYPES.GENERICS) ??
               (isGenericsType ? Object.keys(struct.inputs)[0] : undefined)
-            : findOutputKeyByValueType(struct, valueType) ??
+            return edgeKey ? { ...item, inputKey: edgeKey } : undefined
+          } else {
+            const edgeKey =
+              findOutputKeyByValueType(struct, valueType) ??
               findOutputKeyByValueType(struct, UNIT_VALUE_TYPES.GENERICS) ??
               (isGenericsType ? Object.keys(struct.outputs)[0] : undefined)
-          return edgeKey ? { ...item, key: edgeKey } : undefined
+            return edgeKey ? { ...item, outputKey: edgeKey } : undefined
+          }
         })
         .filter(isNotNullish)
 
@@ -398,7 +422,10 @@ function findInputKeyByValueType(
   return hit ? hit[0] : undefined
 }
 
-type NodeSuggestionMenuOptionSrc = { key: string } & NodeMenuOption
+type NodeSuggestionMenuOptionSrc = {
+  inputKey?: string
+  outputKey?: string
+} & NodeMenuOption
 type NodeSuggestionMenuOption = {
   label: string
   children: NodeSuggestionMenuOptionSrc[]

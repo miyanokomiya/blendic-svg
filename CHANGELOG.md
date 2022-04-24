@@ -5,9 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.16.0] - 2022-04-24
 ### Added
 - Add new graph node to get a bone summary
 - Show new node suggestions during modifying output edge
+- Insert new node among two nodes by clicking the edge
+- Add new node to be connected when input edge is release at empty space
 
 ### Changed
 - Use native clipborad API in the animation graph canvas

@@ -61,7 +61,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, inject, PropType } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 import { IdMap } from '/@/models'
 import {
   CurveSelectedState,
@@ -73,6 +73,7 @@ import BezierControls from '/@/components/elements/molecules/BezierControls.vue'
 import GraphCurveLines from '/@/components/elements/molecules/GraphCurveLines.vue'
 import { useSettings } from '/@/composables/settings'
 import { getCurves } from '/@/utils/graphCurves'
+import { injectScale } from '/@/composables/canvas'
 
 export default defineComponent({
   components: {
@@ -131,7 +132,7 @@ export default defineComponent({
       emit('down-control', keyframeId, props.pointKey, state)
     }
 
-    const getScale = inject<() => number>('getScale', () => 1)
+    const getScale = injectScale()
 
     const radius = computed(() => (props.focused ? 6.5 : 5))
     const lineWidth = computed(() => (props.focused ? 2.5 : 1))

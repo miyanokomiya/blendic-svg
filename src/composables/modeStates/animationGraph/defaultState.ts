@@ -65,6 +65,16 @@ const state: AnimationGraphState = {
                 return onDownEdgeInput(event)
               case 'node-edge-output':
                 return onDownEdgeOutput(event)
+            }
+            return
+          case 1:
+            return usePanningState
+        }
+        return
+      case 'pointerup':
+        switch (event.data.options.button) {
+          case 0:
+            switch (event.target.type) {
               case 'edge':
                 return () =>
                   useAddingNewNodeState({
@@ -73,8 +83,6 @@ const state: AnimationGraphState = {
                   })
             }
             return
-          case 1:
-            return usePanningState
         }
         return
       case 'keydown':

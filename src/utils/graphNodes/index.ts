@@ -691,7 +691,7 @@ function _createGraphNode(
     node.inputs = { ...node.inputs, ...arg.inputs }
   }
   if (generateId) {
-    node.id = `gn_${generateUuid()}`
+    node.id = generateUuid()
   }
   return node
 }

@@ -14,12 +14,12 @@
     "lint:fix": "yarn lint --fix && yarn lint-json -w"
   },
   "dependencies": {
+    "nanoid": "^3.3.3",
     "okageo": "^3.0.0",
     "okahistory": "^0.0.8",
     "okanvas": "^0.0.4",
     "okaselect": "^0.0.11",
     "ress": "^5.0.2",
-    "uuid": "^8.3.2",
     "vue": "^3.2.33"
   },
   "devDependencies": {

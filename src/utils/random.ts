@@ -1,5 +1,5 @@
-import { v4 } from 'uuid'
+import { nanoid } from 'nanoid'
 
 // Avoid `crypto.randomUUID` due to HTTPS limitation
-// Avoid number prefix to use as DOM ID
-export const generateUuid: () => string = () => `b-${v4()}`
+// Avoid number prefix for DOM ID
+export const generateUuid: () => string = () => `b${nanoid(12)}`

@@ -51,6 +51,7 @@ import {
   getOutputType,
   getNodeErrors,
   cleanAllEdgeGenerics,
+  getUpdatedNodeMapToDisconnectNodeInputs,
   getUpdatedNodeMapToDisconnectNodeInput,
   getInputTypes,
   createDefaultUnitValueForGenerics,
@@ -2051,6 +2052,41 @@ describe('src/utils/graphNodes/index.ts', () => {
         b: ['Circular connection is found'],
         c: ['Circular connection is found'],
         d: ['Invalid input: rotate'],
+      })
+    })
+  })
+
+  describe('getUpdatedNodeMapToDisconnectNodeInputs', () => {
+    it('should return updated node map after disconnecting all target inputs ', () => {
+      expect(
+        getUpdatedNodeMapToDisconnectNodeInputs(
+          getGraphNodeModule,
+          {
+            a: createGraphNode('add_generics', {
+              id: 'a',
+              inputs: {
+                a: {
+                  from: { id: 'b', key: 'vector2' },
+                  genericsType: UNIT_VALUE_TYPES.VECTOR2,
+                },
+              },
+            }),
+            b: createGraphNode('make_vector2', { id: 'b' }),
+            c: createGraphNode('add_generics', {
+              id: 'c',
+              inputs: {
+                b: {
+                  from: { id: 'b', key: 'vector2' },
+                  genericsType: UNIT_VALUE_TYPES.VECTOR2,
+                },
+              },
+            }),
+          },
+          { a: { a: true }, c: { b: true } }
+        )
+      ).toEqual({
+        a: createGraphNode('add_generics', { id: 'a' }),
+        c: createGraphNode('add_generics', { id: 'c' }),
       })
     })
   })

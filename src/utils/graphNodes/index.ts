@@ -1418,6 +1418,35 @@ export function getNodeErrors(
   }, {})
 }
 
+export function getUpdatedNodeMapToDisconnectNodeInputs(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: GraphNodeMap,
+  inputsMap: IdMap<IdMap<true>>
+): GraphNodeMap {
+  const latestMap: GraphNodeMap = nodeMap
+  const updatedIds = new Set<string>()
+
+  Object.entries(inputsMap).forEach(([id, inputs]) => {
+    Object.keys(inputs).forEach((key) => {
+      const updated = getUpdatedNodeMapToDisconnectNodeInput(
+        getGraphNodeModule,
+        latestMap,
+        id,
+        key
+      )
+      Object.entries(updated).forEach(([id, val]) => {
+        latestMap[id] = val
+        updatedIds.add(id)
+      })
+    })
+  })
+
+  return Array.from(updatedIds).reduce<GraphNodeMap>((p, id) => {
+    p[id] = latestMap[id]
+    return p
+  }, {})
+}
+
 export function getUpdatedNodeMapToDisconnectNodeInput(
   getGraphNodeModule: GetGraphNodeModule,
   nodeMap: GraphNodeMap,

@@ -19,35 +19,59 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 import { IVec2 } from 'okageo'
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
+import { usePathCollision } from '/@/composables/pathCollision'
+import { IdMap } from '/@/models'
+import { mapReduce } from '/@/utils/commons'
+import { getUpdatedNodeMapToDisconnectNodeInputs } from '/@/utils/graphNodes'
+import { getGraphNodeEdgePath } from '/@/utils/helpers'
 
 export function useEdgeCutting(options: { point: IVec2 }): AnimationGraphState {
+  let edgeCollision: IdMap<ReturnType<typeof usePathCollision>>
+
   return {
-    ...state,
+    getLabel: () => 'EdgeCutting',
     onStart: async (ctx) => {
+      edgeCollision = mapReduce(ctx.getEdgeSummaryMap(), (edges) =>
+        usePathCollision(
+          mapReduce(edges, (edge) => getGraphNodeEdgePath(edge.from, edge.to))
+        )
+      )
       ctx.setEdgeCutter({ from: options.point, to: options.point })
       ctx.startDragging()
     },
     onEnd: async (ctx) => {
       ctx.setEdgeCutter(undefined)
     },
-  }
-}
-
-const state: AnimationGraphState = {
-  getLabel: () => 'EdgeCutting',
-  handleEvent: async (ctx, event) => {
-    switch (event.type) {
-      case 'pointerdrag': {
-        const current = ctx.getEdgeCutter()
-        if (current) {
-          ctx.setEdgeCutter({ ...current, to: event.data.current })
-          return
-        } else {
+    handleEvent: async (ctx, event) => {
+      switch (event.type) {
+        case 'pointerdrag': {
+          const current = ctx.getEdgeCutter()
+          if (current) {
+            ctx.setEdgeCutter({ ...current, to: event.data.current })
+            return
+          } else {
+            return { type: 'break' }
+          }
+        }
+        case 'pointerup': {
+          const cutter = ctx.getEdgeCutter()
+          if (cutter && edgeCollision) {
+            const seg: [IVec2, IVec2] = [cutter.from, cutter.to]
+            const hitMap = mapReduce(edgeCollision, (collision) =>
+              collision.getHitPathMap(seg)
+            )
+            const updatedMap = getUpdatedNodeMapToDisconnectNodeInputs(
+              ctx.getGraphNodeModule,
+              ctx.getNodeMap(),
+              hitMap
+            )
+            if (Object.keys(updatedMap).length > 0) {
+              ctx.updateNodes(updatedMap)
+            }
+          }
           return { type: 'break' }
         }
       }
-      case 'pointerup':
-        return { type: 'break' }
-    }
-  },
+    },
+  }
 }

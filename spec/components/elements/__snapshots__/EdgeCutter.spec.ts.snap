@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/EdgeCutter.vue snapshot initial 1`] = `
+<g
+  class="edge-cutter"
+  data-type="edge-cutter"
+>
+  <path
+    d="M1,2 L10,20"
+    fill="none"
+    stroke="lime"
+    stroke-width="3"
+  />
+</g>
+`;

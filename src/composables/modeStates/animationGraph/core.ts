@@ -68,6 +68,9 @@ export interface AnimationGraphStateContext extends ModeStateContextBase {
   getDraggedRectangle: () => Rectangle | undefined
 
   setCommandExams: (exams?: CommandExam[]) => void
+
+  setEdgeCutter: (val: EdgeCutter | undefined) => void
+  getEdgeCutter: () => EdgeCutter | undefined
 }
 
 export interface AnimationGraphState
@@ -84,3 +87,8 @@ export type DraftGraphEdge =
       output: IVec2
       input: GraphEdgeConnection
     }
+
+export type EdgeCutter = {
+  from: IVec2
+  to: IVec2
+}

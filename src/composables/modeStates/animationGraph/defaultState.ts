@@ -41,6 +41,7 @@ import {
   PointerDownEvent,
   TransitionValue,
 } from '/@/composables/modeStates/core'
+import { useEdgeCutting } from '/@/composables/modeStates/animationGraph/edgeCuttingState'
 
 export function useDefaultState(): AnimationGraphState {
   return state
@@ -69,6 +70,10 @@ const state: AnimationGraphState = {
             return
           case 1:
             return usePanningState
+          case 2:
+            if (event.data.options.ctrl) {
+              return () => useEdgeCutting({ point: event.data.point })
+            }
         }
         return
       case 'pointerup':

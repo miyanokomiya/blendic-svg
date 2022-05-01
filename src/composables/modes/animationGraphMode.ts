@@ -19,7 +19,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
-import { AnimationGraphStateContext } from '/@/composables/modeStates/animationGraph/core'
+import {
+  AnimationGraphStateContext,
+  EdgeCutter,
+} from '/@/composables/modeStates/animationGraph/core'
 import { AnimationGraphStore } from '/@/store/animationGraph'
 import { mapReduce } from '/@/utils/commons'
 import {
@@ -47,6 +50,9 @@ export function useAnimationGraphMode(options: {
   setPopupMenuList: (val?: { items: PopupMenuItem[]; point: IVec2 }) => void
   getNodeItemList: () => NODE_MENU_OPTION[]
   setCommandExams: (exams?: CommandExam[]) => void
+
+  setEdgeCutter: (val: EdgeCutter | undefined) => void
+  getEdgeCutter: () => EdgeCutter | undefined
 }) {
   const graphStore = options.graphStore
 
@@ -85,6 +91,10 @@ export function useAnimationGraphMode(options: {
     getDraggedRectangle: options.getDraggedRectangle,
 
     setCommandExams: options.setCommandExams,
+
+    setEdgeCutter: options.setEdgeCutter,
+    getEdgeCutter: options.getEdgeCutter,
+    getEdgeSummaryMap: () => graphStore.edgeSummaryMap.value,
   }
   const sm = useModeStateMachine(ctx, useDefaultState)
   return { sm }

@@ -59,7 +59,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <div class="main">
       <AnimationGraphCanvas class="canvas" :canvas="canvas">
-        <g v-for="(edgeMapOfNode, id) in edgeMap" :key="id">
+        <g v-for="(edgeMapOfNode, id) in edgeSummaryMap" :key="id">
           <GraphEdge
             v-for="(edge, key) in edgeMapOfNode"
             :key="key"
@@ -101,11 +101,8 @@ import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import GraphNode from '/@/components/elements/GraphNode.vue'
 import GraphNodeReroute from '/@/components/elements/GraphNodeReroute.vue'
 import GraphEdge from '/@/components/elements/GraphEdge.vue'
-import { IdMap, toMap } from '/@/models'
-import { mapReduce } from '/@/utils/commons'
-import { add, IVec2, sub } from 'okageo'
-import { getGraphNodeEdgePosition } from '/@/utils/helpers'
-import { GraphNodeEdgePositions } from '/@/models/graphNode'
+import { toMap } from '/@/models'
+import { add, IVec2 } from 'okageo'
 import { useElementStore } from '/@/store/element'
 import GraphSideBar from '/@/components/GraphSideBar.vue'
 import { flatElementTree, getElementLabel } from '/@/utils/elements'
@@ -114,15 +111,6 @@ import {
   provideGetGraphNodeModuleFn,
   provideGetObjectOptions,
 } from '/@/composables/animationGraph'
-
-type EdgeSummary = {
-  from: IVec2
-  to: IVec2
-  inputId: string
-  inputKey: string
-  outputId: string
-  outputKey: string
-}
 
 export default defineComponent({
   components: {
@@ -218,71 +206,8 @@ export default defineComponent({
 
     const selectedNodes = graphStore.selectedNodes
 
-    const editedNodeMap = computed(() => {
-      const editMovement = graphStore.editMovement.value
-      if (!editMovement) return graphStore.nodeMap.value
-
-      const translate = sub(editMovement.current, editMovement.start)
-      const selectedMap = selectedNodes.value
-      return mapReduce(graphStore.nodeMap.value, (n, id) => {
-        return selectedMap[id]
-          ? { ...n, position: add(n.position, translate) }
-          : n
-      })
-    })
-
-    const edgePositionMap = computed<IdMap<GraphNodeEdgePositions>>(() => {
-      return mapReduce(editedNodeMap.value, (node) =>
-        getGraphNodeEdgePosition(getGraphNodeModule.value, node)
-      )
-    })
-
-    const edgeMap = computed<IdMap<IdMap<EdgeSummary>>>(() => {
-      const draftToInfo =
-        graphStore.draftEdge.value?.type === 'draft-output'
-          ? {
-              id: graphStore.draftEdge.value.input.nodeId,
-              key: graphStore.draftEdge.value.input.key,
-            }
-          : undefined
-
-      const allNodes = editedNodeMap.value
-
-      return mapReduce(allNodes, (node) => {
-        const inputsPositions = edgePositionMap.value[node.id].inputs
-        return Object.entries(node.inputs).reduce<IdMap<EdgeSummary>>(
-          (p, [key, input]) => {
-            if (
-              !input.from ||
-              !edgePositionMap.value[input.from.id] ||
-              !edgePositionMap.value[input.from.id].outputs[input.from.key]
-            )
-              return p
-
-            if (
-              draftToInfo &&
-              draftToInfo.id === node.id &&
-              draftToInfo.key === key
-            )
-              return p
-
-            p[key] = {
-              from: add(
-                allNodes[input.from.id].position,
-                edgePositionMap.value[input.from.id].outputs[input.from.key].p
-              ),
-              to: add(node.position, inputsPositions[key].p),
-              inputId: node.id,
-              inputKey: key,
-              outputId: input.from.id,
-              outputKey: input.from.key,
-            }
-            return p
-          },
-          {}
-        )
-      })
-    })
+    const editedNodeMap = graphStore.editedNodeMap
+    const edgePositionMap = graphStore.edgePositionMap
 
     const draftEdge = computed<{ output: IVec2; input: IVec2 } | undefined>(
       () => {
@@ -355,7 +280,7 @@ export default defineComponent({
       selectedArmature,
       editedNodeMap,
       edgePositionMap,
-      edgeMap,
+      edgeSummaryMap: graphStore.edgeSummaryMap,
       draftEdge,
       nodeErrorMessagesMap: graphStore.nodeErrorMessagesMap,
 

@@ -31,6 +31,7 @@ import type {
 } from '/@/composables/modeStates/core'
 import { IdMap } from '/@/models'
 import {
+  EdgeSummary,
   GraphEdgeConnection,
   GraphNode,
   GraphNodeType,
@@ -68,6 +69,10 @@ export interface AnimationGraphStateContext extends ModeStateContextBase {
   getDraggedRectangle: () => Rectangle | undefined
 
   setCommandExams: (exams?: CommandExam[]) => void
+
+  setEdgeCutter: (val: EdgeCutter | undefined) => void
+  getEdgeCutter: () => EdgeCutter | undefined
+  getEdgeSummaryMap: () => IdMap<IdMap<EdgeSummary>>
 }
 
 export interface AnimationGraphState
@@ -84,3 +89,8 @@ export type DraftGraphEdge =
       output: IVec2
       input: GraphEdgeConnection
     }
+
+export type EdgeCutter = {
+  from: IVec2
+  to: IVec2
+}

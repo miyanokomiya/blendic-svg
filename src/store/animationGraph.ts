@@ -37,8 +37,10 @@ import { useItemSelectable } from '/@/composables/stores/selectable'
 import { HistoryStore } from '/@/composables/stores/history'
 import { fromEntityList, toEntityList } from '/@/models/entity'
 import {
+  EdgeSummary,
   GraphNode,
   GraphNodeBase,
+  GraphNodeEdgePositions,
   GraphNodes,
   GraphNodeType,
 } from '/@/models/graphNode'
@@ -68,6 +70,8 @@ import { useValueStore } from '/@/composables/stores/valueStore'
 import { createCustomNodeModule } from '/@/utils/graphNodes/customGraph'
 import { useCanvasStore } from '/@/store/canvas'
 import { DraftGraphEdge } from '/@/composables/modeStates/animationGraph/core'
+import { add, sub } from 'okageo'
+import { getGraphNodeEdgePosition } from '/@/utils/helpers'
 
 export type GraphType = 'graph' | 'custom'
 
@@ -598,6 +602,71 @@ export function createStore(
   const editMovement = ref<EditMovement>()
   const draftEdge = ref<DraftGraphEdge>()
 
+  const editedNodeMap = computed(() => {
+    if (!editMovement.value) return nodeMap.value
+
+    const translate = sub(editMovement.value.current, editMovement.value.start)
+    const selectedMap = selectedNodes.value
+    return mapReduce(nodeMap.value, (n, id) => {
+      return selectedMap[id]
+        ? { ...n, position: add(n.position, translate) }
+        : n
+    })
+  })
+
+  const edgePositionMap = computed<IdMap<GraphNodeEdgePositions>>(() => {
+    return mapReduce(editedNodeMap.value, (node) =>
+      getGraphNodeEdgePosition(getGraphNodeModuleFn.value(), node)
+    )
+  })
+
+  const edgeSummaryMap = computed<IdMap<IdMap<EdgeSummary>>>(() => {
+    const draftToInfo =
+      draftEdge.value?.type === 'draft-output'
+        ? {
+            id: draftEdge.value.input.nodeId,
+            key: draftEdge.value.input.key,
+          }
+        : undefined
+
+    const allNodes = editedNodeMap.value
+
+    return mapReduce(allNodes, (node) => {
+      const inputsPositions = edgePositionMap.value[node.id].inputs
+      return Object.entries(node.inputs).reduce<IdMap<EdgeSummary>>(
+        (p, [key, input]) => {
+          if (
+            !input.from ||
+            !edgePositionMap.value[input.from.id] ||
+            !edgePositionMap.value[input.from.id].outputs[input.from.key]
+          )
+            return p
+
+          if (
+            draftToInfo &&
+            draftToInfo.id === node.id &&
+            draftToInfo.key === key
+          )
+            return p
+
+          p[key] = {
+            from: add(
+              allNodes[input.from.id].position,
+              edgePositionMap.value[input.from.id].outputs[input.from.key].p
+            ),
+            to: add(node.position, inputsPositions[key].p),
+            inputId: node.id,
+            inputKey: key,
+            outputId: input.from.id,
+            outputKey: input.from.key,
+          }
+          return p
+        },
+        {}
+      )
+    })
+  })
+
   return {
     initState,
     exportState,
@@ -652,6 +721,10 @@ export function createStore(
     setDraftEdge: (val?: DraftGraphEdge) => {
       draftEdge.value = val
     },
+
+    editedNodeMap,
+    edgePositionMap,
+    edgeSummaryMap,
   }
 }
 export type AnimationGraphStore = ReturnType<typeof createStore>

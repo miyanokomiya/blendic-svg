@@ -41,6 +41,7 @@ import {
   PointerDownEvent,
   TransitionValue,
 } from '/@/composables/modeStates/core'
+import { useCuttingEdgeState } from '/@/composables/modeStates/animationGraph/cuttingEdgeState'
 
 export function useDefaultState(): AnimationGraphState {
   return state
@@ -69,6 +70,10 @@ const state: AnimationGraphState = {
             return
           case 1:
             return usePanningState
+          case 2:
+            if (event.data.options.ctrl) {
+              return () => useCuttingEdgeState({ point: event.data.point })
+            }
         }
         return
       case 'pointerup':
@@ -126,6 +131,7 @@ function updateCommandExams(ctx: AnimationGraphStateContext) {
   ctx.setCommandExams([
     COMMAND_EXAM_SRC.add,
     COMMAND_EXAM_SRC.selectAll,
+    COMMAND_EXAM_SRC.cutEdge,
     ...(selected
       ? [
           COMMAND_EXAM_SRC.delete,

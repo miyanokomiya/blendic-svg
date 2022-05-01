@@ -47,6 +47,7 @@ import { withDefaults, computed } from 'vue'
 import { IVec2 } from 'okageo'
 import { useSettings } from '/@/composables/settings'
 import { injectScale } from '/@/composables/canvas'
+import { getGraphNodeEdgePath } from '/@/utils/helpers'
 </script>
 
 <script setup lang="ts">
@@ -69,13 +70,7 @@ const props = withDefaults(
   }
 )
 
-const pathD = computed(() => {
-  const xD = Math.sqrt(Math.abs(props.from.x - props.to.x)) * 8
-  return `M${props.from.x + 5},${props.from.y} C${props.from.x + xD},${
-    props.from.y
-  } ${props.to.x - xD},${props.to.y} ${props.to.x - 5},${props.to.y}`
-})
-
+const pathD = computed(() => getGraphNodeEdgePath(props.from, props.to))
 const { settings } = useSettings()
 const scale = computed(injectScale())
 

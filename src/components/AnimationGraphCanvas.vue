@@ -36,6 +36,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         @mousedown.prevent="handleDownEvent"
         @mouseup.prevent="handleUpEvent"
         @mousemove="handleNativeMoveEvent"
+        @contextmenu.prevent
       >
         <DotBackground
           :x="viewCanvasRect.x"
@@ -57,6 +58,11 @@ Copyright (C) 2021, Tomoya Komiyama.
           :width="draggedRectangle.width"
           :height="draggedRectangle.height"
           class="view-only"
+        />
+        <EdgeCutterElm
+          v-if="edgeCutter"
+          :from="edgeCutter.from"
+          :to="edgeCutter.to"
         />
       </svg>
     </FocusableBlock>
@@ -83,6 +89,7 @@ import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import DotBackground from '/@/components/elements/atoms/DotBackground.vue'
 import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
+import EdgeCutterElm from '/@/components/elements/EdgeCutter.vue'
 import FocusableBlock from '/@/components/atoms/FocusableBlock.vue'
 import { useCanvasElement } from '/@/composables/canvasElement'
 import { useAnimationGraphMode } from '/@/composables/modes/animationGraphMode'
@@ -95,6 +102,7 @@ import { CommandExam, PopupMenuItem } from '/@/composables/modes/types'
 import { IVec2 } from 'okageo'
 import { useMenuList } from '/@/composables/menuList'
 import { NODE_MENU_OPTIONS_SRC } from '/@/utils/graphNodes'
+import { EdgeCutter } from '/@/composables/modeStates/animationGraph/core'
 
 export default defineComponent({
   components: {
@@ -102,6 +110,7 @@ export default defineComponent({
     CommandExamPanel,
     DotBackground,
     SelectRectangle,
+    EdgeCutterElm,
     FocusableBlock,
   },
   props: {
@@ -159,6 +168,7 @@ export default defineComponent({
     )
 
     const commandExams = ref<CommandExam[]>()
+    const edgeCutter = ref<EdgeCutter>()
 
     const graphStore = useAnimationGraphStore()
     const mode = useAnimationGraphMode({
@@ -190,6 +200,8 @@ export default defineComponent({
           graphStore.customGraphNodeMenuOptionsSrc.value
         ),
       setCommandExams: (val) => (commandExams.value = val),
+      getEdgeCutter: () => edgeCutter.value,
+      setEdgeCutter: (val: EdgeCutter | undefined) => (edgeCutter.value = val),
     })
 
     function handleDownEvent(e: MouseEvent) {
@@ -272,6 +284,7 @@ export default defineComponent({
       availableCommandList: computed(() => commandExams.value ?? []),
       popupMenuListPosition,
       draggedRectangle: computed(() => props.canvas.draggedRectangle.value),
+      edgeCutter: computed(() => edgeCutter.value),
 
       onCopy: handleCopyEvent,
       onPaste: handlePasteEvent,

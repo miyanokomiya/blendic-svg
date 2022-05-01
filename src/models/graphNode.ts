@@ -136,6 +136,15 @@ export interface GraphNodeEdgePositions {
   outputs: { [key: string]: GraphNodeEdgeInfo }
 }
 
+export type EdgeSummary = {
+  from: IVec2
+  to: IVec2
+  inputId: string
+  inputKey: string
+  outputId: string
+  outputKey: string
+}
+
 ////
 // GraphNodes
 ////

@@ -25,7 +25,9 @@ import { mapReduce } from '/@/utils/commons'
 import { getUpdatedNodeMapToDisconnectNodeInputs } from '/@/utils/graphNodes'
 import { getGraphNodeEdgePath } from '/@/utils/helpers'
 
-export function useEdgeCutting(options: { point: IVec2 }): AnimationGraphState {
+export function useCuttingEdgeState(options: {
+  point: IVec2
+}): AnimationGraphState {
   let edgeCollision: IdMap<ReturnType<typeof usePathCollision>>
 
   return {

@@ -181,6 +181,7 @@ export const COMMAND_EXAM_SRC = {
   delete: { command: 'x', title: 'Delete' },
   grab: { command: 'g', title: 'Grab' },
   duplicate: { command: 'D', title: 'Duplicate' },
+  cutEdge: { command: `${getCtrlOrMetaStr()} + R-Drag`, title: 'Disconnect' },
   clip: { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
   paste: { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
 } as const

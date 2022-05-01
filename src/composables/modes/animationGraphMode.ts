@@ -94,6 +94,7 @@ export function useAnimationGraphMode(options: {
 
     setEdgeCutter: options.setEdgeCutter,
     getEdgeCutter: options.getEdgeCutter,
+    getEdgeSummaryMap: () => graphStore.edgeSummaryMap.value,
   }
   const sm = useModeStateMachine(ctx, useDefaultState)
   return { sm }

@@ -449,3 +449,10 @@ export function truncate(val: number | string, count: number): string {
   const str = val.toString()
   return str.length <= count ? str : str.slice(0, count) + '..'
 }
+
+export function getGraphNodeEdgePath(from: IVec2, to: IVec2): string {
+  const xD = Math.sqrt(Math.abs(from.x - to.x)) * 8
+  return `M${from.x + 5},${from.y} C${from.x + xD},${from.y} ${to.x - xD},${
+    to.y
+  } ${to.x - 5},${to.y}`
+}

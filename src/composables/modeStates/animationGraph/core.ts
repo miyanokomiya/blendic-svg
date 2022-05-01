@@ -31,6 +31,7 @@ import type {
 } from '/@/composables/modeStates/core'
 import { IdMap } from '/@/models'
 import {
+  EdgeSummary,
   GraphEdgeConnection,
   GraphNode,
   GraphNodeType,
@@ -71,6 +72,7 @@ export interface AnimationGraphStateContext extends ModeStateContextBase {
 
   setEdgeCutter: (val: EdgeCutter | undefined) => void
   getEdgeCutter: () => EdgeCutter | undefined
+  getEdgeSummaryMap: () => IdMap<IdMap<EdgeSummary>>
 }
 
 export interface AnimationGraphState

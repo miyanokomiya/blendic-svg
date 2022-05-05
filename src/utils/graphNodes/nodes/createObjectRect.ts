@@ -69,11 +69,8 @@ export const struct: NodeStruct<GraphNodeCreateObjectRect> = {
   },
   outputs: nodeToCreateObjectProps.outputs,
   computation(inputs, self, context): { object: string } {
-    const base = nodeToCreateObjectProps.computation(inputs, self)
-    if (!base) return { object: '' }
-
-    return {
-      object: context.createObject('rect', {
+    return nodeToCreateObjectProps.getComputation((base) =>
+      context.createObject('rect', {
         ...base,
         attributes: {
           x: inputs.centered ? inputs.x - inputs.width / 2 : inputs.x,
@@ -81,8 +78,8 @@ export const struct: NodeStruct<GraphNodeCreateObjectRect> = {
           width: inputs.width,
           height: inputs.height,
         },
-      }),
-    }
+      })
+    )(inputs, self)
   },
   width: 140,
   color: '#dc143c',

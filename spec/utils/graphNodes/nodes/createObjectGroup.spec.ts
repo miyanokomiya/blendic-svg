@@ -36,6 +36,7 @@ describe('src/utils/graphNodes/nodes/createObjectGroup.ts', () => {
         )
       ).toEqual({
         object: 'a',
+        parent: 'p',
       })
       expect(createObject).toHaveBeenCalledWith('g', {
         transform: getTransform({ rotate: 10 }),
@@ -47,12 +48,13 @@ describe('src/utils/graphNodes/nodes/createObjectGroup.ts', () => {
       const createObject = jest.fn().mockReturnValue('a')
       expect(
         target.struct.computation(
-          { disabled: true } as any,
+          { disabled: true, parent: 'p' } as any,
           {} as any,
           { createObject } as any
         )
       ).toEqual({
         object: '',
+        parent: 'p',
       })
       expect(createObject).not.toHaveBeenCalled()
     })

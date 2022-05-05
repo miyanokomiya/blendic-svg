@@ -57,8 +57,8 @@ export const struct: NodeStruct<GraphNodeCreateObjectGroup> = {
     },
   },
   outputs: nodeToCreateObjectProps.outputs,
-  computation(inputs, _self, context): { object: string } {
-    if (inputs.disabled) return { object: '' }
+  computation(inputs, _self, context): { object: string; parent: string } {
+    if (inputs.disabled) return { object: '', parent: inputs.parent }
 
     return {
       object: context.createObject('g', {
@@ -66,6 +66,7 @@ export const struct: NodeStruct<GraphNodeCreateObjectGroup> = {
         transform: inputs.transform,
         attributes: {},
       }),
+      parent: inputs.parent,
     }
   },
   width: 140,

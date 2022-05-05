@@ -43,6 +43,7 @@ describe('src/utils/graphNodes/nodes/createObjectEllipse.ts', () => {
         )
       ).toEqual({
         object: 'a',
+        parent: 'p',
       })
       expect(createObject).toHaveBeenCalledWith('ellipse', {
         transform: getTransform({ rotate: 10 }),

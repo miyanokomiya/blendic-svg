@@ -46,6 +46,7 @@ describe('src/utils/graphNodes/nodes/createObjectText.ts', () => {
         )
       ).toEqual({
         object: 'a',
+        parent: 'p',
       })
       expect(createObject).toHaveBeenCalledWith('text', {
         transform: getTransform({ rotate: 10 }),
@@ -87,6 +88,7 @@ describe('src/utils/graphNodes/nodes/createObjectText.ts', () => {
         )
       ).toEqual({
         object: '',
+        parent: 'p',
       })
       expect(createObject).not.toHaveBeenCalled()
     })
@@ -114,6 +116,7 @@ describe('src/utils/graphNodes/nodes/createObjectText.ts', () => {
         )
       ).toEqual({
         object: 'a',
+        parent: 'p',
       })
       expect(createObject).toHaveBeenCalledWith('text', {
         transform: getTransform({ rotate: 10 }),

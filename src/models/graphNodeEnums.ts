@@ -18,7 +18,7 @@ export const CLIP_PATH_UNITS: GraphEnumItem<CLIP_PATH_UNITS_KEY>[] = [
   { key: 'objectBoundingBox', value: 1 },
 ]
 
-export const GraphEnumMap: { [key: string]: GraphEnumItem<string>[] } = {
+export const GraphEnumMap = {
   SPREAD_METHOD,
   CLIP_PATH_UNITS,
 }
@@ -28,7 +28,7 @@ export function getGraphValueEnumKey(
   enumKey: GraphEnumMapKey,
   value: number
 ): string {
-  const map = GraphEnumMap[enumKey] ?? []
+  const map: GraphEnumItem<string>[] = GraphEnumMap[enumKey] ?? []
   const v = clamp(0, map.length - 1, Math.floor(value))
   return map.find((item) => item.value === v)?.key ?? ''
 }

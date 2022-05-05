@@ -17,7 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getTransform, GraphObjectAttributes, Transform } from '/@/models'
+import {
+  getTransform,
+  GraphObject,
+  GraphObjectAttributes,
+  Transform,
+} from '/@/models'
 import {
   GradientStop,
   GraphNodeBase,
@@ -161,25 +166,31 @@ export const nodeToCreateObjectProps = {
   },
   outputs: {
     object: UNIT_VALUE_TYPES.OBJECT,
+    parent: UNIT_VALUE_TYPES.OBJECT,
   },
-  computation(
-    inputs: {
-      [key in keyof GraphNodeCreateObjectInputsBase]: Required<
-        GraphNodeCreateObjectInputsBase[key]
-      >['value']
-    },
-    self: { id: string }
-  ): (Omit<typeof inputs, 'disabled'> & { id: string }) | undefined {
-    return inputs.disabled
-      ? undefined
-      : {
-          id: self.id,
-          parent: inputs.parent,
-          transform: inputs.transform,
-          fill: inputs.fill,
-          stroke: inputs.stroke,
-          'stroke-width': inputs['stroke-width'],
-        }
+  getComputation(processObject: (base: Partial<GraphObject>) => string) {
+    return (
+      inputs: {
+        [key in keyof GraphNodeCreateObjectInputsBase]: Required<
+          GraphNodeCreateObjectInputsBase[key]
+        >['value']
+      },
+      self: { id: string }
+    ) => {
+      return {
+        object: inputs.disabled
+          ? ''
+          : processObject({
+              id: self.id,
+              parent: inputs.parent,
+              transform: inputs.transform,
+              fill: inputs.fill,
+              stroke: inputs.stroke,
+              'stroke-width': inputs['stroke-width'],
+            }),
+        parent: inputs.parent,
+      }
+    }
   },
 } as const
 

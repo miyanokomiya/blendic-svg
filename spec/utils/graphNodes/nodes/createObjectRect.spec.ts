@@ -44,6 +44,7 @@ describe('src/utils/graphNodes/nodes/createObjectRect.ts', () => {
         )
       ).toEqual({
         object: 'a',
+        parent: 'p',
       })
       expect(createObject).toHaveBeenCalledWith('rect', {
         id: 'a',
@@ -82,6 +83,7 @@ describe('src/utils/graphNodes/nodes/createObjectRect.ts', () => {
         )
       ).toEqual({
         object: '',
+        parent: 'p',
       })
       expect(createObject).not.toHaveBeenCalled()
     })
@@ -105,7 +107,7 @@ describe('src/utils/graphNodes/nodes/createObjectRect.ts', () => {
           {} as any,
           { createObject } as any
         )
-      ).toEqual({ object: 'a' })
+      ).toEqual({ object: 'a', parent: 'p' })
       expect(createObject).toHaveBeenCalledWith('rect', {
         transform: getTransform({ rotate: 10 }),
         fill: getTransform({ rotate: 11 }),

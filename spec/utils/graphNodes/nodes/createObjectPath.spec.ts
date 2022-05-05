@@ -40,6 +40,7 @@ describe('src/utils/graphNodes/nodes/createObjectPath.ts', () => {
         )
       ).toEqual({
         object: 'a',
+        parent: 'p',
       })
       expect(createObject).toHaveBeenCalledWith('path', {
         transform: getTransform({ rotate: 10 }),
@@ -70,6 +71,7 @@ describe('src/utils/graphNodes/nodes/createObjectPath.ts', () => {
         )
       ).toEqual({
         object: '',
+        parent: 'p',
       })
       expect(createObject).not.toHaveBeenCalled()
     })

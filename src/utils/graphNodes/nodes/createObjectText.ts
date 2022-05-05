@@ -79,11 +79,8 @@ export const struct: NodeStruct<GraphNodeCreateObjectText> = {
   },
   outputs: nodeToCreateObjectProps.outputs,
   computation(inputs, self, context): { object: string } {
-    const base = nodeToCreateObjectProps.computation(inputs, self)
-    if (!base) return { object: '' }
-
-    return {
-      object: context.createObject('text', {
+    return nodeToCreateObjectProps.getComputation((base) =>
+      context.createObject('text', {
         ...base,
         attributes: {
           x: inputs.x,
@@ -99,8 +96,8 @@ export const struct: NodeStruct<GraphNodeCreateObjectText> = {
             : {}),
         },
         text: inputs.text,
-      }),
-    }
+      })
+    )(inputs, self)
   },
   width: 140,
   color: '#dc143c',

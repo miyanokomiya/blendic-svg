@@ -64,11 +64,8 @@ export const struct: NodeStruct<GraphNodeCreateObjectEllipse> = {
   },
   outputs: nodeToCreateObjectProps.outputs,
   computation(inputs, self, context): { object: string } {
-    const base = nodeToCreateObjectProps.computation(inputs, self)
-    if (!base) return { object: '' }
-
-    return {
-      object: context.createObject('ellipse', {
+    return nodeToCreateObjectProps.getComputation((base) =>
+      context.createObject('ellipse', {
         ...base,
         attributes: {
           cx: inputs.cx,
@@ -76,8 +73,8 @@ export const struct: NodeStruct<GraphNodeCreateObjectEllipse> = {
           rx: inputs.rx,
           ry: inputs.ry,
         },
-      }),
-    }
+      })
+    )(inputs, self)
   },
   width: 140,
   color: '#dc143c',

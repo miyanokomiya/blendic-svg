@@ -49,17 +49,12 @@ export const struct: NodeStruct<GraphNodeCreateObjectPath> = {
   },
   outputs: nodeToCreateObjectProps.outputs,
   computation(inputs, self, context): { object: string } {
-    const base = nodeToCreateObjectProps.computation(inputs, self)
-    if (!base) return { object: '' }
-
-    return {
-      object: context.createObject('path', {
+    return nodeToCreateObjectProps.getComputation((base) =>
+      context.createObject('path', {
         ...base,
-        attributes: {
-          d: inputs.d,
-        },
-      }),
-    }
+        attributes: { d: inputs.d },
+      })
+    )(inputs, self)
   },
   width: 140,
   color: '#dc143c',

@@ -31,5 +31,13 @@ describe('src/models/graphNodeEnums.ts', () => {
       expect(getGraphValueEnumKey('SPREAD_METHOD', 1.1)).toBe('reflect')
       expect(getGraphValueEnumKey('SPREAD_METHOD', 2.1)).toBe('repeat')
     })
+    it('should recognize CLIP_PATH_UNITS_KEY', () => {
+      expect(getGraphValueEnumKey('CLIP_PATH_UNITS', 0.1)).toBe(
+        'userSpaceOnUse'
+      )
+      expect(getGraphValueEnumKey('CLIP_PATH_UNITS', 1.1)).toBe(
+        'objectBoundingBox'
+      )
+    })
   })
 })

@@ -12,8 +12,15 @@ export const SPREAD_METHOD: GraphEnumItem<SPREAD_METHOD_KEY>[] = [
   { key: 'repeat', value: 2 },
 ]
 
-export const GraphEnumMap = {
+type CLIP_PATH_UNITS_KEY = 'userSpaceOnUse' | 'objectBoundingBox'
+export const CLIP_PATH_UNITS: GraphEnumItem<CLIP_PATH_UNITS_KEY>[] = [
+  { key: 'userSpaceOnUse', value: 0 },
+  { key: 'objectBoundingBox', value: 1 },
+]
+
+export const GraphEnumMap: { [key: string]: GraphEnumItem<string>[] } = {
   SPREAD_METHOD,
+  CLIP_PATH_UNITS,
 }
 export type GraphEnumMapKey = keyof typeof GraphEnumMap
 

@@ -1519,10 +1519,10 @@
     "@swc/core-win32-ia32-msvc" "1.2.173"
     "@swc/core-win32-x64-msvc" "1.2.173"
 
-"@swc/jest@^0.2.20":
-  version "0.2.20"
-  resolved "https://registry.yarnpkg.com/@swc/jest/-/jest-0.2.20.tgz#2bddb4348fb730296b86cdcd96748be131b11395"
-  integrity sha512-5qSUBYY1wyIMn7p0Vl9qqV4hMI69oJwZCIPUpBsTFWN2wlwn6RDugzdgCn+bLXVYh+Cxi8bJcZ1uumDgsoL+FA==
+"@swc/jest@^0.2.21":
+  version "0.2.21"
+  resolved "https://registry.yarnpkg.com/@swc/jest/-/jest-0.2.21.tgz#e8c4e234016a914f4cfbb7d75844860a250c1d1c"
+  integrity sha512-/+NcExiZbxXANNhNPnIdFuGq62CeumulLS1bngwqIXd8H7d96LFUfrYzdt8tlTwLMel8tFtQ5aRjzVkyOTyPDw==
   dependencies:
     "@jest/create-cache-key-function" "^27.4.2"
 
@@ -1737,10 +1737,10 @@
     "@typescript-eslint/types" "5.21.0"
     eslint-visitor-keys "^3.0.0"
 
-"@vitejs/plugin-vue@^2.3.1":
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/@vitejs/plugin-vue/-/plugin-vue-2.3.1.tgz#5f286b8d3515381c6d5c8fa8eee5e6335f727e14"
-  integrity sha512-YNzBt8+jt6bSwpt7LP890U1UcTOIZZxfpE5WOJ638PNxSEKOqAi0+FSKS0nVeukfdZ0Ai/H7AFd6k3hayfGZqQ==
+"@vitejs/plugin-vue@^2.3.2":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/@vitejs/plugin-vue/-/plugin-vue-2.3.2.tgz#12ea7a42e6c83d5ea48e14dc41fd2bbb5806ee37"
+  integrity sha512-umyypfSHS4kQLdYAnJHhaASq7FRzNCdvcRoQ3uYGNk1/M4a+hXUd7ysN7BLhCrWH6uBokyCkFeUAaFDzSaaSrQ==
 
 "@vue/compiler-core@3.2.33", "@vue/compiler-core@^3.0.2", "@vue/compiler-core@^3.2.31":
   version "3.2.33"

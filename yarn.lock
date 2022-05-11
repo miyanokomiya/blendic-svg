@@ -4391,15 +4391,10 @@ ms@2.1.3, ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-nanoid@^3.3.1:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.1.tgz#6347a18cac88af88f58af0b3594b723d5e99bb35"
-  integrity sha512-n6Vs/3KGyxPQd6uO0eH4Bv0ojGSUvuLlIHtC3Y0kEO23YRge8H9x1GCzLn28YX0H66pMkxuaeESFq4tKISKwdw==
-
-nanoid@^3.3.3:
-  version "3.3.3"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.3.tgz#fd8e8b7aa761fe807dba2d1b98fb7241bb724a25"
-  integrity sha512-p1sjXuopFs0xg+fPASzQ28agW1oHD7xDsd9Xkf3T15H3c/cifrFHVwrh74PdoklAPi+i7MdRsE47vm2r6JoB+w==
+nanoid@^3.3.1, nanoid@^3.3.4:
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.4.tgz#730b67e3cd09e2deacf03c027c81c9d9dbc5e8ab"
+  integrity sha512-MqBkQh/OHTS2egovRtLk45wEyNXwF+cokD+1YPf9u5VfJiRdAiRwB2froX5Co9Rh20xs4siNPm8naNotSD6RBw==
 
 natural-compare@^1.4.0:
   version "1.4.0"
@@ -4670,36 +4665,12 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-playwright-chromium@^1.20.2:
-  version "1.20.2"
-  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.20.2.tgz#e6494f2a315afbfebab0083ff4b14459c9f3863b"
-  integrity sha512-KsiPLRC1v56qLWqjzeEoDZNVW/eFrP5ad0PFQAa74u5EwnnId89LgOHEZFy487tt3xJdv3Ayyfdn8zwsUpS3Qg==
+playwright-chromium@^1.21.1:
+  version "1.21.1"
+  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.21.1.tgz#ca9000ffc4105d6e02d4cb34a7d095cecfda0651"
+  integrity sha512-bbqFFpcTs+3amiofja/KvTmZ+FZnMNEOuGkRyJk2p6DV9EbgRYVrlzzgLtMnX2DwaX3ZZ23MukGuQ+bVKOdsnw==
   dependencies:
-    playwright-core "1.20.2"
-
-playwright-core@1.20.2:
-  version "1.20.2"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.20.2.tgz#02336afd9a631d59a666f11f3492550201c6c31b"
-  integrity sha512-iV6+HftSPalynkq0CYJala1vaTOq7+gU9BRfKCdM9bAxNq/lFLrwbluug2Wt5OoUwbMABcnTThIEm3/qUhCdJQ==
-  dependencies:
-    colors "1.4.0"
-    commander "8.3.0"
-    debug "4.3.3"
-    extract-zip "2.0.1"
-    https-proxy-agent "5.0.0"
-    jpeg-js "0.4.3"
-    mime "3.0.0"
-    pixelmatch "5.2.1"
-    pngjs "6.0.0"
-    progress "2.0.3"
-    proper-lockfile "4.1.2"
-    proxy-from-env "1.1.0"
-    rimraf "3.0.2"
-    socks-proxy-agent "6.1.1"
-    stack-utils "2.0.5"
-    ws "8.4.2"
-    yauzl "2.10.0"
-    yazl "2.5.1"
+    playwright-core "1.21.1"
 
 playwright-core@1.21.1:
   version "1.21.1"

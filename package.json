@@ -26,7 +26,7 @@
     "@babel/core": "^7.17.10",
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-typescript": "^7.16.7",
-    "@playwright/test": "^1.21.1",
+    "@playwright/test": "^1.22.1",
     "@swc/core": "^1.2.186",
     "@swc/jest": "^0.2.21",
     "@types/jest": "^27.4.1",

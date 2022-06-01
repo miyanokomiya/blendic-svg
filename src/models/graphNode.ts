@@ -196,6 +196,9 @@ export interface GraphNodes {
   make_path_a: GraphNodeMakePathA
   make_path_z: GraphNodeMakePathZ
 
+  create_object_clip_path: GraphNodeCreateObjectClipPath
+  set_clip_path: GraphNodeSetClipPath
+
   create_linear_gradient: GraphNodeCreateLinearGradient
   create_radial_gradient: GraphNodeCreateRadialGradient
   make_stop: GraphNodeMakeStop
@@ -591,6 +594,23 @@ export interface GraphNodeMakePathA extends GraphNodeBase {
     'large-arc': GraphNodeInput<boolean>
     sweep: GraphNodeInput<boolean>
     p: GraphNodeInput<IVec2>
+  }
+}
+
+export interface GraphNodeCreateObjectClipPath extends GraphNodeBase {
+  type: 'create_object_clip_path'
+  inputs: {
+    disabled: GraphNodeInput<boolean>
+    parent: GraphNodeInput<string>
+    relative: GraphNodeInput<boolean>
+  }
+}
+
+export interface GraphNodeSetClipPath extends GraphNodeBase {
+  type: 'set_clip_path'
+  inputs: {
+    object: GraphNodeInput<string>
+    clip_path: GraphNodeInput<string>
   }
 }
 

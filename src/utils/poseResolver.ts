@@ -376,6 +376,8 @@ const STRING_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
   'stroke-dasharray': true,
   gradientUnits: true,
   spreadMethod: true,
+  clipPathUnits: true,
+  'clip-path': true,
 }
 
 function getGraphResolvedAttributes(

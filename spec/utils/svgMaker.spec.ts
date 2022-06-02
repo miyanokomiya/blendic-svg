@@ -91,17 +91,18 @@ describe('utils/svgMaker.ts', () => {
             }),
           ],
         }),
-        true
+        { svg_1: 'root', g_1: 'child' }
       )
 
-      expect(ret.id).toBe('svg_1')
-      expect(ret.children[0].id).toBe('g_1')
+      expect(ret.classList.value).toBe('root')
+      expect(ret.children[0].classList.value).toBe('child')
     })
   })
 
   describe('serializeToAnimatedSvg', () => {
     it('should create SVG animate tags', () => {
       const svg = serializeToAnimatedSvg(
+        'test',
         getElementNode({
           id: 'svg_1',
           tag: 'svg',
@@ -122,7 +123,7 @@ describe('utils/svgMaker.ts', () => {
       )
 
       expect(svg).toBeInstanceOf(SVGElement)
-      expect(svg.id).toBe('svg_1')
+      expect(svg.classList.value).toBe('test-0')
       expect(svg.children[0].tagName.toLowerCase()).toBe('style')
       const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
       expect(animateG).toBeTruthy()
@@ -136,6 +137,7 @@ describe('utils/svgMaker.ts', () => {
 
     it('should create animation styles', () => {
       const svg = serializeToAnimatedSvg(
+        'test',
         getElementNode({
           id: 'svg_1',
           tag: 'svg',
@@ -156,18 +158,20 @@ describe('utils/svgMaker.ts', () => {
       )
 
       expect(svg).toBeInstanceOf(SVGElement)
-      expect(svg.id).toBe('svg_1')
+      expect(svg.classList.value).toBe('test-0')
       const style = svg.getElementsByTagName('style')[0]
       expect(style.innerHTML).not.toContain('offset')
-      expect(style.innerHTML).toContain('#g_1')
+      expect(style.innerHTML).toContain(svg.classList.value)
+      expect(style.innerHTML).toContain(svg.children[0].classList.value)
       expect(style.innerHTML).toContain('transform')
       expect(style.innerHTML).toContain(
-        '#svg_1 * {animation-duration:2s;animation-iteration-count:3;}'
+        '.test-0 * {animation-duration:2s;animation-iteration-count:3;}'
       )
     })
 
     it('should translate viewBox to transform', () => {
       const svg = serializeToAnimatedSvg(
+        'test',
         getElementNode({
           id: 'svg_1',
           tag: 'svg',
@@ -184,12 +188,13 @@ describe('utils/svgMaker.ts', () => {
           { svg_1: { viewBox: '0 0 100 100' } },
           { svg_1: { viewBox: '0 0 50 50' } },
         ],
-        2000
+        2000,
+        'infinite'
       )
 
       expect(svg).toBeInstanceOf(SVGElement)
       expect(svg.children[2].id).not.toBe('g_1')
-      expect(svg.children[2].children[0].id).toBe('g_1')
+      expect(svg.children[2].children[0].classList.value).toBe('test-2')
       const style = svg.getElementsByTagName('style')[0]
       expect(style.innerHTML).toContain('matrix(2,0,0,2,0,0)')
       const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
@@ -277,7 +282,7 @@ describe('utils/svgMaker.ts', () => {
   describe('createAnimationElementStyle', () => {
     it('should create animation style for the element', () => {
       expect(createAnimationElementStyle('elm')).toBe(
-        '#elm{animation-name:blendic-keyframes-elm;}'
+        '.elm{animation-name:blendic-keyframes-elm;}'
       )
     })
   })

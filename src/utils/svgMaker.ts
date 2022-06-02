@@ -20,26 +20,33 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { affineToTransform } from 'okageo'
 import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
 import { thinOutSameAttributes } from '/@/utils/commons'
-import { isPlainText, parseViewBoxFromStr } from '/@/utils/elements'
+import {
+  flatElementTree,
+  isPlainText,
+  parseViewBoxFromStr,
+} from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
-export function makeSvg(svgNode: ElementNode, applyId = false): SVGElement {
-  return makeNode(svgNode, applyId) as SVGElement
+export function makeSvg(
+  svgNode: ElementNode,
+  identifierMap?: { [id: string]: string }
+): SVGElement {
+  return makeNode(svgNode, identifierMap) as SVGElement
 }
 
 function makeNode(
   svgNode: ElementNode | string,
-  applyId = false
+  identifierMap?: { [id: string]: string }
 ): SVGElement | string {
   if (isPlainText(svgNode)) return svgNode
   const elm = createSVGElement(
     svgNode.tag,
     normalizeAttributes(svgNode.attributes),
-    svgNode.children.map((c) => makeNode(c, applyId))
+    svgNode.children.map((c) => makeNode(c, identifierMap))
   )
 
-  if (applyId) {
-    elm.id = svgNode.id
+  if (identifierMap?.[svgNode.id]) {
+    elm.classList.add(identifierMap[svgNode.id])
   }
 
   return elm
@@ -49,7 +56,7 @@ const SVG_URL = 'http://www.w3.org/2000/svg'
 
 type Attributes = { [name: string]: string } | null
 
-export function createSVGElement(
+function createSVGElement(
   tag: string,
   attributes: Attributes = null,
   children: (SVGElement | string)[] = []
@@ -90,7 +97,11 @@ function appendChildren($el: SVGElement, children: (SVGElement | string)[]) {
 const VIEWBOX_G_ID = 'blendic-viewbox-g'
 const ANIM_G_ID = 'blendic-anim-group'
 
+/**
+ * "identifier" should be valid as CSS selector
+ */
 export function serializeToAnimatedSvg(
+  identifier: string,
   svgRoot: ElementNode,
   attributesMapPerFrame: IdMap<ElementNodeAttributes>[],
   duration: number,
@@ -101,8 +112,18 @@ export function serializeToAnimatedSvg(
     adjustedSvgRoot.id,
     attributesMapPerFrame
   )
-  const allElementIds = Array.from(
-    new Set(adjustedAttributesMapPerFrame.flatMap((a) => Object.keys(a)))
+
+  const allElements = flatElementTree([adjustedSvgRoot])
+  const allElementIds = allElements.map((e) => e.id)
+
+  // Avoid using "id" attribute as CSS selector
+  // => CSS selector requires more strict rules than HTML id attribute
+  const identifierMap = allElements.reduce<{ [id: string]: string }>(
+    (p, e, i) => {
+      p[e.id] = `${identifier}-${i}`
+      return p
+    },
+    {}
   )
 
   const animG = createSVGElement('g')
@@ -123,16 +144,16 @@ export function serializeToAnimatedSvg(
     allElementIds
       .map((id) =>
         createAnimationStyle(
-          id,
+          identifierMap[id],
           adjustedAttributesMapPerFrame.map((attrMap) => attrMap[id])
         )
       )
       .join('') +
-    `#${adjustedSvgRoot.id} * {animation-duration:${
+    `.${identifierMap[adjustedSvgRoot.id]} * {animation-duration:${
       duration / 1000
     }s;animation-iteration-count:${iteration};}`
 
-  const svg = makeSvg(adjustedSvgRoot, true)
+  const svg = makeSvg(adjustedSvgRoot, identifierMap)
   svg.prepend(animG)
   svg.prepend(style)
   return svg
@@ -203,18 +224,23 @@ function createTransformFromViewbox(viewBoxStr: string) {
 }
 
 function createAnimationStyle(
-  id: string,
+  identifier: string,
   attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
   const adjustedAttrsPerFrame = completeEdgeAttrs(
     thinOutSameAttributes(attrsPerFrame) as ElementNodeAttributes[]
   )
-  const keyframeStyle = createAnimationKeyframes(id, adjustedAttrsPerFrame)
-  return keyframeStyle ? keyframeStyle + createAnimationElementStyle(id) : ''
+  const keyframeStyle = createAnimationKeyframes(
+    identifier,
+    adjustedAttrsPerFrame
+  )
+  return keyframeStyle
+    ? keyframeStyle + createAnimationElementStyle(identifier)
+    : ''
 }
 
 export function createAnimationKeyframes(
-  id: string,
+  identifier: string,
   attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
   const steps = getStepList(attrsPerFrame.length, 100)
@@ -226,7 +252,9 @@ export function createAnimationKeyframes(
     return ''
   }
 
-  return `@keyframes ${getAnimationName(id)} {${keyframeValues.join(' ')}}`
+  return `@keyframes ${getAnimationName(identifier)} {${keyframeValues.join(
+    ' '
+  )}}`
 }
 
 /**
@@ -283,12 +311,12 @@ export function createAnimationKeyframeItem(
   return `${percent}%{${content}}`
 }
 
-export function createAnimationElementStyle(id: string): string {
-  return `#${id}{animation-name:${getAnimationName(id)};}`
+export function createAnimationElementStyle(identifier: string): string {
+  return `.${identifier}{animation-name:${getAnimationName(identifier)};}`
 }
 
-function getAnimationName(id: string): string {
-  return `blendic-keyframes-${id}`
+function getAnimationName(identifier: string): string {
+  return `blendic-keyframes-${identifier}`
 }
 
 export function createAnimationTagsForElement(

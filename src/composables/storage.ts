@@ -396,16 +396,20 @@ export function useStorage() {
       )
     })
 
+    const graph = graphStore.lastSelectedGraph.value
+
     const svgElm = serializeToAnimatedSvg(
+      [action?.id, graph?.id].filter((n) => !!n).join('-') ?? 'bsvg',
       wholeSvgTree,
       attributesMapPerFrameByGraph,
       // Reduce round-off error, e.g. endFrame * (1000 / 60)
       (endFrame * 100) / 6
     )
 
-    const graph = graphStore.lastSelectedGraph.value
-    const name = [action?.name, graph?.name].filter((n) => !!n).join('_')
-    saveSvg(svgElm.outerHTML, `${name}_anim.svg`)
+    const name = [action?.name, graph?.name, 'anim']
+      .filter((n) => !!n)
+      .join('-')
+    saveSvg(svgElm.outerHTML, `${name}.svg`)
   }
 
   return {

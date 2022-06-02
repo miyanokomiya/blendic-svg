@@ -49,7 +49,9 @@ import { getConstraint } from '/@/utils/constraints'
 import {
   addEssentialSvgAttributes,
   bakeKeyframe,
+  bakeKeyframeFromResolvedBoneMap,
   bakeKeyframes,
+  bakeKeyframesFromResolvedBoneMap,
   convertGroupUseTree,
   getClonedElementsTree,
   getCreatedElementsTree,
@@ -59,6 +61,7 @@ import {
   getNativeDeformMatrix,
   getPoseDeformMatrix,
   getPosedElementMatrixMap,
+  getResolvedBoneMap,
 } from '/@/utils/poseResolver'
 
 describe('utils/poseResolver.ts', () => {
@@ -227,6 +230,43 @@ describe('utils/poseResolver.ts', () => {
       })
     })
 
+    describe('bakeKeyframesFromResolvedBoneMap', () => {
+      it('bake poses from frame 0 to endFrame', () => {
+        const res = bakeKeyframesFromResolvedBoneMap(
+          [
+            {
+              bone_a: getBone({
+                id: 'bone_a',
+                parentId: 'bone_b',
+                transform: getTransform({ rotate: 10 }),
+              }),
+              bone_b: getBone({ id: 'bone_b' }),
+            },
+            {
+              bone_a: getBone({
+                id: 'bone_a',
+                parentId: 'bone_b',
+                transform: getTransform({ rotate: 20 }),
+              }),
+              bone_b: getBone({ id: 'bone_b' }),
+            },
+          ],
+          elementMap,
+          root
+        )
+        expect(Object.keys(res).sort()).toEqual(['0', '1'])
+        expect(res[1]).toEqual({
+          root: { viewBox: '1 2 3 4' },
+          elm_a: {
+            transform: affineToTransform(
+              boneToAffine(getBone({ transform: getTransform({ rotate: 20 }) }))
+            ),
+          },
+          elm_b: {},
+        })
+      })
+    })
+
     describe('addPoseTransform', () => {
       it('should add two transforms', () => {
         expect(
@@ -343,6 +383,46 @@ describe('utils/poseResolver.ts', () => {
             ' '
           )
         ).toMatchSnapshot()
+      })
+    })
+
+    describe('bakeKeyframeFromResolvedBoneMap', () => {
+      it('bake interpolated poses with resolved bones', () => {
+        expect(
+          bakeKeyframeFromResolvedBoneMap(
+            {
+              bone_a: getBone({
+                id: 'bone_a',
+                parentId: 'bone_b',
+                transform: getTransform({ rotate: 20 }),
+              }),
+              bone_b: getBone({ id: 'bone_b' }),
+            },
+            elementMap,
+            root
+          )
+        ).toEqual({
+          root: { viewBox: '1 2 3 4' },
+          elm_a: {
+            transform: affineToTransform(
+              boneToAffine(getBone({ transform: getTransform({ rotate: 20 }) }))
+            ),
+          },
+          elm_b: {},
+        })
+      })
+    })
+
+    describe('getResolvedBoneMap', () => {
+      it('resolve all bones', () => {
+        expect(getResolvedBoneMap(keyMap, boneMap, constraintMap, 2)).toEqual({
+          bone_a: getBone({
+            id: 'bone_a',
+            parentId: 'bone_b',
+            transform: getTransform({ rotate: 20 }),
+          }),
+          bone_b: getBone({ id: 'bone_b' }),
+        })
       })
     })
   })

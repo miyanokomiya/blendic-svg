@@ -232,6 +232,16 @@ export function bakeKeyframes(
   })
 }
 
+export function bakeKeyframesFromResolvedBoneMap(
+  posedBonesPerFrame: IdMap<Bone>[],
+  elementMap: IdMap<BElement>,
+  svgRoot: ElementNode
+): IdMap<ElementNodeAttributes>[] {
+  return posedBonesPerFrame.map((boneMap) => {
+    return bakeKeyframeFromResolvedBoneMap(boneMap, elementMap, svgRoot)
+  })
+}
+
 export function getInterpolatedBoneMap(
   keyframeMapByTargetId: IdMap<KeyframeBase[]>,
   boneMap: IdMap<Bone>,
@@ -274,16 +284,23 @@ export function bakeKeyframe(
   svgRoot: ElementNode,
   currentFrame: number
 ): IdMap<ElementNodeAttributes> {
-  const interpolated = getInterpolatedBoneMap(
-    keyframeMapByTargetId,
-    boneMap,
-    constraintMap,
-    currentFrame
+  return bakeKeyframeFromResolvedBoneMap(
+    getResolvedBoneMap(
+      keyframeMapByTargetId,
+      boneMap,
+      constraintMap,
+      currentFrame
+    ),
+    elementMap,
+    svgRoot
   )
-  const resolvedBoneMap = getTransformedBoneMap(
-    interpolated.bones,
-    interpolated.constraints
-  )
+}
+
+export function bakeKeyframeFromResolvedBoneMap(
+  resolvedBoneMap: IdMap<Bone>,
+  elementMap: IdMap<BElement>,
+  svgRoot: ElementNode
+): IdMap<ElementNodeAttributes> {
   const matrixMap = getPosedElementMatrixMap(
     resolvedBoneMap,
     elementMap,
@@ -299,6 +316,21 @@ export function bakeKeyframe(
       nodeMap[nodeId]
     )
   })
+}
+
+export function getResolvedBoneMap(
+  keyframeMapByTargetId: IdMap<KeyframeBase[]>,
+  boneMap: IdMap<Bone>,
+  constraintMap: IdMap<BoneConstraint>,
+  currentFrame: number
+): IdMap<Bone> {
+  const interpolated = getInterpolatedBoneMap(
+    keyframeMapByTargetId,
+    boneMap,
+    constraintMap,
+    currentFrame
+  )
+  return getTransformedBoneMap(interpolated.bones, interpolated.constraints)
 }
 
 export function getGraphResolvedAttributesMap(

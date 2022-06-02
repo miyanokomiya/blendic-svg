@@ -50,6 +50,8 @@ import {
   getGraphResolvedElementTree,
   getPosedElementTree,
   getInterpolatedBoneMap,
+  getResolvedBoneMap,
+  bakeKeyframesFromResolvedBoneMap,
 } from '../utils/poseResolver'
 import { initialize, StorageRoot } from '/@/models/storage'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
@@ -294,7 +296,7 @@ export function useStorage() {
   function getElementNodeAtFrame(
     currentFrame: number,
     endFrame: number,
-    posedBones: IdMap<Bone> = {}
+    posedBones: IdMap<Bone>
   ): ElementNode {
     const actor = elementStore.lastSelectedActor.value!
     const elementMap = elementStore.elementMap.value
@@ -344,10 +346,29 @@ export function useStorage() {
     if (!actor) return
 
     const endFrame = animationStore.endFrame.value
-    const frames = [...Array(endFrame + 1)]
+    const frames = [...Array(endFrame + 1)].map((_, i) => i)
 
-    const svgTreeList = frames.map((_, currentFrame) =>
-      getElementNodeAtFrame(currentFrame, endFrame)
+    const action = animationStore.selectedAction.value
+    const keyframeMap = toMap(animationStore.keyframes.value)
+    const keyframeMapByTargetId = getKeyframeMapByTargetId(
+      action?.keyframes.map((id) => keyframeMap[id]) ?? []
+    )
+
+    const posedBonesPerFrame = frames.map((currentFrame) =>
+      getResolvedBoneMap(
+        keyframeMapByTargetId,
+        store.boneMap.value,
+        store.constraintMap.value,
+        currentFrame
+      )
+    )
+
+    const svgTreeList = frames.map((currentFrame) =>
+      getElementNodeAtFrame(
+        currentFrame,
+        endFrame,
+        posedBonesPerFrame[currentFrame]
+      )
     )
     const wholeSvgElementNode = mergeSvgTreeList(svgTreeList, true)
     if (!wholeSvgElementNode) return
@@ -359,17 +380,10 @@ export function useStorage() {
 
     const wholeSvgTree = addEssentialSvgAttributes(wholeSvgElementNode)
 
-    const action = animationStore.selectedAction.value
-    const keyframeMap = toMap(animationStore.keyframes.value)
-    const attributesMapPerFrameByAction = bakeKeyframes(
-      getKeyframeMapByTargetId(
-        action?.keyframes.map((id) => keyframeMap[id]) ?? []
-      ),
-      store.boneMap.value,
-      store.constraintMap.value,
+    const attributesMapPerFrameByAction = bakeKeyframesFromResolvedBoneMap(
+      posedBonesPerFrame,
       wholeBElementMap,
-      wholeSvgTree,
-      endFrame
+      wholeSvgTree
     )
 
     const originalAttributesMap = mapReduce(
@@ -377,7 +391,7 @@ export function useStorage() {
       (elm) => elm.attributes
     )
 
-    const attributesMapPerFrameByGraph = frames.map((_, currentFrame) => {
+    const attributesMapPerFrameByGraph = frames.map((currentFrame) => {
       const graphObjectMap = resolveAnimationGraph(
         graphStore.getGraphNodeModuleFn.value(),
         wholeBElementMap,
@@ -396,16 +410,20 @@ export function useStorage() {
       )
     })
 
+    const graph = graphStore.lastSelectedGraph.value
+
     const svgElm = serializeToAnimatedSvg(
+      [action?.id, graph?.id].filter((n) => !!n).join('-') ?? 'bsvg',
       wholeSvgTree,
       attributesMapPerFrameByGraph,
       // Reduce round-off error, e.g. endFrame * (1000 / 60)
       (endFrame * 100) / 6
     )
 
-    const graph = graphStore.lastSelectedGraph.value
-    const name = [action?.name, graph?.name].filter((n) => !!n).join('_')
-    saveSvg(svgElm.outerHTML, `${name}_anim.svg`)
+    const name = [action?.name, graph?.name, 'anim']
+      .filter((n) => !!n)
+      .join('-')
+    saveSvg(svgElm.outerHTML, `${name}.svg`)
   }
 
   return {

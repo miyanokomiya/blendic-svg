@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="tree-node" :class="{ 'has-children': hasChildren }">
     <div class="node-view">
-      <div class="spacer" :style="{ width: `${nestIndex * 10}px` }" />
+      <div class="spacer" :style="{ width: `${nestIndex * 8}px` }" />
       <button v-if="hasChildren" class="toggle-closed" @click="toggleClosed">
         <UpIcon :flipped="!closed" :right="closed" />
       </button>
@@ -162,6 +162,7 @@ export default defineComponent({
 .toggle-closed {
   margin-right: 4px;
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   border-radius: 2px;
   overflow: hidden;

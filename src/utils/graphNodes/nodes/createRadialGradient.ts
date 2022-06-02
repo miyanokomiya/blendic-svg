@@ -116,7 +116,10 @@ export const struct: NodeStruct<GraphNodeCreateRadialGradient> = {
         r: Math.max(inputs.radius, 0),
         fx: inputs.focus.x,
         fy: inputs.focus.y,
-        gradientUnits: inputs.relative ? 'objectBoundingBox' : 'userSpaceOnUse',
+        gradientUnits: getGraphValueEnumKey(
+          'SPACE_UNITS',
+          inputs.relative ? 1 : 0
+        ),
         spreadMethod: getGraphValueEnumKey('SPREAD_METHOD', inputs.spread),
       },
     })

@@ -17,36 +17,28 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { getTransform } from '/@/models'
-import type { GraphNodeSetFill } from '/@/models/graphNode'
-import * as target from '/@/utils/graphNodes/nodes/setFill'
+import * as target from '/@/utils/graphNodes/nodes/setClipPath'
 
-describe('src/utils/graphNodes/nodes/setFill.ts', () => {
-  const node: GraphNodeSetFill = {
-    id: 'node',
-    type: 'set_fill',
-    data: {},
-    inputs: {
-      object: { value: 'a' },
-      color: { value: getTransform() },
-    },
-    position: { x: 0, y: 0 },
-  }
-
+describe('src/utils/graphNodes/nodes/setClipPath.ts', () => {
   describe('computation', () => {
-    it('should call setFill of the context and return the object', () => {
-      const setFill = jest.fn()
+    it('should call setAttributes of the context and return the object', () => {
+      const setAttributes = jest.fn()
       expect(
         target.struct.computation(
           {
             object: 'a',
-            color: getTransform({ rotate: 1 }),
+            clip_path: 'clip',
           },
-          node,
-          { setFill } as any
+          { id: 'clip' } as any,
+          { setAttributes } as any
         )
       ).toEqual({ object: 'a' })
-      expect(setFill).toHaveBeenCalledWith('a', getTransform({ rotate: 1 }))
+      expect(setAttributes).toHaveBeenNthCalledWith(1, 'a', {
+        'clip-path': 'url(#clip)',
+      })
+      expect(setAttributes).toHaveBeenNthCalledWith(2, 'clip', {
+        id: 'clip',
+      })
     })
   })
 })

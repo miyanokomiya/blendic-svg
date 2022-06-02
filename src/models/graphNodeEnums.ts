@@ -12,8 +12,15 @@ export const SPREAD_METHOD: GraphEnumItem<SPREAD_METHOD_KEY>[] = [
   { key: 'repeat', value: 2 },
 ]
 
+type SPACE_UNITS_KEY = 'userSpaceOnUse' | 'objectBoundingBox'
+export const SPACE_UNITS: GraphEnumItem<SPACE_UNITS_KEY>[] = [
+  { key: 'userSpaceOnUse', value: 0 },
+  { key: 'objectBoundingBox', value: 1 },
+]
+
 export const GraphEnumMap = {
   SPREAD_METHOD,
+  SPACE_UNITS,
 }
 export type GraphEnumMapKey = keyof typeof GraphEnumMap
 
@@ -21,7 +28,7 @@ export function getGraphValueEnumKey(
   enumKey: GraphEnumMapKey,
   value: number
 ): string {
-  const map = GraphEnumMap[enumKey] ?? []
+  const map: GraphEnumItem<string>[] = GraphEnumMap[enumKey] ?? []
   const v = clamp(0, map.length - 1, Math.floor(value))
   return map.find((item) => item.value === v)?.key ?? ''
 }

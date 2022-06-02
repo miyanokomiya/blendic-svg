@@ -156,7 +156,10 @@ export interface GraphObject {
   disabled?: boolean
 }
 
+type SpaceUnits = 'objectBoundingBox' | 'userSpaceOnUse'
+
 export interface GraphObjectAttributes {
+  id?: string
   x?: number
   y?: number
   dx?: number
@@ -184,8 +187,10 @@ export interface GraphObjectAttributes {
   y2?: number
   offset?: number
   'stop-color'?: Transform
-  gradientUnits?: 'objectBoundingBox' | 'userSpaceOnUse'
+  gradientUnits?: SpaceUnits
   spreadMethod?: 'pad' | 'reflect' | 'repeat'
+  clipPathUnits?: SpaceUnits
+  'clip-path'?: string
 }
 
 export function getGraphObject(

@@ -110,6 +110,9 @@ import * as make_path_s from './nodes/makePathS'
 import * as make_path_a from './nodes/makePathA'
 import * as make_path_z from './nodes/makePathZ'
 
+import * as create_object_clip_path from './nodes/createObjectClipPath'
+import * as set_clip_path from './nodes/setClipPath'
+
 import * as greater_than from './nodes/greaterThan'
 import * as greater_than_or_equal from './nodes/greaterThanOrEqual'
 import * as less_than from './nodes/lessThan'
@@ -175,6 +178,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   set_stroke,
   set_stroke_length,
   set_gradient,
+  set_clip_path,
   set_viewbox,
   hide_object,
 
@@ -192,6 +196,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   create_linear_gradient,
   create_radial_gradient,
   make_stop,
+  create_object_clip_path,
 
   make_path_m,
   make_path_l,
@@ -313,6 +318,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Set Stroke', type: 'set_stroke' },
       { label: 'Set Stroke Length', type: 'set_stroke_length' },
       { label: 'Set Gradient', type: 'set_gradient' },
+      { label: 'Set Clip Path', type: 'set_clip_path' },
       { label: 'Set Viewbox', type: 'set_viewbox' },
       { label: 'Hide Object', type: 'hide_object' },
 
@@ -334,6 +340,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Linear Gradient', type: 'create_linear_gradient' },
       { label: 'Radial Gradient', type: 'create_radial_gradient' },
       { label: 'Stop', type: 'make_stop' },
+      { label: 'Clip Path', type: 'create_object_clip_path' },
     ],
   },
   MAKE_PATH_SRC,

@@ -59,6 +59,7 @@ import {
   getNativeDeformMatrix,
   getPoseDeformMatrix,
   getPosedElementMatrixMap,
+  getResolvedBoneMap,
 } from '/@/utils/poseResolver'
 
 describe('utils/poseResolver.ts', () => {
@@ -343,6 +344,19 @@ describe('utils/poseResolver.ts', () => {
             ' '
           )
         ).toMatchSnapshot()
+      })
+    })
+
+    describe('getResolvedBoneMap', () => {
+      it('resolve all bones', () => {
+        expect(getResolvedBoneMap(keyMap, boneMap, constraintMap, 2)).toEqual({
+          bone_a: getBone({
+            id: 'bone_a',
+            parentId: 'bone_b',
+            transform: getTransform({ rotate: 20 }),
+          }),
+          bone_b: getBone({ id: 'bone_b' }),
+        })
       })
     })
   })

@@ -189,17 +189,23 @@ export function createStore(
   })
 
   function saveLastSelectedBoneSpace() {
-    if (!indexStore.lastSelectedBoneId.value) return
+    const bone = indexStore.lastSelectedBoneId.value
+      ? posedBoneMap.value[indexStore.lastSelectedBoneId.value]
+      : undefined
 
-    const bone = posedBoneMap.value[indexStore.lastSelectedBoneId.value]
     if (!bone || canvasMode.value !== 'pose') {
       lastSelectedBoneSpace.value = undefined
       return
     }
 
+    const posedParent = bone.parentId
+      ? animationStore.currentPosedBones.value[bone.parentId]
+      : undefined
+    const parentRotate = posedParent?.transform.rotate ?? 0
+
     lastSelectedBoneSpace.value = {
       origin: posedTransform(bone, [bone.transform]).head,
-      radian: getBoneXRadian(bone),
+      radian: getBoneXRadian(bone) + (parentRotate * Math.PI) / 180,
     }
   }
 

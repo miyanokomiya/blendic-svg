@@ -73,6 +73,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                       v-if="lastSelectedBoneSpace"
                       :origin="lastSelectedBoneSpace.origin"
                       :radian="lastSelectedBoneSpace.radian"
+                      class="view-only"
                     />
                   </g>
                 </AppCanvas>

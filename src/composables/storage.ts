@@ -51,6 +51,7 @@ import {
   getPosedElementTree,
   getInterpolatedBoneMap,
   getResolvedBoneMap,
+  bakeKeyframesFromResolvedBoneMap,
 } from '../utils/poseResolver'
 import { initialize, StorageRoot } from '/@/models/storage'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
@@ -345,7 +346,7 @@ export function useStorage() {
     if (!actor) return
 
     const endFrame = animationStore.endFrame.value
-    const frames = [...Array(endFrame + 1)]
+    const frames = [...Array(endFrame + 1)].map((_, i) => i)
 
     const action = animationStore.selectedAction.value
     const keyframeMap = toMap(animationStore.keyframes.value)
@@ -353,16 +354,20 @@ export function useStorage() {
       action?.keyframes.map((id) => keyframeMap[id]) ?? []
     )
 
-    const svgTreeList = frames.map((_, currentFrame) =>
+    const posedBonesPerFrame = frames.map((currentFrame) =>
+      getResolvedBoneMap(
+        keyframeMapByTargetId,
+        store.boneMap.value,
+        store.constraintMap.value,
+        currentFrame
+      )
+    )
+
+    const svgTreeList = frames.map((currentFrame) =>
       getElementNodeAtFrame(
         currentFrame,
         endFrame,
-        getResolvedBoneMap(
-          keyframeMapByTargetId,
-          store.boneMap.value,
-          store.constraintMap.value,
-          currentFrame
-        )
+        posedBonesPerFrame[currentFrame]
       )
     )
     const wholeSvgElementNode = mergeSvgTreeList(svgTreeList, true)
@@ -375,13 +380,10 @@ export function useStorage() {
 
     const wholeSvgTree = addEssentialSvgAttributes(wholeSvgElementNode)
 
-    const attributesMapPerFrameByAction = bakeKeyframes(
-      keyframeMapByTargetId,
-      store.boneMap.value,
-      store.constraintMap.value,
+    const attributesMapPerFrameByAction = bakeKeyframesFromResolvedBoneMap(
+      posedBonesPerFrame,
       wholeBElementMap,
-      wholeSvgTree,
-      endFrame
+      wholeSvgTree
     )
 
     const originalAttributesMap = mapReduce(
@@ -389,7 +391,7 @@ export function useStorage() {
       (elm) => elm.attributes
     )
 
-    const attributesMapPerFrameByGraph = frames.map((_, currentFrame) => {
+    const attributesMapPerFrameByGraph = frames.map((currentFrame) => {
       const graphObjectMap = resolveAnimationGraph(
         graphStore.getGraphNodeModuleFn.value(),
         wholeBElementMap,

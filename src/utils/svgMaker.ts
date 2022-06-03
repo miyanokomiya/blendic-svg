@@ -25,6 +25,7 @@ import {
   isPlainText,
   parseViewBoxFromStr,
 } from '/@/utils/elements'
+import { logRound } from '/@/utils/geometry'
 import { normalizeAttributes } from '/@/utils/helpers'
 
 export function makeSvg(
@@ -243,7 +244,10 @@ export function createAnimationKeyframes(
   identifier: string,
   attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
-  const steps = getStepList(attrsPerFrame.length, 100)
+  const frameDigit = Math.ceil(Math.log10(attrsPerFrame.length))
+  const steps = getStepList(attrsPerFrame.length, 100).map((v) =>
+    logRound(-frameDigit, v)
+  )
   const keyframeValues = completeEdgeAttrs(attrsPerFrame)
     .map((a, i) => createAnimationKeyframeItem(a, steps[i]))
     .filter((s) => s)
@@ -351,6 +355,7 @@ export function createAnimationTagsForElement(
 
 function getStepList(length: number, scale = 1): number[] {
   if (length === 0) return []
+  if (length === 1) return [0, scale]
 
   const step = scale / (length - 1)
   const list = [...Array(length)].map((_, i) => step * i)

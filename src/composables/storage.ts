@@ -49,13 +49,11 @@ import {
   getGraphResolvedAttributesMap,
   getGraphResolvedElementTree,
   getPosedElementTree,
-  getInterpolatedBoneMap,
   getResolvedBoneMap,
   bakeKeyframesFromResolvedBoneMap,
 } from '../utils/poseResolver'
 import { initialize, StorageRoot } from '/@/models/storage'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
-import { getTransformedBoneMap } from '/@/utils/armatures'
 import { mapReduce, toList } from '/@/utils/commons'
 import {
   makeSvg,
@@ -316,16 +314,6 @@ export function useStorage() {
     return getGraphResolvedElementTree(graphObjectMap, svgNode)
   }
 
-  function getPosedBoneMapAtFrame(currentFrame: number): IdMap<Bone> {
-    const interpolated = getInterpolatedBoneMap(
-      animationStore.keyframeMapByTargetId.value,
-      store.boneMap.value,
-      store.constraintMap.value,
-      currentFrame
-    )
-    return getTransformedBoneMap(interpolated.bones, interpolated.constraints)
-  }
-
   function bakeSvg() {
     const actor = elementStore.lastSelectedActor.value
     if (!actor) return
@@ -395,7 +383,7 @@ export function useStorage() {
       const graphObjectMap = resolveAnimationGraph(
         graphStore.getGraphNodeModuleFn.value(),
         wholeBElementMap,
-        getPosedBoneMapAtFrame(currentFrame),
+        posedBonesPerFrame[currentFrame],
         { currentFrame, endFrame },
         graphStore.completedNodeMap.value
       )

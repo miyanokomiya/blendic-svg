@@ -47,7 +47,11 @@ import {
 } from '/@/utils/attributesResolver'
 import { BoneConstraint } from '/@/utils/constraints'
 import { flatElementTree, isPlainText } from '/@/utils/elements'
-import { isIdentityAffine, transformToAffine } from '/@/utils/geometry'
+import {
+  isIdentityAffine,
+  logRound,
+  transformToAffine,
+} from '/@/utils/geometry'
 import { splitKeyframeMapByName } from '/@/utils/keyframes'
 import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
 import * as keyframeConstraint from '/@/utils/keyframes/keyframeConstraint'
@@ -166,10 +170,21 @@ function getPosedAttributes(
     node
   )
   if (matrix && !isIdentityAffine(matrix)) {
-    ret.transform = affineToTransform(matrix)
+    ret.transform = affineToTransformTruncated(matrix)
   }
 
   return ret
+}
+
+export function affineToTransformTruncated(matrix: AffineMatrix): string {
+  return affineToTransform([
+    logRound(-5, matrix[0]),
+    logRound(-5, matrix[1]),
+    logRound(-5, matrix[2]),
+    logRound(-5, matrix[3]),
+    logRound(-5, matrix[4]),
+    logRound(-5, matrix[5]),
+  ])
 }
 
 function getPosedElementNode(
@@ -423,7 +438,9 @@ function getGraphResolvedAttributes(
   const ret: ElementNodeAttributes = { ...nodeAttributes }
 
   if (graphObject.transform) {
-    ret.transform = affineToTransform(transformToAffine(graphObject.transform))
+    ret.transform = affineToTransformTruncated(
+      transformToAffine(graphObject.transform)
+    )
   } else if (nodeAttributes.transform) {
     ret.transform = nodeAttributes.transform
   }

@@ -19,7 +19,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import {
   AffineMatrix,
-  affineToTransform,
   IDENTITY_AFFINE,
   invertTransform,
   multiAffine,
@@ -48,6 +47,7 @@ import { mapReduce } from '/@/utils/commons'
 import { getConstraint } from '/@/utils/constraints'
 import {
   addEssentialSvgAttributes,
+  affineToTransformTruncated,
   bakeKeyframe,
   bakeKeyframeFromResolvedBoneMap,
   bakeKeyframes,
@@ -162,8 +162,19 @@ describe('utils/poseResolver.ts', () => {
         })
       )
       expect(
-        JSON.stringify(mapReduce(map, affineToTransform), null, ' ')
+        JSON.stringify(mapReduce(map, affineToTransformTruncated), null, ' ')
       ).toMatchSnapshot()
+    })
+  })
+
+  describe('affineToTransformTruncated', () => {
+    it('should return truncated affine matrix string', () => {
+      expect(
+        affineToTransformTruncated([
+          0.1234567, 0.01234567, 0.001234567, 0.001234567, 0.0001234567,
+          0.00001234567,
+        ])
+      ).toBe('matrix(0.12346,0.01235,0.00123,0.00123,0.00012,0.00001)')
     })
   })
 
@@ -221,7 +232,7 @@ describe('utils/poseResolver.ts', () => {
         expect(res[2]).toEqual({
           root: { viewBox: '1 2 3 4' },
           elm_a: {
-            transform: affineToTransform(
+            transform: affineToTransformTruncated(
               boneToAffine(getBone({ transform: getTransform({ rotate: 20 }) }))
             ),
           },
@@ -258,7 +269,7 @@ describe('utils/poseResolver.ts', () => {
         expect(res[1]).toEqual({
           root: { viewBox: '1 2 3 4' },
           elm_a: {
-            transform: affineToTransform(
+            transform: affineToTransformTruncated(
               boneToAffine(getBone({ transform: getTransform({ rotate: 20 }) }))
             ),
           },
@@ -368,7 +379,7 @@ describe('utils/poseResolver.ts', () => {
         ).toEqual({
           root: { viewBox: '1 2 3 4' },
           elm_a: {
-            transform: affineToTransform(
+            transform: affineToTransformTruncated(
               boneToAffine(getBone({ transform: getTransform({ rotate: 20 }) }))
             ),
           },
@@ -404,7 +415,7 @@ describe('utils/poseResolver.ts', () => {
         ).toEqual({
           root: { viewBox: '1 2 3 4' },
           elm_a: {
-            transform: affineToTransform(
+            transform: affineToTransformTruncated(
               boneToAffine(getBone({ transform: getTransform({ rotate: 20 }) }))
             ),
           },

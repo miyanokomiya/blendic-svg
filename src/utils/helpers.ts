@@ -32,6 +32,7 @@ import { getGraphValueEnumKey } from '/@/models/graphNodeEnums'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { BoneConstraint } from '/@/utils/constraints'
+import { logRound } from '/@/utils/geometry'
 import { GetGraphNodeModule, getNodeEdgeTypes } from '/@/utils/graphNodes'
 import { NodeStruct, NodeModule } from '/@/utils/graphNodes/core'
 
@@ -87,7 +88,12 @@ export function gridLineElm(
 }
 
 export function viewbox(rect: IRectangle): string {
-  return `${rect.x} ${rect.y} ${rect.width} ${rect.height}`
+  return [
+    logRound(-1, rect.x),
+    logRound(-1, rect.y),
+    logRound(-1, rect.width),
+    logRound(-1, rect.height),
+  ].join(' ')
 }
 
 export function parseStyle(val = ''): { [name: string]: string } {

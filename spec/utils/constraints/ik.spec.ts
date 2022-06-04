@@ -90,6 +90,30 @@ describe('utils/constraints/ik.ts', () => {
         expect(res.a.transform.translate.x).toBeCloseTo(0)
         expect(res.a.transform.translate.y).toBeCloseTo(0)
       })
+      it('3 chain: should connect the chain', () => {
+        const option = {
+          targetId: 'target',
+          poleTargetId: '',
+          iterations: 1,
+          chainLength: 3,
+          influence: 1,
+        }
+        const res = apply(
+          'c',
+          option,
+          {},
+          {
+            ...boneMap,
+            target: getBone({
+              id: 'target',
+              head: { x: 5, y: 0 },
+            }),
+          }
+        )
+        expect(res.a.transform.translate.y).toBeCloseTo(0)
+        expect(res.b.transform.translate.y).toBeCloseTo(0)
+        expect(res.c.transform.translate.y).toBeCloseTo(0)
+      })
       it('should effect by influence rate', () => {
         const option = {
           targetId: 'target',
@@ -151,8 +175,8 @@ describe('utils/constraints/ik.ts', () => {
           influence: 1,
         }
         const res = apply('b', option, {}, boneMap)
-        expect(res.a.transform.rotate).toBeCloseTo(-24.20873509072387)
-        expect(res.b.transform.rotate).toBeCloseTo(114.41051185097109)
+        expect(res.a.transform.rotate).toBeCloseTo(-24.29491472973583)
+        expect(res.b.transform.rotate).toBeCloseTo(114.2955545667173)
         expect(res.a.transform.translate.x).toBeCloseTo(0)
         expect(res.a.transform.translate.y).toBeCloseTo(0)
       })
@@ -165,8 +189,8 @@ describe('utils/constraints/ik.ts', () => {
           influence: 1,
         }
         const res = apply('b', option, {}, boneMap)
-        expect(res.a.transform.rotate).toBeCloseTo(114.2087350907239)
-        expect(res.b.transform.rotate).toBeCloseTo(-24.410511850971062)
+        expect(res.a.transform.rotate).toBeCloseTo(114.29491472973586)
+        expect(res.b.transform.rotate).toBeCloseTo(-24.29555456671727)
         expect(res.a.transform.translate.x).toBeCloseTo(0)
         expect(res.a.transform.translate.y).toBeCloseTo(0)
       })

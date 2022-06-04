@@ -93,16 +93,12 @@ function step(targetPoint: IVec2, bones: Bone[]): Bone[] {
     .concat()
     .reverse()
     .map((b) => {
-      const stickInfo = getStickInfoTarget(currentTargetPoint, b)
-      currentTargetPoint = stickInfo.head
-      return {
-        ...b,
-        transform: {
-          ...b.transform,
-          rotate: stickInfo.rotate,
-          translate: stickInfo.translate,
-        },
-      }
+      const [rotate, translate, nextTargetPoint] = getStickInfoTarget(
+        currentTargetPoint,
+        b
+      )
+      currentTargetPoint = nextTargetPoint
+      return { ...b, transform: { ...b.transform, rotate, translate } }
     })
     .reverse()
 
@@ -131,7 +127,7 @@ function getScaledTail(bone: Bone): IVec2 {
 function getStickInfoTarget(
   targetPoint: IVec2,
   bone: Bone
-): { rotate: number; translate: IVec2; head: IVec2 } {
+): [rotate: number, translate: IVec2, nextTargetPoint: IVec2] {
   const spaceFn = toBoneSpaceFn(bone)
   const worldTranslate = spaceFn.toWorld(bone.transform.translate)
 
@@ -139,14 +135,15 @@ function getStickInfoTarget(
   const tail = add(getScaledTail(bone), worldTranslate)
   const rad = getRadian(targetPoint, head) - getRadian(tail, head)
   const rotatedTail = rotate(tail, rad, head)
-  return {
-    rotate: (rad / Math.PI) * 180,
-    translate: add(
-      bone.transform.translate,
-      spaceFn.toLocal(sub(targetPoint, rotatedTail))
-    ),
-    head,
-  }
+  const translate = add(
+    bone.transform.translate,
+    spaceFn.toLocal(sub(targetPoint, rotatedTail))
+  )
+  return [
+    (rad / Math.PI) * 180,
+    translate,
+    add(bone.head, spaceFn.toWorld(translate)),
+  ]
 }
 
 export function straightToPoleTarget(

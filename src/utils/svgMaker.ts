@@ -19,12 +19,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { affineToTransform } from 'okageo'
 import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
-import { thinOutSameAttributes } from '/@/utils/commons'
+import { thinOutList, thinOutSameAttributes } from '/@/utils/commons'
 import {
   flatElementTree,
   isPlainText,
   parseViewBoxFromStr,
 } from '/@/utils/elements'
+import { logRound } from '/@/utils/geometry'
 import { normalizeAttributes } from '/@/utils/helpers'
 
 export function makeSvg(
@@ -98,19 +99,27 @@ const VIEWBOX_G_ID = 'blendic-viewbox-g'
 const ANIM_G_ID = 'blendic-anim-group'
 
 /**
- * "identifier" should be valid as CSS selector
+ * identifier: Should be valid as CSS selector
+ * quolity: Should be 0-1
  */
 export function serializeToAnimatedSvg(
   identifier: string,
   svgRoot: ElementNode,
   attributesMapPerFrame: IdMap<ElementNodeAttributes>[],
   duration: number,
-  iteration: number | 'infinite' = 'infinite'
+  iteration: number | 'infinite' = 'infinite',
+  quolity = 1
 ): SVGElement {
+  const thinnedOutAttributesMapPerFrame = thinOutList(
+    attributesMapPerFrame,
+    quolity,
+    true
+  )
+
   const adjustedSvgRoot = immigrateViewBox(svgRoot)
   const adjustedAttributesMapPerFrame = immigrateViewBoxPerFrame(
     adjustedSvgRoot.id,
-    attributesMapPerFrame
+    thinnedOutAttributesMapPerFrame
   )
 
   const allElements = flatElementTree([adjustedSvgRoot])
@@ -151,7 +160,7 @@ export function serializeToAnimatedSvg(
       .join('') +
     `.${identifierMap[adjustedSvgRoot.id]} * {animation-duration:${
       duration / 1000
-    }s;animation-iteration-count:${iteration};}`
+    }s;animation-iteration-count:${iteration};animation-timing-function:linear;}`
 
   const svg = makeSvg(adjustedSvgRoot, identifierMap)
   svg.prepend(animG)
@@ -243,7 +252,10 @@ export function createAnimationKeyframes(
   identifier: string,
   attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
-  const steps = getStepList(attrsPerFrame.length, 100)
+  const frameDigit = Math.ceil(Math.log10(attrsPerFrame.length))
+  const steps = getStepList(attrsPerFrame.length, 100).map((v) =>
+    logRound(-frameDigit, v)
+  )
   const keyframeValues = completeEdgeAttrs(attrsPerFrame)
     .map((a, i) => createAnimationKeyframeItem(a, steps[i]))
     .filter((s) => s)
@@ -351,6 +363,7 @@ export function createAnimationTagsForElement(
 
 function getStepList(length: number, scale = 1): number[] {
   if (length === 0) return []
+  if (length === 1) return [0, scale]
 
   const step = scale / (length - 1)
   const list = [...Array(length)].map((_, i) => step * i)

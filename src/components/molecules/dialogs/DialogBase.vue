@@ -49,7 +49,7 @@ export default defineComponent({
     },
   },
   emits: ['update:open'],
-  setup(props, { emit }) {
+  setup(_, { emit }) {
     return {
       close: () => emit('update:open', false),
     }

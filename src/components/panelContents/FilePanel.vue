@@ -45,42 +45,24 @@ Copyright (C) 2021, Tomoya Komiyama.
       <button type="button" @click="exportAnimatedSvg">Animated SVG</button>
     </div>
     <h3>Version {{ appVersion }}</h3>
-    <teleport to="body">
-      <DialogBase v-model:open="showSelectActionDialogFlag">
-        <template #default>
-          <h3>Select Actions</h3>
-          <CheckboxInput
-            v-for="action in exportableActions"
-            :key="action.id"
-            v-model="selectedActionIds[action.id]"
-            :label="action.name"
-          />
-        </template>
-        <template #buttons>
-          <DialogButton @click="closeSelectActionDialog">Cancel</DialogButton>
-          <DialogButton
-            type="primary"
-            :disabled="exportingActionIds.length === 0"
-            @click="bakeAction"
-            >Export</DialogButton
-          >
-        </template>
-      </DialogBase>
-    </teleport>
+    <BakingConfigDialog
+      v-model:open="showSelectActionDialogFlag"
+      :actions="exportableActions"
+      @execute="bakeAction"
+    />
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
 import { useStorage } from '/@/composables/storage'
-import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
-import DialogBase from '/@/components/molecules/dialogs/DialogBase.vue'
-import DialogButton from '/@/components/atoms/DialogButton.vue'
 import { useAnimationStore } from '/@/store/animation'
 import { useStore } from '/@/store'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
+import BakingConfigDialog from '/@/components/molecules/dialogs/BakingConfigDialog.vue'
 
 export default defineComponent({
-  components: { CheckboxInput, DialogBase, DialogButton },
+  components: { CheckboxInput, BakingConfigDialog },
   emits: [],
   setup() {
     const storage = useStorage()
@@ -89,7 +71,7 @@ export default defineComponent({
     const store = useStore()
     const animationStore = useAnimationStore()
     const showSelectActionDialogFlag = ref(false)
-    const selectedActionIds = ref<{ [id: string]: boolean }>({})
+    const selectedActionIds = ref<string[]>([])
 
     const exportableActions = computed(() => {
       return animationStore.actions.value.filter((a) => {
@@ -97,11 +79,11 @@ export default defineComponent({
       })
     })
 
-    const exportingActionIds = computed(() => {
-      return exportableActions.value
-        .filter((a) => selectedActionIds.value[a.id])
-        .map((a) => a.id)
-    })
+    function bakeAction(actionIds: string[]) {
+      showSelectActionDialogFlag.value = false
+      selectedActionIds.value = actionIds
+      storage.bakeAction(actionIds)
+    }
 
     return {
       appVersion: process.env.APP_VERSION,
@@ -118,13 +100,10 @@ export default defineComponent({
       exportSvg: storage.bakeSvg,
       exportAnimatedSvg: storage.bakeAnimatedSvg,
 
-      bakeAction: () => storage.bakeAction(exportingActionIds.value),
-      selectedActionIds,
+      bakeAction,
       exportableActions,
-      exportingActionIds,
       showSelectActionDialogFlag,
       showSelectActionDialog: () => (showSelectActionDialogFlag.value = true),
-      closeSelectActionDialog: () => (showSelectActionDialogFlag.value = false),
     }
   },
 })

@@ -20,6 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { getCenter, circleClamp, clamp } from 'okageo'
 import { useMapCache } from '/@/composables/cache'
 import { getTransform, Transform } from '/@/models'
+import { logRound } from '/@/utils/geometry'
 
 export interface RGBA {
   r: number // 0 ~ 255
@@ -91,7 +92,10 @@ const rednerRGBByHSVCache = useMapCache<HSVA, string>(
   (hsva) => `${hsva.h},${hsva.s}${hsva.v}`,
   (hsva) => {
     const rgba = hsvaToRgba(hsva)
-    return `rgb(${rgba.r},${rgba.g},${rgba.b})`
+    return `rgb(${logRound(-1, rgba.r)},${logRound(-1, rgba.g)},${logRound(
+      -1,
+      rgba.b
+    )})`
   }
 )
 

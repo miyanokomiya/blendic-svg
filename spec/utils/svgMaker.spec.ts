@@ -165,7 +165,7 @@ describe('utils/svgMaker.ts', () => {
       expect(style.innerHTML).toContain(svg.children[0].classList.value)
       expect(style.innerHTML).toContain('transform')
       expect(style.innerHTML).toContain(
-        '.test-0 * {animation-duration:2s;animation-iteration-count:3;}'
+        '.test-0 * {animation-duration:2s;animation-iteration-count:3;animation-timing-function:linear;}'
       )
     })
 
@@ -241,6 +241,37 @@ describe('utils/svgMaker.ts', () => {
         ])
       ).toBe(
         '@keyframes blendic-keyframes-elm {0%{transform:0;} 50%{transform:20px;} 100%{transform:100px;}}'
+      )
+    })
+    it('should truncate percent corresponding to its digit', () => {
+      expect(
+        createAnimationKeyframes(
+          'elm',
+          [...Array(10)].map(() => ({ transform: '0' }))
+        )
+      ).toContain('55.6%')
+      expect(
+        createAnimationKeyframes(
+          'elm',
+          [...Array(12)].map(() => ({ transform: '0' }))
+        )
+      ).toContain('54.55%')
+      expect(
+        createAnimationKeyframes(
+          'elm',
+          [...Array(100)].map(() => ({ transform: '0' }))
+        )
+      ).toContain('55.56%')
+      expect(
+        createAnimationKeyframes(
+          'elm',
+          [...Array(102)].map(() => ({ transform: '0' }))
+        )
+      ).toContain('55.446%')
+    })
+    it('should return an edge when one keyframe exists', () => {
+      expect(createAnimationKeyframes('elm', [{ transform: '0' }])).toBe(
+        '@keyframes blendic-keyframes-elm {0%{transform:0;}}'
       )
     })
     it('should return empty string if no keyframe exists', () => {

@@ -54,6 +54,7 @@ import {
   thinOutSameAttributes,
   isNotNullish,
   dropNullishItem,
+  thinOutList,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
@@ -682,6 +683,27 @@ describe('utils/commons.ts', () => {
       expect(
         thinOutSameAttributes([{ a: '1' }, undefined, { a: '1' }])
       ).toEqual([{ a: '1' }, undefined, { a: '1' }])
+    })
+  })
+
+  describe('thinOutList', () => {
+    it('should thin out items', () => {
+      expect(thinOutList([0, 1, 2, 3, 4, 5, 6], 1 / 2)).toEqual([0, 2, 4, 6])
+      expect(thinOutList([0, 1, 2, 3, 4, 5, 6, 7], 1 / 2)).toEqual([0, 2, 4, 6])
+      expect(thinOutList([0, 1, 2, 3, 4, 5, 6], 1 / 3)).toEqual([0, 3, 6])
+      expect(thinOutList([0, 1, 2, 3, 4, 5, 6, 7, 8], 1 / 3)).toEqual([0, 3, 6])
+    })
+    it('should complete the edge when the option is passed', () => {
+      expect(thinOutList([0, 1, 2, 3, 4, 5, 6], 1 / 2, true)).toEqual([
+        0, 2, 4, 6,
+      ])
+      expect(thinOutList([0, 1, 2, 3, 4, 5, 6, 7], 1 / 2, true)).toEqual([
+        0, 2, 4, 6, 7,
+      ])
+      expect(thinOutList([0, 1, 2, 3, 4, 5, 6], 1 / 3, true)).toEqual([0, 3, 6])
+      expect(thinOutList([0, 1, 2, 3, 4, 5, 6, 7, 8], 1 / 3, true)).toEqual([
+        0, 3, 6, 8,
+      ])
     })
   })
 

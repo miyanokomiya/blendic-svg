@@ -165,7 +165,7 @@ describe('utils/svgMaker.ts', () => {
       expect(style.innerHTML).toContain(svg.children[0].classList.value)
       expect(style.innerHTML).toContain('transform')
       expect(style.innerHTML).toContain(
-        '.test-0 * {animation-duration:2s;animation-iteration-count:3;}'
+        '.test-0 * {animation-duration:2s;animation-iteration-count:3;animation-timing-function:linear;}'
       )
     })
 

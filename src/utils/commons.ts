@@ -436,6 +436,22 @@ export function thinOutSameAttributes<T extends { [key: string]: unknown }>(
     .map((item) => (Object.keys(item).length === 0 ? undefined : item))
 }
 
+/**
+ * rate: Should be 0-1
+ */
+export function thinOutList<T>(
+  src: T[],
+  rate: number,
+  completeEndEdge = false
+): T[] {
+  const skipCount = Math.floor(1 / rate)
+  const ret = src.filter((_, i) => i % skipCount === 0)
+  if (completeEndEdge && Number.isInteger(src.length * rate)) {
+    ret.push(src[src.length - 1])
+  }
+  return ret
+}
+
 export function isNotNullish(v: any): v is Exclude<typeof v, undefined | null> {
   return v != null
 }

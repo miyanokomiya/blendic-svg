@@ -405,7 +405,9 @@ export function useStorage() {
       wholeSvgTree,
       attributesMapPerFrameByGraph,
       // Reduce round-off error, e.g. endFrame * (1000 / 60)
-      (endFrame * 100) / 6
+      (endFrame * 100) / 6,
+      'infinite',
+      1 / 2
     )
 
     const name = [action?.name, graph?.name, 'anim']

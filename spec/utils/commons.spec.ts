@@ -55,9 +55,16 @@ import {
   isNotNullish,
   dropNullishItem,
   thinOutList,
+  toMapFromString,
 } from '/@/utils/commons'
 
 describe('utils/commons.ts', () => {
+  describe('toMapFromString', () => {
+    it('should return key map with initial values', () => {
+      expect(toMapFromString(['a', 'b'], true)).toEqual({ a: true, b: true })
+    })
+  })
+
   describe('toKeyMap', () => {
     it('list to map', () => {
       expect(

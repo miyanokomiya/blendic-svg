@@ -21,6 +21,16 @@ import { generateUuid } from '/@/utils/random'
 import { IdMap, KeyValueMap, toMap } from '/@/models'
 import { getNotDuplicatedName } from '/@/utils/relations'
 
+export function toMapFromString<T>(
+  src: string[],
+  initial: T
+): { [key: string]: T } {
+  return src.reduce<{ [key: string]: T }>((p, key) => {
+    p[key] = initial
+    return p
+  }, {})
+}
+
 export function toKeyMap<T extends object>(
   list: T[],
   key: string | number

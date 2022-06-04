@@ -1,0 +1,186 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/molecules/dialogs/BakingConfigDialog.vue snapshot default 1`] = `
+<div
+  class="dialog-wrapper"
+>
+  <div
+    class="overlay"
+  />
+  <div
+    class="body-outer"
+  >
+    <div
+      class="body-innter"
+    >
+      <button
+        class="close-button"
+      >
+        <svg
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="none"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
+            fill="none"
+            stroke="#888"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <div
+        class="body-content"
+      >
+        
+        <h3>
+          Select Actions
+        </h3>
+        
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <span>
+            a_name
+          </span>
+        </label>
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <span>
+            b_name
+          </span>
+        </label>
+        
+        
+        <div
+          class="buttons"
+        >
+          
+          <button
+            class="default"
+            type="button"
+          >
+            
+            Cancel
+            
+          </button>
+          <button
+            class="primary"
+            disabled=""
+            type="button"
+          >
+            
+            Export
+            
+          </button>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`src/components/molecules/dialogs/BakingConfigDialog.vue snapshot selected 1`] = `
+<div
+  class="dialog-wrapper"
+>
+  <div
+    class="overlay"
+  />
+  <div
+    class="body-outer"
+  >
+    <div
+      class="body-innter"
+    >
+      <button
+        class="close-button"
+      >
+        <svg
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="none"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
+            fill="none"
+            stroke="#888"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <div
+        class="body-content"
+      >
+        
+        <h3>
+          Select Actions
+        </h3>
+        
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <span>
+            a_name
+          </span>
+        </label>
+        <label
+          class=""
+        >
+          <input
+            type="checkbox"
+          />
+          <span>
+            b_name
+          </span>
+        </label>
+        
+        
+        <div
+          class="buttons"
+        >
+          
+          <button
+            class="default"
+            type="button"
+          >
+            
+            Cancel
+            
+          </button>
+          <button
+            class="primary"
+            type="button"
+          >
+            
+            Export
+            
+          </button>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

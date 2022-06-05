@@ -211,7 +211,9 @@ export function createStore(
 
   const axisGridLine = computed(() => axisGridInfo.value)
 
-  function toggleCanvasMode() {
+  function toggleCanvasMode(ctrl = false) {
+    if (ctrl) return ctrlToggleCanvasMode()
+
     if (canvasMode.value === 'edit') {
       setCanvasMode(pastCanvasMode.value)
     } else {
@@ -351,11 +353,7 @@ export function createStore(
       case 'Tab':
         if (indexStore.lastSelectedArmature.value) {
           // Ctrl + Tab cannot be controlled by JS
-          if (options.shift) {
-            ctrlToggleCanvasMode()
-          } else {
-            toggleCanvasMode()
-          }
+          toggleCanvasMode(options.shift)
         }
         return { needLock: false }
       case 'g':
@@ -432,6 +430,7 @@ export function createStore(
     command,
     selectedBonesOrigin,
     changeCanvasMode,
+    toggleCanvasMode,
 
     snapScaleDiff,
     snapTranslate,

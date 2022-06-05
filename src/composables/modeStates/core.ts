@@ -235,9 +235,10 @@ export interface ChangeStateEvent extends ModeStateEventBase {
   }
 }
 
-export function useGroupState<C>(
+export function useGroupState<C, K>(
   getState: () => ModeStateBase<C>,
-  getInitialState: () => ModeStateBase<C>
+  getInitialState: () => ModeStateBase<K>,
+  deriveCtx: (ctx: C) => K
 ): ModeStateBase<C> {
   let sm: StateMachine | undefined
   const state = getState()
@@ -246,7 +247,7 @@ export function useGroupState<C>(
       state.getLabel() + (sm ? `:${sm.getStateSummary().label}` : ''),
     onStart: async (ctx) => {
       await state.onStart?.(ctx)
-      sm = useModeStateMachine(ctx, getInitialState)
+      sm = useModeStateMachine({ ...ctx, ...deriveCtx(ctx) }, getInitialState)
       await sm.ready
     },
     onEnd: async (ctx) => {

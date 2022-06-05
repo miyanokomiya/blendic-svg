@@ -121,9 +121,10 @@ describe('src/composables/modeStates/core.ts', () => {
         getLabel: () => 'a',
         handleEvent: async () => {},
       })
-      const groupA = useGroupState<any>(
+      const groupA = useGroupState<any, any>(
         () => groupASrc,
-        () => childAA
+        () => childAA,
+        (ctx) => ctx
       )
 
       const sm = useModeStateMachine({}, () => groupA)

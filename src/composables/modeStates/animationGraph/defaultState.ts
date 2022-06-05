@@ -107,8 +107,8 @@ const state: AnimationGraphState = {
           case 'D':
             return onDuplicate(ctx)
           case 'x':
-            updateCommandExams(ctx)
             ctx.deleteNodes()
+            updateCommandExams(ctx)
             return
         }
         return

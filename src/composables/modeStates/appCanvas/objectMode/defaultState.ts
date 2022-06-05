@@ -17,8 +17,12 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { ObjectState } from '/@/composables/modeStates/appCanvas/objectMode/core'
+import {
+  ObjectState,
+  ObjectStateContext,
+} from '/@/composables/modeStates/appCanvas/objectMode/core'
 import { usePanningState } from '/@/composables/modeStates/commons'
+import { PointerDownEvent } from '/@/composables/modeStates/core'
 
 export function useDefaultState(): ObjectState {
   return state
@@ -26,14 +30,57 @@ export function useDefaultState(): ObjectState {
 
 const state: ObjectState = {
   getLabel: () => 'DefaultState',
-  handleEvent: async (_ctx, event) => {
+  handleEvent: async (ctx, event) => {
     switch (event.type) {
       case 'pointerdown':
         switch (event.data.options.button) {
+          case 0:
+            switch (event.target.type) {
+              case 'empty':
+                return onDownEmpty(ctx)
+              case 'node-body':
+                return onDownArmature(ctx, event)
+            }
+            return
           case 1:
             return usePanningState
         }
         return
+      case 'keydown':
+        switch (event.data.key) {
+          case 'A': {
+            ctx.addArmature()
+            return
+          }
+          case 'a':
+            ctx.selectAllArmatures()
+            updateCommandExams(ctx)
+            return
+          case 'x':
+            ctx.deleteArmatures()
+            updateCommandExams(ctx)
+            return
+        }
+        return
     }
   },
+}
+
+function onDownEmpty(ctx: ObjectStateContext): void {
+  ctx.selectArmature()
+  updateCommandExams(ctx)
+}
+
+function onDownArmature(
+  ctx: ObjectStateContext,
+  event: PointerDownEvent
+): void {
+  const id = event.target.data?.['armature_id']
+  if (id) {
+    ctx.selectArmature(id)
+  }
+}
+
+function updateCommandExams(ctx: ObjectStateContext) {
+  ctx.setCommandExams([])
 }

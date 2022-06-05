@@ -18,24 +18,40 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { useGroupState } from '/@/composables/modeStates/core'
-import { ObjectState } from '/@/composables/modeStates/appCanvas/objectMode/core'
 import { useEditGroupState } from '/@/composables/modeStates/appCanvas/editGroupState'
 import { useDefaultState } from '/@/composables/modeStates/appCanvas/objectMode/defaultState'
+import {
+  AppCanvasState,
+  AppCanvasStateContext,
+} from '/@/composables/modeStates/appCanvas/core'
+import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
 
-export function useObjectGroupState(): ObjectState {
-  return useGroupState(
-    () => ({
-      getLabel: () => 'Object',
-      handleEvent: async (_, e) => {
-        switch (e.type) {
-          case 'state':
-            switch (e.data.name) {
-              case 'edit':
-                return useEditGroupState
-            }
-        }
-      },
-    }),
-    useDefaultState
+export function useObjectGroupState(): AppCanvasState {
+  return useGroupState<AppCanvasStateContext, ObjectStateContext>(
+    () => state,
+    useDefaultState,
+    (ctx) => ctx.getObjectContext()
   )
+}
+
+const state: AppCanvasState = {
+  getLabel: () => 'Object',
+  handleEvent: async (ctx, e) => {
+    switch (e.type) {
+      case 'state':
+        switch (e.data.name) {
+          case 'edit':
+            return useEditGroupState
+        }
+        return
+      case 'keydown':
+        switch (e.data.key) {
+          case 'Tab':
+            // Note: Ctrl + Tab cannot be controlled by JS
+            ctx.toggleMode(e.data.shift)
+            return
+        }
+        return
+    }
+  },
 }

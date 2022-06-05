@@ -26,7 +26,7 @@ import {
   validDraftConnection,
 } from '/@/composables/modeStates/animationGraph/utils'
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
-import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
+import { usePanningState } from '/@/composables/modeStates/commons'
 
 export function useConnectingOutputEdgeState(options: {
   nodeId: string

@@ -24,7 +24,7 @@ import type {
   AnimationGraphStateContext,
 } from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
-import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
+import { usePanningState } from '/@/composables/modeStates/commons'
 import { updateNodeInput } from '/@/composables/modeStates/animationGraph/utils'
 import { PopupMenuEvent, TransitionValue } from '/@/composables/modeStates/core'
 import { dropNullishItem } from '/@/utils/commons'

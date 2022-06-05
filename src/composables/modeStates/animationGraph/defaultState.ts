@@ -24,7 +24,7 @@ import type {
 import { useMovingNodeState } from '/@/composables/modeStates/animationGraph/movingNodeState'
 import { useGrabbingNodeState } from '/@/composables/modeStates/animationGraph/grabbingNodeState'
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
-import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
+import { usePanningState } from '/@/composables/modeStates/commons'
 import { useRectangleSelectingState } from '/@/composables/modeStates/animationGraph/rectangleSelectingState'
 import { useConnectingInputEdgeState } from '/@/composables/modeStates/animationGraph/connectingInputEdgeState'
 import { useConnectingOutputEdgeState } from '/@/composables/modeStates/animationGraph/connectingOutputEdgeState'

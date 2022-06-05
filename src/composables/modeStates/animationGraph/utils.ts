@@ -146,35 +146,6 @@ export function parseEdgeInfo(target: ModeEventTarget): {
   return { inputId, inputKey, outputId, outputKey }
 }
 
-const emptyTarget = {
-  id: '',
-  type: 'empty',
-}
-
-export function parseEventTarget(event: Event): ModeEventTarget {
-  if (!event.target) return emptyTarget
-  const target = findClosestAnchorElement(event.target as SVGElement)
-  if (!target) return emptyTarget
-
-  const id = target.dataset['id'] ?? ''
-  const type = target.dataset['type'] ?? ''
-  const data = target.dataset
-    ? Object.entries(target.dataset).reduce<Required<ModeEventTarget>['data']>(
-        (p, [k, v]) => {
-          p[k] = v ?? 'true'
-          return p
-        },
-        {}
-      )
-    : undefined
-  return { id, type, data }
-}
-
-function findClosestAnchorElement(elm: SVGElement): SVGElement | undefined {
-  const closest = elm.closest('[data-type]')
-  return closest ? (closest as SVGElement) : undefined
-}
-
 export const COMMAND_EXAM_SRC = {
   add: { command: 'A', title: 'Add' } as CommandExam,
   selectAll: { command: 'a', title: 'All Select' },

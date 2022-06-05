@@ -1,6 +1,7 @@
 import {
   ModeStateBase,
   useModeStateMachine,
+  useGroupState,
 } from '/@/composables/modeStates/core'
 
 describe('src/composables/modeStates/core.ts', () => {
@@ -104,6 +105,43 @@ describe('src/composables/modeStates/core.ts', () => {
         expect(current.onStart).toHaveBeenCalledTimes(1)
         expect(sm.getStateSummary().label).toBe('0')
       })
+    })
+  })
+
+  describe('useObjectGroupState', () => {
+    it('should create group state', async () => {
+      const childAB = getMockState({ getLabel: () => 'ab' })
+      const childAA = getMockState({
+        getLabel: () => 'aa',
+        handleEvent: async () => {
+          return () => childAB
+        },
+      })
+      const groupASrc = getMockState({
+        getLabel: () => 'a',
+        handleEvent: async () => {},
+      })
+      const groupA = useGroupState<any>(
+        () => groupASrc,
+        () => childAA
+      )
+
+      const sm = useModeStateMachine({}, () => groupA)
+      await sm.ready
+      expect(sm.getStateSummary().label).toBe('a:aa')
+      expect(groupASrc.onStart).toHaveBeenCalledTimes(1)
+      expect(childAA.onStart).toHaveBeenCalledTimes(1)
+
+      await sm.handleEvent({ type: 'state', data: { name: '' } })
+      expect(sm.getStateSummary().label).toBe('a:ab')
+      expect(groupASrc.onStart).toHaveBeenCalledTimes(1)
+      expect(groupASrc.onEnd).toHaveBeenCalledTimes(0)
+      expect(childAA.onEnd).toHaveBeenCalledTimes(1)
+      expect(childAB.onStart).toHaveBeenCalledTimes(1)
+
+      await sm.dispose()
+      expect(groupASrc.onEnd).toHaveBeenCalledTimes(1)
+      expect(childAB.onEnd).toHaveBeenCalledTimes(1)
     })
   })
 })

@@ -32,7 +32,7 @@ export type TransitionValue<C> =
 export interface ModeStateBase<C> {
   getLabel: () => string
   shouldRequestPointerLock?: boolean
-  onStart?: (ctx: C) => Promise<void>
+  onStart?: (ctx: ModeStateContextBase & C) => Promise<void>
   onEnd?: (ctx: C) => Promise<void>
   handleEvent: (ctx: C, e: ModeStateEvent) => Promise<TransitionValue<C>>
 }
@@ -42,15 +42,23 @@ type StateStackItem<C> = {
   type?: TransitionType
 }
 
+interface StateMachine {
+  getStateSummary: () => { label: string }
+  handleEvent: (event: ModeStateEvent) => Promise<void>
+  dispose: () => Promise<void>
+  // This will be resolved when "onStart" of the initial state finishes
+  ready: Promise<void>
+}
+
 export function useModeStateMachine<C>(
   ctx: ModeStateContextBase & C,
   getInitialState: () => ModeStateBase<C>
-) {
+): StateMachine {
   const stateStack: StateStackItem<C>[] = [{ state: getInitialState() }]
   function getCurrentState(): StateStackItem<C> {
     return stateStack[stateStack.length - 1]
   }
-  getCurrentState().state.onStart?.(ctx)
+  const ready = getCurrentState().state.onStart?.(ctx) ?? Promise.resolve()
 
   function getStateSummary() {
     return {
@@ -126,9 +134,17 @@ export function useModeStateMachine<C>(
     await nextState.onStart?.(ctx)
   }
 
+  async function dispose() {
+    const current = getCurrentState()
+    await current.state.onEnd?.(ctx)
+    stateStack.length = 0
+  }
+
   return {
     getStateSummary,
     handleEvent,
+    dispose,
+    ready,
   }
 }
 
@@ -147,6 +163,7 @@ export type ModeStateEvent =
   | PopupMenuEvent
   | CopyEvent
   | PasteEvent
+  | ChangeStateEvent
 
 export interface ModeStateEventBase {
   type: string
@@ -208,4 +225,38 @@ export interface CopyEvent extends ModeStateEventBase {
 export interface PasteEvent extends ModeStateEventBase {
   type: 'paste'
   nativeEvent: ClipboardEvent
+}
+
+export interface ChangeStateEvent extends ModeStateEventBase {
+  type: 'state'
+  data: {
+    name: string
+    options?: unknown
+  }
+}
+
+export function useGroupState<C>(
+  getState: () => ModeStateBase<C>,
+  getInitialState: () => ModeStateBase<C>
+): ModeStateBase<C> {
+  let sm: StateMachine | undefined
+  const state = getState()
+  return {
+    getLabel: () =>
+      state.getLabel() + (sm ? `:${sm.getStateSummary().label}` : ''),
+    onStart: async (ctx) => {
+      await state.onStart?.(ctx)
+      sm = useModeStateMachine(ctx, getInitialState)
+      await sm.ready
+    },
+    onEnd: async (ctx) => {
+      await sm!.dispose()
+      await state.onEnd?.(ctx)
+    },
+    handleEvent: async (ctx, e) => {
+      const ret = await state.handleEvent(ctx, e)
+      if (ret) return ret
+      return sm!.handleEvent(e)
+    },
+  }
 }

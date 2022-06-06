@@ -42,6 +42,7 @@ export interface EditStateContext extends CanvasStateContext {
   addBone: () => void
   updateBones: (diffMap: IdMap<Partial<Bone>>) => void
   deleteBones: () => void
+  extrudeBones: () => void
   dissolveBones: () => void
   subdivideBones: () => void
   symmetrizeBones: () => void

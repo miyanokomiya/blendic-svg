@@ -30,6 +30,13 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
       selectAllBones: jest.fn(),
       getLastSelectedBoneId: jest.fn(),
       startEditMovement: jest.fn(),
+
+      extrudeBones: jest.fn(),
+      duplicateBones: jest.fn(),
+      deleteBones: jest.fn(),
+      dissolveBones: jest.fn(),
+      subdivideBones: jest.fn(),
+      symmetrizeBones: jest.fn(),
     } as any
   }
   async function prepare() {
@@ -119,6 +126,7 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
       expect(ctx.addBone).toHaveBeenNthCalledWith(1)
       expect(ctx.setCommandExams).toHaveBeenCalled()
     })
+
     it('a: should execute "selectAllBones"', async () => {
       const { ctx, sm } = await prepare()
       await sm.handleEvent({
@@ -128,13 +136,81 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
       expect(ctx.selectAllBones).toHaveBeenNthCalledWith(1)
       expect(ctx.setCommandExams).toHaveBeenCalled()
     })
+
+    it('e: should execute "extrudeBones" and move to "Grabbing" when any bones are selected', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({ type: 'keydown', data: { key: 'e' } })
+      expect(ctx.extrudeBones).not.toHaveBeenCalled()
+      expect(sm.getStateSummary().label).toBe('Default')
+
+      ctx.getLastSelectedBoneId.mockReturnValue('a')
+      await sm.handleEvent({ type: 'keydown', data: { key: 'e' } })
+      expect(ctx.extrudeBones).toHaveBeenNthCalledWith(1)
+      expect(sm.getStateSummary().label).toBe('Grabbing')
+    })
+
     it('g: should move to "Grabbing" when any bones are selected', async () => {
       const { sm, ctx } = await prepare()
       await sm.handleEvent({ type: 'keydown', data: { key: 'g' } })
       expect(sm.getStateSummary().label).toBe('Default')
+
       ctx.getLastSelectedBoneId.mockReturnValue('a')
       await sm.handleEvent({ type: 'keydown', data: { key: 'g' } })
       expect(sm.getStateSummary().label).toBe('Grabbing')
+    })
+
+    it('D: should execute "duplicateBones" and move to "Grabbing" when any bones are selected', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({ type: 'keydown', data: { key: 'D' } })
+      expect(ctx.duplicateBones).not.toHaveBeenCalled()
+      expect(sm.getStateSummary().label).toBe('Default')
+
+      ctx.getLastSelectedBoneId.mockReturnValue('a')
+      await sm.handleEvent({ type: 'keydown', data: { key: 'D' } })
+      expect(ctx.duplicateBones).toHaveBeenNthCalledWith(1)
+      expect(sm.getStateSummary().label).toBe('Grabbing')
+    })
+  })
+
+  describe('popupmenu', () => {
+    it('delete: should execute "deleteBones"', async () => {
+      const { ctx, sm } = await prepare()
+      await sm.handleEvent({
+        type: 'popupmenu',
+        data: { key: 'delete' },
+      })
+      expect(ctx.deleteBones).toHaveBeenNthCalledWith(1)
+      expect(ctx.setCommandExams).toHaveBeenCalled()
+    })
+
+    it('dissolve: should execute "dissolveBones"', async () => {
+      const { ctx, sm } = await prepare()
+      await sm.handleEvent({
+        type: 'popupmenu',
+        data: { key: 'dissolve' },
+      })
+      expect(ctx.dissolveBones).toHaveBeenNthCalledWith(1)
+      expect(ctx.setCommandExams).toHaveBeenCalled()
+    })
+
+    it('subdivide: should execute "subdivideBones"', async () => {
+      const { ctx, sm } = await prepare()
+      await sm.handleEvent({
+        type: 'popupmenu',
+        data: { key: 'subdivide' },
+      })
+      expect(ctx.subdivideBones).toHaveBeenNthCalledWith(1)
+      expect(ctx.setCommandExams).toHaveBeenCalled()
+    })
+
+    it('symmetrize: should execute "symmetrizeBones"', async () => {
+      const { ctx, sm } = await prepare()
+      await sm.handleEvent({
+        type: 'popupmenu',
+        data: { key: 'symmetrize' },
+      })
+      expect(ctx.symmetrizeBones).toHaveBeenNthCalledWith(1)
+      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
   })
 })

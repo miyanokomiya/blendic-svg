@@ -8,16 +8,18 @@ import {
   ModeStateContextBase,
   useModeStateMachine,
 } from '/@/composables/modeStates/core'
-import { BoneSelectedState, IdMap, toMap } from '/@/models'
+import { Bone, BoneSelectedState, IdMap, toMap } from '/@/models'
 import { IndexStore } from '/@/store'
 import { CanvasStore } from '/@/store/canvas'
 import {
   duplicateBones,
+  extrudeFromParent,
   subdivideBones,
   symmetrizeBones,
 } from '/@/utils/armatures'
 import { mapReduce, toList } from '/@/utils/commons'
 import { generateUuid } from '/@/utils/random'
+import { getNotDuplicatedName } from '/@/utils/relations'
 
 type Option = {
   indexStore: IndexStore
@@ -108,6 +110,38 @@ function createEditContext(options: Option): EditStateContext {
     addBone: indexStore.addBone,
     updateBones: indexStore.updateBones,
     deleteBones: indexStore.deleteBone,
+    extrudeBones: () => {
+      const bones = indexStore.boneMap.value
+      const selectedBones = indexStore.selectedBones.value
+      const names = Object.values(bones).map((b) => b.name)
+      const shouldSkipBones: IdMap<boolean> = {}
+      const extrudedBones: Bone[] = []
+
+      Object.keys(selectedBones).forEach((id) => {
+        const selectedState = selectedBones[id]
+        const parent = bones[id]
+
+        const targetBones: Bone[] = []
+        if (selectedState.tail) targetBones.push(extrudeFromParent(parent))
+        if (selectedState.head)
+          targetBones.push(extrudeFromParent(parent, true))
+
+        targetBones.forEach((b) => {
+          // prevent to extruding from same parent
+          if (!shouldSkipBones[b.parentId]) {
+            b.name = getNotDuplicatedName(parent.name, names)
+            extrudedBones.push(b)
+            names.push(b.name)
+            shouldSkipBones[b.parentId] = true
+          }
+        })
+      })
+
+      // grab the new bones if its are extruded
+      if (extrudedBones.length > 0) {
+        indexStore.addBones(extrudedBones, { tail: true })
+      }
+    },
     dissolveBones: indexStore.dissolveBone,
     subdivideBones: () => {
       const upsertedBones = subdivideBones(

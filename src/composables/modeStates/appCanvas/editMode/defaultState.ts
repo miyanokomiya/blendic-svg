@@ -67,6 +67,15 @@ const state: EditState = {
             ctx.addBone()
             updateCommandExams(ctx)
             return
+          case 'x':
+            // TODO: Move to Deleting
+            return
+          case 'e':
+            if (ctx.getLastSelectedBoneId()) {
+              ctx.extrudeBones()
+              return useGrabbingState
+            }
+            return
           case 'g':
             if (ctx.getLastSelectedBoneId()) {
               return useGrabbingState

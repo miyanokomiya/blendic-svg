@@ -28,6 +28,8 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
       setCommandExams: jest.fn(),
       addBone: jest.fn(),
       selectAllBones: jest.fn(),
+      getLastSelectedBoneId: jest.fn(),
+      startEditMovement: jest.fn(),
     } as any
   }
   async function prepare() {
@@ -125,6 +127,14 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
       })
       expect(ctx.selectAllBones).toHaveBeenNthCalledWith(1)
       expect(ctx.setCommandExams).toHaveBeenCalled()
+    })
+    it('g: should move to "Grabbing" when any bones are selected', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({ type: 'keydown', data: { key: 'g' } })
+      expect(sm.getStateSummary().label).toBe('Default')
+      ctx.getLastSelectedBoneId.mockReturnValue('a')
+      await sm.handleEvent({ type: 'keydown', data: { key: 'g' } })
+      expect(sm.getStateSummary().label).toBe('Grabbing')
     })
   })
 })

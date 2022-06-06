@@ -17,14 +17,17 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { IVec2 } from 'okageo'
 import { SelectOptions } from '/@/composables/modes/types'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
-import { Bone, BoneSelectedState, IdMap } from '/@/models'
+import { Bone, BoneSelectedState, IdMap, Transform } from '/@/models'
+import { AxisGridInfo } from '/@/store/canvas'
 
 export interface EditStateContext extends CanvasStateContext {
   getBones: () => IdMap<Bone>
   getLastSelectedBoneId: () => string | undefined
+  getSelectedBones: () => IdMap<BoneSelectedState>
   selectBone: (
     id?: string,
     selectedState?: BoneSelectedState,
@@ -37,11 +40,18 @@ export interface EditStateContext extends CanvasStateContext {
   ) => void
   selectAllBones: () => void
   addBone: () => void
+  updateBones: (diffMap: IdMap<Partial<Bone>>) => void
   deleteBones: () => void
   dissolveBones: () => void
   subdivideBones: () => void
   symmetrizeBones: () => void
   duplicateBones: () => void
+
+  setEditTransform: (val?: Transform) => void
+  completeEditTransform: () => void
+  setAxisGridInfo: (val?: AxisGridInfo) => void
+  getAxisGridInfo: () => AxisGridInfo
+  snapTranslate: (size: number, translate: IVec2) => IVec2
 }
 
 export interface EditState extends ModeStateBase<EditStateContext> {}

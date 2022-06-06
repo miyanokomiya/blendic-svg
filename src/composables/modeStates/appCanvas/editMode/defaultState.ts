@@ -22,6 +22,7 @@ import {
   EditStateContext,
 } from '/@/composables/modeStates/appCanvas/editMode/core'
 import { usePanningState } from '/@/composables/modeStates/commons'
+import { useGrabbingState } from '/@/composables/modeStates/appCanvas/editMode/grabbingState'
 import { BoneSelectedState } from '/@/models'
 
 export function useDefaultState(): EditState {
@@ -65,6 +66,11 @@ const state: EditState = {
           case 'A':
             ctx.addBone()
             updateCommandExams(ctx)
+            return
+          case 'g':
+            if (ctx.getLastSelectedBoneId()) {
+              return useGrabbingState
+            }
             return
         }
     }

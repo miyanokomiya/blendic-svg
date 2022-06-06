@@ -12,6 +12,8 @@ exports[`src/components/elements/BoneLayer.vue snapshot defalut 1`] = `
     title=""
   >
     <g
+      data-id="a"
+      data-type="bone-body"
       stroke-linejoin="bevel"
     >
       <path
@@ -25,12 +27,16 @@ exports[`src/components/elements/BoneLayer.vue snapshot defalut 1`] = `
     <circle
       cx="0"
       cy="0"
+      data-id="a"
+      data-type="bone-head"
       fill=""
       r="2"
     />
     <circle
       cx="10"
       cy="10"
+      data-id="a"
+      data-type="bone-tail"
       fill=""
       r="2"
     />
@@ -53,6 +59,8 @@ exports[`src/components/elements/BoneLayer.vue snapshot pose mode 1`] = `
     title=""
   >
     <g
+      data-id="a"
+      data-type="bone-body"
       stroke-linejoin="bevel"
     >
       <path
@@ -66,12 +74,16 @@ exports[`src/components/elements/BoneLayer.vue snapshot pose mode 1`] = `
     <circle
       cx="0"
       cy="0"
+      data-id="a"
+      data-type="bone-head"
       fill=""
       r="2"
     />
     <circle
       cx="10"
       cy="10"
+      data-id="a"
+      data-type="bone-tail"
       fill=""
       r="2"
     />
@@ -94,6 +106,8 @@ exports[`src/components/elements/BoneLayer.vue snapshot selected 1`] = `
     title=""
   >
     <g
+      data-id="a"
+      data-type="bone-body"
       stroke-linejoin="bevel"
     >
       <path
@@ -107,12 +121,16 @@ exports[`src/components/elements/BoneLayer.vue snapshot selected 1`] = `
     <circle
       cx="0"
       cy="0"
+      data-id="a"
+      data-type="bone-head"
       fill=""
       r="2"
     />
     <circle
       cx="10"
       cy="10"
+      data-id="a"
+      data-type="bone-tail"
       fill=""
       r="2"
     />

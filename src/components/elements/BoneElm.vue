@@ -27,6 +27,8 @@ Copyright (C) 2021, Tomoya Komiyama.
   >
     <g
       stroke-linejoin="bevel"
+      :data-type="readOnly ? undefined : 'bone-body'"
+      :data-id="readOnly ? undefined : bone.id"
       @click="click($event, { head: true, tail: true })"
     >
       <path :d="headPath" :fill="fillDark" />
@@ -37,6 +39,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       :cx="head.x"
       :cy="head.y"
       :fill="fillHead"
+      :data-type="readOnly ? undefined : 'bone-head'"
+      :data-id="readOnly ? undefined : bone.id"
       @click="click($event, { head: true })"
     ></circle>
     <circle
@@ -44,6 +48,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       :cx="tail.x"
       :cy="tail.y"
       :fill="fillTail"
+      :data-type="readOnly ? undefined : 'bone-tail'"
+      :data-id="readOnly ? undefined : bone.id"
       @click="click($event, { tail: true })"
     ></circle>
     <line
@@ -110,6 +116,10 @@ export default defineComponent({
       default: () => ({}),
     },
     poseMode: {
+      type: Boolean,
+      default: false,
+    },
+    readOnly: {
       type: Boolean,
       default: false,
     },

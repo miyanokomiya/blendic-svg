@@ -29,7 +29,7 @@ export function useDefaultState(): ObjectState {
 }
 
 const state: ObjectState = {
-  getLabel: () => 'DefaultState',
+  getLabel: () => 'Default',
   handleEvent: async (ctx, event) => {
     switch (event.type) {
       case 'pointerdown':
@@ -38,7 +38,7 @@ const state: ObjectState = {
             switch (event.target.type) {
               case 'empty':
                 return onDownEmpty(ctx)
-              case 'node-body':
+              case 'armature-body':
                 return onDownArmature(ctx, event)
             }
             return
@@ -50,6 +50,7 @@ const state: ObjectState = {
         switch (event.data.key) {
           case 'A': {
             ctx.addArmature()
+            updateCommandExams(ctx)
             return
           }
           case 'a':
@@ -75,9 +76,10 @@ function onDownArmature(
   ctx: ObjectStateContext,
   event: PointerDownEvent
 ): void {
-  const id = event.target.data?.['armature_id']
+  const id = event.target.id
   if (id) {
     ctx.selectArmature(id)
+    updateCommandExams(ctx)
   }
 }
 

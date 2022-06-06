@@ -25,7 +25,7 @@ export function useDefaultState(): EditState {
 }
 
 const state: EditState = {
-  getLabel: () => 'DefaultState',
+  getLabel: () => 'Default',
   handleEvent: async (_ctx, event) => {
     switch (event.type) {
       case 'pointerdown':

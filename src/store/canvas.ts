@@ -50,7 +50,7 @@ import { AnimationStore, useAnimationStore } from '/@/store/animation'
 import { ElementStore, useElementStore } from '/@/store/element'
 import {
   addPoseTransform,
-  editTransform,
+  editTransform as applyEditTransform,
   getTransformedBoneMap,
   posedTransform,
 } from '/@/utils/armatures'
@@ -82,6 +82,7 @@ export function createStore(
   const pastCanvasMode = ref<CanvasMode>('edit')
   const axisGridInfo = ref<AxisGridInfo>()
   const lastSelectedBoneSpace = ref<{ radian: number; origin: IVec2 }>()
+  const editTransform = ref<Transform>()
 
   const canvasMode = canvasModeStore.state
 
@@ -172,7 +173,7 @@ export function createStore(
     if (canvasMode.value === 'edit') {
       return toMap(
         toList(indexStore.boneMap.value).map((b) => {
-          return editTransform(
+          return applyEditTransform(
             b,
             getEditTransforms(b.id),
             indexStore.selectedBones.value[b.id] || {}
@@ -236,6 +237,11 @@ export function createStore(
   function setCanvasMode(canvasMode: CanvasMode) {
     historyStore.dispatch(canvasModeStore.createUpdateAction(canvasMode))
   }
+
+  function setAxisGridInfo(val: AxisGridInfo | undefined) {
+    axisGridInfo.value = val
+  }
+
   function toggleAxisGridInfo(axis: AxisGrid) {
     const unit = axis === 'x' ? { x: 1, y: 0 } : { x: 0, y: 1 }
 
@@ -431,6 +437,7 @@ export function createStore(
     selectedBonesOrigin,
     changeCanvasMode,
     toggleCanvasMode,
+    setAxisGridInfo,
 
     snapScaleDiff,
     snapTranslate,
@@ -460,6 +467,11 @@ export function createStore(
     posedBoneMap,
     visibledBoneMap,
     lastSelectedBoneSpace: computed(() => lastSelectedBoneSpace.value),
+
+    setEditTransform: (val: Transform | undefined) => {
+      editTransform.value = val
+    },
+    completeEditTransform: () => {},
   }
 }
 

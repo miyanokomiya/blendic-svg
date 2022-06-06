@@ -72,6 +72,32 @@ const state: EditState = {
               return useGrabbingState
             }
             return
+          case 'D':
+            if (ctx.getLastSelectedBoneId()) {
+              ctx.duplicateBones()
+              return useGrabbingState
+            }
+            return
+        }
+        return
+      case 'popupmenu':
+        switch (event.data.key) {
+          case 'delete':
+            ctx.deleteBones()
+            updateCommandExams(ctx)
+            return
+          case 'dissolve':
+            ctx.dissolveBones()
+            updateCommandExams(ctx)
+            return
+          case 'subdivide':
+            ctx.subdivideBones()
+            updateCommandExams(ctx)
+            return
+          case 'symmetrize':
+            ctx.symmetrizeBones()
+            updateCommandExams(ctx)
+            return
         }
     }
   },

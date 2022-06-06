@@ -36,6 +36,7 @@ const state: EditState = {
   },
   onEnd: async (ctx) => {
     ctx.setAxisGridInfo()
+    ctx.setEditMovement()
   },
   handleEvent: async (ctx, event) => {
     switch (event.type) {
@@ -51,16 +52,14 @@ const state: EditState = {
         if (event.data.options.button === 0) {
           ctx.completeEditTransform()
         }
-        ctx.setEditMovement()
         return useDefaultState
       }
       case 'keydown':
         switch (event.data.key) {
           case 'Escape':
-            ctx.setEditMovement()
             return useDefaultState
           case 'x':
-            if (ctx.getAxisGridInfo().axis === 'x') {
+            if (ctx.getAxisGridInfo()?.axis === 'x') {
               ctx.setAxisGridInfo()
             } else {
               ctx.setAxisGridInfo({
@@ -75,7 +74,7 @@ const state: EditState = {
             }
             return
           case 'y':
-            if (ctx.getAxisGridInfo().axis === 'y') {
+            if (ctx.getAxisGridInfo()?.axis === 'y') {
               ctx.setAxisGridInfo()
             } else {
               ctx.setAxisGridInfo({

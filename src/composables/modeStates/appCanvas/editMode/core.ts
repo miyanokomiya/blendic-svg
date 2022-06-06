@@ -50,7 +50,7 @@ export interface EditStateContext extends CanvasStateContext {
   setEditTransform: (val?: Transform) => void
   completeEditTransform: () => void
   setAxisGridInfo: (val?: AxisGridInfo) => void
-  getAxisGridInfo: () => AxisGridInfo
+  getAxisGridInfo: () => AxisGridInfo | undefined
   snapTranslate: (size: number, translate: IVec2) => IVec2
 }
 

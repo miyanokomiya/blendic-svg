@@ -50,6 +50,7 @@ describe('src/composables/modeStates/appCanvas/editMode/grabbingState.ts', () =>
       expect(ctx.startEditMovement).toHaveBeenNthCalledWith(1)
     })
   })
+
   describe('onEnd', () => {
     it('should execute "startEditMovement"', async () => {
       const { ctx, sm } = await prepare()

@@ -23,6 +23,7 @@ import {
 } from '/@/composables/modeStates/appCanvas/editMode/core'
 import { usePanningState } from '/@/composables/modeStates/commons'
 import { useGrabbingState } from '/@/composables/modeStates/appCanvas/editMode/grabbingState'
+import { useDeletingState } from '/@/composables/modeStates/appCanvas/editMode/deletingState'
 import { BoneSelectedState } from '/@/models'
 
 export function useDefaultState(): EditState {
@@ -51,12 +52,14 @@ const state: EditState = {
                 )
                 updateCommandExams(ctx)
                 return
+              default:
+                return
             }
-            return
           case 1:
             return usePanningState
+          default:
+            return
         }
-        return
       case 'keydown':
         switch (event.data.key) {
           case 'a':
@@ -67,9 +70,13 @@ const state: EditState = {
             ctx.addBone()
             updateCommandExams(ctx)
             return
-          case 'x':
-            // TODO: Move to Deleting
+          case 'x': {
+            if (ctx.getLastSelectedBoneId()) {
+              const point = event.point
+              return point ? () => useDeletingState({ point }) : undefined
+            }
             return
+          }
           case 'e':
             if (ctx.getLastSelectedBoneId()) {
               ctx.extrudeBones()
@@ -87,8 +94,9 @@ const state: EditState = {
               return useGrabbingState
             }
             return
+          default:
+            return
         }
-        return
       case 'popupmenu':
         switch (event.data.key) {
           case 'delete':
@@ -106,6 +114,8 @@ const state: EditState = {
           case 'symmetrize':
             ctx.symmetrizeBones()
             updateCommandExams(ctx)
+            return
+          default:
             return
         }
     }

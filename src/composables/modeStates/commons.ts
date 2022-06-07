@@ -51,7 +51,7 @@ export function usePanningState(): CanvasState {
   return panningState
 }
 const panningState: CanvasState = {
-  getLabel: () => 'PanningState',
+  getLabel: () => 'Panning',
   shouldRequestPointerLock: true,
   handleEvent: async (ctx, event) => {
     switch (event.type) {

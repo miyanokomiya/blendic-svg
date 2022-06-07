@@ -30,6 +30,7 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
       selectAllBones: jest.fn(),
       getLastSelectedBoneId: jest.fn(),
       startEditMovement: jest.fn(),
+      setPopupMenuList: jest.fn(),
 
       extrudeBones: jest.fn(),
       duplicateBones: jest.fn(),
@@ -105,14 +106,14 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
   })
 
   describe('handle pointerdown: button 1', () => {
-    it('should move to PanningState', async () => {
+    it('should move to Panning', async () => {
       const { sm } = await prepare()
       await sm.handleEvent({
         type: 'pointerdown',
         target: { type: '', id: '' },
         data: { point: { x: 0, y: 0 }, options: { button: 1 } },
       })
-      expect(sm.getStateSummary().label).toBe('PanningState')
+      expect(sm.getStateSummary().label).toBe('Panning')
     })
   })
 
@@ -135,6 +136,24 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
       })
       expect(ctx.selectAllBones).toHaveBeenNthCalledWith(1)
       expect(ctx.setCommandExams).toHaveBeenCalled()
+    })
+
+    it('x: should move to "Deleting" when any bones are selected', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({
+        type: 'keydown',
+        point: { x: 10, y: 20 },
+        data: { key: 'x' },
+      })
+      expect(sm.getStateSummary().label).toBe('Default')
+
+      ctx.getLastSelectedBoneId.mockReturnValue('a')
+      await sm.handleEvent({
+        type: 'keydown',
+        point: { x: 10, y: 20 },
+        data: { key: 'x' },
+      })
+      expect(sm.getStateSummary().label).toBe('Deleting')
     })
 
     it('e: should execute "extrudeBones" and move to "Grabbing" when any bones are selected', async () => {

@@ -18,14 +18,14 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { getMockEditCtx } from 'spec/composables/modeStates/appCanvas/mocks'
-import { useGrabbingState } from 'src/composables/modeStates/appCanvas/editMode/grabbingState'
+import { useRotatingState } from 'src/composables/modeStates/appCanvas/editMode/rotatingState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
-import { getTransform } from '/@/models'
+import { getBone, getTransform } from '/@/models'
 
-describe('src/composables/modeStates/appCanvas/editMode/grabbingState.ts', () => {
+describe('src/composables/modeStates/appCanvas/editMode/rotatingState.ts', () => {
   async function prepare() {
     const ctx = getMockEditCtx()
-    const sm = useModeStateMachine(ctx, useGrabbingState)
+    const sm = useModeStateMachine(ctx, useRotatingState)
     await sm.ready
     return { sm, ctx }
   }
@@ -49,36 +49,40 @@ describe('src/composables/modeStates/appCanvas/editMode/grabbingState.ts', () =>
   describe('handle pointermove', () => {
     it('empty: should execute "setEditTransform"', async () => {
       const { ctx, sm } = await prepare()
+      ctx.getBones.mockReturnValue({
+        a: getBone({ tail: { x: 10, y: 0 } }),
+      })
+      ctx.getSelectedBones.mockReturnValue({
+        a: getBone({ transform: getTransform({ translate: { x: 10, y: 0 } }) }),
+      })
+
       await sm.handleEvent({
         type: 'pointermove',
         data: {
-          start: { x: 1, y: 2 },
-          current: { x: 11, y: 22 },
+          start: { x: 10, y: 0 },
+          current: { x: 10, y: 5 },
           scale: 1,
         },
       })
-      expect(ctx.snapTranslate).toHaveBeenNthCalledWith(1, 0, { x: 10, y: 20 })
       expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
         1,
-        getTransform({
-          translate: { x: 100, y: 200 },
-        })
+        getTransform({ rotate: 45, origin: { x: 5, y: 0 } })
       )
 
       // Activate snapping by "ctrl"
       await sm.handleEvent({
         type: 'pointermove',
         data: {
-          start: { x: 1, y: 2 },
-          current: { x: 11, y: 22 },
+          start: { x: 10, y: 0 },
+          current: { x: 10, y: 4 },
           scale: 1,
           ctrl: true,
         },
       })
-      expect(ctx.snapTranslate).toHaveBeenNthCalledWith(2, 10, {
-        x: 10,
-        y: 20,
-      })
+      expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
+        2,
+        getTransform({ rotate: 45, origin: { x: 5, y: 0 } })
+      )
     })
   })
 
@@ -113,54 +117,6 @@ describe('src/composables/modeStates/appCanvas/editMode/grabbingState.ts', () =>
         data: { key: 'Escape' },
       })
       expect(sm.getStateSummary().label).toBe('Default')
-    })
-
-    it('x: should execute "setAxisGridInfo" to toggle axis "x"', async () => {
-      const { ctx, sm } = await prepare()
-      const val = {
-        axis: 'x',
-        local: false,
-        vec: { x: 1, y: 0 },
-        origin: expect.anything(),
-      }
-
-      ctx.getAxisGridInfo.mockReturnValue(undefined)
-      await sm.handleEvent({
-        type: 'keydown',
-        data: { key: 'x' },
-      })
-      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1, val)
-
-      ctx.getAxisGridInfo.mockReturnValue(val)
-      await sm.handleEvent({
-        type: 'keydown',
-        data: { key: 'x' },
-      })
-      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(2)
-    })
-
-    it('y: should execute "setAxisGridInfo" to toggle axis "y"', async () => {
-      const { ctx, sm } = await prepare()
-      const val = {
-        axis: 'y',
-        local: false,
-        vec: { x: 0, y: 1 },
-        origin: expect.anything(),
-      }
-
-      ctx.getAxisGridInfo.mockReturnValue(undefined)
-      await sm.handleEvent({
-        type: 'keydown',
-        data: { key: 'y' },
-      })
-      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1, val)
-
-      ctx.getAxisGridInfo.mockReturnValue(val)
-      await sm.handleEvent({
-        type: 'keydown',
-        data: { key: 'y' },
-      })
-      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(2)
     })
   })
 })

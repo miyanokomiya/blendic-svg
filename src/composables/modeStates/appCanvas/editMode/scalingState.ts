@@ -17,19 +17,19 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { sub } from 'okageo'
+import { getDistance, multi } from 'okageo'
 import { EditState } from '/@/composables/modeStates/appCanvas/editMode/core'
 import { useDefaultState } from '/@/composables/modeStates/appCanvas/editMode/defaultState'
 import { getTransform } from '/@/models'
 import { getSelectedBonesOrigin } from '/@/utils/armatures'
-import { getGridSize } from '/@/utils/geometry'
+import { isOppositeSide, snapScale } from '/@/utils/geometry'
 
-export function useGrabbingState(): EditState {
+export function useScalingState(): EditState {
   return state
 }
 
 const state: EditState = {
-  getLabel: () => 'Grabbing',
+  getLabel: () => 'Scaling',
   shouldRequestPointerLock: true,
   onStart: async (ctx) => {
     ctx.startEditMovement()
@@ -41,11 +41,23 @@ const state: EditState = {
   handleEvent: async (ctx, event) => {
     switch (event.type) {
       case 'pointermove': {
-        const translate = ctx.snapTranslate(
-          event.data.ctrl ? getGridSize(event.data.scale) : 0,
-          sub(event.data.current, event.data.start)
+        const origin = getSelectedBonesOrigin(
+          ctx.getBones(),
+          ctx.getSelectedBones()
         )
-        ctx.setEditTransform(getTransform({ translate }))
+        const opposite = isOppositeSide(
+          origin,
+          event.data.start,
+          event.data.current
+        )
+        const scale = multi(
+          multi({ x: 1, y: 1 }, opposite ? -1 : 1),
+          getDistance(event.data.current, origin) /
+            getDistance(event.data.start, origin)
+        )
+        const gridScale = event.data.ctrl ? snapScale(scale) : scale
+        const snappedScale = ctx.snapScaleDiff(gridScale)
+        ctx.setEditTransform(getTransform({ scale: snappedScale, origin }))
         return
       }
       case 'pointerup': {

@@ -24,6 +24,7 @@ import {
 import { usePanningState } from '/@/composables/modeStates/commons'
 import { useGrabbingState } from '/@/composables/modeStates/appCanvas/editMode/grabbingState'
 import { useRotatingState } from '/@/composables/modeStates/appCanvas/editMode/rotatingState'
+import { useScalingState } from '/@/composables/modeStates/appCanvas/editMode/scalingState'
 import { useDeletingState } from '/@/composables/modeStates/appCanvas/editMode/deletingState'
 import { BoneSelectedState } from '/@/models'
 
@@ -95,6 +96,11 @@ const state: EditState = {
           case 'r':
             if (ctx.getLastSelectedBoneId()) {
               return useRotatingState
+            }
+            return
+          case 's':
+            if (ctx.getLastSelectedBoneId()) {
+              return useScalingState
             }
             return
           case 'D':

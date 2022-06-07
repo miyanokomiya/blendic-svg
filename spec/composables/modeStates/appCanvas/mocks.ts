@@ -53,6 +53,7 @@ export function getMockEditCtx() {
     subdivideBones: jest.fn(),
     symmetrizeBones: jest.fn(),
     snapTranslate: jest.fn().mockReturnValue({ x: 100, y: 200 }),
+    snapScaleDiff: jest.fn().mockReturnValue({ x: 0.1, y: 0.2 }),
     setEditTransform: jest.fn(),
     completeEditTransform: jest.fn(),
     setAxisGridInfo: jest.fn(),

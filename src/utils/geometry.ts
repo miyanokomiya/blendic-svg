@@ -34,6 +34,7 @@ import {
   rotate as rotateVector2,
   sub,
   circleClamp,
+  getInner,
 } from 'okageo'
 import { Bone, getTransform, scaleRate, Transform } from '/@/models'
 
@@ -419,4 +420,8 @@ export function snapPlainGrid(
     y: Math.round(rotated.y / size) * size,
   }
   return rotate(snapped, radian)
+}
+
+export function isOppositeSide(origin: IVec2, a: IVec2, b: IVec2): boolean {
+  return getInner(sub(a, origin), sub(b, origin)) < 0
 }

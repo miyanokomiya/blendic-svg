@@ -18,14 +18,14 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { getMockEditCtx } from 'spec/composables/modeStates/appCanvas/mocks'
-import { useRotatingState } from 'src/composables/modeStates/appCanvas/editMode/rotatingState'
+import { useScalingState } from 'src/composables/modeStates/appCanvas/editMode/scalingState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 import { getBone, getTransform } from '/@/models'
 
-describe('src/composables/modeStates/appCanvas/editMode/rotatingState.ts', () => {
+describe('src/composables/modeStates/appCanvas/editMode/scalingState.ts', () => {
   async function prepare() {
     const ctx = getMockEditCtx()
-    const sm = useModeStateMachine(ctx, useRotatingState)
+    const sm = useModeStateMachine(ctx, useScalingState)
     await sm.ready
     return { sm, ctx }
   }
@@ -52,9 +52,7 @@ describe('src/composables/modeStates/appCanvas/editMode/rotatingState.ts', () =>
       ctx.getBones.mockReturnValue({
         a: getBone({ tail: { x: 10, y: 0 } }),
       })
-      ctx.getSelectedBones.mockReturnValue({
-        a: { head: true, tail: true },
-      })
+      ctx.getSelectedBones.mockReturnValue({ a: { head: true, tail: true } })
 
       await sm.handleEvent({
         type: 'pointermove',
@@ -66,8 +64,12 @@ describe('src/composables/modeStates/appCanvas/editMode/rotatingState.ts', () =>
       })
       expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
         1,
-        getTransform({ rotate: 45, origin: { x: 5, y: 0 } })
+        getTransform({ scale: { x: 0.1, y: 0.2 }, origin: { x: 5, y: 0 } })
       )
+      expect(ctx.snapScaleDiff).not.toHaveBeenNthCalledWith(1, {
+        x: 1.3,
+        y: 1.3,
+      })
 
       // Activate snapping by "ctrl"
       await sm.handleEvent({
@@ -79,10 +81,7 @@ describe('src/composables/modeStates/appCanvas/editMode/rotatingState.ts', () =>
           ctrl: true,
         },
       })
-      expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
-        2,
-        getTransform({ rotate: 45, origin: { x: 5, y: 0 } })
-      )
+      expect(ctx.snapScaleDiff).toHaveBeenNthCalledWith(2, { x: 1.3, y: 1.3 })
     })
   })
 
@@ -117,6 +116,54 @@ describe('src/composables/modeStates/appCanvas/editMode/rotatingState.ts', () =>
         data: { key: 'Escape' },
       })
       expect(sm.getStateSummary().label).toBe('Default')
+    })
+
+    it('x: should execute "setAxisGridInfo" to toggle axis "x"', async () => {
+      const { ctx, sm } = await prepare()
+      const val = {
+        axis: 'x',
+        local: false,
+        vec: { x: 1, y: 0 },
+        origin: expect.anything(),
+      }
+
+      ctx.getAxisGridInfo.mockReturnValue(undefined)
+      await sm.handleEvent({
+        type: 'keydown',
+        data: { key: 'x' },
+      })
+      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1, val)
+
+      ctx.getAxisGridInfo.mockReturnValue(val)
+      await sm.handleEvent({
+        type: 'keydown',
+        data: { key: 'x' },
+      })
+      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(2)
+    })
+
+    it('y: should execute "setAxisGridInfo" to toggle axis "y"', async () => {
+      const { ctx, sm } = await prepare()
+      const val = {
+        axis: 'y',
+        local: false,
+        vec: { x: 0, y: 1 },
+        origin: expect.anything(),
+      }
+
+      ctx.getAxisGridInfo.mockReturnValue(undefined)
+      await sm.handleEvent({
+        type: 'keydown',
+        data: { key: 'y' },
+      })
+      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1, val)
+
+      ctx.getAxisGridInfo.mockReturnValue(val)
+      await sm.handleEvent({
+        type: 'keydown',
+        data: { key: 'y' },
+      })
+      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(2)
     })
   })
 })

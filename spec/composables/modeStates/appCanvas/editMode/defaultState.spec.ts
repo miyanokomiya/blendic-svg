@@ -197,6 +197,16 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
       expect(sm.getStateSummary().label).toBe('Rotating')
     })
 
+    it('s: should move to "Scaling" when any bones are selected', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({ type: 'keydown', data: { key: 's' } })
+      expect(sm.getStateSummary().label).toBe('Default')
+
+      ctx.getLastSelectedBoneId.mockReturnValue('a')
+      await sm.handleEvent({ type: 'keydown', data: { key: 's' } })
+      expect(sm.getStateSummary().label).toBe('Scaling')
+    })
+
     it('D: should execute "duplicateBones" and move to "Grabbing" when any bones are selected', async () => {
       const { sm, ctx } = await prepare()
       await sm.handleEvent({ type: 'keydown', data: { key: 'D' } })

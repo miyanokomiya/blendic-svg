@@ -17,14 +17,18 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import {
+  getMockEditCtx,
+  getMockObjectCtx,
+} from 'spec/composables/modeStates/appCanvas/mocks'
 import { useEditGroupState } from '/@/composables/modeStates/appCanvas/editGroupState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 
-describe('src/composables/modeStates/appCanvas/objectGroupState.ts', () => {
+describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
   function getMockCtx() {
     return {
-      getObjectContext: jest.fn(),
-      getEditContext: jest.fn(),
+      getObjectContext: getMockObjectCtx,
+      getEditContext: getMockEditCtx,
       toggleMode: jest.fn(),
     } as any
   }

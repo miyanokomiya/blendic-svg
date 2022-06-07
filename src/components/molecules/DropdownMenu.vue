@@ -74,8 +74,8 @@ export default defineComponent({
       toggle() {
         opened.value = !opened.value
       },
-      exec(fn: () => void) {
-        fn()
+      exec(fn?: () => void) {
+        fn?.()
         opened.value = false
       },
     }

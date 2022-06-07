@@ -60,7 +60,7 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
   })
 
   describe('handle pointerdown: button 1', () => {
-    it('should move to PanningState', async () => {
+    it('should move to Panning', async () => {
       const ctx = getMockCtx()
       const sm = useModeStateMachine(ctx, useDefaultState)
       await sm.ready
@@ -69,7 +69,7 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
         target: { type: '', id: '' },
         data: { point: { x: 0, y: 0 }, options: { button: 1 } },
       })
-      expect(sm.getStateSummary().label).toBe('PanningState')
+      expect(sm.getStateSummary().label).toBe('Panning')
     })
   })
 

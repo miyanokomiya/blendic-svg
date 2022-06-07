@@ -32,6 +32,9 @@ export function useDefaultState(): EditState {
 
 const state: EditState = {
   getLabel: () => 'Default',
+  onStart: async (ctx) => {
+    onChangeSelection(ctx)
+  },
   handleEvent: async (ctx, event) => {
     switch (event.type) {
       case 'pointerdown':
@@ -40,7 +43,7 @@ const state: EditState = {
             switch (event.target.type) {
               case 'empty':
                 ctx.selectBone()
-                updateCommandExams(ctx)
+                onChangeSelection(ctx)
                 return
               case 'bone-body':
               case 'bone-head':
@@ -50,7 +53,7 @@ const state: EditState = {
                   getBoneSelectedState(event.target.type),
                   event.data.options
                 )
-                updateCommandExams(ctx)
+                onChangeSelection(ctx)
                 return
               default:
                 return
@@ -64,11 +67,11 @@ const state: EditState = {
         switch (event.data.key) {
           case 'a':
             ctx.selectAllBones()
-            updateCommandExams(ctx)
+            onChangeSelection(ctx)
             return
           case 'A':
             ctx.addBone()
-            updateCommandExams(ctx)
+            onChangeSelection(ctx)
             return
           case 'x': {
             if (ctx.getLastSelectedBoneId()) {
@@ -101,19 +104,19 @@ const state: EditState = {
         switch (event.data.key) {
           case 'delete':
             ctx.deleteBones()
-            updateCommandExams(ctx)
+            onChangeSelection(ctx)
             return
           case 'dissolve':
             ctx.dissolveBones()
-            updateCommandExams(ctx)
+            onChangeSelection(ctx)
             return
           case 'subdivide':
             ctx.subdivideBones()
-            updateCommandExams(ctx)
+            onChangeSelection(ctx)
             return
           case 'symmetrize':
             ctx.symmetrizeBones()
-            updateCommandExams(ctx)
+            onChangeSelection(ctx)
             return
           default:
             return
@@ -122,8 +125,24 @@ const state: EditState = {
   },
 }
 
-function updateCommandExams(ctx: EditStateContext) {
-  ctx.setCommandExams([])
+function onChangeSelection(ctx: EditStateContext) {
+  if (ctx.getLastSelectedBoneId()) {
+    ctx.setCommandExams([])
+    ctx.setToolMenuGroups([
+      {
+        label: 'Armature',
+        items: [
+          { label: 'Subdivide', key: 'subdivide' },
+          { label: 'Symmetrize', key: 'symmetrize', underline: true },
+          { label: 'Dissolve', key: 'dissolve' },
+          { label: 'Delete', key: 'delete' },
+        ],
+      },
+    ])
+  } else {
+    ctx.setCommandExams([])
+    ctx.setToolMenuGroups([])
+  }
 }
 
 function getBoneSelectedState(type: string): BoneSelectedState {

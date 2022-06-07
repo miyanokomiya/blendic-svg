@@ -17,35 +17,44 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { getMockEditCtx } from 'spec/composables/modeStates/appCanvas/mocks'
 import { useDefaultState } from 'src/composables/modeStates/appCanvas/editMode/defaultState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 
 describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => {
-  function getMockCtx() {
-    return {
-      requestPointerLock: jest.fn(),
-      selectBone: jest.fn(),
-      setCommandExams: jest.fn(),
-      addBone: jest.fn(),
-      selectAllBones: jest.fn(),
-      getLastSelectedBoneId: jest.fn(),
-      startEditMovement: jest.fn(),
-      setPopupMenuList: jest.fn(),
-
-      extrudeBones: jest.fn(),
-      duplicateBones: jest.fn(),
-      deleteBones: jest.fn(),
-      dissolveBones: jest.fn(),
-      subdivideBones: jest.fn(),
-      symmetrizeBones: jest.fn(),
-    } as any
-  }
   async function prepare() {
-    const ctx = getMockCtx()
+    const ctx = getMockEditCtx()
     const sm = useModeStateMachine(ctx, useDefaultState)
     await sm.ready
+    ctx.setCommandExams.mockReset()
     return { sm, ctx }
   }
+
+  describe('onStart', () => {
+    it('should execute "setCommandExams"', async () => {
+      const ctx = getMockEditCtx()
+      const sm = useModeStateMachine(ctx, useDefaultState)
+      await sm.ready
+      expect(ctx.setCommandExams).toHaveBeenCalled()
+    })
+
+    it('should execute "setToolMenuGroups"', async () => {
+      const ctx = getMockEditCtx()
+      const sm1 = useModeStateMachine(ctx, useDefaultState)
+      await sm1.ready
+      expect(ctx.setToolMenuGroups).toHaveBeenNthCalledWith(1, [])
+
+      ctx.getLastSelectedBoneId.mockReturnValue('a')
+      const sm2 = useModeStateMachine(ctx, useDefaultState)
+      await sm2.ready
+      expect(ctx.setToolMenuGroups).toHaveBeenNthCalledWith(2, [
+        {
+          label: 'Armature',
+          items: expect.anything(),
+        },
+      ])
+    })
+  })
 
   describe('handle pointerdown: button 0', () => {
     it('empty: should execute "selectArmature"', async () => {

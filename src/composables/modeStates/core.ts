@@ -92,7 +92,6 @@ export function useModeStateMachine<C>(
     if (current.type !== 'stack-resume') {
       await next.state.onStart?.(ctx)
     }
-    console.log('break', next.state.getLabel())
   }
 
   async function switchState(
@@ -100,7 +99,6 @@ export function useModeStateMachine<C>(
     nextState: ModeStateBase<C>,
     type?: Exclude<TransitionType, 'break'>
   ): Promise<void> {
-    console.log('switch', nextState.getLabel(), type)
     const current = getCurrentState()
 
     if (

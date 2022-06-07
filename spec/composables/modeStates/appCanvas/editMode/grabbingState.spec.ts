@@ -17,28 +17,14 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { getMockEditCtx } from 'spec/composables/modeStates/appCanvas/mocks'
 import { useGrabbingState } from 'src/composables/modeStates/appCanvas/editMode/grabbingState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 import { getTransform } from '/@/models'
 
 describe('src/composables/modeStates/appCanvas/editMode/grabbingState.ts', () => {
-  function getMockCtx() {
-    return {
-      requestPointerLock: jest.fn(),
-      exitPointerLock: jest.fn(),
-      startEditMovement: jest.fn(),
-      setEditMovement: jest.fn(),
-      getBones: jest.fn().mockReturnValue({}),
-      getSelectedBones: jest.fn().mockReturnValue({}),
-      snapTranslate: jest.fn().mockReturnValue({ x: 100, y: 200 }),
-      setEditTransform: jest.fn(),
-      completeEditTransform: jest.fn(),
-      setAxisGridInfo: jest.fn(),
-      getAxisGridInfo: jest.fn(),
-    } as any
-  }
   async function prepare() {
-    const ctx = getMockCtx()
+    const ctx = getMockEditCtx()
     const sm = useModeStateMachine(ctx, useGrabbingState)
     await sm.ready
     return { sm, ctx }

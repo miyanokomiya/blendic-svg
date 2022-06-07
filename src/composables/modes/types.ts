@@ -56,8 +56,10 @@ export interface ToolMenuGroup {
 
 export interface ToolMenuItem {
   label: string
-  exec: () => void
+  exec?: () => void
   underline?: boolean
+  key?: string
+  data?: { [key: string]: string }
 }
 
 export type CommandExam = { command?: string; title: string }

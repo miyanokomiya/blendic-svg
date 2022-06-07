@@ -17,23 +17,13 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { getMockEditCtx } from 'spec/composables/modeStates/appCanvas/mocks'
 import { useDeletingState } from 'src/composables/modeStates/appCanvas/editMode/deletingState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 
 describe('src/composables/modeStates/appCanvas/editMode/deletingState.ts', () => {
-  function getMockCtx() {
-    return {
-      requestPointerLock: jest.fn(),
-      setCommandExams: jest.fn(),
-      startEditMovement: jest.fn(),
-      setPopupMenuList: jest.fn(),
-
-      deleteBones: jest.fn(),
-      dissolveBones: jest.fn(),
-    } as any
-  }
   async function prepare() {
-    const ctx = getMockCtx()
+    const ctx = getMockEditCtx()
     const sm = useModeStateMachine(ctx, () =>
       useDeletingState({ point: { x: 10, y: 20 } })
     )

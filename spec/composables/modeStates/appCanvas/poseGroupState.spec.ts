@@ -22,10 +22,10 @@ import {
   getMockObjectCtx,
   getMockPoseCtx,
 } from 'spec/composables/modeStates/appCanvas/mocks'
-import { useObjectGroupState } from '/@/composables/modeStates/appCanvas/objectGroupState'
+import { usePoseGroupState } from '/@/composables/modeStates/appCanvas/poseGroupState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 
-describe('src/composables/modeStates/appCanvas/objectGroupState.ts', () => {
+describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
   function getMockCtx() {
     return {
       getObjectContext: getMockObjectCtx,
@@ -38,7 +38,7 @@ describe('src/composables/modeStates/appCanvas/objectGroupState.ts', () => {
   describe('handle keydown: Tab', () => {
     it('should execute "toggleMode"', async () => {
       const ctx = getMockCtx()
-      const sm = useModeStateMachine(ctx, useObjectGroupState)
+      const sm = useModeStateMachine(ctx, usePoseGroupState)
       await sm.ready
       await sm.handleEvent({
         type: 'keydown',
@@ -50,30 +50,30 @@ describe('src/composables/modeStates/appCanvas/objectGroupState.ts', () => {
         data: { key: 'Tab', shift: true },
       })
       expect(ctx.toggleMode).toHaveBeenNthCalledWith(2, true)
-      expect(sm.getStateSummary().label).toBe('Object:Default')
+      expect(sm.getStateSummary().label).toBe('Pose:Default')
     })
   })
 
-  describe('handle state: edit', () => {
+  describe('handle state: object', () => {
+    it('should move to ObjectGroupState', async () => {
+      const ctx = getMockCtx()
+      const sm = useModeStateMachine(ctx, usePoseGroupState)
+      await sm.ready
+      await sm.handleEvent({
+        type: 'state',
+        data: { name: 'object' },
+      })
+      expect(sm.getStateSummary().label).toBe('Object:Default')
+    })
     it('should move to EditGroupState', async () => {
       const ctx = getMockCtx()
-      const sm = useModeStateMachine(ctx, useObjectGroupState)
+      const sm = useModeStateMachine(ctx, usePoseGroupState)
       await sm.ready
       await sm.handleEvent({
         type: 'state',
         data: { name: 'edit' },
       })
       expect(sm.getStateSummary().label).toBe('Edit:Default')
-    })
-    it('should move to PoseGroupState', async () => {
-      const ctx = getMockCtx()
-      const sm = useModeStateMachine(ctx, useObjectGroupState)
-      await sm.ready
-      await sm.handleEvent({
-        type: 'state',
-        data: { name: 'pose' },
-      })
-      expect(sm.getStateSummary().label).toBe('Pose:Default')
     })
   })
 })

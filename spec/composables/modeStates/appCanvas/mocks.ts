@@ -60,3 +60,28 @@ export function getMockEditCtx() {
     getAxisGridInfo: jest.fn(),
   } as any
 }
+
+export function getMockPoseCtx() {
+  return {
+    requestPointerLock: jest.fn(),
+    exitPointerLock: jest.fn(),
+    setCommandExams: jest.fn(),
+    startEditMovement: jest.fn(),
+    setEditMovement: jest.fn(),
+    setPopupMenuList: jest.fn(),
+
+    setToolMenuGroups: jest.fn(),
+    selectBone: jest.fn(),
+    selectAllBones: jest.fn(),
+    getBones: jest.fn().mockReturnValue({}),
+    getSelectedBones: jest.fn().mockReturnValue({}),
+    getLastSelectedBoneId: jest.fn(),
+
+    snapTranslate: jest.fn().mockReturnValue({ x: 100, y: 200 }),
+    snapScaleDiff: jest.fn().mockReturnValue({ x: 0.1, y: 0.2 }),
+    setEditTransforms: jest.fn(),
+    completeEditTransforms: jest.fn(),
+    setAxisGridInfo: jest.fn(),
+    getAxisGridInfo: jest.fn(),
+  } as any
+}

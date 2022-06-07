@@ -25,6 +25,7 @@ import {
   AppCanvasStateContext,
 } from '/@/composables/modeStates/appCanvas/core'
 import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/core'
+import { usePoseGroupState } from '/@/composables/modeStates/appCanvas/poseGroupState'
 
 export function useEditGroupState(): AppCanvasState {
   return useGroupState<AppCanvasStateContext, EditStateContext>(
@@ -42,16 +43,20 @@ const state: AppCanvasState = {
         switch (e.data.name) {
           case 'object':
             return useObjectGroupState
+          case 'pose':
+            return usePoseGroupState
+          default:
+            return
         }
-        return
       case 'keydown':
         switch (e.data.key) {
           case 'Tab':
             // Note: Ctrl + Tab cannot be controlled by JS
             ctx.toggleMode(e.data.shift)
             return
+          default:
+            return
         }
-        return
     }
   },
 }

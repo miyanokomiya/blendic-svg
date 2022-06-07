@@ -20,6 +20,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 import {
   getMockEditCtx,
   getMockObjectCtx,
+  getMockPoseCtx,
 } from 'spec/composables/modeStates/appCanvas/mocks'
 import { useEditGroupState } from '/@/composables/modeStates/appCanvas/editGroupState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
@@ -29,6 +30,7 @@ describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
     return {
       getObjectContext: getMockObjectCtx,
       getEditContext: getMockEditCtx,
+      getPoseContext: getMockPoseCtx,
       toggleMode: jest.fn(),
     } as any
   }
@@ -62,6 +64,16 @@ describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
         data: { name: 'object' },
       })
       expect(sm.getStateSummary().label).toBe('Object:Default')
+    })
+    it('should move to PoseGroupState', async () => {
+      const ctx = getMockCtx()
+      const sm = useModeStateMachine(ctx, useEditGroupState)
+      await sm.ready
+      await sm.handleEvent({
+        type: 'state',
+        data: { name: 'pose' },
+      })
+      expect(sm.getStateSummary().label).toBe('Pose:Default')
     })
   })
 })

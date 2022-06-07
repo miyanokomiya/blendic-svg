@@ -18,33 +18,33 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { useGroupState } from '/@/composables/modeStates/core'
-import { useEditGroupState } from '/@/composables/modeStates/appCanvas/editGroupState'
-import { useDefaultState } from '/@/composables/modeStates/appCanvas/objectMode/defaultState'
+import { useObjectGroupState } from '/@/composables/modeStates/appCanvas/objectGroupState'
+import { useDefaultState } from '/@/composables/modeStates/appCanvas/poseMode/defaultState'
 import {
   AppCanvasState,
   AppCanvasStateContext,
 } from '/@/composables/modeStates/appCanvas/core'
-import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
-import { usePoseGroupState } from '/@/composables/modeStates/appCanvas/poseGroupState'
+import { PoseStateContext } from '/@/composables/modeStates/appCanvas/poseMode/core'
+import { useEditGroupState } from '/@/composables/modeStates/appCanvas/editGroupState'
 
-export function useObjectGroupState(): AppCanvasState {
-  return useGroupState<AppCanvasStateContext, ObjectStateContext>(
+export function usePoseGroupState(): AppCanvasState {
+  return useGroupState<AppCanvasStateContext, PoseStateContext>(
     () => state,
     useDefaultState,
-    (ctx) => ctx.getObjectContext()
+    (ctx) => ctx.getPoseContext()
   )
 }
 
 const state: AppCanvasState = {
-  getLabel: () => 'Object',
+  getLabel: () => 'Pose',
   handleEvent: async (ctx, e) => {
     switch (e.type) {
       case 'state':
         switch (e.data.name) {
+          case 'object':
+            return useObjectGroupState
           case 'edit':
             return useEditGroupState
-          case 'pose':
-            return usePoseGroupState
           default:
             return
         }

@@ -19,6 +19,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/core'
 import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
+import { PoseStateContext } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import type {
   ModeStateBase,
   ModeStateContextBase,
@@ -27,6 +28,7 @@ import type {
 export interface AppCanvasStateContext extends ModeStateContextBase {
   getObjectContext: () => ObjectStateContext
   getEditContext: () => EditStateContext
+  getPoseContext: () => PoseStateContext
   toggleMode: (ctrl?: boolean) => void
 }
 

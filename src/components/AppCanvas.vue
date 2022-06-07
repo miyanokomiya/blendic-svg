@@ -383,7 +383,6 @@ export default defineComponent({
     function handleCopyEvent(_e: ClipboardEvent) {}
     function handlePasteEvent(_e: ClipboardEvent) {}
     function handleChangeMode(name: CanvasMode) {
-      console.log(name)
       canvasStore.changeCanvasMode(name)
       mode.sm.handleEvent({ type: 'state', data: { name } })
     }

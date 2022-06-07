@@ -27,22 +27,31 @@ describe('src/composables/modeStates/appCanvas/editMode/grabbingState.ts', () =>
     const ctx = getMockEditCtx()
     const sm = useModeStateMachine(ctx, useGrabbingState)
     await sm.ready
+    ctx.setEditTransform.mockReset()
     return { sm, ctx }
   }
 
   describe('onStart', () => {
     it('should execute "startEditMovement"', async () => {
-      const { ctx } = await prepare()
+      const ctx = getMockEditCtx()
+      const sm = useModeStateMachine(ctx, useGrabbingState)
+      await sm.ready
       expect(ctx.startEditMovement).toHaveBeenNthCalledWith(1)
+      expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
+        1,
+        getTransform(),
+        'grab'
+      )
     })
   })
 
   describe('onEnd', () => {
-    it('should execute "startEditMovement"', async () => {
+    it('should init movement', async () => {
       const { ctx, sm } = await prepare()
       await sm.dispose()
       expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1)
       expect(ctx.setEditMovement).toHaveBeenNthCalledWith(1)
+      expect(ctx.setEditTransform).toHaveBeenNthCalledWith(1)
     })
   })
 
@@ -62,7 +71,8 @@ describe('src/composables/modeStates/appCanvas/editMode/grabbingState.ts', () =>
         1,
         getTransform({
           translate: { x: 100, y: 200 },
-        })
+        }),
+        'grab'
       )
 
       // Activate snapping by "ctrl"

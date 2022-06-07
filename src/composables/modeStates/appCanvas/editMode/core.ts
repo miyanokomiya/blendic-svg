@@ -18,7 +18,11 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { IVec2 } from 'okageo'
-import { SelectOptions, ToolMenuGroup } from '/@/composables/modes/types'
+import {
+  CanvasCommand,
+  SelectOptions,
+  ToolMenuGroup,
+} from '/@/composables/modes/types'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
 import { Bone, BoneSelectedState, IdMap, Transform } from '/@/models'
@@ -48,11 +52,12 @@ export interface EditStateContext extends CanvasStateContext {
   symmetrizeBones: () => void
   duplicateBones: () => void
 
-  setEditTransform: (val?: Transform) => void
+  setEditTransform: (val?: Transform, type?: CanvasCommand) => void
   completeEditTransform: () => void
   setAxisGridInfo: (val?: AxisGridInfo) => void
   getAxisGridInfo: () => AxisGridInfo | undefined
   snapTranslate: (size: number, translate: IVec2) => IVec2
+  snapScaleDiff: (scaleDiff: IVec2) => IVec2
 
   setToolMenuGroups: (val?: ToolMenuGroup[]) => void
 }

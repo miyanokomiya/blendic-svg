@@ -27,22 +27,31 @@ describe('src/composables/modeStates/appCanvas/editMode/scalingState.ts', () => 
     const ctx = getMockEditCtx()
     const sm = useModeStateMachine(ctx, useScalingState)
     await sm.ready
+    ctx.setEditTransform.mockReset()
     return { sm, ctx }
   }
 
   describe('onStart', () => {
     it('should execute "startEditMovement"', async () => {
-      const { ctx } = await prepare()
+      const ctx = getMockEditCtx()
+      const sm = useModeStateMachine(ctx, useScalingState)
+      await sm.ready
       expect(ctx.startEditMovement).toHaveBeenNthCalledWith(1)
+      expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
+        1,
+        getTransform(),
+        'scale'
+      )
     })
   })
 
   describe('onEnd', () => {
-    it('should execute "startEditMovement"', async () => {
+    it('should init movement', async () => {
       const { ctx, sm } = await prepare()
       await sm.dispose()
       expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1)
       expect(ctx.setEditMovement).toHaveBeenNthCalledWith(1)
+      expect(ctx.setEditTransform).toHaveBeenNthCalledWith(1)
     })
   })
 
@@ -64,7 +73,8 @@ describe('src/composables/modeStates/appCanvas/editMode/scalingState.ts', () => 
       })
       expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
         1,
-        getTransform({ scale: { x: 0.1, y: 0.2 }, origin: { x: 5, y: 0 } })
+        getTransform({ scale: { x: 0.1, y: 0.2 }, origin: { x: 5, y: 0 } }),
+        'scale'
       )
       expect(ctx.snapScaleDiff).not.toHaveBeenNthCalledWith(1, {
         x: 1.3,

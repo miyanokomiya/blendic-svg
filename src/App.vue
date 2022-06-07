@@ -51,7 +51,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                       :armature="armature"
                       :bones="bonesByArmatureId[armature.id]"
                       :selected="lastSelectedArmatureId === armature.id"
-                      @select="selectArmature(armature.id)"
                     />
                   </g>
                   <g v-else>
@@ -67,7 +66,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                       :bone-map="visibledBoneMap"
                       :selected-bones="selectedBones"
                       :canvas-mode="canvasMode"
-                      @select="selectBone"
                     />
                     <SpaceAxis
                       v-if="lastSelectedBoneSpace"
@@ -106,8 +104,6 @@ import ArmatureElm from './components/elements/ArmatureElm.vue'
 import CanvasSideBar from '/@/components/CanvasSideBar.vue'
 import BoneLayer from '/@/components/elements/BoneLayer.vue'
 import SpaceAxis from '/@/components/elements/atoms/SpaceAxis.vue'
-import { BoneSelectedState } from './models/index'
-import { SelectOptions } from './composables/modes/types'
 import { useStore } from '/@/store/index'
 import { useCanvasStore } from './store/canvas'
 import { useHistoryStore } from './store/history'
@@ -227,12 +223,6 @@ export default defineComponent({
       visibledBoneMap,
       selectedBones,
       canvasMode,
-      selectBone(id: string, state: BoneSelectedState, options: SelectOptions) {
-        canvasStore.select(id, state, options)
-      },
-      selectArmature(id: string) {
-        store.selectArmature(id)
-      },
     }
   },
 })

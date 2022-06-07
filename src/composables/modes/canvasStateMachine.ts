@@ -24,7 +24,16 @@ import { getNotDuplicatedName } from '/@/utils/relations'
 type Option = {
   indexStore: IndexStore
   canvasStore: CanvasStore
-} & Exclude<CanvasStateContext, 'generateUuid'>
+  requestPointerLock: CanvasStateContext['requestPointerLock']
+  exitPointerLock: CanvasStateContext['exitPointerLock']
+  startEditMovement: CanvasStateContext['startEditMovement']
+  getEditMovement: CanvasStateContext['getEditMovement']
+  setEditMovement: CanvasStateContext['setEditMovement']
+  panView: CanvasStateContext['panView']
+  startDragging: CanvasStateContext['startDragging']
+  setRectangleDragging: CanvasStateContext['setRectangleDragging']
+  getDraggedRectangle: CanvasStateContext['getDraggedRectangle']
+}
 
 export function useCanvasStateMachine(options: Option) {
   const objectCtx = createObjectContext(options)
@@ -50,7 +59,7 @@ function createBaseContext(options: Option): ModeStateContextBase {
 }
 
 function createObjectContext(options: Option): ObjectStateContext {
-  const { indexStore } = options
+  const { indexStore, canvasStore } = options
   return {
     ...createBaseContext(options),
 
@@ -72,8 +81,8 @@ function createObjectContext(options: Option): ObjectStateContext {
     setRectangleDragging: () => undefined,
     getDraggedRectangle: () => undefined,
 
-    setPopupMenuList: options.setPopupMenuList,
-    setCommandExams: options.setCommandExams,
+    setPopupMenuList: canvasStore.setPopupMenuList,
+    setCommandExams: canvasStore.setCommandExams,
   }
 }
 
@@ -98,8 +107,8 @@ function createEditContext(options: Option): EditStateContext {
     setRectangleDragging: () => undefined,
     getDraggedRectangle: () => undefined,
 
-    setPopupMenuList: options.setPopupMenuList,
-    setCommandExams: options.setCommandExams,
+    setPopupMenuList: canvasStore.setPopupMenuList,
+    setCommandExams: canvasStore.setCommandExams,
 
     getBones: () => indexStore.boneMap.value,
     getLastSelectedBoneId: () => indexStore.lastSelectedBoneId.value,
@@ -194,5 +203,8 @@ function createEditContext(options: Option): EditStateContext {
     setAxisGridInfo: canvasStore.setAxisGridInfo,
     getAxisGridInfo: () => canvasStore.axisGridLine.value,
     snapTranslate: canvasStore.snapTranslate,
+    snapScaleDiff: canvasStore.snapScaleDiff,
+
+    setToolMenuGroups: canvasStore.setToolMenuGroups,
   }
 }

@@ -84,22 +84,24 @@ describe('src/composables/modeStates/appCanvas/editMode/deletingState.ts', () =>
   })
 
   describe('popupmenu', () => {
-    it('delete: should execute "deleteBones"', async () => {
+    it('delete: should execute "deleteBones" and move to "Default"', async () => {
       const { ctx, sm } = await prepare()
       await sm.handleEvent({
         type: 'popupmenu',
         data: { key: 'delete' },
       })
       expect(ctx.deleteBones).toHaveBeenNthCalledWith(1)
+      expect(sm.getStateSummary().label).toBe('Default')
     })
 
-    it('dissolve: should execute "dissolveBones"', async () => {
+    it('dissolve: should execute "dissolveBones" and move to "Default"', async () => {
       const { ctx, sm } = await prepare()
       await sm.handleEvent({
         type: 'popupmenu',
         data: { key: 'dissolve' },
       })
       expect(ctx.dissolveBones).toHaveBeenNthCalledWith(1)
+      expect(sm.getStateSummary().label).toBe('Default')
     })
   })
 })

@@ -19,53 +19,54 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div ref="wrapper" class="app-canvas-root">
-    <svg
-      ref="svg"
-      tabindex="-1"
-      xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="none"
-      font-family="sans-serif"
-      :viewBox="viewBox"
-      :width="viewSize.width"
-      :height="viewSize.height"
-      @wheel.prevent="wheel"
-      @click.right.prevent
-      @mouseup.right.prevent="escape"
-      @mouseenter="focus"
-      @mousedown.left.prevent="downLeft"
-      @mouseup.left.prevent="upLeft"
-      @mousedown.middle.prevent="downMiddle"
-      @mouseup.middle.prevent="upMiddle"
-      @keydown.prevent="editKeyDown"
+    <FocusableBlock
+      @keydown="handleKeydownEvent"
+      @copy="handleCopyEvent"
+      @paste="handlePasteEvent"
     >
-      <g v-if="showAxis" :stroke-width="1 * scale" stroke-opacity="0.3">
-        <line x1="-20000" x2="20000" stroke="red" />
-        <line y1="-20000" y2="20000" stroke="green" />
-      </g>
-      <line
-        v-if="gridLineElm"
-        :x1="gridLineElm.from.x"
-        :y1="gridLineElm.from.y"
-        :x2="gridLineElm.to.x"
-        :y2="gridLineElm.to.y"
-        :stroke="gridLineElm.color"
-        :stroke-width="2 * scale"
-      />
-      <slot :scale="scale" />
-      <SelectRectangle
-        v-if="dragRectangle"
-        :x="dragRectangle.x"
-        :y="dragRectangle.y"
-        :width="dragRectangle.width"
-        :height="dragRectangle.height"
-        class="view-only"
-      />
-      <CursorLine
-        v-if="cursorInfo"
-        :origin="cursorInfo.origin"
-        :current="cursorInfo.current"
-      />
-    </svg>
+      <svg
+        ref="svg"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="none"
+        font-family="sans-serif"
+        :viewBox="viewBox"
+        :width="viewSize.width"
+        :height="viewSize.height"
+        @wheel.prevent="wheel"
+        @mousedown.prevent="handleDownEvent"
+        @mouseup.prevent="handleUpEvent"
+        @mousemove="handleNativeMoveEvent"
+        @contextmenu.prevent
+      >
+        <g v-if="showAxis" :stroke-width="1 * scale" stroke-opacity="0.3">
+          <line x1="-20000" x2="20000" stroke="red" />
+          <line y1="-20000" y2="20000" stroke="green" />
+        </g>
+        <line
+          v-if="gridLineElm"
+          :x1="gridLineElm.from.x"
+          :y1="gridLineElm.from.y"
+          :x2="gridLineElm.to.x"
+          :y2="gridLineElm.to.y"
+          :stroke="gridLineElm.color"
+          :stroke-width="2 * scale"
+        />
+        <slot :scale="scale" />
+        <SelectRectangle
+          v-if="dragRectangle"
+          :x="dragRectangle.x"
+          :y="dragRectangle.y"
+          :width="dragRectangle.width"
+          :height="dragRectangle.height"
+          class="view-only"
+        />
+        <CursorLine
+          v-if="cursorInfo"
+          :origin="cursorInfo.origin"
+          :current="cursorInfo.current"
+        />
+      </svg>
+    </FocusableBlock>
     <div class="left-top-space">
       <CanvasModepanel
         class="mode-panel"
@@ -80,12 +81,12 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <CommandExamPanel
       class="command-exam-panel"
-      :available-command-list="availableCommandList"
+      :available-command-list="commandExamList"
     />
     <PopupMenuList
-      v-if="popupMenuList.length > 0 && popupMenuListPosition"
+      v-if="popupMenuItems.length > 0 && popupMenuListPosition"
       class="popup-menu-list"
-      :popup-menu-list="popupMenuList"
+      :popup-menu-list="popupMenuItems"
       :style="{
         left: `${popupMenuListPosition.x - 20}px`,
         top: `${popupMenuListPosition.y - 10}px`,
@@ -97,7 +98,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
-import { getRadian, IRectangle, IVec2 } from 'okageo'
+import { getRadian, IRectangle } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
@@ -106,6 +107,7 @@ import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import GlobalCursor from '/@/components/atoms/GlobalCursor.vue'
 import CursorLine from '/@/components/elements/atoms/CursorLine.vue'
 import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
+import FocusableBlock from '/@/components/atoms/FocusableBlock.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import {
   PointerMovement,
@@ -114,10 +116,19 @@ import {
   useWindow,
 } from '../composables/window'
 import { useSettings } from '/@/composables/settings'
-import { centerizeView, provideScale, useCanvas } from '../composables/canvas'
+import {
+  centerizeView,
+  provideScale,
+  useSvgCanvas,
+} from '../composables/canvas'
 import { useThrottle } from '/@/composables/throttle'
-import { getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { useCanvasElement } from '/@/composables/canvasElement'
+import { useCanvasStateMachine } from '/@/composables/modes/canvasStateMachine'
+import { useStore } from '/@/store'
+import { CanvasMode, EditMovement } from '/@/composables/modes/types'
+import { parseEventTarget } from '/@/composables/modeStates/utils'
+import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
+import { useMenuList } from '/@/composables/menuList'
 
 export default defineComponent({
   components: {
@@ -128,6 +139,7 @@ export default defineComponent({
     GlobalCursor,
     CursorLine,
     SelectRectangle,
+    FocusableBlock,
   },
   props: {
     originalViewBox: {
@@ -136,22 +148,71 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const indexStore = useStore()
     const canvasStore = useCanvasStore()
     const { settings } = useSettings()
-    const canvas = useCanvas()
+    const canvas = useSvgCanvas()
 
     const { wrapper, svg, addRootPosition, removeRootPosition } =
       useCanvasElement(() => canvas)
 
-    const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
+    provideScale(() => canvas.scale.value)
+
+    const throttleMousemove = useThrottle(handleMoveEvent, 1000 / 60, true)
     const pointerLock = usePointerLock({
       onMove: throttleMousemove,
       onGlobalMove: (arg) => {
+        if (!svg.value) return
         const p = removeRootPosition(arg.p)
         if (!p) return
         canvas.setMousePoint(p)
       },
-      onEscape: escape,
+      onEscape: () => {
+        mode.sm.handleEvent({
+          type: 'keydown',
+          data: { key: 'Escape' },
+          point: canvas.viewToCanvas(canvas.mousePoint.value),
+        } as any)
+      },
+    })
+
+    const editMovement = ref<EditMovement>()
+
+    const mode = useCanvasStateMachine({
+      indexStore,
+      canvasStore,
+
+      requestPointerLock: () => {
+        if (!svg.value) return
+        canvas.startMoving()
+        pointerLock.requestPointerLockFromElement(svg.value)
+      },
+      exitPointerLock: () => {
+        pointerLock.exitPointerLock()
+        canvas.endMoving()
+      },
+
+      startEditMovement: () => {
+        editMovement.value = {
+          start: canvas.viewToCanvas(canvas.mousePoint.value),
+          current: canvas.viewToCanvas(canvas.mousePoint.value),
+          ctrl: false,
+          scale: canvas.scale.value,
+        }
+      },
+      getEditMovement: () => editMovement.value,
+      setEditMovement: (val) => {
+        editMovement.value = val
+      },
+
+      panView: (val) => canvas.viewMove(val),
+      startDragging: () => canvas.startDragging(),
+      setRectangleDragging: (val) => canvas.setRectangleDragging(val),
+      getDraggedRectangle: () => canvas.draggedRectangle.value,
+    })
+
+    watch(canvasStore.canvasMode, (to) => {
+      mode.sm.handleEvent({ type: 'state', data: { name: to } })
     })
 
     function initView() {
@@ -168,8 +229,6 @@ export default defineComponent({
     watch(() => props.originalViewBox, initView)
     onMounted(initView)
 
-    const isDownEmpty = ref(false)
-
     const gridLineElm = computed(() => {
       if (!canvas.editStartPoint.value) return
       if (!canvasStore.axisGridLine.value) return
@@ -184,16 +243,6 @@ export default defineComponent({
       }
     })
 
-    watch(
-      () => canvasStore.command.value,
-      (to) => {
-        if (to === '') {
-          canvas.editStartPoint.value = undefined
-          pointerLock.exitPointerLock()
-        }
-      }
-    )
-
     function adjustSvgSize() {
       if (!wrapper.value) return
       const rect = wrapper.value.getBoundingClientRect()
@@ -204,34 +253,43 @@ export default defineComponent({
     onMounted(adjustSvgSize)
     watch(() => windowState.state.size, adjustSvgSize)
 
-    const popupMenuListPosition = ref<IVec2>()
-    const popupMenuList = computed(() => canvasStore.popupMenuList.value)
-    watch(popupMenuList, () => {
-      popupMenuListPosition.value = addRootPosition(canvas.mousePoint.value)
+    const popupMenuListPosition = computed(() => {
+      return canvasStore.popupMenuInfo.value
+        ? addRootPosition(
+            canvas.canvasToView(canvasStore.popupMenuInfo.value.point)
+          )
+        : undefined
     })
+    const popupMenuList = useMenuList(
+      () =>
+        canvasStore.popupMenuInfo.value?.items.map(
+          ({ label, children, key, data }) => ({
+            label,
+            exec: key
+              ? () => handlePopupmenuEvent(key as string, data)
+              : undefined,
+            children: children?.map(({ label, key, data }) => ({
+              label,
+              exec: key ? () => handlePopupmenuEvent(key, data) : undefined,
+            })),
+          })
+        ) ?? []
+    )
 
-    function mousemove(arg: PointerMovement) {
-      if (canvas.dragInfo.value) {
-        // rect select
-      } else if (canvas.viewMovingInfo.value) {
-        canvas.viewMove()
-      } else {
-        if (!canvas.editStartPoint.value) return
-        canvasStore.mousemove({
-          current: canvas.viewToCanvas(canvas.mousePoint.value),
-          start: canvas.viewToCanvas(canvas.editStartPoint.value),
-          ctrl: !!arg.ctrl,
-          scale: canvas.scale.value,
-        })
-      }
-    }
-
-    function escape() {
-      canvasStore.cancel()
-    }
+    const toolMenuGroupList = computed(
+      () =>
+        canvasStore.toolMenuGroupList.value.map(({ label, items }) => ({
+          label,
+          items: items.map(({ label, key }) => ({
+            label,
+            exec: key ? () => handlePopupmenuEvent(key!) : undefined,
+          })),
+        })) ?? []
+    )
 
     const cursorInfo = computed(() => {
-      if (!['scale', 'rotate'].includes(canvasStore.command.value)) return
+      if (!['scale', 'rotate'].includes(canvasStore.editTransformType.value))
+        return
       return {
         origin: canvasStore.selectedBonesOrigin.value,
         current: canvas.viewToCanvas(canvas.mousePoint.value),
@@ -247,7 +305,7 @@ export default defineComponent({
     })
 
     const cursorType = computed<PointerType>(() => {
-      switch (canvasStore.command.value) {
+      switch (canvasStore.editTransformType.value) {
         case 'rotate':
           return 'move-v'
         case 'scale':
@@ -258,13 +316,77 @@ export default defineComponent({
     })
 
     const cursor = computed(() => {
-      if (['grab', 'rotate', 'scale'].includes(canvasStore.command.value)) {
-        return addRootPosition(canvas.mousePoint.value)
-      }
-      return undefined
+      return canvasStore.editTransformType.value
+        ? addRootPosition(canvas.mousePoint.value)
+        : undefined
     })
 
-    provideScale(() => canvas.scale.value)
+    function handleDownEvent(e: MouseEvent) {
+      mode.sm.handleEvent({
+        type: 'pointerdown',
+        target: parseEventTarget(e),
+        data: {
+          point: canvas.viewToCanvas(canvas.mousePoint.value),
+          options: getMouseOptions(e),
+        },
+      })
+    }
+    function handleUpEvent(e: MouseEvent) {
+      canvas.endMoving()
+      mode.sm.handleEvent({
+        type: 'pointerup',
+        target: parseEventTarget(e),
+        data: {
+          point: canvas.viewToCanvas(canvas.mousePoint.value),
+          options: getMouseOptions(e),
+        },
+      })
+    }
+    function handleMoveEvent(e: PointerMovement) {
+      if (!canvas.editStartPoint.value) return
+      mode.sm.handleEvent({
+        type: 'pointermove',
+        data: {
+          start: canvas.viewToCanvas(canvas.editStartPoint.value),
+          current: canvas.viewToCanvas(canvas.mousePoint.value),
+          ctrl: e.ctrl,
+          scale: canvas.scale.value,
+        },
+      })
+    }
+    function handleNativeMoveEvent(e: MouseEvent) {
+      if (canvas.dragged.value && canvas.editStartPoint.value) {
+        mode.sm.handleEvent({
+          type: 'pointerdrag',
+          data: {
+            start: canvas.viewToCanvas(canvas.editStartPoint.value),
+            current: canvas.viewToCanvas(canvas.mousePoint.value),
+            ctrl: isCtrlOrMeta(e),
+            scale: canvas.scale.value,
+          },
+        })
+      }
+    }
+    function handleKeydownEvent(e: KeyboardEvent) {
+      mode.sm.handleEvent({
+        type: 'keydown',
+        data: getKeyOptions(e),
+        point: canvas.viewToCanvas(canvas.mousePoint.value),
+      })
+    }
+    function handlePopupmenuEvent(
+      key: string,
+      data: { [key: string]: string } = {}
+    ) {
+      mode.sm.handleEvent({ type: 'popupmenu', data: { key, ...data } })
+    }
+    function handleCopyEvent(_e: ClipboardEvent) {}
+    function handlePasteEvent(_e: ClipboardEvent) {}
+    function handleChangeMode(name: CanvasMode) {
+      console.log(name)
+      canvasStore.changeCanvasMode(name)
+      mode.sm.handleEvent({ type: 'state', data: { name } })
+    }
 
     return {
       viewCanvasRect: computed(() => canvas.viewCanvasRect.value),
@@ -275,73 +397,34 @@ export default defineComponent({
       wrapper,
       viewBox: canvas.viewBox,
       gridLineElm,
-      dragRectangle: canvas.dragRectangle,
+      dragRectangle: canvas.draggedRectangle,
       canvasMode: canvasStore.canvasMode,
-      popupMenuList,
+      popupMenuItems: computed(() => popupMenuList.list.value),
       popupMenuListPosition,
-      focus() {
-        svg.value?.focus()
-      },
       wheel: canvas.wheel,
-      downMiddle(e: Event) {
-        pointerLock.requestPointerLock(e)
-        canvas.downMiddle()
-      },
-      upMiddle: canvas.upMiddle,
 
-      downLeft: (e: MouseEvent) => {
-        isDownEmpty.value = e.target === svg.value
-
-        if (canvasStore.command.value) return
-
-        // NOTE: rect-select only supports 'edit' and 'pose' modes currently
-        if (['edit', 'pose'].includes(canvasStore.canvasMode.value)) {
-          canvas.downLeft('rect-select')
-        }
-      },
-      upLeft: (e: MouseEvent) => {
-        if (canvas.dragRectangle.value && canvas.isValidDragRectangle.value) {
-          canvasStore.rectSelect(canvas.dragRectangle.value, getMouseOptions(e))
-        } else {
-          if (e.target === svg.value && isDownEmpty.value) {
-            canvasStore.clickEmpty()
-          } else {
-            canvasStore.clickAny()
-          }
-        }
-
-        canvas.upLeft()
-        isDownEmpty.value = false
-      },
-
-      escape,
-      editKeyDown(e: KeyboardEvent) {
-        const { needLock } = canvasStore.editKeyDown(e.key, {
-          shift: e.shiftKey,
-          ctrl: isCtrlOrMeta(e),
-        })
-        if (needLock) {
-          pointerLock.requestPointerLock(e)
-          if (!pointerLock.current.value) return
-          const p = removeRootPosition(pointerLock.current.value)
-          if (!p) return
-          canvas.editStartPoint.value = p
-        }
-      },
-      changeMode: canvasStore.changeCanvasMode,
-      availableCommandList: canvasStore.availableCommandList,
-      toolMenuGroupList: canvasStore.toolMenuGroupList,
+      changeMode: handleChangeMode,
+      commandExamList: canvasStore.commandExamList,
+      toolMenuGroupList,
 
       cursorInfo,
       cursorRotate,
       cursorType,
       cursor,
+
+      handleDownEvent,
+      handleUpEvent,
+      handleMoveEvent,
+      handleNativeMoveEvent,
+      handleKeydownEvent,
+      handleCopyEvent,
+      handlePasteEvent,
     }
   },
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .app-canvas-root {
   position: relative;
 }
@@ -351,10 +434,9 @@ export default defineComponent({
   left: 4px;
   display: flex;
   align-items: center;
-
-  .armature-menu {
-    margin-left: 10px;
-  }
+}
+.armature-menu {
+  margin-left: 10px;
 }
 .command-exam-panel {
   position: absolute;
@@ -363,9 +445,6 @@ export default defineComponent({
 }
 svg {
   border: solid 1px black;
-  user-select: none;
-  outline: none;
-  overflow-anchor: none;
 }
 .view-only {
   pointer-events: none;

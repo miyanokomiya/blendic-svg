@@ -33,10 +33,12 @@ const state: EditState = {
   shouldRequestPointerLock: true,
   onStart: async (ctx) => {
     ctx.startEditMovement()
+    ctx.setEditTransform(getTransform(), 'scale')
   },
   onEnd: async (ctx) => {
     ctx.setAxisGridInfo()
     ctx.setEditMovement()
+    ctx.setEditTransform()
   },
   handleEvent: async (ctx, event) => {
     switch (event.type) {
@@ -57,7 +59,10 @@ const state: EditState = {
         )
         const gridScale = event.data.ctrl ? snapScale(scale) : scale
         const snappedScale = ctx.snapScaleDiff(gridScale)
-        ctx.setEditTransform(getTransform({ scale: snappedScale, origin }))
+        ctx.setEditTransform(
+          getTransform({ scale: snappedScale, origin }),
+          'scale'
+        )
         return
       }
       case 'pointerup': {

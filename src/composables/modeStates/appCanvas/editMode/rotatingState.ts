@@ -33,10 +33,12 @@ const state: EditState = {
   shouldRequestPointerLock: true,
   onStart: async (ctx) => {
     ctx.startEditMovement()
+    ctx.setEditTransform(getTransform(), 'rotate')
   },
   onEnd: async (ctx) => {
     ctx.setAxisGridInfo()
     ctx.setEditMovement()
+    ctx.setEditTransform()
   },
   handleEvent: async (ctx, event) => {
     switch (event.type) {
@@ -51,7 +53,10 @@ const state: EditState = {
             Math.PI) *
           180
         const snappedRotate = event.data.ctrl ? snapRotate(rotate) : rotate
-        ctx.setEditTransform(getTransform({ rotate: snappedRotate, origin }))
+        ctx.setEditTransform(
+          getTransform({ rotate: snappedRotate, origin }),
+          'rotate'
+        )
         return
       }
       case 'pointerup': {

@@ -56,10 +56,10 @@ export function useDeletingState(options: Options): EditState {
           switch (event.data.key) {
             case 'delete':
               ctx.deleteBones()
-              return
+              return useDefaultState
             case 'dissolve':
               ctx.dissolveBones()
-              return
+              return useDefaultState
             default:
               return
           }

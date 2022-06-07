@@ -27,22 +27,31 @@ describe('src/composables/modeStates/appCanvas/editMode/rotatingState.ts', () =>
     const ctx = getMockEditCtx()
     const sm = useModeStateMachine(ctx, useRotatingState)
     await sm.ready
+    ctx.setEditTransform.mockReset()
     return { sm, ctx }
   }
 
   describe('onStart', () => {
     it('should execute "startEditMovement"', async () => {
-      const { ctx } = await prepare()
+      const ctx = getMockEditCtx()
+      const sm = useModeStateMachine(ctx, useRotatingState)
+      await sm.ready
       expect(ctx.startEditMovement).toHaveBeenNthCalledWith(1)
+      expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
+        1,
+        getTransform(),
+        'rotate'
+      )
     })
   })
 
   describe('onEnd', () => {
-    it('should execute "startEditMovement"', async () => {
+    it('should init movement', async () => {
       const { ctx, sm } = await prepare()
       await sm.dispose()
       expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1)
       expect(ctx.setEditMovement).toHaveBeenNthCalledWith(1)
+      expect(ctx.setEditTransform).toHaveBeenNthCalledWith(1)
     })
   })
 
@@ -52,9 +61,7 @@ describe('src/composables/modeStates/appCanvas/editMode/rotatingState.ts', () =>
       ctx.getBones.mockReturnValue({
         a: getBone({ tail: { x: 10, y: 0 } }),
       })
-      ctx.getSelectedBones.mockReturnValue({
-        a: { head: true, tail: true },
-      })
+      ctx.getSelectedBones.mockReturnValue({ a: { head: true, tail: true } })
 
       await sm.handleEvent({
         type: 'pointermove',
@@ -66,7 +73,8 @@ describe('src/composables/modeStates/appCanvas/editMode/rotatingState.ts', () =>
       })
       expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
         1,
-        getTransform({ rotate: 45, origin: { x: 5, y: 0 } })
+        getTransform({ rotate: 45, origin: { x: 5, y: 0 } }),
+        'rotate'
       )
 
       // Activate snapping by "ctrl"
@@ -81,7 +89,8 @@ describe('src/composables/modeStates/appCanvas/editMode/rotatingState.ts', () =>
       })
       expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
         2,
-        getTransform({ rotate: 45, origin: { x: 5, y: 0 } })
+        getTransform({ rotate: 45, origin: { x: 5, y: 0 } }),
+        'rotate'
       )
     })
   })

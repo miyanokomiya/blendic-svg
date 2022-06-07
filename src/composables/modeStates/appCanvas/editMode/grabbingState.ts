@@ -33,10 +33,12 @@ const state: EditState = {
   shouldRequestPointerLock: true,
   onStart: async (ctx) => {
     ctx.startEditMovement()
+    ctx.setEditTransform(getTransform(), 'grab')
   },
   onEnd: async (ctx) => {
     ctx.setAxisGridInfo()
     ctx.setEditMovement()
+    ctx.setEditTransform()
   },
   handleEvent: async (ctx, event) => {
     switch (event.type) {
@@ -45,7 +47,7 @@ const state: EditState = {
           event.data.ctrl ? getGridSize(event.data.scale) : 0,
           sub(event.data.current, event.data.start)
         )
-        ctx.setEditTransform(getTransform({ translate }))
+        ctx.setEditTransform(getTransform({ translate }), 'grab')
         return
       }
       case 'pointerup': {

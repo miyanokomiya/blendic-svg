@@ -97,5 +97,7 @@ export function getMockWeightCtx() {
     startEditMovement: jest.fn(),
     setEditMovement: jest.fn(),
     setPopupMenuList: jest.fn(),
+
+    selectElement: jest.fn(),
   } as any
 }

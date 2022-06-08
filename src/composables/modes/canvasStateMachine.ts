@@ -14,6 +14,7 @@ import { Bone, BoneSelectedState, IdMap, toMap } from '/@/models'
 import { IndexStore } from '/@/store'
 import { AnimationStore } from '/@/store/animation'
 import { CanvasStore } from '/@/store/canvas'
+import { ElementStore } from '/@/store/element'
 import {
   duplicateBones,
   extrudeFromParent,
@@ -28,6 +29,8 @@ type Option = {
   indexStore: IndexStore
   canvasStore: CanvasStore
   animationStore: AnimationStore
+  elementStore: ElementStore
+
   requestPointerLock: CanvasStateContext['requestPointerLock']
   exitPointerLock: CanvasStateContext['exitPointerLock']
   startEditMovement: CanvasStateContext['startEditMovement']
@@ -261,7 +264,7 @@ function createPoseContext(options: Option): PoseStateContext {
 }
 
 function createWeightContext(options: Option): WeightStateContext {
-  const { canvasStore } = options
+  const { canvasStore, elementStore } = options
 
   let editMovement: EditMovement | undefined
 
@@ -283,5 +286,7 @@ function createWeightContext(options: Option): WeightStateContext {
 
     setPopupMenuList: canvasStore.setPopupMenuList,
     setCommandExams: canvasStore.setCommandExams,
+
+    selectElement: elementStore.selectElement,
   }
 }

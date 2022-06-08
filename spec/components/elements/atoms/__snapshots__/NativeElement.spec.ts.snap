@@ -2,13 +2,21 @@
 
 exports[`src/components/elements/atoms/NativeElement.vue snapshot nested svg tree 1`] = `
 <g
+  data-id=""
+  data-type="element"
   fill="red"
   style="fill: red;"
 >
-  <text>
+  <text
+    data-id="text_1"
+    data-type="element"
+  >
     text1
   </text>
-  <text>
+  <text
+    data-id="text_2"
+    data-type="element"
+  >
     text1
     text2
   </text>
@@ -17,11 +25,15 @@ exports[`src/components/elements/atoms/NativeElement.vue snapshot nested svg tre
 
 exports[`src/components/elements/atoms/NativeElement.vue snapshot selected 1`] = `
 <g
+  data-id=""
+  data-type="element"
   fill="orange"
   stroke="orange"
   style="fill: orange; stroke: orange;"
 >
   <text
+    data-id="text_1"
+    data-type="element"
     fill="orange"
     stroke="orange"
     style="fill: orange; stroke: orange;"
@@ -29,6 +41,8 @@ exports[`src/components/elements/atoms/NativeElement.vue snapshot selected 1`] =
     text1
   </text>
   <text
+    data-id="text_2"
+    data-type="element"
     fill="orange"
     stroke="orange"
     style="fill: orange; stroke: orange;"

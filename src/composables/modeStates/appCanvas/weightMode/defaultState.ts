@@ -29,10 +29,21 @@ const state: WeightState = {
   onStart: async (ctx) => {
     ctx.setCommandExams()
   },
-  handleEvent: async (_ctx, event) => {
+  handleEvent: async (ctx, event) => {
     switch (event.type) {
       case 'pointerdown':
         switch (event.data.options.button) {
+          case 0:
+            switch (event.target.type) {
+              case 'empty':
+                ctx.selectElement()
+                return
+              case 'element':
+                ctx.selectElement(event.target.id, event.data.options)
+                return
+              default:
+                return
+            }
           case 1:
             return usePanningState
           default:

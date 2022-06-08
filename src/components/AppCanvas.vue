@@ -130,6 +130,7 @@ import { parseEventTarget } from '/@/composables/modeStates/utils'
 import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { useMenuList } from '/@/composables/menuList'
 import { useAnimationStore } from '/@/store/animation'
+import { useElementStore } from '/@/store/element'
 
 export default defineComponent({
   components: {
@@ -152,6 +153,7 @@ export default defineComponent({
     const indexStore = useStore()
     const canvasStore = useCanvasStore()
     const animationStore = useAnimationStore()
+    const elementStore = useElementStore()
     const { settings } = useSettings()
     const canvas = useSvgCanvas()
 
@@ -184,6 +186,7 @@ export default defineComponent({
       indexStore,
       canvasStore,
       animationStore,
+      elementStore,
 
       requestPointerLock: () => {
         if (!svg.value) return

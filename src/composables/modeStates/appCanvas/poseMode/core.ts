@@ -54,6 +54,13 @@ export interface PoseStateContext extends CanvasStateContext {
   getAxisGridInfo: () => AxisGridInfo | undefined
   snapTranslate: (size: number, translate: IVec2) => IVec2
   snapScaleDiff: (scaleDiff: IVec2) => IVec2
+  insertKeyframe: (options?: {
+    translateX?: boolean
+    translateY?: boolean
+    rotate?: boolean
+    scaleX?: boolean
+    scaleY?: boolean
+  }) => void
 
   setToolMenuGroups: (val?: ToolMenuGroup[]) => void
 }

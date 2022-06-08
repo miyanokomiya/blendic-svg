@@ -22,9 +22,11 @@ import {
   PoseStateContext,
 } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { useGrabbingState } from '/@/composables/modeStates/appCanvas/poseMode/grabbingState'
+import { useInsertingState } from '/@/composables/modeStates/appCanvas/poseMode/insertingState'
 import { useRotatingState } from '/@/composables/modeStates/appCanvas/poseMode/rotatingState'
 import { useScalingState } from '/@/composables/modeStates/appCanvas/poseMode/scalingState'
 import { usePanningState } from '/@/composables/modeStates/commons'
+import { getCtrlOrMetaStr } from '/@/utils/devices'
 
 export function useDefaultState(): PoseState {
   return state
@@ -85,6 +87,13 @@ const state: PoseState = {
               return useScalingState
             }
             return
+          case 'i': {
+            const point = event.point
+            if (ctx.getLastSelectedBoneId() && point) {
+              return () => useInsertingState({ point })
+            }
+            return
+          }
           default:
             return
         }
@@ -95,6 +104,21 @@ const state: PoseState = {
 }
 
 function onChangeSelection(ctx: PoseStateContext) {
-  ctx.setCommandExams([])
+  if (ctx.getLastSelectedBoneId()) {
+    ctx.setCommandExams([
+      { command: 'i', title: 'Insert Keyframe' },
+      { command: 'g', title: 'Grab' },
+      { command: 'r', title: 'Rotate' },
+      { command: 'a', title: 'All Select' },
+      { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
+      { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
+    ])
+  } else {
+    ctx.setCommandExams([
+      { command: 'a', title: 'All Select' },
+      { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
+    ])
+  }
+
   ctx.setToolMenuGroups([])
 }

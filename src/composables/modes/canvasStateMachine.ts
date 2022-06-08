@@ -251,6 +251,7 @@ function createPoseContext(options: Option): PoseStateContext {
     getAxisGridInfo: () => canvasStore.axisGridLine.value,
     snapTranslate: canvasStore.snapTranslate,
     snapScaleDiff: canvasStore.snapScaleDiff,
+    insertKeyframe: animationStore.execInsertKeyframe,
 
     setToolMenuGroups: canvasStore.setToolMenuGroups,
   }

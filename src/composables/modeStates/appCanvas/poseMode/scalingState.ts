@@ -38,11 +38,16 @@ const state: PoseState = {
   onStart: async (ctx) => {
     ctx.startEditMovement()
     ctx.setEditTransforms({}, 'scale')
+    ctx.setCommandExams([
+      { command: 'x', title: 'On Axis X' },
+      { command: 'y', title: 'On Axis Y' },
+    ])
   },
   onEnd: async (ctx) => {
     ctx.setAxisGridInfo()
     ctx.setEditMovement()
     ctx.setEditTransforms()
+    ctx.setCommandExams()
   },
   handleEvent: async (ctx, event) => {
     switch (event.type) {

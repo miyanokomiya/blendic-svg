@@ -31,7 +31,11 @@ import { AxisGridInfo } from '/@/store/canvas'
 export interface PoseStateContext extends CanvasStateContext {
   getBones: () => IdMap<Bone>
   getLastSelectedBoneId: () => string | undefined
-  getSelectedBones: () => IdMap<BoneSelectedState>
+  /**
+   * Returns only selected index bones in the tree
+   * eg) When a bone and its parent are selected, this method returns only the parent
+   */
+  getSelectedBones: () => IdMap<Bone>
   selectBone: (
     id?: string,
     selectedState?: BoneSelectedState,

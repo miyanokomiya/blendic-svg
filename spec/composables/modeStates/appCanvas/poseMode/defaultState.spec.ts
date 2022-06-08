@@ -73,7 +73,8 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
         1,
         'a',
         { head: true, tail: true },
-        expect.anything()
+        expect.anything(),
+        true
       )
       expect(ctx.setCommandExams).toHaveBeenCalled()
     })
@@ -91,7 +92,7 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
     })
   })
 
-  xdescribe('keydown', () => {
+  describe('keydown', () => {
     it('a: should execute "selectAllBones"', async () => {
       const { ctx, sm } = await prepare()
       await sm.handleEvent({
@@ -112,7 +113,7 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
       expect(sm.getStateSummary().label).toBe('Grabbing')
     })
 
-    it('r: should move to "Rotating" when any bones are selected', async () => {
+    xit('r: should move to "Rotating" when any bones are selected', async () => {
       const { sm, ctx } = await prepare()
       await sm.handleEvent({ type: 'keydown', data: { key: 'r' } })
       expect(sm.getStateSummary().label).toBe('Default')
@@ -122,7 +123,7 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
       expect(sm.getStateSummary().label).toBe('Rotating')
     })
 
-    it('s: should move to "Scaling" when any bones are selected', async () => {
+    xit('s: should move to "Scaling" when any bones are selected', async () => {
       const { sm, ctx } = await prepare()
       await sm.handleEvent({ type: 'keydown', data: { key: 's' } })
       expect(sm.getStateSummary().label).toBe('Default')

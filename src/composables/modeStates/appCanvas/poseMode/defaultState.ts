@@ -21,6 +21,7 @@ import {
   PoseState,
   PoseStateContext,
 } from '/@/composables/modeStates/appCanvas/poseMode/core'
+import { useGrabbingState } from '/@/composables/modeStates/appCanvas/poseMode/grabbingState'
 import { usePanningState } from '/@/composables/modeStates/commons'
 
 export function useDefaultState(): PoseState {
@@ -48,7 +49,8 @@ const state: PoseState = {
                 ctx.selectBone(
                   event.target.id,
                   { head: true, tail: true },
-                  event.data.options
+                  event.data.options,
+                  true
                 )
                 onChangeSelection(ctx)
                 return
@@ -68,7 +70,7 @@ const state: PoseState = {
             return
           case 'g':
             if (ctx.getLastSelectedBoneId()) {
-              // return useGrabbingState
+              return useGrabbingState
             }
             return
           case 'r':

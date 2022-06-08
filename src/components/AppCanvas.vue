@@ -129,6 +129,7 @@ import { CanvasMode, EditMovement } from '/@/composables/modes/types'
 import { parseEventTarget } from '/@/composables/modeStates/utils'
 import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { useMenuList } from '/@/composables/menuList'
+import { useAnimationStore } from '/@/store/animation'
 
 export default defineComponent({
   components: {
@@ -150,6 +151,7 @@ export default defineComponent({
   setup(props) {
     const indexStore = useStore()
     const canvasStore = useCanvasStore()
+    const animationStore = useAnimationStore()
     const { settings } = useSettings()
     const canvas = useSvgCanvas()
 
@@ -181,6 +183,7 @@ export default defineComponent({
     const mode = useCanvasStateMachine({
       indexStore,
       canvasStore,
+      animationStore,
 
       requestPointerLock: () => {
         if (!svg.value) return

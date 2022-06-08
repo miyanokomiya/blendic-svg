@@ -3,6 +3,7 @@ import { AppCanvasStateContext } from '/@/composables/modeStates/appCanvas/core'
 import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/core'
 import { useObjectGroupState } from '/@/composables/modeStates/appCanvas/objectGroupState'
 import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
+import { PoseStateContext } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import {
   ModeStateContextBase,
@@ -10,6 +11,7 @@ import {
 } from '/@/composables/modeStates/core'
 import { Bone, BoneSelectedState, IdMap, toMap } from '/@/models'
 import { IndexStore } from '/@/store'
+import { AnimationStore } from '/@/store/animation'
 import { CanvasStore } from '/@/store/canvas'
 import {
   duplicateBones,
@@ -24,6 +26,7 @@ import { getNotDuplicatedName } from '/@/utils/relations'
 type Option = {
   indexStore: IndexStore
   canvasStore: CanvasStore
+  animationStore: AnimationStore
   requestPointerLock: CanvasStateContext['requestPointerLock']
   exitPointerLock: CanvasStateContext['exitPointerLock']
   startEditMovement: CanvasStateContext['startEditMovement']
@@ -38,11 +41,13 @@ type Option = {
 export function useCanvasStateMachine(options: Option) {
   const objectCtx = createObjectContext(options)
   const editCtx = createEditContext(options)
+  const poseCtx = createPoseContext(options)
 
   const ctx: AppCanvasStateContext = {
     ...createBaseContext(options),
     getObjectContext: () => objectCtx,
     getEditContext: () => editCtx,
+    getPoseContext: () => poseCtx,
     toggleMode: options.canvasStore.toggleCanvasMode,
   }
 
@@ -200,6 +205,48 @@ function createEditContext(options: Option): EditStateContext {
 
     setEditTransform: canvasStore.setEditTransform,
     completeEditTransform: canvasStore.completeEditTransform,
+    setAxisGridInfo: canvasStore.setAxisGridInfo,
+    getAxisGridInfo: () => canvasStore.axisGridLine.value,
+    snapTranslate: canvasStore.snapTranslate,
+    snapScaleDiff: canvasStore.snapScaleDiff,
+
+    setToolMenuGroups: canvasStore.setToolMenuGroups,
+  }
+}
+
+function createPoseContext(options: Option): PoseStateContext {
+  const { indexStore, canvasStore, animationStore } = options
+
+  let editMovement: EditMovement | undefined
+
+  return {
+    ...createBaseContext(options),
+
+    generateUuid: generateUuid,
+
+    startEditMovement: options.startEditMovement,
+    getEditMovement: () => editMovement,
+    setEditMovement: (val) => {
+      editMovement = val
+    },
+
+    panView: options.panView,
+    startDragging: options.startDragging,
+    setRectangleDragging: () => undefined,
+    getDraggedRectangle: () => undefined,
+
+    setPopupMenuList: canvasStore.setPopupMenuList,
+    setCommandExams: canvasStore.setCommandExams,
+
+    getBones: () => animationStore.currentPosedBones.value,
+    getLastSelectedBoneId: () => indexStore.lastSelectedBoneId.value,
+    getSelectedBones: () => animationStore.selectedBones.value,
+    selectBone: indexStore.selectBone,
+    selectBones: indexStore.selectBones,
+    selectAllBones: indexStore.selectAllBones,
+
+    setEditTransforms: canvasStore.setPoseTransforms,
+    completeEditTransforms: canvasStore.completePoseTransforms,
     setAxisGridInfo: canvasStore.setAxisGridInfo,
     getAxisGridInfo: () => canvasStore.axisGridLine.value,
     snapTranslate: canvasStore.snapTranslate,

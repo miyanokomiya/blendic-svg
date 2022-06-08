@@ -51,6 +51,7 @@ export interface AxisGridInfo {
 }
 
 const IDENTITY_TRANSFORM = getTransform()
+const IDENTITY_POSE_TRANSFORM = getTransform({ scale: { x: 0, y: 0 } })
 
 export function createStore(
   historyStore: HistoryStore,
@@ -69,6 +70,7 @@ export function createStore(
   const axisGridInfo = ref<AxisGridInfo>()
   const lastSelectedBoneSpace = ref<{ radian: number; origin: IVec2 }>()
   const editTransform = ref<Transform>()
+  const poseTransforms = ref<IdMap<Transform>>({})
   const editTransformType = ref<CanvasCommand>('')
 
   const canvasMode = canvasModeStore.state
@@ -116,7 +118,7 @@ export function createStore(
   const posedBoneMap = computed(() => {
     if (!indexStore.lastSelectedArmature.value) return {}
 
-    if (editTransform.value) {
+    if (Object.keys(poseTransforms.value).length > 0) {
       const constraintMap =
         animationStore.currentInterpolatedConstraintMap.value
 
@@ -127,7 +129,7 @@ export function createStore(
               ...b,
               transform: addPoseTransform(
                 animationStore.getCurrentSelfTransforms(b.id),
-                getEditTransforms(b.id)
+                getEditPoseTransforms(b.id)
               ),
             }
           })
@@ -212,9 +214,9 @@ export function createStore(
     return t && indexStore.selectedBones.value[id] ? t : IDENTITY_TRANSFORM
   }
 
-  function getEditPoseTransforms(_id: string): Transform {
-    if (canvasMode.value !== 'pose') return IDENTITY_TRANSFORM
-    return IDENTITY_TRANSFORM // canvasEditMode.value.getEditTransforms(id)
+  function getEditPoseTransforms(id: string): Transform {
+    if (canvasMode.value !== 'pose') return IDENTITY_POSE_TRANSFORM
+    return poseTransforms.value[id] ?? IDENTITY_POSE_TRANSFORM
   }
 
   function changeCanvasMode(canvasMode: CanvasMode) {
@@ -256,6 +258,16 @@ export function createStore(
     editTransformType.value = type
   }
 
+  function completePoseTransforms() {
+    animationStore.applyEditedTransforms(poseTransforms.value)
+    setPoseTransforms()
+  }
+
+  function setPoseTransforms(val?: IdMap<Transform>, type: CanvasCommand = '') {
+    poseTransforms.value = val ?? {}
+    editTransformType.value = type
+  }
+
   return {
     initState,
     exportState,
@@ -289,6 +301,9 @@ export function createStore(
 
     setEditTransform,
     completeEditTransform,
+
+    completePoseTransforms,
+    setPoseTransforms,
   }
 }
 

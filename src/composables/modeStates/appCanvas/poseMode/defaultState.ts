@@ -22,6 +22,7 @@ import {
   PoseStateContext,
 } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { useGrabbingState } from '/@/composables/modeStates/appCanvas/poseMode/grabbingState'
+import { useScalingState } from '/@/composables/modeStates/appCanvas/poseMode/scalingState'
 import { usePanningState } from '/@/composables/modeStates/commons'
 
 export function useDefaultState(): PoseState {
@@ -80,7 +81,7 @@ const state: PoseState = {
             return
           case 's':
             if (ctx.getLastSelectedBoneId()) {
-              // return useScalingState
+              return useScalingState
             }
             return
           default:

@@ -17,27 +17,27 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { sub } from 'okageo'
+import { getDistance, multi } from 'okageo'
 import { PoseState } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { useDefaultState } from '/@/composables/modeStates/appCanvas/poseMode/defaultState'
-import { mapFilter, mapReduce } from '/@/utils/commons'
-import { getGridSize } from '/@/utils/geometry'
 import {
-  convertToPosedSpace,
   getDefaultEditTransform,
   handleToggleAxisGrid,
 } from '/@/composables/modeStates/appCanvas/poseMode/utils'
+import { getPosedBoneHeadsOrigin } from '/@/utils/armatures'
+import { mapFilter, mapReduce } from '/@/utils/commons'
+import { isOppositeSide, snapScale } from '/@/utils/geometry'
 
-export function useGrabbingState(): PoseState {
+export function useScalingState(): PoseState {
   return state
 }
 
 const state: PoseState = {
-  getLabel: () => 'Grabbing',
+  getLabel: () => 'Scaling',
   shouldRequestPointerLock: true,
   onStart: async (ctx) => {
     ctx.startEditMovement()
-    ctx.setEditTransforms({}, 'grab')
+    ctx.setEditTransforms({}, 'scale')
   },
   onEnd: async (ctx) => {
     ctx.setAxisGridInfo()
@@ -47,23 +47,31 @@ const state: PoseState = {
   handleEvent: async (ctx, event) => {
     switch (event.type) {
       case 'pointermove': {
-        const translate = ctx.snapTranslate(
-          event.data.ctrl ? getGridSize(event.data.scale) : 0,
-          sub(event.data.current, event.data.start)
-        )
         const boneMap = ctx.getBones()
         const selectedBoneMap = ctx.getSelectedBones()
+        const origin = getPosedBoneHeadsOrigin(selectedBoneMap)
+        const opposite = isOppositeSide(
+          origin,
+          event.data.start,
+          event.data.current
+        )
+        const scaleDiff = multi(
+          multi({ x: 1, y: 1 }, opposite ? -1 : 1),
+          getDistance(event.data.current, origin) /
+            getDistance(event.data.start, origin) -
+            1
+        )
+        const gridScale = event.data.ctrl ? snapScale(scaleDiff) : scaleDiff
+        const snappedScale = ctx.snapScaleDiff(gridScale)
+
         const targetIds = mapFilter(
           selectedBoneMap,
           (_, id) => boneMap[id] && !boneMap[id].connected
         )
+        const t = getDefaultEditTransform({ scale: snappedScale })
         ctx.setEditTransforms(
-          mapReduce(targetIds, (_, id) =>
-            getDefaultEditTransform({
-              translate: convertToPosedSpace(translate, boneMap, id),
-            })
-          ),
-          'grab'
+          mapReduce(targetIds, () => t),
+          'scale'
         )
         return
       }

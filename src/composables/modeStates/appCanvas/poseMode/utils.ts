@@ -19,8 +19,13 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 import { IVec2, rotate } from 'okageo'
 import { PoseStateContext } from '/@/composables/modeStates/appCanvas/poseMode/core'
+import { Bone, getTransform, IdMap, Transform } from '/@/models'
 import { AxisGrid } from '/@/store/canvas'
-import { getSelectedBonesOrigin, posedTransform } from '/@/utils/armatures'
+import {
+  getSelectedBonesOrigin,
+  getWorldToLocalTranslateFn,
+  posedTransform,
+} from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
 import { getBoneXRadian } from '/@/utils/geometry'
 
@@ -80,4 +85,19 @@ export function handleToggleAxisGrid(
       ),
     })
   }
+}
+
+export function getDefaultEditTransform(arg: Partial<Transform> = {}) {
+  return getTransform({ scale: { x: 0, y: 0 }, ...arg })
+}
+
+export function convertToPosedSpace(
+  vec: IVec2,
+  boneMap: IdMap<Bone>,
+  boneId: string
+): IVec2 {
+  const bone = boneMap[boneId]
+  const parent = boneMap[bone.parentId]
+  const worldToLocalFn = getWorldToLocalTranslateFn(bone, parent?.transform)
+  return worldToLocalFn(vec)
 }

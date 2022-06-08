@@ -22,6 +22,7 @@ import {
   PoseStateContext,
 } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { useGrabbingState } from '/@/composables/modeStates/appCanvas/poseMode/grabbingState'
+import { useRotatingState } from '/@/composables/modeStates/appCanvas/poseMode/rotatingState'
 import { useScalingState } from '/@/composables/modeStates/appCanvas/poseMode/scalingState'
 import { usePanningState } from '/@/composables/modeStates/commons'
 
@@ -76,7 +77,7 @@ const state: PoseState = {
             return
           case 'r':
             if (ctx.getLastSelectedBoneId()) {
-              // return useRotatingState
+              return useRotatingState
             }
             return
           case 's':

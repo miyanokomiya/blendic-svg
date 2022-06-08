@@ -113,7 +113,7 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
       expect(sm.getStateSummary().label).toBe('Grabbing')
     })
 
-    xit('r: should move to "Rotating" when any bones are selected', async () => {
+    it('r: should move to "Rotating" when any bones are selected', async () => {
       const { sm, ctx } = await prepare()
       await sm.handleEvent({ type: 'keydown', data: { key: 'r' } })
       expect(sm.getStateSummary().label).toBe('Default')
@@ -123,7 +123,7 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
       expect(sm.getStateSummary().label).toBe('Rotating')
     })
 
-    xit('s: should move to "Scaling" when any bones are selected', async () => {
+    it('s: should move to "Scaling" when any bones are selected', async () => {
       const { sm, ctx } = await prepare()
       await sm.handleEvent({ type: 'keydown', data: { key: 's' } })
       expect(sm.getStateSummary().label).toBe('Default')

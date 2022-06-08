@@ -19,35 +19,35 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 import { useGroupState } from '/@/composables/modeStates/core'
 import { useObjectGroupState } from '/@/composables/modeStates/appCanvas/objectGroupState'
-import { useDefaultState } from '/@/composables/modeStates/appCanvas/editMode/defaultState'
+import { useDefaultState } from '/@/composables/modeStates/appCanvas/weightMode/defaultState'
 import {
   AppCanvasState,
   AppCanvasStateContext,
 } from '/@/composables/modeStates/appCanvas/core'
-import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/core'
+import { WeightStateContext } from '/@/composables/modeStates/appCanvas/weightMode/core'
+import { useEditGroupState } from '/@/composables/modeStates/appCanvas/editGroupState'
 import { usePoseGroupState } from '/@/composables/modeStates/appCanvas/poseGroupState'
-import { useWeightGroupState } from '/@/composables/modeStates/appCanvas/weightGroupState'
 
-export function useEditGroupState(): AppCanvasState {
-  return useGroupState<AppCanvasStateContext, EditStateContext>(
+export function useWeightGroupState(): AppCanvasState {
+  return useGroupState<AppCanvasStateContext, WeightStateContext>(
     () => state,
     useDefaultState,
-    (ctx) => ctx.getEditContext()
+    (ctx) => ctx.getWeightContext()
   )
 }
 
 const state: AppCanvasState = {
-  getLabel: () => 'Edit',
+  getLabel: () => 'Weight',
   handleEvent: async (ctx, e) => {
     switch (e.type) {
       case 'state':
         switch (e.data.name) {
           case 'object':
             return useObjectGroupState
+          case 'edit':
+            return useEditGroupState
           case 'pose':
             return usePoseGroupState
-          case 'weight':
-            return useWeightGroupState
           default:
             return
         }

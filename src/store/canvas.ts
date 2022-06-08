@@ -164,26 +164,26 @@ export function createStore(
 
   const axisGridLine = computed(() => axisGridInfo.value)
 
-  function toggleCanvasMode(ctrl = false) {
-    if (ctrl) return ctrlToggleCanvasMode()
-
-    if (canvasMode.value === 'edit') {
-      setCanvasMode(pastCanvasMode.value)
+  function toggleCanvasMode(ctrl = false): boolean {
+    if (ctrl) {
+      return ctrlToggleCanvasMode()
+    } else if (canvasMode.value === 'edit') {
+      return changeCanvasMode(pastCanvasMode.value)
     } else {
-      setCanvasMode('edit')
+      return changeCanvasMode('edit')
     }
   }
-  function ctrlToggleCanvasMode() {
+  function ctrlToggleCanvasMode(): boolean {
     if (canvasMode.value === 'edit') {
       if (pastCanvasMode.value === 'object') {
-        setCanvasMode('pose')
+        return changeCanvasMode('pose')
       } else {
-        setCanvasMode('object')
+        return changeCanvasMode('object')
       }
     } else if (canvasMode.value === 'object') {
-      setCanvasMode('pose')
+      return changeCanvasMode('pose')
     } else {
-      setCanvasMode('object')
+      return changeCanvasMode('object')
     }
   }
   function setCanvasMode(canvasMode: CanvasMode) {
@@ -216,7 +216,7 @@ export function createStore(
     return poseTransforms.value[id] ?? IDENTITY_POSE_TRANSFORM
   }
 
-  function changeCanvasMode(canvasMode: CanvasMode) {
+  function changeCanvasMode(canvasMode: CanvasMode): boolean {
     if (canvasMode === 'weight') {
       if (elementStore.lastSelectedActor.value) {
         setCanvasMode(canvasMode)
@@ -228,6 +228,8 @@ export function createStore(
         setCanvasMode('object')
       }
     }
+
+    return canvasMode === canvasModeStore.state.value
   }
 
   function completeEditTransform() {

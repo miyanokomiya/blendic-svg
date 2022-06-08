@@ -30,6 +30,9 @@ export function useDefaultState(): ObjectState {
 
 const state: ObjectState = {
   getLabel: () => 'Default',
+  onStart: async (ctx) => {
+    updateCommandExams(ctx)
+  },
   handleEvent: async (ctx, event) => {
     switch (event.type) {
       case 'pointerdown':
@@ -58,8 +61,10 @@ const state: ObjectState = {
             updateCommandExams(ctx)
             return
           case 'x':
-            ctx.deleteArmatures()
-            updateCommandExams(ctx)
+            if (Object.keys(ctx.getArmatures()).length > 1) {
+              ctx.deleteArmatures()
+              updateCommandExams(ctx)
+            }
             return
         }
         return
@@ -84,5 +89,15 @@ function onDownArmature(
 }
 
 function updateCommandExams(ctx: ObjectStateContext) {
-  ctx.setCommandExams([])
+  if (ctx.getLastSelectedArmaturesId()) {
+    ctx.setCommandExams([
+      { command: 'a', title: 'All Select' },
+      { command: 'A', title: 'Add Armature' },
+      ...(Object.keys(ctx.getArmatures()).length > 1
+        ? [{ command: 'x', title: 'Delete Armature' }]
+        : []),
+    ])
+  } else {
+    ctx.setCommandExams([{ command: 'A', title: 'Add Armature' }])
+  }
 }

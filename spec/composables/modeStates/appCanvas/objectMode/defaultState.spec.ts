@@ -17,24 +17,14 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { getMockObjectCtx } from 'spec/composables/modeStates/appCanvas/mocks'
 import { useDefaultState } from 'src/composables/modeStates/appCanvas/objectMode/defaultState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 
 describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () => {
-  function getMockCtx() {
-    return {
-      selectArmature: jest.fn(),
-      setCommandExams: jest.fn(),
-      requestPointerLock: jest.fn(),
-      addArmature: jest.fn(),
-      selectAllArmatures: jest.fn(),
-      deleteArmatures: jest.fn(),
-    } as any
-  }
-
   describe('handle pointerdown: button 0', () => {
     it('empty: should execute "selectArmature"', async () => {
-      const ctx = getMockCtx()
+      const ctx = getMockObjectCtx()
       const sm = useModeStateMachine(ctx, useDefaultState)
       await sm.ready
       await sm.handleEvent({
@@ -46,7 +36,7 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
       expect(ctx.setCommandExams).toHaveBeenCalled()
     })
     it('armature-body: should execute "selectArmature"', async () => {
-      const ctx = getMockCtx()
+      const ctx = getMockObjectCtx()
       const sm = useModeStateMachine(ctx, useDefaultState)
       await sm.ready
       await sm.handleEvent({
@@ -61,7 +51,7 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
 
   describe('handle pointerdown: button 1', () => {
     it('should move to Panning', async () => {
-      const ctx = getMockCtx()
+      const ctx = getMockObjectCtx()
       const sm = useModeStateMachine(ctx, useDefaultState)
       await sm.ready
       await sm.handleEvent({
@@ -75,7 +65,7 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
 
   describe('keydown', () => {
     it('A: should execute "addArmature"', async () => {
-      const ctx = getMockCtx()
+      const ctx = getMockObjectCtx()
       const sm = useModeStateMachine(ctx, useDefaultState)
       await sm.ready
       await sm.handleEvent({
@@ -86,7 +76,7 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
       expect(ctx.setCommandExams).toHaveBeenCalled()
     })
     it('a: should execute "selectAllArmatures"', async () => {
-      const ctx = getMockCtx()
+      const ctx = getMockObjectCtx()
       const sm = useModeStateMachine(ctx, useDefaultState)
       await sm.ready
       await sm.handleEvent({
@@ -96,10 +86,17 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
       expect(ctx.selectAllArmatures).toHaveBeenNthCalledWith(1)
       expect(ctx.setCommandExams).toHaveBeenCalled()
     })
-    it('x: should execute "deleteArmatures"', async () => {
-      const ctx = getMockCtx()
+    it('x: should execute "deleteArmatures" when multiple armatures exist', async () => {
+      const ctx = getMockObjectCtx()
       const sm = useModeStateMachine(ctx, useDefaultState)
       await sm.ready
+      await sm.handleEvent({
+        type: 'keydown',
+        data: { key: 'x' },
+      })
+      expect(ctx.deleteArmatures).not.toHaveBeenCalled()
+
+      ctx.getArmatures.mockReturnValue({ a: {}, b: {} })
       await sm.handleEvent({
         type: 'keydown',
         data: { key: 'x' },

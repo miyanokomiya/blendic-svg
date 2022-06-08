@@ -26,6 +26,7 @@ import {
 } from '/@/composables/modeStates/appCanvas/core'
 import { PoseStateContext } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { useEditGroupState } from '/@/composables/modeStates/appCanvas/editGroupState'
+import { useWeightGroupState } from '/@/composables/modeStates/appCanvas/weightGroupState'
 
 export function usePoseGroupState(): AppCanvasState {
   return useGroupState<AppCanvasStateContext, PoseStateContext>(
@@ -45,6 +46,8 @@ const state: AppCanvasState = {
             return useObjectGroupState
           case 'edit':
             return useEditGroupState
+          case 'weight':
+            return useWeightGroupState
           default:
             return
         }

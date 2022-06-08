@@ -23,7 +23,7 @@ import {
   getMockPoseCtx,
   getMockWeightCtx,
 } from 'spec/composables/modeStates/appCanvas/mocks'
-import { useEditGroupState } from '/@/composables/modeStates/appCanvas/editGroupState'
+import { useWeightGroupState } from '/@/composables/modeStates/appCanvas/weightGroupState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 
 describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
@@ -40,7 +40,7 @@ describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
   describe('handle keydown: Tab', () => {
     it('should execute "toggleMode"', async () => {
       const ctx = getMockCtx()
-      const sm = useModeStateMachine(ctx, useEditGroupState)
+      const sm = useModeStateMachine(ctx, useWeightGroupState)
       await sm.ready
       await sm.handleEvent({
         type: 'keydown',
@@ -52,14 +52,14 @@ describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
         data: { key: 'Tab', shift: true },
       })
       expect(ctx.toggleMode).toHaveBeenNthCalledWith(2, true)
-      expect(sm.getStateSummary().label).toBe('Edit:Default')
+      expect(sm.getStateSummary().label).toBe('Weight:Default')
     })
   })
 
   describe('handle state: object', () => {
     it('should move to ObjectGroupState', async () => {
       const ctx = getMockCtx()
-      const sm = useModeStateMachine(ctx, useEditGroupState)
+      const sm = useModeStateMachine(ctx, useWeightGroupState)
       await sm.ready
       await sm.handleEvent({
         type: 'state',
@@ -67,25 +67,25 @@ describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
       })
       expect(sm.getStateSummary().label).toBe('Object:Default')
     })
+    it('should move to EditGroupState', async () => {
+      const ctx = getMockCtx()
+      const sm = useModeStateMachine(ctx, useWeightGroupState)
+      await sm.ready
+      await sm.handleEvent({
+        type: 'state',
+        data: { name: 'edit' },
+      })
+      expect(sm.getStateSummary().label).toBe('Edit:Default')
+    })
     it('should move to PoseGroupState', async () => {
       const ctx = getMockCtx()
-      const sm = useModeStateMachine(ctx, useEditGroupState)
+      const sm = useModeStateMachine(ctx, useWeightGroupState)
       await sm.ready
       await sm.handleEvent({
         type: 'state',
         data: { name: 'pose' },
       })
       expect(sm.getStateSummary().label).toBe('Pose:Default')
-    })
-    it('should move to WeightGroupState', async () => {
-      const ctx = getMockCtx()
-      const sm = useModeStateMachine(ctx, useEditGroupState)
-      await sm.ready
-      await sm.handleEvent({
-        type: 'state',
-        data: { name: 'weight' },
-      })
-      expect(sm.getStateSummary().label).toBe('Weight:Default')
     })
   })
 })

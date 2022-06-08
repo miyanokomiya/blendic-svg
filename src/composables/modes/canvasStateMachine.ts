@@ -4,6 +4,7 @@ import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/c
 import { useObjectGroupState } from '/@/composables/modeStates/appCanvas/objectGroupState'
 import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
 import { PoseStateContext } from '/@/composables/modeStates/appCanvas/poseMode/core'
+import { WeightStateContext } from '/@/composables/modeStates/appCanvas/weightMode/core'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import {
   ModeStateContextBase,
@@ -42,12 +43,14 @@ export function useCanvasStateMachine(options: Option) {
   const objectCtx = createObjectContext(options)
   const editCtx = createEditContext(options)
   const poseCtx = createPoseContext(options)
+  const weightCtx = createWeightContext(options)
 
   const ctx: AppCanvasStateContext = {
     ...createBaseContext(options),
     getObjectContext: () => objectCtx,
     getEditContext: () => editCtx,
     getPoseContext: () => poseCtx,
+    getWeightContext: () => weightCtx,
     toggleMode: options.canvasStore.toggleCanvasMode,
   }
 
@@ -254,5 +257,31 @@ function createPoseContext(options: Option): PoseStateContext {
     insertKeyframe: animationStore.execInsertKeyframe,
 
     setToolMenuGroups: canvasStore.setToolMenuGroups,
+  }
+}
+
+function createWeightContext(options: Option): WeightStateContext {
+  const { canvasStore } = options
+
+  let editMovement: EditMovement | undefined
+
+  return {
+    ...createBaseContext(options),
+
+    generateUuid: generateUuid,
+
+    startEditMovement: options.startEditMovement,
+    getEditMovement: () => editMovement,
+    setEditMovement: (val) => {
+      editMovement = val
+    },
+
+    panView: options.panView,
+    startDragging: options.startDragging,
+    setRectangleDragging: () => undefined,
+    getDraggedRectangle: () => undefined,
+
+    setPopupMenuList: canvasStore.setPopupMenuList,
+    setCommandExams: canvasStore.setCommandExams,
   }
 }

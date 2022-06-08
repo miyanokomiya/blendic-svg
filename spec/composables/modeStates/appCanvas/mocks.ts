@@ -24,7 +24,9 @@ export function getMockObjectCtx() {
     selectArmature: jest.fn(),
     setCommandExams: jest.fn(),
     addArmature: jest.fn(),
+    getArmatures: jest.fn().mockReturnValue({}),
     selectAllArmatures: jest.fn(),
+    getLastSelectedArmaturesId: jest.fn(),
     deleteArmatures: jest.fn(),
   } as any
 }
@@ -84,5 +86,16 @@ export function getMockPoseCtx() {
     setAxisGridInfo: jest.fn(),
     getAxisGridInfo: jest.fn(),
     insertKeyframe: jest.fn(),
+  } as any
+}
+
+export function getMockWeightCtx() {
+  return {
+    requestPointerLock: jest.fn(),
+    exitPointerLock: jest.fn(),
+    setCommandExams: jest.fn(),
+    startEditMovement: jest.fn(),
+    setEditMovement: jest.fn(),
+    setPopupMenuList: jest.fn(),
   } as any
 }

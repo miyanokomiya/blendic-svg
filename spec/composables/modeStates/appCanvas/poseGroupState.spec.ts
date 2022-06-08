@@ -21,6 +21,7 @@ import {
   getMockEditCtx,
   getMockObjectCtx,
   getMockPoseCtx,
+  getMockWeightCtx,
 } from 'spec/composables/modeStates/appCanvas/mocks'
 import { usePoseGroupState } from '/@/composables/modeStates/appCanvas/poseGroupState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
@@ -31,6 +32,7 @@ describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
       getObjectContext: getMockObjectCtx,
       getEditContext: getMockEditCtx,
       getPoseContext: getMockPoseCtx,
+      getWeightContext: getMockWeightCtx,
       toggleMode: jest.fn(),
     } as any
   }
@@ -74,6 +76,16 @@ describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
         data: { name: 'edit' },
       })
       expect(sm.getStateSummary().label).toBe('Edit:Default')
+    })
+    it('should move to WeightGroupState', async () => {
+      const ctx = getMockCtx()
+      const sm = useModeStateMachine(ctx, usePoseGroupState)
+      await sm.ready
+      await sm.handleEvent({
+        type: 'state',
+        data: { name: 'weight' },
+      })
+      expect(sm.getStateSummary().label).toBe('Weight:Default')
     })
   })
 })

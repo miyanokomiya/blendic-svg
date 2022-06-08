@@ -40,32 +40,8 @@ describe('store/canvas.ts', () => {
       target,
     }
   }
-  describe('isOppositeSide', () => {
-    it('returns false if same side', () => {
-      const { target } = prepare()
-
-      expect(
-        target.isOppositeSide({ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 })
-      ).toBe(false)
-      expect(
-        target.isOppositeSide({ x: 0, y: 0 }, { x: -1, y: 0 }, { x: -1, y: 1 })
-      ).toBe(false)
-      expect(
-        target.isOppositeSide({ x: 0, y: 0 }, { x: -1, y: -1 }, { x: -1, y: 0 })
-      ).toBe(false)
-    })
-    it('returns true if opposite side', () => {
-      const { target } = prepare()
-
-      expect(
-        target.isOppositeSide({ x: 0, y: 0 }, { x: 1, y: 0 }, { x: -1, y: 1 })
-      ).toBe(true)
-      expect(
-        target.isOppositeSide({ x: 0, y: 0 }, { x: -1, y: 0 }, { x: 1, y: 1 })
-      ).toBe(true)
-      expect(
-        target.isOppositeSide({ x: 0, y: 0 }, { x: -1, y: -1 }, { x: 1, y: 0 })
-      ).toBe(true)
-    })
+  it('mock', () => {
+    const { target } = prepare()
+    expect(target).not.toBeFalsy()
   })
 })

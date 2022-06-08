@@ -29,7 +29,7 @@ type Options = { point: IVec2 }
 
 export function useInsertingState(options: Options): PoseState {
   return {
-    getLabel: () => 'Deleting',
+    getLabel: () => 'Inserting',
     onStart: async (ctx) => {
       setupPopupMenuList(ctx, options)
     },

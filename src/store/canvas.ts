@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getInner, IVec2, sub } from 'okageo'
+import { IVec2 } from 'okageo'
 import { computed, ref, watch } from 'vue'
 import { useHistoryStore } from './history'
 import {
@@ -205,9 +205,6 @@ export function createStore(
     if (!axisGridLine.value) return snapPlainGrid(size, 0, translate)
     return snapAxisGrid(size, axisGridLine.value.vec, translate)
   }
-  function isOppositeSide(origin: IVec2, from: IVec2, current: IVec2): boolean {
-    return getInner(sub(from, origin), sub(current, origin)) < 0
-  }
 
   function getEditTransforms(id: string): Transform {
     const t = editTransform.value
@@ -283,7 +280,6 @@ export function createStore(
     axisGridLine,
     setAxisGridInfo,
 
-    isOppositeSide,
     getEditTransforms,
     getEditPoseTransforms,
 

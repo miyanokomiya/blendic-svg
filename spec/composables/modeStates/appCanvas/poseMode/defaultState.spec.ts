@@ -132,5 +132,23 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
       await sm.handleEvent({ type: 'keydown', data: { key: 's' } })
       expect(sm.getStateSummary().label).toBe('Scaling')
     })
+
+    it('i: should move to "Inserting" when any bones are selected', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({
+        type: 'keydown',
+        point: { x: 10, y: 10 },
+        data: { key: 'i' },
+      })
+      expect(sm.getStateSummary().label).toBe('Default')
+
+      ctx.getLastSelectedBoneId.mockReturnValue('a')
+      await sm.handleEvent({
+        type: 'keydown',
+        point: { x: 10, y: 10 },
+        data: { key: 'i' },
+      })
+      expect(sm.getStateSummary().label).toBe('Inserting')
+    })
   })
 })

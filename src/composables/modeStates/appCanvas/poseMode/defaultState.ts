@@ -20,6 +20,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 import {
   PoseState,
   PoseStateContext,
+  usePoseClipboard,
 } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { useGrabbingState } from '/@/composables/modeStates/appCanvas/poseMode/grabbingState'
 import { useInsertingState } from '/@/composables/modeStates/appCanvas/poseMode/insertingState'
@@ -95,6 +96,16 @@ const state: PoseState = {
           default:
             return
         }
+      case 'copy': {
+        const clipboard = usePoseClipboard(ctx)
+        clipboard.onCopy(event.nativeEvent)
+        return
+      }
+      case 'paste': {
+        const clipboard = usePoseClipboard(ctx)
+        await clipboard.onPaste(event.nativeEvent)
+        return
+      }
       case 'selection':
         onChangeSelection(ctx)
         return

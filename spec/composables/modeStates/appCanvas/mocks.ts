@@ -90,6 +90,7 @@ export function getMockPoseCtx() {
     setAxisGridInfo: jest.fn(),
     getAxisGridInfo: jest.fn(),
     insertKeyframe: jest.fn(),
+    pastePoses: jest.fn(),
   } as any
 }
 

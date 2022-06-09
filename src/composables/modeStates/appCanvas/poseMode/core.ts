@@ -19,6 +19,11 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 import { IVec2 } from 'okageo'
 import {
+  StringItem,
+  useClipboard,
+  useClipboardSerializer,
+} from '/@/composables/clipboard'
+import {
   CanvasCommand,
   SelectOptions,
   ToolMenuGroup,
@@ -28,6 +33,7 @@ import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
 import { Bone, BoneSelectedState, IdMap, Transform } from '/@/models'
 import { AxisGridInfo } from '/@/store/canvas'
+import { mapReduce } from '/@/utils/commons'
 
 export interface PoseStateContext extends CanvasStateContext {
   getBones: () => IdMap<Bone>
@@ -62,9 +68,38 @@ export interface PoseStateContext extends CanvasStateContext {
     scaleX?: boolean
     scaleY?: boolean
   }) => void
+  pastePoses: (val: IdMap<Transform>) => void
 
   setToolMenuGroups: (val?: ToolMenuGroup[]) => void
 }
 
 export interface PoseState
   extends ModeStateBase<PoseStateContext, AppCanvasEvent> {}
+
+const clipboardSerializer = useClipboardSerializer<
+  'bone-poses',
+  IdMap<Transform>
+>('bone-poses')
+export function usePoseClipboard(ctx: PoseStateContext) {
+  return useClipboard(
+    () => {
+      return {
+        'text/plain': clipboardSerializer.serialize(
+          mapReduce(ctx.getBones(), (b) => b.transform)
+        ),
+      }
+    },
+    async (items) => {
+      const item = items.find((i) => i.kind === 'string') as
+        | StringItem
+        | undefined
+      if (!item) return
+
+      const text: any = await item.getAsString()
+      const restored = clipboardSerializer.deserialize(text)
+      if (Object.keys(restored).length > 0) {
+        ctx.pastePoses(restored)
+      }
+    }
+  )
+}

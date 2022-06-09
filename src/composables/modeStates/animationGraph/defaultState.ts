@@ -115,7 +115,7 @@ const state: AnimationGraphState = {
       }
       case 'paste': {
         const clipboard = useGraphNodeClipboard(ctx)
-        clipboard.onPaste(event.nativeEvent)
+        await clipboard.onPaste(event.nativeEvent)
         return
       }
       case 'selection':

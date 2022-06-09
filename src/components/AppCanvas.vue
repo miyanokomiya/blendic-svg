@@ -381,8 +381,12 @@ export default defineComponent({
     ) {
       mode.sm.handleEvent({ type: 'popupmenu', data: { key, ...data } })
     }
-    function handleCopyEvent(_e: ClipboardEvent) {}
-    function handlePasteEvent(_e: ClipboardEvent) {}
+    function handleCopyEvent(e: ClipboardEvent) {
+      mode.sm.handleEvent({ type: 'copy', nativeEvent: e })
+    }
+    function handlePasteEvent(e: ClipboardEvent) {
+      mode.sm.handleEvent({ type: 'paste', nativeEvent: e })
+    }
     function handleChangeMode(name: CanvasMode) {
       canvasStore.changeCanvasMode(name)
     }

@@ -236,6 +236,7 @@ function createPoseContext(options: Option): PoseStateContext {
     snapTranslate: canvasStore.snapTranslate,
     snapScaleDiff: canvasStore.snapScaleDiff,
     insertKeyframe: animationStore.execInsertKeyframe,
+    pastePoses: animationStore.pastePoses,
 
     setToolMenuGroups: canvasStore.setToolMenuGroups,
   }

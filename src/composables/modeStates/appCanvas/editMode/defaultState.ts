@@ -20,6 +20,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 import {
   EditState,
   EditStateContext,
+  useEditClipboard,
 } from '/@/composables/modeStates/appCanvas/editMode/core'
 import { usePanningState } from '/@/composables/modeStates/commons'
 import { useGrabbingState } from '/@/composables/modeStates/appCanvas/editMode/grabbingState'
@@ -127,6 +128,16 @@ const state: EditState = {
           default:
             return
         }
+      case 'copy': {
+        const clipboard = useEditClipboard(ctx)
+        clipboard.onCopy(event.nativeEvent)
+        return
+      }
+      case 'paste': {
+        const clipboard = useEditClipboard(ctx)
+        await clipboard.onPaste(event.nativeEvent)
+        return
+      }
       case 'selection':
         onChangeSelection(ctx)
     }

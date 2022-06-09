@@ -52,6 +52,7 @@ export function getMockEditCtx() {
 
     extrudeBones: jest.fn(),
     duplicateBones: jest.fn(),
+    getDuplicateBones: jest.fn(),
     deleteBones: jest.fn(),
     dissolveBones: jest.fn(),
     subdivideBones: jest.fn(),

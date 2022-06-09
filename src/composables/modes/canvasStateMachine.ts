@@ -98,6 +98,12 @@ function createObjectContext(options: Option): ObjectStateContext {
 function createEditContext(options: Option): EditStateContext {
   const { indexStore, canvasStore } = options
 
+  function getDuplicateBones() {
+    const srcBones = indexStore.allSelectedBones.value
+    const names = toList(indexStore.boneMap.value).map((b) => b.name)
+    return duplicateBones(srcBones, indexStore.constraintMap.value, names)
+  }
+
   return {
     ...createBaseContext(options),
 
@@ -118,6 +124,7 @@ function createEditContext(options: Option): EditStateContext {
     selectBones: indexStore.selectBones,
     selectAllBones: indexStore.selectAllBones,
     addBone: indexStore.addBone,
+    addBones: indexStore.addBones,
     updateBones: indexStore.updateBones,
     deleteBones: indexStore.deleteBone,
     extrudeBones: () => {
@@ -181,19 +188,14 @@ function createEditContext(options: Option): EditStateContext {
       )
     },
     duplicateBones: () => {
-      const srcBones = indexStore.allSelectedBones.value
-      const names = toList(indexStore.boneMap.value).map((a) => a.name) ?? []
-      const duplicated = duplicateBones(
-        srcBones,
-        indexStore.constraintMap.value,
-        names
-      )
+      const duplicated = getDuplicateBones()
       indexStore.addBones(
         duplicated.bones,
         { head: true, tail: true },
         duplicated.createdConstraints
       )
     },
+    getDuplicateBones,
 
     setEditTransform: canvasStore.setEditTransform,
     completeEditTransform: canvasStore.completeEditTransform,

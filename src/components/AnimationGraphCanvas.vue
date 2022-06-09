@@ -83,7 +83,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, computed, PropType, ref } from 'vue'
+import { defineComponent, onMounted, computed, PropType, ref, watch } from 'vue'
 import { provideScale, useSvgCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
@@ -150,7 +150,7 @@ export default defineComponent({
           type: 'keydown',
           data: { key: 'Escape' },
           point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-        } as any)
+        })
       },
     })
 
@@ -202,6 +202,10 @@ export default defineComponent({
       setCommandExams: (val) => (commandExams.value = val),
       getEdgeCutter: () => edgeCutter.value,
       setEdgeCutter: (val: EdgeCutter | undefined) => (edgeCutter.value = val),
+    })
+
+    watch(graphStore.selectedNodes, () => {
+      mode.sm.handleEvent({ type: 'selection' })
     })
 
     function handleDownEvent(e: MouseEvent) {

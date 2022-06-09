@@ -220,6 +220,16 @@ export default defineComponent({
     watch(canvasStore.canvasMode, (to) => {
       mode.sm.handleEvent({ type: 'state', data: { name: to } })
     })
+    watch(
+      [
+        indexStore.lastSelectedArmature,
+        indexStore.selectedBones,
+        elementStore.selectedElements,
+      ],
+      () => {
+        mode.sm.handleEvent({ type: 'selection' })
+      }
+    )
 
     function initView() {
       if (!props.originalViewBox) return

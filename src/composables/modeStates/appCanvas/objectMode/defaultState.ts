@@ -53,20 +53,20 @@ const state: ObjectState = {
         switch (event.data.key) {
           case 'A': {
             ctx.addArmature()
-            updateCommandExams(ctx)
             return
           }
           case 'a':
             ctx.selectAllArmatures()
-            updateCommandExams(ctx)
             return
           case 'x':
             if (Object.keys(ctx.getArmatures()).length > 1) {
               ctx.deleteArmatures()
-              updateCommandExams(ctx)
             }
             return
         }
+        return
+      case 'selection':
+        updateCommandExams(ctx)
         return
     }
   },

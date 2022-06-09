@@ -22,38 +22,38 @@ import { useDefaultState } from 'src/composables/modeStates/appCanvas/objectMode
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 
 describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () => {
+  async function prepare() {
+    const ctx = getMockObjectCtx()
+    const sm = useModeStateMachine(ctx, useDefaultState)
+    await sm.ready
+    ctx.setCommandExams.mockReset()
+    return { sm, ctx }
+  }
+
   describe('handle pointerdown: button 0', () => {
     it('empty: should execute "selectArmature"', async () => {
-      const ctx = getMockObjectCtx()
-      const sm = useModeStateMachine(ctx, useDefaultState)
-      await sm.ready
+      const { ctx, sm } = await prepare()
       await sm.handleEvent({
         type: 'pointerdown',
         target: { type: 'empty', id: '' },
         data: { point: { x: 0, y: 0 }, options: { button: 0 } },
       })
       expect(ctx.selectArmature).toHaveBeenNthCalledWith(1)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
     it('armature-body: should execute "selectArmature"', async () => {
-      const ctx = getMockObjectCtx()
-      const sm = useModeStateMachine(ctx, useDefaultState)
-      await sm.ready
+      const { ctx, sm } = await prepare()
       await sm.handleEvent({
         type: 'pointerdown',
         target: { type: 'armature-body', id: 'a' },
         data: { point: { x: 0, y: 0 }, options: { button: 0 } },
       })
       expect(ctx.selectArmature).toHaveBeenNthCalledWith(1, 'a')
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
   })
 
   describe('handle pointerdown: button 1', () => {
     it('should move to Panning', async () => {
-      const ctx = getMockObjectCtx()
-      const sm = useModeStateMachine(ctx, useDefaultState)
-      await sm.ready
+      const { sm } = await prepare()
       await sm.handleEvent({
         type: 'pointerdown',
         target: { type: '', id: '' },
@@ -65,31 +65,23 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
 
   describe('keydown', () => {
     it('A: should execute "addArmature"', async () => {
-      const ctx = getMockObjectCtx()
-      const sm = useModeStateMachine(ctx, useDefaultState)
-      await sm.ready
+      const { ctx, sm } = await prepare()
       await sm.handleEvent({
         type: 'keydown',
         data: { key: 'A' },
       })
       expect(ctx.addArmature).toHaveBeenNthCalledWith(1)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
     it('a: should execute "selectAllArmatures"', async () => {
-      const ctx = getMockObjectCtx()
-      const sm = useModeStateMachine(ctx, useDefaultState)
-      await sm.ready
+      const { ctx, sm } = await prepare()
       await sm.handleEvent({
         type: 'keydown',
         data: { key: 'a' },
       })
       expect(ctx.selectAllArmatures).toHaveBeenNthCalledWith(1)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
     it('x: should execute "deleteArmatures" when multiple armatures exist', async () => {
-      const ctx = getMockObjectCtx()
-      const sm = useModeStateMachine(ctx, useDefaultState)
-      await sm.ready
+      const { ctx, sm } = await prepare()
       await sm.handleEvent({
         type: 'keydown',
         data: { key: 'x' },
@@ -102,6 +94,13 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
         data: { key: 'x' },
       })
       expect(ctx.deleteArmatures).toHaveBeenNthCalledWith(1)
+    })
+  })
+
+  describe('selection', () => {
+    it('should execute "setCommandExams"', async () => {
+      const { ctx, sm } = await prepare()
+      await sm.handleEvent({ type: 'selection' })
       expect(ctx.setCommandExams).toHaveBeenCalled()
     })
   })

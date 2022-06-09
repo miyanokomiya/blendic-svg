@@ -60,7 +60,6 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
         data: { point: { x: 0, y: 0 }, options: { button: 0 } },
       })
       expect(ctx.selectBones).toHaveBeenNthCalledWith(1, {}, undefined)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
       expect(sm.getStateSummary().label).toBe('RectangleSelecting')
     })
     it('bone-body: should execute "selectArmature"', async () => {
@@ -77,7 +76,6 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
         expect.anything(),
         true
       )
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
   })
 
@@ -101,7 +99,6 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
         data: { key: 'a' },
       })
       expect(ctx.selectAllBones).toHaveBeenNthCalledWith(1)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
 
     it('g: should move to "Grabbing" when any bones are selected', async () => {
@@ -150,6 +147,14 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
         data: { key: 'i' },
       })
       expect(sm.getStateSummary().label).toBe('Inserting')
+    })
+  })
+
+  describe('selection', () => {
+    it('should execute "setCommandExams"', async () => {
+      const { ctx, sm } = await prepare()
+      await sm.handleEvent({ type: 'selection' })
+      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
   })
 })

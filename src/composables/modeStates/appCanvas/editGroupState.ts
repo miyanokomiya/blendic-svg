@@ -21,6 +21,7 @@ import { useGroupState } from '/@/composables/modeStates/core'
 import { useObjectGroupState } from '/@/composables/modeStates/appCanvas/objectGroupState'
 import { useDefaultState } from '/@/composables/modeStates/appCanvas/editMode/defaultState'
 import {
+  AppCanvasEvent,
   AppCanvasState,
   AppCanvasStateContext,
 } from '/@/composables/modeStates/appCanvas/core'
@@ -29,7 +30,7 @@ import { usePoseGroupState } from '/@/composables/modeStates/appCanvas/poseGroup
 import { useWeightGroupState } from '/@/composables/modeStates/appCanvas/weightGroupState'
 
 export function useEditGroupState(): AppCanvasState {
-  return useGroupState<AppCanvasStateContext, EditStateContext>(
+  return useGroupState<AppCanvasStateContext, EditStateContext, AppCanvasEvent>(
     () => state,
     useDefaultState,
     (ctx) => ctx.getEditContext()

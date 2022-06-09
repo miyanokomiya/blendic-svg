@@ -19,7 +19,11 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 import { IVec2 } from 'okageo'
 import { SelectOptions } from '/@/composables/modes/types'
-import type { ModeStateBase } from '/@/composables/modeStates/core'
+import type {
+  ModeStateBase,
+  ModeStateEvent,
+  ModeStateEventBase,
+} from '/@/composables/modeStates/core'
 import { IdMap } from '/@/models'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import {
@@ -55,7 +59,13 @@ export interface AnimationGraphStateContext extends CanvasStateContext {
 }
 
 export interface AnimationGraphState
-  extends ModeStateBase<AnimationGraphStateContext> {}
+  extends ModeStateBase<AnimationGraphStateContext, AnimationGraphEvent> {}
+
+export type AnimationGraphEvent = ModeStateEvent | ChangeSelectionEvent
+
+export interface ChangeSelectionEvent extends ModeStateEventBase {
+  type: 'selection'
+}
 
 export type DraftGraphEdge =
   | {

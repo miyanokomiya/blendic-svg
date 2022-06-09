@@ -1,5 +1,8 @@
 import { EditMovement } from '/@/composables/modes/types'
-import { AppCanvasStateContext } from '/@/composables/modeStates/appCanvas/core'
+import {
+  AppCanvasEvent,
+  AppCanvasStateContext,
+} from '/@/composables/modeStates/appCanvas/core'
 import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/core'
 import { useObjectGroupState } from '/@/composables/modeStates/appCanvas/objectGroupState'
 import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
@@ -57,7 +60,10 @@ export function useCanvasStateMachine(options: Option) {
     toggleMode: options.canvasStore.toggleCanvasMode,
   }
 
-  const sm = useModeStateMachine(ctx, useObjectGroupState)
+  const sm = useModeStateMachine<AppCanvasStateContext, AppCanvasEvent>(
+    ctx,
+    useObjectGroupState
+  )
   return { sm }
 }
 

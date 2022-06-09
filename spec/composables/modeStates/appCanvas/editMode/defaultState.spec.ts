@@ -65,7 +65,6 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         data: { point: { x: 0, y: 0 }, options: { button: 0 } },
       })
       expect(ctx.selectBones).toHaveBeenNthCalledWith(1, {}, undefined)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
       expect(sm.getStateSummary().label).toBe('RectangleSelecting')
     })
     it('bone-body: should execute "selectArmature"', async () => {
@@ -81,7 +80,6 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         { head: true, tail: true },
         expect.anything()
       )
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
     it('bone-head: should execute "selectArmature"', async () => {
       const { ctx, sm } = await prepare()
@@ -96,7 +94,6 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         { head: true },
         expect.anything()
       )
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
     it('bone-tail: should execute "selectArmature"', async () => {
       const { ctx, sm } = await prepare()
@@ -111,7 +108,6 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         { tail: true },
         expect.anything()
       )
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
   })
 
@@ -135,7 +131,6 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         data: { key: 'A' },
       })
       expect(ctx.addBone).toHaveBeenNthCalledWith(1)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
 
     it('a: should execute "selectAllBones"', async () => {
@@ -145,7 +140,6 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         data: { key: 'a' },
       })
       expect(ctx.selectAllBones).toHaveBeenNthCalledWith(1)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
 
     it('x: should move to "Deleting" when any bones are selected', async () => {
@@ -229,7 +223,6 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         data: { key: 'delete' },
       })
       expect(ctx.deleteBones).toHaveBeenNthCalledWith(1)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
 
     it('dissolve: should execute "dissolveBones"', async () => {
@@ -239,7 +232,6 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         data: { key: 'dissolve' },
       })
       expect(ctx.dissolveBones).toHaveBeenNthCalledWith(1)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
 
     it('subdivide: should execute "subdivideBones"', async () => {
@@ -249,7 +241,6 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         data: { key: 'subdivide' },
       })
       expect(ctx.subdivideBones).toHaveBeenNthCalledWith(1)
-      expect(ctx.setCommandExams).toHaveBeenCalled()
     })
 
     it('symmetrize: should execute "symmetrizeBones"', async () => {
@@ -259,6 +250,13 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         data: { key: 'symmetrize' },
       })
       expect(ctx.symmetrizeBones).toHaveBeenNthCalledWith(1)
+    })
+  })
+
+  describe('selection', () => {
+    it('should execute "setCommandExams"', async () => {
+      const { ctx, sm } = await prepare()
+      await sm.handleEvent({ type: 'selection' })
       expect(ctx.setCommandExams).toHaveBeenCalled()
     })
   })

@@ -20,6 +20,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 import type {
   AnimationGraphState,
   AnimationGraphStateContext,
+  AnimationGraphEvent,
 } from '/@/composables/modeStates/animationGraph/core'
 import { useMovingNodeState } from '/@/composables/modeStates/animationGraph/movingNodeState'
 import { useGrabbingNodeState } from '/@/composables/modeStates/animationGraph/grabbingNodeState'
@@ -98,7 +99,6 @@ const state: AnimationGraphState = {
           }
           case 'a':
             ctx.selectAllNode()
-            updateCommandExams(ctx)
             return
           case 'g':
             return ctx.getLastSelectedNodeId()
@@ -108,7 +108,6 @@ const state: AnimationGraphState = {
             return onDuplicate(ctx)
           case 'x':
             ctx.deleteNodes()
-            updateCommandExams(ctx)
             return
         }
         return
@@ -122,6 +121,9 @@ const state: AnimationGraphState = {
         clipboard.onPaste(event.nativeEvent)
         return
       }
+      case 'selection':
+        updateCommandExams(ctx)
+        return
     }
   },
 }
@@ -147,25 +149,22 @@ function updateCommandExams(ctx: AnimationGraphStateContext) {
 function onDownEmpty(
   ctx: AnimationGraphStateContext,
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext> {
+): TransitionValue<AnimationGraphStateContext, AnimationGraphEvent> {
   ctx.selectNodes({}, event.data.options)
-  updateCommandExams(ctx)
   return useRectangleSelectingState
 }
 
 function onDownNodeBody(
   ctx: AnimationGraphStateContext,
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext> {
+): TransitionValue<AnimationGraphStateContext, AnimationGraphEvent> {
   const nodeId = event.target.data?.['node_id']
   if (nodeId) {
     if (event.data.options.shift) {
       ctx.selectNodes({ [nodeId]: true }, event.data.options)
-      updateCommandExams(ctx)
     } else {
       if (!ctx.getSelectedNodeMap()[nodeId]) {
         ctx.selectNodes({ [nodeId]: true }, event.data.options)
-        updateCommandExams(ctx)
       }
       return () => useMovingNodeState({ nodeId })
     }
@@ -174,7 +173,7 @@ function onDownNodeBody(
 
 function onDownEdgeInput(
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext> {
+): TransitionValue<AnimationGraphStateContext, AnimationGraphEvent> {
   const edgeInfo = parseNodeEdgeInfo(event.target)
   return () =>
     useConnectingInputEdgeState({
@@ -186,7 +185,7 @@ function onDownEdgeInput(
 
 function onDownEdgeOutput(
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext> {
+): TransitionValue<AnimationGraphStateContext, AnimationGraphEvent> {
   const edgeInfo = parseNodeEdgeInfo(event.target)
   return () =>
     useConnectingOutputEdgeState({
@@ -198,7 +197,7 @@ function onDownEdgeOutput(
 
 function onDuplicate(
   ctx: AnimationGraphStateContext
-): TransitionValue<AnimationGraphStateContext> {
+): TransitionValue<AnimationGraphStateContext, AnimationGraphEvent> {
   ctx.pasteNodes(
     toList(
       duplicateNodes(

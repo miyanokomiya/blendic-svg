@@ -23,6 +23,7 @@ import {
   SelectOptions,
   ToolMenuGroup,
 } from '/@/composables/modes/types'
+import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
 import { Bone, BoneSelectedState, IdMap, Transform } from '/@/models'
@@ -62,4 +63,5 @@ export interface EditStateContext extends CanvasStateContext {
   setToolMenuGroups: (val?: ToolMenuGroup[]) => void
 }
 
-export interface EditState extends ModeStateBase<EditStateContext> {}
+export interface EditState
+  extends ModeStateBase<EditStateContext, AppCanvasEvent> {}

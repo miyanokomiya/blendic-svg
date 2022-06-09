@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
 import { Armature, IdMap } from '/@/models'
@@ -30,4 +31,5 @@ export interface ObjectStateContext extends CanvasStateContext {
   deleteArmatures: () => void
 }
 
-export interface ObjectState extends ModeStateBase<ObjectStateContext> {}
+export interface ObjectState
+  extends ModeStateBase<ObjectStateContext, AppCanvasEvent> {}

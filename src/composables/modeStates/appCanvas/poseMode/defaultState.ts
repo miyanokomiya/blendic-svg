@@ -46,7 +46,6 @@ const state: PoseState = {
             switch (event.target.type) {
               case 'empty':
                 ctx.selectBones({}, event.data.options.shift)
-                onChangeSelection(ctx)
                 return useRectangleSelectingState
               case 'bone-body':
               case 'bone-head':
@@ -57,7 +56,6 @@ const state: PoseState = {
                   event.data.options,
                   true
                 )
-                onChangeSelection(ctx)
                 return
               default:
                 return
@@ -71,7 +69,6 @@ const state: PoseState = {
         switch (event.data.key) {
           case 'a':
             ctx.selectAllBones()
-            onChangeSelection(ctx)
             return
           case 'g':
             if (ctx.getLastSelectedBoneId()) {
@@ -98,6 +95,9 @@ const state: PoseState = {
           default:
             return
         }
+      case 'selection':
+        onChangeSelection(ctx)
+        return
       default:
         return
     }

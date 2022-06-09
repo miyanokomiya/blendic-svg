@@ -47,7 +47,6 @@ const state: EditState = {
             switch (event.target.type) {
               case 'empty':
                 ctx.selectBones({}, event.data.options.shift)
-                onChangeSelection(ctx)
                 return useRectangleSelectingState
               case 'bone-body':
               case 'bone-head':
@@ -57,7 +56,6 @@ const state: EditState = {
                   getBoneSelectedState(event.target.type),
                   event.data.options
                 )
-                onChangeSelection(ctx)
                 return
               default:
                 return
@@ -71,11 +69,9 @@ const state: EditState = {
         switch (event.data.key) {
           case 'a':
             ctx.selectAllBones()
-            onChangeSelection(ctx)
             return
           case 'A':
             ctx.addBone()
-            onChangeSelection(ctx)
             return
           case 'x': {
             if (ctx.getLastSelectedBoneId()) {
@@ -118,23 +114,21 @@ const state: EditState = {
         switch (event.data.key) {
           case 'delete':
             ctx.deleteBones()
-            onChangeSelection(ctx)
             return
           case 'dissolve':
             ctx.dissolveBones()
-            onChangeSelection(ctx)
             return
           case 'subdivide':
             ctx.subdivideBones()
-            onChangeSelection(ctx)
             return
           case 'symmetrize':
             ctx.symmetrizeBones()
-            onChangeSelection(ctx)
             return
           default:
             return
         }
+      case 'selection':
+        onChangeSelection(ctx)
     }
   },
 }

@@ -24,6 +24,8 @@ import { WeightStateContext } from '/@/composables/modeStates/appCanvas/weightMo
 import type {
   ModeStateBase,
   ModeStateContextBase,
+  ModeStateEvent,
+  ModeStateEventBase,
 } from '/@/composables/modeStates/core'
 
 export interface AppCanvasStateContext extends ModeStateContextBase {
@@ -34,4 +36,22 @@ export interface AppCanvasStateContext extends ModeStateContextBase {
   toggleMode: (ctrl?: boolean) => void
 }
 
-export interface AppCanvasState extends ModeStateBase<AppCanvasStateContext> {}
+export interface AppCanvasState
+  extends ModeStateBase<AppCanvasStateContext, AppCanvasEvent> {}
+
+export type AppCanvasEvent =
+  | ModeStateEvent
+  | ChangeStateEvent
+  | ChangeSelectionEvent
+
+export interface ChangeStateEvent extends ModeStateEventBase {
+  type: 'state'
+  data: {
+    name: string
+    options?: unknown
+  }
+}
+
+export interface ChangeSelectionEvent extends ModeStateEventBase {
+  type: 'selection'
+}

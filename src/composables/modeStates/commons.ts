@@ -47,7 +47,7 @@ export interface CanvasStateContext extends ModeStateContextBase {
 
 export interface CanvasState extends ModeStateBase<CanvasStateContext> {}
 
-export function usePanningState(): CanvasState {
+export function usePanningState(): ModeStateBase<CanvasStateContext, any> {
   return panningState
 }
 const panningState: CanvasState = {

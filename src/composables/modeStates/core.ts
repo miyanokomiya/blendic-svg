@@ -23,39 +23,39 @@ import type { KeyOptions, MouseOptions } from '/@/utils/devices'
 
 type TransitionType = 'break' | 'stack-restart' | 'stack-resume'
 
-export type TransitionValue<C> =
-  | (() => ModeStateBase<C>)
-  | { getState: () => ModeStateBase<C>; type: TransitionType }
+export type TransitionValue<C, E = ModeStateEvent> =
+  | (() => ModeStateBase<C, E>)
+  | { getState: () => ModeStateBase<C, E>; type: TransitionType }
   | { type: 'break' }
   | void
 
-export interface ModeStateBase<C> {
+export interface ModeStateBase<C, E = ModeStateEvent> {
   getLabel: () => string
   shouldRequestPointerLock?: boolean
   onStart?: (ctx: ModeStateContextBase & C) => Promise<void>
   onEnd?: (ctx: C) => Promise<void>
-  handleEvent: (ctx: C, e: ModeStateEvent) => Promise<TransitionValue<C>>
+  handleEvent: (ctx: C, e: E) => Promise<TransitionValue<C, E>>
 }
 
-type StateStackItem<C> = {
-  state: ModeStateBase<C>
+type StateStackItem<C, E = ModeStateEvent> = {
+  state: ModeStateBase<C, E>
   type?: TransitionType
 }
 
-interface StateMachine {
+interface StateMachine<E = ModeStateEvent> {
   getStateSummary: () => { label: string }
-  handleEvent: (event: ModeStateEvent) => Promise<void>
+  handleEvent: (event: E) => Promise<void>
   dispose: () => Promise<void>
   // This will be resolved when "onStart" of the initial state finishes
   ready: Promise<void>
 }
 
-export function useModeStateMachine<C>(
+export function useModeStateMachine<C, E = ModeStateEvent>(
   ctx: ModeStateContextBase & C,
-  getInitialState: () => ModeStateBase<C>
-): StateMachine {
-  const stateStack: StateStackItem<C>[] = [{ state: getInitialState() }]
-  function getCurrentState(): StateStackItem<C> {
+  getInitialState: () => ModeStateBase<C, E>
+): StateMachine<E> {
+  const stateStack: StateStackItem<C, E>[] = [{ state: getInitialState() }]
+  function getCurrentState(): StateStackItem<C, E> {
     return stateStack[stateStack.length - 1]
   }
   const ready = getCurrentState().state.onStart?.(ctx) ?? Promise.resolve()
@@ -66,7 +66,7 @@ export function useModeStateMachine<C>(
     }
   }
 
-  async function handleEvent(event: ModeStateEvent): Promise<void> {
+  async function handleEvent(event: E): Promise<void> {
     const ret = await getCurrentState().state.handleEvent(ctx, event)
     if (ret) {
       if (typeof ret === 'function') {
@@ -97,7 +97,7 @@ export function useModeStateMachine<C>(
 
   async function switchState(
     ctx: ModeStateContextBase & C,
-    nextState: ModeStateBase<C>,
+    nextState: ModeStateBase<C, E>,
     type?: Exclude<TransitionType, 'break'>
   ): Promise<void> {
     // console.log('switch', nextState.getLabel(), type)
@@ -163,7 +163,6 @@ export type ModeStateEvent =
   | PopupMenuEvent
   | CopyEvent
   | PasteEvent
-  | ChangeStateEvent
 
 export interface ModeStateEventBase {
   type: string
@@ -227,20 +226,12 @@ export interface PasteEvent extends ModeStateEventBase {
   nativeEvent: ClipboardEvent
 }
 
-export interface ChangeStateEvent extends ModeStateEventBase {
-  type: 'state'
-  data: {
-    name: string
-    options?: unknown
-  }
-}
-
-export function useGroupState<C, K>(
-  getState: () => ModeStateBase<C>,
-  getInitialState: () => ModeStateBase<K>,
+export function useGroupState<C, K, E = ModeStateEvent>(
+  getState: () => ModeStateBase<C, E>,
+  getInitialState: () => ModeStateBase<K, E>,
   deriveCtx: (ctx: C) => K
-): ModeStateBase<C> {
-  let sm: StateMachine | undefined
+): ModeStateBase<C, E> {
+  let sm: StateMachine<E> | undefined
   const state = getState()
   return {
     getLabel: () =>

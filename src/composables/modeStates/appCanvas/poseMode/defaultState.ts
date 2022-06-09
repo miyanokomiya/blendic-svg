@@ -23,6 +23,7 @@ import {
 } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { useGrabbingState } from '/@/composables/modeStates/appCanvas/poseMode/grabbingState'
 import { useInsertingState } from '/@/composables/modeStates/appCanvas/poseMode/insertingState'
+import { useRectangleSelectingState } from '/@/composables/modeStates/appCanvas/poseMode/rectangleSelectingState'
 import { useRotatingState } from '/@/composables/modeStates/appCanvas/poseMode/rotatingState'
 import { useScalingState } from '/@/composables/modeStates/appCanvas/poseMode/scalingState'
 import { usePanningState } from '/@/composables/modeStates/commons'
@@ -44,9 +45,9 @@ const state: PoseState = {
           case 0:
             switch (event.target.type) {
               case 'empty':
-                ctx.selectBone()
+                ctx.selectBones({}, event.data.options.shift)
                 onChangeSelection(ctx)
-                return
+                return useRectangleSelectingState
               case 'bone-body':
               case 'bone-head':
               case 'bone-tail':

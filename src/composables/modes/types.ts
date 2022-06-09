@@ -18,21 +18,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ComputedRef } from '@vue/reactivity'
-import { IRectangle, IVec2 } from 'okageo'
-import { BoneSelectedState, Transform } from '/@/models'
+import { IVec2 } from 'okageo'
 import { CurveSelectedState, KeyframeSelectedState } from '/@/models/keyframe'
 import { MouseOptions } from '/@/utils/devices'
 
 export type CanvasMode = 'object' | 'edit' | 'pose' | 'weight'
 export type CanvasCommand = '' | 'grab' | 'rotate' | 'scale'
-export type EditMode =
-  | ''
-  | 'grab'
-  | 'rotate'
-  | 'scale'
-  | 'extrude'
-  | 'insert'
-  | 'delete'
 
 export type EditMovement = {
   current: IVec2
@@ -66,34 +57,6 @@ export type CommandExam = { command?: string; title: string }
 
 export type SelectOptions = Pick<MouseOptions, 'shift' | 'ctrl'>
 
-export interface CanvasEditModeBase {
-  command: ComputedRef<EditMode>
-  getEditTransforms: (id: string) => Transform
-  end: () => void
-  cancel: () => void
-  setEditMode: (mode: EditMode) => void
-  select: (
-    id: string,
-    selectedState: BoneSelectedState,
-    options?: SelectOptions
-  ) => void
-  rectSelect: (rect: IRectangle, options?: SelectOptions) => void
-  selectAll: () => void
-  mousemove: (arg: EditMovement) => void
-  clickAny: () => void
-  clickEmpty: () => void
-  execDelete: () => void
-  execAdd: () => void
-  insert: () => void
-  clip: () => void
-  paste: () => void
-  duplicate: () => boolean
-  availableCommandList: ComputedRef<CommandExam[]>
-  popupMenuList: ComputedRef<PopupMenuItem[]>
-  toolMenuGroupList: ComputedRef<ToolMenuGroup[]>
-}
-
-export type KeyframeModeName = 'action'
 export type KeyframeEditCommand =
   | ''
   | 'grab'

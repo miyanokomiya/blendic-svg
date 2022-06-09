@@ -17,15 +17,15 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import type { EditState } from '/@/composables/modeStates/appCanvas/editMode/core'
-import { useDefaultState } from '/@/composables/modeStates/appCanvas/editMode/defaultState'
+import type { PoseState } from '/@/composables/modeStates/appCanvas/poseMode/core'
+import { useDefaultState } from '/@/composables/modeStates/appCanvas/poseMode/defaultState'
 import { selectBoneInRect } from '/@/utils/armatures'
 
-export function useRectangleSelectingState(): EditState {
+export function useRectangleSelectingState(): PoseState {
   return state
 }
 
-const state: EditState = {
+const state: PoseState = {
   getLabel: () => 'RectangleSelecting',
   onStart: async (ctx) => {
     ctx.startDragging()

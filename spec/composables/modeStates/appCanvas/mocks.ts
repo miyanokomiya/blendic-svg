@@ -75,9 +75,13 @@ export function getMockPoseCtx() {
     startEditMovement: jest.fn(),
     setEditMovement: jest.fn(),
     setPopupMenuList: jest.fn(),
+    startDragging: jest.fn(),
+    setRectangleDragging: jest.fn(),
+    getDraggedRectangle: jest.fn(),
 
     setToolMenuGroups: jest.fn(),
     selectBone: jest.fn(),
+    selectBones: jest.fn(),
     selectAllBones: jest.fn(),
     getBones: jest.fn().mockReturnValue({}),
     getSelectedBones: jest.fn().mockReturnValue({}),

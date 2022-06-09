@@ -97,7 +97,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed, watch, onMounted } from 'vue'
+import { defineComponent, PropType, computed, watch, onMounted } from 'vue'
 import { getRadian, IRectangle } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import CanvasModepanel from '/@/components/molecules/CanvasModepanel.vue'
@@ -125,7 +125,7 @@ import { useThrottle } from '/@/composables/throttle'
 import { useCanvasElement } from '/@/composables/canvasElement'
 import { useCanvasStateMachine } from '/@/composables/modes/canvasStateMachine'
 import { useStore } from '/@/store'
-import { CanvasMode, EditMovement } from '/@/composables/modes/types'
+import { CanvasMode } from '/@/composables/modes/types'
 import { parseEventTarget } from '/@/composables/modeStates/utils'
 import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { useMenuList } from '/@/composables/menuList'
@@ -180,8 +180,6 @@ export default defineComponent({
       },
     })
 
-    const editMovement = ref<EditMovement>()
-
     const mode = useCanvasStateMachine({
       indexStore,
       canvasStore,
@@ -196,19 +194,6 @@ export default defineComponent({
       exitPointerLock: () => {
         pointerLock.exitPointerLock()
         canvas.endMoving()
-      },
-
-      startEditMovement: () => {
-        editMovement.value = {
-          start: canvas.viewToCanvas(canvas.mousePoint.value),
-          current: canvas.viewToCanvas(canvas.mousePoint.value),
-          ctrl: false,
-          scale: canvas.scale.value,
-        }
-      },
-      getEditMovement: () => editMovement.value,
-      setEditMovement: (val) => {
-        editMovement.value = val
       },
 
       panView: (val) => canvas.viewMove(val),

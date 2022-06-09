@@ -1,4 +1,3 @@
-import { EditMovement } from '/@/composables/modes/types'
 import {
   AppCanvasEvent,
   AppCanvasStateContext,
@@ -36,9 +35,6 @@ type Option = {
 
   requestPointerLock: CanvasStateContext['requestPointerLock']
   exitPointerLock: CanvasStateContext['exitPointerLock']
-  startEditMovement: CanvasStateContext['startEditMovement']
-  getEditMovement: CanvasStateContext['getEditMovement']
-  setEditMovement: CanvasStateContext['setEditMovement']
   panView: CanvasStateContext['panView']
   startDragging: CanvasStateContext['startDragging']
   setRectangleDragging: CanvasStateContext['setRectangleDragging']
@@ -89,10 +85,6 @@ function createObjectContext(options: Option): ObjectStateContext {
 
     generateUuid: generateUuid,
 
-    startEditMovement: options.startEditMovement,
-    getEditMovement: () => undefined,
-    setEditMovement: () => undefined,
-
     panView: options.panView,
     startDragging: options.startDragging,
     setRectangleDragging: options.setRectangleDragging,
@@ -106,18 +98,10 @@ function createObjectContext(options: Option): ObjectStateContext {
 function createEditContext(options: Option): EditStateContext {
   const { indexStore, canvasStore } = options
 
-  let editMovement: EditMovement | undefined
-
   return {
     ...createBaseContext(options),
 
     generateUuid: generateUuid,
-
-    startEditMovement: options.startEditMovement,
-    getEditMovement: () => editMovement,
-    setEditMovement: (val) => {
-      editMovement = val
-    },
 
     panView: options.panView,
     startDragging: options.startDragging,
@@ -163,10 +147,7 @@ function createEditContext(options: Option): EditStateContext {
         })
       })
 
-      // grab the new bones if its are extruded
-      if (extrudedBones.length > 0) {
-        indexStore.addBones(extrudedBones, { tail: true })
-      }
+      indexStore.addBones(extrudedBones, { tail: true })
     },
     dissolveBones: indexStore.dissolveBone,
     subdivideBones: () => {
@@ -174,7 +155,6 @@ function createEditContext(options: Option): EditStateContext {
         indexStore.boneMap.value,
         Object.keys(indexStore.allSelectedBones.value)
       )
-      // select subdivided bones
       const subdividedIdMap = Object.keys(upsertedBones).reduce<
         IdMap<BoneSelectedState>
       >((p, id) => {
@@ -229,18 +209,10 @@ function createEditContext(options: Option): EditStateContext {
 function createPoseContext(options: Option): PoseStateContext {
   const { indexStore, canvasStore, animationStore } = options
 
-  let editMovement: EditMovement | undefined
-
   return {
     ...createBaseContext(options),
 
     generateUuid: generateUuid,
-
-    startEditMovement: options.startEditMovement,
-    getEditMovement: () => editMovement,
-    setEditMovement: (val) => {
-      editMovement = val
-    },
 
     panView: options.panView,
     startDragging: options.startDragging,
@@ -272,18 +244,10 @@ function createPoseContext(options: Option): PoseStateContext {
 function createWeightContext(options: Option): WeightStateContext {
   const { canvasStore, elementStore } = options
 
-  let editMovement: EditMovement | undefined
-
   return {
     ...createBaseContext(options),
 
     generateUuid: generateUuid,
-
-    startEditMovement: options.startEditMovement,
-    getEditMovement: () => editMovement,
-    setEditMovement: (val) => {
-      editMovement = val
-    },
 
     panView: options.panView,
     startDragging: options.startDragging,

@@ -36,7 +36,6 @@ const state: PoseState = {
   getLabel: () => 'Scaling',
   shouldRequestPointerLock: true,
   onStart: async (ctx) => {
-    ctx.startEditMovement()
     ctx.setEditTransforms({}, 'scale')
     ctx.setCommandExams([
       { command: 'x', title: 'On Axis X' },
@@ -45,7 +44,6 @@ const state: PoseState = {
   },
   onEnd: async (ctx) => {
     ctx.setAxisGridInfo()
-    ctx.setEditMovement()
     ctx.setEditTransforms()
     ctx.setCommandExams()
   },

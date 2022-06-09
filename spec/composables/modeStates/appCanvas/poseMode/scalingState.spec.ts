@@ -34,11 +34,10 @@ describe('src/composables/modeStates/appCanvas/poseMode/scalingState.ts', () => 
   }
 
   describe('onStart', () => {
-    it('should execute "startEditMovement"', async () => {
+    it('should execute "setEditTransforms"', async () => {
       const ctx = getMockPoseCtx()
       const sm = useModeStateMachine(ctx, useScalingState)
       await sm.ready
-      expect(ctx.startEditMovement).toHaveBeenNthCalledWith(1)
       expect(ctx.setEditTransforms).toHaveBeenNthCalledWith(1, {}, 'scale')
     })
   })
@@ -48,7 +47,6 @@ describe('src/composables/modeStates/appCanvas/poseMode/scalingState.ts', () => 
       const { ctx, sm } = await prepare()
       await sm.dispose()
       expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1)
-      expect(ctx.setEditMovement).toHaveBeenNthCalledWith(1)
       expect(ctx.setEditTransforms).toHaveBeenNthCalledWith(1)
     })
   })

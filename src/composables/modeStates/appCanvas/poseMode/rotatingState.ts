@@ -34,12 +34,10 @@ export function useRotatingState(): PoseState {
     getLabel: () => 'Rotating',
     shouldRequestPointerLock: true,
     onStart: async (ctx) => {
-      ctx.startEditMovement()
       ctx.setEditTransforms({}, 'rotate')
     },
     onEnd: async (ctx) => {
       ctx.setAxisGridInfo()
-      ctx.setEditMovement()
       ctx.setEditTransforms()
     },
     handleEvent: async (ctx, event) => {

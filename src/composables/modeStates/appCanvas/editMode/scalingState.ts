@@ -32,12 +32,10 @@ const state: EditState = {
   getLabel: () => 'Scaling',
   shouldRequestPointerLock: true,
   onStart: async (ctx) => {
-    ctx.startEditMovement()
     ctx.setEditTransform(getTransform(), 'scale')
   },
   onEnd: async (ctx) => {
     ctx.setAxisGridInfo()
-    ctx.setEditMovement()
     ctx.setEditTransform()
   },
   handleEvent: async (ctx, event) => {

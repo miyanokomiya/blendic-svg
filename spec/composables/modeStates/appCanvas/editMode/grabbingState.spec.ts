@@ -32,11 +32,10 @@ describe('src/composables/modeStates/appCanvas/editMode/grabbingState.ts', () =>
   }
 
   describe('onStart', () => {
-    it('should execute "startEditMovement"', async () => {
+    it('should execute "setEditTransform"', async () => {
       const ctx = getMockEditCtx()
       const sm = useModeStateMachine(ctx, useGrabbingState)
       await sm.ready
-      expect(ctx.startEditMovement).toHaveBeenNthCalledWith(1)
       expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
         1,
         getTransform(),
@@ -50,7 +49,6 @@ describe('src/composables/modeStates/appCanvas/editMode/grabbingState.ts', () =>
       const { ctx, sm } = await prepare()
       await sm.dispose()
       expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1)
-      expect(ctx.setEditMovement).toHaveBeenNthCalledWith(1)
       expect(ctx.setEditTransform).toHaveBeenNthCalledWith(1)
     })
   })

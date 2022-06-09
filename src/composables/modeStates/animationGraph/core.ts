@@ -18,7 +18,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { IVec2 } from 'okageo'
-import { SelectOptions } from '/@/composables/modes/types'
+import { EditMovement, SelectOptions } from '/@/composables/modes/types'
 import type {
   ModeStateBase,
   ModeStateEvent,
@@ -35,6 +35,9 @@ import {
 import { GetGraphNodeModule, NODE_MENU_OPTION } from '/@/utils/graphNodes'
 
 export interface AnimationGraphStateContext extends CanvasStateContext {
+  startEditMovement: () => void
+  getEditMovement: () => EditMovement | undefined
+  setEditMovement: (val?: EditMovement) => void
   getGraphNodeModule: GetGraphNodeModule
   getNodeMap: () => IdMap<GraphNode>
   updateNodes: (val: IdMap<Partial<GraphNode>>) => void

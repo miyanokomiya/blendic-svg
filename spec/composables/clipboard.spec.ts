@@ -43,7 +43,9 @@ describe('src/composables/clipboard.ts', () => {
     describe('onPaste', () => {
       it('should get each data from the clipboard', async () => {
         let items: any[] = []
-        const handler = (_items: any[]) => (items = _items)
+        const handler = (_items: any[]) => {
+          items = _items
+        }
         const clipboard = useClipboard(() => ({}), handler)
         const e = {
           preventDefault: jest.fn(),

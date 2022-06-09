@@ -20,9 +20,10 @@ Copyright (C) 2022, Tomoya Komiyama.
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
+import { SelectOptions } from '/@/composables/modes/types'
 
 export interface WeightStateContext extends CanvasStateContext {
-  selectElement: (id = '', options?: SelectOptions) => void
+  selectElement: (id?: string, options?: SelectOptions) => void
 }
 
 export interface WeightState

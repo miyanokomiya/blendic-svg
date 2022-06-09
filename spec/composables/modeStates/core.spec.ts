@@ -133,7 +133,7 @@ describe('src/composables/modeStates/core.ts', () => {
       expect(groupASrc.onStart).toHaveBeenCalledTimes(1)
       expect(childAA.onStart).toHaveBeenCalledTimes(1)
 
-      await sm.handleEvent({ type: 'state', data: { name: '' } })
+      await sm.handleEvent({ type: 'keydown', data: { key: 'a' } })
       expect(sm.getStateSummary().label).toBe('a:ab')
       expect(groupASrc.onStart).toHaveBeenCalledTimes(1)
       expect(groupASrc.onEnd).toHaveBeenCalledTimes(0)

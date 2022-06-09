@@ -23,6 +23,7 @@ import type {
   ModeStateBase,
   ModeStateEvent,
   ModeStateEventBase,
+  TransitionValue,
 } from '/@/composables/modeStates/core'
 import { IdMap } from '/@/models'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
@@ -65,6 +66,11 @@ export interface AnimationGraphState
   extends ModeStateBase<AnimationGraphStateContext, AnimationGraphEvent> {}
 
 export type AnimationGraphEvent = ModeStateEvent | ChangeSelectionEvent
+
+export type AnimationGraphTransitionValue = TransitionValue<
+  AnimationGraphStateContext,
+  AnimationGraphEvent
+>
 
 export interface ChangeSelectionEvent extends ModeStateEventBase {
   type: 'selection'

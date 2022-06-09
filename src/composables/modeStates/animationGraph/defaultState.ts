@@ -20,7 +20,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 import type {
   AnimationGraphState,
   AnimationGraphStateContext,
-  AnimationGraphEvent,
+  AnimationGraphTransitionValue,
 } from '/@/composables/modeStates/animationGraph/core'
 import { useMovingNodeState } from '/@/composables/modeStates/animationGraph/movingNodeState'
 import { useGrabbingNodeState } from '/@/composables/modeStates/animationGraph/grabbingNodeState'
@@ -38,10 +38,7 @@ import {
 import { toList } from '/@/utils/commons'
 import { duplicateNodes } from '/@/utils/graphNodes'
 import { add } from 'okageo'
-import {
-  PointerDownEvent,
-  TransitionValue,
-} from '/@/composables/modeStates/core'
+import { PointerDownEvent } from '/@/composables/modeStates/core'
 import { useCuttingEdgeState } from '/@/composables/modeStates/animationGraph/cuttingEdgeState'
 
 export function useDefaultState(): AnimationGraphState {
@@ -149,7 +146,7 @@ function updateCommandExams(ctx: AnimationGraphStateContext) {
 function onDownEmpty(
   ctx: AnimationGraphStateContext,
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext, AnimationGraphEvent> {
+): AnimationGraphTransitionValue {
   ctx.selectNodes({}, event.data.options)
   return useRectangleSelectingState
 }
@@ -157,7 +154,7 @@ function onDownEmpty(
 function onDownNodeBody(
   ctx: AnimationGraphStateContext,
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext, AnimationGraphEvent> {
+): AnimationGraphTransitionValue {
   const nodeId = event.target.data?.['node_id']
   if (nodeId) {
     if (event.data.options.shift) {
@@ -173,7 +170,7 @@ function onDownNodeBody(
 
 function onDownEdgeInput(
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext, AnimationGraphEvent> {
+): AnimationGraphTransitionValue {
   const edgeInfo = parseNodeEdgeInfo(event.target)
   return () =>
     useConnectingInputEdgeState({
@@ -185,7 +182,7 @@ function onDownEdgeInput(
 
 function onDownEdgeOutput(
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext, AnimationGraphEvent> {
+): AnimationGraphTransitionValue {
   const edgeInfo = parseNodeEdgeInfo(event.target)
   return () =>
     useConnectingOutputEdgeState({
@@ -197,7 +194,7 @@ function onDownEdgeOutput(
 
 function onDuplicate(
   ctx: AnimationGraphStateContext
-): TransitionValue<AnimationGraphStateContext, AnimationGraphEvent> {
+): AnimationGraphTransitionValue {
   ctx.pasteNodes(
     toList(
       duplicateNodes(

@@ -17,17 +17,15 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
-import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
-import { mapFilter, mapReduce } from '/@/utils/commons'
-import { getIsRectHitRectFn } from '/@/utils/geometry'
-import { getGraphNodeRect } from '/@/utils/helpers'
+import type { EditState } from '/@/composables/modeStates/appCanvas/editMode/core'
+import { useDefaultState } from '/@/composables/modeStates/appCanvas/editMode/defaultState'
+import { selectBoneInRect } from '/@/utils/armatures'
 
-export function useRectangleSelectingState(): AnimationGraphState {
+export function useRectangleSelectingState(): EditState {
   return state
 }
 
-const state: AnimationGraphState = {
+const state: EditState = {
   getLabel: () => 'RectangleSelectingState',
   onStart: async (ctx) => {
     ctx.startDragging()
@@ -41,15 +39,9 @@ const state: AnimationGraphState = {
       case 'pointerup': {
         const rect = ctx.getDraggedRectangle()
         if (rect) {
-          const checkFn = getIsRectHitRectFn(rect)
-          ctx.selectNodes(
-            mapReduce(
-              mapFilter(ctx.getNodeMap(), (node) =>
-                checkFn(getGraphNodeRect(ctx.getGraphNodeModule, node))
-              ),
-              () => true
-            ),
-            event.data.options
+          ctx.selectBones(
+            selectBoneInRect(rect, ctx.getBones()),
+            event.data.options.shift
           )
         }
         return useDefaultState

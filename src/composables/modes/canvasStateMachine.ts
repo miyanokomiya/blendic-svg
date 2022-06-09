@@ -89,8 +89,8 @@ function createObjectContext(options: Option): ObjectStateContext {
 
     panView: options.panView,
     startDragging: options.startDragging,
-    setRectangleDragging: () => undefined,
-    getDraggedRectangle: () => undefined,
+    setRectangleDragging: options.setRectangleDragging,
+    getDraggedRectangle: options.getDraggedRectangle,
 
     setPopupMenuList: canvasStore.setPopupMenuList,
     setCommandExams: canvasStore.setCommandExams,
@@ -115,8 +115,8 @@ function createEditContext(options: Option): EditStateContext {
 
     panView: options.panView,
     startDragging: options.startDragging,
-    setRectangleDragging: () => undefined,
-    getDraggedRectangle: () => undefined,
+    setRectangleDragging: options.setRectangleDragging,
+    getDraggedRectangle: options.getDraggedRectangle,
 
     setPopupMenuList: canvasStore.setPopupMenuList,
     setCommandExams: canvasStore.setCommandExams,
@@ -238,8 +238,8 @@ function createPoseContext(options: Option): PoseStateContext {
 
     panView: options.panView,
     startDragging: options.startDragging,
-    setRectangleDragging: () => undefined,
-    getDraggedRectangle: () => undefined,
+    setRectangleDragging: options.setRectangleDragging,
+    getDraggedRectangle: options.getDraggedRectangle,
 
     setPopupMenuList: canvasStore.setPopupMenuList,
     setCommandExams: canvasStore.setCommandExams,
@@ -281,8 +281,8 @@ function createWeightContext(options: Option): WeightStateContext {
 
     panView: options.panView,
     startDragging: options.startDragging,
-    setRectangleDragging: () => undefined,
-    getDraggedRectangle: () => undefined,
+    setRectangleDragging: options.setRectangleDragging,
+    getDraggedRectangle: options.getDraggedRectangle,
 
     setPopupMenuList: canvasStore.setPopupMenuList,
     setCommandExams: canvasStore.setCommandExams,

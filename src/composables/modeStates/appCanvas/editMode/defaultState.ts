@@ -27,6 +27,8 @@ import { useRotatingState } from '/@/composables/modeStates/appCanvas/editMode/r
 import { useScalingState } from '/@/composables/modeStates/appCanvas/editMode/scalingState'
 import { useDeletingState } from '/@/composables/modeStates/appCanvas/editMode/deletingState'
 import { BoneSelectedState } from '/@/models'
+import { useRectangleSelectingState } from '/@/composables/modeStates/appCanvas/editMode/rectangleSelectingState'
+import { getCtrlOrMetaStr } from '/@/utils/devices'
 
 export function useDefaultState(): EditState {
   return state
@@ -44,9 +46,9 @@ const state: EditState = {
           case 0:
             switch (event.target.type) {
               case 'empty':
-                ctx.selectBone()
+                ctx.selectBones({}, event.data.options.shift)
                 onChangeSelection(ctx)
-                return
+                return useRectangleSelectingState
               case 'bone-body':
               case 'bone-head':
               case 'bone-tail':
@@ -139,7 +141,18 @@ const state: EditState = {
 
 function onChangeSelection(ctx: EditStateContext) {
   if (ctx.getLastSelectedBoneId()) {
-    ctx.setCommandExams([])
+    ctx.setCommandExams([
+      { command: 'e', title: 'Extrude' },
+      { command: 'g', title: 'Grab' },
+      { command: 'r', title: 'Rotate' },
+      { command: 's', title: 'Scale' },
+      { command: 'a', title: 'All Select' },
+      { command: 'A', title: 'Add Bone' },
+      { command: 'x', title: 'Delete' },
+      { command: 'D', title: 'Duplicate' },
+      { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
+      { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
+    ])
     ctx.setToolMenuGroups([
       {
         label: 'Armature',
@@ -152,7 +165,11 @@ function onChangeSelection(ctx: EditStateContext) {
       },
     ])
   } else {
-    ctx.setCommandExams([])
+    ctx.setCommandExams([
+      { command: 'a', title: 'All Select' },
+      { command: 'A', title: 'Add Bone' },
+      { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },
+    ])
     ctx.setToolMenuGroups([])
   }
 }

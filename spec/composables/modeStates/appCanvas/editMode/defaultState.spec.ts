@@ -64,7 +64,7 @@ describe('src/composables/modeStates/appCanvas/editMode/defaultState.ts', () => 
         target: { type: 'empty', id: '' },
         data: { point: { x: 0, y: 0 }, options: { button: 0 } },
       })
-      expect(ctx.selectBone).toHaveBeenNthCalledWith(1)
+      expect(ctx.selectBones).toHaveBeenNthCalledWith(1, {}, undefined)
       expect(ctx.setCommandExams).toHaveBeenCalled()
     })
     it('bone-body: should execute "selectArmature"', async () => {

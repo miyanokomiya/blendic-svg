@@ -109,6 +109,7 @@ function onChangeSelection(ctx: PoseStateContext) {
       { command: 'i', title: 'Insert Keyframe' },
       { command: 'g', title: 'Grab' },
       { command: 'r', title: 'Rotate' },
+      { command: 's', title: 'Scale' },
       { command: 'a', title: 'All Select' },
       { command: `${getCtrlOrMetaStr()} + c`, title: 'Clip' },
       { command: `${getCtrlOrMetaStr()} + v`, title: 'Paste' },

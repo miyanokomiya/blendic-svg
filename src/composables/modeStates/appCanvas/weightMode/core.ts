@@ -17,22 +17,14 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
+import { CanvasStateContext } from '/@/composables/modeStates/commons'
+import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
+import type { ModeStateBase } from '/@/composables/modeStates/core'
+import { SelectOptions } from '/@/composables/modes/types'
 
-export function usePanningState(): AnimationGraphState {
-  return state
+export interface WeightStateContext extends CanvasStateContext {
+  selectElement: (id?: string, options?: SelectOptions) => void
 }
 
-const state: AnimationGraphState = {
-  getLabel: () => 'PanningState',
-  shouldRequestPointerLock: true,
-  handleEvent: async (ctx, event) => {
-    switch (event.type) {
-      case 'pointermove':
-        ctx.panView(event.data)
-        return
-      case 'pointerup':
-        return { type: 'break' }
-    }
-  },
-}
+export interface WeightState
+  extends ModeStateBase<WeightStateContext, AppCanvasEvent> {}

@@ -20,11 +20,12 @@ Copyright (C) 2022, Tomoya Komiyama.
 import type {
   AnimationGraphState,
   AnimationGraphStateContext,
+  AnimationGraphTransitionValue,
 } from '/@/composables/modeStates/animationGraph/core'
 import { useMovingNodeState } from '/@/composables/modeStates/animationGraph/movingNodeState'
 import { useGrabbingNodeState } from '/@/composables/modeStates/animationGraph/grabbingNodeState'
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
-import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
+import { usePanningState } from '/@/composables/modeStates/commons'
 import { useRectangleSelectingState } from '/@/composables/modeStates/animationGraph/rectangleSelectingState'
 import { useConnectingInputEdgeState } from '/@/composables/modeStates/animationGraph/connectingInputEdgeState'
 import { useConnectingOutputEdgeState } from '/@/composables/modeStates/animationGraph/connectingOutputEdgeState'
@@ -37,10 +38,7 @@ import {
 import { toList } from '/@/utils/commons'
 import { duplicateNodes } from '/@/utils/graphNodes'
 import { add } from 'okageo'
-import {
-  PointerDownEvent,
-  TransitionValue,
-} from '/@/composables/modeStates/core'
+import { PointerDownEvent } from '/@/composables/modeStates/core'
 import { useCuttingEdgeState } from '/@/composables/modeStates/animationGraph/cuttingEdgeState'
 
 export function useDefaultState(): AnimationGraphState {
@@ -98,7 +96,6 @@ const state: AnimationGraphState = {
           }
           case 'a':
             ctx.selectAllNode()
-            updateCommandExams(ctx)
             return
           case 'g':
             return ctx.getLastSelectedNodeId()
@@ -107,7 +104,6 @@ const state: AnimationGraphState = {
           case 'D':
             return onDuplicate(ctx)
           case 'x':
-            updateCommandExams(ctx)
             ctx.deleteNodes()
             return
         }
@@ -119,9 +115,12 @@ const state: AnimationGraphState = {
       }
       case 'paste': {
         const clipboard = useGraphNodeClipboard(ctx)
-        clipboard.onPaste(event.nativeEvent)
+        await clipboard.onPaste(event.nativeEvent)
         return
       }
+      case 'selection':
+        updateCommandExams(ctx)
+        return
     }
   },
 }
@@ -147,25 +146,22 @@ function updateCommandExams(ctx: AnimationGraphStateContext) {
 function onDownEmpty(
   ctx: AnimationGraphStateContext,
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext> {
+): AnimationGraphTransitionValue {
   ctx.selectNodes({}, event.data.options)
-  updateCommandExams(ctx)
   return useRectangleSelectingState
 }
 
 function onDownNodeBody(
   ctx: AnimationGraphStateContext,
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext> {
+): AnimationGraphTransitionValue {
   const nodeId = event.target.data?.['node_id']
   if (nodeId) {
     if (event.data.options.shift) {
       ctx.selectNodes({ [nodeId]: true }, event.data.options)
-      updateCommandExams(ctx)
     } else {
       if (!ctx.getSelectedNodeMap()[nodeId]) {
         ctx.selectNodes({ [nodeId]: true }, event.data.options)
-        updateCommandExams(ctx)
       }
       return () => useMovingNodeState({ nodeId })
     }
@@ -174,7 +170,7 @@ function onDownNodeBody(
 
 function onDownEdgeInput(
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext> {
+): AnimationGraphTransitionValue {
   const edgeInfo = parseNodeEdgeInfo(event.target)
   return () =>
     useConnectingInputEdgeState({
@@ -186,7 +182,7 @@ function onDownEdgeInput(
 
 function onDownEdgeOutput(
   event: PointerDownEvent
-): TransitionValue<AnimationGraphStateContext> {
+): AnimationGraphTransitionValue {
   const edgeInfo = parseNodeEdgeInfo(event.target)
   return () =>
     useConnectingOutputEdgeState({
@@ -198,7 +194,7 @@ function onDownEdgeOutput(
 
 function onDuplicate(
   ctx: AnimationGraphStateContext
-): TransitionValue<AnimationGraphStateContext> {
+): AnimationGraphTransitionValue {
   ctx.pasteNodes(
     toList(
       duplicateNodes(

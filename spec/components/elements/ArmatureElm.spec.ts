@@ -26,7 +26,7 @@ describe('src/components/elements/ArmatureElm.vue', () => {
     const getWrapper = () =>
       mount(Target, {
         props: {
-          armature: getArmature({ bones: ['a'] }),
+          armature: getArmature({ id: 'arm', bones: ['a'] }),
           bones: [getBone({ id: 'a', tail: { x: 10, y: 10 } })],
         },
       })

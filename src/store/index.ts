@@ -627,6 +627,6 @@ export function createStore(historyStore: HistoryStore) {
 export type IndexStore = ReturnType<typeof createStore>
 
 const store = createStore(useHistoryStore())
-export function useStore() {
+export function useStore(): IndexStore {
   return store
 }

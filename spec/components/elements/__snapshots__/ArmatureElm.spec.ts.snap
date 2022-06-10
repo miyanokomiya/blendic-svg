@@ -2,6 +2,8 @@
 
 exports[`src/components/elements/ArmatureElm.vue snapshot defalut 1`] = `
 <g
+  data-id="arm"
+  data-type="armature-body"
   opacity="0.8"
   transform=""
 >
@@ -45,6 +47,8 @@ exports[`src/components/elements/ArmatureElm.vue snapshot defalut 1`] = `
 
 exports[`src/components/elements/ArmatureElm.vue snapshot selected 1`] = `
 <g
+  data-id="arm"
+  data-type="armature-body"
   opacity="0.8"
   transform=""
 >

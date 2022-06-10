@@ -23,34 +23,42 @@ import type { KeyOptions, MouseOptions } from '/@/utils/devices'
 
 type TransitionType = 'break' | 'stack-restart' | 'stack-resume'
 
-export type TransitionValue<C> =
-  | (() => ModeStateBase<C>)
-  | { getState: () => ModeStateBase<C>; type: TransitionType }
+export type TransitionValue<C, E = ModeStateEvent> =
+  | (() => ModeStateBase<C, E>)
+  | { getState: () => ModeStateBase<C, E>; type: TransitionType }
   | { type: 'break' }
   | void
 
-export interface ModeStateBase<C> {
+export interface ModeStateBase<C, E = ModeStateEvent> {
   getLabel: () => string
   shouldRequestPointerLock?: boolean
-  onStart?: (ctx: C) => Promise<void>
+  onStart?: (ctx: ModeStateContextBase & C) => Promise<void>
   onEnd?: (ctx: C) => Promise<void>
-  handleEvent: (ctx: C, e: ModeStateEvent) => Promise<TransitionValue<C>>
+  handleEvent: (ctx: C, e: E) => Promise<TransitionValue<C, E>>
 }
 
-type StateStackItem<C> = {
-  state: ModeStateBase<C>
+type StateStackItem<C, E = ModeStateEvent> = {
+  state: ModeStateBase<C, E>
   type?: TransitionType
 }
 
-export function useModeStateMachine<C>(
+interface StateMachine<E = ModeStateEvent> {
+  getStateSummary: () => { label: string }
+  handleEvent: (event: E) => Promise<void>
+  dispose: () => Promise<void>
+  // This will be resolved when "onStart" of the initial state finishes
+  ready: Promise<void>
+}
+
+export function useModeStateMachine<C, E = ModeStateEvent>(
   ctx: ModeStateContextBase & C,
-  getInitialState: () => ModeStateBase<C>
-) {
-  const stateStack: StateStackItem<C>[] = [{ state: getInitialState() }]
-  function getCurrentState(): StateStackItem<C> {
+  getInitialState: () => ModeStateBase<C, E>
+): StateMachine<E> {
+  const stateStack: StateStackItem<C, E>[] = [{ state: getInitialState() }]
+  function getCurrentState(): StateStackItem<C, E> {
     return stateStack[stateStack.length - 1]
   }
-  getCurrentState().state.onStart?.(ctx)
+  const ready = getCurrentState().state.onStart?.(ctx) ?? Promise.resolve()
 
   function getStateSummary() {
     return {
@@ -58,7 +66,7 @@ export function useModeStateMachine<C>(
     }
   }
 
-  async function handleEvent(event: ModeStateEvent): Promise<void> {
+  async function handleEvent(event: E): Promise<void> {
     const ret = await getCurrentState().state.handleEvent(ctx, event)
     if (ret) {
       if (typeof ret === 'function') {
@@ -84,15 +92,15 @@ export function useModeStateMachine<C>(
     if (current.type !== 'stack-resume') {
       await next.state.onStart?.(ctx)
     }
-    console.log('break', next.state.getLabel())
+    // console.log('break', next.state.getLabel())
   }
 
   async function switchState(
     ctx: ModeStateContextBase & C,
-    nextState: ModeStateBase<C>,
+    nextState: ModeStateBase<C, E>,
     type?: Exclude<TransitionType, 'break'>
   ): Promise<void> {
-    console.log('switch', nextState.getLabel(), type)
+    // console.log('switch', nextState.getLabel(), type)
     const current = getCurrentState()
 
     if (
@@ -126,9 +134,17 @@ export function useModeStateMachine<C>(
     await nextState.onStart?.(ctx)
   }
 
+  async function dispose() {
+    const current = getCurrentState()
+    await current.state.onEnd?.(ctx)
+    stateStack.length = 0
+  }
+
   return {
     getStateSummary,
     handleEvent,
+    dispose,
+    ready,
   }
 }
 
@@ -208,4 +224,31 @@ export interface CopyEvent extends ModeStateEventBase {
 export interface PasteEvent extends ModeStateEventBase {
   type: 'paste'
   nativeEvent: ClipboardEvent
+}
+
+export function useGroupState<C, K, E = ModeStateEvent>(
+  getState: () => ModeStateBase<C, E>,
+  getInitialState: () => ModeStateBase<K, E>,
+  deriveCtx: (ctx: C) => K
+): ModeStateBase<C, E> {
+  let sm: StateMachine<E> | undefined
+  const state = getState()
+  return {
+    getLabel: () =>
+      state.getLabel() + (sm ? `:${sm.getStateSummary().label}` : ''),
+    onStart: async (ctx) => {
+      await state.onStart?.(ctx)
+      sm = useModeStateMachine({ ...ctx, ...deriveCtx(ctx) }, getInitialState)
+      await sm.ready
+    },
+    onEnd: async (ctx) => {
+      await sm!.dispose()
+      await state.onEnd?.(ctx)
+    },
+    handleEvent: async (ctx, e) => {
+      const ret = await state.handleEvent(ctx, e)
+      if (ret) return ret
+      return sm!.handleEvent(e)
+    },
+  }
 }

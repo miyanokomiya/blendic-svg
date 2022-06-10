@@ -36,7 +36,9 @@ export interface FileItem {
 
 export function useClipboard(
   generateCopyDataSet: () => CopyDataSet,
-  handlePastedItems: (items: Array<StringItem | FileItem>) => void
+  handlePastedItems: (
+    items: Array<StringItem | FileItem>
+  ) => Promise<void> | void
 ) {
   function onCopy(e: ClipboardEvent) {
     if (!e.clipboardData) return
@@ -47,14 +49,14 @@ export function useClipboard(
     e.preventDefault()
   }
 
-  function onPaste(e: ClipboardEvent) {
+  async function onPaste(e: ClipboardEvent) {
     if (!e.clipboardData) return
 
+    e.preventDefault()
     const items = Array.from(e.clipboardData.items).map(createItem)
     if (items.length > 0) {
-      handlePastedItems(items)
+      await handlePastedItems(items)
     }
-    e.preventDefault()
   }
 
   return {

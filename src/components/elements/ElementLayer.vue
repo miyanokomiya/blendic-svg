@@ -51,7 +51,7 @@ import {
 } from '/@/utils/poseResolver'
 import { isPlainText, parseViewBoxFromStr } from '/@/utils/elements'
 import { useSettings } from '/@/composables/settings'
-import type { CanvasMode, SelectOptions } from '/@/composables/modes/types'
+import type { CanvasMode } from '/@/composables/modes/types'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { useCanvasStore } from '/@/store/canvas'
 import { useStore } from '/@/store'
@@ -142,12 +142,6 @@ export default defineComponent({
 
       return parseViewBoxFromStr(graphResolvedElement.value.attributes.viewBox)
     })
-
-    function clickElement(id: string, options?: SelectOptions) {
-      if (props.canvasMode !== 'weight') return
-      elementStore.selectElement(id, options)
-    }
-    provide('onClickElement', clickElement)
 
     const scale = computed(injectScale())
     const viewboxStrokeWidth = computed(() => scale.value)

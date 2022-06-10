@@ -18,10 +18,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g :transform="transform" :opacity="opacity">
+  <g
+    :transform="transform"
+    :opacity="opacity"
+    data-type="armature-body"
+    :data-id="armature.id"
+  >
     <BoneElm
       v-for="bone in sortedBoneMap"
       :key="bone.id"
+      read-only
       :bone="bone"
       :selected-state="boneSelectedState"
       :parent="boneMap[bone.parentId]"

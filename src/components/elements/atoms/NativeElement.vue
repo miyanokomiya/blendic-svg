@@ -26,10 +26,8 @@ import {
   inject,
   PropType,
 } from 'vue'
-import { SelectOptions } from '/@/composables/modes/types'
 import { useSettings } from '/@/composables/settings'
 import { ElementNode } from '/@/models'
-import { getMouseOptions } from '/@/utils/devices'
 import { isPlainText, testEditableTag } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
@@ -44,7 +42,6 @@ const NativeElement: any = defineComponent({
       default: false,
     },
   },
-  emits: ['click-element'],
   setup(props) {
     const { settings } = useSettings()
 
@@ -68,16 +65,6 @@ const NativeElement: any = defineComponent({
 
     const element = computed(() => props.element as ElementNode)
 
-    const onClickElement = inject<
-      (id: string, options?: SelectOptions) => void
-    >('onClickElement', () => {})
-
-    function onClick(e: MouseEvent) {
-      if (!testEditableTag(element.value.tag)) return
-      e.stopPropagation()
-      onClickElement(element.value.id, getMouseOptions(e))
-    }
-
     const groupSelected = computed(() => {
       return props.groupSelected || selectedMap.value[element.value.id]
     })
@@ -87,8 +74,13 @@ const NativeElement: any = defineComponent({
         ...normalizeAttributes({
           ...element.value.attributes,
           ...(overrideAttrs.value ?? {}),
+          ...(testEditableTag(element.value.tag)
+            ? {
+                'data-type': 'element',
+                'data-id': element.value.id,
+              }
+            : {}),
         }),
-        onClick,
         key: props.element.id,
       }
     })
@@ -112,11 +104,11 @@ const NativeElement: any = defineComponent({
 export default NativeElement
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 g {
   pointer-events: none;
-  > * {
-    pointer-events: initial;
-  }
+}
+g > * {
+  pointer-events: initial;
 }
 </style>

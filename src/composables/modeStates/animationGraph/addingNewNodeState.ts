@@ -22,11 +22,12 @@ import { PopupMenuItem } from '/@/composables/modes/types'
 import type {
   AnimationGraphState,
   AnimationGraphStateContext,
+  AnimationGraphTransitionValue,
 } from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
-import { usePanningState } from '/@/composables/modeStates/animationGraph/panningState'
+import { usePanningState } from '/@/composables/modeStates/commons'
 import { updateNodeInput } from '/@/composables/modeStates/animationGraph/utils'
-import { PopupMenuEvent, TransitionValue } from '/@/composables/modeStates/core'
+import { PopupMenuEvent } from '/@/composables/modeStates/core'
 import { dropNullishItem } from '/@/utils/commons'
 import {
   getInputType,
@@ -183,7 +184,7 @@ function onSelectNewNode(
   ctx: AnimationGraphStateContext,
   event: PopupMenuEvent,
   options: Options
-): TransitionValue<AnimationGraphStateContext> {
+): AnimationGraphTransitionValue {
   const type = event.data.key
   const struct = ctx.getGraphNodeModule(type)?.struct
   const draft = ctx.getDraftEdge()
@@ -230,7 +231,7 @@ function onSelectNewNodeToInsert(
   ctx: AnimationGraphStateContext,
   event: PopupMenuEvent,
   options: Options
-): TransitionValue<AnimationGraphStateContext> {
+): AnimationGraphTransitionValue {
   const type = event.data.key
   const struct = ctx.getGraphNodeModule(type)?.struct
   if (!struct) return useDefaultState

@@ -228,7 +228,7 @@ export default defineComponent({
 
       return addPoseTransform(
         animationStore.getCurrentSelfTransforms(targetBone.value.id),
-        canvasStore.getEditTransforms(targetBone.value.id)
+        canvasStore.getEditPoseTransforms(targetBone.value.id)
       )
     })
 

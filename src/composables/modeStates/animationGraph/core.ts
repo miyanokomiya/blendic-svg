@@ -18,18 +18,15 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { IVec2 } from 'okageo'
-import { Rectangle } from 'okanvas'
-import {
-  CommandExam,
-  EditMovement,
-  PopupMenuItem,
-  SelectOptions,
-} from '/@/composables/modes/types'
+import { EditMovement, SelectOptions } from '/@/composables/modes/types'
 import type {
   ModeStateBase,
-  ModeStateContextBase,
+  ModeStateEvent,
+  ModeStateEventBase,
+  TransitionValue,
 } from '/@/composables/modeStates/core'
 import { IdMap } from '/@/models'
+import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import {
   EdgeSummary,
   GraphEdgeConnection,
@@ -38,8 +35,10 @@ import {
 } from '/@/models/graphNode'
 import { GetGraphNodeModule, NODE_MENU_OPTION } from '/@/utils/graphNodes'
 
-export interface AnimationGraphStateContext extends ModeStateContextBase {
-  generateUuid: () => string
+export interface AnimationGraphStateContext extends CanvasStateContext {
+  startEditMovement: () => void
+  getEditMovement: () => EditMovement | undefined
+  setEditMovement: (val?: EditMovement) => void
   getGraphNodeModule: GetGraphNodeModule
   getNodeMap: () => IdMap<GraphNode>
   updateNodes: (val: IdMap<Partial<GraphNode>>) => void
@@ -53,22 +52,10 @@ export interface AnimationGraphStateContext extends ModeStateContextBase {
     arg?: Partial<GraphNode>
   ) => GraphNode | undefined
   pasteNodes: (val: GraphNode[]) => void
-  getEditMovement: () => EditMovement | undefined
-  setEditMovement: (val?: EditMovement) => void
   getDraftEdge: () => DraftGraphEdge | undefined
   setDraftEdge: (val?: DraftGraphEdge) => void
 
-  startEditMovement: () => void
-  startDragging: () => void
-
-  setPopupMenuList: (val?: { items: PopupMenuItem[]; point: IVec2 }) => void
   getNodeItemList: () => NODE_MENU_OPTION[]
-
-  panView: (val: EditMovement) => void
-  setRectangleDragging: (val?: boolean) => void
-  getDraggedRectangle: () => Rectangle | undefined
-
-  setCommandExams: (exams?: CommandExam[]) => void
 
   setEdgeCutter: (val: EdgeCutter | undefined) => void
   getEdgeCutter: () => EdgeCutter | undefined
@@ -76,7 +63,18 @@ export interface AnimationGraphStateContext extends ModeStateContextBase {
 }
 
 export interface AnimationGraphState
-  extends ModeStateBase<AnimationGraphStateContext> {}
+  extends ModeStateBase<AnimationGraphStateContext, AnimationGraphEvent> {}
+
+export type AnimationGraphEvent = ModeStateEvent | ChangeSelectionEvent
+
+export type AnimationGraphTransitionValue = TransitionValue<
+  AnimationGraphStateContext,
+  AnimationGraphEvent
+>
+
+export interface ChangeSelectionEvent extends ModeStateEventBase {
+  type: 'selection'
+}
 
 export type DraftGraphEdge =
   | {

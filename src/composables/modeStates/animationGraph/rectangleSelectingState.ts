@@ -40,7 +40,6 @@ const state: AnimationGraphState = {
     switch (event.type) {
       case 'pointerup': {
         const rect = ctx.getDraggedRectangle()
-        console.log(rect)
         if (rect) {
           const checkFn = getIsRectHitRectFn(rect)
           ctx.selectNodes(
@@ -57,7 +56,7 @@ const state: AnimationGraphState = {
       }
       case 'keydown':
         switch (event.data.key) {
-          case 'escape':
+          case 'Escape':
             return useDefaultState
         }
         return

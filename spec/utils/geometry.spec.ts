@@ -55,6 +55,7 @@ import {
   snapAxisGrid,
   snapPlainGrid,
   gridRound,
+  isOppositeSide,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -810,6 +811,17 @@ describe('src/utils/geometry.ts', () => {
         x: 0,
         y: Math.sqrt(2),
       })
+    })
+  })
+
+  describe('isOppositeSide', () => {
+    it('should return true when two points are opposite based at the origin', () => {
+      expect(
+        isOppositeSide({ x: 10, y: 10 }, { x: 12, y: 12 }, { x: 8, y: 8 })
+      ).toBe(true)
+      expect(
+        isOppositeSide({ x: 10, y: 10 }, { x: 12, y: 12 }, { x: 12, y: 10 })
+      ).toBe(false)
     })
   })
 })

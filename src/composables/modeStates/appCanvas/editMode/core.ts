@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { add, IVec2 } from 'okageo'
+import { add } from 'okageo'
 import {
   StringItem,
   useClipboard,
@@ -74,8 +74,6 @@ export interface EditStateContext extends CanvasStateContext {
   completeEditTransform: () => void
   setAxisGridInfo: (val?: AxisGridInfo) => void
   getAxisGridInfo: () => AxisGridInfo | undefined
-  snapTranslate: (size: number, translate: IVec2) => IVec2
-  snapScaleDiff: (scaleDiff: IVec2) => IVec2
 
   setToolMenuGroups: (val?: ToolMenuGroup[]) => void
 }

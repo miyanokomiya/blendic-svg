@@ -37,7 +37,6 @@ import {
   getTransformedBoneMap,
   posedTransform,
 } from '/@/utils/armatures'
-import { snapAxisGrid, snapPlainGrid } from '/@/utils/geometry'
 import { toList } from '/@/utils/commons'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import { Bone, getTransform, IdMap, toMap, Transform } from '/@/models'
@@ -194,18 +193,6 @@ export function createStore(
     axisGridInfo.value = val
   }
 
-  function snapScaleDiff(scaleDiff: IVec2): IVec2 {
-    if (!axisGridLine.value) return scaleDiff
-    return {
-      x: axisGridLine.value.axis === 'y' ? 0 : scaleDiff.x,
-      y: axisGridLine.value.axis === 'x' ? 0 : scaleDiff.y,
-    }
-  }
-  function snapTranslate(size: number, translate: IVec2): IVec2 {
-    if (!axisGridLine.value) return snapPlainGrid(size, 0, translate)
-    return snapAxisGrid(size, axisGridLine.value.vec, translate)
-  }
-
   function getEditTransforms(id: string): Transform {
     const t = editTransform.value
     return t && indexStore.selectedBones.value[id] ? t : IDENTITY_TRANSFORM
@@ -277,8 +264,6 @@ export function createStore(
     changeCanvasMode,
     toggleCanvasMode,
 
-    snapScaleDiff,
-    snapTranslate,
     axisGridLine,
     setAxisGridInfo,
 

@@ -17,8 +17,11 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { getDistance, multi } from 'okageo'
-import { EditState } from '/@/composables/modeStates/appCanvas/editMode/core'
+import { getDistance, IVec2, multi } from 'okageo'
+import {
+  EditState,
+  EditStateContext,
+} from '/@/composables/modeStates/appCanvas/editMode/core'
 import { useDefaultState } from '/@/composables/modeStates/appCanvas/editMode/defaultState'
 import { getTransform } from '/@/models'
 import { getSelectedBonesOrigin } from '/@/utils/armatures'
@@ -56,7 +59,7 @@ const state: EditState = {
             getDistance(event.data.start, origin)
         )
         const gridScale = event.data.ctrl ? snapScale(scale) : scale
-        const snappedScale = ctx.snapScaleDiff(gridScale)
+        const snappedScale = snapScaleDiff(ctx, gridScale)
         ctx.setEditTransform(
           getTransform({ scale: snappedScale, origin }),
           'scale'
@@ -110,4 +113,16 @@ const state: EditState = {
         return
     }
   },
+}
+
+function snapScaleDiff(
+  ctx: Pick<EditStateContext, 'getAxisGridInfo'>,
+  scaleDiff: IVec2
+): IVec2 {
+  const axisGridLine = ctx.getAxisGridInfo()
+  if (!axisGridLine) return scaleDiff
+  return {
+    x: axisGridLine.axis === 'y' ? 1 : scaleDiff.x,
+    y: axisGridLine.axis === 'x' ? 1 : scaleDiff.y,
+  }
 }

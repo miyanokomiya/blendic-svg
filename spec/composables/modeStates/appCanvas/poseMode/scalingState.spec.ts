@@ -67,18 +67,6 @@ describe('src/composables/modeStates/appCanvas/poseMode/scalingState.ts', () => 
         { a: expect.anything() },
         'scale'
       )
-
-      // Activate snapping by "ctrl"
-      await sm.handleEvent({
-        type: 'pointermove',
-        data: {
-          start: { x: 10, y: 0 },
-          current: { x: 10, y: 4 },
-          scale: 1,
-          ctrl: true,
-        },
-      })
-      expect(ctx.snapScaleDiff).toHaveBeenNthCalledWith(2, { x: 0.1, y: 0.1 })
     })
   })
 

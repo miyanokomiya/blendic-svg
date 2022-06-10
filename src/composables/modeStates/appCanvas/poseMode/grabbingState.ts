@@ -17,11 +17,14 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { sub } from 'okageo'
-import { PoseState } from '/@/composables/modeStates/appCanvas/poseMode/core'
+import { IVec2, sub } from 'okageo'
+import {
+  PoseState,
+  PoseStateContext,
+} from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { useDefaultState } from '/@/composables/modeStates/appCanvas/poseMode/defaultState'
 import { mapFilter, mapReduce } from '/@/utils/commons'
-import { getGridSize } from '/@/utils/geometry'
+import { getGridSize, snapAxisGrid, snapPlainGrid } from '/@/utils/geometry'
 import {
   convertToPosedSpace,
   getDefaultEditTransform,
@@ -50,7 +53,8 @@ const state: PoseState = {
   handleEvent: async (ctx, event) => {
     switch (event.type) {
       case 'pointermove': {
-        const translate = ctx.snapTranslate(
+        const translate = snapTranslate(
+          ctx,
           event.data.ctrl ? getGridSize(event.data.scale) : 0,
           sub(event.data.current, event.data.start)
         )
@@ -95,4 +99,14 @@ const state: PoseState = {
         return
     }
   },
+}
+
+function snapTranslate(
+  ctx: Pick<PoseStateContext, 'getAxisGridInfo'>,
+  size: number,
+  translate: IVec2
+): IVec2 {
+  const axisGridLine = ctx.getAxisGridInfo()
+  if (!axisGridLine) return snapPlainGrid(size, 0, translate)
+  return snapAxisGrid(size, axisGridLine.vec, translate)
 }

@@ -62,24 +62,11 @@ describe('src/composables/modeStates/appCanvas/poseMode/grabbingState.ts', () =>
           scale: 1,
         },
       })
-      expect(ctx.snapTranslate).toHaveBeenNthCalledWith(1, 0, { x: 10, y: 20 })
       expect(ctx.setEditTransforms).toHaveBeenNthCalledWith(
         1,
         { a: expect.anything() },
         'grab'
       )
-
-      // Activate snapping by "ctrl"
-      await sm.handleEvent({
-        type: 'pointermove',
-        data: {
-          start: { x: 1, y: 2 },
-          current: { x: 11, y: 22 },
-          scale: 1,
-          ctrl: true,
-        },
-      })
-      expect(ctx.snapTranslate).toHaveBeenNthCalledWith(2, 10, { x: 10, y: 20 })
     })
   })
 

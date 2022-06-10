@@ -201,8 +201,6 @@ function createEditContext(options: Option): EditStateContext {
     completeEditTransform: canvasStore.completeEditTransform,
     setAxisGridInfo: canvasStore.setAxisGridInfo,
     getAxisGridInfo: () => canvasStore.axisGridLine.value,
-    snapTranslate: canvasStore.snapTranslate,
-    snapScaleDiff: canvasStore.snapScaleDiff,
 
     setToolMenuGroups: canvasStore.setToolMenuGroups,
   }
@@ -235,8 +233,6 @@ function createPoseContext(options: Option): PoseStateContext {
     completeEditTransforms: canvasStore.completePoseTransforms,
     setAxisGridInfo: canvasStore.setAxisGridInfo,
     getAxisGridInfo: () => canvasStore.axisGridLine.value,
-    snapTranslate: canvasStore.snapTranslate,
-    snapScaleDiff: canvasStore.snapScaleDiff,
     insertKeyframe: animationStore.execInsertKeyframe,
     pastePoses: animationStore.pastePoses,
 

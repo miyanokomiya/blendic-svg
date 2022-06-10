@@ -5,8 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.17.0] - 2022-06-10
 ### Added
+- Add new graph node to clip shapes
 - Disconnect node edges by `ctrl + right-dragging`
+- Reduce exported file size of animated SVG
+- Implement copy & paste in the armature edit mode
+
+### Fixed
+- Fix invalid IK with more than 2 chains
+- Use class selector for animations instead of id selector
+
+### Changed
+- refactor: Introduce state pattern into the app canvas
 
 ## [0.16.0] - 2022-04-24
 ### Added

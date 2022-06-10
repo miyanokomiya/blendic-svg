@@ -57,8 +57,6 @@ export function getMockEditCtx() {
     dissolveBones: jest.fn(),
     subdivideBones: jest.fn(),
     symmetrizeBones: jest.fn(),
-    snapTranslate: jest.fn().mockReturnValue({ x: 100, y: 200 }),
-    snapScaleDiff: jest.fn().mockReturnValue({ x: 0.1, y: 0.2 }),
     setEditTransform: jest.fn(),
     completeEditTransform: jest.fn(),
     setAxisGridInfo: jest.fn(),
@@ -84,8 +82,6 @@ export function getMockPoseCtx() {
     getSelectedBones: jest.fn().mockReturnValue({}),
     getLastSelectedBoneId: jest.fn(),
 
-    snapTranslate: jest.fn().mockReturnValue({ x: 100, y: 200 }),
-    snapScaleDiff: jest.fn().mockReturnValue({ x: 0.1, y: 0.2 }),
     setEditTransforms: jest.fn(),
     completeEditTransforms: jest.fn(),
     setAxisGridInfo: jest.fn(),

@@ -65,31 +65,15 @@ describe('src/composables/modeStates/appCanvas/editMode/scalingState.ts', () => 
         type: 'pointermove',
         data: {
           start: { x: 10, y: 0 },
-          current: { x: 10, y: 5 },
+          current: { x: 15, y: 0 },
           scale: 1,
         },
       })
       expect(ctx.setEditTransform).toHaveBeenNthCalledWith(
         1,
-        getTransform({ scale: { x: 0.1, y: 0.2 }, origin: { x: 5, y: 0 } }),
+        getTransform({ scale: { x: 2, y: 2 }, origin: { x: 5, y: 0 } }),
         'scale'
       )
-      expect(ctx.snapScaleDiff).not.toHaveBeenNthCalledWith(1, {
-        x: 1.3,
-        y: 1.3,
-      })
-
-      // Activate snapping by "ctrl"
-      await sm.handleEvent({
-        type: 'pointermove',
-        data: {
-          start: { x: 10, y: 0 },
-          current: { x: 10, y: 4 },
-          scale: 1,
-          ctrl: true,
-        },
-      })
-      expect(ctx.snapScaleDiff).toHaveBeenNthCalledWith(2, { x: 1.3, y: 1.3 })
     })
   })
 

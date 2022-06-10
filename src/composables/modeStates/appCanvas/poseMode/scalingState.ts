@@ -17,8 +17,11 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { getDistance, multi } from 'okageo'
-import { PoseState } from '/@/composables/modeStates/appCanvas/poseMode/core'
+import { getDistance, IVec2, multi } from 'okageo'
+import {
+  PoseState,
+  PoseStateContext,
+} from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { useDefaultState } from '/@/composables/modeStates/appCanvas/poseMode/defaultState'
 import {
   getDefaultEditTransform,
@@ -26,7 +29,7 @@ import {
 } from '/@/composables/modeStates/appCanvas/poseMode/utils'
 import { getPosedBoneHeadsOrigin } from '/@/utils/armatures'
 import { mapFilter, mapReduce } from '/@/utils/commons'
-import { isOppositeSide, snapScale } from '/@/utils/geometry'
+import { snapScale } from '/@/utils/geometry'
 
 export function useScalingState(): PoseState {
   return state
@@ -53,19 +56,14 @@ const state: PoseState = {
         const boneMap = ctx.getBones()
         const selectedBoneMap = ctx.getSelectedBones()
         const origin = getPosedBoneHeadsOrigin(selectedBoneMap)
-        const opposite = isOppositeSide(
-          origin,
-          event.data.start,
-          event.data.current
-        )
         const scaleDiff = multi(
-          multi({ x: 1, y: 1 }, opposite ? -1 : 1),
+          { x: 1, y: 1 },
           getDistance(event.data.current, origin) /
             getDistance(event.data.start, origin) -
             1
         )
         const gridScale = event.data.ctrl ? snapScale(scaleDiff) : scaleDiff
-        const snappedScale = ctx.snapScaleDiff(gridScale)
+        const snappedScale = snapScaleDiff(ctx, gridScale)
 
         const targetIds = mapFilter(
           selectedBoneMap,
@@ -103,4 +101,16 @@ const state: PoseState = {
         return
     }
   },
+}
+
+function snapScaleDiff(
+  ctx: Pick<PoseStateContext, 'getAxisGridInfo'>,
+  scaleDiff: IVec2
+): IVec2 {
+  const axisGridLine = ctx.getAxisGridInfo()
+  if (!axisGridLine) return scaleDiff
+  return {
+    x: axisGridLine.axis === 'y' ? 0 : scaleDiff.x,
+    y: axisGridLine.axis === 'x' ? 0 : scaleDiff.y,
+  }
 }

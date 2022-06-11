@@ -584,9 +584,12 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
-  const bonePicker = ref<(id: string) => void>()
-  function setBonePicker(fn?: (id: string) => void) {
-    bonePicker.value = fn
+  const bonePicker = ref<{
+    callback: (id: string) => void
+    name: string
+  }>()
+  function setBonePicker(callback?: (id: string) => void, name: string = '') {
+    bonePicker.value = callback ? { callback, name } : undefined
   }
 
   return {

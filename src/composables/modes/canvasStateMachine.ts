@@ -259,7 +259,7 @@ function createWeightContext(options: Option): WeightStateContext {
     selectElement: elementStore.selectElement,
     pickBone: (id) => {
       if (id) {
-        indexStore.bonePicker.value?.(id)
+        indexStore.bonePicker.value?.callback(id)
       }
       indexStore.setBonePicker()
     },

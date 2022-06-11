@@ -177,7 +177,7 @@ export default defineComponent({
           type: 'keydown',
           data: { key: 'Escape' },
           point: canvas.viewToCanvas(canvas.mousePoint.value),
-        } as any)
+        })
       },
     })
 
@@ -327,6 +327,12 @@ export default defineComponent({
     watch(pickingBone, (to) => {
       if (to) {
         mode.sm.handleEvent({ type: 'state', data: { name: 'pick-bone' } })
+      } else {
+        // Make sure to finish picking state
+        mode.sm.handleEvent({
+          type: 'keydown',
+          data: { key: 'Escape' },
+        })
       }
     })
 

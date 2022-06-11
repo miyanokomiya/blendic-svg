@@ -32,7 +32,9 @@ Copyright (C) 2021, Tomoya Komiyama.
                 <SelectField v-model="viewBoxBoneId" :options="boneOptions" />
                 <template #button>
                   <button @click="pickBone('viewBoxBoneId')">
-                    <EyedropperIcon />
+                    <EyedropperIcon
+                      :highlight="pickingBone === 'viewBoxBoneId'"
+                    />
                   </button>
                 </template>
               </FieldWithButton>
@@ -46,7 +48,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                 <SelectField v-model="boneId" :options="boneOptions" />
                 <template #button>
                   <button @click="pickBone('boneId')">
-                    <EyedropperIcon />
+                    <EyedropperIcon :highlight="pickingBone === 'boneId'" />
                   </button>
                 </template>
               </FieldWithButton>
@@ -58,7 +60,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                 <SelectField v-model="fillBoneId" :options="boneOptions" />
                 <template #button>
                   <button @click="pickBone('fillBoneId')">
-                    <EyedropperIcon />
+                    <EyedropperIcon :highlight="pickingBone === 'fillBoneId'" />
                   </button>
                 </template>
               </FieldWithButton>
@@ -70,7 +72,9 @@ Copyright (C) 2021, Tomoya Komiyama.
                 <SelectField v-model="strokeBoneId" :options="boneOptions" />
                 <template #button>
                   <button @click="pickBone('strokeBoneId')">
-                    <EyedropperIcon />
+                    <EyedropperIcon
+                      :highlight="pickingBone === 'strokeBoneId'"
+                    />
                   </button>
                 </template>
               </FieldWithButton>
@@ -186,14 +190,19 @@ export default defineComponent({
       )
     })
 
+    const pickingBone = computed(() => store.bonePicker.value?.name ?? '')
     function pickBone(
       key: 'boneId' | 'fillBoneId' | 'strokeBoneId' | 'viewBoxBoneId'
     ) {
-      store.setBonePicker((id) => {
-        if (boneOptions.value.some((b) => b.value === id)) {
-          elementStore.updateElement({ [key]: id })
-        }
-      })
+      if (pickingBone.value === key) {
+        store.setBonePicker()
+      } else {
+        store.setBonePicker((id) => {
+          if (boneOptions.value.some((b) => b.value === id)) {
+            elementStore.updateElement({ [key]: id })
+          }
+        }, key)
+      }
     }
 
     return {
@@ -207,6 +216,7 @@ export default defineComponent({
       fillBoneId,
       strokeBoneId,
       viewBoxBoneId,
+      pickingBone,
       pickBone,
     }
   },

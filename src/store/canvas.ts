@@ -40,6 +40,7 @@ import {
 import { toList } from '/@/utils/commons'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import { Bone, getTransform, IdMap, toMap, Transform } from '/@/models'
+import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
 
 export type AxisGrid = 'x' | 'y'
 export interface AxisGridInfo {
@@ -254,6 +255,15 @@ export function createStore(
     editTransformType.value = type
   }
 
+  // TODO: Improve event flow
+  const eventDispatcher = ref<(event: AppCanvasEvent) => void>()
+  function setEventDispatcher(fn?: (event: AppCanvasEvent) => void) {
+    eventDispatcher.value = fn
+  }
+  function dispatchCanvasEvent(event: AppCanvasEvent) {
+    eventDispatcher.value?.(event)
+  }
+
   return {
     initState,
     exportState,
@@ -287,6 +297,9 @@ export function createStore(
 
     completePoseTransforms,
     setPoseTransforms,
+
+    setEventDispatcher,
+    dispatchCanvasEvent,
   }
 }
 

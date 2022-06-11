@@ -68,6 +68,8 @@ const state: ObjectState = {
       case 'selection':
         updateCommandExams(ctx)
         return
+      default:
+        return
     }
   },
 }

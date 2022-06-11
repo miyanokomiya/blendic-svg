@@ -28,8 +28,10 @@ import {
   SelectOptions,
   ToolMenuGroup,
 } from '/@/composables/modes/types'
-import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
-import { CanvasStateContext } from '/@/composables/modeStates/commons'
+import {
+  AppCanvasEvent,
+  AppCanvasStateContext,
+} from '/@/composables/modeStates/appCanvas/core'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
 import { Bone, BoneSelectedState, IdMap, toMap, Transform } from '/@/models'
 import { AxisGridInfo } from '/@/store/canvas'
@@ -37,7 +39,7 @@ import { duplicateBones } from '/@/utils/armatures'
 import { mapFilter, mapReduce, toList } from '/@/utils/commons'
 import { BoneConstraint } from '/@/utils/constraints'
 
-export interface EditStateContext extends CanvasStateContext {
+export interface EditStateContext extends AppCanvasStateContext {
   getBones: () => IdMap<Bone>
   getLastSelectedBoneId: () => string | undefined
   getSelectedBones: () => IdMap<BoneSelectedState>

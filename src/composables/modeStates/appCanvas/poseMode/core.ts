@@ -27,14 +27,16 @@ import {
   SelectOptions,
   ToolMenuGroup,
 } from '/@/composables/modes/types'
-import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
-import { CanvasStateContext } from '/@/composables/modeStates/commons'
+import {
+  AppCanvasEvent,
+  AppCanvasStateContext,
+} from '/@/composables/modeStates/appCanvas/core'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
 import { Bone, BoneSelectedState, IdMap, Transform } from '/@/models'
 import { AxisGridInfo } from '/@/store/canvas'
 import { mapReduce } from '/@/utils/commons'
 
-export interface PoseStateContext extends CanvasStateContext {
+export interface PoseStateContext extends AppCanvasStateContext {
   getBones: () => IdMap<Bone>
   getLastSelectedBoneId: () => string | undefined
   /**

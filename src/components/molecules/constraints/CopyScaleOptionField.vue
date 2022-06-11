@@ -20,10 +20,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div>
     <InlineField label="Target" :label-width="labelWidth">
-      <SelectField
+      <SelectWithPicker
         :model-value="modelValue.targetId"
         :options="boneOptions"
+        name="targetId"
         @update:model-value="updateTargetId"
+        @start-pick="startPickBone"
       />
     </InlineField>
     <InlineField label="Target Space" :label-width="labelWidth">
@@ -88,16 +90,25 @@ import SelectField from '/@/components/atoms/SelectField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
+import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import { SpaceType } from '/@/models'
 import {
   getProps,
   spaceTypeOptions,
 } from '/@/components/molecules/constraints/common'
+import { PickerOptions } from '/@/composables/modes/types'
 
 export default defineComponent({
-  components: { SliderInput, SelectField, CheckboxInput, InlineField, KeyDot },
+  components: {
+    SliderInput,
+    SelectField,
+    CheckboxInput,
+    InlineField,
+    KeyDot,
+    SelectWithPicker,
+  },
   props: getProps<BoneConstraintOptions['COPY_SCALE']>(),
-  emits: ['update:model-value'],
+  emits: ['update:model-value', 'start-pick-bone'],
   setup(props, { emit }) {
     function emitUpdated(
       val: Partial<BoneConstraintOptions['COPY_SCALE']>,
@@ -129,6 +140,9 @@ export default defineComponent({
       },
       updateCopyY(val: boolean) {
         emitUpdated({ copyY: val })
+      },
+      startPickBone(val?: PickerOptions) {
+        emit('start-pick-bone', val)
       },
     }
   },

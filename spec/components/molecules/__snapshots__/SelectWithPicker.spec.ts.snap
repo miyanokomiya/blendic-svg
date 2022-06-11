@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/molecules/SelectWithPicker.vue snapshot default 1`] = `
+<div
+  class="field-with-button"
+>
+  <div
+    class="field"
+  >
+    
+    <span
+      class="select-root"
+    >
+      <select>
+        <option
+          value=""
+        >
+          -- None --
+        </option>
+        
+        <option
+          value="a"
+        >
+          item1
+        </option>
+        <option
+          value="b"
+        >
+          item2
+        </option>
+        <option
+          value="c"
+        >
+          item3
+        </option>
+        
+      </select>
+    </span>
+    
+  </div>
+  <div
+    class="button"
+  >
+    
+    <button>
+      <svg
+        viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g
+          transform="rotate(45 10 10)"
+        >
+          <path
+            d="M8 2 A2 2 0 0 1 12 2 L12 5 L13 5 L13 7 L7 7 L7 5 L8 5z"
+            fill="#000"
+            stroke="none"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M11.5 7 L11.5 17 L10 19 L8.5 17 L8.5 7"
+            fill="none"
+            stroke="#000"
+            stroke-linejoin="round"
+          />
+        </g>
+      </svg>
+    </button>
+    
+  </div>
+</div>
+`;

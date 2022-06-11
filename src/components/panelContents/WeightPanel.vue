@@ -27,58 +27,38 @@ Copyright (C) 2021, Tomoya Komiyama.
       <template v-if="targetElement">
         <template v-if="targetElement.tag === 'svg'">
           <BlockField label="Viewbox">
-            <InlineField>
-              <FieldWithButton>
-                <SelectField v-model="viewBoxBoneId" :options="boneOptions" />
-                <template #button>
-                  <button @click="pickBone('viewBoxBoneId')">
-                    <EyedropperIcon
-                      :highlight="pickingBone === 'viewBoxBoneId'"
-                    />
-                  </button>
-                </template>
-              </FieldWithButton>
-            </InlineField>
+            <SelectWithPicker
+              v-model="viewBoxBoneId"
+              name="viewBoxBoneId"
+              :options="boneOptions"
+              @start-pick="startPickBone"
+            />
           </BlockField>
         </template>
         <template v-else>
           <BlockField label="Transform">
-            <InlineField>
-              <FieldWithButton>
-                <SelectField v-model="boneId" :options="boneOptions" />
-                <template #button>
-                  <button @click="pickBone('boneId')">
-                    <EyedropperIcon :highlight="pickingBone === 'boneId'" />
-                  </button>
-                </template>
-              </FieldWithButton>
-            </InlineField>
+            <SelectWithPicker
+              v-model="boneId"
+              name="boneId"
+              :options="boneOptions"
+              @start-pick="startPickBone"
+            />
           </BlockField>
           <BlockField label="Fill">
-            <InlineField>
-              <FieldWithButton>
-                <SelectField v-model="fillBoneId" :options="boneOptions" />
-                <template #button>
-                  <button @click="pickBone('fillBoneId')">
-                    <EyedropperIcon :highlight="pickingBone === 'fillBoneId'" />
-                  </button>
-                </template>
-              </FieldWithButton>
-            </InlineField>
+            <SelectWithPicker
+              v-model="fillBoneId"
+              name="fillBoneId"
+              :options="boneOptions"
+              @start-pick="startPickBone"
+            />
           </BlockField>
           <BlockField label="Stroke">
-            <InlineField>
-              <FieldWithButton>
-                <SelectField v-model="strokeBoneId" :options="boneOptions" />
-                <template #button>
-                  <button @click="pickBone('strokeBoneId')">
-                    <EyedropperIcon
-                      :highlight="pickingBone === 'strokeBoneId'"
-                    />
-                  </button>
-                </template>
-              </FieldWithButton>
-            </InlineField>
+            <SelectWithPicker
+              v-model="strokeBoneId"
+              name="strokeBoneId"
+              :options="boneOptions"
+              @start-pick="startPickBone"
+            />
           </BlockField>
         </template>
       </template>
@@ -95,19 +75,16 @@ import { useStore } from '/@/store'
 import { useCanvasStore } from '/@/store/canvas'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
-import InlineField from '/@/components/atoms/InlineField.vue'
-import EyedropperIcon from '/@/components/atoms/EyedropperIcon.vue'
-import FieldWithButton from '/@/components/atoms/FieldWithButton.vue'
+import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import { useElementStore } from '/@/store/element'
 import { sortByValue } from '/@/utils/commons'
+import { PickerOptions } from '/@/composables/modes/types'
 
 export default defineComponent({
   components: {
     SelectField,
     BlockField,
-    InlineField,
-    EyedropperIcon,
-    FieldWithButton,
+    SelectWithPicker,
   },
   setup() {
     const store = useStore()
@@ -190,19 +167,11 @@ export default defineComponent({
       )
     })
 
-    const pickingBone = computed(() => store.bonePicker.value?.name ?? '')
-    function pickBone(
-      key: 'boneId' | 'fillBoneId' | 'strokeBoneId' | 'viewBoxBoneId'
-    ) {
-      if (pickingBone.value === key) {
-        store.setBonePicker()
-      } else {
-        store.setBonePicker((id) => {
-          if (boneOptions.value.some((b) => b.value === id)) {
-            elementStore.updateElement({ [key]: id })
-          }
-        }, key)
-      }
+    function startPickBone(val?: PickerOptions) {
+      canvasStore.dispatchCanvasEvent({
+        type: 'state',
+        data: { name: 'pick-bone', options: val },
+      })
     }
 
     return {
@@ -216,8 +185,7 @@ export default defineComponent({
       fillBoneId,
       strokeBoneId,
       viewBoxBoneId,
-      pickingBone,
-      pickBone,
+      startPickBone,
     }
   },
 })

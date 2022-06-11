@@ -160,6 +160,7 @@ export type ModeStateEvent =
   | PointerDownEvent
   | PointerUpEvent
   | KeyDownEvent
+  | ChangeStateEvent
   | PopupMenuEvent
   | CopyEvent
   | PasteEvent
@@ -209,6 +210,14 @@ export interface KeyDownEvent extends ModeStateEventBase {
   type: 'keydown'
   data: KeyOptions
   point?: IVec2
+}
+
+export interface ChangeStateEvent extends ModeStateEventBase {
+  type: 'state'
+  data: {
+    name: string
+    options?: unknown
+  }
 }
 
 export interface PopupMenuEvent extends ModeStateEventBase {

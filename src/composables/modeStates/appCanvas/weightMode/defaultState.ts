@@ -18,7 +18,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { WeightState } from '/@/composables/modeStates/appCanvas/weightMode/core'
-import { usePickingBoneState } from '/@/composables/modeStates/appCanvas/weightMode/pickingBoneState'
+import { usePickingBoneState } from '/@/composables/modeStates/appCanvas/pickingBoneState'
 import { usePanningState } from '/@/composables/modeStates/commons'
 
 export function useDefaultState(): WeightState {
@@ -53,7 +53,7 @@ const state: WeightState = {
       case 'state':
         switch (event.data.name) {
           case 'pick-bone':
-            return usePickingBoneState
+            return () => usePickingBoneState(event.data.options as any)
           default:
             return
         }

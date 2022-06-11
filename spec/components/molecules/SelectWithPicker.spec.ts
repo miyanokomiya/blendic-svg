@@ -17,21 +17,24 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import {
-  AppCanvasEvent,
-  AppCanvasStateContext,
-} from '/@/composables/modeStates/appCanvas/core'
-import type { ModeStateBase } from '/@/composables/modeStates/core'
-import { Armature, IdMap } from '/@/models'
+import { mount } from '@vue/test-utils'
+import Target from '/@/components/molecules/SelectWithPicker.vue'
 
-export interface ObjectStateContext extends AppCanvasStateContext {
-  getArmatures: () => IdMap<Armature>
-  getLastSelectedArmaturesId: () => string | undefined
-  selectArmature: (id?: string) => void
-  selectAllArmatures: () => void
-  addArmature: () => void
-  deleteArmatures: () => void
-}
-
-export interface ObjectState
-  extends ModeStateBase<ObjectStateContext, AppCanvasEvent> {}
+describe('src/components/molecules/SelectWithPicker.vue', () => {
+  describe('snapshot', () => {
+    it('default', () => {
+      const wrapper = mount(Target, {
+        props: {
+          modelValue: '',
+          name: 'name_1',
+          options: [
+            { label: 'item1', value: 'a' },
+            { label: 'item2', value: 'b' },
+            { label: 'item3', value: 'c' },
+          ],
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+  })
+})

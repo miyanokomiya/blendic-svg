@@ -50,7 +50,7 @@ import {
   xor,
 } from '/@/utils/commons'
 import { useEntities } from '/@/composables/stores/entities'
-import { SelectOptions } from '/@/composables/modes/types'
+import { PickerOptions, SelectOptions } from '/@/composables/modes/types'
 import { BoneConstraint } from '/@/utils/constraints'
 
 export function createStore(historyStore: HistoryStore) {
@@ -584,12 +584,23 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
-  const bonePicker = ref<{
-    callback: (id: string) => void
-    name: string
-  }>()
-  function setBonePicker(callback?: (id: string) => void, name: string = '') {
-    bonePicker.value = callback ? { callback, name } : undefined
+  const bonePicker = ref<PickerOptions>()
+  function setBonePicker(val?: PickerOptions) {
+    if (val) {
+      val.onstart?.()
+      bonePicker.value = val
+    } else {
+      bonePicker.value?.oncancel?.()
+      bonePicker.value = undefined
+    }
+  }
+  function pickBone(id?: string) {
+    if (id) {
+      bonePicker.value?.callback(id)
+    } else {
+      bonePicker.value?.oncancel?.()
+    }
+    bonePicker.value = undefined
   }
 
   return {
@@ -633,6 +644,7 @@ export function createStore(historyStore: HistoryStore) {
 
     bonePicker: computed(() => bonePicker.value),
     setBonePicker,
+    pickBone,
   }
 }
 export type IndexStore = ReturnType<typeof createStore>

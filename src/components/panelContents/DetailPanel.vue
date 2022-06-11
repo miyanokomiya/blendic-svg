@@ -43,7 +43,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
       </InlineField>
       <InlineField label="Parent" label-width="50px">
-        <SelectField v-model="parentId" :options="otherBoneOptions" />
+        <SelectWithPicker
+          v-model="parentId"
+          :options="otherBoneOptions"
+          name="targetId"
+          @start-pick="startPickBone"
+        />
       </InlineField>
       <InlineField>
         <CheckboxInput
@@ -68,6 +73,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         @update-item="updateConstraint"
         @add-keyframe="addKeyframeConstraint"
         @remove-keyframe="removeKeyframeConstraint"
+        @start-pick-bone="startPickBone"
       />
     </form>
   </div>
@@ -76,13 +82,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { ComputedRef, defineComponent, computed } from 'vue'
 import { useStore } from '/@/store/index'
-import SelectField from '/@/components/atoms/SelectField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import { BoneConstraint } from '/@/utils/constraints'
 import ConstraintList from '/@/components/panelContents/ConstraintList.vue'
 import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import TextInput from '/@/components/atoms/TextInput.vue'
+import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import {
   KeyframeConstraint,
   KeyframeConstraintPropKey,
@@ -90,18 +96,21 @@ import {
 import { useAnimationStore } from '/@/store/animation'
 import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
 import { IdMap } from '/@/models'
+import { PickerOptions } from '/@/composables/modes/types'
+import { useCanvasStore } from '/@/store/canvas'
 
 export default defineComponent({
   components: {
-    SelectField,
     CheckboxInput,
     ConstraintList,
     InlineField,
     TextInput,
+    SelectWithPicker,
   },
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
+    const canvasStore = useCanvasStore()
 
     const lastSelectedBone = computed(() => {
       return store.lastSelectedBone.value
@@ -201,6 +210,13 @@ export default defineComponent({
       animationStore.execDeleteKeyframeConstraint(target.id, { [key]: true })
     }
 
+    function startPickBone(val?: PickerOptions) {
+      canvasStore.dispatchCanvasEvent({
+        type: 'state',
+        data: { name: 'pick-bone', options: val },
+      })
+    }
+
     return {
       lastSelectedArmature: store.lastSelectedArmature,
       lastSelectedBone,
@@ -254,6 +270,7 @@ export default defineComponent({
       updateConstraint,
       addKeyframeConstraint,
       removeKeyframeConstraint,
+      startPickBone,
     }
   },
 })

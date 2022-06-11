@@ -39,11 +39,13 @@ Copyright (C) 2021, Tomoya Komiyama.
     </template>
     <template v-else-if="valueTypeKey === 'BONE'">
       <TextInput v-if="disabled" :model-value="modelValue" disabled />
-      <SelectField
+      <SelectWithPicker
         v-else
         :model-value="modelValue"
         :options="boneOptions"
+        name="targetId"
         @update:model-value="update"
+        @start-pick="startPickBone"
       />
     </template>
     <template v-else-if="valueTypeKey === 'OBJECT'">
@@ -127,6 +129,7 @@ import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
 import ColorRect from '/@/components/atoms/ColorRect.vue'
 import GraphNodeDataFieldTransform from '/@/components/atoms/GraphNodeDataFieldTransform.vue'
+import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { GraphEnumMap, GraphEnumMapKey } from '/@/models/graphNodeEnums'
@@ -134,6 +137,7 @@ import {
   injectGetBoneOptions,
   injectGetObjectOptions,
 } from '/@/composables/animationGraph'
+import { PickerOptions } from '/@/composables/modes/types'
 
 const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
   [GRAPH_VALUE_TYPE.BOOLEAN]: true,
@@ -156,6 +160,7 @@ export default defineComponent({
     ColorPicker,
     ColorRect,
     GraphNodeDataFieldTransform,
+    SelectWithPicker,
   },
   props: {
     modelValue: { type: null, required: true },
@@ -166,7 +171,7 @@ export default defineComponent({
     },
     disabled: { type: Boolean, default: false },
   },
-  emits: ['update:model-value'],
+  emits: ['update:model-value', 'start-pick-bone'],
   setup(props, { emit }) {
     function update(val: any, seriesKey?: string) {
       emit('update:model-value', val, seriesKey)
@@ -214,6 +219,9 @@ export default defineComponent({
       toggleShowColorPicker,
       updateByColor,
       hsva,
+      startPickBone(val?: PickerOptions) {
+        emit('start-pick-bone', val)
+      },
     }
   },
 })

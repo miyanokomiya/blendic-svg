@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { usePickingBoneState } from '/@/composables/modeStates/appCanvas/pickingBoneState'
 import {
   PoseState,
   PoseStateContext,
@@ -109,6 +110,13 @@ const state: PoseState = {
       case 'selection':
         onChangeSelection(ctx)
         return
+      case 'state':
+        switch (event.data.name) {
+          case 'pick-bone':
+            return () => usePickingBoneState(event.data.options as any)
+          default:
+            return
+        }
       default:
         return
     }

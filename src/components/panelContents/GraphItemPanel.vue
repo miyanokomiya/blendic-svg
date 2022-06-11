@@ -30,6 +30,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             @update:model-value="
               (val, seriesKey) => updateData(key as string, val, seriesKey)
             "
+            @start-pick-bone="startPickBone"
           />
         </BlockField>
       </template>
@@ -45,6 +46,7 @@ Copyright (C) 2021, Tomoya Komiyama.
               @update:model-value="
                 (val, seriesKey) => updateInput(key as string, val, seriesKey)
               "
+              @start-pick-bone="startPickBone"
             />
           </BlockField>
         </template>
@@ -69,6 +71,8 @@ import { mapReduce } from '/@/utils/commons'
 import GraphNodeDataField from '/@/components/atoms/GraphNodeDataField.vue'
 import { ValueType } from '/@/models/graphNode'
 import { injectGetGraphNodeModuleFn } from '/@/composables/animationGraph'
+import { PickerOptions } from '/@/composables/modes/types'
+import { useCanvasStore } from '/@/store/canvas'
 
 interface DataInfo {
   type: ValueType
@@ -83,6 +87,7 @@ export default defineComponent({
     GraphNodeDataField,
   },
   setup() {
+    const canvasStore = useCanvasStore()
     const graphStore = useAnimationGraphStore()
     const targetNode = graphStore.lastSelectedNode
 
@@ -165,6 +170,13 @@ export default defineComponent({
     }
     const hasInput = computed(() => Object.keys(inputsMap.value).length > 0)
 
+    function startPickBone(val?: PickerOptions) {
+      canvasStore.dispatchCanvasEvent({
+        type: 'state',
+        data: { name: 'pick-bone', options: val },
+      })
+    }
+
     return {
       targetNode,
       dataMap,
@@ -172,6 +184,7 @@ export default defineComponent({
       inputsMap,
       updateInput,
       hasInput,
+      startPickBone,
     }
   },
 })

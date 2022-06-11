@@ -37,7 +37,7 @@ import { computed, PropType } from 'vue'
 
 const props = defineProps({
   options: {
-    type: Array as PropType<{ value: number | string; label: string }[]>,
+    type: Array as PropType<{ value: any; label: string }[]>,
     default: () => [],
   },
   modelValue: {
@@ -59,14 +59,14 @@ const props = defineProps({
 })
 
 const emits = defineEmits<{
-  (e: 'update:model-value', val: number | string): void
+  (e: 'update:model-value', val: any): void
 }>()
 
 const value = computed({
   get() {
     return props.modelValue
   },
-  set(val: number | string) {
+  set(val: any) {
     emits('update:model-value', val)
   },
 })

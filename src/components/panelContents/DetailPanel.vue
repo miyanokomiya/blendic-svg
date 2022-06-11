@@ -43,7 +43,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
       </InlineField>
       <InlineField label="Parent" label-width="50px">
-        <SelectField v-model="parentId" :options="otherBoneOptions" />
+        <SelectWithPicker
+          v-model="parentId"
+          :options="otherBoneOptions"
+          name="targetId"
+          @start-pick="startPickBone"
+        />
       </InlineField>
       <InlineField>
         <CheckboxInput
@@ -77,13 +82,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { ComputedRef, defineComponent, computed } from 'vue'
 import { useStore } from '/@/store/index'
-import SelectField from '/@/components/atoms/SelectField.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import { BoneConstraint } from '/@/utils/constraints'
 import ConstraintList from '/@/components/panelContents/ConstraintList.vue'
 import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import TextInput from '/@/components/atoms/TextInput.vue'
+import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import {
   KeyframeConstraint,
   KeyframeConstraintPropKey,
@@ -96,11 +101,11 @@ import { useCanvasStore } from '/@/store/canvas'
 
 export default defineComponent({
   components: {
-    SelectField,
     CheckboxInput,
     ConstraintList,
     InlineField,
     TextInput,
+    SelectWithPicker,
   },
   setup() {
     const store = useStore()

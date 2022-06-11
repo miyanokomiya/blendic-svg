@@ -246,9 +246,8 @@ export function useGroupState<C, K, E = ModeStateEvent>(
       await state.onEnd?.(ctx)
     },
     handleEvent: async (ctx, e) => {
-      const ret = await state.handleEvent(ctx, e)
-      if (ret) return ret
-      return sm!.handleEvent(e)
+      await sm!.handleEvent(e)
+      return await state.handleEvent(ctx, e)
     },
   }
 }

@@ -110,16 +110,20 @@ describe('src/composables/modeStates/core.ts', () => {
 
   describe('useObjectGroupState', () => {
     it('should create group state', async () => {
+      const eventCalled: string[] = []
       const childAB = getMockState({ getLabel: () => 'ab' })
       const childAA = getMockState({
         getLabel: () => 'aa',
         handleEvent: async () => {
+          eventCalled.push('aa')
           return () => childAB
         },
       })
       const groupASrc = getMockState({
         getLabel: () => 'a',
-        handleEvent: async () => {},
+        handleEvent: async () => {
+          eventCalled.push('a')
+        },
       })
       const groupA = useGroupState<any, any>(
         () => groupASrc,
@@ -139,6 +143,7 @@ describe('src/composables/modeStates/core.ts', () => {
       expect(groupASrc.onEnd).toHaveBeenCalledTimes(0)
       expect(childAA.onEnd).toHaveBeenCalledTimes(1)
       expect(childAB.onStart).toHaveBeenCalledTimes(1)
+      expect(eventCalled).toEqual(['aa', 'a'])
 
       await sm.dispose()
       expect(groupASrc.onEnd).toHaveBeenCalledTimes(1)

@@ -586,10 +586,20 @@ export function createStore(historyStore: HistoryStore) {
 
   const bonePicker = ref<{
     callback: (id: string) => void
+    oncancel?: () => void
     name: string
   }>()
-  function setBonePicker(callback?: (id: string) => void, name: string = '') {
-    bonePicker.value = callback ? { callback, name } : undefined
+  function setBonePicker(val?: {
+    name: string
+    callback: (value: string) => void
+    oncancel: () => void
+  }) {
+    if (val) {
+      bonePicker.value = val
+    } else {
+      bonePicker.value?.oncancel?.()
+      bonePicker.value = undefined
+    }
   }
 
   return {

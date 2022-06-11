@@ -37,7 +37,7 @@ import { computed, PropType } from 'vue'
 
 const props = defineProps({
   options: {
-    type: Array as PropType<{ value: number | string; label: string }[]>,
+    type: Array as PropType<{ value: any; label: string }[]>,
     default: () => [],
   },
   modelValue: {

@@ -14,18 +14,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 
-Copyright (C) 2022, Tomoya Komiyama.
+Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { CanvasStateContext } from '/@/composables/modeStates/commons'
-import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
-import type { ModeStateBase } from '/@/composables/modeStates/core'
-import { SelectOptions } from '/@/composables/modes/types'
+import { mount } from '@vue/test-utils'
+import Target from '/@/components/atoms/FieldWithButton.vue'
 
-export interface WeightStateContext extends CanvasStateContext {
-  selectElement: (id?: string, options?: SelectOptions) => void
-  pickBone: (id?: string) => void
-}
-
-export interface WeightState
-  extends ModeStateBase<WeightStateContext, AppCanvasEvent> {}
+describe('src/components/atoms/FieldWithButton.vue', () => {
+  it('snapshot', () => {
+    const wrapper = mount(Target, {
+      slots: {
+        default: 'slot_default',
+        button: 'slot_button',
+      },
+    })
+    expect(wrapper.element).toMatchSnapshot()
+  })
+})

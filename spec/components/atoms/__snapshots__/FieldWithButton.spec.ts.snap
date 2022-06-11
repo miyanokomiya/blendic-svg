@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/FieldWithButton.vue snapshot 1`] = `
+<div
+  class="field-with-button"
+>
+  <div
+    class="field"
+  >
+    
+    slot_default
+    
+  </div>
+  <div
+    class="button"
+  >
+    
+    slot_button
+    
+  </div>
+</div>
+`;

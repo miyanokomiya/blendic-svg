@@ -4,7 +4,6 @@ exports[`src/components/elements/BoneLayer.vue snapshot defalut 1`] = `
 <g>
   
   <g
-    class=""
     fill="#ddd"
     opacity="1"
     stroke="black"
@@ -51,7 +50,6 @@ exports[`src/components/elements/BoneLayer.vue snapshot pose mode 1`] = `
 <g>
   
   <g
-    class=""
     fill="#ddd"
     opacity="1"
     stroke="black"
@@ -98,7 +96,6 @@ exports[`src/components/elements/BoneLayer.vue snapshot selected 1`] = `
 <g>
   
   <g
-    class=""
     fill="#ddd"
     opacity="1"
     stroke="black"

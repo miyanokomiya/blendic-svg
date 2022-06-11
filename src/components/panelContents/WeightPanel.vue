@@ -27,18 +27,58 @@ Copyright (C) 2021, Tomoya Komiyama.
       <template v-if="targetElement">
         <template v-if="targetElement.tag === 'svg'">
           <BlockField label="Viewbox">
-            <SelectField v-model="viewBoxBoneId" :options="boneOptions" />
+            <InlineField>
+              <FieldWithButton>
+                <SelectField v-model="viewBoxBoneId" :options="boneOptions" />
+                <template #button>
+                  <button @click="pickBone('viewBoxBoneId')">
+                    <EyedropperIcon
+                      :highlight="pickingBone === 'viewBoxBoneId'"
+                    />
+                  </button>
+                </template>
+              </FieldWithButton>
+            </InlineField>
           </BlockField>
         </template>
         <template v-else>
           <BlockField label="Transform">
-            <SelectField v-model="boneId" :options="boneOptions" />
+            <InlineField>
+              <FieldWithButton>
+                <SelectField v-model="boneId" :options="boneOptions" />
+                <template #button>
+                  <button @click="pickBone('boneId')">
+                    <EyedropperIcon :highlight="pickingBone === 'boneId'" />
+                  </button>
+                </template>
+              </FieldWithButton>
+            </InlineField>
           </BlockField>
           <BlockField label="Fill">
-            <SelectField v-model="fillBoneId" :options="boneOptions" />
+            <InlineField>
+              <FieldWithButton>
+                <SelectField v-model="fillBoneId" :options="boneOptions" />
+                <template #button>
+                  <button @click="pickBone('fillBoneId')">
+                    <EyedropperIcon :highlight="pickingBone === 'fillBoneId'" />
+                  </button>
+                </template>
+              </FieldWithButton>
+            </InlineField>
           </BlockField>
           <BlockField label="Stroke">
-            <SelectField v-model="strokeBoneId" :options="boneOptions" />
+            <InlineField>
+              <FieldWithButton>
+                <SelectField v-model="strokeBoneId" :options="boneOptions" />
+                <template #button>
+                  <button @click="pickBone('strokeBoneId')">
+                    <EyedropperIcon
+                      :highlight="pickingBone === 'strokeBoneId'"
+                    />
+                  </button>
+                </template>
+              </FieldWithButton>
+            </InlineField>
           </BlockField>
         </template>
       </template>
@@ -55,11 +95,20 @@ import { useStore } from '/@/store'
 import { useCanvasStore } from '/@/store/canvas'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
+import EyedropperIcon from '/@/components/atoms/EyedropperIcon.vue'
+import FieldWithButton from '/@/components/atoms/FieldWithButton.vue'
 import { useElementStore } from '/@/store/element'
 import { sortByValue } from '/@/utils/commons'
 
 export default defineComponent({
-  components: { SelectField, BlockField },
+  components: {
+    SelectField,
+    BlockField,
+    InlineField,
+    EyedropperIcon,
+    FieldWithButton,
+  },
   setup() {
     const store = useStore()
     const canvasStore = useCanvasStore()
@@ -141,6 +190,21 @@ export default defineComponent({
       )
     })
 
+    const pickingBone = computed(() => store.bonePicker.value?.name ?? '')
+    function pickBone(
+      key: 'boneId' | 'fillBoneId' | 'strokeBoneId' | 'viewBoxBoneId'
+    ) {
+      if (pickingBone.value === key) {
+        store.setBonePicker()
+      } else {
+        store.setBonePicker((id) => {
+          if (boneOptions.value.some((b) => b.value === id)) {
+            elementStore.updateElement({ [key]: id })
+          }
+        }, key)
+      }
+    }
+
     return {
       canvasMode,
       targetActor,
@@ -152,12 +216,14 @@ export default defineComponent({
       fillBoneId,
       strokeBoneId,
       viewBoxBoneId,
+      pickingBone,
+      pickBone,
     }
   },
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .weight-panel {
   text-align: left;
 }

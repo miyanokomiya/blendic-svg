@@ -238,7 +238,7 @@ export default defineComponent({
     }
 
     const hsva = computed(() => {
-      if (!targetTransform.value) return ''
+      if (!targetTransform.value) return undefined
       return posedHsva(targetTransform.value)
     })
     function updatePoseByColor(hsva: HSVA, seriesKey?: string) {

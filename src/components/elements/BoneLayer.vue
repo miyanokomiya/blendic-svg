@@ -27,7 +27,6 @@ Copyright (C) 2021, Tomoya Komiyama.
       :selected-state="selectedBones[bone.id]"
       :scale="scale"
       :pose-mode="canvasMode === 'pose'"
-      :class="{ 'view-only': canvasMode === 'weight' }"
       @select="(state, options) => selectBone(bone.id, state, options)"
     />
   </g>
@@ -80,9 +79,3 @@ export default defineComponent({
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.view-only {
-  pointer-events: none;
-}
-</style>

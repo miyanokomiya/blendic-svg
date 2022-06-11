@@ -17,18 +17,17 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { WeightState } from '/@/composables/modeStates/appCanvas/weightMode/core'
-import { usePickingBoneState } from '/@/composables/modeStates/appCanvas/pickingBoneState'
+import { AppCanvasState } from '/@/composables/modeStates/appCanvas/core'
 import { usePanningState } from '/@/composables/modeStates/commons'
 
-export function useDefaultState(): WeightState {
+export function usePickingBoneState(): AppCanvasState {
   return state
 }
 
-const state: WeightState = {
-  getLabel: () => 'Default',
+const state: AppCanvasState = {
+  getLabel: () => 'PickingBone',
   onStart: async (ctx) => {
-    ctx.setCommandExams()
+    ctx.setCommandExams([{ title: 'Pick a bone' }])
   },
   handleEvent: async (ctx, event) => {
     switch (event.type) {
@@ -37,26 +36,32 @@ const state: WeightState = {
           case 0:
             switch (event.target.type) {
               case 'empty':
-                ctx.selectElement()
-                return
-              case 'element':
-                ctx.selectElement(event.target.id, event.data.options)
-                return
+                ctx.pickBone()
+                return { type: 'break' }
+              case 'bone-body':
+              case 'bone-head':
+              case 'bone-tail':
+                ctx.pickBone(event.target.id)
+                return { type: 'break' }
               default:
                 return
             }
           case 1:
-            return usePanningState
+            return { getState: usePanningState, type: 'stack-resume' }
+          default:
+            return
+        }
+      case 'keydown':
+        switch (event.data.key) {
+          case 'Escape':
+            ctx.pickBone()
+            return { type: 'break' }
           default:
             return
         }
       case 'state':
-        switch (event.data.name) {
-          case 'pick-bone':
-            return usePickingBoneState
-          default:
-            return
-        }
+        ctx.pickBone()
+        return
       default:
         return
     }

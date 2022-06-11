@@ -21,6 +21,7 @@ import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/c
 import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
 import { PoseStateContext } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { WeightStateContext } from '/@/composables/modeStates/appCanvas/weightMode/core'
+import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import type {
   ModeStateBase,
   ModeStateContextBase,
@@ -28,7 +29,14 @@ import type {
   ModeStateEventBase,
 } from '/@/composables/modeStates/core'
 
-export interface AppCanvasStateContext extends ModeStateContextBase {
+export interface AppCanvasStateContext extends CanvasStateContext {
+  pickBone: (id?: string) => void
+}
+
+export interface AppCanvasState
+  extends ModeStateBase<AppCanvasStateContext, AppCanvasEvent> {}
+
+export interface AppCanvasGroupStateContext extends ModeStateContextBase {
   getObjectContext: () => ObjectStateContext
   getEditContext: () => EditStateContext
   getPoseContext: () => PoseStateContext
@@ -36,22 +44,13 @@ export interface AppCanvasStateContext extends ModeStateContextBase {
   toggleMode: (ctrl?: boolean) => void
 }
 
-export interface AppCanvasState
-  extends ModeStateBase<AppCanvasStateContext, AppCanvasEvent> {}
+export interface AppCanvasGroupState
+  extends ModeStateBase<AppCanvasGroupStateContext, AppCanvasEvent> {}
 
 export type AppCanvasEvent =
   | ModeStateEvent
-  | ChangeStateEvent
   | ChangeSelectionEvent
   | PickBoneEvent
-
-interface ChangeStateEvent extends ModeStateEventBase {
-  type: 'state'
-  data: {
-    name: string
-    options?: unknown
-  }
-}
 
 interface ChangeSelectionEvent extends ModeStateEventBase {
   type: 'selection'

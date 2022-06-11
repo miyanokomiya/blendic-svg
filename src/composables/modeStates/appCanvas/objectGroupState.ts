@@ -22,16 +22,16 @@ import { useEditGroupState } from '/@/composables/modeStates/appCanvas/editGroup
 import { useDefaultState } from '/@/composables/modeStates/appCanvas/objectMode/defaultState'
 import {
   AppCanvasEvent,
-  AppCanvasState,
-  AppCanvasStateContext,
+  AppCanvasGroupState,
+  AppCanvasGroupStateContext,
 } from '/@/composables/modeStates/appCanvas/core'
 import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
 import { usePoseGroupState } from '/@/composables/modeStates/appCanvas/poseGroupState'
 import { useWeightGroupState } from '/@/composables/modeStates/appCanvas/weightGroupState'
 
-export function useObjectGroupState(): AppCanvasState {
+export function useObjectGroupState(): AppCanvasGroupState {
   return useGroupState<
-    AppCanvasStateContext,
+    AppCanvasGroupStateContext,
     ObjectStateContext,
     AppCanvasEvent
   >(
@@ -41,7 +41,7 @@ export function useObjectGroupState(): AppCanvasState {
   )
 }
 
-const state: AppCanvasState = {
+const state: AppCanvasGroupState = {
   getLabel: () => 'Object',
   handleEvent: async (ctx, e) => {
     switch (e.type) {

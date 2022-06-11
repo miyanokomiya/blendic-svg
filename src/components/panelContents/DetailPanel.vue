@@ -68,6 +68,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         @update-item="updateConstraint"
         @add-keyframe="addKeyframeConstraint"
         @remove-keyframe="removeKeyframeConstraint"
+        @start-pick-bone="startPickBone"
       />
     </form>
   </div>
@@ -254,6 +255,7 @@ export default defineComponent({
       updateConstraint,
       addKeyframeConstraint,
       removeKeyframeConstraint,
+      startPickBone: store.setBonePicker,
     }
   },
 })

@@ -104,4 +104,15 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
       expect(ctx.setCommandExams).toHaveBeenCalled()
     })
   })
+
+  describe('handle state: pick-bone', () => {
+    it('should move to PickingBone', async () => {
+      const { sm } = await prepare()
+      await sm.handleEvent({
+        type: 'state',
+        data: { name: 'pick-bone' },
+      })
+      expect(sm.getStateSummary().label).toBe('PickingBone')
+    })
+  })
 })

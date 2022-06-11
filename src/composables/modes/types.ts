@@ -90,3 +90,9 @@ export interface KeyframeEditModeBase {
     controls: CurveSelectedState
   ) => void
 }
+
+export interface PickerOptions {
+  callback: (id: string) => void
+  oncancel?: () => void
+  name: string
+}

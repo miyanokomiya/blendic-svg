@@ -50,6 +50,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :props-updated-status="getKeyframeUpdatedStatus(c.id)"
       :keyframe-status-map="getKeyframeStatus(c.id)"
       :bone-options="boneOptions"
+      :pick-bone="pickBone"
       :create-keyframe="createKeyframe(i)"
       :delete-keyframe="deleteKeyframe(i)"
       @update:model-value="
@@ -57,6 +58,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       "
       @add-keyframe="(key) => addKeyframe(i, key)"
       @remove-keyframe="(key) => removeKeyframe(i, key)"
+      @start-pick-bone="($event) => $emit('start-pick-bone', $event)"
     />
   </div>
 </template>
@@ -136,6 +138,12 @@ export default defineComponent({
       type: Array as PropType<{ value: string; label: string }[]>,
       required: true,
     },
+    pickBone: {
+      type: Function as PropType<
+        (key: string, callback: (id: string) => void) => void
+      >,
+      default: undefined,
+    },
     constraintKeyframeMap: {
       type: Object as PropType<IdMap<KeyframeConstraint[]>>,
       default: () => ({}),
@@ -145,7 +153,13 @@ export default defineComponent({
       default: 0,
     },
   },
-  emits: ['update', 'update-item', 'add-keyframe', 'remove-keyframe'],
+  emits: [
+    'update',
+    'update-item',
+    'add-keyframe',
+    'remove-keyframe',
+    'start-pick-bone',
+  ],
   setup(props, { emit }) {
     const constraintMap = computed(() => toMap(props.constraints))
 

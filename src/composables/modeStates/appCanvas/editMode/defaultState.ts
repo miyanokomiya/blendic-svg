@@ -30,6 +30,7 @@ import { useDeletingState } from '/@/composables/modeStates/appCanvas/editMode/d
 import { BoneSelectedState } from '/@/models'
 import { useRectangleSelectingState } from '/@/composables/modeStates/appCanvas/editMode/rectangleSelectingState'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
+import { usePickingBoneState } from '/@/composables/modeStates/appCanvas/pickingBoneState'
 
 export function useDefaultState(): EditState {
   return state
@@ -140,6 +141,16 @@ const state: EditState = {
       }
       case 'selection':
         onChangeSelection(ctx)
+        return
+      case 'state':
+        switch (event.data.name) {
+          case 'pick-bone':
+            return usePickingBoneState
+          default:
+            return
+        }
+      default:
+        return
     }
   },
 }

@@ -20,17 +20,21 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div>
     <InlineField label="Target" :label-width="labelWidth">
-      <SelectField
+      <SelectWithPicker
         :model-value="modelValue.targetId"
         :options="boneOptions"
+        name="targetId"
         @update:model-value="updateTargetId"
+        @start-pick="startPickBone"
       />
     </InlineField>
     <InlineField label="Pole Target" :label-width="labelWidth">
-      <SelectField
+      <SelectWithPicker
         :model-value="modelValue.poleTargetId"
         :options="boneOptions"
+        name="poleTargetId"
         @update:model-value="updatePoleTargetId"
+        @start-pick="startPickBone"
       />
     </InlineField>
     <InlineField label="Chain Length" :label-width="labelWidth">
@@ -71,15 +75,21 @@ Copyright (C) 2021, Tomoya Komiyama.
 import { defineComponent } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
-import SelectField from '/@/components/atoms/SelectField.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
+import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
 import { getProps } from '/@/components/molecules/constraints/common'
+import { PickerOptions } from '/@/composables/modes/types'
 
 export default defineComponent({
-  components: { SliderInput, SelectField, InlineField, KeyDot },
+  components: {
+    SliderInput,
+    InlineField,
+    KeyDot,
+    SelectWithPicker,
+  },
   props: getProps<BoneConstraintOptions['IK']>(),
-  emits: ['update:model-value'],
+  emits: ['update:model-value', 'start-pick-bone'],
   setup(props, { emit }) {
     function emitUpdated(
       val: Partial<BoneConstraintOptions['IK']>,
@@ -104,6 +114,9 @@ export default defineComponent({
       },
       updateInfluence(val: number, seriesKey?: string) {
         emitUpdated({ influence: val }, seriesKey)
+      },
+      startPickBone(val?: PickerOptions) {
+        emit('start-pick-bone', val)
       },
     }
   },

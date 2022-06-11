@@ -17,14 +17,15 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { CanvasStateContext } from '/@/composables/modeStates/commons'
-import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
+import {
+  AppCanvasEvent,
+  AppCanvasStateContext,
+} from '/@/composables/modeStates/appCanvas/core'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
 import { SelectOptions } from '/@/composables/modes/types'
 
-export interface WeightStateContext extends CanvasStateContext {
+export interface WeightStateContext extends AppCanvasStateContext {
   selectElement: (id?: string, options?: SelectOptions) => void
-  pickBone: (id?: string) => void
 }
 
 export interface WeightState

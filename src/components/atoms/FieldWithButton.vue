@@ -30,7 +30,6 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 <style scoped>
 .field-with-button {
-  width: 100%;
   display: flex;
   align-items: center;
 }

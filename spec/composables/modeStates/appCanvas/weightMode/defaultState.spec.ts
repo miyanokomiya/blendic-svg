@@ -75,4 +75,15 @@ describe('src/composables/modeStates/appCanvas/weightMode/defaultState.ts', () =
       expect(sm.getStateSummary().label).toBe('Panning')
     })
   })
+
+  describe('handle state: pick-bone', () => {
+    it('should move to PickingBone', async () => {
+      const { sm } = await prepare()
+      await sm.handleEvent({
+        type: 'state',
+        data: { name: 'pick-bone' },
+      })
+      expect(sm.getStateSummary().label).toBe('PickingBone')
+    })
+  })
 })

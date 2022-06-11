@@ -21,6 +21,7 @@ import {
   ObjectState,
   ObjectStateContext,
 } from '/@/composables/modeStates/appCanvas/objectMode/core'
+import { usePickingBoneState } from '/@/composables/modeStates/appCanvas/pickingBoneState'
 import { usePanningState } from '/@/composables/modeStates/commons'
 import { PointerDownEvent } from '/@/composables/modeStates/core'
 
@@ -67,6 +68,15 @@ const state: ObjectState = {
         return
       case 'selection':
         updateCommandExams(ctx)
+        return
+      case 'state':
+        switch (event.data.name) {
+          case 'pick-bone':
+            return usePickingBoneState
+          default:
+            return
+        }
+      default:
         return
     }
   },

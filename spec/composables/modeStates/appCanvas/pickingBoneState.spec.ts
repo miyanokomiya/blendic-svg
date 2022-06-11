@@ -18,14 +18,18 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { getMockWeightCtx } from 'spec/composables/modeStates/appCanvas/mocks'
-import { usePickingBoneState } from '/@/composables/modeStates/appCanvas/weightMode/pickingBoneState'
+import { usePickingBoneState } from '/@/composables/modeStates/appCanvas/pickingBoneState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 
-describe('src/composables/modeStates/appCanvas/weightMode/pickingBoneState.ts', () => {
+describe('src/composables/modeStates/appCanvas/pickingBoneState.ts', () => {
   async function prepare() {
     const ctx = getMockWeightCtx()
-    const sm = useModeStateMachine(ctx, usePickingBoneState)
+    const sm = useModeStateMachine(ctx, () => ({
+      getLabel: () => 'Default',
+      handleEvent: async () => usePickingBoneState,
+    }))
     await sm.ready
+    await sm.handleEvent({ type: 'state', data: { name: '' } })
     ctx.setCommandExams.mockReset()
     return { sm, ctx }
   }

@@ -1,6 +1,6 @@
 import {
   AppCanvasEvent,
-  AppCanvasStateContext,
+  AppCanvasGroupStateContext,
 } from '/@/composables/modeStates/appCanvas/core'
 import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/core'
 import { useObjectGroupState } from '/@/composables/modeStates/appCanvas/objectGroupState'
@@ -47,7 +47,7 @@ export function useCanvasStateMachine(options: Option) {
   const poseCtx = createPoseContext(options)
   const weightCtx = createWeightContext(options)
 
-  const ctx: AppCanvasStateContext = {
+  const ctx: AppCanvasGroupStateContext = {
     ...createBaseContext(options),
     getObjectContext: () => objectCtx,
     getEditContext: () => editCtx,
@@ -56,7 +56,7 @@ export function useCanvasStateMachine(options: Option) {
     toggleMode: options.canvasStore.toggleCanvasMode,
   }
 
-  const sm = useModeStateMachine<AppCanvasStateContext, AppCanvasEvent>(
+  const sm = useModeStateMachine<AppCanvasGroupStateContext, AppCanvasEvent>(
     ctx,
     useObjectGroupState
   )
@@ -92,6 +92,7 @@ function createObjectContext(options: Option): ObjectStateContext {
 
     setPopupMenuList: canvasStore.setPopupMenuList,
     setCommandExams: canvasStore.setCommandExams,
+    pickBone: indexStore.pickBone,
   }
 }
 
@@ -117,6 +118,7 @@ function createEditContext(options: Option): EditStateContext {
     setPopupMenuList: canvasStore.setPopupMenuList,
     setCommandExams: canvasStore.setCommandExams,
 
+    pickBone: indexStore.pickBone,
     getBones: () => indexStore.boneMap.value,
     getLastSelectedBoneId: () => indexStore.lastSelectedBoneId.value,
     getSelectedBones: () => indexStore.selectedBones.value,
@@ -222,6 +224,7 @@ function createPoseContext(options: Option): PoseStateContext {
     setPopupMenuList: canvasStore.setPopupMenuList,
     setCommandExams: canvasStore.setCommandExams,
 
+    pickBone: indexStore.pickBone,
     getBones: () => animationStore.currentPosedBones.value,
     getLastSelectedBoneId: () => indexStore.lastSelectedBoneId.value,
     getSelectedBones: () => animationStore.selectedBones.value,
@@ -256,12 +259,7 @@ function createWeightContext(options: Option): WeightStateContext {
     setPopupMenuList: canvasStore.setPopupMenuList,
     setCommandExams: canvasStore.setCommandExams,
 
+    pickBone: indexStore.pickBone,
     selectElement: elementStore.selectElement,
-    pickBone: (id) => {
-      if (id) {
-        indexStore.bonePicker.value?.callback(id)
-      }
-      indexStore.setBonePicker()
-    },
   }
 }

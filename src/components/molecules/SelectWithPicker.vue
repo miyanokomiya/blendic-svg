@@ -33,6 +33,7 @@ import { computed, ref } from 'vue'
 import FieldWithButton from '/@/components/atoms/FieldWithButton.vue'
 import EyedropperIcon from '/@/components/atoms/EyedropperIcon.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
+import { PickerOptions } from '/@/composables/modes/types'
 
 const props = defineProps<{
   modelValue: string
@@ -42,14 +43,7 @@ const props = defineProps<{
 
 const emits = defineEmits<{
   (e: 'update:model-value', val: any): void
-  (
-    e: 'start-pick',
-    val?: {
-      name: string
-      callback: (value: string) => void
-      oncancel: () => void
-    }
-  ): void
+  (e: 'start-pick', val?: PickerOptions): void
 }>()
 
 const value = computed({

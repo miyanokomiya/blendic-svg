@@ -17,12 +17,14 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
-import { CanvasStateContext } from '/@/composables/modeStates/commons'
+import {
+  AppCanvasEvent,
+  AppCanvasStateContext,
+} from '/@/composables/modeStates/appCanvas/core'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
 import { Armature, IdMap } from '/@/models'
 
-export interface ObjectStateContext extends CanvasStateContext {
+export interface ObjectStateContext extends AppCanvasStateContext {
   getArmatures: () => IdMap<Armature>
   getLastSelectedArmaturesId: () => string | undefined
   selectArmature: (id?: string) => void

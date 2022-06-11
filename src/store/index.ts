@@ -587,6 +587,7 @@ export function createStore(historyStore: HistoryStore) {
   const bonePicker = ref<PickerOptions>()
   function setBonePicker(val?: PickerOptions) {
     if (val) {
+      val.onstart?.()
       bonePicker.value = val
     } else {
       bonePicker.value?.oncancel?.()
@@ -596,8 +597,10 @@ export function createStore(historyStore: HistoryStore) {
   function pickBone(id?: string) {
     if (id) {
       bonePicker.value?.callback(id)
+    } else {
+      bonePicker.value?.oncancel?.()
     }
-    setBonePicker()
+    bonePicker.value = undefined
   }
 
   return {

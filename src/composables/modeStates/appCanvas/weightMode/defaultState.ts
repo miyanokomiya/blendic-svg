@@ -53,7 +53,7 @@ const state: WeightState = {
       case 'state':
         switch (event.data.name) {
           case 'pick-bone':
-            return usePickingBoneState
+            return () => usePickingBoneState(event.data.options as any)
           default:
             return
         }

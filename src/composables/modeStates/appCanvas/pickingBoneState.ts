@@ -17,53 +17,53 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { PickerOptions } from '/@/composables/modes/types'
 import { AppCanvasState } from '/@/composables/modeStates/appCanvas/core'
 import { usePanningState } from '/@/composables/modeStates/commons'
 
-export function usePickingBoneState(): AppCanvasState {
-  return state
-}
-
-const state: AppCanvasState = {
-  getLabel: () => 'PickingBone',
-  onStart: async (ctx) => {
-    ctx.setCommandExams([{ title: 'Pick a bone' }])
-  },
-  handleEvent: async (ctx, event) => {
-    switch (event.type) {
-      case 'pointerdown':
-        switch (event.data.options.button) {
-          case 0:
-            switch (event.target.type) {
-              case 'empty':
-                ctx.pickBone()
-                return { type: 'break' }
-              case 'bone-body':
-              case 'bone-head':
-              case 'bone-tail':
-                ctx.pickBone(event.target.id)
-                return { type: 'break' }
-              default:
-                return
-            }
-          case 1:
-            return { getState: usePanningState, type: 'stack-resume' }
-          default:
-            return
-        }
-      case 'keydown':
-        switch (event.data.key) {
-          case 'Escape':
-            ctx.pickBone()
-            return { type: 'break' }
-          default:
-            return
-        }
-      case 'state':
-        ctx.pickBone()
-        return
-      default:
-        return
-    }
-  },
+export function usePickingBoneState(options: PickerOptions): AppCanvasState {
+  return {
+    getLabel: () => 'PickingBone',
+    onStart: async (ctx) => {
+      ctx.setCommandExams([{ title: 'Pick a bone' }])
+      ctx.startPickBone(options)
+    },
+    handleEvent: async (ctx, event) => {
+      switch (event.type) {
+        case 'pointerdown':
+          switch (event.data.options.button) {
+            case 0:
+              switch (event.target.type) {
+                case 'empty':
+                  ctx.pickBone()
+                  return { type: 'break' }
+                case 'bone-body':
+                case 'bone-head':
+                case 'bone-tail':
+                  ctx.pickBone(event.target.id)
+                  return { type: 'break' }
+                default:
+                  return
+              }
+            case 1:
+              return { getState: usePanningState, type: 'stack-resume' }
+            default:
+              return
+          }
+        case 'keydown':
+          switch (event.data.key) {
+            case 'Escape':
+              ctx.pickBone()
+              return { type: 'break' }
+            default:
+              return
+          }
+        case 'state':
+          ctx.pickBone()
+          return { type: 'break' }
+        default:
+          return
+      }
+    },
+  }
 }

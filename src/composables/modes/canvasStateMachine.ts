@@ -93,6 +93,7 @@ function createObjectContext(options: Option): ObjectStateContext {
     setPopupMenuList: canvasStore.setPopupMenuList,
     setCommandExams: canvasStore.setCommandExams,
     pickBone: indexStore.pickBone,
+    startPickBone: indexStore.setBonePicker,
   }
 }
 
@@ -119,6 +120,7 @@ function createEditContext(options: Option): EditStateContext {
     setCommandExams: canvasStore.setCommandExams,
 
     pickBone: indexStore.pickBone,
+    startPickBone: indexStore.setBonePicker,
     getBones: () => indexStore.boneMap.value,
     getLastSelectedBoneId: () => indexStore.lastSelectedBoneId.value,
     getSelectedBones: () => indexStore.selectedBones.value,
@@ -225,6 +227,7 @@ function createPoseContext(options: Option): PoseStateContext {
     setCommandExams: canvasStore.setCommandExams,
 
     pickBone: indexStore.pickBone,
+    startPickBone: indexStore.setBonePicker,
     getBones: () => animationStore.currentPosedBones.value,
     getLastSelectedBoneId: () => indexStore.lastSelectedBoneId.value,
     getSelectedBones: () => animationStore.selectedBones.value,
@@ -260,6 +263,7 @@ function createWeightContext(options: Option): WeightStateContext {
     setCommandExams: canvasStore.setCommandExams,
 
     pickBone: indexStore.pickBone,
+    startPickBone: indexStore.setBonePicker,
     selectElement: elementStore.selectElement,
   }
 }

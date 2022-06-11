@@ -93,6 +93,7 @@ export interface KeyframeEditModeBase {
 
 export interface PickerOptions {
   callback: (id: string) => void
+  onstart?: () => void
   oncancel?: () => void
   name: string
 }

@@ -22,24 +22,35 @@ import { usePickingBoneState } from '/@/composables/modeStates/appCanvas/picking
 import { useModeStateMachine } from '/@/composables/modeStates/core'
 
 describe('src/composables/modeStates/appCanvas/pickingBoneState.ts', () => {
+  function getState() {
+    return usePickingBoneState({
+      name: 'mock',
+      callback: () => {},
+    })
+  }
   async function prepare() {
     const ctx = getMockWeightCtx()
     const sm = useModeStateMachine(ctx, () => ({
       getLabel: () => 'Default',
-      handleEvent: async () => usePickingBoneState,
+      handleEvent: async () => getState,
     }))
     await sm.ready
     await sm.handleEvent({ type: 'state', data: { name: '' } })
     ctx.setCommandExams.mockReset()
+    ctx.startPickBone.mockReset()
     return { sm, ctx }
   }
 
   describe('onStart', () => {
-    it('should execute "setCommandExams"', async () => {
+    it('should init the context', async () => {
       const ctx = getMockWeightCtx()
-      const sm = useModeStateMachine(ctx, usePickingBoneState)
+      const sm = useModeStateMachine(ctx, getState)
       await sm.ready
       expect(ctx.setCommandExams).toHaveBeenCalled()
+      expect(ctx.startPickBone).toHaveBeenNthCalledWith(1, {
+        name: 'mock',
+        callback: expect.anything(),
+      })
     })
   })
 

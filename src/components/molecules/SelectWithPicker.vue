@@ -59,7 +59,6 @@ function startPickValue() {
   if (active.value) {
     emits('start-pick')
   } else {
-    active.value = true
     emits('start-pick', {
       name: props.name,
       callback: (val) => {
@@ -67,6 +66,9 @@ function startPickValue() {
           emits('update:model-value', val)
         }
         active.value = false
+      },
+      onstart: () => {
+        active.value = true
       },
       oncancel: () => {
         active.value = false

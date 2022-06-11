@@ -91,6 +91,8 @@ import {
 import { useAnimationStore } from '/@/store/animation'
 import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
 import { IdMap } from '/@/models'
+import { PickerOptions } from '/@/composables/modes/types'
+import { useCanvasStore } from '/@/store/canvas'
 
 export default defineComponent({
   components: {
@@ -103,6 +105,7 @@ export default defineComponent({
   setup() {
     const store = useStore()
     const animationStore = useAnimationStore()
+    const canvasStore = useCanvasStore()
 
     const lastSelectedBone = computed(() => {
       return store.lastSelectedBone.value
@@ -202,6 +205,13 @@ export default defineComponent({
       animationStore.execDeleteKeyframeConstraint(target.id, { [key]: true })
     }
 
+    function startPickBone(val?: PickerOptions) {
+      canvasStore.dispatchCanvasEvent({
+        type: 'state',
+        data: { name: 'pick-bone', options: val },
+      })
+    }
+
     return {
       lastSelectedArmature: store.lastSelectedArmature,
       lastSelectedBone,
@@ -255,7 +265,7 @@ export default defineComponent({
       updateConstraint,
       addKeyframeConstraint,
       removeKeyframeConstraint,
-      startPickBone: store.setBonePicker,
+      startPickBone,
     }
   },
 })

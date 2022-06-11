@@ -78,6 +78,7 @@ import BlockField from '/@/components/atoms/BlockField.vue'
 import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import { useElementStore } from '/@/store/element'
 import { sortByValue } from '/@/utils/commons'
+import { PickerOptions } from '/@/composables/modes/types'
 
 export default defineComponent({
   components: {
@@ -166,6 +167,13 @@ export default defineComponent({
       )
     })
 
+    function startPickBone(val?: PickerOptions) {
+      canvasStore.dispatchCanvasEvent({
+        type: 'state',
+        data: { name: 'pick-bone', options: val },
+      })
+    }
+
     return {
       canvasMode,
       targetActor,
@@ -177,7 +185,7 @@ export default defineComponent({
       fillBoneId,
       strokeBoneId,
       viewBoxBoneId,
-      startPickBone: store.setBonePicker,
+      startPickBone,
     }
   },
 })

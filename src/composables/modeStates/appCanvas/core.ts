@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { PickerOptions } from '/@/composables/modes/types'
 import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/core'
 import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
 import { PoseStateContext } from '/@/composables/modeStates/appCanvas/poseMode/core'
@@ -31,6 +32,7 @@ import type {
 
 export interface AppCanvasStateContext extends CanvasStateContext {
   pickBone: (id?: string) => void
+  startPickBone: (val?: PickerOptions) => void
 }
 
 export interface AppCanvasState

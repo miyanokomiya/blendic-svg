@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   Armature,
   getBone,
@@ -584,6 +584,11 @@ export function createStore(historyStore: HistoryStore) {
     )
   }
 
+  const bonePicker = ref<(id: string) => void>()
+  function setBonePicker(fn?: (id: string) => void) {
+    bonePicker.value = fn
+  }
+
   return {
     armatures,
     lastSelectedArmatureId,
@@ -622,6 +627,9 @@ export function createStore(historyStore: HistoryStore) {
     updateBoneName,
     updateBoneConstraints,
     upsertBones,
+
+    bonePicker: computed(() => bonePicker.value),
+    setBonePicker,
   }
 }
 export type IndexStore = ReturnType<typeof createStore>

@@ -43,8 +43,9 @@ export type AppCanvasEvent =
   | ModeStateEvent
   | ChangeStateEvent
   | ChangeSelectionEvent
+  | PickBoneEvent
 
-export interface ChangeStateEvent extends ModeStateEventBase {
+interface ChangeStateEvent extends ModeStateEventBase {
   type: 'state'
   data: {
     name: string
@@ -52,6 +53,10 @@ export interface ChangeStateEvent extends ModeStateEventBase {
   }
 }
 
-export interface ChangeSelectionEvent extends ModeStateEventBase {
+interface ChangeSelectionEvent extends ModeStateEventBase {
   type: 'selection'
+}
+
+interface PickBoneEvent extends ModeStateEventBase {
+  type: 'pick-bone'
 }

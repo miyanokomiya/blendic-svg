@@ -99,5 +99,6 @@ export function getMockWeightCtx() {
     setPopupMenuList: jest.fn(),
 
     selectElement: jest.fn(),
+    pickBone: jest.fn(),
   } as any
 }

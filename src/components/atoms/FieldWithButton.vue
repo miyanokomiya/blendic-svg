@@ -1,4 +1,4 @@
-/*
+<!--
 This file is part of Blendic SVG.
 
 Blendic SVG is free software: you can redistribute it and/or modify
@@ -15,17 +15,35 @@ You should have received a copy of the GNU General Public License
 along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 
 Copyright (C) 2022, Tomoya Komiyama.
-*/
+-->
 
-import { CanvasStateContext } from '/@/composables/modeStates/commons'
-import { AppCanvasEvent } from '/@/composables/modeStates/appCanvas/core'
-import type { ModeStateBase } from '/@/composables/modeStates/core'
-import { SelectOptions } from '/@/composables/modes/types'
+<template>
+  <div class="field-with-button">
+    <div class="field">
+      <slot />
+    </div>
+    <div class="button">
+      <slot name="button" />
+    </div>
+  </div>
+</template>
 
-export interface WeightStateContext extends CanvasStateContext {
-  selectElement: (id?: string, options?: SelectOptions) => void
-  pickBone: (id?: string) => void
+<style scoped>
+.field-with-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
 }
-
-export interface WeightState
-  extends ModeStateBase<WeightStateContext, AppCanvasEvent> {}
+.field {
+  flex: 1;
+}
+.button {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+.button > ::v-deep(button) {
+  width: 100%;
+  height: 100%;
+}
+</style>

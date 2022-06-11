@@ -32,6 +32,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :viewBox="viewBox"
         :width="viewSize.width"
         :height="viewSize.height"
+        :class="{ 'picking-bone': pickingBone }"
         @wheel.prevent="wheel"
         @mousedown.prevent="handleDownEvent"
         @mouseup.prevent="handleUpEvent"
@@ -322,6 +323,13 @@ export default defineComponent({
         : undefined
     })
 
+    const pickingBone = computed(() => !!indexStore.bonePicker.value)
+    watch(pickingBone, (to) => {
+      if (to) {
+        mode.sm.handleEvent({ type: 'state', data: { name: 'pick-bone' } })
+      }
+    })
+
     function handleDownEvent(e: MouseEvent) {
       mode.sm.handleEvent({
         type: 'pointerdown',
@@ -414,6 +422,7 @@ export default defineComponent({
       cursorRotate,
       cursorType,
       cursor,
+      pickingBone,
 
       handleDownEvent,
       handleUpEvent,
@@ -455,5 +464,11 @@ svg {
 .popup-menu-list {
   position: fixed;
   z-index: 1;
+}
+</style>
+
+<style scoped>
+.picking-bone {
+  background-color: #bbb;
 }
 </style>

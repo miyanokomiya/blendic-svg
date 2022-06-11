@@ -241,7 +241,7 @@ function createPoseContext(options: Option): PoseStateContext {
 }
 
 function createWeightContext(options: Option): WeightStateContext {
-  const { canvasStore, elementStore } = options
+  const { indexStore, canvasStore, elementStore } = options
 
   return {
     ...createBaseContext(options),
@@ -257,5 +257,11 @@ function createWeightContext(options: Option): WeightStateContext {
     setCommandExams: canvasStore.setCommandExams,
 
     selectElement: elementStore.selectElement,
+    pickBone: (id) => {
+      if (id) {
+        indexStore.bonePicker.value?.(id)
+      }
+      indexStore.setBonePicker()
+    },
   }
 }

@@ -28,7 +28,7 @@ import {
   handleToggleAxisGrid,
 } from '/@/composables/modeStates/appCanvas/poseMode/utils'
 import { getPosedBoneHeadsOrigin } from '/@/utils/armatures'
-import { mapFilter, mapReduce } from '/@/utils/commons'
+import { mapReduce } from '/@/utils/commons'
 import { snapScale } from '/@/utils/geometry'
 
 export function useScalingState(): PoseState {
@@ -53,7 +53,6 @@ const state: PoseState = {
   handleEvent: async (ctx, event) => {
     switch (event.type) {
       case 'pointermove': {
-        const boneMap = ctx.getBones()
         const selectedBoneMap = ctx.getSelectedBones()
         const origin = getPosedBoneHeadsOrigin(selectedBoneMap)
         const scaleDiff = multi(
@@ -65,13 +64,9 @@ const state: PoseState = {
         const gridScale = event.data.ctrl ? snapScale(scaleDiff) : scaleDiff
         const snappedScale = snapScaleDiff(ctx, gridScale)
 
-        const targetIds = mapFilter(
-          selectedBoneMap,
-          (_, id) => boneMap[id] && !boneMap[id].connected
-        )
         const t = getDefaultEditTransform({ scale: snappedScale })
         ctx.setEditTransforms(
-          mapReduce(targetIds, () => t),
+          mapReduce(selectedBoneMap, () => t),
           'scale'
         )
         return

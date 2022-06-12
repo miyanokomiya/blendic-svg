@@ -64,6 +64,33 @@ describe('utils/armatures', () => {
     })
   })
 
+  describe('posedTransform', () => {
+    it('should apply pose transform', () => {
+      expect(
+        target.posedTransform(
+          getBone({
+            head: { x: 0, y: 0 },
+            tail: { x: 0, y: 10 },
+          }),
+          [
+            getTransform({
+              translate: { x: 10, y: 20 },
+              scale: { x: 4, y: 2 },
+            }),
+          ]
+        )
+      ).toEqual(
+        getBone({
+          head: { x: 10, y: 20 },
+          tail: { x: 10, y: 40 },
+          transform: getTransform({
+            scale: { x: 2, y: 1 },
+          }),
+        })
+      )
+    })
+  })
+
   describe('extrudeFromParent', () => {
     const parent = getBone({ id: 'parent', tail: { x: 1, y: 2 } })
 

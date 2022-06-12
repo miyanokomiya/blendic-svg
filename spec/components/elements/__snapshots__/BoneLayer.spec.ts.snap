@@ -8,8 +8,8 @@ exports[`src/components/elements/BoneLayer.vue snapshot defalut 1`] = `
     opacity="1"
     stroke="black"
     stroke-width="1.2"
-    title=""
   >
+    <title />
     <g
       data-id="a"
       data-type="bone-body"
@@ -54,8 +54,8 @@ exports[`src/components/elements/BoneLayer.vue snapshot pose mode 1`] = `
     opacity="1"
     stroke="black"
     stroke-width="1.2"
-    title=""
   >
+    <title />
     <g
       data-id="a"
       data-type="bone-body"
@@ -100,8 +100,8 @@ exports[`src/components/elements/BoneLayer.vue snapshot selected 1`] = `
     opacity="1"
     stroke="black"
     stroke-width="1.2"
-    title=""
   >
+    <title />
     <g
       data-id="a"
       data-type="bone-body"

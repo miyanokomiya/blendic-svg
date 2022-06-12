@@ -18,10 +18,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g
-    :title="node.type"
-    :transform="`translate(${node.position.x}, ${node.position.y})`"
-  >
+  <g :transform="`translate(${node.position.x}, ${node.position.y})`">
+    <title>{{ node.type }}</title>
     <g data-type="node-body" :data-node_id="node.id">
       <path
         :d="outline"

@@ -22,7 +22,7 @@ import { reactive } from 'vue'
 const settings = reactive({
   selectedColor: 'orange',
   historyMax: 64,
-  showBoneName: true,
+  showBoneName: false,
   boneOpacity: 1,
   showViewbox: true,
   showAxis: true,

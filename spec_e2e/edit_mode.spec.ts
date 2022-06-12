@@ -42,7 +42,7 @@ test.describe('edit bones', () => {
     await screenshot('extlude_bone')
 
     // Select a bone
-    await page.click('g[title="bone.001"] >> path')
+    await page.click('g:has(title:has-text("bone.001")) >> path')
     await screenshot('select_bone_body')
 
     // Scale

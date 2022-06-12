@@ -21,6 +21,7 @@ import { getMockPoseCtx } from 'spec/composables/modeStates/appCanvas/mocks'
 import {
   getLastSelectedBoneSpace,
   handleToggleAxisGrid,
+  handleToggleAxisGridLocal,
 } from '/@/composables/modeStates/appCanvas/poseMode/utils'
 import { getBone, getTransform } from '/@/models'
 
@@ -106,6 +107,44 @@ describe('src/composables/modeStates/appCanvas/poseMode/utils.ts', () => {
       ctx.getAxisGridInfo.mockReturnValue({ ...val, local: true })
       handleToggleAxisGrid(ctx, 'y')
       expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(3)
+    })
+  })
+
+  describe('handleToggleAxisGridLocal', () => {
+    it('x: should execute "setAxisGridInfo" to toggle axis "x"', () => {
+      const ctx = getMockPoseCtx()
+      const val = {
+        axis: 'x',
+        local: true,
+        vec: { x: 1, y: 0 },
+        origin: expect.anything(),
+      }
+
+      ctx.getAxisGridInfo.mockReturnValue(undefined)
+      handleToggleAxisGridLocal(ctx, 'x')
+      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1, val)
+
+      ctx.getAxisGridInfo.mockReturnValue(val)
+      handleToggleAxisGridLocal(ctx, 'x')
+      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(2)
+    })
+
+    it('y: should execute "setAxisGridInfo" to toggle axis "y"', () => {
+      const ctx = getMockPoseCtx()
+      const val = {
+        axis: 'y',
+        local: true,
+        vec: { x: 0, y: 1 },
+        origin: expect.anything(),
+      }
+
+      ctx.getAxisGridInfo.mockReturnValue(undefined)
+      handleToggleAxisGridLocal(ctx, 'y')
+      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(1, val)
+
+      ctx.getAxisGridInfo.mockReturnValue(val)
+      handleToggleAxisGridLocal(ctx, 'y')
+      expect(ctx.setAxisGridInfo).toHaveBeenNthCalledWith(2)
     })
   })
 })

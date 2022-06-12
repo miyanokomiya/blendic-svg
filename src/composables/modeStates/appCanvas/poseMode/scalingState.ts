@@ -25,7 +25,7 @@ import {
 import { useDefaultState } from '/@/composables/modeStates/appCanvas/poseMode/defaultState'
 import {
   getDefaultEditTransform,
-  handleToggleAxisGrid,
+  handleToggleAxisGridLocal,
 } from '/@/composables/modeStates/appCanvas/poseMode/utils'
 import { getPosedBoneHeadsOrigin } from '/@/utils/armatures'
 import { mapReduce } from '/@/utils/commons'
@@ -82,11 +82,11 @@ const state: PoseState = {
           case 'Escape':
             return useDefaultState
           case 'x': {
-            handleToggleAxisGrid(ctx, 'x')
+            handleToggleAxisGridLocal(ctx, 'x')
             return
           }
           case 'y': {
-            handleToggleAxisGrid(ctx, 'y')
+            handleToggleAxisGridLocal(ctx, 'y')
             return
           }
           default:

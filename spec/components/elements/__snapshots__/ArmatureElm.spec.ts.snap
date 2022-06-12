@@ -13,8 +13,8 @@ exports[`src/components/elements/ArmatureElm.vue snapshot defalut 1`] = `
     opacity="1"
     stroke="black"
     stroke-width="1.2"
-    title=""
   >
+    <title />
     <g
       stroke-linejoin="bevel"
     >
@@ -58,8 +58,8 @@ exports[`src/components/elements/ArmatureElm.vue snapshot selected 1`] = `
     opacity="1"
     stroke="black"
     stroke-width="1.2"
-    title=""
   >
+    <title />
     <g
       stroke-linejoin="bevel"
     >

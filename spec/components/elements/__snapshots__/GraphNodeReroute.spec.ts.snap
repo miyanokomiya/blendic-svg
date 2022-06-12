@@ -2,9 +2,11 @@
 
 exports[`src/components/elements/GraphNodeReroute.vue snapshot initial 1`] = `
 <g
-  title="reroute"
   transform="translate(0, 0)"
 >
+  <title>
+    reroute
+  </title>
   <g
     data-node_id=""
     data-type="node-body"
@@ -65,9 +67,11 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot initial 1`] = `
 
 exports[`src/components/elements/GraphNodeReroute.vue snapshot selected 1`] = `
 <g
-  title="reroute"
   transform="translate(0, 0)"
 >
+  <title>
+    reroute
+  </title>
   <g
     data-node_id=""
     data-type="node-body"

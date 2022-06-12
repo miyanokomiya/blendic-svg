@@ -23,8 +23,8 @@ Copyright (C) 2021, Tomoya Komiyama.
     :fill="fill"
     :opacity="adjustedOpacity"
     :stroke-width="1.2 * Math.min(scale, 1)"
-    :title="bone.name"
   >
+    <title>{{ bone.name }}</title>
     <g
       stroke-linejoin="bevel"
       :data-type="readOnly ? undefined : 'bone-body'"

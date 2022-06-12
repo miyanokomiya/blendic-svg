@@ -87,6 +87,27 @@ export function handleToggleAxisGrid(
   }
 }
 
+export function handleToggleAxisGridLocal(
+  ctx: Pick<
+    PoseStateContext,
+    'getAxisGridInfo' | 'setAxisGridInfo' | 'getLastSelectedBoneId' | 'getBones'
+  >,
+  axis: AxisGrid
+) {
+  if (ctx.getAxisGridInfo()?.axis === axis) {
+    ctx.setAxisGridInfo()
+  } else {
+    const unitV = axis === 'x' ? { x: 1, y: 0 } : { x: 0, y: 1 }
+    const boneSpace = getLastSelectedBoneSpace(ctx)
+    ctx.setAxisGridInfo({
+      axis,
+      local: true,
+      vec: rotate(unitV, boneSpace.radian),
+      origin: boneSpace.origin,
+    })
+  }
+}
+
 export function getDefaultEditTransform(arg: Partial<Transform> = {}) {
   return getTransform({ scale: { x: 0, y: 0 }, ...arg })
 }

@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Add bone pickers at each bone selection field
+
+### Fixed
+- Fix invalid scale modification in the edit mode and the pose mode
 
 ## [0.17.0] - 2022-06-10
 ### Added

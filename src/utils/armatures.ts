@@ -177,9 +177,16 @@ export function posedTransform(bone: Bone, transforms: Transform[]): Bone {
     head,
     tail: add(multi(sub(tail, head), convoluted.scale.y), head),
     transform: getTransform({
-      // scale x does not affect bone's head and tail
-      // => it affects bone's width
-      scale: { x: convoluted.scale.x, y: 1 },
+      // Original bone's width is derived from its height: the distance between head and tail
+      // Scale x affects its width as well
+      // => Divide the width by scale y to negate the pose transformation of the height
+      scale: {
+        x:
+          convoluted.scale.y === 0
+            ? 0
+            : convoluted.scale.x / convoluted.scale.y,
+        y: 1,
+      },
     }),
   }
 }

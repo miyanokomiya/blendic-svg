@@ -23,7 +23,7 @@
     "vue": "^3.2.33"
   },
   "devDependencies": {
-    "@babel/core": "^7.17.10",
+    "@babel/core": "^7.18.5",
     "@babel/preset-env": "^7.18.0",
     "@babel/preset-typescript": "^7.16.7",
     "@playwright/test": "^1.22.2",
@@ -50,7 +50,7 @@
     "jest": "^27.5.1",
     "playwright-chromium": "^1.22.0",
     "prettier": "^2.6.2",
-    "sass": "^1.50.0",
+    "sass": "^1.52.3",
     "tree-kill": "^1.2.2",
     "ts-jest": "^27.1.4",
     "tslib": "^2.4.0",

@@ -56,16 +56,15 @@ const state: AnimationGraphState = {
         switch (event.data.options.button) {
           case 0:
             switch (event.target.type) {
-              case 'empty':
-                return onDownEmpty(ctx, event)
               case 'node-body':
                 return onDownNodeBody(ctx, event)
               case 'node-edge-input':
                 return onDownEdgeInput(event)
               case 'node-edge-output':
                 return onDownEdgeOutput(event)
+              default:
+                return onDownEmpty(ctx, event)
             }
-            return
           case 1:
             return usePanningState
           case 2:

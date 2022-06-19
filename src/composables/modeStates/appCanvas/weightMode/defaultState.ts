@@ -36,13 +36,11 @@ const state: WeightState = {
         switch (event.data.options.button) {
           case 0:
             switch (event.target.type) {
-              case 'empty':
-                ctx.selectElement()
-                return
               case 'element':
                 ctx.selectElement(event.target.id, event.data.options)
                 return
               default:
+                ctx.selectElement()
                 return
             }
           case 1:

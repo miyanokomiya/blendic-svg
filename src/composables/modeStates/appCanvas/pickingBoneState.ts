@@ -34,16 +34,14 @@ export function usePickingBoneState(options: PickerOptions): AppCanvasState {
           switch (event.data.options.button) {
             case 0:
               switch (event.target.type) {
-                case 'empty':
-                  ctx.pickBone()
-                  return { type: 'break' }
                 case 'bone-body':
                 case 'bone-head':
                 case 'bone-tail':
                   ctx.pickBone(event.target.id)
                   return { type: 'break' }
                 default:
-                  return
+                  ctx.pickBone()
+                  return { type: 'break' }
               }
             case 1:
               return { getState: usePanningState, type: 'stack-resume' }

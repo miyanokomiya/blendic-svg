@@ -22,6 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <ul>
       <li v-for="item in popupMenuList" :key="item.label">
         <button
+          type="button"
           :data-test-id="item.label"
           @click="item.exec"
           @mousemove="item.hover"

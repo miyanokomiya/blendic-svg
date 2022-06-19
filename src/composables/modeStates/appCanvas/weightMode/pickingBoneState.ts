@@ -36,16 +36,14 @@ const state: WeightState = {
         switch (event.data.options.button) {
           case 0:
             switch (event.target.type) {
-              case 'empty':
-                ctx.pickBone()
-                return useDefaultState
               case 'bone-body':
               case 'bone-head':
               case 'bone-tail':
                 ctx.pickBone(event.target.id)
                 return useDefaultState
               default:
-                return
+                ctx.pickBone()
+                return useDefaultState
             }
           case 1:
             return { getState: usePanningState, type: 'stack-resume' }

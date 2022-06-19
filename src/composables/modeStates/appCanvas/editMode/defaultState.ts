@@ -47,9 +47,6 @@ const state: EditState = {
         switch (event.data.options.button) {
           case 0:
             switch (event.target.type) {
-              case 'empty':
-                ctx.selectBones({}, event.data.options.shift)
-                return useRectangleSelectingState
               case 'bone-body':
               case 'bone-head':
               case 'bone-tail':
@@ -60,7 +57,8 @@ const state: EditState = {
                 )
                 return
               default:
-                return
+                ctx.selectBones({}, event.data.options.shift)
+                return useRectangleSelectingState
             }
           case 1:
             return usePanningState

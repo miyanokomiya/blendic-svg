@@ -15,6 +15,7 @@ exports[`src/components/molecules/dialogs/BakingConfigDialog.vue snapshot defaul
     >
       <button
         class="close-button"
+        type="button"
       >
         <svg
           viewBox="0 0 10 10"
@@ -108,6 +109,7 @@ exports[`src/components/molecules/dialogs/BakingConfigDialog.vue snapshot select
     >
       <button
         class="close-button"
+        type="button"
       >
         <svg
           viewBox="0 0 10 10"

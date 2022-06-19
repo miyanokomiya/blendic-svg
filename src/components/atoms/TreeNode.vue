@@ -21,7 +21,12 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="tree-node" :class="{ 'has-children': hasChildren }">
     <div class="node-view">
       <div class="spacer" :style="{ width: `${nestIndex * 8}px` }" />
-      <button v-if="hasChildren" class="toggle-closed" @click="toggleClosed">
+      <button
+        v-if="hasChildren"
+        type="button"
+        class="toggle-closed"
+        @click="toggleClosed"
+      >
         <UpIcon :flipped="!closed" :right="closed" />
       </button>
       <div v-else class="spacer" :style="{ width: '16px' }" />

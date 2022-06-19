@@ -17,6 +17,7 @@ exports[`src/components/molecules/dialogs/DialogBase.vue snapshot open 1`] = `
     >
       <button
         class="close-button"
+        type="button"
       >
         <svg
           viewBox="0 0 10 10"
@@ -64,6 +65,7 @@ exports[`src/components/molecules/dialogs/DialogBase.vue snapshot with buttons 1
     >
       <button
         class="close-button"
+        type="button"
       >
         <svg
           viewBox="0 0 10 10"

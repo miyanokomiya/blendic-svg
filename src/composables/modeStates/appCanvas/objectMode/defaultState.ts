@@ -39,12 +39,11 @@ const state: ObjectState = {
         switch (event.data.options.button) {
           case 0:
             switch (event.target.type) {
-              case 'empty':
-                return onDownEmpty(ctx)
               case 'armature-body':
                 return onDownArmature(ctx, event)
+              default:
+                return onDownEmpty(ctx)
             }
-            return
           case 1:
             return usePanningState
         }

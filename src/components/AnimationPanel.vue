@@ -33,10 +33,16 @@ Copyright (C) 2021, Tomoya Komiyama.
       </div>
       <input v-model="draftName" type="text" @change="changeActionName" />
       <div class="action-buttons">
-        <button class="add-action" title="Add action" @click="addAction">
+        <button
+          type="button"
+          class="add-action"
+          title="Add action"
+          @click="addAction"
+        >
           <AddIcon />
         </button>
         <button
+          type="button"
           class="delete-action"
           title="Delete action"
           :disabled="!selectedActionId"

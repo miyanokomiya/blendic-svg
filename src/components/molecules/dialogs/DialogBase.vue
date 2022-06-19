@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div class="overlay" />
     <div class="body-outer" @click.self="close">
       <div class="body-innter">
-        <button class="close-button" @click="close">
+        <button type="button" class="close-button" @click="close">
           <DeleteIcon fill="none" stroke="#888" />
         </button>
         <div class="body-content">

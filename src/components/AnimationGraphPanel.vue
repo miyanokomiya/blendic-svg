@@ -39,6 +39,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       />
       <div class="graph-buttons">
         <button
+          type="button"
           class="add-graph"
           title="Add graph"
           :disabled="!selectedArmature"
@@ -47,6 +48,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           <AddIcon />
         </button>
         <button
+          type="button"
           class="delete-graph"
           title="Delete graph"
           :disabled="!selectedGraphId"

@@ -21,7 +21,7 @@ Copyright (C) 2022, Tomoya Komiyama.
   <FieldWithButton>
     <SelectField v-model="value" :options="options" />
     <template #button>
-      <button @click="startPickValue">
+      <button type="button" @click="startPickValue">
         <EyedropperIcon :highlight="active" />
       </button>
     </template>

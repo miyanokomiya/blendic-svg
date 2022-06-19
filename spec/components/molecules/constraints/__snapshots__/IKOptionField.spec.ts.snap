@@ -51,7 +51,9 @@ exports[`/@/src/components/molecules/constraints/IKOptionField.vue snapshot 1`] 
           class="button"
         >
           
-          <button>
+          <button
+            type="button"
+          >
             <svg
               viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"
@@ -130,7 +132,9 @@ exports[`/@/src/components/molecules/constraints/IKOptionField.vue snapshot 1`] 
           class="button"
         >
           
-          <button>
+          <button
+            type="button"
+          >
             <svg
               viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"

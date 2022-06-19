@@ -23,6 +23,7 @@ import {
   ElementNodeAttributes,
   IdMap,
   toMap,
+  BElement,
 } from '../models'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
@@ -291,21 +292,35 @@ export function useStorage() {
     )
   }
 
+  function removeWeight(src: BElement): BElement {
+    return {
+      id: src.id,
+      tag: src.tag,
+      index: src.index,
+      parentId: src.parentId,
+    }
+  }
+
   function getElementNodeAtFrame(
     currentFrame: number,
     endFrame: number,
-    posedBones: IdMap<Bone>
+    posedBones: IdMap<Bone>,
+    ignoreWeight = false
   ): ElementNode {
     const actor = elementStore.lastSelectedActor.value!
     const elementMap = elementStore.elementMap.value
 
+    const adjustedElementMap = ignoreWeight
+      ? mapReduce(elementMap, removeWeight)
+      : elementMap
+
     const svgNode = addEssentialSvgAttributes(
-      getPosedElementTree(posedBones, elementMap, actor.svgTree)
+      getPosedElementTree(posedBones, adjustedElementMap, actor.svgTree)
     )
 
     const graphObjectMap = resolveAnimationGraph(
       graphStore.getGraphNodeModuleFn.value(),
-      elementMap,
+      adjustedElementMap,
       posedBones,
       { currentFrame, endFrame },
       graphStore.completedNodeMap.value
@@ -351,11 +366,14 @@ export function useStorage() {
       )
     )
 
+    // Create whole SVG tree in advance to avoid creating elements dynamically
+    // For this usage, each SVG element must not be transformed by bones
     const svgTreeList = frames.map((currentFrame) =>
       getElementNodeAtFrame(
         currentFrame,
         endFrame,
-        posedBonesPerFrame[currentFrame]
+        posedBonesPerFrame[currentFrame],
+        true
       )
     )
     const wholeSvgElementNode = mergeSvgTreeList(svgTreeList, true)

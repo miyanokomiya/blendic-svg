@@ -175,17 +175,12 @@ export function serializeToAnimatedSvg(
 function immigrateViewBox(svgRoot: ElementNode): ElementNode {
   return {
     ...svgRoot,
-    attributes: {
-      ...svgRoot.attributes,
-      viewBox: `0 0 ${BASE_VIEW_SIZE} ${BASE_VIEW_SIZE}`,
-    },
+    attributes: resetSvgViewBoxAttributes(svgRoot.attributes),
     children: [
       {
         id: VIEWBOX_G_ID,
         tag: 'g',
-        attributes: {
-          viewBox: createTransformFromViewbox(svgRoot.attributes.viewBox),
-        },
+        attributes: {},
         children: svgRoot.children,
       },
     ],
@@ -200,15 +195,11 @@ function immigrateViewBoxPerFrame(
   attributesMapPerFrame: IdMap<ElementNodeAttributes>[]
 ) {
   return attributesMapPerFrame.map((attrsMap) => {
-    const svgAttrs = attrsMap[svgId]
     return {
       ...attrsMap,
-      [svgId]: {
-        ...svgAttrs,
-        viewBox: `0 0 ${BASE_VIEW_SIZE} ${BASE_VIEW_SIZE}`,
-      },
+      [svgId]: resetSvgViewBoxAttributes(attrsMap[svgId]),
       [VIEWBOX_G_ID]: {
-        transform: createTransformFromViewbox(svgAttrs?.viewBox),
+        transform: createTransformFromViewbox(attrsMap[svgId]?.viewBox),
       } as ElementNodeAttributes,
     }
   })
@@ -216,19 +207,35 @@ function immigrateViewBoxPerFrame(
 
 const BASE_VIEW_SIZE = 100
 
+function resetSvgViewBoxAttributes(
+  attrs: ElementNodeAttributes
+): ElementNodeAttributes {
+  const svgAttrs = { ...attrs }
+  svgAttrs.viewBox = `0 0 ${BASE_VIEW_SIZE} ${BASE_VIEW_SIZE}`
+  // Original aspect ratio cannot be kept by viewBox transforming
+  delete svgAttrs.width
+  delete svgAttrs.height
+  return svgAttrs
+}
+
 function createTransformFromViewbox(viewBoxStr: string) {
   const viewBox = parseViewBoxFromStr(viewBoxStr)
   if (!viewBox) return ''
 
-  const scaleX = viewBox.width / BASE_VIEW_SIZE
-  const scaleY = viewBox.height / BASE_VIEW_SIZE
+  const scaleX = BASE_VIEW_SIZE / viewBox.width
+  const scaleY = BASE_VIEW_SIZE / viewBox.height
+
+  const minScale = Math.min(scaleX, scaleY)
+  const paddingX = (BASE_VIEW_SIZE - viewBox.width * minScale) / 2
+  const paddingY = (BASE_VIEW_SIZE - viewBox.height * minScale) / 2
+
   return affineToTransform([
-    1 / scaleX,
+    minScale,
     0,
     0,
-    1 / scaleY,
-    -viewBox.x / scaleX,
-    -viewBox.y / scaleY,
+    minScale,
+    paddingX - viewBox.x,
+    paddingY - viewBox.y,
   ])
 }
 

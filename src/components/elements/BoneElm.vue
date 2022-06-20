@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     stroke="black"
     :fill="fill"
     :opacity="adjustedOpacity"
-    :stroke-width="1.2 * Math.min(scale, 1)"
+    :stroke-width="strokeWidth"
   >
     <title>{{ bone.name }}</title>
     <g
@@ -58,7 +58,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :y1="parent.tail.y"
       :x2="head.x"
       :y2="head.y"
-      :stroke-dasharray="`${2 * scale} ${2 * scale}`"
+      :stroke-dasharray="`${1.5 * scale} ${6 * scale}`"
       class="view-only"
     />
     <g
@@ -153,6 +153,10 @@ export default defineComponent({
       getCircleR(head.value, tail.value, props.scale)
     )
 
+    const strokeWidth = computed(() =>
+      Math.min(1.2 * Math.min(props.scale, 1), 3)
+    )
+
     return {
       adjustedOpacity: computed(() => props.opacity * settings.boneOpacity),
       name: computed(() => (settings.showBoneName ? props.bone.name : '')),
@@ -173,6 +177,7 @@ export default defineComponent({
       fillTail: computed(() =>
         props.selectedState.tail ? settings.selectedColor : ''
       ),
+      strokeWidth,
       click: (e: MouseEvent, state: BoneSelectedState) => {
         const stateForMode = props.poseMode ? { head: true, tail: true } : state
 

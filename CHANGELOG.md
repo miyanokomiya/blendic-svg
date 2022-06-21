@@ -5,11 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.17.1] - 2022-06-21
 ### Added
 - Add bone pickers at each bone selection field
 
 ### Fixed
 - Fix invalid scale modification in the edit mode and the pose mode
+- Fix invalid `viewBox` emulation in animated SVG
+- Fix invalid whole SVG tree in animated SVG
 
 ## [0.17.0] - 2022-06-10
 ### Added

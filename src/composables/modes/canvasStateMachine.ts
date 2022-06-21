@@ -240,6 +240,10 @@ function createPoseContext(options: Option): PoseStateContext {
     setAxisGridInfo: canvasStore.setAxisGridInfo,
     getAxisGridInfo: () => canvasStore.axisGridLine.value,
     insertKeyframe: animationStore.execInsertKeyframe,
+    getPosesToClip: () =>
+      mapReduce(indexStore.selectedBones.value, (_, id) =>
+        animationStore.getCurrentSelfTransforms(id)
+      ),
     pastePoses: animationStore.pastePoses,
 
     setToolMenuGroups: canvasStore.setToolMenuGroups,

@@ -34,7 +34,6 @@ import {
 import type { ModeStateBase } from '/@/composables/modeStates/core'
 import { Bone, BoneSelectedState, IdMap, Transform } from '/@/models'
 import { AxisGridInfo } from '/@/store/canvas'
-import { mapReduce } from '/@/utils/commons'
 
 export interface PoseStateContext extends AppCanvasStateContext {
   getBones: () => IdMap<Bone>
@@ -67,6 +66,7 @@ export interface PoseStateContext extends AppCanvasStateContext {
     scaleX?: boolean
     scaleY?: boolean
   }) => void
+  getPosesToClip: () => IdMap<Transform>
   pastePoses: (val: IdMap<Transform>) => void
 
   setToolMenuGroups: (val?: ToolMenuGroup[]) => void
@@ -83,9 +83,7 @@ export function usePoseClipboard(ctx: PoseStateContext) {
   return useClipboard(
     () => {
       return {
-        'text/plain': clipboardSerializer.serialize(
-          mapReduce(ctx.getBones(), (b) => b.transform)
-        ),
+        'text/plain': clipboardSerializer.serialize(ctx.getPosesToClip()),
       }
     },
     async (items) => {

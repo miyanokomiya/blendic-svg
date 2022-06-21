@@ -234,8 +234,8 @@ function createTransformFromViewbox(viewBoxStr: string) {
     0,
     0,
     minScale,
-    paddingX - viewBox.x,
-    paddingY - viewBox.y,
+    paddingX - viewBox.x * minScale,
+    paddingY - viewBox.y * minScale,
   ])
 }
 

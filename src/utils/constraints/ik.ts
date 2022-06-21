@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { add, getRadian, IVec2, multi, rotate, sub } from 'okageo'
+import { add, getDistance, getRadian, IVec2, multi, rotate, sub } from 'okageo'
 import { getParentIdPath, sumReduce } from '../commons'
 import { Bone, IdMap, toMap } from '/@/models'
 import { interpolateTransform } from '/@/utils/armatures'
@@ -32,6 +32,7 @@ export interface Option {
   poleTargetId: string
   iterations: number
   chainLength: number
+  smoothJoint?: boolean
   influence: number
 }
 
@@ -49,7 +50,11 @@ export function apply(
   const targetWorldLocation = getBoneWorldLocation(target)
 
   let applied = poleTarget
-    ? straightToPoleTarget(getBoneWorldLocation(poleTarget), bones)
+    ? straightToPoleTarget(
+        getBoneWorldLocation(poleTarget),
+        bones,
+        option.smoothJoint ? targetWorldLocation : undefined
+      )
     : bones
 
   for (let i = 0; i < option.iterations; i++) {
@@ -146,17 +151,33 @@ function getStickInfoTarget(
   ]
 }
 
+/**
+ * When "targetPoint" is passed, smooth joint feature is turned on
+ */
 export function straightToPoleTarget(
   poleTargetPoint: IVec2,
-  bones: Bone[]
+  bones: Bone[],
+  targetPoint?: IVec2
 ): Bone[] {
   if (bones.length === 0) return bones
 
   const root = bones[0]
-  const rad = getRadian(
-    poleTargetPoint,
-    add(root.head, getBoneWorldTranslate(root))
-  )
+  const rootWorldHead = add(root.head, getBoneWorldTranslate(root))
+
+  let scaleRate = 1
+  if (targetPoint) {
+    const distanceWithPole =
+      getDistance(rootWorldHead, poleTargetPoint) +
+      getDistance(poleTargetPoint, targetPoint)
+    const chainMaxDistance = bones.reduce(
+      (sum, b) => sum + getDistance(b.head, b.tail) * b.transform.scale.y,
+      0
+    )
+    // Shrink the chain when the pole target is close
+    scaleRate = Math.min(distanceWithPole / chainMaxDistance, 1)
+  }
+
+  const rad = getRadian(poleTargetPoint, rootWorldHead)
   let parent = root
   let parentTailTranslate = { x: 0, y: 0 }
   return bones.map((b) => {
@@ -167,15 +188,16 @@ export function straightToPoleTarget(
     const tail = add(b.tail, worldTranslate)
     const selfRad = rad - getRadian(tail, head)
     const angle = (selfRad / Math.PI) * 180
-    const next = {
+    const next: Bone = {
       ...b,
       transform: {
-        ...b.transform,
+        origin: b.transform.origin,
         rotate: angle,
         translate: add(
           b.transform.translate,
           toSpaceFn.toLocal(parentTailTranslate)
         ),
+        scale: { x: b.transform.scale.x, y: b.transform.scale.y * scaleRate },
       },
     }
     parent = next

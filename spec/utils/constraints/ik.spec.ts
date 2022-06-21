@@ -274,6 +274,34 @@ describe('utils/constraints/ik.ts', () => {
         })
       )
     })
+
+    it('smooth joint', () => {
+      const a = getBone({
+        id: 'a',
+        head: { x: 0, y: 0 },
+        tail: { x: 10, y: 0 },
+      })
+      const b = getBone({
+        id: 'b',
+        head: { x: 10, y: 0 },
+        tail: { x: 20, y: 0 },
+      })
+      const res1 = straightToPoleTarget({ x: 5, y: 0 }, [a, b], { x: 10, y: 0 })
+      assertTransform(
+        res1[0].transform,
+        getTransform({ scale: { x: 1, y: 0.5 } })
+      )
+      assertTransform(
+        res1[1].transform,
+        getTransform({ scale: { x: 1, y: 0.5 } })
+      )
+
+      const res2 = straightToPoleTarget({ x: 5, y: 5 }, [a, b], { x: 10, y: 0 })
+      expect(res2[0].transform.scale.y).toBeLessThan(1)
+      expect(res2[0].transform.scale.y).toBeGreaterThan(0.5)
+      expect(res2[1].transform.scale.y).toBeLessThan(1)
+      expect(res2[1].transform.scale.y).toBeGreaterThan(0.5)
+    })
   })
 
   describe('immigrate', () => {

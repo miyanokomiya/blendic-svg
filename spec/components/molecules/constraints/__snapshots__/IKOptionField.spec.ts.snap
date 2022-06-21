@@ -168,6 +168,29 @@ exports[`/@/src/components/molecules/constraints/IKOptionField.vue snapshot 1`] 
     class="row-block inline-field"
   >
     
+    <!--v-if-->
+    <div
+      class="inline-content"
+    >
+      
+      <label
+        class=""
+      >
+        <input
+          type="checkbox"
+        />
+        <span>
+          Smooth Joint
+        </span>
+      </label>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field"
+  >
+    
     <label
       style="width: 100px;"
     >

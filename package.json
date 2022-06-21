@@ -1,6 +1,6 @@
 {
   "name": "blendic-svg",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "license": "SEE LICENSE IN README.md",
   "scripts": {
     "dev": "vite",

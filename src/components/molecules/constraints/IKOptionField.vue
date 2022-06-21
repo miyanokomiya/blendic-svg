@@ -37,6 +37,13 @@ Copyright (C) 2021, Tomoya Komiyama.
         @start-pick="startPickBone"
       />
     </InlineField>
+    <InlineField>
+      <CheckboxInput
+        :model-value="modelValue.smoothJoint"
+        label="Smooth Joint"
+        @update:model-value="updateSmoothJoint"
+      />
+    </InlineField>
     <InlineField label="Chain Length" :label-width="labelWidth">
       <SliderInput
         :model-value="modelValue.chainLength"
@@ -78,6 +85,7 @@ import SliderInput from '/@/components/atoms/SliderInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import { getProps } from '/@/components/molecules/constraints/common'
 import { PickerOptions } from '/@/composables/modes/types'
 
@@ -87,6 +95,7 @@ export default defineComponent({
     InlineField,
     KeyDot,
     SelectWithPicker,
+    CheckboxInput,
   },
   props: getProps<BoneConstraintOptions['IK']>(),
   emits: ['update:model-value', 'start-pick-bone'],
@@ -105,6 +114,9 @@ export default defineComponent({
       },
       updatePoleTargetId(val: string) {
         emitUpdated({ poleTargetId: val })
+      },
+      updateSmoothJoint(val: boolean) {
+        emitUpdated({ smoothJoint: val })
       },
       updateChainLength(val: number, seriesKey?: string) {
         emitUpdated({ chainLength: val }, seriesKey)

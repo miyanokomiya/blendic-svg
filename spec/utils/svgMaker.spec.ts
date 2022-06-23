@@ -115,8 +115,8 @@ describe('utils/svgMaker.ts', () => {
           ],
         }),
         [
-          { svg_1: { width: '0', offset: 'mock' }, g_1: { offset: '0' } },
-          { svg_1: { width: '100px' }, g_1: { offset: '1' } },
+          { svg_1: { width: '0', offset: '1' }, g_1: { offset: '0' } },
+          { svg_1: { width: '100px', offset: '2' }, g_1: { offset: '1' } },
         ],
         2000,
         3
@@ -200,6 +200,69 @@ describe('utils/svgMaker.ts', () => {
       const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
       expect(animateG.innerHTML).not.toContain('viewBox')
     })
+
+    it('should not animate static attributes', () => {
+      const svg = serializeToAnimatedSvg(
+        'test',
+        getElementNode({
+          id: 'svg_1',
+          tag: 'svg',
+          children: [
+            getElementNode({
+              id: 'g_1',
+              tag: 'g',
+              attributes: { class: 'g_1' },
+              children: [],
+            }),
+          ],
+        }),
+        [
+          { svg_1: { offset: '1' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
+          { svg_1: { offset: '1' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
+        ],
+        2000,
+        3
+      )
+
+      expect(svg.getAttribute('offset')).toBe('1')
+      const style = svg.getElementsByTagName('style')[0]
+      expect(style.innerHTML).not.toContain('offset')
+      expect(style.innerHTML).not.toContain('transform')
+    })
+
+    it('should complete edge animated attributes', () => {
+      const svg = serializeToAnimatedSvg(
+        'test',
+        getElementNode({
+          id: 'svg_1',
+          tag: 'svg',
+          children: [
+            getElementNode({
+              id: 'g_1',
+              tag: 'g',
+              attributes: { class: 'g_1' },
+              children: [],
+            }),
+          ],
+        }),
+        [
+          {},
+          { svg_1: { offset: '1' }, g_1: { transform: 'm(1,0,0,1,0,0)' } },
+          { svg_1: { offset: '2' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
+          {},
+        ],
+        2000,
+        3
+      )
+
+      const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
+      expect(animateG.innerHTML).toContain('offset')
+      expect(animateG.innerHTML).toContain('keyTimes="0;0.25;0.5;1"')
+      const style = svg.getElementsByTagName('style')[0]
+      expect(style.innerHTML).not.toContain('offset')
+      expect(style.innerHTML).toContain('0%{transform:m(1')
+      expect(style.innerHTML).toContain('100%{transform:m(2')
+    })
   })
 
   describe('createAnimationKeyframes', () => {
@@ -214,20 +277,6 @@ describe('utils/svgMaker.ts', () => {
         ])
       ).toBe(
         '@keyframes blendic-keyframes-elm {0%{transform:0;} 25%{transform:10px;} 50%{transform:20px;} 75%{transform:30px;} 100%{transform:100px;}}'
-      )
-    })
-    it('should complete edge keyframes if they are omitted', () => {
-      expect(
-        createAnimationKeyframes('elm', [
-          {},
-          {},
-          { transform: '20px' },
-          { transform: '30px' },
-          {},
-          {},
-        ])
-      ).toBe(
-        '@keyframes blendic-keyframes-elm {0%{transform:20px;} 40%{transform:20px;} 60%{transform:30px;} 100%{transform:30px;}}'
       )
     })
     it('should omit empty keyframes except for edges', () => {

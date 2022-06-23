@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Reduce animated SVG file size by omitting static attributes from animated tags and styles
 
 ## [0.17.1] - 2022-06-21
 ### Added

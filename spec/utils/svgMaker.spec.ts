@@ -276,7 +276,7 @@ describe('utils/svgMaker.ts', () => {
           { transform: '100px' },
         ])
       ).toBe(
-        '@keyframes blendic-keyframes-elm {0%{transform:0;} 25%{transform:10px;} 50%{transform:20px;} 75%{transform:30px;} 100%{transform:100px;}}'
+        '@keyframes ba-elm {0%{transform:0;} 25%{transform:10px;} 50%{transform:20px;} 75%{transform:30px;} 100%{transform:100px;}}'
       )
     })
     it('should omit empty keyframes except for edges', () => {
@@ -289,7 +289,7 @@ describe('utils/svgMaker.ts', () => {
           { transform: '100px' },
         ])
       ).toBe(
-        '@keyframes blendic-keyframes-elm {0%{transform:0;} 50%{transform:20px;} 100%{transform:100px;}}'
+        '@keyframes ba-elm {0%{transform:0;} 50%{transform:20px;} 100%{transform:100px;}}'
       )
     })
     it('should truncate percent corresponding to its digit', () => {
@@ -320,7 +320,7 @@ describe('utils/svgMaker.ts', () => {
     })
     it('should return an edge when one keyframe exists', () => {
       expect(createAnimationKeyframes('elm', [{ transform: '0' }])).toBe(
-        '@keyframes blendic-keyframes-elm {0%{transform:0;}}'
+        '@keyframes ba-elm {0%{transform:0;}}'
       )
     })
     it('should return empty string if no keyframe exists', () => {
@@ -362,7 +362,7 @@ describe('utils/svgMaker.ts', () => {
   describe('createAnimationElementStyle', () => {
     it('should create animation style for the element', () => {
       expect(createAnimationElementStyle('elm')).toBe(
-        '.elm{animation-name:blendic-keyframes-elm;}'
+        '.elm{animation-name:ba-elm;}'
       )
     })
   })

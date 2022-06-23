@@ -194,7 +194,7 @@ describe('utils/svgMaker.ts', () => {
 
       expect(svg).toBeInstanceOf(SVGElement)
       expect(svg.children[2].id).not.toBe('g_1')
-      expect(svg.children[2].children[0].classList.value).toBe('test-2')
+      expect(svg.children[2].children[0].tagName).toBe('g')
       const style = svg.getElementsByTagName('style')[0]
       expect(style.innerHTML).toContain('matrix(2,0,0,2,0,0)')
       const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
@@ -211,7 +211,6 @@ describe('utils/svgMaker.ts', () => {
             getElementNode({
               id: 'g_1',
               tag: 'g',
-              attributes: { class: 'g_1' },
               children: [],
             }),
           ],
@@ -240,7 +239,6 @@ describe('utils/svgMaker.ts', () => {
             getElementNode({
               id: 'g_1',
               tag: 'g',
-              attributes: { class: 'g_1' },
               children: [],
             }),
           ],
@@ -262,6 +260,33 @@ describe('utils/svgMaker.ts', () => {
       expect(style.innerHTML).not.toContain('offset')
       expect(style.innerHTML).toContain('0%{transform:m(1')
       expect(style.innerHTML).toContain('100%{transform:m(2')
+    })
+
+    it('should not add animated identifier to elements not having any animated attributes', () => {
+      const svg = serializeToAnimatedSvg(
+        'test',
+        getElementNode({
+          id: 'svg_1',
+          tag: 'svg',
+          children: [
+            getElementNode({
+              id: 'g_1',
+              tag: 'g',
+              children: [],
+            }),
+          ],
+        }),
+        [
+          { svg_1: {}, g_1: {} },
+          { svg_1: {}, g_1: {} },
+        ],
+        2000,
+        3
+      )
+
+      // class for <svg> is essential
+      expect(svg.innerHTML).toContain('test-0')
+      expect(svg.innerHTML).not.toContain('test-1')
     })
   })
 

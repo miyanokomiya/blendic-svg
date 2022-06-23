@@ -138,16 +138,6 @@ export function serializeToAnimatedSvg(
   const allElements = flatElementTree([adjustedSvgRoot])
   const allElementIds = allElements.map((e) => e.id)
 
-  // Avoid using "id" attribute as CSS selector
-  // => CSS selector requires more strict rules than HTML id attribute
-  const identifierMap = allElements.reduce<{ [id: string]: string }>(
-    (p, e, i) => {
-      p[e.id] = `${identifier}-${i}`
-      return p
-    },
-    {}
-  )
-
   const adjustedAttributesMap = allElementIds.reduce<{
     [id: string]: (ElementNodeAttributes | undefined)[]
   }>((p, id) => {
@@ -164,12 +154,31 @@ export function serializeToAnimatedSvg(
   const animatedAttributes: {
     [id: string]: (ElementNodeAttributes | undefined)[]
   } = mapReduce(completedAttrs, (attrsFrames, id) => {
-    return attrsFrames.map((attrs) => {
-      const staticAttrs = staticAttributes[id]
-      if (!staticAttrs) return attrs
-      return attrs ? mapFilter(attrs, (_, key) => !staticAttrs[key]) : undefined
-    })
+    return attrsFrames
+      .map((attrs) => {
+        const staticAttrs = staticAttributes[id]
+        if (!staticAttrs || !attrs) return attrs
+        return mapFilter(attrs, (_, key) => !staticAttrs[key])
+      })
+      .map((attrs) =>
+        !attrs || Object.keys(attrs).length === 0 ? undefined : attrs
+      )
   })
+
+  // Avoid using "id" attribute as CSS selector
+  // => CSS selector requires more strict rules than HTML id attribute
+  const identifierMap = allElements.reduce<{ [id: string]: string }>(
+    (p, e, i) => {
+      if (
+        e.id === adjustedSvgRoot.id ||
+        animatedAttributes[e.id]?.some((a) => !!a)
+      ) {
+        p[e.id] = `${identifier}-${i}`
+      }
+      return p
+    },
+    {}
+  )
 
   const animG = createSVGElement('g')
   animG.classList.add(ANIM_G_ID)

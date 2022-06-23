@@ -19,7 +19,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { affineToTransform } from 'okageo'
 import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
-import { thinOutList, thinOutSameAttributes } from '/@/utils/commons'
+import {
+  mapFilter,
+  mapReduce,
+  thinOutList,
+  thinOutSameAttributes,
+} from '/@/utils/commons'
 import {
   flatElementTree,
   isPlainText,
@@ -30,20 +35,27 @@ import { normalizeAttributes } from '/@/utils/helpers'
 
 export function makeSvg(
   svgNode: ElementNode,
-  identifierMap?: { [id: string]: string }
+  identifierMap?: { [id: string]: string },
+  overrideAttributesMap?: { [id: string]: ElementNodeAttributes }
 ): SVGElement {
-  return makeNode(svgNode, identifierMap) as SVGElement
+  return makeNode(svgNode, identifierMap, overrideAttributesMap) as SVGElement
 }
 
 function makeNode(
   svgNode: ElementNode | string,
-  identifierMap?: { [id: string]: string }
+  identifierMap?: { [id: string]: string },
+  overrideAttributesMap?: { [id: string]: ElementNodeAttributes }
 ): SVGElement | string {
   if (isPlainText(svgNode)) return svgNode
   const elm = createSVGElement(
     svgNode.tag,
-    normalizeAttributes(svgNode.attributes),
-    svgNode.children.map((c) => makeNode(c, identifierMap))
+    normalizeAttributes({
+      ...svgNode.attributes,
+      ...(overrideAttributesMap?.[svgNode.id] ?? {}),
+    }),
+    svgNode.children.map((c) =>
+      makeNode(c, identifierMap, overrideAttributesMap)
+    )
   )
 
   if (identifierMap?.[svgNode.id]) {
@@ -117,10 +129,11 @@ export function serializeToAnimatedSvg(
   )
 
   const adjustedSvgRoot = immigrateViewBox(svgRoot)
-  const adjustedAttributesMapPerFrame = immigrateViewBoxPerFrame(
-    adjustedSvgRoot.id,
-    thinnedOutAttributesMapPerFrame
-  )
+  const adjustedAttributesMapPerFrame: IdMap<ElementNodeAttributes>[] =
+    immigrateViewBoxPerFrame(
+      adjustedSvgRoot.id,
+      thinnedOutAttributesMapPerFrame
+    )
 
   const allElements = flatElementTree([adjustedSvgRoot])
   const allElementIds = allElements.map((e) => e.id)
@@ -135,13 +148,36 @@ export function serializeToAnimatedSvg(
     {}
   )
 
+  const adjustedAttributesMap = allElementIds.reduce<{
+    [id: string]: (ElementNodeAttributes | undefined)[]
+  }>((p, id) => {
+    p[id] = adjustedAttributesMapPerFrame.map((attrMap) => attrMap[id])
+    return p
+  }, {})
+
+  const completedAttrs = mapReduce(adjustedAttributesMap, (attrsFrames) =>
+    completeEdgeAttrs(
+      thinOutSameAttributes(attrsFrames) as ElementNodeAttributes[]
+    )
+  )
+  const staticAttributes = splitStaticAttribute(completedAttrs)
+  const animatedAttributes: {
+    [id: string]: (ElementNodeAttributes | undefined)[]
+  } = mapReduce(completedAttrs, (attrsFrames, id) => {
+    return attrsFrames.map((attrs) => {
+      const staticAttrs = staticAttributes[id]
+      if (!staticAttrs) return attrs
+      return attrs ? mapFilter(attrs, (_, key) => !staticAttrs[key]) : undefined
+    })
+  })
+
   const animG = createSVGElement('g')
   animG.classList.add(ANIM_G_ID)
   animG.innerHTML = allElementIds
     .map((id) =>
       createAnimationTagsForElement(
         id,
-        adjustedAttributesMapPerFrame.map((attrMap) => attrMap[id]),
+        animatedAttributes[id],
         duration,
         iteration
       )
@@ -152,17 +188,14 @@ export function serializeToAnimatedSvg(
   style.innerHTML =
     allElementIds
       .map((id) =>
-        createAnimationStyle(
-          identifierMap[id],
-          adjustedAttributesMapPerFrame.map((attrMap) => attrMap[id])
-        )
+        createAnimationStyle(identifierMap[id], animatedAttributes[id])
       )
       .join('') +
     `.${identifierMap[adjustedSvgRoot.id]} * {animation-duration:${
       duration / 1000
     }s;animation-iteration-count:${iteration};animation-timing-function:linear;}`
 
-  const svg = makeSvg(adjustedSvgRoot, identifierMap)
+  const svg = makeSvg(adjustedSvgRoot, identifierMap, staticAttributes)
   svg.prepend(animG)
   svg.prepend(style)
   return svg
@@ -239,16 +272,85 @@ function createTransformFromViewbox(viewBoxStr: string) {
   ])
 }
 
+function isStaticAttribute(attrPerFrames: (string | undefined)[]): boolean {
+  return (
+    attrPerFrames[0] === attrPerFrames[attrPerFrames.length - 1] &&
+    attrPerFrames.filter((f) => !!f).length === 2
+  )
+}
+
+function toPerFrameAttrMap(
+  attrsPerFrame: (ElementNodeAttributes | undefined)[]
+): {
+  [key: string]: (string | undefined)[]
+} {
+  const targetKeys = Array.from(
+    new Set(attrsPerFrame.flatMap((attrs) => (attrs ? Object.keys(attrs) : [])))
+  )
+
+  return targetKeys.reduce<{
+    [key: string]: (string | undefined)[]
+  }>((p, key) => {
+    p[key] = attrsPerFrame.map((attrs) => attrs?.[key])
+    return p
+  }, {})
+}
+
+function toAttrMapPerFrame(attrMap: {
+  [key: string]: (string | undefined)[]
+}): (ElementNodeAttributes | undefined)[] {
+  const keys = Object.keys(attrMap)
+  return keys.length === 0
+    ? []
+    : attrMap[keys[0]].map((_, i) =>
+        keys.reduce<ElementNodeAttributes>((p, key) => {
+          const val = attrMap[key][i]
+          if (val) {
+            p[key] = val
+          }
+          return p
+        }, {})
+      )
+}
+
+function splitStaticAttribute(completedAttrs: {
+  [id: string]: (ElementNodeAttributes | undefined)[]
+}): {
+  [id: string]: ElementNodeAttributes
+} {
+  return Object.keys(completedAttrs).reduce<{
+    [id: string]: ElementNodeAttributes
+  }>((p, id) => {
+    const attrPerFrameMap = toPerFrameAttrMap(completedAttrs[id])
+    const attrs = Object.keys(attrPerFrameMap).reduce<ElementNodeAttributes>(
+      (q, key) => {
+        const frames = attrPerFrameMap[key]
+        if (isStaticAttribute(frames)) {
+          q[key] = frames[0] as string
+        }
+        return q
+      },
+      {}
+    )
+    if (Object.keys(attrs).length > 0) {
+      p[id] = attrs
+    }
+    return p
+  }, {})
+}
+
 function createAnimationStyle(
   identifier: string,
   attrsPerFrame: (ElementNodeAttributes | undefined)[]
 ): string {
-  const adjustedAttrsPerFrame = completeEdgeAttrs(
-    thinOutSameAttributes(attrsPerFrame) as ElementNodeAttributes[]
+  const attrPerFrameMap = mapFilter(
+    toPerFrameAttrMap(attrsPerFrame),
+    (_, key) => validAnimationCssAttr(key)
   )
+
   const keyframeStyle = createAnimationKeyframes(
     identifier,
-    adjustedAttrsPerFrame
+    toAttrMapPerFrame(attrPerFrameMap)
   )
   return keyframeStyle
     ? keyframeStyle + createAnimationElementStyle(identifier)
@@ -263,7 +365,7 @@ export function createAnimationKeyframes(
   const steps = getStepList(attrsPerFrame.length, 100).map((v) =>
     logRound(-frameDigit, v)
   )
-  const keyframeValues = completeEdgeAttrs(attrsPerFrame)
+  const keyframeValues = attrsPerFrame
     .map((a, i) => createAnimationKeyframeItem(a, steps[i]))
     .filter((s) => s)
 
@@ -344,23 +446,17 @@ export function createAnimationTagsForElement(
   duration: number,
   iteration: number | 'infinite' = 'infinite'
 ): string {
-  const adjustedAttrsPerFrame = completeEdgeAttrs(
-    thinOutSameAttributes(attrsPerFrame) as ElementNodeAttributes[]
+  const attrPerFrameMap = mapFilter(
+    toPerFrameAttrMap(attrsPerFrame),
+    (_, key) => validAnimationAttr(key)
   )
-  const allKeys = Array.from(
-    new Set(
-      adjustedAttrsPerFrame.flatMap((attrs) =>
-        attrs ? Object.keys(attrs) : []
-      )
-    )
-  )
-  return allKeys
-    .filter(validAnimationAttr)
+
+  return Object.keys(attrPerFrameMap)
     .map((key) =>
       createAnimationTag(
         elementId,
         key,
-        adjustedAttrsPerFrame.map((attrs) => attrs?.[key]),
+        attrPerFrameMap[key],
         duration,
         iteration
       )

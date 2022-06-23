@@ -49,7 +49,7 @@ import { BoneConstraint } from '/@/utils/constraints'
 import { flatElementTree, isPlainText } from '/@/utils/elements'
 import {
   isIdentityAffine,
-  logRound,
+  logRoundByDigit,
   transformToAffine,
 } from '/@/utils/geometry'
 import { splitKeyframeMapByName } from '/@/utils/keyframes'
@@ -178,12 +178,12 @@ function getPosedAttributes(
 
 export function affineToTransformTruncated(matrix: AffineMatrix): string {
   return affineToTransform([
-    logRound(-5, matrix[0]),
-    logRound(-5, matrix[1]),
-    logRound(-5, matrix[2]),
-    logRound(-5, matrix[3]),
-    logRound(-5, matrix[4]),
-    logRound(-5, matrix[5]),
+    logRoundByDigit(6, matrix[0]),
+    logRoundByDigit(6, matrix[1]),
+    logRoundByDigit(6, matrix[2]),
+    logRoundByDigit(6, matrix[3]),
+    logRoundByDigit(6, matrix[4]),
+    logRoundByDigit(6, matrix[5]),
   ])
 }
 

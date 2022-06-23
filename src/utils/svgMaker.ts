@@ -437,7 +437,7 @@ export function createAnimationElementStyle(identifier: string): string {
 }
 
 function getAnimationName(identifier: string): string {
-  return `blendic-keyframes-${identifier}`
+  return `ba-${identifier}`
 }
 
 export function createAnimationTagsForElement(

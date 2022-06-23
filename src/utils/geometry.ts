@@ -43,6 +43,13 @@ export function logRound(log: number, val: number) {
   return Math.round(val * pow) / pow
 }
 
+export function logRoundByDigit(digitCount: number, val: number) {
+  const absint = Math.abs(Math.round(val))
+  const sign = Math.sign(val)
+  const d = absint.toString().length
+  return d >= digitCount ? absint * sign : logRound(d - digitCount, val)
+}
+
 export function gridRound(size: number, val: number) {
   return Math.round(val / size) * size
 }

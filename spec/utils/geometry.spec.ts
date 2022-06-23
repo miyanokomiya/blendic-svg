@@ -25,6 +25,7 @@ import {
   applyPosedTransformToPoint,
   applyTransformToVec,
   logRound,
+  logRoundByDigit,
   getBoneBodyRotation,
   getBoneWorldLocation,
   getBoneWorldRotation,
@@ -71,6 +72,22 @@ describe('src/utils/geometry.ts', () => {
       [2, 666, 700],
     ])('logRound(%s, %s) => %s', (decimal, val, expected) => {
       expect(logRound(decimal, val)).toBe(expected)
+    })
+  })
+
+  describe('logRoundByDigit', () => {
+    it.each([
+      [0, 123.456, 123],
+      [3, 123.456, 123],
+      [4, 123.456, 123.5],
+      [5, 123.456, 123.46],
+      [6, 123.456, 123.456],
+      [7, 123.456, 123.456],
+      [2, 1.45678, 1.5],
+      [3, 1.45678, 1.46],
+      [4, -123.456, -123.5],
+    ])('logRoundByDigit(%s, %s) => %s', (digitCount, val, expected) => {
+      expect(logRoundByDigit(digitCount, val)).toBe(expected)
     })
   })
 

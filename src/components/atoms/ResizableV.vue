@@ -22,11 +22,12 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div class="top" :style="{ height: topSize }">
       <slot name="top" />
     </div>
-    <div class="anchor" @mousedown.prevent="onDown">
+    <div v-if="!dense" class="anchor" @mousedown.prevent="onDown">
       <div />
     </div>
     <div class="bottom" :style="{ height: bottomSize }">
       <slot name="bottom" />
+      <div v-if="dense" class="anchor-dence" @mousedown.prevent="onDown" />
     </div>
   </div>
 </template>
@@ -39,8 +40,6 @@ import { useResizableStorage } from '/@/composables/stateStorage'
 import { useThrottle } from '/@/composables/throttle'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import { logRound } from '/@/utils/geometry'
-
-const anchorHeight = 9
 
 export default defineComponent({
   props: {
@@ -56,6 +55,10 @@ export default defineComponent({
       type: Number,
       default: 0.9,
     },
+    dense: {
+      type: Boolean,
+      default: false,
+    },
     storageKey: {
       type: String,
       default: '',
@@ -69,12 +72,13 @@ export default defineComponent({
 
     const root = ref<Element>()
     const rate = ref(resizableStorage.restoredRate)
+    const anchorSize = computed(() => (props.dense ? 0 : 9))
 
     const topSize = computed(() => {
-      return `calc((100% - ${anchorHeight}px) * ${rate.value})`
+      return `calc((100% - ${anchorSize.value}px) * ${rate.value})`
     })
     const bottomSize = computed(() => {
-      return `calc((100% - ${anchorHeight}px) * ${1 - rate.value})`
+      return `calc((100% - ${anchorSize.value}px) * ${1 - rate.value})`
     })
 
     async function onDrag(arg: DragArgs) {
@@ -126,6 +130,7 @@ export default defineComponent({
   width: 100%;
 }
 .bottom {
+  position: relative;
   width: 100%;
 }
 .anchor {
@@ -138,5 +143,14 @@ export default defineComponent({
   &:hover > div {
     background-color: #bbb;
   }
+}
+.anchor-dence {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  transform: translateY(-50%);
+  height: 12px;
+  cursor: row-resize;
 }
 </style>

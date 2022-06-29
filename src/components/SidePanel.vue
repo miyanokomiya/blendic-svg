@@ -18,39 +18,36 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <div>
-    <TabPanel
-      :tabs="[
-        { key: 'file', label: 'File' },
-        { key: 'detail', label: 'Detail' },
-        { key: 'tree', label: 'Tree' },
-        { key: 'history', label: 'History' },
-      ]"
-      initial-tab="file"
-    >
-      <template #detail><DetailPanel /></template>
-      <template #history><HistoryStack /></template>
-      <template #file><FilePanel /></template>
-      <template #tree><TreePanel /></template>
-    </TabPanel>
-  </div>
+  <TabPanel
+    :tabs="[
+      { key: 'file', label: 'File' },
+      { key: 'detail', label: 'Detail' },
+      { key: 'tree', label: 'Tree' },
+      { key: 'history', label: 'History' },
+    ]"
+    :initial-tab="initialTab"
+  >
+    <template #detail><DetailPanel /></template>
+    <template #history><HistoryStack /></template>
+    <template #file><FilePanel /></template>
+    <template #tree><TreePanel /></template>
+  </TabPanel>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { withDefaults } from 'vue'
 import TabPanel from './TabPanel.vue'
 import HistoryStack from '/@/components/panelContents/HistoryStack.vue'
 import FilePanel from '/@/components/panelContents/FilePanel.vue'
 import TreePanel from '/@/components/panelContents/TreePanel.vue'
 import DetailPanel from '/@/components/panelContents/DetailPanel.vue'
 
-export default defineComponent({
-  components: {
-    TabPanel,
-    DetailPanel,
-    HistoryStack,
-    FilePanel,
-    TreePanel,
-  },
-})
+withDefaults(
+  defineProps<{
+    initialTab?: string
+  }>(),
+  {
+    initialTab: 'file',
+  }
+)
 </script>

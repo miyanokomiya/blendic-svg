@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`src/components/atoms/ResizableV.vue snapshot 1`] = `
+exports[`src/components/atoms/ResizableV.vue snapshot default 1`] = `
 <div
   class="resizable-v-wrapper"
 >
@@ -22,6 +22,30 @@ exports[`src/components/atoms/ResizableV.vue snapshot 1`] = `
     
     slot_bottom
     
+    <!--v-if-->
+  </div>
+</div>
+`;
+
+exports[`src/components/atoms/ResizableV.vue snapshot dense 1`] = `
+<div
+  class="resizable-v-wrapper"
+>
+  <div
+    class="top"
+  >
+    
+    
+  </div>
+  <!--v-if-->
+  <div
+    class="bottom"
+  >
+    
+    
+    <div
+      class="anchor-dence"
+    />
   </div>
 </div>
 `;

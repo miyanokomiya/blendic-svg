@@ -81,7 +81,19 @@ Copyright (C) 2021, Tomoya Komiyama.
           </ResizableH>
         </template>
         <template #right>
-          <SidePanel class="side-panel" />
+          <ResizableV
+            :initial-rate="0.4"
+            storage-key="app-side"
+            dense
+            class="side-panel"
+          >
+            <template #top>
+              <SidePanel />
+            </template>
+            <template #bottom>
+              <SidePanel initial-tab="detail" />
+            </template>
+          </ResizableV>
         </template>
       </ResizableH>
     </template>

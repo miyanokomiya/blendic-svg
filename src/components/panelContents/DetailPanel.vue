@@ -141,7 +141,8 @@ export default defineComponent({
     })
 
     const selectedObjectType = computed((): 'bone' | 'armature' | '' => {
-      if (lastSelectedBone.value) return 'bone'
+      if (lastSelectedBone.value && canvasStore.canvasMode.value !== 'object')
+        return 'bone'
       if (store.lastSelectedArmature.value) return 'armature'
       return ''
     })
@@ -276,7 +277,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 h3 {
   text-align: left;
   margin-bottom: 10px;

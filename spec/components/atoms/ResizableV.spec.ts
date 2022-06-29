@@ -21,14 +21,26 @@ import { mount } from '@vue/test-utils'
 import Target from '/@/components/atoms/ResizableV.vue'
 
 describe('src/components/atoms/ResizableV.vue', () => {
-  it('snapshot', () => {
-    const wrapper = mount(Target, {
-      props: { initialRate: 0.3 },
-      slots: {
-        top: 'slot_top',
-        bottom: 'slot_bottom',
-      },
+  describe('snapshot', () => {
+    it('default', () => {
+      const wrapper = mount(Target, {
+        props: { initialRate: 0.3 },
+        slots: {
+          top: 'slot_top',
+          bottom: 'slot_bottom',
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
     })
-    expect(wrapper.element).toMatchSnapshot()
+    it('dense', () => {
+      const wrapper = mount(Target, {
+        props: { initialRate: 0.3, dense: true },
+        slots: {
+          left: 'slot_left',
+          right: 'slot_right',
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 })

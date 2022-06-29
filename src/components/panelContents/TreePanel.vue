@@ -84,7 +84,7 @@ export default defineComponent({
       switch (canvasStore.canvasMode.value) {
         case 'edit':
         case 'pose':
-          return mapReduce(store.allSelectedBones.value, () => true)
+          return mapReduce(store.selectedBones.value, () => true)
         case 'weight':
           return elementStore.selectedElements.value
         default:
@@ -150,7 +150,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 h3 {
   margin-bottom: 10px;
   text-align: left;

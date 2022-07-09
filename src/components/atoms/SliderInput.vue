@@ -219,7 +219,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .slider-wrapper {
   position: relative;
   display: flex;
@@ -230,13 +230,13 @@ input {
   text-align: center;
 }
 .slider-background {
+  z-index: -1;
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #4169e1;
-  opacity: 0.3;
+  background-color: var(--input-value-primary);
   pointer-events: none;
   transform-origin: 0;
 }

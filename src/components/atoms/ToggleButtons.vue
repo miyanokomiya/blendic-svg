@@ -24,6 +24,7 @@ Copyright (C) 2022, Tomoya Komiyama.
       :key="option.value"
       type="button"
       :class="{ selected: selectedMap[option.value] }"
+      :disabled="disabled"
       @click="click(option.value)"
     >
       {{ option.label }}
@@ -69,13 +70,11 @@ const selectedMap = computed<{ [value: string]: true }>(() => {
 }
 button {
   padding: 2px 10px;
-  border: 1px solid #777;
+  border: 1px solid var(--strong-border);
 }
 button.selected {
-  color: #191970;
-  background-color: #aed6ff;
-  border: 1px solid #191970;
-  box-shadow: inset 0px 0px 3px #191970;
+  background-color: var(--input-value-primary);
+  box-shadow: inset 0px 0px 3px var(--input-value-primary-shadow);
 }
 button:not(:first-child) {
   border-left: none;
@@ -85,9 +84,5 @@ button:first-child {
 }
 button:last-child {
   border-radius: 0 12px 12px 0;
-}
-.toggle-buttons.disabled > buttons {
-  cursor: default;
-  opacity: 0.7;
 }
 </style>

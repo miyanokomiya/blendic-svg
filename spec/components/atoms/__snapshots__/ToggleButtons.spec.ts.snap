@@ -34,18 +34,21 @@ exports[`src/components/atoms/ToggleButtons.vue snapshot disabled 1`] = `
   
   <button
     class=""
+    disabled=""
     type="button"
   >
     a
   </button>
   <button
     class="selected"
+    disabled=""
     type="button"
   >
     b
   </button>
   <button
     class=""
+    disabled=""
     type="button"
   >
     c

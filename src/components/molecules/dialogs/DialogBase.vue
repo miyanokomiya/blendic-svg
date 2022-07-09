@@ -87,10 +87,10 @@ export default defineComponent({
   box-shadow: 0 3px 3px #aaa;
   border-radius: 4px;
   padding: 12px;
-}
-.body-content {
   min-width: 220px;
   max-width: 50%;
+}
+.body-content {
   min-height: 100px;
   max-height: 80%;
   overflow: auto;

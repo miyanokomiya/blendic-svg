@@ -240,8 +240,8 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss">
-#app {
+<style>
+body {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -269,9 +269,7 @@ button:disabled {
 }
 </style>
 
-<style lang="scss" scoped>
-$wide-panel-width: 240px;
-
+<style scoped>
 .app-root {
   height: 100vh;
 }
@@ -288,12 +286,12 @@ $wide-panel-width: 240px;
   height: 100%;
   display: flex;
   background-color: #fff;
-  .canvas {
-    width: calc(100% - 24px);
-  }
-  .side-bar {
-    flex-shrink: 0;
-  }
+}
+.main .canvas {
+  width: calc(100% - 24px);
+}
+.main .side-bar {
+  flex-shrink: 0;
 }
 .side-panel {
   height: 100%;

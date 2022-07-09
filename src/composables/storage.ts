@@ -51,8 +51,9 @@ import {
   getGraphResolvedElementTree,
   getPosedElementTree,
   getResolvedBoneMap,
-  bakeKeyframesFromResolvedBoneMap,
+  bakeKeyframeFromResolvedBoneMap,
 } from '../utils/poseResolver'
+import { useSettings } from '/@/composables/settings'
 import { initialize, StorageRoot } from '/@/models/storage'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { mapReduce, toList } from '/@/utils/commons'
@@ -348,8 +349,23 @@ export function useStorage() {
     const actor = elementStore.lastSelectedActor.value
     if (!actor) return
 
-    const endFrame = animationStore.endFrame.value
-    const frames = [...Array(endFrame + 1)].map((_, i) => i)
+    const { settings } = useSettings()
+    const animSettings = settings.animationExportingSettings
+
+    const [startFrame, endFrame] =
+      animSettings.range === 'auto'
+        ? [0, animationStore.endFrame.value]
+        : [
+            animSettings.customRange.from,
+            Math.max(
+              animSettings.customRange.from,
+              animSettings.customRange.to
+            ),
+          ]
+    const frameCount = endFrame - startFrame + 1
+
+    // const endFrame = animationStore.endFrame.value
+    const frames = [...Array(frameCount)].map((_, i) => startFrame + i)
 
     const action = animationStore.selectedAction.value
     const keyframeMap = toMap(animationStore.keyframes.value)
@@ -357,13 +373,16 @@ export function useStorage() {
       action?.keyframes.map((id) => keyframeMap[id]) ?? []
     )
 
-    const posedBonesPerFrame = frames.map((currentFrame) =>
-      getResolvedBoneMap(
-        keyframeMapByTargetId,
-        store.boneMap.value,
-        store.constraintMap.value,
-        currentFrame
-      )
+    const posedBonesPerFrame = new Map(
+      frames.map((currentFrame) => [
+        currentFrame,
+        getResolvedBoneMap(
+          keyframeMapByTargetId,
+          store.boneMap.value,
+          store.constraintMap.value,
+          currentFrame
+        ),
+      ])
     )
 
     // Create whole SVG tree in advance to avoid creating elements dynamically
@@ -372,7 +391,7 @@ export function useStorage() {
       getElementNodeAtFrame(
         currentFrame,
         endFrame,
-        posedBonesPerFrame[currentFrame],
+        posedBonesPerFrame.get(currentFrame)!,
         true
       )
     )
@@ -386,10 +405,15 @@ export function useStorage() {
 
     const wholeSvgTree = addEssentialSvgAttributes(wholeSvgElementNode)
 
-    const attributesMapPerFrameByAction = bakeKeyframesFromResolvedBoneMap(
-      posedBonesPerFrame,
-      wholeBElementMap,
-      wholeSvgTree
+    const attributesMapPerFrameByAction = new Map(
+      frames.map((currentFrame) => [
+        currentFrame,
+        bakeKeyframeFromResolvedBoneMap(
+          posedBonesPerFrame.get(currentFrame)!,
+          wholeBElementMap,
+          wholeSvgTree
+        ),
+      ])
     )
 
     const originalAttributesMap = mapReduce(
@@ -401,12 +425,12 @@ export function useStorage() {
       const graphObjectMap = resolveAnimationGraph(
         graphStore.getGraphNodeModuleFn.value(),
         wholeBElementMap,
-        posedBonesPerFrame[currentFrame],
+        posedBonesPerFrame.get(currentFrame)!,
         { currentFrame, endFrame },
         graphStore.completedNodeMap.value
       )
 
-      const posedAttrsMap = attributesMapPerFrameByAction[currentFrame]
+      const posedAttrsMap = attributesMapPerFrameByAction.get(currentFrame)!
       return getGraphResolvedAttributesMap(
         graphObjectMap,
         mapReduce(originalAttributesMap, (attrs, id) => ({
@@ -422,11 +446,16 @@ export function useStorage() {
       [action?.id, graph?.id].filter((n) => !!n).join('-') ?? 'bsvg',
       wholeSvgTree,
       attributesMapPerFrameByGraph,
-      // Reduce round-off error, e.g. endFrame * (1000 / 60)
-      (endFrame * 100) / 6,
+      // Reduce round-off error, e.g. frameCount * (1000 / 60)
+      (frameCount * 100) / 6,
       'infinite',
-      1 / 2
+      animSettings.fps / 60
     )
+
+    if (animSettings.size === 'custom') {
+      svgElm.setAttribute('width', `${animSettings.customSize.width}px`)
+      svgElm.setAttribute('height', `${animSettings.customSize.height}px`)
+    }
 
     const name = [action?.name, graph?.name, 'anim']
       .filter((n) => !!n)

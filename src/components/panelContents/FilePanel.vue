@@ -42,13 +42,20 @@ Copyright (C) 2021, Tomoya Komiyama.
         Baked Action
       </button>
       <button type="button" @click="exportSvg">Posed SVG</button>
-      <button type="button" @click="exportAnimatedSvg">Animated SVG</button>
+      <button type="button" @click="showAnimatedSvgSettingDialog">
+        Animated SVG
+      </button>
     </div>
     <h3>Version {{ appVersion }}</h3>
     <BakingConfigDialog
       v-model:open="showSelectActionDialogFlag"
       :actions="exportableActions"
       @execute="bakeAction"
+    />
+    <AnimatedSvgSettingDialog
+      v-model:open="showAnimatedSvgSettingDialogFlag"
+      :settings="settings.animationExportingSettings"
+      @execute="exportAnimatedSvg"
     />
   </div>
 </template>
@@ -60,9 +67,14 @@ import { useAnimationStore } from '/@/store/animation'
 import { useStore } from '/@/store'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import BakingConfigDialog from '/@/components/molecules/dialogs/BakingConfigDialog.vue'
+import AnimatedSvgSettingDialog from '/@/components/molecules/dialogs/AnimatedSvgSettingDialog.vue'
+import {
+  AnimationExportingSettings,
+  useSettings,
+} from '/@/composables/settings'
 
 export default defineComponent({
-  components: { CheckboxInput, BakingConfigDialog },
+  components: { CheckboxInput, BakingConfigDialog, AnimatedSvgSettingDialog },
   emits: [],
   setup() {
     const storage = useStorage()
@@ -85,6 +97,14 @@ export default defineComponent({
       storage.bakeAction(actionIds)
     }
 
+    const showAnimatedSvgSettingDialogFlag = ref(false)
+    const { settings } = useSettings()
+    function exportAnimatedSvg(val: AnimationExportingSettings) {
+      settings.animationExportingSettings = val
+      storage.bakeAnimatedSvg()
+      showAnimatedSvgSettingDialogFlag.value = false
+    }
+
     return {
       appVersion: process.env.APP_VERSION,
 
@@ -98,12 +118,17 @@ export default defineComponent({
         storage.loadSvgFile(isInheritWeight.value)
       },
       exportSvg: storage.bakeSvg,
-      exportAnimatedSvg: storage.bakeAnimatedSvg,
 
       bakeAction,
       exportableActions,
       showSelectActionDialogFlag,
       showSelectActionDialog: () => (showSelectActionDialogFlag.value = true),
+
+      settings,
+      showAnimatedSvgSettingDialogFlag,
+      exportAnimatedSvg,
+      showAnimatedSvgSettingDialog: () =>
+        (showAnimatedSvgSettingDialogFlag.value = true),
     }
   },
 })

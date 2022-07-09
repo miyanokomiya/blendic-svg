@@ -81,10 +81,10 @@ button:not(:first-child) {
   border-left: none;
 }
 button:first-child {
-  border-radius: 16px 0 0 16px;
+  border-radius: 12px 0 0 12px;
 }
 button:last-child {
-  border-radius: 0 16px 16px 0;
+  border-radius: 0 12px 12px 0;
 }
 .toggle-buttons.disabled > buttons {
   cursor: default;

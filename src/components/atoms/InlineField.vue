@@ -68,7 +68,7 @@ export default defineComponent({
   &.between {
     justify-content: space-between;
     .inline-content {
-      flex: 0;
+      flex: initial;
       min-width: auto;
     }
   }

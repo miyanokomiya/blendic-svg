@@ -1063,6 +1063,44 @@ describe('utils/armatures', () => {
         })
       )
     })
+    it('should immigrate constraints', () => {
+      const res = target.symmetrizeBones(
+        {
+          a: getBone({
+            id: 'a',
+            name: 'a',
+          }),
+          b1_R: getBone({
+            id: 'b1_R',
+            name: 'b1.R',
+            head: { x: 1, y: 0 },
+            parentId: 'a',
+          }),
+          b2_R: getBone({
+            id: 'b2_R',
+            name: 'b2.R',
+            head: { x: 2, y: 0 },
+            parentId: 'b1_R',
+            constraints: ['ik_R'],
+          }),
+        },
+        {
+          ik_R: getConstraint({
+            id: 'ik_R',
+            type: 'IK',
+            option: getOptionByType('IK', { targetId: 'b1_R' }),
+          }),
+        },
+        ['b1_R', 'b2_R']
+      )
+      expect(res.bones).toHaveLength(2)
+      expect(res.createdConstraints).toHaveLength(1)
+      expect(res.bones[1].constraints).toEqual([res.createdConstraints[0].id])
+      expect(res.createdConstraints[0].id).not.toBe('ik_R')
+      expect(res.createdConstraints[0].option).toEqual(
+        getOptionByType('IK', { targetId: res.bones[0].id })
+      )
+    })
   })
 
   describe('getSymmetrizedIdMap', () => {

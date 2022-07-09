@@ -647,7 +647,7 @@ export function symmetrizeBones(
     bones: immigrated.bones.map((b) =>
       updatedConnections[b.id] ? { ...b, ...updatedConnections[b.id] } : b
     ),
-    createdConstraints: [],
+    createdConstraints: immigrated.constraints,
   }
 }
 

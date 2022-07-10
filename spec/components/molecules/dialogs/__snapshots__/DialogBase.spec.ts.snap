@@ -23,16 +23,11 @@ exports[`src/components/molecules/dialogs/DialogBase.vue snapshot open 1`] = `
           viewBox="0 0 10 10"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <rect
-            fill="none"
-            height="10"
-            stroke="none"
-            width="10"
-          />
+          <!--v-if-->
           <path
+            class="stroke-background-second"
             d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
             fill="none"
-            stroke="#888"
             stroke-linejoin="round"
           />
         </svg>
@@ -71,16 +66,11 @@ exports[`src/components/molecules/dialogs/DialogBase.vue snapshot with buttons 1
           viewBox="0 0 10 10"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <rect
-            fill="none"
-            height="10"
-            stroke="none"
-            width="10"
-          />
+          <!--v-if-->
           <path
+            class="stroke-background-second"
             d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
             fill="none"
-            stroke="#888"
             stroke-linejoin="round"
           />
         </svg>

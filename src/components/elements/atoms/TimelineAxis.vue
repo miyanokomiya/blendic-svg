@@ -31,7 +31,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :y1="headerHeight"
           x2="0"
           y2="20000"
-          stroke="#aaa"
+          class="stroke-background-second"
           :stroke-width="f.strokeWidth"
         />
       </g>
@@ -39,9 +39,9 @@ Copyright (C) 2021, Tomoya Komiyama.
     <g class="view-only">
       <g
         :transform="`translate(0, ${headerHeight})`"
-        fill="#aaa"
         stroke="none"
         fill-opacity="0.5"
+        class="fill-background-second"
       >
         <g transform="scale(-1, 1)">
           <rect width="200000" height="200000" />
@@ -68,8 +68,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         x="-100000"
         width="200000"
         :height="headerHeight"
-        fill="#fff"
-        stroke="#000"
+        class="fill-background stroke-text"
       />
     </g>
     <g class="view-only">
@@ -84,6 +83,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           :font-size="f.labelSize"
           dominant-baseline="text-after-edge"
           text-anchor="middle"
+          class="fill-text"
           >{{ f.f }}</text
         >
       </g>

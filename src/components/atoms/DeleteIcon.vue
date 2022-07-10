@@ -19,12 +19,18 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
-    <rect width="10" height="10" stroke="none" :fill="fill" />
+    <rect
+      v-if="!float"
+      width="10"
+      height="10"
+      stroke="none"
+      class="fill-background-second"
+    />
     <path
       d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
       stroke-linejoin="round"
-      :stroke="stroke"
       fill="none"
+      :class="float ? 'stroke-background-second' : 'stroke-background'"
     />
   </svg>
 </template>
@@ -34,13 +40,9 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
   props: {
-    fill: {
-      type: String,
-      default: '#888',
-    },
-    stroke: {
-      type: String,
-      default: '#fff',
+    float: {
+      type: Boolean,
+      default: false,
     },
   },
 })

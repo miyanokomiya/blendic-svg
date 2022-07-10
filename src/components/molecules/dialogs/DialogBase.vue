@@ -23,7 +23,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div class="body-outer" @click.self="close">
       <div class="body-innter">
         <button type="button" class="close-button" @click="close">
-          <DeleteIcon fill="none" stroke="#888" />
+          <DeleteIcon float />
         </button>
         <div class="body-content">
           <slot />
@@ -71,7 +71,7 @@ export default defineComponent({
   right: 0;
   bottom: 0;
   left: 0;
-  background-color: var(--strong-border);
+  background-color: #555;
   opacity: 0.2;
 }
 .body-outer {
@@ -103,6 +103,7 @@ export default defineComponent({
   width: 24px;
   height: 24px;
   outline: none;
+  background-color: transparent;
 }
 .buttons {
   margin-top: 14px;

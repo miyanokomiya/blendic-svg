@@ -155,4 +155,7 @@ h3 {
   margin-bottom: 10px;
   text-align: left;
 }
+.tree-view {
+  border-right: solid 1px var(--weak-border);
+}
 </style>

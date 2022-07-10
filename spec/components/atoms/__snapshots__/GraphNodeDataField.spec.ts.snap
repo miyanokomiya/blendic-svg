@@ -43,15 +43,15 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot BONE 1`] = `
             transform="rotate(45 10 10)"
           >
             <path
+              class="fill-text"
               d="M8 2 A2 2 0 0 1 12 2 L12 5 L13 5 L13 7 L7 7 L7 5 L8 5z"
-              fill="#000"
               stroke="none"
               stroke-linejoin="round"
             />
             <path
+              class="stroke-text"
               d="M11.5 7 L11.5 17 L10 19 L8.5 17 L8.5 7"
               fill="none"
-              stroke="#000"
               stroke-linejoin="round"
             />
           </g>

@@ -2,6 +2,7 @@
   --text: #2c3e50;
   --background: #fff;
   --background-second: #eee;
+  --background-slight: #eee;
   --strong-border: #777;
   --weak-border: #aaa;
   --input-value-primary: #c6d2f6;
@@ -9,6 +10,8 @@
   --input-value-primary-shadow: #191970;
   --input-value-selected-weak: #ddd;
   --dialog-button-primary: #4169e1;
+
+  --icon-base: #888;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,13 +19,16 @@
     --text: #fff;
     --background: #181818;
     --background-second: #777;
+    --background-slight: #333;
     --strong-border: #ccc;
     --weak-border: #555;
     --input-value-primary: #3465bd;
     --input-value-primary-text: #fff;
     --input-value-primary-shadow: #191970;
-    --input-value-selected-weak: #666;
+    --input-value-selected-weak: #444;
     --dialog-button-primary: #4169e1;
+
+    --icon-base: #666;
   }
 }
 
@@ -31,13 +37,16 @@
   --text: #fff;
   --background: #181818;
   --background-second: #777;
+  --background-slight: #333;
   --strong-border: #ccc;
   --weak-border: #555;
   --input-value-primary: #3465bd;
   --input-value-primary-text: #fff;
   --input-value-primary-shadow: #191970;
-  --input-value-selected-weak: #666;
+  --input-value-selected-weak: #444;
   --dialog-button-primary: #4169e1;
+
+  --icon-base: #666;
 }
 
 body {
@@ -75,4 +84,29 @@ button:disabled {
 }
 .view-only {
   pointer-events: none;
+}
+
+svg .fill-text {
+  fill: var(--text);
+}
+svg .fill-background {
+  fill: var(--background);
+}
+svg .fill-background-second {
+  fill: var(--icon-base);
+}
+svg .fill-highlight {
+  fill: orange;
+}
+svg .stroke-text {
+  stroke: var(--text);
+}
+svg .stroke-background {
+  stroke: var(--background);
+}
+svg .stroke-background-second {
+  stroke: var(--icon-base);
+}
+svg .stroke-highlight {
+  stroke: orange;
 }

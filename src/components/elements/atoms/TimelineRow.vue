@@ -19,20 +19,31 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g class="toggle-expanded" @click="toggleExpanded">
-    <rect :width="labelWidth" :height="labelHeight" fill="#fff" stroke="#000" />
+    <rect
+      :width="labelWidth"
+      :height="labelHeight"
+      class="fill-background stroke-text"
+    />
     <text
       x="4"
       :y="labelHeight / 2"
       dominant-baseline="central"
-      :fill="color"
+      :class="highlight ? 'fill-highlight' : 'fill-text'"
       >{{ label }}</text
     >
     <g
       v-if="showExpanded"
       :transform="`translate(${labelWidth - 16}, ${labelHeight / 2 - 6})`"
     >
-      <rect x="-1" y="-1" width="14" height="14" stroke="none" fill="#888" />
-      <g stroke-linejoin="round" stroke="none" fill="#fff">
+      <rect
+        x="-1"
+        y="-1"
+        width="14"
+        height="14"
+        stroke="none"
+        class="fill-background-second"
+      />
+      <g stroke-linejoin="round" stroke="none" class="fill-background">
         <path v-if="expanded" d="M2 9L10 9L6 3z" />
         <path v-else d="M10 3L2 3L6 9z" />
       </g>
@@ -69,9 +80,9 @@ export default defineComponent({
       type: Boolean,
       required: false,
     },
-    color: {
-      type: String,
-      default: '#000',
+    highlight: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ['toggle-expanded'],

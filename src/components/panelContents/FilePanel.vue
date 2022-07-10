@@ -134,7 +134,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 h3 {
   margin-bottom: 10px;
   text-align: left;
@@ -143,18 +143,18 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  > * {
-    margin-bottom: 10px;
-  }
-  > button {
-    width: 100%;
-    padding: 2px;
-    border: solid 1px #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    &:hover {
-      background-color: #eee;
-    }
-  }
+}
+.menu-list > * {
+  margin-bottom: 10px;
+}
+.menu-list > button {
+  width: 100%;
+  padding: 2px;
+  border: solid 1px var(--weak-border);
+  border-radius: 4px;
+  font-size: 14px;
+}
+.menu-list > button:hover {
+  background-color: var(--background-second);
 }
 </style>

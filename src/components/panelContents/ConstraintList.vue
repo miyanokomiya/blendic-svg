@@ -284,35 +284,35 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .constraints-item {
   padding: 8px 0;
   width: 100%;
   margin-top: 10px;
-  border-top: solid 1px #aaa;
-  .constraint-header {
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    > button {
-      margin-left: 4px;
-      border-radius: 8px;
-      width: 18px;
-      height: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      .icon {
-        height: 100%;
-      }
-    }
-    .name {
-      margin-right: auto;
-      font-size: 14px;
-      font-weight: 600;
-      text-align: left;
-    }
-  }
+  border-top: solid 1px var(--weak-border);
+}
+.constraints-item .constraint-header {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.constraints-item .constraint-header > button {
+  margin-left: 4px;
+  border-radius: 8px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.constraints-item .constraint-header > button .icon {
+  height: 100%;
+}
+.constraints-item .constraint-header .name {
+  margin-right: auto;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
 }
 </style>

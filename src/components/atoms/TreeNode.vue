@@ -149,11 +149,11 @@ export default defineComponent({
   flex-direction: column;
   text-align: left;
   font-size: 16px;
-  background-color: #fff;
+  background-color: var(--background);
   user-select: none;
   &.has-children {
-    border: solid 1px #ccc;
-    background-color: #eee;
+    border: solid 1px var(--weak-border);
+    background-color: var(--background-second);
   }
 }
 .node-view {

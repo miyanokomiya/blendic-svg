@@ -51,6 +51,6 @@ export default defineComponent({
   display: block;
   min-width: 20px;
   height: 20px;
-  border: solid 1px #aaa;
+  border: solid 1px var(--weak-border);
 }
 </style>

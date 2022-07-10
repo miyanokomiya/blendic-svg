@@ -94,18 +94,18 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .input-wrapper {
   position: relative;
   display: flex;
 }
 input {
   width: 100%;
-  &:disabled {
-    background-color: #eee;
-    opacity: 0.5;
-    cursor: default;
-  }
+}
+input:disabled {
+  background-color: var(--background-second);
+  opacity: 0.5;
+  cursor: default;
 }
 .input-forward {
   position: absolute;

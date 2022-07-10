@@ -272,7 +272,7 @@ const edgeAnchorWidth = 60
   fill: #ffa07a;
 }
 .error-message {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--background);
+  color: var(--text);
 }
 </style>

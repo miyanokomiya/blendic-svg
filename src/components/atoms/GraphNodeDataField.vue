@@ -227,7 +227,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 h5 {
   margin-bottom: 8px;
 }
@@ -237,19 +237,19 @@ h5 {
 }
 .color-button {
   width: 100%;
-  > * {
-    width: 100%;
-  }
+}
+.color-button > * {
+  width: 100%;
 }
 .color-popup {
   position: relative;
   top: 10px;
   left: -50%;
   z-index: 1;
-  .color-picker {
-    position: fixed;
-    transform: translateX(-50%);
-    border: solid 1px #aaa;
-  }
+}
+.color-popup .color-picker {
+  position: fixed;
+  transform: translateX(-50%);
+  border: solid 1px var(--weak-border);
 }
 </style>

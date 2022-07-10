@@ -308,7 +308,7 @@ export default defineComponent({
   height: 100%;
 }
 svg {
-  background-color: #aaa;
+  background-color: var(--weak-border);
   border: solid 1px black;
 }
 .command-exam-panel {

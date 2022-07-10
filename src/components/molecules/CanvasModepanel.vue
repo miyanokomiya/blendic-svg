@@ -72,22 +72,20 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
-.cnavas-mode-panel {
-  > button {
-    margin-right: 4px;
-    width: 70px;
-    padding: 2px;
-    border: solid 1px #777;
-    border-radius: 4px;
-    font-size: 12px;
-    background-color: #fff;
-    &.selected {
-      background-color: #ddd;
-    }
-    &:last-child {
-      margin-right: 0;
-    }
-  }
+<style scoped>
+.cnavas-mode-panel > button {
+  margin-right: 4px;
+  width: 70px;
+  padding: 2px;
+  border: solid 1px var(--strong-border);
+  border-radius: 4px;
+  font-size: 12px;
+  background-color: var(--background);
+}
+.cnavas-mode-panel > button.selected {
+  background-color: var(--input-value-selected-weak);
+}
+.cnavas-mode-panel > button:last-child {
+  margin-right: 0;
 }
 </style>

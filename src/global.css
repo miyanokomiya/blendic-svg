@@ -48,13 +48,11 @@ body {
   color: var(--text);
   background-color: var(--background);
 }
+input,
+select,
 button {
   color: var(--text);
   background-color: var(--background);
-}
-input,
-select {
-  color: var(--text);
 }
 input {
   max-width: 100%;

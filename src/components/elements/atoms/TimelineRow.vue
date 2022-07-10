@@ -85,7 +85,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .toggle-expanded {
   cursor: pointer;
 }

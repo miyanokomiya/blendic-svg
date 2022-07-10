@@ -270,7 +270,4 @@ export default defineComponent({
 .bottom {
   height: 100%;
 }
-.view-only {
-  pointer-events: none;
-}
 </style>

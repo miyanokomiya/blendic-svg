@@ -192,14 +192,11 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 path {
   cursor: pointer;
 }
 circle {
   cursor: pointer;
-}
-.view-only {
-  pointer-events: none;
 }
 </style>

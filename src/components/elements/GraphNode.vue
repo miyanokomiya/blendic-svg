@@ -267,9 +267,6 @@ const edgeAnchorWidth = 60
 </script>
 
 <style scoped>
-.view-only {
-  pointer-events: none;
-}
 .edge-anchor:hover {
   transition: fill 0.2s;
   fill: #ffa07a;

@@ -39,7 +39,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .label {
   display: block;
   margin-bottom: 8px;

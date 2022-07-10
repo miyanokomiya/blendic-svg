@@ -455,9 +455,6 @@ export default defineComponent({
 svg {
   border: solid 1px black;
 }
-.view-only {
-  pointer-events: none;
-}
 .popup-menu-list {
   position: fixed;
   z-index: 1;

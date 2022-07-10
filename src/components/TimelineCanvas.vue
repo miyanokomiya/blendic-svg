@@ -204,7 +204,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .timeline-canvas-root {
   position: relative;
   height: 100%;

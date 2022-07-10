@@ -138,7 +138,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 h4 {
   text-align: left;
   margin-bottom: 8px;

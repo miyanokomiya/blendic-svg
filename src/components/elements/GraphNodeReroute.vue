@@ -100,9 +100,6 @@ const outlineStrokeWidth = computed(() =>
 </script>
 
 <style scoped>
-.view-only {
-  pointer-events: none;
-}
 .edge-anchor:hover circle {
   transition: fill 0.2s;
   fill: #ffa07a;

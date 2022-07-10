@@ -58,11 +58,15 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 div {
   width: 100%;
   height: 100%;
   background-repeat: repeat repeat;
-  background-image: radial-gradient(circle, #000 2px, rgba(#fff, 0) 2px);
+  background-image: radial-gradient(
+    circle,
+    #000 2px,
+    rgba(255, 255, 255, 0) 2px
+  );
 }
 </style>

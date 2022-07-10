@@ -46,7 +46,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .color-rect {
   display: block;
   min-width: 20px;

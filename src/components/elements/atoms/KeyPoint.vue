@@ -84,9 +84,3 @@ export default defineComponent({
   },
 })
 </script>
-
-<style lang="scss">
-.view-only {
-  pointer-events: none;
-}
-</style>

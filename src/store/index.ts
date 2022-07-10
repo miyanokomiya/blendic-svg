@@ -511,10 +511,13 @@ export function createStore(historyStore: HistoryStore) {
     )
     const updated = constraints.filter((c) => currentMap[c.id])
 
+    const currentIds = lastSelectedBone.value.constraints
+    const nextIds = constraints.map((c) => c.id)
+
     historyStore.dispatch(
       constraintEntities.createUpdateAction(toMap(updated), seriesKey),
       [
-        created.length + deleted.length > 0
+        currentIds.join(':') !== nextIds.join(':')
           ? boneEntities.createUpdateAction({
               [lastSelectedBone.value.id]: {
                 constraints: constraints.map((c) => c.id),

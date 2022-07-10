@@ -76,7 +76,7 @@ describe('src/store/index.ts', () => {
       const target = createStore(useHistoryStore())
       expect(target.armatures.value).toHaveLength(0)
       target.addArmature('arm_a', 'bo_a')
-      target.updateBoneConstraints([getConstraint({ type: 'IK' })])
+      target.updateBoneConstraints([getConstraint({ id: 'ik', type: 'IK' })])
       expect(target.boneMap.value).not.toEqual({})
       expect(target.constraintMap.value).not.toEqual({})
       target.deleteArmature()
@@ -374,6 +374,30 @@ describe('src/store/index.ts', () => {
         copy_0: getConstraint({ id: 'copy_0', type: 'COPY_SCALE' }),
         copy_1: getConstraint({ id: 'copy_1', type: 'COPY_LOCATION' }),
       })
+    })
+    it('should be able to sort constraints', () => {
+      const target = createStore(useHistoryStore())
+      target.addArmature('arm_a')
+      expect(target.lastSelectedBone.value?.constraints).toEqual([])
+      expect(target.constraintMap.value).toEqual({})
+
+      target.updateBoneConstraints([
+        getConstraint({ id: 'ik_0', type: 'IK' }),
+        getConstraint({ id: 'ik_1', type: 'IK' }),
+      ])
+      expect(target.lastSelectedBone.value?.constraints).toEqual([
+        'ik_0',
+        'ik_1',
+      ])
+
+      target.updateBoneConstraints([
+        getConstraint({ id: 'ik_1', type: 'IK' }),
+        getConstraint({ id: 'ik_0', type: 'IK' }),
+      ])
+      expect(target.lastSelectedBone.value?.constraints).toEqual([
+        'ik_1',
+        'ik_0',
+      ])
     })
   })
 

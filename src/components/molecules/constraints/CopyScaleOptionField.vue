@@ -142,12 +142,6 @@ export default defineComponent({
           })
         },
       }),
-      updateCopyX(val: boolean) {
-        emitUpdated({ copyX: val })
-      },
-      updateCopyY(val: boolean) {
-        emitUpdated({ copyY: val })
-      },
       startPickBone(val?: PickerOptions) {
         emit('start-pick-bone', val)
       },

@@ -122,14 +122,14 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with children 1`] =
           xmlns="http://www.w3.org/2000/svg"
         >
           <rect
-            fill="#888"
+            class="fill-background-second"
             height="10"
             stroke="none"
             width="10"
           />
           <path
+            class="fill-background"
             d="M2 7L8 7L5 2z"
-            fill="#fff"
             stroke="none"
             stroke-linejoin="round"
           />

@@ -19,12 +19,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
-    <rect width="10" height="10" stroke="none" fill="#888" />
+    <rect width="10" height="10" stroke="none" class="fill-background-second" />
     <path
       d="M2.5 5L7.5 5M5 2.5L5 7.5"
       stroke-linejoin="round"
-      stroke="#fff"
       fill="none"
+      class="stroke-background"
     />
   </svg>
 </template>

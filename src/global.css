@@ -9,6 +9,8 @@
   --input-value-primary-shadow: #191970;
   --input-value-selected-weak: #ddd;
   --dialog-button-primary: #4169e1;
+
+  --icon-base: #888;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,6 +25,8 @@
     --input-value-primary-shadow: #191970;
     --input-value-selected-weak: #666;
     --dialog-button-primary: #4169e1;
+
+    --icon-base: #666;
   }
 }
 
@@ -38,6 +42,8 @@
   --input-value-primary-shadow: #191970;
   --input-value-selected-weak: #666;
   --dialog-button-primary: #4169e1;
+
+  --icon-base: #666;
 }
 
 body {
@@ -75,4 +81,29 @@ button:disabled {
 }
 .view-only {
   pointer-events: none;
+}
+
+svg .fill-text {
+  fill: var(--text);
+}
+svg .fill-background {
+  fill: var(--background);
+}
+svg .fill-background-second {
+  fill: var(--icon-base);
+}
+svg .fill-highlight {
+  fill: orange;
+}
+svg .stroke-text {
+  stroke: var(--text);
+}
+svg .stroke-background {
+  stroke: var(--background);
+}
+svg .stroke-background-second {
+  stroke: var(--icon-base);
+}
+svg .stroke-highlight {
+  stroke: orange;
 }

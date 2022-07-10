@@ -23,8 +23,13 @@ Copyright (C) 2021, Tomoya Komiyama.
     viewBox="0 0 10 10"
     :transform="`scale(${flipped ? 1 : -1}, 1)`"
   >
-    <rect width="10" height="10" stroke="none" fill="#888" />
-    <path d="M2 5L7 2L7 8z" stroke-linejoin="round" stroke="none" fill="#fff" />
+    <rect width="10" height="10" stroke="none" class="fill-background-second" />
+    <path
+      d="M2 5L7 2L7 8z"
+      stroke-linejoin="round"
+      stroke="none"
+      class="fill-background"
+    />
   </svg>
 </template>
 

@@ -96,14 +96,14 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
           xmlns="http://www.w3.org/2000/svg"
         >
           <rect
-            fill="#888"
+            class="fill-background-second"
             height="10"
             stroke="none"
             width="10"
           />
           <path
+            class="fill-background"
             d="M2 7L8 7L5 2z"
-            fill="#fff"
             stroke="none"
             stroke-linejoin="round"
           />
@@ -119,14 +119,14 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
           xmlns="http://www.w3.org/2000/svg"
         >
           <rect
-            fill="#888"
+            class="fill-background-second"
             height="10"
             stroke="none"
             width="10"
           />
           <path
+            class="fill-background"
             d="M2 7L8 7L5 2z"
-            fill="#fff"
             stroke="none"
             stroke-linejoin="round"
           />
@@ -141,15 +141,15 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
           xmlns="http://www.w3.org/2000/svg"
         >
           <rect
-            fill="#888"
+            class="fill-background-second"
             height="10"
             stroke="none"
             width="10"
           />
           <path
+            class="stroke-background"
             d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
             fill="none"
-            stroke="#fff"
             stroke-linejoin="round"
           />
         </svg>
@@ -216,15 +216,15 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
                     transform="rotate(45 10 10)"
                   >
                     <path
+                      class="fill-text"
                       d="M8 2 A2 2 0 0 1 12 2 L12 5 L13 5 L13 7 L7 7 L7 5 L8 5z"
-                      fill="#000"
                       stroke="none"
                       stroke-linejoin="round"
                     />
                     <path
+                      class="stroke-text"
                       d="M11.5 7 L11.5 17 L10 19 L8.5 17 L8.5 7"
                       fill="none"
-                      stroke="#000"
                       stroke-linejoin="round"
                     />
                   </g>
@@ -297,15 +297,15 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
                     transform="rotate(45 10 10)"
                   >
                     <path
+                      class="fill-text"
                       d="M8 2 A2 2 0 0 1 12 2 L12 5 L13 5 L13 7 L7 7 L7 5 L8 5z"
-                      fill="#000"
                       stroke="none"
                       stroke-linejoin="round"
                     />
                     <path
+                      class="stroke-text"
                       d="M11.5 7 L11.5 17 L10 19 L8.5 17 L8.5 7"
                       fill="none"
-                      stroke="#000"
                       stroke-linejoin="round"
                     />
                   </g>
@@ -475,14 +475,14 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
           xmlns="http://www.w3.org/2000/svg"
         >
           <rect
-            fill="#888"
+            class="fill-background-second"
             height="10"
             stroke="none"
             width="10"
           />
           <path
+            class="fill-background"
             d="M2 7L8 7L5 2z"
-            fill="#fff"
             stroke="none"
             stroke-linejoin="round"
           />
@@ -499,14 +499,14 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
           xmlns="http://www.w3.org/2000/svg"
         >
           <rect
-            fill="#888"
+            class="fill-background-second"
             height="10"
             stroke="none"
             width="10"
           />
           <path
+            class="fill-background"
             d="M2 7L8 7L5 2z"
-            fill="#fff"
             stroke="none"
             stroke-linejoin="round"
           />
@@ -521,15 +521,15 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
           xmlns="http://www.w3.org/2000/svg"
         >
           <rect
-            fill="#888"
+            class="fill-background-second"
             height="10"
             stroke="none"
             width="10"
           />
           <path
+            class="stroke-background"
             d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
             fill="none"
-            stroke="#fff"
             stroke-linejoin="round"
           />
         </svg>

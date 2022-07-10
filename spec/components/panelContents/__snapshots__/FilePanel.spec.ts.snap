@@ -64,12 +64,14 @@ exports[`src/components/panelContents/FilePanel.vue snapshot default 1`] = `
     <button
       type="button"
     >
-      Animated SVG
+       Animated SVG 
     </button>
   </div>
   <h3>
     Version test
   </h3>
+  <!--teleport start-->
+  <!--teleport end-->
   <!--teleport start-->
   <!--teleport end-->
 </div>

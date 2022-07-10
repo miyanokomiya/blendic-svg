@@ -55,7 +55,7 @@ button {
   }
 }
 .primary {
-  background-color: #4169e1;
+  background-color: var(--dialog-button-primary);
   color: #fff;
 }
 </style>

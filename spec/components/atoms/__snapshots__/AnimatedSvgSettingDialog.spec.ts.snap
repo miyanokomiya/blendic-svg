@@ -1,0 +1,275 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/molecules/dialogs/AnimatedSvgSettingDialog.vue snapshot default 1`] = `
+<div
+  class="dialog-wrapper"
+>
+  <div
+    class="overlay"
+  />
+  <div
+    class="body-outer"
+  >
+    <div
+      class="body-innter"
+    >
+      <button
+        class="close-button"
+        type="button"
+      >
+        <svg
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            fill="none"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            d="M2.5 2.5L7.5 7.5M2.5 7.5L7.5 2.5"
+            fill="none"
+            stroke="#888"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <div
+        class="body-content"
+      >
+        
+        <div
+          class="content"
+        >
+          <h3>
+            Animation Settings
+          </h3>
+          <div
+            class="row-block inline-field between"
+          >
+            
+            <label>
+              FPS
+            </label>
+            <div
+              class="inline-content"
+            >
+              
+              <div
+                class="toggle-buttons"
+              >
+                
+                <button
+                  class=""
+                  type="button"
+                >
+                  20
+                </button>
+                <button
+                  class="selected"
+                  type="button"
+                >
+                  30
+                </button>
+                <button
+                  class=""
+                  type="button"
+                >
+                  60
+                </button>
+                
+              </div>
+              
+            </div>
+            
+          </div>
+          <div
+            class="row-block inline-field between"
+          >
+            
+            <label>
+              Range
+            </label>
+            <div
+              class="inline-content"
+            >
+              
+              <div
+                class="toggle-buttons"
+              >
+                
+                <button
+                  class="selected"
+                  type="button"
+                >
+                  Auto
+                </button>
+                <button
+                  class=""
+                  type="button"
+                >
+                  Custom
+                </button>
+                
+              </div>
+              
+            </div>
+            
+          </div>
+          <div
+            class="row-block inline-field between"
+          >
+            
+            <label>
+              Custom Range
+            </label>
+            <div
+              class="inline-content"
+            >
+              
+              <div
+                class="slider-wrapper inline-slider"
+              >
+                <div
+                  class="slider-background"
+                  style="transform: scaleX(0);"
+                />
+                <input
+                  disabled=""
+                  type="text"
+                />
+                <!--v-if-->
+              </div>
+              <span
+                class="slider-between"
+              >
+                to
+              </span>
+              <div
+                class="slider-wrapper inline-slider"
+              >
+                <div
+                  class="slider-background"
+                  style="transform: scaleX(0);"
+                />
+                <input
+                  disabled=""
+                  type="text"
+                />
+                <!--v-if-->
+              </div>
+              
+            </div>
+            
+          </div>
+          <div
+            class="row-block inline-field between"
+          >
+            
+            <label>
+              Size
+            </label>
+            <div
+              class="inline-content"
+            >
+              
+              <div
+                class="toggle-buttons"
+              >
+                
+                <button
+                  class=""
+                  type="button"
+                >
+                  Auto
+                </button>
+                <button
+                  class="selected"
+                  type="button"
+                >
+                  Custom
+                </button>
+                
+              </div>
+              
+            </div>
+            
+          </div>
+          <div
+            class="row-block inline-field between"
+          >
+            
+            <label>
+              Custom Size
+            </label>
+            <div
+              class="inline-content"
+            >
+              
+              <div
+                class="slider-wrapper inline-slider"
+              >
+                <div
+                  class="slider-background"
+                  style="transform: scaleX(0);"
+                />
+                <input
+                  type="text"
+                />
+                <div
+                  class="slider-forward"
+                />
+              </div>
+              <span
+                class="slider-between"
+              >
+                x
+              </span>
+              <div
+                class="slider-wrapper inline-slider"
+              >
+                <div
+                  class="slider-background"
+                  style="transform: scaleX(0);"
+                />
+                <input
+                  type="text"
+                />
+                <div
+                  class="slider-forward"
+                />
+              </div>
+              
+            </div>
+            
+          </div>
+        </div>
+        
+        <div
+          class="buttons"
+        >
+          
+          <button
+            class="default"
+            type="button"
+          >
+            
+            Cancel
+            
+          </button>
+          <button
+            class="primary"
+            type="button"
+          >
+            
+            Export
+            
+          </button>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

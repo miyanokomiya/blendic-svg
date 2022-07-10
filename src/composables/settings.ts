@@ -19,6 +19,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { reactive } from 'vue'
 
+export interface AnimationExportingSettings {
+  fps: 20 | 30 | 60
+  range: 'auto' | 'custom'
+  customRange: { from: number; to: number }
+  size: 'auto' | 'custom'
+  customSize: { width: number; height: number }
+}
+
 const settings = reactive({
   selectedColor: 'orange',
   historyMax: 64,
@@ -27,6 +35,13 @@ const settings = reactive({
   showViewbox: true,
   showAxis: true,
   graphValueWidth: 5,
+  animationExportingSettings: {
+    fps: 30,
+    range: 'auto',
+    customRange: { from: 0, to: 60 },
+    size: 'auto',
+    customSize: { width: 200, height: 200 },
+  } as AnimationExportingSettings,
 })
 
 export function useSettings() {

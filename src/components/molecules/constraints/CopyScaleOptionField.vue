@@ -44,19 +44,8 @@ Copyright (C) 2021, Tomoya Komiyama.
         @update:model-value="updateOwnerSpaceType"
       />
     </InlineField>
-    <InlineField>
-      <CheckboxInput
-        :model-value="modelValue.copyX"
-        label="Axis X"
-        @update:model-value="updateCopyX"
-      />
-    </InlineField>
-    <InlineField>
-      <CheckboxInput
-        :model-value="modelValue.copyY"
-        label="Axis Y"
-        @update:model-value="updateCopyY"
-      />
+    <InlineField label="Axis" :label-width="labelWidth">
+      <ToggleButtons v-model="copyAxes" :options="axesOptions" />
     </InlineField>
     <InlineField label="Power" :label-width="labelWidth">
       <SliderInput
@@ -83,14 +72,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, computed } from 'vue'
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
-import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
 import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
+import ToggleButtons from '/@/components/atoms/ToggleButtons.vue'
 import { SpaceType } from '/@/models'
 import {
   getProps,
@@ -102,10 +91,10 @@ export default defineComponent({
   components: {
     SliderInput,
     SelectField,
-    CheckboxInput,
     InlineField,
     KeyDot,
     SelectWithPicker,
+    ToggleButtons,
   },
   props: getProps<BoneConstraintOptions['COPY_SCALE']>(),
   emits: ['update:model-value', 'start-pick-bone'],
@@ -135,6 +124,24 @@ export default defineComponent({
       updatePower(val: number, seriesKey?: string) {
         emitUpdated({ power: val }, seriesKey)
       },
+      axesOptions: [
+        { value: 'x', label: 'X' },
+        { value: 'y', label: 'Y' },
+      ],
+      copyAxes: computed({
+        get() {
+          return [
+            props.modelValue.copyX ? 'x' : '',
+            props.modelValue.copyY ? 'y' : '',
+          ].filter((v) => v)
+        },
+        set(val: string[]) {
+          emitUpdated({
+            copyX: val.includes('x'),
+            copyY: val.includes('y'),
+          })
+        },
+      }),
       updateCopyX(val: boolean) {
         emitUpdated({ copyX: val })
       },

@@ -42,7 +42,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 button {
-  padding: 4px 10px;
+  padding: 6px 16px;
   border: solid 1px var(--weak-border);
   border-radius: 4px;
   font-size: 14px;
@@ -56,6 +56,6 @@ button {
 }
 .primary {
   background-color: var(--dialog-button-primary);
-  color: var(--background);
+  color: var(--input-value-primary-text);
 }
 </style>

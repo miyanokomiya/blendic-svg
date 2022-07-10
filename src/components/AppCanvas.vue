@@ -453,7 +453,7 @@ export default defineComponent({
   left: 4px;
 }
 svg {
-  border: solid 1px black;
+  border: solid 1px var(--strong-border);
 }
 .popup-menu-list {
   position: fixed;
@@ -463,6 +463,6 @@ svg {
 
 <style scoped>
 .picking-bone {
-  background-color: #bbb;
+  background-color: var(--weak-border);
 }
 </style>

@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive } from 'vue'
+import { reactive, watchEffect } from 'vue'
 
 export interface AnimationExportingSettings {
   fps: 20 | 30 | 60
@@ -26,6 +26,8 @@ export interface AnimationExportingSettings {
   size: 'auto' | 'custom'
   customSize: { width: number; height: number }
 }
+
+export type ColorTheme = 'auto' | 'light' | 'dark'
 
 const settings = reactive({
   selectedColor: 'orange',
@@ -42,8 +44,24 @@ const settings = reactive({
     size: 'auto',
     customSize: { width: 200, height: 200 },
   } as AnimationExportingSettings,
+  colorTheme: 'auto' as ColorTheme,
 })
 
 export function useSettings() {
   return { settings }
 }
+
+watchEffect(() => {
+  const theme = settings.colorTheme
+  if (theme === 'light') {
+    document.documentElement.classList.add('theme-light')
+  } else {
+    document.documentElement.classList.remove('theme-light')
+  }
+
+  if (theme === 'dark') {
+    document.documentElement.classList.add('theme-dark')
+  } else {
+    document.documentElement.classList.remove('theme-dark')
+  }
+})

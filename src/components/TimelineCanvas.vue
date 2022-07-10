@@ -210,7 +210,7 @@ export default defineComponent({
   height: 100%;
 }
 svg {
-  border: solid 1px black;
+  border: solid 1px var(--strong-border);
   user-select: none;
   outline: none;
   overflow-anchor: none;

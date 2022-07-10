@@ -5,8 +5,38 @@
   --strong-border: #777;
   --weak-border: #aaa;
   --input-value-primary: #c6d2f6;
+  --input-value-primary-text: #fff;
   --input-value-primary-shadow: #191970;
   --input-value-selected-weak: #ddd;
+  --dialog-button-primary: #4169e1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.theme-light) {
+    --text: #fff;
+    --background: #181818;
+    --background-second: #777;
+    --strong-border: #ccc;
+    --weak-border: #555;
+    --input-value-primary: #3465bd;
+    --input-value-primary-text: #fff;
+    --input-value-primary-shadow: #191970;
+    --input-value-selected-weak: #666;
+    --dialog-button-primary: #4169e1;
+  }
+}
+
+/* FIXME: No good way to avoid duplicated difinition */
+:root.theme-dark {
+  --text: #fff;
+  --background: #181818;
+  --background-second: #777;
+  --strong-border: #ccc;
+  --weak-border: #555;
+  --input-value-primary: #3465bd;
+  --input-value-primary-text: #fff;
+  --input-value-primary-shadow: #191970;
+  --input-value-selected-weak: #666;
   --dialog-button-primary: #4169e1;
 }
 
@@ -15,6 +45,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
+  color: var(--text);
+  background-color: var(--background);
+}
+button {
+  color: var(--text);
+  background-color: var(--background);
+}
+input,
+select {
   color: var(--text);
 }
 input {

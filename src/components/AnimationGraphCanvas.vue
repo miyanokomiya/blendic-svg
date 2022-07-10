@@ -309,7 +309,7 @@ export default defineComponent({
 }
 svg {
   background-color: var(--weak-border);
-  border: solid 1px black;
+  border: solid 1px var(--strong-border);
 }
 .command-exam-panel {
   position: absolute;

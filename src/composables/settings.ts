@@ -29,23 +29,49 @@ export interface AnimationExportingSettings {
 
 export type ColorTheme = 'auto' | 'light' | 'dark'
 
-const settings = reactive({
-  selectedColor: 'orange',
-  historyMax: 64,
-  showBoneName: false,
-  boneOpacity: 1,
-  showViewbox: true,
-  showAxis: true,
-  graphValueWidth: 5,
-  animationExportingSettings: {
-    fps: 30,
-    range: 'auto',
-    customRange: { from: 0, to: 60 },
-    size: 'auto',
-    customSize: { width: 200, height: 200 },
-  } as AnimationExportingSettings,
-  colorTheme: 'auto' as ColorTheme,
-})
+function getDefaultValue() {
+  return {
+    selectedColor: 'orange',
+    historyMax: 64,
+    showBoneName: false,
+    boneOpacity: 1,
+    showViewbox: true,
+    showAxis: true,
+    graphValueWidth: 5,
+    animationExportingSettings: {
+      fps: 30,
+      range: 'auto',
+      customRange: { from: 0, to: 60 },
+      size: 'auto',
+      customSize: { width: 200, height: 200 },
+    } as AnimationExportingSettings,
+    colorTheme: 'auto' as ColorTheme,
+  }
+}
+
+const SETTING_STORAGE_KEY = 'blendic-app-settings'
+
+function restoreValue() {
+  const src = getDefaultValue()
+
+  try {
+    const json = localStorage.getItem(SETTING_STORAGE_KEY)
+    const restored: Partial<typeof src> = json ? JSON.parse(json) : {}
+
+    return {
+      ...src,
+      ...restored,
+      animationExportingSettings: {
+        ...src.animationExportingSettings,
+        ...(restored.animationExportingSettings ?? {}),
+      },
+    }
+  } catch {
+    return src
+  }
+}
+
+const settings = reactive(restoreValue())
 
 export function useSettings() {
   return { settings }
@@ -64,4 +90,8 @@ watchEffect(() => {
   } else {
     document.documentElement.classList.remove('theme-dark')
   }
+})
+
+watchEffect(() => {
+  localStorage.setItem(SETTING_STORAGE_KEY, JSON.stringify(settings))
 })

@@ -5,8 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.17.2] - 2022-07-10
 ### Added
 - Reduce animated SVG file size by omitting static attributes from animated tags and styles
+- Enable to modify exporting settings for animated SVG
+- Add dark theme
+
+### Fixed
+- Fix a logic to symmetrize bones with consraints
 
 ## [0.17.1] - 2022-06-21
 ### Added

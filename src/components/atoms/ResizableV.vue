@@ -141,7 +141,7 @@ export default defineComponent({
     height: 1px;
   }
   &:hover > div {
-    background-color: #bbb;
+    background-color: var(--weak-border);
   }
 }
 .anchor-dence {

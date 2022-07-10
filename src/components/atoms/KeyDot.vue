@@ -81,7 +81,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 button {
   display: flex;
   align-items: center;

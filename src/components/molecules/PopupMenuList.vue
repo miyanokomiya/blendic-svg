@@ -85,8 +85,8 @@ export default defineComponent({
 <style lang="scss" scoped>
 .popup-menu-list-wrapper {
   position: relative;
-  border: solid 1px #aaa;
-  background-color: #fff;
+  border: solid 1px var(--weak-border);
+  background-color: var(--background);
 }
 ul {
   list-style: none;
@@ -97,7 +97,7 @@ li {
   display: flex;
   align-items: center;
   &:hover {
-    background-color: #eee;
+    background-color: var(--background-second);
   }
   > button {
     display: flex;

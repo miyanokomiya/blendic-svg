@@ -267,15 +267,12 @@ const edgeAnchorWidth = 60
 </script>
 
 <style scoped>
-.view-only {
-  pointer-events: none;
-}
 .edge-anchor:hover {
   transition: fill 0.2s;
   fill: #ffa07a;
 }
 .error-message {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--background);
+  color: var(--text);
 }
 </style>

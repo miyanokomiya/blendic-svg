@@ -204,13 +204,13 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .timeline-canvas-root {
   position: relative;
   height: 100%;
 }
 svg {
-  border: solid 1px black;
+  border: solid 1px var(--strong-border);
   user-select: none;
   outline: none;
   overflow-anchor: none;

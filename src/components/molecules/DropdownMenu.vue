@@ -90,11 +90,11 @@ export default defineComponent({
   > button {
     position: relative;
     padding: 2px 18px 2px 10px;
-    border: solid 1px #777;
+    border: solid 1px var(--strong-border);
     border-radius: 4px;
-    background-color: #fff;
+    background-color: var(--background);
     &.selected {
-      background-color: #ddd;
+      background-color: var(--input-value-selected-weak);
     }
     &::after {
       display: block;
@@ -105,7 +105,7 @@ export default defineComponent({
       width: 0;
       height: 0;
       pointer-events: none;
-      border-top: solid 6px #999;
+      border-top: solid 6px var(--strong-border);
       border-left: solid 5px transparent;
       border-right: solid 5px transparent;
     }
@@ -115,8 +115,8 @@ export default defineComponent({
     top: 20px;
     left: 1px;
     list-style: none;
-    border: solid 1px #aaa;
-    background-color: #fff;
+    border: solid 1px var(--weak-border);
+    background-color: var(--background);
     min-width: 100px;
     border-radius: 0 4px 4px 4px;
     li {
@@ -126,7 +126,7 @@ export default defineComponent({
       margin: 0 auto;
       width: calc(100% - 10px);
       border: none;
-      border-top: solid 1px #aaa;
+      border-top: solid 1px var(--weak-border);
     }
     button {
       display: block;
@@ -134,7 +134,7 @@ export default defineComponent({
       padding: 4px 10px;
       text-align: left;
       &:hover {
-        background-color: #eee;
+        background-color: var(--background-second);
       }
     }
   }

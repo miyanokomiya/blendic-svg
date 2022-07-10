@@ -71,7 +71,7 @@ export default defineComponent({
   right: 0;
   bottom: 0;
   left: 0;
-  background-color: #777;
+  background-color: var(--strong-border);
   opacity: 0.2;
 }
 .body-outer {
@@ -83,8 +83,8 @@ export default defineComponent({
 }
 .body-innter {
   position: relative;
-  background-color: #fff;
-  box-shadow: 0 3px 3px #aaa;
+  background-color: var(--background);
+  box-shadow: 0 3px 3px var(--weak-border);
   border-radius: 4px;
   padding: 12px;
   min-width: 220px;

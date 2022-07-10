@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { reactive } from 'vue'
+import { reactive, watchEffect } from 'vue'
 
 export interface AnimationExportingSettings {
   fps: 20 | 30 | 60
@@ -27,23 +27,71 @@ export interface AnimationExportingSettings {
   customSize: { width: number; height: number }
 }
 
-const settings = reactive({
-  selectedColor: 'orange',
-  historyMax: 64,
-  showBoneName: false,
-  boneOpacity: 1,
-  showViewbox: true,
-  showAxis: true,
-  graphValueWidth: 5,
-  animationExportingSettings: {
-    fps: 30,
-    range: 'auto',
-    customRange: { from: 0, to: 60 },
-    size: 'auto',
-    customSize: { width: 200, height: 200 },
-  } as AnimationExportingSettings,
-})
+export type ColorTheme = 'auto' | 'light' | 'dark'
+
+function getDefaultValue() {
+  return {
+    selectedColor: 'orange',
+    historyMax: 64,
+    showBoneName: false,
+    boneOpacity: 1,
+    showViewbox: true,
+    showAxis: true,
+    graphValueWidth: 5,
+    animationExportingSettings: {
+      fps: 30,
+      range: 'auto',
+      customRange: { from: 0, to: 60 },
+      size: 'auto',
+      customSize: { width: 200, height: 200 },
+    } as AnimationExportingSettings,
+    colorTheme: 'auto' as ColorTheme,
+  }
+}
+
+const SETTING_STORAGE_KEY = 'blendic-app-settings'
+
+function restoreValue() {
+  const src = getDefaultValue()
+
+  try {
+    const json = localStorage.getItem(SETTING_STORAGE_KEY)
+    const restored: Partial<typeof src> = json ? JSON.parse(json) : {}
+
+    return {
+      ...src,
+      ...restored,
+      animationExportingSettings: {
+        ...src.animationExportingSettings,
+        ...(restored.animationExportingSettings ?? {}),
+      },
+    }
+  } catch {
+    return src
+  }
+}
+
+const settings = reactive(restoreValue())
 
 export function useSettings() {
   return { settings }
 }
+
+watchEffect(() => {
+  const theme = settings.colorTheme
+  if (theme === 'light') {
+    document.documentElement.classList.add('theme-light')
+  } else {
+    document.documentElement.classList.remove('theme-light')
+  }
+
+  if (theme === 'dark') {
+    document.documentElement.classList.add('theme-dark')
+  } else {
+    document.documentElement.classList.remove('theme-dark')
+  }
+})
+
+watchEffect(() => {
+  localStorage.setItem(SETTING_STORAGE_KEY, JSON.stringify(settings))
+})

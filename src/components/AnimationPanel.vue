@@ -577,7 +577,7 @@ export default defineComponent({
 }
 .graph-panel-space {
   height: 100%;
-  border: solid 1px #000;
+  border: solid 1px var(--strong-border);
   overflow: auto;
 }
 </style>

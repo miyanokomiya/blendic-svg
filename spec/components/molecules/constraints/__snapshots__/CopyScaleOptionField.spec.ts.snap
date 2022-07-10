@@ -159,44 +159,33 @@ exports[`/@/src/components/molecules/constraints/CopyScaleOptionField.vue snapsh
     class="row-block inline-field"
   >
     
-    <!--v-if-->
+    <label
+      style="width: 100px;"
+    >
+      Axis
+    </label>
     <div
       class="inline-content"
     >
       
-      <label
-        class=""
+      <div
+        class="toggle-buttons"
       >
-        <input
-          type="checkbox"
-        />
-        <span>
-          Axis X
-        </span>
-      </label>
-      
-    </div>
-    
-  </div>
-  <div
-    class="row-block inline-field"
-  >
-    
-    <!--v-if-->
-    <div
-      class="inline-content"
-    >
-      
-      <label
-        class=""
-      >
-        <input
-          type="checkbox"
-        />
-        <span>
-          Axis Y
-        </span>
-      </label>
+        
+        <button
+          class="selected"
+          type="button"
+        >
+          X
+        </button>
+        <button
+          class="selected"
+          type="button"
+        >
+          Y
+        </button>
+        
+      </div>
       
     </div>
     

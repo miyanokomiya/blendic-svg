@@ -72,28 +72,28 @@ const value = computed({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .select-root {
   position: relative;
   display: flex;
   align-items: center;
-  select {
-    width: 100%;
-    padding: 2px 12px 2px 4px;
-    border: solid 1px #777;
-  }
-  &::after {
-    display: block;
-    content: ' ';
-    position: absolute;
-    top: 8px;
-    right: 4px;
-    width: 0;
-    height: 0;
-    pointer-events: none;
-    border-top: solid 8px #777;
-    border-left: solid 6px transparent;
-    border-right: solid 6px transparent;
-  }
+}
+.select-root select {
+  width: 100%;
+  padding: 2px 20px 2px 4px;
+  border: solid 1px var(--strong-border);
+}
+.select-root::after {
+  display: block;
+  content: ' ';
+  position: absolute;
+  top: 8px;
+  right: 4px;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  border-top: solid 8px var(--strong-border);
+  border-left: solid 6px transparent;
+  border-right: solid 6px transparent;
 }
 </style>

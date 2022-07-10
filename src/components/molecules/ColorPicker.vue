@@ -183,7 +183,7 @@ $size: 200px;
 
 .color-picker-wrapper {
   padding: 2px;
-  background-color: #fff;
+  background-color: var(--background);
 }
 .color-picker-inner {
   position: relative;
@@ -206,8 +206,8 @@ $size: 200px;
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background-color: #fff;
-      border: solid 1px #000;
+      background-color: var(--background);
+      border: solid 1px var(--strong-border);
     }
   }
 }

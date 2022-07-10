@@ -65,7 +65,7 @@ Copyright (C) 2022, Tomoya Komiyama.
             />
             <span class="slider-between">x</span>
             <SliderInput
-              v-model="draftSettings.customSize.width"
+              v-model="draftSettings.customSize.height"
               :min="0"
               :disabled="draftSettings.size !== 'custom'"
               class="inline-slider"

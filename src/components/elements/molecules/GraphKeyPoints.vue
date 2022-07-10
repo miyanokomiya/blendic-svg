@@ -150,9 +150,3 @@ export default defineComponent({
   },
 })
 </script>
-
-<style lang="scss" scoped>
-.view-only {
-  pointer-events: none;
-}
-</style>

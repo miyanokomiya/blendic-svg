@@ -68,8 +68,65 @@ exports[`src/components/panelContents/FilePanel.vue snapshot default 1`] = `
     </button>
   </div>
   <h3>
-    Version test
+    App
   </h3>
+  <div
+    class="row-block inline-field between"
+  >
+    
+    <label>
+      Theme
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <div
+        class="toggle-buttons"
+      >
+        
+        <button
+          class="selected"
+          type="button"
+        >
+          Auto
+        </button>
+        <button
+          class=""
+          type="button"
+        >
+          Light
+        </button>
+        <button
+          class=""
+          type="button"
+        >
+          Dark
+        </button>
+        
+      </div>
+      
+    </div>
+    
+  </div>
+  <div
+    class="row-block inline-field between"
+  >
+    
+    <label>
+      Version
+    </label>
+    <div
+      class="inline-content"
+    >
+      
+      <span>
+        test
+      </span>
+      
+    </div>
+    
+  </div>
   <!--teleport start-->
   <!--teleport end-->
   <!--teleport start-->

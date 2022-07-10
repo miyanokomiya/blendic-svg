@@ -256,7 +256,7 @@ export default defineComponent({
 .main {
   height: 100%;
   display: flex;
-  background-color: #fff;
+  background-color: var(--background);
 }
 .main .canvas {
   width: calc(100% - 24px);
@@ -269,8 +269,5 @@ export default defineComponent({
 }
 .bottom {
   height: 100%;
-}
-.view-only {
-  pointer-events: none;
 }
 </style>

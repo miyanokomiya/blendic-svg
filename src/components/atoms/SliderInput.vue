@@ -226,11 +226,11 @@ export default defineComponent({
   align-items: center;
 }
 input {
+  position: relative;
   width: 100%;
   text-align: center;
 }
 .slider-background {
-  z-index: -1;
   position: absolute;
   top: 0;
   bottom: 0;

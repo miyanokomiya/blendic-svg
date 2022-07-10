@@ -42,8 +42,8 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 button {
-  padding: 4px 10px;
-  border: solid 1px #ccc;
+  padding: 6px 16px;
+  border: solid 1px var(--weak-border);
   border-radius: 4px;
   font-size: 14px;
   &:hover {
@@ -56,6 +56,6 @@ button {
 }
 .primary {
   background-color: var(--dialog-button-primary);
-  color: #fff;
+  color: var(--input-value-primary-text);
 }
 </style>

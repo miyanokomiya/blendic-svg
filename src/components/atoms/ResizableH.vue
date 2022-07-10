@@ -149,7 +149,7 @@ export default defineComponent({
     height: 100%;
   }
   &:hover > div {
-    background-color: #bbb;
+    background-color: var(--weak-border);
   }
 }
 .right {

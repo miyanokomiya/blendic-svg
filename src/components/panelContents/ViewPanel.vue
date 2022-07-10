@@ -62,7 +62,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .view-panel {
   text-align: left;
 }

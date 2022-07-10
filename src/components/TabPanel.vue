@@ -76,15 +76,15 @@ ul {
   > li {
     margin-right: 4px;
     padding: 2px 4px;
-    border: solid 1px #aaa;
+    border: solid 1px var(--weak-border);
     border-radius: 4px 4px 0 0;
     border-bottom: none;
     &.current {
-      background-color: #ddd;
+      background-color: var(--input-value-selected-weak);
     }
     > a {
       text-decoration: none;
-      color: #000;
+      color: var(--text);
       font-size: 14px;
     }
   }
@@ -92,7 +92,7 @@ ul {
 .panels {
   flex: 1;
   padding: 10px;
-  border: solid 1px #000;
+  border: solid 1px var(--strong-border);
   overflow: auto;
 }
 </style>

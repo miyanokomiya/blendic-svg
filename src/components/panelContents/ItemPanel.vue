@@ -423,7 +423,7 @@ h5 {
   display: block;
   width: 100%;
   height: 20px;
-  border: solid 1px #aaa;
+  border: solid 1px var(--weak-border);
   > * {
     width: 100%;
   }
@@ -436,7 +436,7 @@ h5 {
   .color-picker {
     position: fixed;
     transform: translateX(-50%);
-    border: solid 1px #aaa;
+    border: solid 1px var(--weak-border);
   }
 }
 </style>

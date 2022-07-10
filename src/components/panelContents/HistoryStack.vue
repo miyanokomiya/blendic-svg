@@ -47,7 +47,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 h3 {
   margin-bottom: 8px;
   text-align: left;
@@ -57,14 +57,14 @@ ul {
   display: flex;
   align-items: flex-start;
   flex-direction: column-reverse;
-  > li {
-    width: 100%;
-    padding: 4px 8px;
-    text-align: left;
-    border-bottom: solid 1px #888;
-    &.done {
-      background-color: #aaa;
-    }
-  }
+}
+ul > li {
+  width: 100%;
+  padding: 4px 8px;
+  text-align: left;
+  border-bottom: solid 1px var(--strong-border);
+}
+ul > li.done {
+  background-color: var(--weak-border);
 }
 </style>

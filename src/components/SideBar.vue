@@ -69,17 +69,17 @@ export default defineComponent({
   > li {
     margin-bottom: 4px;
     padding: 4px 2px;
-    border: solid 1px #aaa;
+    border: solid 1px var(--weak-border);
     border-right: none;
     border-radius: 4px 0 0 4px;
     writing-mode: vertical-lr;
     transform: scale(-1);
     &.current {
-      background-color: #ddd;
+      background-color: var(--input-value-selected-weak);
     }
     > a {
       text-decoration: none;
-      color: #000;
+      color: var(--text);
       font-size: 14px;
     }
   }
@@ -89,9 +89,9 @@ export default defineComponent({
   top: 0;
   right: 100%;
   padding: 10px;
-  border: solid 1px #aaa;
+  border: solid 1px var(--weak-border);
   border-radius: 0 0 0 4px;
-  background-color: #fff;
+  background-color: var(--background);
   min-width: 140px;
   max-width: 140px;
   max-height: 100%;

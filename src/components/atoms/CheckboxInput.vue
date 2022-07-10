@@ -62,7 +62,7 @@ label {
   &.disabled {
     cursor: default;
     > span {
-      color: #aaa;
+      color: var(--weak-border);
     }
   }
 }

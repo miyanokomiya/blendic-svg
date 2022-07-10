@@ -2,6 +2,7 @@
   --text: #2c3e50;
   --background: #fff;
   --background-second: #eee;
+  --background-slight: #eee;
   --strong-border: #777;
   --weak-border: #aaa;
   --input-value-primary: #c6d2f6;
@@ -18,12 +19,13 @@
     --text: #fff;
     --background: #181818;
     --background-second: #777;
+    --background-slight: #333;
     --strong-border: #ccc;
     --weak-border: #555;
     --input-value-primary: #3465bd;
     --input-value-primary-text: #fff;
     --input-value-primary-shadow: #191970;
-    --input-value-selected-weak: #666;
+    --input-value-selected-weak: #444;
     --dialog-button-primary: #4169e1;
 
     --icon-base: #666;
@@ -35,12 +37,13 @@
   --text: #fff;
   --background: #181818;
   --background-second: #777;
+  --background-slight: #333;
   --strong-border: #ccc;
   --weak-border: #555;
   --input-value-primary: #3465bd;
   --input-value-primary-text: #fff;
   --input-value-primary-shadow: #191970;
-  --input-value-selected-weak: #666;
+  --input-value-selected-weak: #444;
   --dialog-button-primary: #4169e1;
 
   --icon-base: #666;

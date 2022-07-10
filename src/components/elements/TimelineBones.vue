@@ -19,8 +19,19 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g>
-    <rect :width="labelWidth" height="10000" stroke="none" fill="#fff" />
-    <line :x1="labelWidth" y1="0" :x2="labelWidth" y2="10000" stroke="black" />
+    <rect
+      :width="labelWidth"
+      height="10000"
+      stroke="none"
+      class="fill-background"
+    />
+    <line
+      :x1="labelWidth"
+      y1="0"
+      :x2="labelWidth"
+      y2="10000"
+      class="stroke-text"
+    />
     <g :transform="`translate(0, ${-scrollY})`">
       <g
         v-for="(target, i) in targetList"
@@ -43,11 +54,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             :label-width="labelWidth - 10"
             :label-height="height"
             :label="getLabel(key as string)"
-            :color="
-              isSelectedProp(target.id, key as string)
-                ? settings.selectedColor
-                : undefined
-            "
+            :highlight="isSelectedProp(target.id, key as string)"
             @click.left.exact="clickRow(target.id, key as string)"
             @click.left.shift.exact="clickRow(target.id, key as string, true)"
           />

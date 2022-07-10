@@ -153,7 +153,8 @@ export default defineComponent({
   user-select: none;
   &.has-children {
     border: solid 1px var(--weak-border);
-    background-color: var(--background-second);
+    border-right: none;
+    background-color: var(--background-slight);
   }
 }
 .node-view {

@@ -71,7 +71,7 @@ export default defineComponent({
   right: 0;
   bottom: 0;
   left: 0;
-  background-color: var(--strong-border);
+  background-color: #555;
   opacity: 0.2;
 }
 .body-outer {

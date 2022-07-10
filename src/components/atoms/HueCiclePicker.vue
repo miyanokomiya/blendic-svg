@@ -25,7 +25,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     @mousedown="onDown"
   >
     <HueCicle :radius="49" />
-    <circle r="40" fill="#fff" />
+    <circle r="40" class="fill-background" />
     <line
       v-if="cursorP"
       :x2="cursorP.x"
@@ -33,7 +33,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       stroke="#ddd"
       stroke-width="4"
     />
-    <circle r="39" fill="#fff" />
+    <circle r="39" class="fill-background" />
   </svg>
 </template>
 

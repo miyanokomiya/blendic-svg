@@ -20,7 +20,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <g>
     <g :transform="`scale(${scale}) translate(0, ${height * 2})`">
-      <line x1="-100000" x2="100000" stroke="#000" />
+      <line x1="-100000" x2="100000" class="stroke-text" />
     </g>
     <g
       v-for="(keyframes, f) in sortedKeyframeMapByFrame"

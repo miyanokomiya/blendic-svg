@@ -56,7 +56,7 @@ Copyright (C) 2022, Tomoya Komiyama.
               :options="autoCustomOptions"
             />
           </InlineField>
-          <InlineField label="Custom Size" between>
+          <InlineField label="Custom Size (px)" between>
             <SliderInput
               v-model="draftSettings.customSize.width"
               :min="0"
@@ -71,6 +71,21 @@ Copyright (C) 2022, Tomoya Komiyama.
               class="inline-slider"
             />
           </InlineField>
+          <InlineField label="Duration" between>
+            <ToggleRadioButtons
+              v-model="draftSettings.duration"
+              :options="autoCustomOptions"
+            />
+          </InlineField>
+          <InlineField label="Custom Duration (s)" between>
+            <SliderInput
+              v-model="customDuration"
+              :min="0"
+              :step="0.1"
+              :disabled="draftSettings.duration !== 'custom'"
+              class="inline-slider"
+            />
+          </InlineField>
         </div>
       </template>
       <template #buttons>
@@ -82,7 +97,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { AnimationExportingSettings } from '/@/composables/settings'
 </script>
 
@@ -126,11 +141,20 @@ function updateOpen(val: boolean) {
 function execute() {
   emits('execute', draftSettings.value)
 }
+
+const customDuration = computed({
+  get() {
+    return draftSettings.value.customDuration / 1000
+  },
+  set(val: number) {
+    draftSettings.value.customDuration = val * 1000
+  },
+})
 </script>
 
 <style scoped>
 .content {
-  width: 300px;
+  width: 350px;
 }
 h3 {
   margin-bottom: 16px;

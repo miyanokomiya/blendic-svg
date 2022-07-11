@@ -25,6 +25,8 @@ export interface AnimationExportingSettings {
   customRange: { from: number; to: number }
   size: 'auto' | 'custom'
   customSize: { width: number; height: number }
+  duration: 'auto' | 'custom'
+  customDuration: number
 }
 
 export type ColorTheme = 'auto' | 'light' | 'dark'
@@ -44,6 +46,8 @@ function getDefaultValue() {
       customRange: { from: 0, to: 60 },
       size: 'auto',
       customSize: { width: 200, height: 200 },
+      duration: 'auto',
+      customDuration: 1000,
     } as AnimationExportingSettings,
     colorTheme: 'auto' as ColorTheme,
   }

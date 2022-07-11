@@ -196,7 +196,7 @@ exports[`src/components/molecules/dialogs/AnimatedSvgSettingDialog.vue snapshot 
           >
             
             <label>
-              Custom Size
+              Custom Size (px)
             </label>
             <div
               class="inline-content"
@@ -234,6 +234,67 @@ exports[`src/components/molecules/dialogs/AnimatedSvgSettingDialog.vue snapshot 
                 <div
                   class="slider-forward"
                 />
+              </div>
+              
+            </div>
+            
+          </div>
+          <div
+            class="row-block inline-field between"
+          >
+            
+            <label>
+              Duration
+            </label>
+            <div
+              class="inline-content"
+            >
+              
+              <div
+                class="toggle-buttons"
+              >
+                
+                <button
+                  class=""
+                  type="button"
+                >
+                  Auto
+                </button>
+                <button
+                  class=""
+                  type="button"
+                >
+                  Custom
+                </button>
+                
+              </div>
+              
+            </div>
+            
+          </div>
+          <div
+            class="row-block inline-field between"
+          >
+            
+            <label>
+              Custom Duration (s)
+            </label>
+            <div
+              class="inline-content"
+            >
+              
+              <div
+                class="slider-wrapper inline-slider"
+              >
+                <div
+                  class="slider-background"
+                  style="transform: scaleX(0);"
+                />
+                <input
+                  disabled=""
+                  type="text"
+                />
+                <!--v-if-->
               </div>
               
             </div>

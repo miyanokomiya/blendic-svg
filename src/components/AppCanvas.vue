@@ -459,9 +459,6 @@ svg {
   position: fixed;
   z-index: 1;
 }
-</style>
-
-<style scoped>
 .picking-bone {
   background-color: var(--weak-border);
 }

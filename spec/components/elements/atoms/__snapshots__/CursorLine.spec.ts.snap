@@ -2,8 +2,7 @@
 
 exports[`src/components/elements/atoms/CursorLine.vue snapshot default 1`] = `
 <g
-  fill="black"
-  stroke="black"
+  class="fill-text stroke-text"
 >
   <g
     transform="translate(1, 2) rotate(63.43494882292201) scale(1)"

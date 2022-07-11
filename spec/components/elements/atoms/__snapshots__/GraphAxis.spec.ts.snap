@@ -3,7 +3,7 @@
 exports[`src/components/elements/atoms/GraphAxis.vue snapshot default 1`] = `
 <g
   dominant-baseline="middle"
-  font-size="12"
+  font-size="14"
   text-anchor="middle"
 >
   
@@ -11,23 +11,17 @@ exports[`src/components/elements/atoms/GraphAxis.vue snapshot default 1`] = `
     transform="translate(0, -150) scale(1.5)"
   >
     <g
-      transform="translate(12,0) rotate(-90)"
+      transform="translate(10,0) rotate(-90)"
     >
       <text
-        fill="#fff"
-        stroke="#fff"
-      >
-        -30
-      </text>
-      <text
-        fill="#333"
-        stroke="#333"
+        class="fill-text"
       >
         -30
       </text>
     </g>
     <line
       stroke="#aaa"
+      x1="16"
       x2="100"
     />
   </g>
@@ -35,23 +29,17 @@ exports[`src/components/elements/atoms/GraphAxis.vue snapshot default 1`] = `
     transform="translate(0, 0) scale(1.5)"
   >
     <g
-      transform="translate(12,0) rotate(-90)"
+      transform="translate(10,0) rotate(-90)"
     >
       <text
-        fill="#fff"
-        stroke="#fff"
-      >
-        0
-      </text>
-      <text
-        fill="#333"
-        stroke="#333"
+        class="fill-text"
       >
         0
       </text>
     </g>
     <line
       stroke="#aaa"
+      x1="16"
       x2="100"
     />
   </g>
@@ -59,23 +47,17 @@ exports[`src/components/elements/atoms/GraphAxis.vue snapshot default 1`] = `
     transform="translate(0, 150) scale(1.5)"
   >
     <g
-      transform="translate(12,0) rotate(-90)"
+      transform="translate(10,0) rotate(-90)"
     >
       <text
-        fill="#fff"
-        stroke="#fff"
-      >
-        30
-      </text>
-      <text
-        fill="#333"
-        stroke="#333"
+        class="fill-text"
       >
         30
       </text>
     </g>
     <line
       stroke="#aaa"
+      x1="16"
       x2="100"
     />
   </g>
@@ -83,23 +65,17 @@ exports[`src/components/elements/atoms/GraphAxis.vue snapshot default 1`] = `
     transform="translate(0, 300) scale(1.5)"
   >
     <g
-      transform="translate(12,0) rotate(-90)"
+      transform="translate(10,0) rotate(-90)"
     >
       <text
-        fill="#fff"
-        stroke="#fff"
-      >
-        60
-      </text>
-      <text
-        fill="#333"
-        stroke="#333"
+        class="fill-text"
       >
         60
       </text>
     </g>
     <line
       stroke="#aaa"
+      x1="16"
       x2="100"
     />
   </g>

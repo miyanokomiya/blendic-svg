@@ -18,17 +18,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g font-size="12" text-anchor="middle" dominant-baseline="middle">
+  <g font-size="14" text-anchor="middle" dominant-baseline="middle">
     <g
       v-for="y in values"
       :key="y"
       :transform="`translate(0, ${y * valueWidth}) scale(${scale})`"
     >
-      <g transform="translate(12,0) rotate(-90)">
-        <text fill="#fff" stroke="#fff">{{ y }}</text>
-        <text fill="#333" stroke="#333">{{ y }}</text>
+      <g transform="translate(10,0) rotate(-90)">
+        <text class="fill-text">{{ y }}</text>
       </g>
-      <line :x2="viewWidth" stroke="#aaa" />
+      <line x1="16" :x2="viewWidth" stroke="#aaa" />
     </g>
   </g>
 </template>

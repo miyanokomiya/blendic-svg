@@ -224,11 +224,13 @@ export default defineComponent({
   position: relative;
   display: flex;
   align-items: center;
+  background-color: var(--background);
 }
 input {
   position: relative;
   width: 100%;
   text-align: center;
+  background-color: transparent;
 }
 .slider-background {
   position: absolute;

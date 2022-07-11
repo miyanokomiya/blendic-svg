@@ -50,6 +50,21 @@ Copyright (C) 2022, Tomoya Komiyama.
               class="inline-slider"
             />
           </InlineField>
+          <InlineField label="Duration" between>
+            <ToggleRadioButtons
+              v-model="draftSettings.duration"
+              :options="autoCustomOptions"
+            />
+          </InlineField>
+          <InlineField label="Custom Duration (s)" between>
+            <SliderInput
+              v-model="customDuration"
+              :min="0"
+              :step="0.1"
+              :disabled="draftSettings.duration !== 'custom'"
+              class="inline-slider"
+            />
+          </InlineField>
           <InlineField label="Size" between>
             <ToggleRadioButtons
               v-model="draftSettings.size"
@@ -68,21 +83,6 @@ Copyright (C) 2022, Tomoya Komiyama.
               v-model="draftSettings.customSize.height"
               :min="0"
               :disabled="draftSettings.size !== 'custom'"
-              class="inline-slider"
-            />
-          </InlineField>
-          <InlineField label="Duration" between>
-            <ToggleRadioButtons
-              v-model="draftSettings.duration"
-              :options="autoCustomOptions"
-            />
-          </InlineField>
-          <InlineField label="Custom Duration (s)" between>
-            <SliderInput
-              v-model="customDuration"
-              :min="0"
-              :step="0.1"
-              :disabled="draftSettings.duration !== 'custom'"
               class="inline-slider"
             />
           </InlineField>

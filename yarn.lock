@@ -4439,10 +4439,10 @@ object.values@^1.1.5:
     define-properties "^1.1.3"
     es-abstract "^1.19.1"
 
-okageo@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/okageo/-/okageo-3.0.0.tgz#6c392df3c5168f1badd61152731dd7f3bc0ddcd9"
-  integrity sha512-cpp84L4JmFxgVwZhpJzB+2+bW3QTDVFohsoVMSiaKRHjjqDI+WqAvfAyDmcAJxj8gfqMs+AU6mEZ26VLlHs9nQ==
+okageo@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/okageo/-/okageo-3.0.1.tgz#b5ed5a9028ff81f8e2b8e815b063faf049a647c3"
+  integrity sha512-JFSdqrvb0iz8ZfYG+iTE5VxYOh1VRnMG5uoz1YK1woIIDuXinkbGmiEqWyfzU9SnBq3Os2DAebRsQ1K0yjCu2w==
 
 okahistory@^0.0.8:
   version "0.0.8"
@@ -4454,10 +4454,10 @@ okanvas@^0.0.4:
   resolved "https://registry.yarnpkg.com/okanvas/-/okanvas-0.0.4.tgz#5c0eb0e9ffba9ec03ef2810e7467216b5ee3cf89"
   integrity sha512-jMvfnODVQQ+NObgTO8dQ8/MG4izZ0Rf4IQrVWJOFAHCsfo8hjxX/y7o4/NmVNgaMM/SBb1Qd9qyP7/1no1jpXQ==
 
-okaselect@^0.0.11:
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/okaselect/-/okaselect-0.0.11.tgz#d3ae76bea6dc34e7beabffe3bc54cfd91059e32c"
-  integrity sha512-9pfSBL+JjZrx6q6eaNECOy1m2j6cDiobBNV19JfVEnbzSWqLAiis4dvRWvsxrTAwVQOPA2lIE4JG+dZjDIsh4Q==
+okaselect@^0.0.12:
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/okaselect/-/okaselect-0.0.12.tgz#af9623424a9b29d3e15929333a000ece6b3aa2e6"
+  integrity sha512-yL96zr8psVdpz8Sb9Z2SL5W60VwBeLjLojOFOjBIzzP/Re5Vym70REIc4XWj4k5yzz6mHtAI/nqOH4PK90cE3w==
 
 once@^1.3.0:
   version "1.4.0"

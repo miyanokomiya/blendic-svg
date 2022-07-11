@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <g fill="black" stroke="black">
+  <g class="fill-text stroke-text">
     <g
       :transform="`translate(${origin.x}, ${origin.y}) rotate(${rotate}) scale(${scale})`"
     >

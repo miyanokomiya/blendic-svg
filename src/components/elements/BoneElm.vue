@@ -59,7 +59,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       :x2="head.x"
       :y2="head.y"
       :stroke-dasharray="`${1.5 * scale} ${6 * scale}`"
-      class="view-only"
+      class="view-only stroke-text"
     />
     <g
       v-if="name"
@@ -71,8 +71,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       dominant-baseline="middle"
       class="view-only"
     >
-      <text fill="#fff" stroke="#fff">{{ name }}</text>
-      <text fill="#000" stroke="none">{{ name }}</text>
+      <text class="fill-background stroke-background">{{ name }}</text>
+      <text class="fill-text" stroke="none">{{ name }}</text>
     </g>
   </g>
 </template>

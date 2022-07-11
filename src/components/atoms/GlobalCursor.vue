@@ -26,9 +26,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       xmlns="http://www.w3.org/2000/svg"
       viewBox="-20 -20 40 40"
       stroke="none"
-      fill="#000"
     >
-      <g :transform="`rotate(${rotate})`">
+      <g :transform="`rotate(${rotate})`" class="stroke-text">
         <circle r="2" />
         <g v-for="r in rotateList" :key="r" :transform="`rotate(${r})`">
           <path d="M20,0L10,-10L10,10z" />
@@ -42,10 +41,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       :style="{ transform: originTransform }"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="-20 -20 40 40"
-      stroke="#000"
     >
-      <line x1="-10" x2="10" />
-      <line y1="-10" y2="10" />
+      <g class="stroke-text">
+        <line x1="-10" x2="10" />
+        <line y1="-10" y2="10" />
+      </g>
     </svg>
   </teleport>
 </template>

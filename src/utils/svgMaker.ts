@@ -181,17 +181,25 @@ export function serializeToAnimatedSvg(
   )
 
   const animG = createSVGElement('g')
-  animG.classList.add(ANIM_G_ID)
-  animG.innerHTML = allElementIds
-    .map((id) =>
-      createAnimationTagsForElement(
-        id,
-        animatedAttributes[id],
-        duration,
-        iteration
+  const animTagMap = new Map(
+    allElementIds
+      .map(
+        (id) =>
+          [
+            id,
+            createAnimationTagsForElement(
+              id,
+              animatedAttributes[id],
+              duration,
+              iteration
+            ),
+          ] as [string, string]
       )
-    )
-    .join('')
+      .filter(([, s]) => !!s)
+  )
+
+  animG.classList.add(ANIM_G_ID)
+  animG.innerHTML = allElementIds.map((id) => animTagMap.get(id) ?? '').join('')
 
   const style = createSVGElement('style')
   style.innerHTML =
@@ -204,7 +212,20 @@ export function serializeToAnimatedSvg(
       duration / 1000
     }s;animation-iteration-count:${iteration};animation-timing-function:linear;}`
 
-  const svg = makeSvg(adjustedSvgRoot, identifierMap, staticAttributes)
+  const staticAttributeOwnerIds = new Set([
+    ...animTagMap.keys(),
+    ...Object.keys(staticAttributes),
+  ])
+  const staticAttributesWithId = Array.from(staticAttributeOwnerIds).reduce<{
+    [id: string]: ElementNodeAttributes
+  }>((p, id) => {
+    p[id] = staticAttributes[id] ?? {}
+    if (animTagMap.has(id)) {
+      p[id].id = id
+    }
+    return p
+  }, {})
+  const svg = makeSvg(adjustedSvgRoot, identifierMap, staticAttributesWithId)
   svg.prepend(animG)
   svg.prepend(style)
   return svg

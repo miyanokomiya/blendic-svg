@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Add new feature to paste `d` of `<path>` text as graph nodes
 
+### Fixed
+- Fix: `animate` tags in exported SVG didn't work due to lack of `id`
+
 ## [0.17.2] - 2022-07-10
 ### Added
 - Reduce animated SVG file size by omitting static attributes from animated tags and styles

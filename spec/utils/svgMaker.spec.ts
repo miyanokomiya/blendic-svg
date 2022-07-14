@@ -112,6 +112,11 @@ describe('utils/svgMaker.ts', () => {
               tag: 'g',
               children: [],
             }),
+            getElementNode({
+              id: 'g_2',
+              tag: 'g',
+              children: [],
+            }),
           ],
         }),
         [
@@ -124,7 +129,12 @@ describe('utils/svgMaker.ts', () => {
 
       expect(svg).toBeInstanceOf(SVGElement)
       expect(svg.classList.value).toBe('test-0')
+      expect(svg.id).toBe('svg_1')
       expect(svg.children[0].tagName.toLowerCase()).toBe('style')
+      expect(svg.children[1].children[0].tagName.toLowerCase()).toBe('animate')
+      expect(svg.children[2].children[0].id).toBe('g_1')
+      // `g_2` doesn't has any animated attribute, so doesn't need to have `id`
+      expect(svg.children[2].children[1].id).not.toBe('g_2')
       const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
       expect(animateG).toBeTruthy()
       expect(animateG.innerHTML).toContain('#svg_1')

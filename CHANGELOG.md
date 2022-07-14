@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Add new feature to paste `d` of `<path>` text as graph nodes
+
+### Fixed
+- Fix: `animate` tags in exported SVG didn't work due to lack of `id`
 
 ## [0.17.2] - 2022-07-10
 ### Added

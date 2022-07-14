@@ -42,6 +42,7 @@ export function useAnimationGraphMode(options: {
 
   startEditMovement: () => void
   startDragging: () => void
+  getCursorPoint: () => IVec2
 
   panView: (val: EditMovement) => void
   setRectangleDragging: (val?: boolean) => void
@@ -82,6 +83,7 @@ export function useAnimationGraphMode(options: {
 
     startEditMovement: options.startEditMovement,
     startDragging: options.startDragging,
+    getCursorPoint: options.getCursorPoint,
 
     setPopupMenuList: options.setPopupMenuList,
     getNodeItemList: options.getNodeItemList,

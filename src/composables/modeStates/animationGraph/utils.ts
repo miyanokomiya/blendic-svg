@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { add, IVec2, sub } from 'okageo'
+import { add, IVec2, multi, sub } from 'okageo'
 import {
   StringItem,
   useClipboard,
@@ -39,6 +39,7 @@ import {
   updateInputConnection,
   validateConnection,
 } from '/@/utils/graphNodes'
+import { generatePathDNodes } from '/@/utils/graphNodes/svgConverter'
 
 export function getEditedNodeMap(
   targetNodeMap: IdMap<GraphNode>,
@@ -203,24 +204,41 @@ export function useGraphNodeClipboard(ctx: AnimationGraphStateContext) {
       if (!item) return
 
       const text: any = await item.getAsString()
-      const availableNodes = mapFilter(
-        clipboardSerializer.deserialize(text),
-        (n) => !!ctx.getGraphNodeModule(n.type)
-      )
 
-      ctx.pasteNodes(
-        toList(
-          duplicateNodes(
-            ctx.getGraphNodeModule,
-            availableNodes,
-            ctx.getNodeMap(),
-            ctx.generateUuid
-          )
-        ).map((n) => ({
-          ...n,
-          position: add(n.position, { x: 20, y: 20 }),
-        }))
-      )
+      try {
+        const availableNodes = mapFilter(
+          clipboardSerializer.deserialize(text),
+          (n) => !!ctx.getGraphNodeModule(n.type)
+        )
+        if (Object.keys(availableNodes).length === 0) return
+
+        const p = ctx.getCursorPoint()
+        const positions = toList(availableNodes).map((n) => n.position)
+        const minX = Math.min(...positions.map((p) => p.x))
+        const minY = Math.min(...positions.map((p) => p.y))
+        const diff = { x: p.x - minX, y: p.y - minY }
+
+        ctx.pasteNodes(
+          toList(
+            duplicateNodes(
+              ctx.getGraphNodeModule,
+              availableNodes,
+              ctx.getNodeMap(),
+              ctx.generateUuid
+            )
+          ).map((n) => ({ ...n, position: add(diff, n.position) }))
+        )
+      } catch {
+        // Try parsing text as a part of SVG
+        const p = ctx.getCursorPoint()
+        const nodes = generatePathDNodes(text)
+        ctx.pasteNodes(
+          nodes.map((n, i) => ({
+            ...n,
+            position: add(p, multi({ x: 0, y: 50 }, i)),
+          }))
+        )
+      }
     }
   )
 }

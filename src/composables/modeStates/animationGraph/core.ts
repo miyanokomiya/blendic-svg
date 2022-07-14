@@ -37,6 +37,7 @@ import { GetGraphNodeModule, NODE_MENU_OPTION } from '/@/utils/graphNodes'
 
 export interface AnimationGraphStateContext extends CanvasStateContext {
   startEditMovement: () => void
+  getCursorPoint: () => IVec2
   getEditMovement: () => EditMovement | undefined
   setEditMovement: (val?: EditMovement) => void
   getGraphNodeModule: GetGraphNodeModule

@@ -1,5 +1,12 @@
-import { nanoid } from 'nanoid'
+import { customAlphabet } from 'nanoid'
+
+const alphabet = 'abcdefghijklmnopqrstuvwxyz'
+const nanoid = customAlphabet(
+  alphabet + alphabet.toUpperCase() + '0123456789-',
+  12
+)
 
 // Avoid `crypto.randomUUID` due to HTTPS limitation
 // Avoid number prefix for DOM ID
-export const generateUuid: () => string = () => `b${nanoid(12)}`
+// This ID should be compatible with CSS selector and SVG ID
+export const generateUuid: () => string = () => `b${nanoid()}`

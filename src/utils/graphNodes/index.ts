@@ -131,7 +131,7 @@ import * as custom_input from './nodes/customInput'
 import * as custom_begin_output from './nodes/customBeginOutput'
 import * as custom_output from './nodes/customOutput'
 
-import { getTransform, IdMap, toMap } from '/@/models'
+import { getTransform, IdMap, toMap, Transform } from '/@/models'
 import {
   extractMap,
   isNotNullish,
@@ -139,6 +139,7 @@ import {
   mapReduce,
   toList,
 } from '/@/utils/commons'
+import { IVec2 } from 'okageo'
 
 const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_frame,
@@ -1616,4 +1617,54 @@ export function completeNodeMap(
       ),
     }
   })
+}
+
+export function inheritOutputValue(
+  fromNodeType: string,
+  outputValue: unknown
+): Partial<GraphNode> {
+  switch (fromNodeType) {
+    case 'scaler':
+      return { data: { value: outputValue } }
+    case 'make_vector2': {
+      const v = outputValue as IVec2
+      return {
+        inputs: { x: { value: v.x }, y: { value: v.y } },
+      }
+    }
+    case 'make_transform': {
+      const v = outputValue as Transform
+      return {
+        inputs: {
+          translate: { value: v.translate },
+          rotate: { value: v.rotate },
+          scale: { value: v.scale },
+          origin: { value: v.origin },
+        },
+      }
+    }
+    case 'color': {
+      const v = outputValue as Transform
+      return { data: { color: v } }
+    }
+    case 'make_color': {
+      const v = outputValue as Transform
+      return {
+        inputs: {
+          h: { value: v.rotate },
+          s: { value: v.translate.x },
+          v: { value: v.translate.y },
+          a: { value: v.scale.x },
+        },
+      }
+    }
+    case 'get_object': {
+      const v = outputValue as string
+      return {
+        data: { object: v },
+      }
+    }
+    default:
+      return {}
+  }
 }

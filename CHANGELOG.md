@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Add new feature to paste `d` of `<path>` text as graph nodes
+- Inherit current input value as much as possible
 
 ### Fixed
 - Fix: `animate` tags in exported SVG didn't work due to lack of `id`

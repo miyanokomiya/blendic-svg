@@ -64,6 +64,7 @@ import {
   isInterfaceChanged,
   completeNodeMap,
   isolateNodes,
+  inheritOutputValue,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -2368,6 +2369,77 @@ describe('src/utils/graphNodes/index.ts', () => {
         }),
         b: createGraphNode('make_transform', { id: 'b' }),
       })
+    })
+  })
+
+  describe('inheritOutputValue', () => {
+    it('should inherit output value', () => {
+      expect(inheritOutputValue('scaler', 1)).toEqual({ data: { value: 1 } })
+      expect(inheritOutputValue('make_vector2', { x: 1, y: 2 })).toEqual({
+        inputs: { x: { value: 1 }, y: { value: 2 } },
+      })
+      expect(
+        inheritOutputValue(
+          'make_transform',
+          getTransform({
+            translate: { x: 1, y: 2 },
+            rotate: 3,
+            scale: { x: 4, y: 5 },
+            origin: { x: 6, y: 7 },
+          })
+        )
+      ).toEqual({
+        inputs: {
+          translate: { value: { x: 1, y: 2 } },
+          rotate: { value: 3 },
+          scale: { value: { x: 4, y: 5 } },
+          origin: { value: { x: 6, y: 7 } },
+        },
+      })
+      expect(
+        inheritOutputValue(
+          'color',
+          getTransform({
+            translate: { x: 1, y: 2 },
+            rotate: 3,
+            scale: { x: 4, y: 5 },
+            origin: { x: 6, y: 7 },
+          })
+        )
+      ).toEqual({
+        data: {
+          color: {
+            translate: { x: 1, y: 2 },
+            rotate: 3,
+            scale: { x: 4, y: 5 },
+            origin: { x: 6, y: 7 },
+          },
+        },
+      })
+      expect(
+        inheritOutputValue(
+          'make_color',
+          getTransform({
+            translate: { x: 1, y: 2 },
+            rotate: 3,
+            scale: { x: 4, y: 5 },
+            origin: { x: 6, y: 7 },
+          })
+        )
+      ).toEqual({
+        inputs: {
+          h: { value: 3 },
+          s: { value: 1 },
+          v: { value: 2 },
+          a: { value: 4 },
+        },
+      })
+      expect(inheritOutputValue('get_object', 'a')).toEqual({
+        data: { object: 'a' },
+      })
+    })
+    it('should return empty object when a type is unacceptable', () => {
+      expect(inheritOutputValue('make_path_m', 1)).toEqual({})
     })
   })
 })

@@ -34,6 +34,7 @@ import {
   getInsertingNodeSuggestionMenuOptions,
   getNodeSuggestionMenuOptions,
   getOutputType,
+  inheritOutputValue,
 } from '/@/utils/graphNodes'
 
 type Options = {
@@ -195,7 +196,14 @@ function onSelectNewNode(
   const position = isDraftInput
     ? { x: options.point.x, y: options.point.y - 10 }
     : { x: options.point.x - struct.width, y: options.point.y - 10 }
-  const node = ctx.addNode(type, { position })
+
+  const outputValue =
+    draft?.type === 'draft-output'
+      ? ctx.getNodeMap()[draft.input.nodeId]?.inputs[draft.input.key]?.value
+      : undefined
+  const attrs = outputValue ? inheritOutputValue(type, outputValue) : {}
+
+  const node = ctx.addNode(type, { ...attrs, position })
   if (!node || !draft) return useDefaultState
 
   // Connect draft edge to created node

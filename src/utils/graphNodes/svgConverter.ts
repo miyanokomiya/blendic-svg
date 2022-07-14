@@ -32,7 +32,7 @@ export function generatePathDNodes(
     const id = generateId()
     const d: GraphNodeInput<string[]> = parentId
       ? { from: { id: parentId, key: 'd' } }
-      : {}
+      : { value: [] }
     parentId = id
 
     switch (c.command) {

@@ -34,7 +34,7 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
           id: '0',
           type: 'make_path_m',
           inputs: {
-            d: {},
+            d: { value: [] },
             relative: { value: false },
             p: { value: { x: 1, y: 2 } },
           },
@@ -60,7 +60,7 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
           id: '0',
           type: 'make_path_l',
           inputs: {
-            d: {},
+            d: { value: [] },
             relative: { value: false },
             p: { value: { x: 1, y: 2 } },
           },
@@ -86,7 +86,7 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
           id: '0',
           type: 'make_path_h',
           inputs: {
-            d: {},
+            d: { value: [] },
             relative: { value: false },
             x: { value: 1 },
           },
@@ -112,7 +112,7 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
           id: '0',
           type: 'make_path_v',
           inputs: {
-            d: {},
+            d: { value: [] },
             relative: { value: false },
             y: { value: 1 },
           },
@@ -140,7 +140,7 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
           id: '0',
           type: 'make_path_q',
           inputs: {
-            d: {},
+            d: { value: [] },
             relative: { value: false },
             c1: { value: { x: 1, y: 2 } },
             p: { value: { x: 3, y: 4 } },
@@ -168,7 +168,7 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
           id: '0',
           type: 'make_path_t',
           inputs: {
-            d: {},
+            d: { value: [] },
             relative: { value: false },
             p: { value: { x: 1, y: 2 } },
           },
@@ -196,7 +196,7 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
           id: '0',
           type: 'make_path_c',
           inputs: {
-            d: {},
+            d: { value: [] },
             relative: { value: false },
             c1: { value: { x: 1, y: 2 } },
             c2: { value: { x: 3, y: 4 } },
@@ -228,7 +228,7 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
           id: '0',
           type: 'make_path_s',
           inputs: {
-            d: {},
+            d: { value: [] },
             relative: { value: false },
             c1: { value: { x: 1, y: 2 } },
             p: { value: { x: 3, y: 4 } },
@@ -258,7 +258,7 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
           id: '0',
           type: 'make_path_a',
           inputs: {
-            d: {},
+            d: { value: [] },
             relative: { value: false },
             rx: { value: 1 },
             ry: { value: 2 },
@@ -294,7 +294,7 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
           id: '0',
           type: 'make_path_z',
           inputs: {
-            d: {},
+            d: { value: [] },
           },
         },
         {

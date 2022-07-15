@@ -57,6 +57,8 @@ import {
   snapPlainGrid,
   gridRound,
   isOppositeSide,
+  getWrapperRect,
+  expandRect,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -667,6 +669,34 @@ describe('src/utils/geometry.ts', () => {
       expect(isRectHitRect({ x: 11, y: 1, width: 1, height: 20 })).toBe(false)
       expect(isRectHitRect({ x: 1, y: -2, width: 20, height: 1 })).toBe(false)
       expect(isRectHitRect({ x: 1, y: 21, width: 20, height: 1 })).toBe(false)
+    })
+  })
+
+  describe('getWrapperRect', () => {
+    it('should return a rectangle to wrap all rectangles', () => {
+      expect(
+        getWrapperRect([
+          { x: 1, y: 2, width: 10, height: 20 },
+          { x: 6, y: 7, width: 10, height: 22 },
+        ])
+      ).toEqual({ x: 1, y: 2, width: 15, height: 27 })
+      expect(
+        getWrapperRect([
+          { x: 1, y: 2, width: 10, height: 20 },
+          { x: 6, y: 7, width: 4, height: 6 },
+        ])
+      ).toEqual({ x: 1, y: 2, width: 10, height: 20 })
+    })
+  })
+
+  describe('expandRect', () => {
+    it('should return expanded rectangle', () => {
+      expect(expandRect({ x: 1, y: 2, width: 10, height: 20 }, 5)).toEqual({
+        x: -4,
+        y: -3,
+        width: 20,
+        height: 30,
+      })
     })
   })
 

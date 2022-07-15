@@ -332,6 +332,25 @@ export function getIsRectHitRectFn(
     )
 }
 
+export function getWrapperRect(rects: IRectangle[]): IRectangle {
+  const xList = rects.flatMap((r) => [r.x, r.x + r.width])
+  const yList = rects.flatMap((r) => [r.y, r.y + r.height])
+  const xMin = Math.min(...xList)
+  const xMax = Math.max(...xList)
+  const yMin = Math.min(...yList)
+  const yMax = Math.max(...yList)
+  return { x: xMin, y: yMin, width: xMax - xMin, height: yMax - yMin }
+}
+
+export function expandRect(rect: IRectangle, padding: number): IRectangle {
+  return {
+    x: rect.x - padding,
+    y: rect.y - padding,
+    width: rect.width + padding * 2,
+    height: rect.height + padding * 2,
+  }
+}
+
 const baseV = { x: 1, y: 0 }
 const baseS = { x: 1, y: 1 }
 export function getTornadoTransformFn(

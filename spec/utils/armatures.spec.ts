@@ -261,6 +261,20 @@ describe('utils/armatures', () => {
     })
   })
 
+  describe('getBoneWrapperRect', () => {
+    it('should return a rectangle wrapping the bone', () => {
+      expect(
+        target.getBoneWrapperRect(
+          getBone({
+            head: { x: 1, y: 2 },
+            tail: { x: 11, y: 7 },
+            transform: getTransform({ scale: { x: 2, y: 2 } }),
+          })
+        )
+      ).toEqual({ x: 1, y: 2, width: 20, height: 10 })
+    })
+  })
+
   describe('fixConnections', () => {
     it("connected: true => connect child's head to parent's tail", () => {
       const parent = getBone({ id: 'parent', tail: { x: 1, y: 2 } })

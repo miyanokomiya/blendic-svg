@@ -76,6 +76,16 @@ describe('src/composables/modeStates/appCanvas/weightMode/defaultState.ts', () =
     })
   })
 
+  describe('keydown', () => {
+    it('!, Home: should execute "setViewport"', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({ type: 'keydown', data: { key: '!' } })
+      expect(ctx.setViewport).toHaveBeenNthCalledWith(1)
+      await sm.handleEvent({ type: 'keydown', data: { key: 'Home' } })
+      expect(ctx.setViewport).toHaveBeenNthCalledWith(2)
+    })
+  })
+
   describe('handle state: pick-bone', () => {
     it('should move to PickingBone', async () => {
       const { sm } = await prepare()

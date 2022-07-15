@@ -1,3 +1,4 @@
+import { Rectangle } from 'okanvas'
 import {
   AppCanvasEvent,
   AppCanvasGroupStateContext,
@@ -35,6 +36,7 @@ type Option = {
 
   requestPointerLock: CanvasStateContext['requestPointerLock']
   exitPointerLock: CanvasStateContext['exitPointerLock']
+  setViewport: (rect?: Rectangle) => void
   panView: CanvasStateContext['panView']
   startDragging: CanvasStateContext['startDragging']
   setRectangleDragging: CanvasStateContext['setRectangleDragging']
@@ -85,6 +87,7 @@ function createObjectContext(options: Option): ObjectStateContext {
 
     generateUuid: generateUuid,
 
+    setViewport: options.setViewport,
     panView: options.panView,
     startDragging: options.startDragging,
     setRectangleDragging: options.setRectangleDragging,
@@ -111,6 +114,7 @@ function createEditContext(options: Option): EditStateContext {
 
     generateUuid: generateUuid,
 
+    setViewport: options.setViewport,
     panView: options.panView,
     startDragging: options.startDragging,
     setRectangleDragging: options.setRectangleDragging,
@@ -218,6 +222,7 @@ function createPoseContext(options: Option): PoseStateContext {
 
     generateUuid: generateUuid,
 
+    setViewport: options.setViewport,
     panView: options.panView,
     startDragging: options.startDragging,
     setRectangleDragging: options.setRectangleDragging,
@@ -258,6 +263,7 @@ function createWeightContext(options: Option): WeightStateContext {
 
     generateUuid: generateUuid,
 
+    setViewport: options.setViewport,
     panView: options.panView,
     startDragging: options.startDragging,
     setRectangleDragging: options.setRectangleDragging,

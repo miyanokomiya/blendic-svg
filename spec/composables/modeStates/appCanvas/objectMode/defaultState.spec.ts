@@ -95,6 +95,14 @@ describe('src/composables/modeStates/appCanvas/objectMode/defaultState.ts', () =
       })
       expect(ctx.deleteArmatures).toHaveBeenNthCalledWith(1)
     })
+
+    it('!, Home: should execute "setViewport"', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({ type: 'keydown', data: { key: '!' } })
+      expect(ctx.setViewport).toHaveBeenNthCalledWith(1)
+      await sm.handleEvent({ type: 'keydown', data: { key: 'Home' } })
+      expect(ctx.setViewport).toHaveBeenNthCalledWith(2)
+    })
   })
 
   describe('selection', () => {

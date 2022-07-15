@@ -284,6 +284,17 @@ export function selectBoneInRect(
   }, {})
 }
 
+export function getBoneWrapperRect(bone: Bone): IRectangle {
+  const transformed = posedTransform(bone, [bone.transform])
+  const h = transformed.head
+  const t = transformed.tail
+  const xMin = Math.min(h.x, t.x)
+  const xMax = Math.max(h.x, t.x)
+  const yMin = Math.min(h.y, t.y)
+  const yMax = Math.max(h.y, t.y)
+  return { x: xMin, y: yMin, width: xMax - xMin, height: yMax - yMin }
+}
+
 export function fixConnection(bones: Bone[], b: Bone): Bone {
   if (!b.parentId && !b.connected) return b
 

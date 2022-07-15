@@ -31,6 +31,8 @@ import { BoneSelectedState } from '/@/models'
 import { useRectangleSelectingState } from '/@/composables/modeStates/appCanvas/editMode/rectangleSelectingState'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { usePickingBoneState } from '/@/composables/modeStates/appCanvas/pickingBoneState'
+import { getWrapperRect } from '/@/utils/geometry'
+import { getBoneWrapperRect } from '/@/utils/armatures'
 
 export function useDefaultState(): EditState {
   return state
@@ -107,6 +109,16 @@ const state: EditState = {
               return useGrabbingState
             }
             return
+          case '!':
+          case 'Home': {
+            const bones = Object.values(ctx.getBones())
+            ctx.setViewport(
+              bones.length > 0
+                ? getWrapperRect(bones.map((bone) => getBoneWrapperRect(bone)))
+                : undefined
+            )
+            return
+          }
           default:
             return
         }

@@ -62,8 +62,14 @@ const state: ObjectState = {
               ctx.deleteArmatures()
             }
             return
+          case '!':
+          case 'Home': {
+            ctx.setViewport()
+            return
+          }
+          default:
+            return
         }
-        return
       case 'selection':
         updateCommandExams(ctx)
         return

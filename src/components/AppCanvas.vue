@@ -197,6 +197,7 @@ export default defineComponent({
         canvas.endMoving()
       },
 
+      setViewport: (val) => canvas.setViewport(val),
       panView: (val) => canvas.viewMove(val),
       startDragging: () => canvas.startDragging(),
       setRectangleDragging: (val) => canvas.setRectangleDragging(val),

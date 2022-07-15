@@ -40,6 +40,8 @@ import { duplicateNodes } from '/@/utils/graphNodes'
 import { add } from 'okageo'
 import { PointerDownEvent } from '/@/composables/modeStates/core'
 import { useCuttingEdgeState } from '/@/composables/modeStates/animationGraph/cuttingEdgeState'
+import { getGraphNodeRect } from '/@/utils/helpers'
+import { getWrapperRect } from '/@/utils/geometry'
 
 export function useDefaultState(): AnimationGraphState {
   return state
@@ -105,6 +107,20 @@ const state: AnimationGraphState = {
           case 'x':
             ctx.deleteNodes()
             return
+          case '!':
+          case 'Home': {
+            const nodes = Object.values(ctx.getNodeMap())
+            ctx.setViewport(
+              nodes.length
+                ? getWrapperRect(
+                    nodes.map((node) =>
+                      getGraphNodeRect(ctx.getGraphNodeModule, node)
+                    )
+                  )
+                : undefined
+            )
+            return
+          }
         }
         return
       case 'copy': {

@@ -193,6 +193,7 @@ export default defineComponent({
       startDragging: () => props.canvas.startDragging(),
       getCursorPoint: () =>
         props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+      setViewport: (val) => props.canvas.setViewport(val),
       panView: (val) => props.canvas.viewMove(val),
       setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
       getDraggedRectangle: () => props.canvas.draggedRectangle.value,

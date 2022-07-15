@@ -21,7 +21,7 @@ import { ref, computed, Ref, provide, inject } from 'vue'
 import { IVec2, multi, sub, add, getRectCenter, IRectangle } from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import { scaleRate } from '../models'
-import { getNormalRectangle } from '/@/utils/geometry'
+import { expandRect, getNormalRectangle } from '/@/utils/geometry'
 import { Size } from 'okanvas'
 import { EditMovement } from '/@/composables/modes/types'
 
@@ -329,7 +329,7 @@ export function useSvgCanvas(
     mousePoint.value = val
   }
 
-  const viewCanvasRect = computed(() => ({
+  const viewCanvasRect = computed<IRectangle>(() => ({
     x: viewOrigin.value.x,
     y: viewOrigin.value.y,
     width: viewSize.value.width * scale.value,
@@ -446,6 +446,17 @@ export function useSvgCanvas(
         multi({ x: size.width, y: size.height }, 1 / 2)
       )
       scale.value = ret.scale
+    },
+    setViewport(rect: IRectangle) {
+      const ret = centerizeView(
+        expandRect(rect, 10 / scale.value),
+        viewSize.value
+      )
+      scale.value = ret.scale
+      viewOrigin.value = add(
+        viewOrigin.value,
+        sub(getRectCenter(rect), getRectCenter(viewCanvasRect.value))
+      )
     },
 
     setRectangleDragging,

@@ -132,7 +132,6 @@ import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { useMenuList } from '/@/composables/menuList'
 import { useAnimationStore } from '/@/store/animation'
 import { useElementStore } from '/@/store/element'
-import { Rectangle } from 'okanvas'
 
 export default defineComponent({
   components: {
@@ -198,9 +197,7 @@ export default defineComponent({
         canvas.endMoving()
       },
 
-      setViewport: (rect: Rectangle) => {
-        canvas.setViewport(rect)
-      },
+      setViewport: (val) => canvas.setViewport(val),
       panView: (val) => canvas.viewMove(val),
       startDragging: () => canvas.startDragging(),
       setRectangleDragging: (val) => canvas.setRectangleDragging(val),

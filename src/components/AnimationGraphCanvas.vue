@@ -103,7 +103,6 @@ import { IVec2 } from 'okageo'
 import { useMenuList } from '/@/composables/menuList'
 import { NODE_MENU_OPTIONS_SRC } from '/@/utils/graphNodes'
 import { EdgeCutter } from '/@/composables/modeStates/animationGraph/core'
-import { Rectangle } from 'okanvas'
 
 export default defineComponent({
   components: {
@@ -194,9 +193,7 @@ export default defineComponent({
       startDragging: () => props.canvas.startDragging(),
       getCursorPoint: () =>
         props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-      setViewport: (rect: Rectangle) => {
-        props.canvas.setViewport(rect)
-      },
+      setViewport: (val) => props.canvas.setViewport(val),
       panView: (val) => props.canvas.viewMove(val),
       setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
       getDraggedRectangle: () => props.canvas.draggedRectangle.value,

@@ -44,7 +44,7 @@ export function useAnimationGraphMode(options: {
   startDragging: () => void
   getCursorPoint: () => IVec2
 
-  setViewport: (rect: Rectangle) => void
+  setViewport: (rect?: Rectangle) => void
   panView: (val: EditMovement) => void
   setRectangleDragging: (val?: boolean) => void
   getDraggedRectangle: () => Rectangle | undefined

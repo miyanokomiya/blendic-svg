@@ -36,7 +36,7 @@ type Option = {
 
   requestPointerLock: CanvasStateContext['requestPointerLock']
   exitPointerLock: CanvasStateContext['exitPointerLock']
-  setViewport: (rect: Rectangle) => void
+  setViewport: (rect?: Rectangle) => void
   panView: CanvasStateContext['panView']
   startDragging: CanvasStateContext['startDragging']
   setRectangleDragging: CanvasStateContext['setRectangleDragging']

@@ -386,6 +386,16 @@ export function useSvgCanvas(
     }
   }
 
+  function adjustToCenter() {
+    const size = viewSize.value
+    const ret = centerizeView(size, size)
+    viewOrigin.value = sub(
+      ret.viewOrigin,
+      multi({ x: size.width, y: size.height }, 1 / 2)
+    )
+    scale.value = ret.scale
+  }
+
   return {
     viewSize,
     setViewSize,
@@ -438,16 +448,13 @@ export function useSvgCanvas(
         )
       )
     },
-    adjustToCenter() {
-      const size = viewSize.value
-      const ret = centerizeView(size, size)
-      viewOrigin.value = sub(
-        ret.viewOrigin,
-        multi({ x: size.width, y: size.height }, 1 / 2)
-      )
-      scale.value = ret.scale
-    },
-    setViewport(rect: IRectangle) {
+    adjustToCenter,
+    setViewport(rect?: IRectangle) {
+      if (!rect) {
+        adjustToCenter()
+        return
+      }
+
       const ret = centerizeView(
         expandRect(rect, 10 / scale.value),
         viewSize.value

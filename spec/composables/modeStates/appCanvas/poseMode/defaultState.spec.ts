@@ -20,6 +20,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 import { getMockPoseCtx } from 'spec/composables/modeStates/appCanvas/mocks'
 import { useDefaultState } from 'src/composables/modeStates/appCanvas/poseMode/defaultState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
+import { getBone } from '/@/models'
 
 describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => {
   async function prepare() {
@@ -147,6 +148,20 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
         data: { key: 'i' },
       })
       expect(sm.getStateSummary().label).toBe('Inserting')
+    })
+
+    it('!, Home: should execute "setViewport"', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({ type: 'keydown', data: { key: '!' } })
+      expect(ctx.setViewport).toHaveBeenNthCalledWith(1, undefined)
+      ctx.getBones.mockReturnValue({
+        a: getBone({ tail: { x: 10, y: 5 } }),
+      })
+      const rect = { x: 0, y: 0, width: 10, height: 5 }
+      await sm.handleEvent({ type: 'keydown', data: { key: '!' } })
+      expect(ctx.setViewport).toHaveBeenNthCalledWith(2, rect)
+      await sm.handleEvent({ type: 'keydown', data: { key: 'Home' } })
+      expect(ctx.setViewport).toHaveBeenNthCalledWith(3, rect)
     })
   })
 

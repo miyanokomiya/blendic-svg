@@ -32,7 +32,7 @@ import type {
 export interface CanvasStateContext extends ModeStateContextBase {
   generateUuid: () => string
 
-  setViewport: (rect: Rectangle) => void
+  setViewport: (rect?: Rectangle) => void
   panView: (val: EditMovement) => void
   startDragging: () => void
   setRectangleDragging: (val?: boolean) => void

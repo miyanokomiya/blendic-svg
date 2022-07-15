@@ -48,6 +48,16 @@ const state: WeightState = {
           default:
             return
         }
+      case 'keydown':
+        switch (event.data.key) {
+          case '!':
+          case 'Home': {
+            ctx.setViewport()
+            return
+          }
+          default:
+            return
+        }
       case 'state':
         switch (event.data.name) {
           case 'pick-bone':

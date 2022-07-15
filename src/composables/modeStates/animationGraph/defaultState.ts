@@ -109,13 +109,16 @@ const state: AnimationGraphState = {
             return
           case '!':
           case 'Home': {
-            const nodes = ctx.getNodeMap()
-            const wholeRect = getWrapperRect(
-              Object.values(nodes).map((node) =>
-                getGraphNodeRect(ctx.getGraphNodeModule, node)
-              )
+            const nodes = Object.values(ctx.getNodeMap())
+            ctx.setViewport(
+              nodes.length
+                ? getWrapperRect(
+                    nodes.map((node) =>
+                      getGraphNodeRect(ctx.getGraphNodeModule, node)
+                    )
+                  )
+                : undefined
             )
-            ctx.setViewport(wholeRect)
             return
           }
         }

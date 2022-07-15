@@ -29,7 +29,9 @@ import { useRectangleSelectingState } from '/@/composables/modeStates/appCanvas/
 import { useRotatingState } from '/@/composables/modeStates/appCanvas/poseMode/rotatingState'
 import { useScalingState } from '/@/composables/modeStates/appCanvas/poseMode/scalingState'
 import { usePanningState } from '/@/composables/modeStates/commons'
+import { getBoneWrapperRect } from '/@/utils/armatures'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
+import { getWrapperRect } from '/@/utils/geometry'
 
 export function useDefaultState(): PoseState {
   return state
@@ -90,6 +92,16 @@ const state: PoseState = {
             if (ctx.getLastSelectedBoneId() && point) {
               return () => useInsertingState({ point })
             }
+            return
+          }
+          case '!':
+          case 'Home': {
+            const bones = Object.values(ctx.getBones())
+            ctx.setViewport(
+              bones.length > 0
+                ? getWrapperRect(bones.map((bone) => getBoneWrapperRect(bone)))
+                : undefined
+            )
             return
           }
           default:

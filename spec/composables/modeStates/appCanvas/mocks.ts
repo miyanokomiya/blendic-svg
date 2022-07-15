@@ -25,6 +25,7 @@ export function getMockObjectCtx() {
     setCommandExams: jest.fn(),
     pickBone: jest.fn(),
     startPickBone: jest.fn(),
+    setViewport: jest.fn(),
 
     addArmature: jest.fn(),
     getArmatures: jest.fn().mockReturnValue({}),
@@ -45,6 +46,7 @@ export function getMockEditCtx() {
     getDraggedRectangle: jest.fn(),
     pickBone: jest.fn(),
     startPickBone: jest.fn(),
+    setViewport: jest.fn(),
 
     setToolMenuGroups: jest.fn(),
     selectBone: jest.fn(),
@@ -80,6 +82,7 @@ export function getMockPoseCtx() {
     getDraggedRectangle: jest.fn(),
     pickBone: jest.fn(),
     startPickBone: jest.fn(),
+    setViewport: jest.fn(),
 
     setToolMenuGroups: jest.fn(),
     selectBone: jest.fn(),
@@ -106,6 +109,7 @@ export function getMockWeightCtx() {
     setPopupMenuList: jest.fn(),
     pickBone: jest.fn(),
     startPickBone: jest.fn(),
+    setViewport: jest.fn(),
 
     selectElement: jest.fn(),
   } as any

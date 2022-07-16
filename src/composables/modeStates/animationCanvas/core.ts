@@ -19,12 +19,9 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 import { IVec2 } from 'okageo'
 import { EditMovement } from '/@/composables/modes/types'
-import { ActionStateContext } from '/@/composables/modeStates/animationCanvas/actionMode/core'
-import { GraphStateContext } from '/@/composables/modeStates/animationCanvas/graphMode/core'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
 import type {
   ModeStateBase,
-  ModeStateContextBase,
   ModeStateEvent,
   ModeStateEventBase,
 } from '/@/composables/modeStates/core'
@@ -55,18 +52,6 @@ export interface AnimationCanvasStateContext extends CanvasStateContext {
 
 export interface AnimationCanvasState
   extends ModeStateBase<AnimationCanvasStateContext, AnimationCanvasEvent> {}
-
-export interface AnimationCanvasGroupStateContext extends ModeStateContextBase {
-  getActionContext: () => ActionStateContext
-  getGraphContext: () => GraphStateContext
-  toggleMode: (ctrl?: boolean) => void
-}
-
-export interface AnimationCanvasGroupState
-  extends ModeStateBase<
-    AnimationCanvasGroupStateContext,
-    AnimationCanvasEvent
-  > {}
 
 export type AnimationCanvasEvent = ModeStateEvent | ChangeSelectionEvent
 

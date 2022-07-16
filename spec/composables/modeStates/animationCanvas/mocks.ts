@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-export function getMockActionCtx() {
+function getMockCommonCtx() {
   return {
     startDragging: jest.fn(),
     requestPointerLock: jest.fn(),
@@ -44,29 +44,14 @@ export function getMockActionCtx() {
   } as any
 }
 
-export function getMockGraphCtx() {
-  return {
-    startDragging: jest.fn(),
-    requestPointerLock: jest.fn(),
-    exitPointerLock: jest.fn(),
-    setCommandExams: jest.fn(),
-    setViewport: jest.fn(),
-    startEditMovement: jest.fn(),
-    getCursorPoint: jest.fn(),
-    getEditMovement: jest.fn(),
-    setEditMovement: jest.fn(),
-    completeEdit: jest.fn(),
+export function getMockActionCtx() {
+  return getMockCommonCtx()
+}
 
-    setPopupMenuList: jest.fn(),
-    generateSeriesKey: jest.fn().mockReturnValue('mock-key'),
-    getKeyframes: jest.fn().mockReturnValue({}),
-    getLastSelectedKeyframeId: jest.fn().mockReturnValue(''),
-    getSelectedKeyframes: jest.fn().mockReturnValue({}),
-    selectKeyframe: jest.fn(),
-    selectAllKeyframes: jest.fn(),
-    deleteKeyframes: jest.fn(),
-    updateKeyframes: jest.fn(),
-    setCurrentFrame: jest.fn(),
-    setTmpKeyframes: jest.fn(),
-  } as any
+export function getMockGraphCtx() {
+  return getMockCommonCtx()
+}
+
+export function getMockLabelCtx() {
+  return getMockCommonCtx()
 }

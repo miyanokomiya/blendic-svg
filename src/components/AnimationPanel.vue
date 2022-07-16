@@ -80,7 +80,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       dense
     >
       <template #left="{ size }">
-        <TimelineCanvas class="label-canvas" :canvas="labelCanvas">
+        <TimelineCanvas
+          class="label-canvas"
+          :canvas="labelCanvas"
+          canvas-type="label"
+        >
           <template #default="{ scale, viewOrigin }">
             <g
               :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
@@ -109,7 +113,41 @@ Copyright (C) 2021, Tomoya Komiyama.
         >
           <template #left>
             <div class="timeline-canvas-inner">
-              <TimelineCanvas :canvas="currentCanvas">
+              <TimelineCanvas
+                v-if="canvasType === 'action'"
+                :canvas="currentCanvas"
+                canvas-type="action"
+              >
+                <template #default="{ scale, viewOrigin, viewSize }">
+                  <g :transform="`translate(0, ${viewOrigin.y})`">
+                    <TimelineAxis
+                      :scale="scale"
+                      :origin-x="viewOrigin.x"
+                      :view-width="viewSize.width"
+                      :current-frame="currentFrame"
+                      :end-frame="endFrame"
+                      :header-height="labelHeight"
+                    >
+                      <KeyframeGroup
+                        :scale="scale"
+                        :keyframe-map-by-frame="keyframeMapByFrame"
+                        :target-list="selectedTargetSummaryList"
+                        :target-ids="selectedTargetIdList"
+                        :selected-keyframe-map="selectedKeyframeMap"
+                        :scroll-y="viewOrigin.y"
+                        :target-expanded-map="expandedMap"
+                        :target-top-map="targetTopMap"
+                        :height="labelHeight"
+                      />
+                    </TimelineAxis>
+                  </g>
+                </template>
+              </TimelineCanvas>
+              <TimelineCanvas
+                v-else
+                :canvas="currentCanvas"
+                canvas-type="graph"
+              >
                 <template #default="{ scale, viewOrigin, viewSize }">
                   <g
                     v-if="canvasType === 'graph'"
@@ -131,19 +169,7 @@ Copyright (C) 2021, Tomoya Komiyama.
                       :end-frame="endFrame"
                       :header-height="labelHeight"
                     >
-                      <KeyframeGroup
-                        v-if="canvasType === 'action'"
-                        :scale="scale"
-                        :keyframe-map-by-frame="keyframeMapByFrame"
-                        :target-list="selectedTargetSummaryList"
-                        :target-ids="selectedTargetIdList"
-                        :selected-keyframe-map="selectedKeyframeMap"
-                        :scroll-y="viewOrigin.y"
-                        :target-expanded-map="expandedMap"
-                        :target-top-map="targetTopMap"
-                        :height="labelHeight"
-                      />
-                      <g v-else :transform="`translate(0, ${-viewOrigin.y})`">
+                      <g :transform="`translate(0, ${-viewOrigin.y})`">
                         <GraphKeyframes
                           :keyframe-map-by-frame="keyframeMapByFrame"
                           :selected-keyframe-map="selectedKeyframeMap"

@@ -56,11 +56,7 @@ import { logRound, mapVec } from '/@/utils/geometry'
 import { useMenuList } from '/@/composables/menuList'
 import { ActionStateContext } from '/@/composables/modeStates/animationCanvas/actionMode/core'
 import { IndexStore } from '/@/store'
-import {
-  AnimationCanvasEvent,
-  AnimationCanvasGroupStateContext,
-  AnimationCanvasStateContext,
-} from '/@/composables/modeStates/animationCanvas/core'
+import { AnimationCanvasStateContext } from '/@/composables/modeStates/animationCanvas/core'
 import { Rectangle } from 'okanvas'
 import { GraphStateContext } from '/@/composables/modeStates/animationCanvas/graphMode/core'
 import {
@@ -68,7 +64,9 @@ import {
   useModeStateMachine,
 } from '/@/composables/modeStates/core'
 import { generateUuid } from '/@/utils/random'
-import { useActionGroupState } from '/@/composables/modeStates/animationCanvas/actionGroupState'
+import { useDefaultState as useActionDefaultState } from '/@/composables/modeStates/animationCanvas/actionMode/defaultState'
+import { useDefaultState as useGraphDefaultState } from '/@/composables/modeStates/animationCanvas/graphMode/defaultState'
+import { useDefaultState as useLabelDefaultState } from '/@/composables/modeStates/animationCanvas/labelMode/defaultState'
 
 const notNeedLock = { needLock: false }
 
@@ -507,9 +505,13 @@ export function useKeyframeEditMode(
   }
 }
 
+export type AnimationCanvasType = 'label' | 'action' | 'graph'
+
 type Option = {
   indexStore: IndexStore
   animationStore: AnimationStore
+
+  canvasType: AnimationCanvasType
 
   requestPointerLock: AnimationCanvasStateContext['requestPointerLock']
   exitPointerLock: AnimationCanvasStateContext['exitPointerLock']
@@ -525,21 +527,28 @@ type Option = {
 }
 
 export function useAnimationStateMachine(options: Option) {
-  const actionCtx = createActionContext(options)
-  const graphCtx = createGraphContext(options)
-
-  const ctx: AnimationCanvasGroupStateContext = {
-    ...createBaseContext(options),
-    getActionContext: () => actionCtx,
-    getGraphContext: () => graphCtx,
-    toggleMode: () => {},
+  if (options.canvasType === 'graph') {
+    return {
+      sm: useModeStateMachine(
+        createGraphContext(options),
+        useGraphDefaultState
+      ),
+    }
+  } else if (options.canvasType === 'label') {
+    return {
+      sm: useModeStateMachine(
+        createGraphContext(options),
+        useLabelDefaultState
+      ),
+    }
+  } else {
+    return {
+      sm: useModeStateMachine(
+        createActionContext(options),
+        useActionDefaultState
+      ),
+    }
   }
-
-  const sm = useModeStateMachine<
-    AnimationCanvasGroupStateContext,
-    AnimationCanvasEvent
-  >(ctx, useActionGroupState)
-  return { sm }
 }
 
 function createActionContext(options: Option): ActionStateContext {

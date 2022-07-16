@@ -64,7 +64,10 @@ import { CommandExam, PopupMenuItem } from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
 import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { useCanvasElement } from '/@/composables/canvasElement'
-import { useAnimationStateMachine } from '/@/composables/modes/keyframeEditMode'
+import {
+  AnimationCanvasType,
+  useAnimationStateMachine,
+} from '/@/composables/modes/keyframeEditMode'
 import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
 import { useMenuList } from '/@/composables/menuList'
@@ -75,6 +78,10 @@ export default defineComponent({
   props: {
     canvas: {
       type: Object as PropType<ReturnType<typeof useSvgCanvas>>,
+      required: true,
+    },
+    canvasType: {
+      type: String as PropType<AnimationCanvasType>,
       required: true,
     },
   },
@@ -105,6 +112,7 @@ export default defineComponent({
     const mode = useAnimationStateMachine({
       indexStore: useStore(),
       animationStore,
+      canvasType: props.canvasType,
       requestPointerLock: () => {
         if (!svg.value) return
         props.canvas.startMoving()

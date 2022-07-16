@@ -62,6 +62,15 @@ describe('src/composables/modeStates/animationCanvas/actionMode/defaultState.ts'
         expect.anything()
       )
     })
+    it('frame-control: should move to "MovingFrame"', async () => {
+      const { sm } = await prepare()
+      await sm.handleEvent({
+        type: 'pointerdown',
+        target: { type: 'frame-control', id: '' },
+        data: { point: { x: 0, y: 0 }, options: { button: 0 } },
+      })
+      expect(sm.getStateSummary().label).toBe('MovingFrame')
+    })
   })
 
   describe('handle pointerdown: button 1', () => {
@@ -102,6 +111,24 @@ describe('src/composables/modeStates/animationCanvas/actionMode/defaultState.ts'
         data: { key: 'x' },
       })
       expect(ctx.deleteKeyframes).toHaveBeenCalled()
+    })
+
+    it('x: should move to "Grabbing" if any keyframes are selected', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({
+        type: 'keydown',
+        point: { x: 10, y: 20 },
+        data: { key: 'g' },
+      })
+      expect(sm.getStateSummary().label).toBe('Default')
+
+      ctx.getLastSelectedKeyframeId.mockReturnValue('a')
+      await sm.handleEvent({
+        type: 'keydown',
+        point: { x: 10, y: 20 },
+        data: { key: 'g' },
+      })
+      expect(sm.getStateSummary().label).toBe('Grabbing')
     })
 
     it('!, Home: should execute "setViewport"', async () => {

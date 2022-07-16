@@ -19,32 +19,48 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 export function getMockActionCtx() {
   return {
+    startDragging: jest.fn(),
     requestPointerLock: jest.fn(),
     exitPointerLock: jest.fn(),
     setCommandExams: jest.fn(),
     setViewport: jest.fn(),
+    startEditMovement: jest.fn(),
+    getCursorPoint: jest.fn(),
+    getEditMovement: jest.fn(),
+    setEditMovement: jest.fn(),
+    completeEdit: jest.fn(),
 
+    generateSeriesKey: jest.fn().mockReturnValue('mock-key'),
     getKeyframes: jest.fn().mockReturnValue({}),
     getLastSelectedKeyframeId: jest.fn().mockReturnValue(''),
     getSelectedKeyframes: jest.fn().mockReturnValue({}),
     selectKeyframe: jest.fn(),
     selectAllKeyframes: jest.fn(),
     deleteKeyframes: jest.fn(),
+    setCurrentFrame: jest.fn(),
   } as any
 }
 
 export function getMockGraphCtx() {
   return {
+    startDragging: jest.fn(),
     requestPointerLock: jest.fn(),
     exitPointerLock: jest.fn(),
     setCommandExams: jest.fn(),
     setViewport: jest.fn(),
+    startEditMovement: jest.fn(),
+    getCursorPoint: jest.fn(),
+    getEditMovement: jest.fn(),
+    setEditMovement: jest.fn(),
+    completeEdit: jest.fn(),
 
+    generateSeriesKey: jest.fn().mockReturnValue('mock-key'),
     getKeyframes: jest.fn().mockReturnValue({}),
     getLastSelectedKeyframeId: jest.fn().mockReturnValue(''),
     getSelectedKeyframes: jest.fn().mockReturnValue({}),
     selectKeyframe: jest.fn(),
     selectAllKeyframes: jest.fn(),
     deleteKeyframes: jest.fn(),
+    setCurrentFrame: jest.fn(),
   } as any
 }

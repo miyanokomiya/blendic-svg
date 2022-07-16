@@ -22,6 +22,8 @@ import {
   ActionStateContext,
 } from '/@/composables/modeStates/animationCanvas/actionMode/core'
 import { usePanningState } from '/@/composables/modeStates/commons'
+import { useGrabbingState } from '/@/composables/modeStates/animationCanvas/actionMode/grabbingState'
+import { useMovingFrameState } from '/@/composables/modeStates/animationCanvas/movingFrameState'
 
 export function useDefaultState(): ActionState {
   return state
@@ -39,9 +41,13 @@ const state: ActionState = {
           case 0:
             switch (event.target.type) {
               case 'keyframe-body':
-                return ctx.selectKeyframe(event.target.id, event.data.options)
+                ctx.selectKeyframe(event.target.id, event.data.options)
+                return
+              case 'frame-control':
+                return useMovingFrameState
               default:
-                return ctx.selectKeyframe()
+                ctx.selectKeyframe()
+                return
             }
           case 1:
             return usePanningState
@@ -55,6 +61,11 @@ const state: ActionState = {
           case 'x':
             if (ctx.getLastSelectedKeyframeId()) {
               ctx.deleteKeyframes()
+            }
+            return
+          case 'g':
+            if (ctx.getLastSelectedKeyframeId()) {
+              return useGrabbingState
             }
             return
           case '!':

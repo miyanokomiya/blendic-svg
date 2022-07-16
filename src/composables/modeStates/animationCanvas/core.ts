@@ -17,6 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { IVec2 } from 'okageo'
+import { EditMovement } from '/@/composables/modes/types'
 import { ActionStateContext } from '/@/composables/modeStates/animationCanvas/actionMode/core'
 import { GraphStateContext } from '/@/composables/modeStates/animationCanvas/graphMode/core'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
@@ -27,7 +29,15 @@ import type {
   ModeStateEventBase,
 } from '/@/composables/modeStates/core'
 
-export interface AnimationCanvasStateContext extends CanvasStateContext {}
+export interface AnimationCanvasStateContext extends CanvasStateContext {
+  generateSeriesKey: () => string
+  startEditMovement: () => void
+  getCursorPoint: () => IVec2
+  getEditMovement: () => EditMovement | undefined
+  setEditMovement: (val?: EditMovement) => void
+  completeEdit: () => void
+  setCurrentFrame: (val: number, seriesKey?: string) => void
+}
 
 export interface AnimationCanvasState
   extends ModeStateBase<AnimationCanvasStateContext, AnimationCanvasEvent> {}

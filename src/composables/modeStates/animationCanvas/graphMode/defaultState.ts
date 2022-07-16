@@ -22,6 +22,8 @@ import {
   GraphStateContext,
 } from '/@/composables/modeStates/animationCanvas/graphMode/core'
 import { usePanningState } from '/@/composables/modeStates/commons'
+import { useMovingFrameState } from '/@/composables/modeStates/animationCanvas/movingFrameState'
+import { useChangingCurveTypeState } from '/@/composables/modeStates/animationCanvas/changingCurveTypeState'
 
 export function useDefaultState(): GraphState {
   return state
@@ -40,6 +42,8 @@ const state: GraphState = {
             switch (event.target.type) {
               case 'keyframe-body':
                 return ctx.selectKeyframe(event.target.id, event.data.options)
+              case 'frame-control':
+                return useMovingFrameState
               default:
                 return ctx.selectKeyframe()
             }
@@ -55,6 +59,14 @@ const state: GraphState = {
           case 'x':
             if (ctx.getLastSelectedKeyframeId()) {
               ctx.deleteKeyframes()
+            }
+            return
+          case 't':
+            if (ctx.getLastSelectedKeyframeId()) {
+              const point = event.point
+              return point
+                ? () => useChangingCurveTypeState({ point })
+                : undefined
             }
             return
           case '!':

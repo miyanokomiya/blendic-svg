@@ -104,6 +104,24 @@ describe('src/composables/modeStates/animationCanvas/graphMode/defaultState.ts',
       expect(ctx.deleteKeyframes).toHaveBeenCalled()
     })
 
+    it('t: should move to "ChangingCurveType" if any keyframes are selected', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({
+        type: 'keydown',
+        point: { x: 10, y: 20 },
+        data: { key: 't' },
+      })
+      expect(sm.getStateSummary().label).toBe('Default')
+
+      ctx.getLastSelectedKeyframeId.mockReturnValue('a')
+      await sm.handleEvent({
+        type: 'keydown',
+        point: { x: 10, y: 20 },
+        data: { key: 't' },
+      })
+      expect(sm.getStateSummary().label).toBe('ChangingCurveType')
+    })
+
     it('!, Home: should execute "setViewport"', async () => {
       const { sm, ctx } = await prepare()
       await sm.handleEvent({ type: 'keydown', data: { key: '!' } })

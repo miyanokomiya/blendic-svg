@@ -30,6 +30,7 @@ export function getMockActionCtx() {
     setEditMovement: jest.fn(),
     completeEdit: jest.fn(),
 
+    setPopupMenuList: jest.fn(),
     generateSeriesKey: jest.fn().mockReturnValue('mock-key'),
     getKeyframes: jest.fn().mockReturnValue({}),
     getLastSelectedKeyframeId: jest.fn().mockReturnValue(''),
@@ -37,6 +38,7 @@ export function getMockActionCtx() {
     selectKeyframe: jest.fn(),
     selectAllKeyframes: jest.fn(),
     deleteKeyframes: jest.fn(),
+    updateKeyframes: jest.fn(),
     setCurrentFrame: jest.fn(),
   } as any
 }
@@ -54,6 +56,7 @@ export function getMockGraphCtx() {
     setEditMovement: jest.fn(),
     completeEdit: jest.fn(),
 
+    setPopupMenuList: jest.fn(),
     generateSeriesKey: jest.fn().mockReturnValue('mock-key'),
     getKeyframes: jest.fn().mockReturnValue({}),
     getLastSelectedKeyframeId: jest.fn().mockReturnValue(''),
@@ -61,6 +64,7 @@ export function getMockGraphCtx() {
     selectKeyframe: jest.fn(),
     selectAllKeyframes: jest.fn(),
     deleteKeyframes: jest.fn(),
+    updateKeyframes: jest.fn(),
     setCurrentFrame: jest.fn(),
   } as any
 }

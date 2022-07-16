@@ -24,6 +24,7 @@ import {
 import { usePanningState } from '/@/composables/modeStates/commons'
 import { useGrabbingState } from '/@/composables/modeStates/animationCanvas/actionMode/grabbingState'
 import { useMovingFrameState } from '/@/composables/modeStates/animationCanvas/movingFrameState'
+import { useChangingCurveTypeState } from '/@/composables/modeStates/animationCanvas/changingCurveTypeState'
 
 export function useDefaultState(): ActionState {
   return state
@@ -66,6 +67,14 @@ const state: ActionState = {
           case 'g':
             if (ctx.getLastSelectedKeyframeId()) {
               return useGrabbingState
+            }
+            return
+          case 't':
+            if (ctx.getLastSelectedKeyframeId()) {
+              const point = event.point
+              return point
+                ? () => useChangingCurveTypeState({ point })
+                : undefined
             }
             return
           case '!':

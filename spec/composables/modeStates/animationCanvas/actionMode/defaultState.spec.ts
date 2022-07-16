@@ -113,7 +113,7 @@ describe('src/composables/modeStates/animationCanvas/actionMode/defaultState.ts'
       expect(ctx.deleteKeyframes).toHaveBeenCalled()
     })
 
-    it('x: should move to "Grabbing" if any keyframes are selected', async () => {
+    it('g: should move to "Grabbing" if any keyframes are selected', async () => {
       const { sm, ctx } = await prepare()
       await sm.handleEvent({
         type: 'keydown',
@@ -129,6 +129,24 @@ describe('src/composables/modeStates/animationCanvas/actionMode/defaultState.ts'
         data: { key: 'g' },
       })
       expect(sm.getStateSummary().label).toBe('Grabbing')
+    })
+
+    it('t: should move to "ChangingCurveType" if any keyframes are selected', async () => {
+      const { sm, ctx } = await prepare()
+      await sm.handleEvent({
+        type: 'keydown',
+        point: { x: 10, y: 20 },
+        data: { key: 't' },
+      })
+      expect(sm.getStateSummary().label).toBe('Default')
+
+      ctx.getLastSelectedKeyframeId.mockReturnValue('a')
+      await sm.handleEvent({
+        type: 'keydown',
+        point: { x: 10, y: 20 },
+        data: { key: 't' },
+      })
+      expect(sm.getStateSummary().label).toBe('ChangingCurveType')
     })
 
     it('!, Home: should execute "setViewport"', async () => {

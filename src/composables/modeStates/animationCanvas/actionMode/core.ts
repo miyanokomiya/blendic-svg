@@ -22,18 +22,8 @@ import {
   AnimationCanvasStateContext,
 } from '/@/composables/modeStates/animationCanvas/core'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
-import { IdMap } from '/@/models'
-import { KeyframeBase } from '/@/models/keyframe'
-import { SelectOptions } from '/@/composables/modes/types'
 
-export interface ActionStateContext extends AnimationCanvasStateContext {
-  getKeyframes: () => IdMap<KeyframeBase>
-  getLastSelectedKeyframeId: () => string | undefined
-  getSelectedKeyframes: () => IdMap<KeyframeBase>
-  selectKeyframe: (id?: string, options?: SelectOptions) => void
-  selectAllKeyframes: () => void
-  deleteKeyframes: () => void
-}
+export interface ActionStateContext extends AnimationCanvasStateContext {}
 
 export interface ActionState
   extends ModeStateBase<ActionStateContext, AnimationCanvasEvent> {}

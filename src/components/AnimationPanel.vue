@@ -181,10 +181,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                   </g>
                 </template>
               </TimelineCanvas>
-              <CommandExamPanel
-                class="command-exam-panel"
-                :available-command-list="availableCommandList"
-              />
             </div>
           </template>
           <template #right>
@@ -217,7 +213,6 @@ import AnimationController from './molecules/AnimationController.vue'
 import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
-import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import GraphPanel from '/@/components/panelContents/GraphPanel.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import {
@@ -280,7 +275,6 @@ export default defineComponent({
     GraphKeyframes,
     AnimationController,
     SliderInput,
-    CommandExamPanel,
     GraphPanel,
     AddIcon,
     DeleteIcon,
@@ -479,8 +473,6 @@ export default defineComponent({
         canvasList.setCanvas(val as CanvasType),
       canvasOptions: canvasList.canvasOptions,
       keyframePointColorMap,
-
-      availableCommandList: computed(() => []),
     }
   },
 })
@@ -537,11 +529,6 @@ export default defineComponent({
   .timeline-canvas-inner {
     height: 100%;
     position: relative;
-    .command-exam-panel {
-      position: absolute;
-      bottom: 4px;
-      right: 8px;
-    }
   }
 }
 .graph-panel-space {

@@ -41,6 +41,10 @@ Copyright (C) 2021, Tomoya Komiyama.
         <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
       </svg>
     </FocusableBlock>
+    <CommandExamPanel
+      class="command-exam-panel"
+      :available-command-list="commandExams"
+    />
     <PopupMenuList
       v-if="popupMenuItems.length > 0 && popupMenuListPosition"
       class="popup-menu-list"
@@ -59,6 +63,7 @@ import { PointerMovement, usePointerLock } from '../composables/window'
 import { provideScale, useSvgCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import FocusableBlock from '/@/components/atoms/FocusableBlock.vue'
+import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import { IVec2 } from 'okageo'
 import { CommandExam, PopupMenuItem } from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
@@ -74,7 +79,7 @@ import { useMenuList } from '/@/composables/menuList'
 import { parseEventTarget } from '/@/composables/modeStates/utils'
 
 export default defineComponent({
-  components: { PopupMenuList, FocusableBlock },
+  components: { PopupMenuList, FocusableBlock, CommandExamPanel },
   props: {
     canvas: {
       type: Object as PropType<ReturnType<typeof useSvgCanvas>>,
@@ -239,6 +244,7 @@ export default defineComponent({
       svg,
       popupMenuItems: computed(() => popupMenuList.list.value),
       popupMenuListPosition,
+      commandExams,
 
       onCopy: handleCopyEvent,
       onPaste: handlePasteEvent,
@@ -266,5 +272,10 @@ svg {
 .popup-menu-list {
   position: fixed;
   z-index: 1;
+}
+.command-exam-panel {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
 }
 </style>

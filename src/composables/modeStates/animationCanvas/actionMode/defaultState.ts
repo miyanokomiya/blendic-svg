@@ -121,9 +121,15 @@ const state: ActionState = {
 function updateCommandExams(ctx: ActionStateContext) {
   ctx.setCommandExams([
     { command: 'a', title: 'All Select' },
-    ...(Object.keys(ctx.getKeyframes()).length > 1
-      ? [{ command: 'x', title: 'Delete Keyframe' }]
+    ...(ctx.getLastSelectedKeyframeId()
+      ? [
+          { command: 'g', title: 'Grab' },
+          { command: 't', title: 'Interpolation' },
+          { command: 'x', title: 'Delete' },
+          { command: 'x', title: 'Duplicate' },
+        ]
       : []),
+    { command: 'Space', title: 'Play/Stop' },
   ])
 }
 

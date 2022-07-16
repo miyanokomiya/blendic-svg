@@ -20,6 +20,8 @@ Copyright (C) 2022, Tomoya Komiyama.
 import { getMockActionCtx } from 'spec/composables/modeStates/animationCanvas/mocks'
 import { useDefaultState } from 'src/composables/modeStates/animationCanvas/actionMode/defaultState'
 import { useModeStateMachine } from '/@/composables/modeStates/core'
+import { getKeyframePoint } from '/@/models/keyframe'
+import { getKeyframe } from '/@/utils/keyframes'
 
 describe('src/composables/modeStates/animationCanvas/actionMode/defaultState.ts', () => {
   async function prepare() {
@@ -47,10 +49,19 @@ describe('src/composables/modeStates/animationCanvas/actionMode/defaultState.ts'
         target: { type: 'empty', id: '' },
         data: { point: { x: 0, y: 0 }, options: { button: 0 } },
       })
-      expect(ctx.selectKeyframe).toHaveBeenNthCalledWith(1)
+      expect(ctx.selectKeyframe).toHaveBeenNthCalledWith(1, '')
     })
     it('keyframe-body: should execute "selectKeyframe"', async () => {
       const { ctx, sm } = await prepare()
+      ctx.getKeyframes.mockReturnValue({
+        a: getKeyframe({
+          name: 'bone',
+          points: {
+            x: getKeyframePoint(),
+            y: getKeyframePoint(),
+          },
+        }),
+      })
       await sm.handleEvent({
         type: 'pointerdown',
         target: { type: 'keyframe-body', id: 'a' },
@@ -59,7 +70,22 @@ describe('src/composables/modeStates/animationCanvas/actionMode/defaultState.ts'
       expect(ctx.selectKeyframe).toHaveBeenNthCalledWith(
         1,
         'a',
-        expect.anything()
+        { props: { x: true, y: true } },
+        undefined
+      )
+    })
+    it('keyframe-prop: should execute "selectKeyframe"', async () => {
+      const { ctx, sm } = await prepare()
+      await sm.handleEvent({
+        type: 'pointerdown',
+        target: { type: 'keyframe-prop', id: 'a', data: { key: 'x' } },
+        data: { point: { x: 0, y: 0 }, options: { button: 0 } },
+      })
+      expect(ctx.selectKeyframe).toHaveBeenNthCalledWith(
+        1,
+        'a',
+        { props: { x: true } },
+        undefined
       )
     })
     it('frame-control: should move to "MovingFrame"', async () => {

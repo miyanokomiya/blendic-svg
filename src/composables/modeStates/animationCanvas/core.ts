@@ -18,7 +18,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { IVec2 } from 'okageo'
-import { EditMovement, SelectOptions } from '/@/composables/modes/types'
+import { EditMovement } from '/@/composables/modes/types'
 import { ActionStateContext } from '/@/composables/modeStates/animationCanvas/actionMode/core'
 import { GraphStateContext } from '/@/composables/modeStates/animationCanvas/graphMode/core'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
@@ -42,7 +42,11 @@ export interface AnimationCanvasStateContext extends CanvasStateContext {
   getKeyframes: () => IdMap<KeyframeBase>
   getLastSelectedKeyframeId: () => string | undefined
   getSelectedKeyframes: () => IdMap<KeyframeSelectedState>
-  selectKeyframe: (id?: string, options?: SelectOptions) => void
+  selectKeyframe: (
+    keyframeId: string,
+    selectedState?: KeyframeSelectedState,
+    shift?: boolean
+  ) => void
   selectAllKeyframes: () => void
   deleteKeyframes: () => void
   updateKeyframes: (keyframes: IdMap<KeyframeBase>, seriesKey?: string) => void

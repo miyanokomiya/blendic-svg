@@ -24,6 +24,7 @@ import {
 import { usePanningState } from '/@/composables/modeStates/commons'
 import { useMovingFrameState } from '/@/composables/modeStates/animationCanvas/movingFrameState'
 import { useChangingCurveTypeState } from '/@/composables/modeStates/animationCanvas/changingCurveTypeState'
+import { getAllSelectedState } from '/@/utils/keyframes'
 
 export function useDefaultState(): GraphState {
   return state
@@ -40,12 +41,28 @@ const state: GraphState = {
         switch (event.data.options.button) {
           case 0:
             switch (event.target.type) {
-              case 'keyframe-body':
-                return ctx.selectKeyframe(event.target.id, event.data.options)
+              case 'keyframe-body': {
+                const id = event.target.id
+                ctx.selectKeyframe(
+                  id,
+                  getAllSelectedState(ctx.getKeyframes()[id]),
+                  event.data.options.shift
+                )
+                return
+              }
+              case 'keyframe-prop': {
+                const key = event.target.data!.key
+                ctx.selectKeyframe(
+                  event.target.id,
+                  { props: { [key]: true } },
+                  event.data.options.shift
+                )
+                return
+              }
               case 'frame-control':
                 return useMovingFrameState
               default:
-                return ctx.selectKeyframe()
+                return ctx.selectKeyframe('')
             }
           case 1:
             return usePanningState

@@ -25,9 +25,8 @@ import { usePanningState } from '/@/composables/modeStates/commons'
 import { useGrabbingState } from '/@/composables/modeStates/animationCanvas/actionMode/grabbingState'
 import { useMovingFrameState } from '/@/composables/modeStates/animationCanvas/movingFrameState'
 import { useChangingCurveTypeState } from '/@/composables/modeStates/animationCanvas/changingCurveTypeState'
-import { getAllSelectedState, getKeyframe } from '/@/utils/keyframes'
-import { extractMap, mapReduce, toList } from '/@/utils/commons'
-import { toMap } from '/@/models'
+import { getAllSelectedState } from '/@/utils/keyframes'
+import { duplicateKeyframes } from '/@/composables/modeStates/animationCanvas/utils'
 
 export function useDefaultState(): ActionState {
   return state
@@ -126,21 +125,9 @@ function updateCommandExams(ctx: ActionStateContext) {
           { command: 'g', title: 'Grab' },
           { command: 't', title: 'Interpolation' },
           { command: 'x', title: 'Delete' },
-          { command: 'x', title: 'Duplicate' },
+          { command: 'D', title: 'Duplicate' },
         ]
       : []),
     { command: 'Space', title: 'Play/Stop' },
   ])
-}
-
-function duplicateKeyframes(ctx: ActionStateContext) {
-  const targets = extractMap(ctx.getKeyframes(), ctx.getSelectedKeyframes())
-  const duplicated = toMap(
-    toList(
-      mapReduce(targets, (src) => {
-        return getKeyframe({ ...src }, true)
-      })
-    )
-  )
-  ctx.setTmpKeyframes(duplicated)
 }

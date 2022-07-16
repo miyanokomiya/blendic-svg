@@ -24,7 +24,9 @@ import {
 import { usePanningState } from '/@/composables/modeStates/commons'
 import { useMovingFrameState } from '/@/composables/modeStates/animationCanvas/movingFrameState'
 import { useChangingCurveTypeState } from '/@/composables/modeStates/animationCanvas/changingCurveTypeState'
+import { useGrabbingState } from '/@/composables/modeStates/animationCanvas/graphMode/grabbingState'
 import { getAllSelectedState } from '/@/utils/keyframes'
+import { duplicateKeyframes } from '/@/composables/modeStates/animationCanvas/utils'
 
 export function useDefaultState(): GraphState {
   return state
@@ -78,6 +80,17 @@ const state: GraphState = {
               ctx.deleteKeyframes()
             }
             return
+          case 'g':
+            if (ctx.getLastSelectedKeyframeId()) {
+              return useGrabbingState
+            }
+            return
+          case 'D':
+            if (ctx.getLastSelectedKeyframeId()) {
+              duplicateKeyframes(ctx)
+              return useGrabbingState
+            }
+            return
           case 't':
             if (ctx.getLastSelectedKeyframeId()) {
               const point = event.point
@@ -111,7 +124,7 @@ function updateCommandExams(ctx: GraphStateContext) {
           { command: 'g', title: 'Grab' },
           { command: 't', title: 'Interpolation' },
           { command: 'x', title: 'Delete' },
-          { command: 'x', title: 'Duplicate' },
+          { command: 'D', title: 'Duplicate' },
         ]
       : []),
     { command: 'Space', title: 'Play/Stop' },

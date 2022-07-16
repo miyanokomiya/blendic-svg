@@ -762,7 +762,7 @@ export function createStore(
         ),
         notSelected: {
           ...keyframeSelectedInfoSet.value.notSelected,
-          ...tmpKeyframes.value,
+          ...(tmpKeyframes.value ?? {}),
         },
       }
     }
@@ -781,6 +781,10 @@ export function createStore(
         toList(editedKeyframeMap.value.selected)
       )
     }
+    tmpKeyframes.value = undefined
+  }
+  function setTmpKeyframes(val?: IdMap<KeyframeBase>) {
+    tmpKeyframes.value = val
   }
 
   return {
@@ -860,6 +864,7 @@ export function createStore(
     getEditMovement,
     setEditMovement,
     completeEdit,
+    setTmpKeyframes,
   }
 
   function getSelectAllKeyframesItem(): okahistory.Action<unknown> {

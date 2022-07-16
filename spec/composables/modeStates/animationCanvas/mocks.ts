@@ -40,6 +40,7 @@ export function getMockActionCtx() {
     deleteKeyframes: jest.fn(),
     updateKeyframes: jest.fn(),
     setCurrentFrame: jest.fn(),
+    setTmpKeyframes: jest.fn(),
   } as any
 }
 
@@ -66,5 +67,6 @@ export function getMockGraphCtx() {
     deleteKeyframes: jest.fn(),
     updateKeyframes: jest.fn(),
     setCurrentFrame: jest.fn(),
+    setTmpKeyframes: jest.fn(),
   } as any
 }

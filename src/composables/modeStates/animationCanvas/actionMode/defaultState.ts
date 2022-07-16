@@ -25,7 +25,9 @@ import { usePanningState } from '/@/composables/modeStates/commons'
 import { useGrabbingState } from '/@/composables/modeStates/animationCanvas/actionMode/grabbingState'
 import { useMovingFrameState } from '/@/composables/modeStates/animationCanvas/movingFrameState'
 import { useChangingCurveTypeState } from '/@/composables/modeStates/animationCanvas/changingCurveTypeState'
-import { getAllSelectedState } from '/@/utils/keyframes'
+import { getAllSelectedState, getKeyframe } from '/@/utils/keyframes'
+import { extractMap, mapReduce, toList } from '/@/utils/commons'
+import { toMap } from '/@/models'
 
 export function useDefaultState(): ActionState {
   return state
@@ -85,6 +87,12 @@ const state: ActionState = {
               return useGrabbingState
             }
             return
+          case 'D':
+            if (ctx.getLastSelectedKeyframeId()) {
+              duplicateKeyframes(ctx)
+              return useGrabbingState
+            }
+            return
           case 't':
             if (ctx.getLastSelectedKeyframeId()) {
               const point = event.point
@@ -117,4 +125,16 @@ function updateCommandExams(ctx: ActionStateContext) {
       ? [{ command: 'x', title: 'Delete Keyframe' }]
       : []),
   ])
+}
+
+function duplicateKeyframes(ctx: ActionStateContext) {
+  const targets = extractMap(ctx.getKeyframes(), ctx.getSelectedKeyframes())
+  const duplicated = toMap(
+    toList(
+      mapReduce(targets, (src) => {
+        return getKeyframe({ ...src }, true)
+      })
+    )
+  )
+  ctx.setTmpKeyframes(duplicated)
 }

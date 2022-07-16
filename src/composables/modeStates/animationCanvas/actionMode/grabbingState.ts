@@ -36,7 +36,10 @@ const state: ActionState = {
   handleEvent: async (ctx, event) => {
     switch (event.type) {
       case 'pointermove':
-        ctx.setEditMovement(event.data)
+        ctx.setEditMovement({
+          ...event.data,
+          current: { x: event.data.current.x, y: event.data.start.y },
+        })
         return
       case 'pointerup': {
         if (event.data.options.button === 0) {

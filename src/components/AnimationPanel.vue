@@ -80,7 +80,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       dense
     >
       <template #left="{ size }">
-        <TimelineCanvas class="label-canvas" :canvas="labelCanvas" :mode="mode">
+        <TimelineCanvas class="label-canvas" :canvas="labelCanvas">
           <template #default="{ scale, viewOrigin }">
             <g
               :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
@@ -109,7 +109,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         >
           <template #left>
             <div class="timeline-canvas-inner">
-              <TimelineCanvas :canvas="currentCanvas" :mode="mode">
+              <TimelineCanvas :canvas="currentCanvas">
                 <template #default="{ scale, viewOrigin, viewSize }">
                   <g
                     v-if="canvasType === 'graph'"
@@ -130,7 +130,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                       :current-frame="currentFrame"
                       :end-frame="endFrame"
                       :header-height="labelHeight"
-                      @down-current-frame="downCurrentFrame"
                     >
                       <KeyframeGroup
                         v-if="canvasType === 'action'"
@@ -143,10 +142,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                         :target-expanded-map="expandedMap"
                         :target-top-map="targetTopMap"
                         :height="labelHeight"
-                        @select="selectKeyframe"
-                        @shift-select="shiftSelectKeyframe"
-                        @select-frame="selectKeyframeByFrame"
-                        @shift-select-frame="shiftSelectKeyframeByFrame"
                       />
                       <g v-else :transform="`translate(0, ${-viewOrigin.y})`">
                         <GraphKeyframes
@@ -154,9 +149,6 @@ Copyright (C) 2021, Tomoya Komiyama.
                           :selected-keyframe-map="selectedKeyframeMap"
                           :color-map="keyframePointColorMap"
                           :props-state-map="propsStateMap"
-                          @select="selectKeyframe"
-                          @shift-select="shiftSelectKeyframe"
-                          @down-control="grabControl"
                         />
                       </g>
                     </TimelineAxis>
@@ -185,7 +177,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, Ref, ref, watchEffect } from 'vue'
+import { computed, defineComponent, ref, watchEffect } from 'vue'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
 import SelectField from './atoms/SelectField.vue'
@@ -209,14 +201,9 @@ import {
 import { IVec2 } from 'okageo'
 import { toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
-import { useKeyframeEditMode } from '../composables/modes/keyframeEditMode'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
-import { useCanvas } from '/@/composables/canvas'
-import {
-  CurveSelectedState,
-  KeyframeBase,
-  KeyframeSelectedState,
-} from '/@/models/keyframe'
+import { useSvgCanvas } from '/@/composables/canvas'
+import { KeyframeBase } from '/@/models/keyframe'
 import { useBooleanMap } from '/@/composables/idMap'
 import { Size } from 'okanvas'
 import {
@@ -244,45 +231,6 @@ function useCanvasList() {
     canvasType,
     setCanvas,
     canvasOptions: computed(() => canvasOptions),
-  }
-}
-
-function useCanvasMode(canvasType: Ref<CanvasType>) {
-  const mode = computed(() => {
-    switch (canvasType.value) {
-      case 'action':
-        return useKeyframeEditMode('action')
-      default:
-        return useKeyframeEditMode('graph')
-    }
-  })
-
-  return {
-    mode,
-    handlers: {
-      downCurrentFrame() {
-        mode.value.grabCurrentFrame()
-      },
-      selectKeyframe(id: string, selectedState: KeyframeSelectedState) {
-        mode.value.select(id, selectedState)
-      },
-      shiftSelectKeyframe(id: string, selectedState: KeyframeSelectedState) {
-        mode.value.shiftSelect(id, selectedState)
-      },
-      selectKeyframeByFrame(frame: number) {
-        mode.value.selectFrame(frame)
-      },
-      shiftSelectKeyframeByFrame(frame: number) {
-        mode.value.shiftSelectFrame(frame)
-      },
-      grabControl(
-        keyframeId: string,
-        pointKey: string,
-        controls: CurveSelectedState
-      ) {
-        mode.value.grabControl(keyframeId, pointKey, controls)
-      },
-    },
   }
 }
 
@@ -325,16 +273,15 @@ export default defineComponent({
       viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
       viewSize,
     }
-    const labelCanvas = useCanvas(canvasOptions)
-    const keyframeCanvas = useCanvas(canvasOptions)
-    const graphCanvas = useCanvas({
+    const labelCanvas = useSvgCanvas(canvasOptions)
+    const keyframeCanvas = useSvgCanvas(canvasOptions)
+    const graphCanvas = useSvgCanvas({
       scaleMin: 1,
       viewOrigin: ref<IVec2>({ x: -20, y: -50 }),
       viewSize,
     })
 
     const canvasList = useCanvasList()
-    const canvasMode = useCanvasMode(canvasList.canvasType)
 
     const currentCanvas = computed(() => {
       switch (canvasList.canvasType.value) {
@@ -381,7 +328,7 @@ export default defineComponent({
     })
 
     const keyframeMapByFrame = computed(() => {
-      const splited = canvasMode.mode.value.editedKeyframeMap.value
+      const splited = animationStore.editedKeyframeMap.value
       if (!splited) {
         return getKeyframeMapByFrame(
           toList(animationStore.visibledKeyframeMap.value)
@@ -507,11 +454,7 @@ export default defineComponent({
       canvasOptions: canvasList.canvasOptions,
       keyframePointColorMap,
 
-      availableCommandList: computed(
-        () => canvasMode.mode.value.availableCommandList.value
-      ),
-      mode: canvasMode.mode,
-      ...canvasMode.handlers,
+      availableCommandList: computed(() => []),
     }
   },
 })

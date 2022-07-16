@@ -37,8 +37,9 @@ Copyright (C) 2021, Tomoya Komiyama.
           :stroke="curve.selected ? '#000' : '#777'"
           :stroke-width="scale"
           :fill="curve.selected ? selectedColor : color"
-          @click.exact="select(curve.id, curve.keyframeName)"
-          @click.shift.exact="shiftSelect(curve.id, curve.keyframeName)"
+          data-type="keyframe-prop"
+          :data-id="curve.id"
+          :data-key="pointKey"
         />
       </g>
     </g>
@@ -51,8 +52,9 @@ Copyright (C) 2021, Tomoya Komiyama.
           :control-out="curve.controlOut"
           :color="color"
           :scale="scale"
-          @down-control-in="downControl(curve.id, { controlIn: true })"
-          @down-control-out="downControl(curve.id, { controlOut: true })"
+          data-type="keyframe-curve-control"
+          :data-id="curve.id"
+          :data-key="pointKey"
         >
         </BezierControls>
       </g>
@@ -63,12 +65,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue'
 import { IdMap } from '/@/models'
-import {
-  CurveSelectedState,
-  KeyframeBase,
-  KeyframeName,
-  KeyframeSelectedState,
-} from '/@/models/keyframe'
+import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
 import BezierControls from '/@/components/elements/molecules/BezierControls.vue'
 import GraphCurveLines from '/@/components/elements/molecules/GraphCurveLines.vue'
 import { useSettings } from '/@/composables/settings'
@@ -103,7 +100,7 @@ export default defineComponent({
     },
   },
   emits: ['select', 'shift-select', 'down-control'],
-  setup(props, { emit }) {
+  setup(props) {
     const { settings } = useSettings()
 
     const curves = computed(() =>
@@ -114,23 +111,6 @@ export default defineComponent({
         valueWidth: settings.graphValueWidth,
       })
     )
-
-    function select(id: string, keyframeName: KeyframeName) {
-      emit('select', id, {
-        name: keyframeName,
-        props: { [props.pointKey]: true },
-      } as KeyframeSelectedState)
-    }
-    function shiftSelect(id: string, keyframeName: KeyframeName) {
-      emit('shift-select', id, {
-        name: keyframeName,
-        props: { [props.pointKey]: true },
-      } as KeyframeSelectedState)
-    }
-
-    function downControl(keyframeId: string, state: CurveSelectedState) {
-      emit('down-control', keyframeId, props.pointKey, state)
-    }
 
     const getScale = injectScale()
 
@@ -143,9 +123,6 @@ export default defineComponent({
       lineWidth,
       selectedColor: computed(() => settings.selectedColor),
       curves,
-      select,
-      shiftSelect,
-      downControl,
     }
   },
 })

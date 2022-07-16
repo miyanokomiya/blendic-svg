@@ -19,32 +19,32 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div ref="wrapper" class="timeline-canvas-root">
-    <svg
-      ref="svg"
-      tabindex="-1"
-      xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="none"
-      font-family="sans-serif"
-      :viewBox="viewBox"
-      :width="viewSize.width"
-      :height="viewSize.height"
-      @wheel.prevent="wheel"
-      @click.right.prevent
-      @mouseup.right.prevent="escape"
-      @mouseenter="focus"
-      @mousemove.prevent="mousemoveNative"
-      @mousedown.left.prevent="downLeft"
-      @mouseup.left.prevent="upLeft"
-      @mousedown.middle.prevent="downMiddle"
-      @mouseup.middle.prevent="upMiddle"
-      @keydown.prevent="editKeyDown"
+    <FocusableBlock
+      @keydown="handleKeydownEvent"
+      @copy="onCopy"
+      @paste="onPaste"
     >
-      <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
-    </svg>
+      <svg
+        ref="svg"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="none"
+        font-family="sans-serif"
+        :viewBox="viewBox"
+        :width="viewSize.width"
+        :height="viewSize.height"
+        @wheel.prevent="wheel"
+        @mousedown.prevent="handleDownEvent"
+        @mouseup.prevent="handleUpEvent"
+        @mousemove="handleNativeMoveEvent"
+        @contextmenu.prevent
+      >
+        <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
+      </svg>
+    </FocusableBlock>
     <PopupMenuList
-      v-if="popupMenuList.length > 0 && popupMenuListPosition"
+      v-if="popupMenuItems.length > 0 && popupMenuListPosition"
       class="popup-menu-list"
-      :popup-menu-list="popupMenuList"
+      :popup-menu-list="popupMenuItems"
       :style="{
         left: `${popupMenuListPosition.x - 20}px`,
         top: `${popupMenuListPosition.y - 10}px`,
@@ -56,23 +56,25 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { defineComponent, ref, watch, computed, PropType } from 'vue'
 import { PointerMovement, usePointerLock } from '../composables/window'
-import { provideScale, useCanvas } from '../composables/canvas'
+import { provideScale, useSvgCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
+import FocusableBlock from '/@/components/atoms/FocusableBlock.vue'
 import { IVec2 } from 'okageo'
-import { KeyframeEditModeBase } from '/@/composables/modes/types'
+import { CommandExam, PopupMenuItem } from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
-import { isCtrlOrMeta } from '/@/utils/devices'
+import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { useCanvasElement } from '/@/composables/canvasElement'
+import { useAnimationStateMachine } from '/@/composables/modes/keyframeEditMode'
+import { useStore } from '/@/store'
+import { useAnimationStore } from '/@/store/animation'
+import { useMenuList } from '/@/composables/menuList'
+import { parseEventTarget } from '/@/composables/modeStates/utils'
 
 export default defineComponent({
-  components: { PopupMenuList },
+  components: { PopupMenuList, FocusableBlock },
   props: {
     canvas: {
-      type: Object as PropType<ReturnType<typeof useCanvas>>,
-      required: true,
-    },
-    mode: {
-      type: Object as PropType<KeyframeEditModeBase>,
+      type: Object as PropType<ReturnType<typeof useSvgCanvas>>,
       required: true,
     },
   },
@@ -82,64 +84,141 @@ export default defineComponent({
 
     provideScale(() => props.canvas.scale.value)
 
-    const popupMenuList = computed(() => props.mode.popupMenuList.value)
-    const popupMenuListPosition = ref<IVec2>()
-    watch(popupMenuList, () => {
-      popupMenuListPosition.value = addRootPosition(
-        props.canvas.mousePoint.value
-      )
+    const popupMenuInfo = ref<{ items: PopupMenuItem[]; point: IVec2 }>()
+    const popupMenuListPosition = computed(() => {
+      return popupMenuInfo.value
+        ? addRootPosition(props.canvas.canvasToView(popupMenuInfo.value.point))
+        : undefined
     })
+    const popupMenuList = useMenuList(
+      () =>
+        popupMenuInfo.value?.items.map(({ label, key, data }) => ({
+          label,
+          exec: key
+            ? () => handlePopupmenuEvent(key as string, data)
+            : undefined,
+        })) ?? []
+    )
+    const commandExams = ref<CommandExam[]>()
+    const animationStore = useAnimationStore()
 
-    const isDownEmpty = ref(false)
-
-    function mousemoveNative(e: MouseEvent) {
-      if (!props.canvas.dragInfo.value) return
-
-      props.mode.drag({
-        start: props.canvas.viewToCanvas(props.canvas.dragInfo.value.downAt),
-        current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-        ctrl: isCtrlOrMeta(e),
-        scale: props.canvas.scale.value,
-      })
-    }
-
-    function mousemove(arg: PointerMovement) {
-      if (props.canvas.viewMovingInfo.value) {
-        props.canvas.viewMove()
-        return
-      }
-
-      if (props.canvas.editStartPoint.value) {
-        props.mode.mousemove({
-          start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
+    const mode = useAnimationStateMachine({
+      indexStore: useStore(),
+      animationStore,
+      requestPointerLock: () => {
+        if (!svg.value) return
+        props.canvas.startMoving()
+        pointerLock.requestPointerLockFromElement(svg.value)
+      },
+      exitPointerLock: () => {
+        pointerLock.exitPointerLock()
+        props.canvas.endMoving()
+      },
+      startEditMovement: () => {
+        animationStore.setEditMovement({
+          start: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
           current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-          ctrl: arg.ctrl ?? false,
+          ctrl: false,
           scale: props.canvas.scale.value,
         })
-      }
-    }
-    const throttleMousemove = useThrottle(mousemove, 1000 / 60, true)
+      },
+      startDragging: () => props.canvas.startDragging(),
+      getCursorPoint: () =>
+        props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+      setViewport: (val) => props.canvas.setViewport(val),
+      panView: (val) => props.canvas.viewMove(val),
+      setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
+      getDraggedRectangle: () => props.canvas.draggedRectangle.value,
+      setPopupMenuList: (val) => (popupMenuInfo.value = val),
+      setCommandExams: (val) => (commandExams.value = val),
+    })
+
+    const throttleMousemove = useThrottle(handleMoveEvent, 1000 / 60, true)
     const pointerLock = usePointerLock({
       onMove: throttleMousemove,
       onGlobalMove: (arg) => {
+        if (!svg.value) return
         const p = removeRootPosition(arg.p)
         if (!p) return
         props.canvas.setMousePoint(p)
       },
-      onEscape: escape,
+      onEscape: () => {
+        mode.sm.handleEvent({
+          type: 'keydown',
+          data: { key: 'Escape' },
+          point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+        })
+      },
     })
 
-    watch(
-      () => props.mode.command.value,
-      (to) => {
-        if (to === '') {
-          pointerLock.exitPointerLock()
-        }
-      }
-    )
+    watch(animationStore.selectedKeyframeMap, () => {
+      mode.sm.handleEvent({ type: 'selection' })
+    })
 
-    function escape() {
-      props.mode.cancel()
+    function handleDownEvent(e: MouseEvent) {
+      mode.sm.handleEvent({
+        type: 'pointerdown',
+        target: parseEventTarget(e),
+        data: {
+          point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          options: getMouseOptions(e),
+        },
+      })
+    }
+    function handleUpEvent(e: MouseEvent) {
+      props.canvas.endMoving()
+      mode.sm.handleEvent({
+        type: 'pointerup',
+        target: parseEventTarget(e),
+        data: {
+          point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          options: getMouseOptions(e),
+        },
+      })
+    }
+    function handleMoveEvent(e: PointerMovement) {
+      if (!props.canvas.editStartPoint.value) return
+      mode.sm.handleEvent({
+        type: 'pointermove',
+        data: {
+          start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
+          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+          ctrl: e.ctrl,
+          scale: props.canvas.scale.value,
+        },
+      })
+    }
+    function handleNativeMoveEvent(e: MouseEvent) {
+      if (props.canvas.dragged.value && props.canvas.editStartPoint.value) {
+        mode.sm.handleEvent({
+          type: 'pointerdrag',
+          data: {
+            start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
+            current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+            ctrl: isCtrlOrMeta(e),
+            scale: props.canvas.scale.value,
+          },
+        })
+      }
+    }
+    function handleKeydownEvent(e: KeyboardEvent) {
+      mode.sm.handleEvent({
+        type: 'keydown',
+        data: getKeyOptions(e),
+        point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+      })
+    }
+    function handlePopupmenuEvent(
+      key: string,
+      data: { [key: string]: string } = {}
+    ) {
+      mode.sm.handleEvent({ type: 'popupmenu', data: { key, ...data } })
+    }
+    function handleCopyEvent(e: ClipboardEvent) {
+      mode.sm.handleEvent({ type: 'copy', nativeEvent: e })
+    }
+    function handlePasteEvent(e: ClipboardEvent) {
+      mode.sm.handleEvent({ type: 'paste', nativeEvent: e })
     }
 
     return {
@@ -147,58 +226,19 @@ export default defineComponent({
       viewOrigin: computed(() => props.canvas.viewOrigin.value),
       viewSize: computed(() => props.canvas.viewSize.value),
       viewBox: computed(() => props.canvas.viewBox.value),
-      popupMenuList,
-
-      mousemoveNative,
-      wheel: (e: WheelEvent) => props.canvas.wheel(e, true),
-      downLeft: (e: MouseEvent) => {
-        isDownEmpty.value = e.target === svg.value
-        props.canvas.downLeft()
-        const current = props.canvas.viewToCanvas(props.canvas.mousePoint.value)
-        props.mode.drag({
-          current,
-          start: current,
-          ctrl: isCtrlOrMeta(e),
-          scale: props.canvas.scale.value,
-        })
-      },
-      upLeft: (e: MouseEvent) => {
-        if (e.target === svg.value && isDownEmpty.value) {
-          props.mode.clickEmpty()
-        } else {
-          props.mode.clickAny()
-        }
-
-        props.canvas.upLeft()
-        props.mode.upLeft()
-        isDownEmpty.value = false
-      },
-      downMiddle: (e: MouseEvent) => {
-        props.canvas.downMiddle()
-        pointerLock.requestPointerLock(e)
-      },
-      upMiddle: () => {
-        props.canvas.upMiddle()
-        pointerLock.exitPointerLock()
-      },
-      escape,
-      editKeyDown: (e: KeyboardEvent) => {
-        const { needLock } = props.mode.execKey({
-          key: e.key,
-          shift: e.shiftKey,
-          ctrl: isCtrlOrMeta(e),
-        })
-
-        if (needLock) {
-          pointerLock.requestPointerLock(e)
-          props.canvas.setEditStartPoint(props.canvas.mousePoint.value)
-        }
-      },
 
       wrapper,
       svg,
+      popupMenuItems: computed(() => popupMenuList.list.value),
       popupMenuListPosition,
-      focus: () => svg.value?.focus(),
+
+      onCopy: handleCopyEvent,
+      onPaste: handlePasteEvent,
+      wheel: props.canvas.wheel,
+      handleDownEvent,
+      handleUpEvent,
+      handleNativeMoveEvent,
+      handleKeydownEvent,
     }
   },
 })

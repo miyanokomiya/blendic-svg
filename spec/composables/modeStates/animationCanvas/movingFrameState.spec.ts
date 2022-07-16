@@ -44,7 +44,7 @@ describe('src/composables/modeStates/animationCanvas/movingFrameState.ts', () =>
     })
   })
 
-  describe('handle pointermove', () => {
+  describe('handle pointerdrag', () => {
     it('should execute "setCurrentFrame"', async () => {
       const { ctx, sm } = await prepare()
       const data = {
@@ -53,7 +53,7 @@ describe('src/composables/modeStates/animationCanvas/movingFrameState.ts', () =>
         scale: 1,
       }
       await sm.handleEvent({
-        type: 'pointermove',
+        type: 'pointerdrag',
         data,
       })
       expect(ctx.setCurrentFrame).toHaveBeenCalledWith(10, 'mock-key')
@@ -61,13 +61,14 @@ describe('src/composables/modeStates/animationCanvas/movingFrameState.ts', () =>
   })
 
   describe('handle pointerup', () => {
-    it('empty: should move to "Default"', async () => {
-      const { sm } = await prepare()
+    it('empty: should execute "setCurrentFrame" and move to "Default"', async () => {
+      const { sm, ctx } = await prepare()
       await sm.handleEvent({
         type: 'pointerup',
         target: { type: 'empty', id: '' },
-        data: { point: { x: 0, y: 0 }, options: { button: 0 } },
+        data: { point: { x: 20, y: 0 }, options: { button: 0 } },
       })
+      expect(ctx.setCurrentFrame).toHaveBeenCalledWith(2, 'mock-key')
       expect(sm.getStateSummary().label).toBe('Default')
     })
   })

@@ -31,13 +31,17 @@ export function useMovingFrameState(): AnimationCanvasState {
     },
     handleEvent: async (ctx, event) => {
       switch (event.type) {
-        case 'pointermove':
+        case 'pointerdrag':
           ctx.setCurrentFrame(
             canvasToNearestFrame(event.data.current.x),
             seriesKey
           )
           return
         case 'pointerup': {
+          ctx.setCurrentFrame(
+            canvasToNearestFrame(event.data.point.x),
+            seriesKey
+          )
           return { type: 'break' }
         }
         case 'keydown':

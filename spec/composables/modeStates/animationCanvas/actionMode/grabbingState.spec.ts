@@ -59,7 +59,10 @@ describe('src/composables/modeStates/animationCanvas/actionMode/grabbingState.ts
         type: 'pointermove',
         data,
       })
-      expect(ctx.setEditMovement).toHaveBeenCalledWith(data)
+      expect(ctx.setEditMovement).toHaveBeenCalledWith({
+        ...data,
+        current: { x: 10, y: 0 },
+      })
     })
   })
 

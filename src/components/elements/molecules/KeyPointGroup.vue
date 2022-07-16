@@ -24,8 +24,8 @@ Copyright (C) 2021, Tomoya Komiyama.
         :top="top"
         :selected="selectedAny"
         :same-range-width="sameRangeWidth.all"
-        @select="selectAll"
-        @shift-select="shiftSelectAll"
+        data-type="keyframe-body"
+        :data-id="keyFrame.id"
       />
     </template>
     <template v-if="expanded">
@@ -35,8 +35,9 @@ Copyright (C) 2021, Tomoya Komiyama.
           :selected="selectedState.props[key]"
           :same-range-width="sameRangeWidth[key]"
           :tooltip="keyFrame.points[key].curve.name"
-          @select="select({ [key]: true })"
-          @shift-select="shiftSelect({ [key]: true })"
+          data-type="keyframe-prop"
+          :data-id="keyFrame.id"
+          :data-key="key"
         />
       </template>
     </template>
@@ -49,11 +50,7 @@ import KeyPoint from '/@/components/elements/atoms/KeyPoint.vue'
 import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
 import { mapFilter } from '/@/utils/commons'
 import { getKeyframeTopMap } from '/@/utils/helpers'
-import {
-  getAllSelectedState,
-  getKeyframeDefaultPropsMap,
-  isAnySelected,
-} from '/@/utils/keyframes'
+import { getKeyframeDefaultPropsMap, isAnySelected } from '/@/utils/keyframes'
 
 export default defineComponent({
   components: { KeyPoint },
@@ -94,7 +91,7 @@ export default defineComponent({
     },
   },
   emits: ['select', 'shift-select'],
-  setup(props, { emit }) {
+  setup(props) {
     function isVisible(top: number): boolean {
       return top > props.scrollY + props.height * 1.5
     }
@@ -112,22 +109,6 @@ export default defineComponent({
       isVisible,
       childTopMap,
       selectedAny,
-      select(state: { [key: string]: boolean }) {
-        emit('select', {
-          props: state,
-        })
-      },
-      shiftSelect(state: { [key: string]: boolean }) {
-        emit('shift-select', {
-          props: state,
-        })
-      },
-      selectAll() {
-        emit('select', getAllSelectedState(props.keyFrame))
-      },
-      shiftSelectAll() {
-        emit('shift-select', getAllSelectedState(props.keyFrame))
-      },
     }
   },
 })

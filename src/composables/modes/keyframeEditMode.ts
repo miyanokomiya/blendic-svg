@@ -24,8 +24,9 @@ import {
   KeyframeEditModeBase,
   EditMovement,
   PopupMenuItem,
+  CommandExam,
 } from '/@/composables/modes/types'
-import { useAnimationStore } from '/@/store/animation'
+import { AnimationStore, useAnimationStore } from '/@/store/animation'
 import {
   extractMap,
   mapReduce,
@@ -53,6 +54,21 @@ import { useSettings } from '/@/composables/settings'
 import { pointToControl, moveCurveControlsMap } from '/@/utils/graphCurves'
 import { logRound, mapVec } from '/@/utils/geometry'
 import { useMenuList } from '/@/composables/menuList'
+import { ActionStateContext } from '/@/composables/modeStates/animationCanvas/actionMode/core'
+import { IndexStore } from '/@/store'
+import {
+  AnimationCanvasEvent,
+  AnimationCanvasGroupStateContext,
+  AnimationCanvasStateContext,
+} from '/@/composables/modeStates/animationCanvas/core'
+import { Rectangle } from 'okanvas'
+import { GraphStateContext } from '/@/composables/modeStates/animationCanvas/graphMode/core'
+import {
+  ModeStateContextBase,
+  useModeStateMachine,
+} from '/@/composables/modeStates/core'
+import { generateUuid } from '/@/utils/random'
+import { useActionGroupState } from '/@/composables/modeStates/animationCanvas/actionGroupState'
 
 const notNeedLock = { needLock: false }
 
@@ -488,5 +504,91 @@ export function useKeyframeEditMode(
     editedKeyframeMap,
     grabCurrentFrame,
     grabControl,
+  }
+}
+
+type Option = {
+  indexStore: IndexStore
+  animationStore: AnimationStore
+
+  requestPointerLock: AnimationCanvasStateContext['requestPointerLock']
+  exitPointerLock: AnimationCanvasStateContext['exitPointerLock']
+  setViewport: (rect?: Rectangle) => void
+  panView: AnimationCanvasStateContext['panView']
+  startDragging: AnimationCanvasStateContext['startDragging']
+  getCursorPoint: () => IVec2
+  setRectangleDragging: AnimationCanvasStateContext['setRectangleDragging']
+  getDraggedRectangle: AnimationCanvasStateContext['getDraggedRectangle']
+  startEditMovement: () => void
+  setPopupMenuList: (val?: { items: PopupMenuItem[]; point: IVec2 }) => void
+  setCommandExams: (exams?: CommandExam[]) => void
+}
+
+export function useAnimationStateMachine(options: Option) {
+  const actionCtx = createActionContext(options)
+  const graphCtx = createGraphContext(options)
+
+  const ctx: AnimationCanvasGroupStateContext = {
+    ...createBaseContext(options),
+    getActionContext: () => actionCtx,
+    getGraphContext: () => graphCtx,
+    toggleMode: () => {},
+  }
+
+  const sm = useModeStateMachine<
+    AnimationCanvasGroupStateContext,
+    AnimationCanvasEvent
+  >(ctx, useActionGroupState)
+  return { sm }
+}
+
+function createActionContext(options: Option): ActionStateContext {
+  return createAnimationContext(options)
+}
+
+function createGraphContext(options: Option): GraphStateContext {
+  return createAnimationContext(options)
+}
+
+function createAnimationContext(options: Option): AnimationCanvasStateContext {
+  const { animationStore } = options
+
+  return {
+    ...createBaseContext(options),
+
+    generateUuid: generateUuid,
+
+    setViewport: options.setViewport,
+    panView: options.panView,
+    startDragging: options.startDragging,
+    setRectangleDragging: () => {},
+    getDraggedRectangle: () => undefined,
+
+    setPopupMenuList: options.setPopupMenuList,
+    setCommandExams: options.setCommandExams,
+
+    generateSeriesKey: () => `${Date.now()}`,
+    startEditMovement: options.startEditMovement,
+    getCursorPoint: options.getCursorPoint,
+    getEditMovement: animationStore.getEditMovement,
+    setEditMovement: animationStore.setEditMovement,
+    completeEdit: animationStore.completeEdit,
+    setCurrentFrame: animationStore.setCurrentFrame,
+    getKeyframes: () => animationStore.visibledKeyframeMap.value,
+    getLastSelectedKeyframeId: () =>
+      animationStore.lastSelectedKeyframe.value?.id ?? '',
+    getSelectedKeyframes: () => animationStore.selectedKeyframeMap.value,
+    selectKeyframe: animationStore.selectKeyframe,
+    selectAllKeyframes: animationStore.selectAllKeyframes,
+    deleteKeyframes: animationStore.execDeleteKeyframes,
+    updateKeyframes: animationStore.execUpdateKeyframes,
+  }
+}
+
+function createBaseContext(options: Option): ModeStateContextBase {
+  return {
+    requestPointerLock: options.requestPointerLock,
+    exitPointerLock: options.exitPointerLock,
+    getTimestamp: () => Date.now(),
   }
 }

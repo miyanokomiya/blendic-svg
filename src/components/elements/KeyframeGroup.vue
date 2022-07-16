@@ -31,12 +31,12 @@ Copyright (C) 2021, Tomoya Komiyama.
         <circle
           v-if="keyframes.length > 0"
           key="all"
+          data-type="keyframes-by-frame"
+          :data-id="f"
           :cy="height"
           r="5"
           stroke="#000"
           :fill="selectedFrameMap[f] ? selectedColor : '#fff'"
-          @click.left.exact="selectFrame(f as string)"
-          @click.left.shift.exact="shiftSelectFrame(f as string)"
         />
         <g :transform="`translate(0, ${-scrollY})`">
           <g v-for="k in keyframes" :key="k.id">
@@ -49,8 +49,6 @@ Copyright (C) 2021, Tomoya Komiyama.
               :same-range-width="getSameRangeFrame(k.targetId, k.frame)"
               :height="height"
               :scroll-y="scrollY"
-              @select="(state) => select(k.id, state)"
-              @shift-select="(state) => shiftSelect(k.id, state)"
             />
           </g>
         </g>
@@ -111,7 +109,7 @@ export default defineComponent({
     },
   },
   emits: ['select', 'shift-select', 'select-frame', 'shift-select-frame'],
-  setup(props, { emit }) {
+  setup(props) {
     const { settings } = useSettings()
 
     const targetIds = computed(() => props.targetList.map((t) => t.id))
@@ -184,29 +182,12 @@ export default defineComponent({
         .sort((a, b) => indexMap.value[a.targetId] - indexMap.value[b.targetId])
     }
 
-    function select(keyframeId: string, state: KeyframeSelectedState) {
-      emit('select', keyframeId, state)
-    }
-    function shiftSelect(keyframeId: string, state: KeyframeSelectedState) {
-      emit('shift-select', keyframeId, state)
-    }
-    function selectFrame(keyframeId: string) {
-      emit('select-frame', keyframeId)
-    }
-    function shiftSelectFrame(keyframeId: string) {
-      emit('shift-select-frame', keyframeId)
-    }
-
     return {
       frameWidth,
       sortedKeyframeMapByFrame,
       targetMap,
       getSameRangeFrame,
       selectedFrameMap,
-      select,
-      shiftSelect,
-      selectFrame,
-      shiftSelectFrame,
       selectedColor: settings.selectedColor,
     }
   },

@@ -61,6 +61,9 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
       <circle
         cx="0"
         cy="5"
+        data-id="a"
+        data-key="translateX"
+        data-type="keyframe-prop"
         fill="green"
         r="5"
         stroke="#777"
@@ -74,6 +77,9 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot default 1
       <circle
         cx="0"
         cy="50"
+        data-id="b"
+        data-key="translateX"
+        data-type="keyframe-prop"
         fill="green"
         r="5"
         stroke="#777"
@@ -156,6 +162,9 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
       <circle
         cx="0"
         cy="5"
+        data-id="a"
+        data-key="translateX"
+        data-type="keyframe-prop"
         fill="orange"
         r="5"
         stroke="#000"
@@ -169,6 +178,9 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
       <circle
         cx="0"
         cy="50"
+        data-id="b"
+        data-key="translateX"
+        data-type="keyframe-prop"
         fill="#fff"
         r="5"
         stroke="#777"
@@ -180,7 +192,11 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
   <g>
     
     <g>
-      <g>
+      <g
+        data-id="a"
+        data-key="translateX"
+        data-type="keyframe-curve-control"
+      >
         <g
           class="view-only"
           fill="#fff"

@@ -38,11 +38,14 @@ test.describe('edit bones', () => {
     // Extlude
     await page.mouse.move(100, 100)
     await page.press('.app-canvas-root', 'e')
-    await moveAndClick(page, 200, 150)
+    // Bone size is sensitive to click bone-body in headless env
+    await moveAndClick(page, 400, 200)
     await screenshot('extlude_bone')
 
     // Select a bone
-    await page.click('g:has(title:has-text("bone.001")) >> path')
+    await page.click(
+      'g:has(title:has-text("bone.001")) >> [data-type="bone-body"]'
+    )
     await screenshot('select_bone_body')
 
     // Scale

@@ -27,6 +27,7 @@ import { useChangingCurveTypeState } from '/@/composables/modeStates/animationCa
 import { useGrabbingState } from '/@/composables/modeStates/animationCanvas/graphMode/grabbingState'
 import { getAllSelectedState } from '/@/utils/keyframes'
 import { duplicateKeyframes } from '/@/composables/modeStates/animationCanvas/utils'
+import { useMovingBezierState } from '/@/composables/modeStates/animationCanvas/graphMode/movingBezierState'
 
 export function useDefaultState(): GraphState {
   return state
@@ -63,6 +64,18 @@ const state: GraphState = {
               }
               case 'frame-control':
                 return useMovingFrameState
+              case 'bezier-control': {
+                const data = event.target.data ?? {}
+                return () =>
+                  useMovingBezierState({
+                    id: event.target.id,
+                    key: data.key,
+                    controls: {
+                      controlIn: !!data.control_in,
+                      controlOut: !!data.control_out,
+                    },
+                  })
+              }
               default:
                 return ctx.selectKeyframe('')
             }

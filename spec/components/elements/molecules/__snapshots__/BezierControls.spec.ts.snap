@@ -41,12 +41,20 @@ exports[`src/components/elements/molecules/BezierControls.vue snapshot default 1
     fill="transparent"
   >
     <rect
+      data-control_in="true"
+      data-id="a"
+      data-key="p"
+      data-type="bezier-control"
       height="24"
       width="24"
       x="-9"
       y="-8"
     />
     <rect
+      data-control_out="true"
+      data-id="a"
+      data-key="p"
+      data-type="bezier-control"
       height="24"
       width="24"
       x="-7"

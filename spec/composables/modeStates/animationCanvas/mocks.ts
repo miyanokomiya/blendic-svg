@@ -49,7 +49,7 @@ export function getMockActionCtx() {
 }
 
 export function getMockGraphCtx() {
-  return getMockCommonCtx()
+  return { ...getMockCommonCtx(), toCurveControl: jest.fn() }
 }
 
 export function getMockLabelCtx() {

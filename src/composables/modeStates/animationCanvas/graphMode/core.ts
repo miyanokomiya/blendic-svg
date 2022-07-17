@@ -17,13 +17,16 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { IVec2 } from 'okageo'
 import {
   AnimationCanvasEvent,
   AnimationCanvasStateContext,
 } from '/@/composables/modeStates/animationCanvas/core'
 import type { ModeStateBase } from '/@/composables/modeStates/core'
 
-export interface GraphStateContext extends AnimationCanvasStateContext {}
+export interface GraphStateContext extends AnimationCanvasStateContext {
+  toCurveControl: (v: IVec2) => IVec2
+}
 
 export interface GraphState
   extends ModeStateBase<GraphStateContext, AnimationCanvasEvent> {}

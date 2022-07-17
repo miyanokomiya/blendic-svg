@@ -80,6 +80,7 @@ const settings = reactive(restoreValue())
 export function useSettings() {
   return { settings }
 }
+export type AppSettings = ReturnType<typeof useSettings>['settings']
 
 watchEffect(() => {
   const theme = settings.colorTheme

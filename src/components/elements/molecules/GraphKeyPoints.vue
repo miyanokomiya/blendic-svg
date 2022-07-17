@@ -47,14 +47,13 @@ Copyright (C) 2021, Tomoya Komiyama.
       <g v-for="curve in curves" :key="curve.id">
         <BezierControls
           v-if="curve.selected"
+          :point-id="curve.id"
+          :point-key="pointKey"
           :c0="curve.from"
           :control-in="curve.controlIn"
           :control-out="curve.controlOut"
           :color="color"
           :scale="scale"
-          data-type="keyframe-curve-control"
-          :data-id="curve.id"
-          :data-key="pointKey"
         >
         </BezierControls>
       </g>

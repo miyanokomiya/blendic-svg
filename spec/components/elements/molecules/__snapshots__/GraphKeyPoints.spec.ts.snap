@@ -192,11 +192,7 @@ exports[`src/components/elements/molecules/GraphKeyPoints.vue snapshot selected 
   <g>
     
     <g>
-      <g
-        data-id="a"
-        data-key="translateX"
-        data-type="keyframe-curve-control"
-      >
+      <g>
         <g
           class="view-only"
           fill="#fff"

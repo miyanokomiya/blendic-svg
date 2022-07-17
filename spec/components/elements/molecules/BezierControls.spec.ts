@@ -25,6 +25,8 @@ describe('src/components/elements/molecules/BezierControls.vue', () => {
     it('default', () => {
       const wrapper = mount(Target, {
         props: {
+          pointId: 'a',
+          pointKey: 'p',
           c0: { x: 1, y: 2 },
           controlIn: { x: 3, y: 4 },
           controlOut: { x: 5, y: 6 },

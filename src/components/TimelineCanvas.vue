@@ -77,6 +77,7 @@ import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
 import { useMenuList } from '/@/composables/menuList'
 import { parseEventTarget } from '/@/composables/modeStates/utils'
+import { useSettings } from '/@/composables/settings'
 
 export default defineComponent({
   components: { PopupMenuList, FocusableBlock, CommandExamPanel },
@@ -113,10 +114,12 @@ export default defineComponent({
     )
     const commandExams = ref<CommandExam[]>()
     const animationStore = useAnimationStore()
+    const { settings } = useSettings()
 
     const mode = useAnimationStateMachine({
       indexStore: useStore(),
       animationStore,
+      settings,
       canvasType: props.canvasType,
       requestPointerLock: () => {
         if (!svg.value) return

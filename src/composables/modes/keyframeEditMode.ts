@@ -50,7 +50,7 @@ import {
 } from '/@/utils/keyframes'
 import { curveItems } from '/@/utils/keyframes/core'
 import { IVec2, sub } from 'okageo'
-import { useSettings } from '/@/composables/settings'
+import { AppSettings, useSettings } from '/@/composables/settings'
 import { pointToControl, moveCurveControlsMap } from '/@/utils/graphCurves'
 import { logRound, mapVec } from '/@/utils/geometry'
 import { useMenuList } from '/@/composables/menuList'
@@ -510,6 +510,7 @@ export type AnimationCanvasType = 'label' | 'action' | 'graph'
 type Option = {
   indexStore: IndexStore
   animationStore: AnimationStore
+  settings: AppSettings
 
   canvasType: AnimationCanvasType
 
@@ -556,7 +557,10 @@ function createActionContext(options: Option): ActionStateContext {
 }
 
 function createGraphContext(options: Option): GraphStateContext {
-  return createAnimationContext(options)
+  return {
+    ...createAnimationContext(options),
+    toCurveControl: (v) => pointToControl(v, options.settings.graphValueWidth),
+  }
 }
 
 function createAnimationContext(options: Option): AnimationCanvasStateContext {

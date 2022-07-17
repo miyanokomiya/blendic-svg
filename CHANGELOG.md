@@ -5,12 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.17.3] - 2022-07-17
 ### Added
 - Add new feature to paste `d` of `<path>` text as graph nodes
 - Inherit current input value as much as possible
 
 ### Fixed
 - Fix: `animate` tags in exported SVG didn't work due to lack of `id`
+
+### Refactor
+- refactor: Introduce state pattern into the timeline canvas
 
 ## [0.17.2] - 2022-07-10
 ### Added

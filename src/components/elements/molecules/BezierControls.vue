@@ -58,7 +58,10 @@ Copyright (C) 2021, Tomoya Komiyama.
         :y="controlIn.y - rectSize"
         :width="rectSize * 2"
         :height="rectSize * 2"
-        @mousedown.left="downControlIn"
+        data-type="bezier-control"
+        :data-id="pointId"
+        :data-key="pointKey"
+        data-control_in="true"
       />
       <rect
         v-if="controlOut"
@@ -66,7 +69,10 @@ Copyright (C) 2021, Tomoya Komiyama.
         :y="controlOut.y - rectSize"
         :width="rectSize * 2"
         :height="rectSize * 2"
-        @mousedown.left="downControlOut"
+        data-type="bezier-control"
+        :data-id="pointId"
+        :data-key="pointKey"
+        data-control_out="true"
       />
     </g>
   </g>
@@ -78,6 +84,14 @@ import { computed, defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   props: {
+    pointId: {
+      type: String,
+      required: true,
+    },
+    pointKey: {
+      type: String,
+      required: true,
+    },
     c0: {
       type: Object as PropType<IVec2>,
       required: true,
@@ -99,14 +113,11 @@ export default defineComponent({
       default: 1,
     },
   },
-  emits: ['down-control-in', 'down-control-out'],
-  setup(props, { emit }) {
+  setup(props) {
     const rectSize = computed(() => 10 * props.scale)
 
     return {
       rectSize,
-      downControlIn: () => emit('down-control-in'),
-      downControlOut: () => emit('down-control-out'),
     }
   },
 })

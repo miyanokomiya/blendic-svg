@@ -17,8 +17,8 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IVec2 } from 'okageo'
-import { computed } from 'vue'
+import { IVec2, sub } from 'okageo'
+import { computed, ref } from 'vue'
 import { IndexStore, useStore } from '.'
 import {
   getKeyframeMapByTargetId,
@@ -47,6 +47,7 @@ import {
   dropMap,
   toKeyListMap,
   toKeyMap,
+  regenerateIdMap,
 } from '../utils/commons'
 import { getNotDuplicatedName } from '../utils/relations'
 import { useHistoryStore } from './history'
@@ -89,7 +90,10 @@ import {
   deleteKeyframeByProp,
   getAllSelectedState,
   isAllExistSelected,
+  moveKeyframe,
+  SplitedKeyframeMapBySelected,
   splitKeyframeMapByName,
+  splitKeyframeMapBySelected,
 } from '/@/utils/keyframes'
 import {
   getInterpolatedTransformMapByTargetId,
@@ -97,10 +101,16 @@ import {
 } from '/@/utils/keyframes/keyframeBone'
 import * as keyframeConstraint from '/@/utils/keyframes/keyframeConstraint'
 import * as okahistory from 'okahistory'
+import { EditMovement } from '/@/composables/modes/types'
+import { canvasToFrameValue } from '/@/utils/animations'
+import { useSettings } from '/@/composables/settings'
 
 export function createStore(
   historyStore: HistoryStore,
-  indexStore: IndexStore
+  indexStore: IndexStore,
+  options?: {
+    graphValueWidth: () => number
+  }
 ) {
   const actionEntities = useEntities<Action>('Action')
   const keyframeEntities = useEntities<KeyframeBase>('Keyframe')
@@ -719,6 +729,64 @@ export function createStore(
     )
   }
 
+  const editMovement = ref<EditMovement>()
+  const tmpKeyframes = ref<IdMap<KeyframeBase>>()
+
+  const keyframeSelectedInfoSet = computed<SplitedKeyframeMapBySelected>(() => {
+    const splited = splitKeyframeMapBySelected(
+      visibledKeyframeMap.value,
+      extractMap(
+        keyframeState.selectedStateMap.value,
+        visibledKeyframeMap.value
+      )
+    )
+    return {
+      selected: splited.selected,
+      notSelected: regenerateIdMap(splited.notSelected),
+    }
+  })
+
+  const editedKeyframeMap = computed<SplitedKeyframeMapBySelected | undefined>(
+    () => {
+      if (!editMovement.value) return
+
+      const diff = canvasToFrameValue(
+        sub(editMovement.value.current, editMovement.value.start),
+        options?.graphValueWidth() ?? 1
+      )
+
+      return {
+        selected: mapReduce(
+          keyframeSelectedInfoSet.value.selected,
+          (keyframe) => moveKeyframe(keyframe, diff)
+        ),
+        notSelected: {
+          ...keyframeSelectedInfoSet.value.notSelected,
+          ...(tmpKeyframes.value ?? {}),
+        },
+      }
+    }
+  )
+
+  function getEditMovement(): EditMovement | undefined {
+    return editMovement.value
+  }
+  function setEditMovement(val?: EditMovement): void {
+    editMovement.value = val
+  }
+  function completeEdit(): void {
+    if (editedKeyframeMap.value) {
+      upsertKeyframes(
+        toList(editedKeyframeMap.value.notSelected),
+        toList(editedKeyframeMap.value.selected)
+      )
+    }
+    tmpKeyframes.value = undefined
+  }
+  function setTmpKeyframes(val?: IdMap<KeyframeBase>) {
+    tmpKeyframes.value = val
+  }
+
   return {
     initState,
     exportState,
@@ -791,6 +859,12 @@ export function createStore(
     upsertKeyframes,
 
     selectTargetProp,
+
+    editedKeyframeMap,
+    getEditMovement,
+    setEditMovement,
+    completeEdit,
+    setTmpKeyframes,
   }
 
   function getSelectAllKeyframesItem(): okahistory.Action<unknown> {
@@ -949,7 +1023,10 @@ export function createStore(
 
 export type AnimationStore = ReturnType<typeof createStore>
 
-const store = createStore(useHistoryStore(), useStore())
+const { settings } = useSettings()
+const store = createStore(useHistoryStore(), useStore(), {
+  graphValueWidth: () => settings.graphValueWidth,
+})
 export function useAnimationStore() {
   return store
 }

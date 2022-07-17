@@ -63,7 +63,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       />
     </g>
     <slot />
-    <g :transform="`scale(${scale})`" @mousedown.left="downCurrentFrame">
+    <g :transform="`scale(${scale})`" data-type="frame-control">
       <rect
         x="-100000"
         width="200000"
@@ -145,8 +145,7 @@ export default defineComponent({
       default: 24,
     },
   },
-  emits: ['down-current-frame', 'up-current-frame'],
-  setup(props, { emit }) {
+  setup(props) {
     const frameInterval = computed(() => {
       return animations.getFrameInterval(props.scale)
     })
@@ -192,7 +191,6 @@ export default defineComponent({
       currentFrameX,
       endFrameX,
       currentFrameLabelWidth,
-      downCurrentFrame: () => emit('down-current-frame'),
     }
   },
 })

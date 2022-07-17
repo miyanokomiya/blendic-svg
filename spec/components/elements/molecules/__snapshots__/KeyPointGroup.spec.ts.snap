@@ -11,7 +11,11 @@ exports[`src/components/elements/molecules/KeyPointGroup.vue snapshot expanded 1
 <g>
   <!--v-if-->
   
-  <g>
+  <g
+    data-id=""
+    data-key="scaleX"
+    data-type="keyframe-prop"
+  >
     <title>
       linear
     </title>

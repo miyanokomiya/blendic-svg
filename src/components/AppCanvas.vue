@@ -117,11 +117,7 @@ import {
   useWindow,
 } from '../composables/window'
 import { useSettings } from '/@/composables/settings'
-import {
-  centerizeView,
-  provideScale,
-  useSvgCanvas,
-} from '../composables/canvas'
+import { provideScale, useSvgCanvas } from '../composables/canvas'
 import { useThrottle } from '/@/composables/throttle'
 import { useCanvasElement } from '/@/composables/canvasElement'
 import { useCanvasStateMachine } from '/@/composables/modes/canvasStateMachine'
@@ -222,14 +218,7 @@ export default defineComponent({
 
     function initView() {
       if (!props.originalViewBox) return
-
-      const ret = centerizeView(
-        props.originalViewBox,
-        canvas.viewSize.value,
-        150
-      )
-      canvas.viewOrigin.value = ret.viewOrigin
-      canvas.scale.value = ret.scale
+      canvas.setViewport(props.originalViewBox)
     }
     watch(() => props.originalViewBox, initView)
     onMounted(initView)

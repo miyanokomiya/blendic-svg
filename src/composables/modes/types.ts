@@ -17,9 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ComputedRef } from '@vue/reactivity'
 import { IVec2 } from 'okageo'
-import { CurveSelectedState, KeyframeSelectedState } from '/@/models/keyframe'
 import { MouseOptions } from '/@/utils/devices'
 
 export type CanvasMode = 'object' | 'edit' | 'pose' | 'weight'
@@ -56,40 +54,6 @@ export interface ToolMenuItem {
 export type CommandExam = { command?: string; title: string }
 
 export type SelectOptions = Pick<MouseOptions, 'shift' | 'ctrl'>
-
-export type KeyframeEditCommand =
-  | ''
-  | 'grab'
-  | 'interpolation'
-  | 'grab-control'
-  | 'grab-current-frame'
-
-export interface KeyframeEditModeBase {
-  command: ComputedRef<KeyframeEditCommand>
-  end: () => void
-  cancel: () => void
-  snap: (axis: 'x' | 'y') => void
-  execKey: (arg: { key: string; shift?: boolean; ctrl?: boolean }) => {
-    needLock: boolean
-  }
-  select: (id: string, selectedState: KeyframeSelectedState) => void
-  shiftSelect: (id: string, selectedState: KeyframeSelectedState) => void
-  selectAll: () => void
-  mousemove: (arg: EditMovement) => void
-  drag: (arg: EditMovement) => void
-  clickAny: () => void
-  clickEmpty: () => void
-  upLeft: () => void
-  execDelete: () => void
-  availableCommandList: ComputedRef<CommandExam[]>
-  popupMenuList: ComputedRef<PopupMenuItem[]>
-  grabCurrentFrame: () => void
-  grabControl: (
-    keyframeId: string,
-    pointKey: string,
-    controls: CurveSelectedState
-  ) => void
-}
 
 export interface PickerOptions {
   callback: (id: string) => void

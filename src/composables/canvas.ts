@@ -32,49 +32,38 @@ export interface MoveInfo {
 
 export type Dragtype = '' | 'rect-select'
 
-export function centerizeView(
-  targetViewSize: {
-    width: number
-    height: number
-  },
+function centerizeView(
+  targetRect: IRectangle,
   viewSize: {
     width: number
     height: number
-  },
-  margin = 0
+  }
 ): {
   viewOrigin: IVec2
   scale: number
 } {
-  const adjustedViewbox = {
-    width: viewSize.width - margin,
-    height: viewSize.height - margin,
-  }
-  const rateW = adjustedViewbox.width / targetViewSize.width
-  const rateH = adjustedViewbox.height / targetViewSize.height
+  const rateW = viewSize.width / targetRect.width
+  const rateH = viewSize.height / targetRect.height
 
   if (rateW < rateH) {
     const scale = 1 / rateW
-    const m = (-margin * scale) / 2
     return {
       viewOrigin: {
-        x: m,
+        x: targetRect.x,
         y:
-          m +
-          ((targetViewSize.height / scale - adjustedViewbox.height) / 2) *
-            scale,
+          targetRect.y +
+          ((targetRect.height / scale - viewSize.height) / 2) * scale,
       },
       scale,
     }
   } else {
     const scale = 1 / rateH
-    const m = (-margin * scale) / 2
     return {
       viewOrigin: {
         x:
-          m +
-          ((targetViewSize.width / scale - adjustedViewbox.width) / 2) * scale,
-        y: m,
+          targetRect.x +
+          ((targetRect.width / scale - viewSize.width) / 2) * scale,
+        y: targetRect.y,
       },
       scale,
     }
@@ -206,10 +195,11 @@ export function useSvgCanvas(
 
   function adjustToCenter() {
     const size = viewSize.value
-    const ret = centerizeView(size, size)
-    viewOrigin.value = fixOrigin(
-      sub(ret.viewOrigin, multi({ x: size.width, y: size.height }, 1 / 2))
+    const ret = centerizeView(
+      { x: -size.width / 2, y: -size.height / 2, ...size },
+      size
     )
+    viewOrigin.value = fixOrigin(ret.viewOrigin)
     scale.value = ret.scale
   }
 
@@ -278,12 +268,7 @@ export function useSvgCanvas(
         viewSize.value
       )
       scale.value = ret.scale
-      viewOrigin.value = fixOrigin(
-        add(
-          viewOrigin.value,
-          sub(getRectCenter(rect), getRectCenter(viewCanvasRect.value))
-        )
-      )
+      viewOrigin.value = fixOrigin(ret.viewOrigin)
     },
 
     setRectangleDragging,

@@ -47,6 +47,7 @@ export interface AnimationCanvasStateContext extends CanvasStateContext {
   selectAllKeyframes: () => void
   deleteKeyframes: () => void
   updateKeyframes: (keyframes: IdMap<KeyframeBase>, seriesKey?: string) => void
+  pasteKeyframes: (keyframeList: KeyframeBase[]) => void
   setTmpKeyframes: (keyframes?: IdMap<KeyframeBase>) => void
 }
 

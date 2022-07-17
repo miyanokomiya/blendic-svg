@@ -595,6 +595,7 @@ function createAnimationContext(options: Option): AnimationCanvasStateContext {
     selectAllKeyframes: animationStore.selectAllKeyframes,
     deleteKeyframes: animationStore.execDeleteKeyframes,
     updateKeyframes: animationStore.execUpdateKeyframes,
+    pasteKeyframes: animationStore.pasteKeyframes,
     setTmpKeyframes: animationStore.setTmpKeyframes,
   }
 }

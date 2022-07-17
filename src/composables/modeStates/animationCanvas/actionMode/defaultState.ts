@@ -26,7 +26,10 @@ import { useGrabbingState } from '/@/composables/modeStates/animationCanvas/acti
 import { useMovingFrameState } from '/@/composables/modeStates/animationCanvas/movingFrameState'
 import { useChangingCurveTypeState } from '/@/composables/modeStates/animationCanvas/changingCurveTypeState'
 import { getAllSelectedState } from '/@/utils/keyframes'
-import { duplicateKeyframes } from '/@/composables/modeStates/animationCanvas/utils'
+import {
+  duplicateKeyframes,
+  useKeyframeClipboard,
+} from '/@/composables/modeStates/animationCanvas/utils'
 
 export function useDefaultState(): ActionState {
   return state
@@ -108,6 +111,16 @@ const state: ActionState = {
           default:
             return
         }
+      case 'copy': {
+        const clipboard = useKeyframeClipboard(ctx)
+        clipboard.onCopy(event.nativeEvent)
+        return
+      }
+      case 'paste': {
+        const clipboard = useKeyframeClipboard(ctx)
+        await clipboard.onPaste(event.nativeEvent)
+        return
+      }
       case 'selection':
         updateCommandExams(ctx)
         return

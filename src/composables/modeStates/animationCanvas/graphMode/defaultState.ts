@@ -26,7 +26,10 @@ import { useMovingFrameState } from '/@/composables/modeStates/animationCanvas/m
 import { useChangingCurveTypeState } from '/@/composables/modeStates/animationCanvas/changingCurveTypeState'
 import { useGrabbingState } from '/@/composables/modeStates/animationCanvas/graphMode/grabbingState'
 import { getAllSelectedState } from '/@/utils/keyframes'
-import { duplicateKeyframes } from '/@/composables/modeStates/animationCanvas/utils'
+import {
+  duplicateKeyframes,
+  useKeyframeClipboard,
+} from '/@/composables/modeStates/animationCanvas/utils'
 import { useMovingBezierState } from '/@/composables/modeStates/animationCanvas/graphMode/movingBezierState'
 
 export function useDefaultState(): GraphState {
@@ -120,6 +123,16 @@ const state: GraphState = {
           default:
             return
         }
+      case 'copy': {
+        const clipboard = useKeyframeClipboard(ctx)
+        clipboard.onCopy(event.nativeEvent)
+        return
+      }
+      case 'paste': {
+        const clipboard = useKeyframeClipboard(ctx)
+        await clipboard.onPaste(event.nativeEvent)
+        return
+      }
       case 'selection':
         updateCommandExams(ctx)
         return

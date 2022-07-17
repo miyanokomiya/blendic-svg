@@ -17,10 +17,16 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import {
+  StringItem,
+  useClipboard,
+  useClipboardSerializer,
+} from '/@/composables/clipboard'
 import { AnimationCanvasStateContext } from '/@/composables/modeStates/animationCanvas/core'
 import { IdMap } from '/@/models'
 import { KeyframeBase } from '/@/models/keyframe'
-import { getKeyframe } from '/@/utils/keyframes'
+import { toList } from '/@/utils/commons'
+import { getKeyframe, splitKeyframeMapBySelected } from '/@/utils/keyframes'
 
 export function duplicateKeyframes(
   ctx: Pick<
@@ -41,4 +47,35 @@ export function duplicateKeyframes(
   }, {})
 
   ctx.setTmpKeyframes(duplicated)
+}
+
+const clipboardSerializer = useClipboardSerializer<'keyframes', KeyframeBase[]>(
+  'keyframes'
+)
+export function useKeyframeClipboard(ctx: AnimationCanvasStateContext) {
+  return useClipboard(
+    () => {
+      return {
+        'text/plain': clipboardSerializer.serialize(
+          toList(
+            splitKeyframeMapBySelected(
+              ctx.getKeyframes(),
+              ctx.getSelectedKeyframes()
+            ).selected
+          )
+        ),
+      }
+    },
+    async (items) => {
+      const item = items.find((i) => i.kind === 'string') as
+        | StringItem
+        | undefined
+      if (!item) return
+
+      const text: any = await item.getAsString()
+      const keyframes = clipboardSerializer.deserialize(text)
+      if (keyframes.length === 0) return
+      ctx.pasteKeyframes(keyframes)
+    }
+  )
 }

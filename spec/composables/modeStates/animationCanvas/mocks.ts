@@ -39,6 +39,7 @@ function getMockCommonCtx() {
     selectAllKeyframes: jest.fn(),
     deleteKeyframes: jest.fn(),
     updateKeyframes: jest.fn(),
+    pasteKeyframes: jest.fn(),
     setCurrentFrame: jest.fn(),
     setTmpKeyframes: jest.fn(),
   } as any

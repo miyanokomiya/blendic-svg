@@ -940,9 +940,9 @@ export function createStore(
     const createdList = toList(createdMap)
 
     return [
-      keyframeEntities.createAddAction(createdList),
+      { ...keyframeEntities.createAddAction(createdList), seriesKey },
       keyframeEntities.createDeleteAction(toList(deletedMap).map((k) => k.id)),
-      keyframeEntities.createUpdateAction(updatedMap, seriesKey),
+      keyframeEntities.createUpdateAction(updatedMap),
       actionEntities.createUpdateAction({
         [lastSelectedAction.value!.id]: {
           keyframes: lastSelectedAction

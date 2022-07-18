@@ -114,6 +114,30 @@ describe('src/store/animation.ts', () => {
     })
   })
 
+  describe('selectKeyframes', () => {
+    it('should select keyframes', () => {
+      const { target } = prepare()
+      target.addAction()
+      target.execInsertKeyframe({ rotate: true, scaleX: true })
+      const keyframe0 = target.keyframes.value[0]
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframe0.id]: { props: { rotate: true, scaleX: true } },
+      })
+
+      target.selectKeyframes({ [keyframe0.id]: { props: { rotate: true } } })
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframe0.id]: { props: { rotate: true } },
+      })
+      target.selectKeyframes(
+        { [keyframe0.id]: { props: { scaleY: true } } },
+        true
+      )
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframe0.id]: { props: { rotate: true, scaleY: true } },
+      })
+    })
+  })
+
   describe('execInsertKeyframe', () => {
     it('should insert keyframes for selected bones and select the keyframes', () => {
       const { target, store } = prepare()

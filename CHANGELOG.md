@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Add new feature to modify bezier controls symmetrically
 - Add new feature to modify bezier controls synchronically
+- Add rectangle select feature for the keyframe graph canvas
 
 ### Fixed
 - Fix: Moving bezier controls slows down the cnavas

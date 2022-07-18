@@ -31,6 +31,7 @@ import {
   useKeyframeClipboard,
 } from '/@/composables/modeStates/animationCanvas/utils'
 import { useMovingBezierState } from '/@/composables/modeStates/animationCanvas/graphMode/movingBezierState'
+import { useRectangleSelectingState } from '/@/composables/modeStates/animationCanvas/graphMode/rectangleSelectingState'
 
 export function useDefaultState(): GraphState {
   return state
@@ -80,7 +81,10 @@ const state: GraphState = {
                   })
               }
               default:
-                return ctx.selectKeyframe('')
+                if (!event.data.options.shift) {
+                  ctx.selectKeyframe('')
+                }
+                return useRectangleSelectingState
             }
           case 1:
             return usePanningState

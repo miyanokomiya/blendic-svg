@@ -192,7 +192,12 @@ export function useKeyframeStates(
         } else {
           setSelectedStateMap({
             ...selectedStateMap.value,
-            ...mapReduce(args.selectedTargetMap, getAllSelectedProps),
+            ...mapReduce(args.selectedTargetMap, (target, id) => ({
+              props: {
+                ...(selectedStateMap.value[id]?.props ?? {}),
+                ...getAllSelectedProps(target).props,
+              },
+            })),
           })
           lastSelectedId.value = pickAnyItem(args.selectedTargetMap)?.id ?? ''
         }

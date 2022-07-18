@@ -26,6 +26,7 @@ import type { ModeStateBase } from '/@/composables/modeStates/core'
 
 export interface GraphStateContext extends AnimationCanvasStateContext {
   toCurveControl: (v: IVec2) => IVec2
+  toFrameValue: (v: IVec2, raw?: boolean) => IVec2
 }
 
 export interface GraphState

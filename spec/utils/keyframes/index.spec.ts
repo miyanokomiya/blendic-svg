@@ -647,4 +647,50 @@ describe('utils/keyframes/index.ts', () => {
       })
     })
   })
+
+  describe('getSelectedStateByRectangle', () => {
+    it('should return selected state covered by the rectangle', () => {
+      const src = {
+        a: getKeyframeBone({
+          id: 'a',
+          frame: 1,
+          points: {
+            translateX: getKeyframePoint({ value: 9 }),
+            translateY: getKeyframePoint({ value: 9 }),
+          },
+        }),
+        b: getKeyframeBone({
+          id: 'b',
+          frame: 2,
+          points: {
+            translateX: getKeyframePoint({ value: 9 }),
+            translateY: getKeyframePoint({ value: 10 }),
+            rotate: getKeyframePoint({ value: 20 }),
+            scaleX: getKeyframePoint({ value: 21 }),
+          },
+        }),
+        c: getKeyframeBone({
+          id: 'c',
+          frame: 4,
+          points: {
+            rotate: getKeyframePoint({ value: 20 }),
+          },
+        }),
+        d: getKeyframeBone({
+          id: 'd',
+          frame: 4,
+          points: {
+            rotate: getKeyframePoint({ value: 20 }),
+          },
+        }),
+      }
+      expect(target.getSelectedStateByRectangle(src, [2, 4], [10, 20])).toEqual(
+        {
+          b: { props: { translateY: true, rotate: true } },
+          c: { props: { rotate: true } },
+          d: { props: { rotate: true } },
+        }
+      )
+    })
+  })
 })

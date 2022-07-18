@@ -410,3 +410,28 @@ export function getKeyframeStatus(
     return list.some((k) => k.frame === currentFrame) ? 'self' : 'others'
   })
 }
+
+export function getSelectedStateByRectangle(
+  keyframes: IdMap<KeyframeBase>,
+  frameRange: [min: number, max: number],
+  valueRange: [min: number, max: number]
+): IdMap<KeyframeSelectedState> {
+  const ret: IdMap<KeyframeSelectedState> = {}
+
+  Object.entries(keyframes).forEach(([id, k]) => {
+    if (frameRange[0] <= k.frame && k.frame <= frameRange[1]) {
+      const props: { [key: string]: boolean } = {}
+      Object.entries(k.points).forEach(([key, p]) => {
+        if (valueRange[0] <= p.value && p.value <= valueRange[1]) {
+          props[key] = true
+        }
+      })
+
+      if (Object.keys(props).length > 0) {
+        ret[id] = { props }
+      }
+    }
+  })
+
+  return ret
+}

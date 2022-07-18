@@ -89,11 +89,16 @@ export function canvasToValue(value: number, valueWidth: number): number {
 
 /**
  * @param p point in canvas space
+ * @param raw avoid rounding `frame` if true
  * @return x: frame, y: value
  */
-export function canvasToFrameValue(p: IVec2, valueWidth: number): IVec2 {
+export function canvasToFrameValue(
+  p: IVec2,
+  valueWidth: number,
+  raw = false
+): IVec2 {
   return {
-    x: canvasToNearestFrame(p.x),
+    x: !raw ? canvasToNearestFrame(p.x) : canvasToFrame(p.x),
     y: canvasToValue(p.y, valueWidth),
   }
 }

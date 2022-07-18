@@ -29,6 +29,7 @@ import {
 } from '/@/models/keyframe'
 import { frameToCanvas, canvasToFrame } from '/@/utils/animations'
 import { mapReduce } from '/@/utils/commons'
+import { symmetrizeRotate } from '/@/utils/geometry'
 import {
   getMonotonicBezier3Points,
   getNormalizedBezier3Points,
@@ -169,14 +170,16 @@ export function getCurves(args: {
 export function moveCurveControlsMap(
   keyframeMap: IdMap<KeyframeBase>,
   targetMap: IdMap<IdMap<CurveSelectedState>>,
-  diff: IVec2
+  diff: IVec2,
+  symmetrize = false
 ): IdMap<KeyframeBase> {
   return Object.keys(targetMap).reduce<IdMap<KeyframeBase>>((p, keyframeId) => {
     if (keyframeMap[keyframeId]) {
       p[keyframeId] = moveCurveControls(
         keyframeMap[keyframeId],
         targetMap[keyframeId],
-        diff
+        diff,
+        symmetrize
       )
     }
     return p
@@ -186,7 +189,8 @@ export function moveCurveControlsMap(
 export function moveCurveControls(
   keyframe: KeyframeBase,
   targets: IdMap<CurveSelectedState>,
-  diff: IVec2
+  diff: IVec2,
+  symmetrize = false
 ): KeyframeBase {
   return {
     ...keyframe,
@@ -194,26 +198,41 @@ export function moveCurveControls(
       const selectedState = targets[key]
       if (!selectedState) return p
 
-      const nextIn = selectedState.controlIn
-        ? {
-            x: Math.min(p.curve.controlIn.x + diff.x, 0),
-            y: p.curve.controlIn.y + diff.y,
-          }
-        : p.curve.controlIn
-      const nextOut = selectedState.controlOut
-        ? {
-            x: Math.max(p.curve.controlOut.x + diff.x, 0),
-            y: p.curve.controlOut.y + diff.y,
-          }
-        : p.curve.controlOut
+      if (selectedState.controlIn) {
+        const nextIn = {
+          x: Math.min(p.curve.controlIn.x + diff.x, 0),
+          y: p.curve.controlIn.y + diff.y,
+        }
+        const nextOut = symmetrize
+          ? symmetrizeRotate({ x: 0, y: 0 }, nextIn, p.curve.controlOut)
+          : p.curve.controlOut
 
-      return {
-        value: p.value,
-        curve: {
-          name: p.curve.name,
-          controlIn: nextIn,
-          controlOut: nextOut,
-        },
+        return {
+          value: p.value,
+          curve: {
+            name: p.curve.name,
+            controlIn: nextIn,
+            controlOut: nextOut,
+          },
+        }
+      } else {
+        const nextOut = {
+          x: Math.max(p.curve.controlOut.x + diff.x, 0),
+          y: p.curve.controlOut.y + diff.y,
+        }
+
+        const nextIn = symmetrize
+          ? symmetrizeRotate({ x: 0, y: 0 }, nextOut, p.curve.controlIn)
+          : p.curve.controlIn
+
+        return {
+          value: p.value,
+          curve: {
+            name: p.curve.name,
+            controlIn: nextIn,
+            controlOut: nextOut,
+          },
+        }
       }
     }),
   }

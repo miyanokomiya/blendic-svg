@@ -451,3 +451,15 @@ export function snapPlainGrid(
 export function isOppositeSide(origin: IVec2, a: IVec2, b: IVec2): boolean {
   return getInner(sub(a, origin), sub(b, origin)) < 0
 }
+
+export function symmetrizeRotate(
+  origin: IVec2,
+  base: IVec2,
+  target: IVec2
+): IVec2 {
+  const a = sub(base, origin)
+  const p = sub(target, origin)
+  const radianA = getRadian(a)
+  const radianP = getRadian(p)
+  return add(origin, rotate(p, radianA + Math.PI - radianP))
+}

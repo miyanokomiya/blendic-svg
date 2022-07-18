@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Add new feature to modify bezier controls symmetrically
+- Add new feature to modify bezier controls synchronically
 
 ## [0.17.3] - 2022-07-17
 ### Added

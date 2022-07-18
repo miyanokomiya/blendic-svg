@@ -32,6 +32,14 @@ describe('src/composables/modeStates/animationCanvas/graphMode/movingBezierState
     id: 'a',
     points: { rotate: getKeyframePoint({ curve: getCurve('bezier3') }) },
   })
+  const keyFrameB = getKeyframeBone({
+    id: 'b',
+    points: {
+      rotate: getKeyframePoint({
+        curve: { ...getCurve('bezier3'), controlIn: { x: -5, y: 2 } },
+      }),
+    },
+  })
   async function prepare() {
     const ctx = getMockGraphCtx()
     const sm = useModeStateMachine(ctx, () => useMovingBezierState(options))
@@ -57,7 +65,7 @@ describe('src/composables/modeStates/animationCanvas/graphMode/movingBezierState
         start: { x: 0, y: 0 },
         scale: 1,
       }
-      ctx.getKeyframes.mockReturnValue({ a: keyFrameA })
+      ctx.getKeyframes.mockReturnValue({ a: keyFrameA, b: keyFrameB })
       ctx.toCurveControl.mockReturnValue({ x: 1, y: 2 })
       await sm.handleEvent({
         type: 'pointerdrag',
@@ -65,19 +73,54 @@ describe('src/composables/modeStates/animationCanvas/graphMode/movingBezierState
       })
       expect(ctx.updateKeyframes).toHaveBeenCalledWith(
         {
-          a: {
-            ...keyFrameA,
+          a: getKeyframeBone({
+            id: 'a',
             points: {
-              ...keyFrameA.points,
-              rotate: {
-                ...keyFrameA.points.rotate,
-                curve: {
-                  ...keyFrameA.points.rotate!.curve,
-                  controlIn: { x: -9, y: 2 },
-                },
-              },
+              rotate: getKeyframePoint({
+                curve: { ...getCurve('bezier3'), controlIn: { x: -9, y: 2 } },
+              }),
             },
-          },
+          }),
+        },
+        'mock-key'
+      )
+    })
+    it('shift: should update all selected keyframes', async () => {
+      const { ctx, sm } = await prepare()
+      const data = {
+        current: { x: 10, y: 20 },
+        start: { x: 0, y: 0 },
+        scale: 1,
+        shift: true,
+      }
+      ctx.getKeyframes.mockReturnValue({ a: keyFrameA, b: keyFrameB })
+      ctx.getSelectedKeyframes.mockReturnValue({
+        a: { props: { rotate: true } },
+        b: { props: { rotate: true } },
+      })
+      ctx.toCurveControl.mockReturnValue({ x: 1, y: 2 })
+      await sm.handleEvent({
+        type: 'pointerdrag',
+        data,
+      })
+      expect(ctx.updateKeyframes).toHaveBeenCalledWith(
+        {
+          a: getKeyframeBone({
+            id: 'a',
+            points: {
+              rotate: getKeyframePoint({
+                curve: { ...getCurve('bezier3'), controlIn: { x: -9, y: 2 } },
+              }),
+            },
+          }),
+          b: getKeyframeBone({
+            id: 'b',
+            points: {
+              rotate: getKeyframePoint({
+                curve: { ...getCurve('bezier3'), controlIn: { x: -4, y: 4 } },
+              }),
+            },
+          }),
         },
         'mock-key'
       )

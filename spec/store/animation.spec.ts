@@ -283,5 +283,30 @@ describe('src/store/animation.ts', () => {
         [keyframes[0].id]: { props: { rotate: true } },
       })
     })
+
+    it('should fallback "update" if no new items exist', () => {
+      const { target } = prepare()
+      target.addAction()
+      target.execInsertKeyframe({ scaleX: true })
+      target.execInsertKeyframe({ rotate: true })
+      expect(target.selectedAction.value?.keyframes).toHaveLength(1)
+      expect(target.keyframes.value).toHaveLength(1)
+
+      const keyframes = target.keyframes.value
+      const updated = {
+        ...keyframes[0],
+        frame: 10,
+        points: {
+          rotate: getKeyframePoint({ value: 10 }),
+          scale: getKeyframePoint(),
+        },
+      }
+
+      target.upsertKeyframes([], [updated])
+      expect(target.keyframes.value).toEqual([updated])
+      expect(target.selectedKeyframeMap.value).toEqual({
+        [keyframes[0].id]: { props: { rotate: true } },
+      })
+    })
   })
 })

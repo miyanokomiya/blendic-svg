@@ -58,7 +58,7 @@ describe('src/composables/modeStates/animationCanvas/graphMode/movingBezierState
   })
 
   describe('handle pointerdrag', () => {
-    it('should execute "updateKeyframes"', async () => {
+    it('should execute "setTmpKeyframes"', async () => {
       const { ctx, sm } = await prepare()
       const data = {
         current: { x: 10, y: 20 },
@@ -71,19 +71,16 @@ describe('src/composables/modeStates/animationCanvas/graphMode/movingBezierState
         type: 'pointerdrag',
         data,
       })
-      expect(ctx.updateKeyframes).toHaveBeenCalledWith(
-        {
-          a: getKeyframeBone({
-            id: 'a',
-            points: {
-              rotate: getKeyframePoint({
-                curve: { ...getCurve('bezier3'), controlIn: { x: -9, y: 2 } },
-              }),
-            },
-          }),
-        },
-        'mock-key'
-      )
+      expect(ctx.setTmpKeyframes).toHaveBeenCalledWith({
+        a: getKeyframeBone({
+          id: 'a',
+          points: {
+            rotate: getKeyframePoint({
+              curve: { ...getCurve('bezier3'), controlIn: { x: -9, y: 2 } },
+            }),
+          },
+        }),
+      })
     })
     it('shift: should update all selected keyframes', async () => {
       const { ctx, sm } = await prepare()
@@ -103,27 +100,24 @@ describe('src/composables/modeStates/animationCanvas/graphMode/movingBezierState
         type: 'pointerdrag',
         data,
       })
-      expect(ctx.updateKeyframes).toHaveBeenCalledWith(
-        {
-          a: getKeyframeBone({
-            id: 'a',
-            points: {
-              rotate: getKeyframePoint({
-                curve: { ...getCurve('bezier3'), controlIn: { x: -9, y: 2 } },
-              }),
-            },
-          }),
-          b: getKeyframeBone({
-            id: 'b',
-            points: {
-              rotate: getKeyframePoint({
-                curve: { ...getCurve('bezier3'), controlIn: { x: -4, y: 4 } },
-              }),
-            },
-          }),
-        },
-        'mock-key'
-      )
+      expect(ctx.setTmpKeyframes).toHaveBeenCalledWith({
+        a: getKeyframeBone({
+          id: 'a',
+          points: {
+            rotate: getKeyframePoint({
+              curve: { ...getCurve('bezier3'), controlIn: { x: -9, y: 2 } },
+            }),
+          },
+        }),
+        b: getKeyframeBone({
+          id: 'b',
+          points: {
+            rotate: getKeyframePoint({
+              curve: { ...getCurve('bezier3'), controlIn: { x: -4, y: 4 } },
+            }),
+          },
+        }),
+      })
     })
   })
 

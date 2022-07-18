@@ -88,6 +88,14 @@ describe('utils/animations.ts', () => {
         y: 20,
       })
     })
+    it('raw: get raw frame', () => {
+      expect(
+        canvasToFrameValue({ x: 100 * frameWidth + 0.1, y: 200 }, 10, true)
+      ).toEqual({
+        x: 100.01,
+        y: 20,
+      })
+    })
   })
 
   describe('sortKeyframeMap', () => {

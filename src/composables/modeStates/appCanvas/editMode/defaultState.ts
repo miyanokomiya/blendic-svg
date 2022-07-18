@@ -59,7 +59,9 @@ const state: EditState = {
                 )
                 return
               default:
-                ctx.selectBones({}, event.data.options.shift)
+                if (!event.data.options.shift) {
+                  ctx.selectBones({})
+                }
                 return useRectangleSelectingState
             }
           case 1:

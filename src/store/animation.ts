@@ -544,11 +544,34 @@ export function createStore(
     }
   }
 
+  function selectKeyframes(
+    selectedState: IdMap<KeyframeSelectedState> = {},
+    shift = false
+  ) {
+    const hasItem = Object.keys(selectedState).length > 0
+    if (!hasItem && !isAnyVisibledSelectedKeyframe.value) return
+
+    if (hasItem) {
+      historyStore.dispatch(
+        keyframeState.createMultiSelectAction(
+          mapReduce(selectedState, (k, id) => ({
+            id,
+            points: mapReduce(k.props, () => true),
+          })),
+          shift
+        ),
+        [targetPropsState.createClearAllAction()]
+      )
+    } else {
+      const [head, ...body] = getClearSelectKeyframeItem()
+      historyStore.dispatch(head, body)
+    }
+  }
+
   function selectKeyframeByFrame(frame: number, shift = false) {
     const frames = keyframeMapByFrame.value[frame]
     if (frames.length === 0) return
 
-    // const [head, ...body] = getSelectKeyframesItem(toMap(frames), shift)
     historyStore.dispatch(
       keyframeState.createMultiSelectAction(toMap(frames), shift),
       [targetPropsState.createClearAllAction()]
@@ -860,6 +883,7 @@ export function createStore(
     deleteAction,
 
     selectKeyframe,
+    selectKeyframes,
     selectKeyframeByFrame,
     selectAllKeyframes,
 

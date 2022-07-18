@@ -53,17 +53,30 @@ describe('src/composables/modeStates/appCanvas/poseMode/defaultState.ts', () => 
   })
 
   describe('handle pointerdown: button 0', () => {
-    it('empty: should execute "selectArmature" and move to "RectangleSelecting"', async () => {
-      const { ctx, sm } = await prepare()
-      await sm.handleEvent({
-        type: 'pointerdown',
-        target: { type: 'empty', id: '' },
-        data: { point: { x: 0, y: 0 }, options: { button: 0 } },
+    describe('empty', () => {
+      it('default: should execute "selectBones" and move to RectangleSelecting', async () => {
+        const { ctx, sm } = await prepare()
+        await sm.handleEvent({
+          type: 'pointerdown',
+          target: { type: 'empty', id: '' },
+          data: { point: { x: 0, y: 0 }, options: { button: 0 } },
+        })
+        expect(ctx.selectBones).toHaveBeenNthCalledWith(1, {})
+        expect(sm.getStateSummary().label).toBe('RectangleSelecting')
       })
-      expect(ctx.selectBones).toHaveBeenNthCalledWith(1, {}, undefined)
-      expect(sm.getStateSummary().label).toBe('RectangleSelecting')
+      it('shift: should move to RectangleSelecting', async () => {
+        const { ctx, sm } = await prepare()
+        await sm.handleEvent({
+          type: 'pointerdown',
+          target: { type: 'empty', id: '' },
+          data: { point: { x: 0, y: 0 }, options: { button: 0, shift: true } },
+        })
+        expect(ctx.selectBones).not.toHaveBeenCalled()
+        expect(sm.getStateSummary().label).toBe('RectangleSelecting')
+      })
     })
-    it('bone-body: should execute "selectArmature"', async () => {
+
+    it('bone-body: should execute "selectBones"', async () => {
       const { ctx, sm } = await prepare()
       await sm.handleEvent({
         type: 'pointerdown',

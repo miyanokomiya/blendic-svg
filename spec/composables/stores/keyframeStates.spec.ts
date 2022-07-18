@@ -265,7 +265,7 @@ describe('src/composables/stores/keyframeStates.ts', () => {
         )
         expect(store.selectedStateMap.value).toEqual({
           a: { props: { x: true } },
-          b: { props: { y: true, z: true } },
+          b: { props: { x: true, y: true, z: true } },
         })
       })
 

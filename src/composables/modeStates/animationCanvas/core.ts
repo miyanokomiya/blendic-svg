@@ -44,6 +44,10 @@ export interface AnimationCanvasStateContext extends CanvasStateContext {
     selectedState?: KeyframeSelectedState,
     shift?: boolean
   ) => void
+  selectKeyframes: (
+    selectedState?: IdMap<KeyframeSelectedState>,
+    shift?: boolean
+  ) => void
   selectAllKeyframes: () => void
   deleteKeyframes: () => void
   updateKeyframes: (keyframes: IdMap<KeyframeBase>, seriesKey?: string) => void

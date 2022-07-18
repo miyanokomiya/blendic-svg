@@ -42,15 +42,28 @@ describe('src/composables/modeStates/animationCanvas/actionMode/defaultState.ts'
   })
 
   describe('handle pointerdown: button 0', () => {
-    it('empty: should execute "selectKeyframe"', async () => {
-      const { ctx, sm } = await prepare()
-      await sm.handleEvent({
-        type: 'pointerdown',
-        target: { type: 'empty', id: '' },
-        data: { point: { x: 0, y: 0 }, options: { button: 0 } },
+    describe('empty', () => {
+      it('default: should execute "selectKeyframe"', async () => {
+        const { ctx, sm } = await prepare()
+        await sm.handleEvent({
+          type: 'pointerdown',
+          target: { type: 'empty', id: '' },
+          data: { point: { x: 0, y: 0 }, options: { button: 0 } },
+        })
+        expect(ctx.selectKeyframe).toHaveBeenNthCalledWith(1, '')
+        expect(sm.getStateSummary().label).toBe('Default')
       })
-      expect(ctx.selectKeyframe).toHaveBeenNthCalledWith(1, '')
+      it('shift: should not execute "selectKeyframe"', async () => {
+        const { ctx, sm } = await prepare()
+        await sm.handleEvent({
+          type: 'pointerdown',
+          target: { type: 'empty', id: '' },
+          data: { point: { x: 0, y: 0 }, options: { button: 0, shift: true } },
+        })
+        expect(ctx.selectKeyframe).not.toHaveBeenCalled()
+      })
     })
+
     it('keyframe-body: should execute "selectKeyframe"', async () => {
       const { ctx, sm } = await prepare()
       ctx.getKeyframes.mockReturnValue({

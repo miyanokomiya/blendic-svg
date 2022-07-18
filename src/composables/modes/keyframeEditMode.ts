@@ -37,6 +37,7 @@ import { generateUuid } from '/@/utils/random'
 import { useDefaultState as useActionDefaultState } from '/@/composables/modeStates/animationCanvas/actionMode/defaultState'
 import { useDefaultState as useGraphDefaultState } from '/@/composables/modeStates/animationCanvas/graphMode/defaultState'
 import { useDefaultState as useLabelDefaultState } from '/@/composables/modeStates/animationCanvas/labelMode/defaultState'
+import { canvasToFrameValue } from '/@/utils/animations'
 
 export type AnimationCanvasType = 'label' | 'action' | 'graph'
 
@@ -93,6 +94,8 @@ function createGraphContext(options: Option): GraphStateContext {
   return {
     ...createAnimationContext(options),
     toCurveControl: (v) => pointToControl(v, options.settings.graphValueWidth),
+    toFrameValue: (v, raw) =>
+      canvasToFrameValue(v, options.settings.graphValueWidth, raw),
   }
 }
 
@@ -107,8 +110,8 @@ function createAnimationContext(options: Option): AnimationCanvasStateContext {
     setViewport: options.setViewport,
     panView: options.panView,
     startDragging: options.startDragging,
-    setRectangleDragging: () => {},
-    getDraggedRectangle: () => undefined,
+    setRectangleDragging: options.setRectangleDragging,
+    getDraggedRectangle: options.getDraggedRectangle,
 
     setPopupMenuList: options.setPopupMenuList,
     setCommandExams: options.setCommandExams,
@@ -125,6 +128,7 @@ function createAnimationContext(options: Option): AnimationCanvasStateContext {
       animationStore.lastSelectedKeyframe.value?.id ?? '',
     getSelectedKeyframes: () => animationStore.selectedKeyframeMap.value,
     selectKeyframe: animationStore.selectKeyframe,
+    selectKeyframes: animationStore.selectKeyframes,
     selectAllKeyframes: animationStore.selectAllKeyframes,
     deleteKeyframes: animationStore.execDeleteKeyframes,
     updateKeyframes: animationStore.execUpdateKeyframes,

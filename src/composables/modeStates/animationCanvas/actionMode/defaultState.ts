@@ -67,7 +67,9 @@ const state: ActionState = {
               case 'frame-control':
                 return useMovingFrameState
               default:
-                ctx.selectKeyframe('')
+                if (!event.data.options.shift) {
+                  ctx.selectKeyframe('')
+                }
                 return
             }
           case 1:

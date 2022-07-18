@@ -20,6 +20,8 @@ Copyright (C) 2022, Tomoya Komiyama.
 function getMockCommonCtx() {
   return {
     startDragging: jest.fn(),
+    setRectangleDragging: jest.fn(),
+    getDraggedRectangle: jest.fn(),
     requestPointerLock: jest.fn(),
     exitPointerLock: jest.fn(),
     setCommandExams: jest.fn(),
@@ -36,6 +38,7 @@ function getMockCommonCtx() {
     getLastSelectedKeyframeId: jest.fn().mockReturnValue(''),
     getSelectedKeyframes: jest.fn().mockReturnValue({}),
     selectKeyframe: jest.fn(),
+    selectKeyframes: jest.fn(),
     selectAllKeyframes: jest.fn(),
     deleteKeyframes: jest.fn(),
     updateKeyframes: jest.fn(),
@@ -50,7 +53,11 @@ export function getMockActionCtx() {
 }
 
 export function getMockGraphCtx() {
-  return { ...getMockCommonCtx(), toCurveControl: jest.fn() }
+  return {
+    ...getMockCommonCtx(),
+    toCurveControl: jest.fn(),
+    toFrameValue: jest.fn(),
+  }
 }
 
 export function getMockLabelCtx() {

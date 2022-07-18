@@ -39,6 +39,14 @@ Copyright (C) 2021, Tomoya Komiyama.
         @contextmenu.prevent
       >
         <slot :scale="scale" :view-origin="viewOrigin" :view-size="viewSize" />
+        <SelectRectangle
+          v-if="draggedRectangle"
+          :x="draggedRectangle.x"
+          :y="draggedRectangle.y"
+          :width="draggedRectangle.width"
+          :height="draggedRectangle.height"
+          class="view-only"
+        />
       </svg>
     </FocusableBlock>
     <CommandExamPanel
@@ -63,6 +71,7 @@ import { PointerMovement, usePointerLock } from '../composables/window'
 import { provideScale, useSvgCanvas } from '../composables/canvas'
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import FocusableBlock from '/@/components/atoms/FocusableBlock.vue'
+import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import { IVec2 } from 'okageo'
 import { CommandExam, PopupMenuItem } from '/@/composables/modes/types'
@@ -80,7 +89,12 @@ import { parseEventTarget } from '/@/composables/modeStates/utils'
 import { useSettings } from '/@/composables/settings'
 
 export default defineComponent({
-  components: { PopupMenuList, FocusableBlock, CommandExamPanel },
+  components: {
+    PopupMenuList,
+    FocusableBlock,
+    CommandExamPanel,
+    SelectRectangle,
+  },
   props: {
     canvas: {
       type: Object as PropType<ReturnType<typeof useSvgCanvas>>,
@@ -249,6 +263,7 @@ export default defineComponent({
       popupMenuItems: computed(() => popupMenuList.list.value),
       popupMenuListPosition,
       commandExams,
+      draggedRectangle: computed(() => props.canvas.draggedRectangle.value),
 
       onCopy: handleCopyEvent,
       onPaste: handlePasteEvent,

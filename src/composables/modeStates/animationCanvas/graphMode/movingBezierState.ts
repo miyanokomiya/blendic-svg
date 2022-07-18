@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { IVec2, sub } from 'okageo'
+import { sub } from 'okageo'
 import { GraphState } from '/@/composables/modeStates/animationCanvas/graphMode/core'
 import { useDefaultState } from '/@/composables/modeStates/animationCanvas/graphMode/defaultState'
 import { CurveSelectedState } from '/@/models/keyframe'
@@ -32,13 +32,9 @@ type Options = {
 }
 
 export function useMovingBezierState(options: Options): GraphState {
-  let seriesKey = ''
-  let prevPoint: IVec2
-
   return {
     getLabel: () => 'MovingBezier',
     onStart: async (ctx) => {
-      seriesKey = ctx.generateSeriesKey()
       ctx.startDragging()
       ctx.setCommandExams([
         { command: 'Shift', title: 'Synchronize' },
@@ -55,16 +51,14 @@ export function useMovingBezierState(options: Options): GraphState {
                   mapReduce(props, () => options.controls)
                 )
               : { [options.id]: { [options.key]: options.controls } },
-            ctx.toCurveControl(
-              sub(event.data.current, prevPoint ?? event.data.start)
-            ),
+            ctx.toCurveControl(sub(event.data.current, event.data.start)),
             event.data.ctrl
           )
-          ctx.updateKeyframes(updatedMap, seriesKey)
-          prevPoint = event.data.current
+          ctx.setTmpKeyframes(updatedMap)
           return
         }
         case 'pointerup': {
+          ctx.completeEdit()
           return useDefaultState
         }
         case 'keydown':

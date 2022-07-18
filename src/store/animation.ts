@@ -696,6 +696,12 @@ export function createStore(
     createdList: KeyframeBase[],
     updatedList: KeyframeBase[] = []
   ) {
+    if (createdList.length === 0) {
+      // Needless to upsert if no new items exist
+      execUpdateKeyframes(toMap(updatedList))
+      return
+    }
+
     const [head, ...body] = createUpsertKeyframeActions(
       [...createdList, ...updatedList],
       true
@@ -748,22 +754,32 @@ export function createStore(
 
   const editedKeyframeMap = computed<SplitedKeyframeMapBySelected | undefined>(
     () => {
-      if (!editMovement.value) return
-
-      const diff = canvasToFrameValue(
-        sub(editMovement.value.current, editMovement.value.start),
-        options?.graphValueWidth() ?? 1
-      )
-
-      return {
-        selected: mapReduce(
-          keyframeSelectedInfoSet.value.selected,
-          (keyframe) => moveKeyframe(keyframe, diff)
-        ),
-        notSelected: {
-          ...keyframeSelectedInfoSet.value.notSelected,
-          ...(tmpKeyframes.value ?? {}),
-        },
+      if (editMovement.value) {
+        // In case of grabbing keyframes
+        const diff = canvasToFrameValue(
+          sub(editMovement.value.current, editMovement.value.start),
+          options?.graphValueWidth() ?? 1
+        )
+        return {
+          selected: mapReduce(
+            keyframeSelectedInfoSet.value.selected,
+            (keyframe) => moveKeyframe(keyframe, diff)
+          ),
+          notSelected: {
+            ...keyframeSelectedInfoSet.value.notSelected,
+            ...(tmpKeyframes.value ?? {}),
+          },
+        }
+      } else if (tmpKeyframes.value) {
+        // In case of modifying keyframes without `editMovement`
+        // => Being modified keyframes are in `tmpKeyframes`
+        // => e.g. Moving curve controls
+        return {
+          selected: tmpKeyframes.value,
+          notSelected: {},
+        }
+      } else {
+        return undefined
       }
     }
   )

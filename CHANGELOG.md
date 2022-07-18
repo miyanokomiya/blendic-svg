@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add new feature to modify bezier controls symmetrically
 - Add new feature to modify bezier controls synchronically
 
+### Fixed
+- Fix: Moving bezier controls slows down the cnavas
+
 ## [0.17.3] - 2022-07-17
 ### Added
 - Add new feature to paste `d` of `<path>` text as graph nodes

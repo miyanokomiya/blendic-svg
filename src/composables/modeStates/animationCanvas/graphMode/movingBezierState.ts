@@ -21,6 +21,7 @@ import { IVec2, sub } from 'okageo'
 import { GraphState } from '/@/composables/modeStates/animationCanvas/graphMode/core'
 import { useDefaultState } from '/@/composables/modeStates/animationCanvas/graphMode/defaultState'
 import { CurveSelectedState } from '/@/models/keyframe'
+import { mapReduce } from '/@/utils/commons'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { moveCurveControlsMap } from '/@/utils/graphCurves'
 
@@ -40,6 +41,7 @@ export function useMovingBezierState(options: Options): GraphState {
       seriesKey = ctx.generateSeriesKey()
       ctx.startDragging()
       ctx.setCommandExams([
+        { command: 'Shift', title: 'Synchronize' },
         { command: getCtrlOrMetaStr(), title: 'Symmetrize' },
       ])
     },
@@ -48,7 +50,11 @@ export function useMovingBezierState(options: Options): GraphState {
         case 'pointerdrag': {
           const updatedMap = moveCurveControlsMap(
             ctx.getKeyframes(),
-            { [options.id]: { [options.key]: options.controls } },
+            event.data.shift
+              ? mapReduce(ctx.getSelectedKeyframes(), ({ props }) =>
+                  mapReduce(props, () => options.controls)
+                )
+              : { [options.id]: { [options.key]: options.controls } },
             ctx.toCurveControl(
               sub(event.data.current, prevPoint ?? event.data.start)
             ),

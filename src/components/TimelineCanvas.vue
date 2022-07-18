@@ -67,7 +67,7 @@ import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import { IVec2 } from 'okageo'
 import { CommandExam, PopupMenuItem } from '/@/composables/modes/types'
 import { useThrottle } from '/@/composables/throttle'
-import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
+import { getKeyOptions, getMouseOptions } from '/@/utils/devices'
 import { useCanvasElement } from '/@/composables/canvasElement'
 import {
   AnimationCanvasType,
@@ -200,6 +200,7 @@ export default defineComponent({
           start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
           current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
           ctrl: e.ctrl,
+          shift: e.shift,
           scale: props.canvas.scale.value,
         },
       })
@@ -211,8 +212,8 @@ export default defineComponent({
           data: {
             start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
             current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-            ctrl: isCtrlOrMeta(e),
             scale: props.canvas.scale.value,
+            ...getMouseOptions(e),
           },
         })
       }

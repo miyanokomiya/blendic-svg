@@ -27,6 +27,8 @@ import {
   toPoint,
 } from '/@/utils/graphCurves'
 import { frameWidth } from '/@/models'
+import { assertVec } from 'spec/tools'
+import { getNorm, getRadian } from 'okageo'
 
 describe('src/utils/graphCurves.ts', () => {
   describe('toPoint', () => {
@@ -252,49 +254,76 @@ describe('src/utils/graphCurves.ts', () => {
   })
 
   describe('moveCurveControls', () => {
-    it('should move selected controls of curves', () => {
-      const ret = moveCurveControls(
-        getKeyframeBone({
-          frame: 1,
-          points: {
-            translateX: getKeyframePoint({
-              value: 2,
-              curve: {
-                ...getCurve('bezier3'),
-                controlIn: { x: -100, y: 200 },
-                controlOut: { x: 100, y: 200 },
-              },
-            }),
-            translateY: getKeyframePoint({
-              value: 2,
-              curve: getCurve('bezier3'),
-            }),
+    const keyframe = getKeyframeBone({
+      frame: 1,
+      points: {
+        translateX: getKeyframePoint({
+          value: 2,
+          curve: {
+            ...getCurve('bezier3'),
+            controlIn: { x: -100, y: 200 },
+            controlOut: { x: 100, y: 200 },
           },
         }),
-        {
-          translateX: { controlIn: true },
-        },
-        { x: 10, y: 20 }
-      )
-      expect(ret).toEqual(
-        getKeyframeBone({
-          frame: 1,
-          points: {
-            translateX: getKeyframePoint({
-              value: 2,
-              curve: {
-                ...getCurve('bezier3'),
-                controlIn: { x: -90, y: 220 },
-                controlOut: { x: 100, y: 200 },
-              },
-            }),
-            translateY: getKeyframePoint({
-              value: 2,
-              curve: getCurve('bezier3'),
-            }),
-          },
-        })
-      )
+        translateY: getKeyframePoint({
+          value: 2,
+          curve: getCurve('bezier3'),
+        }),
+      },
+    })
+
+    describe('should move selected controls of curves', () => {
+      it('controlIn', () => {
+        const ret = moveCurveControls(
+          keyframe,
+          { translateX: { controlIn: true } },
+          { x: 10, y: 20 }
+        )
+        assertVec(ret.points.translateX.curve.controlIn, { x: -90, y: 220 })
+        assertVec(ret.points.translateX.curve.controlOut, { x: 100, y: 200 })
+      })
+      it('controlOut', () => {
+        const ret = moveCurveControls(
+          keyframe,
+          { translateX: { controlOut: true } },
+          { x: 10, y: 20 }
+        )
+        assertVec(ret.points.translateX.curve.controlIn, { x: -100, y: 200 })
+        assertVec(ret.points.translateX.curve.controlOut, { x: 110, y: 220 })
+      })
+    })
+
+    describe('symmetrize', () => {
+      it('based on "controlIn": should move "controlOut" control symmetrically', () => {
+        const ret = moveCurveControls(
+          keyframe,
+          { translateX: { controlIn: true } },
+          { x: 10, y: 20 },
+          true
+        )
+        assertVec(ret.points.translateX.curve.controlIn, { x: -90, y: 220 })
+        expect(getRadian(ret.points.translateX.curve.controlOut)).toBeCloseTo(
+          getRadian(ret.points.translateX.curve.controlIn) - Math.PI
+        )
+        expect(getNorm(ret.points.translateX.curve.controlOut)).toBeCloseTo(
+          getNorm({ x: 100, y: 200 })
+        )
+      })
+      it('based on "controlOut": should move "controlIn" control symmetrically', () => {
+        const ret = moveCurveControls(
+          keyframe,
+          { translateX: { controlOut: true } },
+          { x: 10, y: 20 },
+          true
+        )
+        assertVec(ret.points.translateX.curve.controlOut, { x: 110, y: 220 })
+        expect(getRadian(ret.points.translateX.curve.controlIn)).toBeCloseTo(
+          getRadian(ret.points.translateX.curve.controlOut) - Math.PI
+        )
+        expect(getNorm(ret.points.translateX.curve.controlIn)).toBeCloseTo(
+          getNorm({ x: -100, y: 200 })
+        )
+      })
     })
   })
 })

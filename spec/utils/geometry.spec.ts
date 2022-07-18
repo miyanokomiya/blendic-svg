@@ -59,6 +59,7 @@ import {
   isOppositeSide,
   getWrapperRect,
   expandRect,
+  symmetrizeRotate,
 } from '/@/utils/geometry'
 
 describe('src/utils/geometry.ts', () => {
@@ -869,6 +870,19 @@ describe('src/utils/geometry.ts', () => {
       expect(
         isOppositeSide({ x: 10, y: 10 }, { x: 12, y: 12 }, { x: 12, y: 10 })
       ).toBe(false)
+    })
+  })
+
+  describe('symmetrizeRotate', () => {
+    it('should rotate target point making it having symmetric angle', () => {
+      assertVec(
+        symmetrizeRotate({ x: 0, y: 0 }, { x: 10, y: 0 }, { x: -3, y: -4 }),
+        { x: -5, y: 0 }
+      )
+      assertVec(
+        symmetrizeRotate({ x: 1, y: 1 }, { x: 1, y: 11 }, { x: -3, y: -2 }),
+        { x: 1, y: -4 }
+      )
     })
   })
 })

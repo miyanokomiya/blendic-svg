@@ -46,6 +46,16 @@ export function useGlobalScroll(fn: () => void, capture = false) {
   return {}
 }
 
+export function useGlobalClick(fn: (e: MouseEvent) => void, capture = false) {
+  onMounted(() => {
+    window.addEventListener('click', fn, capture)
+  })
+  onUnmounted(() => {
+    window.removeEventListener('click', fn, capture)
+  })
+  return {}
+}
+
 export function useGlobalMousemove(fn: (e: MouseEvent) => void) {
   onMounted(() => {
     window.addEventListener('mousemove', fn)

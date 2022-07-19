@@ -64,6 +64,41 @@ describe('src/composables/modeStates/animationCanvas/actionMode/defaultState.ts'
       })
     })
 
+    it('keyframes-by-frame: should execute "selectKeyframe"', async () => {
+      const { ctx, sm } = await prepare()
+      ctx.getKeyframes.mockReturnValue({
+        a: getKeyframe({
+          name: 'bone',
+          frame: 0,
+          points: { x: getKeyframePoint() },
+        }),
+        b: getKeyframe({
+          name: 'bone',
+          frame: 1,
+          points: { y: getKeyframePoint() },
+        }),
+      })
+      await sm.handleEvent({
+        type: 'pointerdown',
+        target: { type: 'keyframes-by-frame', id: '0' },
+        data: { point: { x: 0, y: 0 }, options: { button: 0 } },
+      })
+      expect(ctx.selectKeyframes).toHaveBeenNthCalledWith(
+        1,
+        { a: { props: { x: true } } },
+        undefined
+      )
+      await sm.handleEvent({
+        type: 'pointerdown',
+        target: { type: 'keyframes-by-frame', id: '1' },
+        data: { point: { x: 0, y: 0 }, options: { button: 0, shift: true } },
+      })
+      expect(ctx.selectKeyframes).toHaveBeenNthCalledWith(
+        2,
+        { b: { props: { y: true } } },
+        true
+      )
+    })
     it('keyframe-body: should execute "selectKeyframe"', async () => {
       const { ctx, sm } = await prepare()
       ctx.getKeyframes.mockReturnValue({

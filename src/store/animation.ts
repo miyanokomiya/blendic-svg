@@ -568,16 +568,6 @@ export function createStore(
     }
   }
 
-  function selectKeyframeByFrame(frame: number, shift = false) {
-    const frames = keyframeMapByFrame.value[frame]
-    if (frames.length === 0) return
-
-    historyStore.dispatch(
-      keyframeState.createMultiSelectAction(toMap(frames), shift),
-      [targetPropsState.createClearAllAction()]
-    )
-  }
-
   function selectAllKeyframes() {
     if (
       Object.keys(visibledSelectedKeyframeMap.value).length ===
@@ -884,7 +874,6 @@ export function createStore(
 
     selectKeyframe,
     selectKeyframes,
-    selectKeyframeByFrame,
     selectAllKeyframes,
 
     execInsertKeyframe,

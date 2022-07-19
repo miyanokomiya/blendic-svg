@@ -30,6 +30,7 @@ import {
   duplicateKeyframes,
   useKeyframeClipboard,
 } from '/@/composables/modeStates/animationCanvas/utils'
+import { mapFilter, mapReduce } from '/@/utils/commons'
 
 export function useDefaultState(): ActionState {
   return state
@@ -46,6 +47,20 @@ const state: ActionState = {
         switch (event.data.options.button) {
           case 0:
             switch (event.target.type) {
+              case 'keyframes-by-frame': {
+                const frame = parseInt(event.target.id)
+                const targets = mapFilter(
+                  ctx.getKeyframes(),
+                  (k) => k.frame === frame
+                )
+                if (Object.keys(targets).length > 0) {
+                  ctx.selectKeyframes(
+                    mapReduce(targets, (k) => getAllSelectedState(k)),
+                    event.data.options.shift
+                  )
+                }
+                return
+              }
               case 'keyframe-body': {
                 const id = event.target.id
                 ctx.selectKeyframe(

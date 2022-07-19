@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/FixedContainer.vue snapshot default 1`] = `
+<div>
+  <div
+    class="fixed-container"
+    style="transform: translate(0px, 0px);"
+  >
+    
+    text
+    
+  </div>
+</div>
+`;

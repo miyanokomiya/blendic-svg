@@ -88,16 +88,22 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot COLOR 1`] = `
   <div
     class="color-block"
   >
-    <button
-      class="color-button"
-      type="button"
+    <div
+      class="color-field"
     >
-      <div
-        class="color-rect"
-        style="background-color: rgb(0, 0, 0);"
-      />
-    </button>
-    <!--v-if-->
+      
+      <button
+        class="color-button"
+        type="button"
+      >
+        <div
+          class="color-rect"
+          style="background-color: rgb(0, 0, 0);"
+        />
+      </button>
+      <!--v-if-->
+      
+    </div>
   </div>
 </div>
 `;

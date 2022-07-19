@@ -98,22 +98,29 @@ Copyright (C) 2021, Tomoya Komiyama.
       @update:model-value="update"
     />
     <div v-else-if="valueTypeKey === 'COLOR'" class="color-block">
-      <button
-        type="button"
-        class="color-button"
-        :disabled="disabled"
-        @click="toggleShowColorPicker"
+      <OutsideEventContainer
+        class="color-field"
+        @click-outside="showColorPicker = false"
       >
-        <ColorRect :hsva="hsva" />
-      </button>
-      <div v-if="showColorPicker" class="color-popup">
-        <ColorPicker
-          class="color-picker"
-          :model-value="hsva"
-          extra-hue
-          @update:model-value="updateByColor"
-        />
-      </div>
+        <button
+          type="button"
+          class="color-button"
+          :disabled="disabled"
+          @click="toggleShowColorPicker"
+        >
+          <ColorRect :hsva="hsva" />
+        </button>
+        <div v-if="showColorPicker" class="color-popup">
+          <FixedContainer>
+            <ColorPicker
+              class="color-picker"
+              :model-value="hsva"
+              extra-hue
+              @update:model-value="updateByColor"
+            />
+          </FixedContainer>
+        </div>
+      </OutsideEventContainer>
     </div>
   </div>
 </template>
@@ -128,6 +135,8 @@ import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
 import ColorRect from '/@/components/atoms/ColorRect.vue'
+import FixedContainer from '/@/components/atoms/FixedContainer.vue'
+import OutsideEventContainer from '/@/components/atoms/OutsideEventContainer.vue'
 import GraphNodeDataFieldTransform from '/@/components/atoms/GraphNodeDataFieldTransform.vue'
 import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
@@ -159,6 +168,8 @@ export default defineComponent({
     InlineField,
     ColorPicker,
     ColorRect,
+    FixedContainer,
+    OutsideEventContainer,
     GraphNodeDataFieldTransform,
     SelectWithPicker,
   },
@@ -235,20 +246,23 @@ h5 {
   display: flex;
   align-items: center;
 }
+.color-field {
+  width: 100%;
+}
 .color-button {
   width: 100%;
+  border: solid 1px var(--weak-border);
 }
 .color-button > * {
   width: 100%;
 }
 .color-popup {
   position: relative;
-  top: 10px;
-  left: -50%;
+  left: 50%;
   z-index: 1;
 }
 .color-popup .color-picker {
-  position: fixed;
+  position: absolute;
   transform: translateX(-50%);
   border: solid 1px var(--weak-border);
 }

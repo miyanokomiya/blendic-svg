@@ -91,21 +91,28 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
       </InlineField>
       <InlineField>
-        <button
-          type="button"
-          class="color-button"
-          @click="toggleShowColorPicker"
+        <OutsideEventContainer
+          class="color-field"
+          @click-outside="showColorPicker = false"
         >
-          <ColorRect :hsva="hsva" />
-        </button>
-        <div v-if="showColorPicker" class="color-popup">
-          <ColorPicker
-            class="color-picker"
-            :model-value="hsva"
-            extra-hue
-            @update:model-value="updatePoseByColor"
-          />
-        </div>
+          <button
+            type="button"
+            class="color-button"
+            @click="toggleShowColorPicker"
+          >
+            <ColorRect :hsva="hsva" />
+          </button>
+          <div v-if="showColorPicker" class="color-popup">
+            <FixedContainer>
+              <ColorPicker
+                class="color-picker"
+                :model-value="hsva"
+                extra-hue
+                @update:model-value="updatePoseByColor"
+              />
+            </FixedContainer>
+          </div>
+        </OutsideEventContainer>
       </InlineField>
     </form>
     <div v-else>
@@ -152,7 +159,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, reactive, ref, watchEffect } from 'vue'
+import {
+  computed,
+  defineComponent,
+  reactive,
+  ref,
+  watchEffect,
+  watch,
+} from 'vue'
 import { Bone, getTransform, IdMap, Transform } from '/@/models'
 import { useStore } from '/@/store'
 import { useAnimationStore } from '/@/store/animation'
@@ -164,6 +178,8 @@ import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
 import ColorRect from '/@/components/atoms/ColorRect.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
+import FixedContainer from '/@/components/atoms/FixedContainer.vue'
+import OutsideEventContainer from '/@/components/atoms/OutsideEventContainer.vue'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
@@ -178,6 +194,8 @@ export default defineComponent({
     ColorPicker,
     ColorRect,
     KeyDot,
+    FixedContainer,
+    OutsideEventContainer,
   },
   setup() {
     const store = useStore()
@@ -230,6 +248,10 @@ export default defineComponent({
         animationStore.getCurrentSelfTransforms(targetBone.value.id),
         canvasStore.getEditPoseTransforms(targetBone.value.id)
       )
+    })
+    watch(targetTransform, (to) => {
+      // In order to reduce blinking
+      if (!to) showColorPicker.value = false
     })
 
     const showColorPicker = ref(false)
@@ -408,7 +430,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .item-panel {
   text-align: left;
 }
@@ -419,24 +441,24 @@ h5 {
 * + h5 {
   margin-top: 8px;
 }
-.color-button {
-  display: block;
+.color-field {
   width: 100%;
-  height: 20px;
+}
+.color-button {
+  width: 100%;
   border: solid 1px var(--weak-border);
-  > * {
-    width: 100%;
-  }
+}
+.color-button > * {
+  width: 100%;
 }
 .color-popup {
   position: relative;
-  top: 10px;
-  left: -50%;
+  left: 50%;
   z-index: 1;
-  .color-picker {
-    position: fixed;
-    transform: translateX(-50%);
-    border: solid 1px var(--weak-border);
-  }
+}
+.color-popup .color-picker {
+  position: absolute;
+  transform: translateX(-50%);
+  border: solid 1px var(--weak-border);
 }
 </style>

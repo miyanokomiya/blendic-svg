@@ -99,12 +99,14 @@ Copyright (C) 2021, Tomoya Komiyama.
           <ColorRect :hsva="hsva" />
         </button>
         <div v-if="showColorPicker" class="color-popup">
-          <ColorPicker
-            class="color-picker"
-            :model-value="hsva"
-            extra-hue
-            @update:model-value="updatePoseByColor"
-          />
+          <FixedContainer>
+            <ColorPicker
+              class="color-picker"
+              :model-value="hsva"
+              extra-hue
+              @update:model-value="updatePoseByColor"
+            />
+          </FixedContainer>
         </div>
       </InlineField>
     </form>
@@ -164,6 +166,7 @@ import InlineField from '/@/components/atoms/InlineField.vue'
 import ColorPicker from '/@/components/molecules/ColorPicker.vue'
 import ColorRect from '/@/components/atoms/ColorRect.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
+import FixedContainer from '/@/components/atoms/FixedContainer.vue'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
@@ -178,6 +181,7 @@ export default defineComponent({
     ColorPicker,
     ColorRect,
     KeyDot,
+    FixedContainer,
   },
   setup() {
     const store = useStore()
@@ -408,7 +412,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .item-panel {
   text-align: left;
 }
@@ -424,19 +428,19 @@ h5 {
   width: 100%;
   height: 20px;
   border: solid 1px var(--weak-border);
-  > * {
-    width: 100%;
-  }
+}
+.color-button > * {
+  width: 100%;
 }
 .color-popup {
   position: relative;
   top: 10px;
   left: -50%;
   z-index: 1;
-  .color-picker {
-    position: fixed;
-    transform: translateX(-50%);
-    border: solid 1px var(--weak-border);
-  }
+}
+.color-popup .color-picker {
+  position: absolute;
+  transform: translateX(-50%);
+  border: solid 1px var(--weak-border);
 }
 </style>

@@ -17,7 +17,11 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { generatePathDNodes } from '../../../src/utils/graphNodes/svgConverter'
+import {
+  generatePathDNodes,
+  alignPathDNodes,
+} from '../../../src/utils/graphNodes/svgConverter'
+import { createGraphNode } from '/@/utils/graphNodes'
 
 describe('src/utils/graphNodes/svgConverter.ts', () => {
   describe('generatePathDNodes', () => {
@@ -305,6 +309,29 @@ describe('src/utils/graphNodes/svgConverter.ts', () => {
             d: { from: { id: '0', key: 'd' } },
           },
         },
+      ])
+    })
+  })
+
+  describe('alignPathDNodes', () => {
+    it('should align path d nodes', () => {
+      expect(
+        alignPathDNodes(
+          [
+            createGraphNode('make_path_m'),
+            createGraphNode('make_path_l'),
+            createGraphNode('make_path_m'),
+            createGraphNode('make_path_l'),
+            createGraphNode('make_path_l'),
+          ],
+          { x: 100, y: 200 }
+        )
+      ).toEqual([
+        createGraphNode('make_path_m', { position: { x: 100, y: 200 } }),
+        createGraphNode('make_path_l', { position: { x: 120, y: 250 } }),
+        createGraphNode('make_path_m', { position: { x: 100, y: 300 } }),
+        createGraphNode('make_path_l', { position: { x: 120, y: 350 } }),
+        createGraphNode('make_path_l', { position: { x: 140, y: 400 } }),
       ])
     })
   })

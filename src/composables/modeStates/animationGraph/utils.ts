@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { add, IVec2, multi, sub } from 'okageo'
+import { add, IVec2, sub } from 'okageo'
 import {
   StringItem,
   useClipboard,
@@ -39,7 +39,10 @@ import {
   updateInputConnection,
   validateConnection,
 } from '/@/utils/graphNodes'
-import { generatePathDNodes } from '/@/utils/graphNodes/svgConverter'
+import {
+  alignPathDNodes,
+  generatePathDNodes,
+} from '/@/utils/graphNodes/svgConverter'
 
 export function getEditedNodeMap(
   targetNodeMap: IdMap<GraphNode>,
@@ -230,13 +233,8 @@ export function useGraphNodeClipboard(ctx: AnimationGraphStateContext) {
         )
       } catch {
         // Try parsing text as a part of SVG
-        const p = ctx.getCursorPoint()
-        const nodes = generatePathDNodes(text)
         ctx.pasteNodes(
-          nodes.map((n, i) => ({
-            ...n,
-            position: add(p, multi({ x: 0, y: 50 }, i)),
-          }))
+          alignPathDNodes(generatePathDNodes(text), ctx.getCursorPoint())
         )
       }
     }

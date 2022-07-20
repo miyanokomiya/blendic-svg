@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { add, IVec2 } from 'okageo'
 import { createGraphNode } from '.'
 import { GraphNode, GraphNodeInput } from '../../models/graphNode'
 import { generateUuid } from '../random'
@@ -142,5 +143,18 @@ export function generatePathDNodes(
           inputs: { d },
         })
     }
+  })
+}
+
+export function alignPathDNodes(src: GraphNode[], origin: IVec2): GraphNode[] {
+  let current = { x: -20, y: -50 }
+  return src.map((n) => {
+    // Break a line at every "M"
+    if (n.type === 'make_path_m') {
+      current = { x: 0, y: current.y + 50 }
+    } else {
+      current = add(current, { x: 20, y: 50 })
+    }
+    return { ...n, position: add(origin, current) }
   })
 }

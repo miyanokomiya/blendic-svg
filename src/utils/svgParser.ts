@@ -17,9 +17,53 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { splitD } from 'okageo'
+import { IVec2, splitD } from 'okageo'
 
-export function parsePathD(d: string) {
+export type PathDCommand =
+  | {
+      command: 'M' | 'm' | 'L' | 'l'
+      p: IVec2
+    }
+  | {
+      command: 'H' | 'h'
+      x: number
+    }
+  | {
+      command: 'V' | 'v'
+      y: number
+    }
+  | {
+      command: 'Q' | 'q'
+      c1: IVec2
+      p: IVec2
+    }
+  | {
+      command: 'T' | 't'
+      p: IVec2
+    }
+  | {
+      command: 'C' | 'c'
+      c1: IVec2
+      c2: IVec2
+      p: IVec2
+    }
+  | {
+      command: 'S' | 's'
+      c1: IVec2
+      p: IVec2
+    }
+  | {
+      command: 'A' | 'a'
+      rx: number
+      ry: number
+      rotate: number
+      'large-arc': boolean
+      sweep: boolean
+      p: IVec2
+    }
+  | { command: 'Z' | 'z' }
+
+export function parsePathD(d: string): PathDCommand[] {
   const commands = splitD(d)
   return commands.map((c) => {
     const [command, values] = parseCommandSrc(c)

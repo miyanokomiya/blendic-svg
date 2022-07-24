@@ -248,12 +248,25 @@ describe('src/store/animationGraph.ts', () => {
     })
   })
 
-  describe('customGraphNodeMenuOptionsSrc', () => {
+  describe('nodeItemList', () => {
     it('should return custom items when current graph mode is graph', () => {
       target.setGraphType('graph')
-      expect(target.customGraphNodeMenuOptionsSrc.value).toHaveLength(1)
+
+      const getTarget = () =>
+        target.nodeItemList.value.find((item) => item.label === 'Custom')
+      expect(getTarget()).not.toBe(undefined)
       target.setGraphType('custom')
-      expect(target.customGraphNodeMenuOptionsSrc.value).toHaveLength(0)
+      expect(getTarget()).toBe(undefined)
+    })
+
+    it('should return input/output items when current graph mode is custom', () => {
+      target.setGraphType('graph')
+
+      const getTarget = () =>
+        target.nodeItemList.value.find((item) => item.label === 'Input/Output')
+      expect(getTarget()).toBe(undefined)
+      target.setGraphType('custom')
+      expect(getTarget()).not.toBe(undefined)
     })
   })
 

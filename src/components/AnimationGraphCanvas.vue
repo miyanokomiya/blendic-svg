@@ -101,7 +101,6 @@ import { useThrottle } from '/@/composables/throttle'
 import { CommandExam, PopupMenuItem } from '/@/composables/modes/types'
 import { IVec2 } from 'okageo'
 import { useMenuList } from '/@/composables/menuList'
-import { NODE_MENU_OPTIONS_SRC } from '/@/utils/graphNodes'
 import { EdgeCutter } from '/@/composables/modeStates/animationGraph/core'
 
 export default defineComponent({
@@ -198,10 +197,7 @@ export default defineComponent({
       setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
       getDraggedRectangle: () => props.canvas.draggedRectangle.value,
       setPopupMenuList: (val) => (popupMenuInfo.value = val),
-      getNodeItemList: () =>
-        NODE_MENU_OPTIONS_SRC.concat(
-          graphStore.customGraphNodeMenuOptionsSrc.value
-        ),
+      getNodeItemList: () => graphStore.nodeItemList.value,
       setCommandExams: (val) => (commandExams.value = val),
       getEdgeCutter: () => edgeCutter.value,
       setEdgeCutter: (val: EdgeCutter | undefined) => (edgeCutter.value = val),

@@ -60,6 +60,7 @@ import {
   isInterfaceChanged,
   getNodeErrors,
   completeNodeMap,
+  NODE_MENU_OPTIONS_SRC,
 } from '/@/utils/graphNodes'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store'
@@ -187,9 +188,9 @@ export function createStore(
     return () => fn
   })
 
-  const customGraphNodeMenuOptionsSrc = computed<NODE_MENU_OPTION[]>(() => {
+  const nodeItemList = computed<NODE_MENU_OPTION[]>(() => {
     return graphType.value === 'graph'
-      ? [
+      ? NODE_MENU_OPTIONS_SRC.concat([
           {
             label: 'Custom',
             children: customGraphs.value.map((graph) => ({
@@ -197,8 +198,16 @@ export function createStore(
               type: graph.id,
             })),
           },
-        ]
-      : []
+        ])
+      : NODE_MENU_OPTIONS_SRC.concat([
+          {
+            label: 'Input/Output',
+            children: [
+              { type: 'custom_input', label: 'Input' },
+              { type: 'custom_output', label: 'Output' },
+            ],
+          },
+        ])
   })
 
   const nodeErrorMessagesMap = computed<IdMap<string[]>>(() => {
@@ -689,7 +698,7 @@ export function createStore(
     selectedNodes,
     targetArmatureId,
     getGraphNodeModuleFn,
-    customGraphNodeMenuOptionsSrc,
+    nodeItemList,
     nodeErrorMessagesMap,
     completedNodeMap,
     resolvedGraph,

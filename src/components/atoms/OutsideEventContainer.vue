@@ -35,7 +35,6 @@ const root = ref<Element>()
 
 useGlobalClick((e) => {
   if (!root.value || !e.target || root.value.contains(e.target as Node)) return
-  console.log('click-outside')
   emits('click-outside')
 })
 </script>

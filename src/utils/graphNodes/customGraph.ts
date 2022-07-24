@@ -35,6 +35,7 @@ import {
   NodeStruct,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
+import { DependencyMap, getAllDependencies } from '/@/utils/relations'
 
 export function createCustomNodeModule(
   customGraph: CustomGraph,
@@ -239,4 +240,60 @@ function stubOutputNodes(
     },
     {}
   )
+}
+
+export function getAllCustomGraphDependencies(
+  nodeMap: IdMap<Pick<GraphNode, 'type'>>,
+  customGraphs: Pick<CustomGraph, 'id' | 'nodes'>[]
+): DependencyMap {
+  const customIds = new Set(customGraphs.map((c) => c.id))
+
+  const firstOrderDepMap = customGraphs.reduce<DependencyMap>((p, c) => {
+    p[c.id] = getCustomGraphFirstDependencies(nodeMap, customIds, c)
+    return p
+  }, {})
+
+  return Array.from(customIds).reduce<DependencyMap>((p, id) => {
+    p[id] = getAllDependencies(firstOrderDepMap, id)
+    return p
+  }, {})
+}
+
+export function getCustomGraphDependencies(
+  nodeMap: IdMap<Pick<GraphNode, 'type'>>,
+  customGraphs: Pick<CustomGraph, 'id' | 'nodes'>[],
+  targetId: string
+): { [id: string]: true } {
+  const customIds = new Set(customGraphs.map((c) => c.id))
+
+  const firstOrderDepMap = customGraphs.reduce<DependencyMap>((p, c) => {
+    p[c.id] = getCustomGraphFirstDependencies(nodeMap, customIds, c)
+    return p
+  }, {})
+  return getAllDependencies(firstOrderDepMap, targetId)
+}
+
+function getCustomGraphFirstDependencies(
+  nodeMap: IdMap<Pick<GraphNode, 'type'>>,
+  customIds: Set<string>,
+  target: Pick<CustomGraph, 'nodes'>
+): { [id: string]: true } {
+  return target.nodes.reduce<{ [id: string]: true }>((p, id) => {
+    const node = nodeMap[id]
+    if (node && customIds.has(node.type as string)) {
+      p[node.type] = true
+    }
+    return p
+  }, {})
+}
+
+export function getIndepenetCustomGraphIds(
+  nodeMap: IdMap<Pick<GraphNode, 'type'>>,
+  customGraphs: Pick<CustomGraph, 'id' | 'nodes'>[],
+  targetId: string
+): string[] {
+  const deps = getAllCustomGraphDependencies(nodeMap, customGraphs)
+  return Object.entries(deps)
+    .filter(([id, dep]) => !dep[targetId] && id !== targetId)
+    .map(([id]) => id)
 }

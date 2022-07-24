@@ -20,7 +20,12 @@ Copyright (C) 2022, Tomoya Komiyama.
 import { getCustomGraph } from '/@/models'
 import { createGraphNode, getGraphNodeModule } from '/@/utils/graphNodes'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
-import { createCustomNodeModule } from '/@/utils/graphNodes/customGraph'
+import {
+  createCustomNodeModule,
+  getAllCustomGraphDependencies,
+  getCustomGraphDependencies,
+  getIndepenetCustomGraphIds,
+} from '/@/utils/graphNodes/customGraph'
 
 describe('src/utils/graphNodes/customGraph.ts', () => {
   describe('createCustomNodeModule', () => {
@@ -245,6 +250,119 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
           output_0: { x: 10, y: 20 },
         })
       })
+    })
+  })
+
+  describe('getAllCustomGraphDependencies', () => {
+    it('should return dependencies', () => {
+      expect(
+        getAllCustomGraphDependencies(
+          {
+            na: { type: 't_na' },
+            nb: { type: 't_nb' },
+            nc: { type: 'b' },
+            nd: { type: 'c' },
+          },
+          [
+            { id: 'a', nodes: ['na', 'nb', 'nc'] },
+            { id: 'b', nodes: ['nd'] },
+            { id: 'c', nodes: [] },
+          ]
+        )
+      ).toEqual({
+        a: { b: true, c: true },
+        b: { c: true },
+        c: {},
+      })
+    })
+
+    it('should handle circular dependencies', () => {
+      expect(
+        getAllCustomGraphDependencies(
+          {
+            nc: { type: 'b' },
+            nd: { type: 'c' },
+            ne: { type: 'a' },
+          },
+          [
+            { id: 'a', nodes: ['nc'] },
+            { id: 'b', nodes: ['nd'] },
+            { id: 'c', nodes: ['ne'] },
+          ]
+        )
+      ).toEqual({
+        a: { b: true, c: true },
+        b: { a: true, c: true },
+        c: { a: true, b: true },
+      })
+    })
+  })
+
+  describe('getCustomGraphDependencies', () => {
+    it('should return dependencies', () => {
+      expect(
+        getCustomGraphDependencies(
+          {
+            na: { type: 't_na' },
+            nb: { type: 't_nb' },
+            nc: { type: 'b' },
+            nd: { type: 'c' },
+          },
+          [
+            { id: 'a', nodes: ['na', 'nb', 'nc'] },
+            { id: 'b', nodes: ['nd'] },
+            { id: 'c', nodes: [] },
+          ],
+          'a'
+        )
+      ).toEqual({ b: true, c: true })
+    })
+
+    it('should ignore circular dependencies', () => {
+      expect(
+        getCustomGraphDependencies(
+          {
+            nc: { type: 'b' },
+            nd: { type: 'c' },
+            ne: { type: 'a' },
+          },
+          [
+            { id: 'a', nodes: ['nc'] },
+            { id: 'b', nodes: ['nd'] },
+            { id: 'c', nodes: ['ne'] },
+          ],
+          'a'
+        )
+      ).toEqual({ b: true, c: true })
+    })
+  })
+
+  describe('getIndepenetCustomGraphIds', () => {
+    it('should return independent graph ids', () => {
+      const nodes = {
+        na: { type: 't_na' },
+        nb: { type: 't_nb' },
+        nc: { type: 'b' },
+        nd: { type: 'c' },
+      }
+      const graphs = [
+        { id: 'a', nodes: ['na', 'nb', 'nc'] },
+        { id: 'b', nodes: ['nd'] },
+        { id: 'c', nodes: [] },
+        { id: 'd', nodes: [] },
+      ]
+      expect(getIndepenetCustomGraphIds(nodes, graphs, 'a')).toEqual([
+        'b',
+        'c',
+        'd',
+      ])
+      expect(getIndepenetCustomGraphIds(nodes, graphs, 'b')).toEqual(['c', 'd'])
+      expect(getIndepenetCustomGraphIds(nodes, graphs, 'c')).toEqual(['d'])
+      expect(getIndepenetCustomGraphIds(nodes, graphs, 'd')).toEqual([
+        'a',
+        'b',
+        'c',
+      ])
     })
   })
 })

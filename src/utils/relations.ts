@@ -83,3 +83,33 @@ export interface TreeNode {
   name: string
   children: TreeNode[]
 }
+
+export interface DependencyMap {
+  [id: string]: { [id: string]: true }
+}
+
+export function getAllDependencies(
+  depSrc: DependencyMap,
+  targetId: string
+): { [id: string]: true } {
+  const firstSrc = depSrc[targetId]
+  if (!firstSrc) return {}
+
+  const ret: { [id: string]: true } = {}
+  const currentSrc = { ...depSrc }
+  delete currentSrc[targetId]
+
+  Object.keys(firstSrc).forEach((firstId) => {
+    const deps = getAllDependencies(currentSrc, firstId)
+    Object.keys(deps).forEach((id) => {
+      ret[id] = true
+      delete currentSrc[id]
+    })
+    ret[firstId] = true
+    delete currentSrc[firstId]
+  })
+
+  delete ret[targetId]
+
+  return ret
+}

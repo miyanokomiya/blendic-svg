@@ -68,7 +68,10 @@ import { useElementStore } from '/@/store/element'
 import { createGraphNodeContext } from '/@/utils/elements'
 import { useAnimationStore } from '/@/store/animation'
 import { useValueStore } from '/@/composables/stores/valueStore'
-import { createCustomNodeModule } from '/@/utils/graphNodes/customGraph'
+import {
+  createCustomNodeModule,
+  getIndepenetCustomGraphIds,
+} from '/@/utils/graphNodes/customGraph'
 import { useCanvasStore } from '/@/store/canvas'
 import { DraftGraphEdge } from '/@/composables/modeStates/animationGraph/core'
 import { add, sub } from 'okageo'
@@ -188,17 +191,39 @@ export function createStore(
     return () => fn
   })
 
+  const availableCustomGraphList = computed(() => {
+    const custom = lastSelectedCustomGraph.value
+    if (graphType.value === 'graph' || !custom) return customGraphs.value
+
+    const ids = new Set(
+      getIndepenetCustomGraphIds(
+        nodeEntities.entities.value.byId,
+        customGraphs.value,
+        custom.id
+      )
+    )
+    return customGraphs.value.filter((c) => ids.has(c.id))
+  })
+  const availableCustomGraphMap = computed(() =>
+    toMap(availableCustomGraphList.value)
+  )
+
   const nodeItemList = computed<NODE_MENU_OPTION[]>(() => {
+    const customItems =
+      availableCustomGraphList.value.length > 0
+        ? [
+            {
+              label: 'Custom',
+              children: availableCustomGraphList.value.map((graph) => ({
+                label: graph.name,
+                type: graph.id,
+              })),
+            },
+          ]
+        : []
+
     return graphType.value === 'graph'
-      ? NODE_MENU_OPTIONS_SRC.concat([
-          {
-            label: 'Custom',
-            children: customGraphs.value.map((graph) => ({
-              label: graph.name,
-              type: graph.id,
-            })),
-          },
-        ])
+      ? NODE_MENU_OPTIONS_SRC.concat(customItems)
       : NODE_MENU_OPTIONS_SRC.concat([
           {
             label: 'Input/Output',
@@ -207,6 +232,7 @@ export function createStore(
               { type: 'custom_output', label: 'Output' },
             ],
           },
+          ...customItems,
         ])
   })
 
@@ -389,10 +415,10 @@ export function createStore(
     if (graphType.value === 'graph') {
       return !isExclusiveNodeForCustomGraph(node.type)
     } else {
-      // TODO: Consider custom graph in other custom graph
       return (
-        !!getGraphNodeModule(node.type) &&
-        !isUniqueEssentialNodeForCustomGraph(node.type)
+        !!availableCustomGraphMap.value[node.type] ||
+        (!!getGraphNodeModule(node.type) &&
+          !isUniqueEssentialNodeForCustomGraph(node.type))
       )
     }
   }

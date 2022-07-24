@@ -87,4 +87,37 @@ describe('utils/relations', () => {
       expect(src).toEqual([1, 2, 3, 4])
     })
   })
+
+  describe('getAllDependencies', () => {
+    it('should return dependency map', () => {
+      expect(
+        target.getAllDependencies(
+          {
+            a: { b: true, f: true },
+            b: { c: true, d: true },
+            d: { g: true },
+          },
+          'a'
+        )
+      ).toEqual({
+        b: true,
+        f: true,
+        c: true,
+        d: true,
+        g: true,
+      })
+    })
+    it('should ignore circular references', () => {
+      expect(
+        target.getAllDependencies(
+          {
+            a: { b: true },
+            b: { c: true },
+            c: { a: true, d: true },
+          },
+          'a'
+        )
+      ).toEqual({ b: true, c: true, d: true })
+    })
+  })
 })

@@ -204,6 +204,9 @@ export function createStore(
     )
     return customGraphs.value.filter((c) => ids.has(c.id))
   })
+  const availableCustomGraphMap = computed(() =>
+    toMap(availableCustomGraphList.value)
+  )
 
   const nodeItemList = computed<NODE_MENU_OPTION[]>(() => {
     const customItems =
@@ -412,10 +415,10 @@ export function createStore(
     if (graphType.value === 'graph') {
       return !isExclusiveNodeForCustomGraph(node.type)
     } else {
-      // TODO: Consider custom graph in other custom graph
       return (
-        !!getGraphNodeModule(node.type) &&
-        !isUniqueEssentialNodeForCustomGraph(node.type)
+        !!availableCustomGraphMap.value[node.type] ||
+        (!!getGraphNodeModule(node.type) &&
+          !isUniqueEssentialNodeForCustomGraph(node.type))
       )
     }
   }

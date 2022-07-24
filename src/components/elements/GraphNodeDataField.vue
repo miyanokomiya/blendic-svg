@@ -96,6 +96,7 @@ export default defineComponent({
 <style scoped>
 .field {
   text-align: left;
+  color: #000;
 }
 .color {
   width: 60px;

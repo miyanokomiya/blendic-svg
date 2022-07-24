@@ -12,7 +12,7 @@
     "lint": "yarn eslint --ext vue,ts,js ./*.js ./*.ts ./src ./spec",
     "lint-json": "yarn prettier -c ./*.json",
     "lint-style": "yarn prettier -c ./src/**/*.css",
-    "lint:fix": "yarn lint --fix && yarn lint-json -w && lint-style -w"
+    "lint:fix": "yarn lint --fix && yarn lint-json -w && yarn lint-style -w"
   },
   "dependencies": {
     "nanoid": "^3.3.4",

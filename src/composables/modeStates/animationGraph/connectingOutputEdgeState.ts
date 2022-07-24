@@ -63,34 +63,38 @@ export function useConnectingOutputEdgeState(options: {
           return
         case 'pointerup':
           if (event.data.options.button === 0) {
-            if (event.target.type === 'empty') {
-              const draftEdge = ctx.getDraftEdge()
-              if (draftEdge?.type === 'draft-input') {
-                return () => useAddingNewNodeState({ point: draftEdge.input })
-              }
-            } else if (event.target.type === 'node-edge-input') {
-              const nodeMap = ctx.getNodeMap()
-              const closest = parseNodeEdgeInfo(event.target)
-              if (
-                validDraftConnection(
-                  ctx.getGraphNodeModule,
-                  ctx.getNodeMap(),
-                  closest.id,
-                  closest.key,
-                  options.nodeId,
-                  options.outputKey
-                )
-              ) {
-                ctx.updateNodes(
-                  updateNodeInput(
+            switch (event.target.type) {
+              case 'node-edge-input': {
+                const nodeMap = ctx.getNodeMap()
+                const closest = parseNodeEdgeInfo(event.target)
+                if (
+                  validDraftConnection(
                     ctx.getGraphNodeModule,
-                    nodeMap,
+                    ctx.getNodeMap(),
                     closest.id,
                     closest.key,
                     options.nodeId,
                     options.outputKey
                   )
-                )
+                ) {
+                  ctx.updateNodes(
+                    updateNodeInput(
+                      ctx.getGraphNodeModule,
+                      nodeMap,
+                      closest.id,
+                      closest.key,
+                      options.nodeId,
+                      options.outputKey
+                    )
+                  )
+                }
+                break
+              }
+              default: {
+                const draftEdge = ctx.getDraftEdge()
+                if (draftEdge?.type === 'draft-input') {
+                  return () => useAddingNewNodeState({ point: draftEdge.input })
+                }
               }
             }
           }

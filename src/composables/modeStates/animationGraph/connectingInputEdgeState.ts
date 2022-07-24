@@ -64,48 +64,52 @@ export function useConnectingInputEdgeState(options: {
           return
         case 'pointerup':
           if (event.data.options.button === 0) {
-            if (event.target.type === 'empty') {
-              const draftEdge = ctx.getDraftEdge()
-              if (draftEdge?.type === 'draft-output') {
+            switch (event.target.type) {
+              case 'node-edge-output': {
                 const nodeMap = ctx.getNodeMap()
-                const node = nodeMap[draftEdge.input.nodeId]
-                if (node.inputs[draftEdge.input.key].from) {
-                  ctx.updateNodes(
-                    getUpdatedNodeMapToDisconnectNodeInput(
-                      ctx.getGraphNodeModule,
-                      nodeMap,
-                      node.id,
-                      draftEdge.input.key
-                    )
-                  )
-                } else {
-                  return () =>
-                    useAddingNewNodeState({ point: draftEdge.output })
-                }
-              }
-            } else if (event.target.type === 'node-edge-output') {
-              const nodeMap = ctx.getNodeMap()
-              const closest = parseNodeEdgeInfo(event.target)
-              if (
-                validDraftConnection(
-                  ctx.getGraphNodeModule,
-                  ctx.getNodeMap(),
-                  options.nodeId,
-                  options.inputKey,
-                  closest.id,
-                  closest.key
-                )
-              ) {
-                ctx.updateNodes(
-                  updateNodeInput(
+                const closest = parseNodeEdgeInfo(event.target)
+                if (
+                  validDraftConnection(
                     ctx.getGraphNodeModule,
-                    nodeMap,
+                    ctx.getNodeMap(),
                     options.nodeId,
                     options.inputKey,
                     closest.id,
                     closest.key
                   )
-                )
+                ) {
+                  ctx.updateNodes(
+                    updateNodeInput(
+                      ctx.getGraphNodeModule,
+                      nodeMap,
+                      options.nodeId,
+                      options.inputKey,
+                      closest.id,
+                      closest.key
+                    )
+                  )
+                }
+                break
+              }
+              default: {
+                const draftEdge = ctx.getDraftEdge()
+                if (draftEdge?.type === 'draft-output') {
+                  const nodeMap = ctx.getNodeMap()
+                  const node = nodeMap[draftEdge.input.nodeId]
+                  if (node.inputs[draftEdge.input.key].from) {
+                    ctx.updateNodes(
+                      getUpdatedNodeMapToDisconnectNodeInput(
+                        ctx.getGraphNodeModule,
+                        nodeMap,
+                        node.id,
+                        draftEdge.input.key
+                      )
+                    )
+                  } else {
+                    return () =>
+                      useAddingNewNodeState({ point: draftEdge.output })
+                  }
+                }
               }
             }
           }

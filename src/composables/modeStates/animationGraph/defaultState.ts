@@ -64,6 +64,8 @@ const state: AnimationGraphState = {
                 return onDownEdgeInput(event)
               case 'node-edge-output':
                 return onDownEdgeOutput(event)
+              case 'edge':
+                return
               default:
                 return onDownEmpty(ctx, event)
             }

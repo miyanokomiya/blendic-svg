@@ -249,12 +249,13 @@ describe('src/store/animationGraph.ts', () => {
   })
 
   describe('nodeItemList', () => {
-    it('should return custom items when current graph mode is graph', () => {
+    it('should return custom items that are independent from current graph', () => {
       target.setGraphType('graph')
 
       const getTarget = () =>
         target.nodeItemList.value.find((item) => item.label === 'Custom')
       expect(getTarget()).not.toBe(undefined)
+      expect(getTarget()!.children).toHaveLength(1)
       target.setGraphType('custom')
       expect(getTarget()).toBe(undefined)
     })

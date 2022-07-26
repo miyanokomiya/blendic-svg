@@ -82,8 +82,14 @@ Copyright (C) 2021, Tomoya Komiyama.
           :selected="selectedNodes[node.id]"
           :errors="nodeErrorMessagesMap[node.id]"
         />
-        <g v-if="draftEdge">
-          <GraphEdge :from="draftEdge.output" :to="draftEdge.input" selected />
+        <g v-if="draftEdges">
+          <GraphEdge
+            v-for="(edge, i) in draftEdges"
+            :key="i"
+            :from="edge.output"
+            :to="edge.input"
+            selected
+          />
         </g>
       </AnimationGraphCanvas>
       <GraphSideBar class="side-bar" />
@@ -211,30 +217,31 @@ export default defineComponent({
     const editedNodeMap = graphStore.editedNodeMap
     const edgePositionMap = graphStore.edgePositionMap
 
-    const draftEdge = computed<{ output: IVec2; input: IVec2 } | undefined>(
+    const draftEdges = computed<{ output: IVec2; input: IVec2 }[] | undefined>(
       () => {
-        if (!graphStore.draftEdge.value) return undefined
+        const draftEdge = graphStore.draftEdge.value
+        if (!draftEdge) return undefined
 
-        if (graphStore.draftEdge.value.type === 'draft-input') {
-          return {
-            output: add(
-              editedNodeMap.value[graphStore.draftEdge.value.output.nodeId]
-                .position,
-              edgePositionMap.value[graphStore.draftEdge.value.output.nodeId]
-                .outputs[graphStore.draftEdge.value.output.key].p
-            ),
-            input: graphStore.draftEdge.value.input,
-          }
+        if (draftEdge.type === 'draft-input') {
+          return [
+            {
+              output: add(
+                editedNodeMap.value[draftEdge.output.nodeId].position,
+                edgePositionMap.value[draftEdge.output.nodeId].outputs[
+                  draftEdge.output.key
+                ].p
+              ),
+              input: draftEdge.input,
+            },
+          ]
         } else {
-          return {
-            output: graphStore.draftEdge.value.output,
+          return draftEdge.inputs.map((input) => ({
+            output: draftEdge.output,
             input: add(
-              editedNodeMap.value[graphStore.draftEdge.value.input.nodeId]
-                .position,
-              edgePositionMap.value[graphStore.draftEdge.value.input.nodeId]
-                .inputs[graphStore.draftEdge.value.input.key].p
+              editedNodeMap.value[input.nodeId].position,
+              edgePositionMap.value[input.nodeId].inputs[input.key].p
             ),
-          }
+          }))
         }
       }
     )
@@ -283,7 +290,7 @@ export default defineComponent({
       editedNodeMap,
       edgePositionMap,
       edgeSummaryMap: graphStore.edgeSummaryMap,
-      draftEdge,
+      draftEdges,
       nodeErrorMessagesMap: graphStore.nodeErrorMessagesMap,
 
       draftName,

@@ -27,7 +27,7 @@ import { CommandExam, EditMovement } from '/@/composables/modes/types'
 import { AnimationGraphStateContext } from '/@/composables/modeStates/animationGraph/core'
 import { ModeEventTarget } from '/@/composables/modeStates/core'
 import { getTransform, IdMap, toMap, Transform } from '/@/models'
-import { GraphNode } from '/@/models/graphNode'
+import { GraphEdgeConnection, GraphNode } from '/@/models/graphNode'
 import { mapFilter, mapReduce, toList } from '/@/utils/commons'
 import { getCtrlOrMetaStr } from '/@/utils/devices'
 import { gridRound } from '/@/utils/geometry'
@@ -125,6 +125,36 @@ export function updateNodeInput(
   }
 }
 
+export function updateMultipleNodeInput(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: IdMap<GraphNode>,
+  outputId: string,
+  outputKey: string,
+  inputs: GraphEdgeConnection[]
+): IdMap<GraphNode> {
+  if (inputs.length === 0) return {}
+
+  const updatedIds = new Set<string>()
+  const latestMap = { ...nodeMap }
+
+  inputs.forEach((input) => {
+    const updated = updateNodeInput(
+      getGraphNodeModule,
+      nodeMap,
+      input.nodeId,
+      input.key,
+      outputId,
+      outputKey
+    )
+    for (const id in updated) {
+      latestMap[id] = updated[id]
+      updatedIds.add(id)
+    }
+  })
+
+  return mapFilter(latestMap, (_, id) => updatedIds.has(id))
+}
+
 export function parseNodeEdgeInfo(target: ModeEventTarget): {
   key: string
   id: string
@@ -178,6 +208,25 @@ export function validDraftConnection(
       getGraphNodeModule,
       { node: fromNode, key: outputKey },
       { node: toNode, key: inputKey }
+    )
+  )
+}
+
+export function validDraftConnections(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: IdMap<GraphNode>,
+  outputId: string,
+  outputKey: string,
+  inputs: GraphEdgeConnection[]
+): boolean {
+  return inputs.every((input) =>
+    validDraftConnection(
+      getGraphNodeModule,
+      nodeMap,
+      input.nodeId,
+      input.key,
+      outputId,
+      outputKey
     )
   )
 }

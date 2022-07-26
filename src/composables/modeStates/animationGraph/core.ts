@@ -86,7 +86,7 @@ export type DraftGraphEdge =
   | {
       type: 'draft-output'
       output: IVec2
-      input: GraphEdgeConnection
+      inputs: GraphEdgeConnection[]
     }
 
 export type EdgeCutter = {

@@ -36,7 +36,11 @@ import {
   useGraphNodeClipboard,
 } from '/@/composables/modeStates/animationGraph/utils'
 import { toList } from '/@/utils/commons'
-import { duplicateNodes } from '/@/utils/graphNodes'
+import {
+  duplicateNodes,
+  getInputsConnectedTo,
+  getUpdatedNodeMapToDisconnectNodeInput,
+} from '/@/utils/graphNodes'
 import { add } from 'okageo'
 import { PointerDownEvent } from '/@/composables/modeStates/core'
 import { useCuttingEdgeState } from '/@/composables/modeStates/animationGraph/cuttingEdgeState'
@@ -61,9 +65,9 @@ const state: AnimationGraphState = {
               case 'node-body':
                 return onDownNodeBody(ctx, event)
               case 'node-edge-input':
-                return onDownEdgeInput(event)
+                return onDownEdgeInput(ctx, event)
               case 'node-edge-output':
-                return onDownEdgeOutput(event)
+                return onDownEdgeOutput(ctx, event)
               case 'edge':
                 return
               default:
@@ -186,27 +190,73 @@ function onDownNodeBody(
 }
 
 function onDownEdgeInput(
+  ctx: AnimationGraphStateContext,
   event: PointerDownEvent
 ): AnimationGraphTransitionValue {
   const edgeInfo = parseNodeEdgeInfo(event.target)
+  if (event.data.options.ctrl) {
+    const node = ctx.getNodeMap()[edgeInfo.id]
+    const from = node.inputs[edgeInfo.key]?.from
+    if (from) {
+      // Disconnect and modify current connection
+      ctx.updateNodes(
+        getUpdatedNodeMapToDisconnectNodeInput(
+          ctx.getGraphNodeModule,
+          ctx.getNodeMap(),
+          edgeInfo.id,
+          edgeInfo.key
+        )
+      )
+
+      return () =>
+        useConnectingOutputEdgeState({
+          nodeId: from.id,
+          outputKey: from.key,
+          point: event.data.point,
+        })
+    }
+  }
+
   return () =>
     useConnectingInputEdgeState({
-      nodeId: edgeInfo.id,
-      inputKey: edgeInfo.key,
       point: event.data.point,
+      inputs: [{ nodeId: edgeInfo.id, key: edgeInfo.key }],
     })
 }
 
 function onDownEdgeOutput(
+  ctx: AnimationGraphStateContext,
   event: PointerDownEvent
 ): AnimationGraphTransitionValue {
   const edgeInfo = parseNodeEdgeInfo(event.target)
-  return () =>
-    useConnectingOutputEdgeState({
-      nodeId: edgeInfo.id,
-      outputKey: edgeInfo.key,
-      point: event.data.point,
-    })
+
+  if (event.data.options.ctrl) {
+    // Modify current connections
+    const inputMap = getInputsConnectedTo(
+      ctx.getNodeMap(),
+      edgeInfo.id,
+      edgeInfo.key
+    )
+    return () =>
+      useConnectingInputEdgeState({
+        point: event.data.point,
+        inputs: Object.entries(inputMap)
+          .flatMap(([id, inputs]) =>
+            Object.keys(inputs).map((key) => ({
+              nodeId: id,
+              key,
+            }))
+          )
+          .flat(),
+      })
+  } else {
+    return () =>
+      useConnectingOutputEdgeState({
+        nodeId: edgeInfo.id,
+        outputKey: edgeInfo.key,
+        point: event.data.point,
+      })
+  }
 }
 
 function onDuplicate(

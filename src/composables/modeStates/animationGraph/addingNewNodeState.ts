@@ -26,7 +26,10 @@ import type {
 } from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import { usePanningState } from '/@/composables/modeStates/commons'
-import { updateNodeInput } from '/@/composables/modeStates/animationGraph/utils'
+import {
+  updateMultipleNodeInput,
+  updateNodeInput,
+} from '/@/composables/modeStates/animationGraph/utils'
 import { PopupMenuEvent } from '/@/composables/modeStates/core'
 import { dropNullishItem } from '/@/utils/commons'
 import {
@@ -106,7 +109,7 @@ function setupPopupMenuListForEdge(
   const forOutput = draft.type === 'draft-input'
   const [edge, point] = forOutput
     ? [draft.output, draft.input]
-    : [draft.input, draft.output]
+    : [draft.inputs[0], draft.output]
   const struct = ctx.getGraphNodeModule(
     ctx.getNodeMap()[edge.nodeId].type
   )?.struct
@@ -199,7 +202,8 @@ function onSelectNewNode(
 
   const outputValue =
     draft?.type === 'draft-output'
-      ? ctx.getNodeMap()[draft.input.nodeId]?.inputs[draft.input.key]?.value
+      ? ctx.getNodeMap()[draft.inputs[0].nodeId]?.inputs[draft.inputs[0].key]
+          ?.value
       : undefined
   const attrs = outputValue ? inheritOutputValue(type, outputValue) : {}
 
@@ -221,13 +225,12 @@ function onSelectNewNode(
     )
   } else if (!isDraftInput && outputKey) {
     ctx.updateNodes(
-      updateNodeInput(
+      updateMultipleNodeInput(
         ctx.getGraphNodeModule,
         ctx.getNodeMap(),
-        draft.input.nodeId,
-        draft.input.key,
         node.id,
-        outputKey
+        outputKey,
+        draft.inputs
       )
     )
   }

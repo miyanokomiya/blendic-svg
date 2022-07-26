@@ -656,13 +656,16 @@ export function createStore(
   })
 
   const edgeSummaryMap = computed<IdMap<IdMap<EdgeSummary>>>(() => {
-    const draftToInfo =
+    const draftToInfos =
       draftEdge.value?.type === 'draft-output'
-        ? {
-            id: draftEdge.value.input.nodeId,
-            key: draftEdge.value.input.key,
-          }
-        : undefined
+        ? draftEdge.value.inputs.reduce<IdMap<{ [key: string]: true }>>(
+            (p, input) => {
+              p[input.nodeId] = { [input.key]: true }
+              return p
+            },
+            {}
+          )
+        : {}
 
     const allNodes = editedNodeMap.value
 
@@ -677,12 +680,7 @@ export function createStore(
           )
             return p
 
-          if (
-            draftToInfo &&
-            draftToInfo.id === node.id &&
-            draftToInfo.key === key
-          )
-            return p
+          if (draftToInfos[node.id]?.[key]) return p
 
           p[key] = {
             from: add(

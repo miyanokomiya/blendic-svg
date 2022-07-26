@@ -1668,3 +1668,25 @@ export function inheritOutputValue(
       return {}
   }
 }
+
+export function getInputsConnectedTo(
+  nodeMap: IdMap<GraphNode>,
+  nodeId: string,
+  outputKey: string
+): IdMap<{ [key: string]: true }> {
+  const ret: IdMap<{ [key: string]: true }> = {}
+  Object.values(nodeMap).forEach((n) => {
+    for (const key in n.inputs) {
+      const input = n.inputs[key]
+      if (
+        !!input.from &&
+        input.from.id === nodeId &&
+        input.from.key === outputKey
+      ) {
+        ret[n.id] ??= {}
+        ret[n.id][key] = true
+      }
+    }
+  })
+  return ret
+}

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add new feature to modify bezier controls synchronically
 - Add rectangle select feature for the keyframe graph canvas
 - Enable to use custom nodes that are independent from current custom node
+- Enable to modify edge connections by `ctrl` + dragging
 
 ### Fixed
 - Fix: Moving bezier controls slows down the cnavas

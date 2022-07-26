@@ -65,6 +65,9 @@ import {
   completeNodeMap,
   isolateNodes,
   inheritOutputValue,
+  getInputsConnectedTo,
+  updateNodeInput,
+  updateMultipleNodeInput,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -2440,6 +2443,121 @@ describe('src/utils/graphNodes/index.ts', () => {
     })
     it('should return empty object when a type is unacceptable', () => {
       expect(inheritOutputValue('make_path_m', 1)).toEqual({})
+    })
+  })
+
+  describe('getInputsConnectedTo', () => {
+    it('should return all inputs connected to the output', () => {
+      const nodeMap = {
+        a: createGraphNode('add_generics', {
+          id: 'a',
+          inputs: {
+            a: { genericsType: UNIT_VALUE_TYPES.SCALER },
+            b: { genericsType: UNIT_VALUE_TYPES.SCALER },
+          },
+        }),
+        b: createGraphNode('add_generics', {
+          id: 'b',
+          inputs: {
+            a: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              from: { id: 'a', key: 'value' },
+            },
+            b: { genericsType: UNIT_VALUE_TYPES.SCALER },
+          },
+        }),
+        c: createGraphNode('add_generics', {
+          id: 'c',
+          inputs: {
+            a: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              from: { id: 'b', key: 'value' },
+            },
+            b: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              from: { id: 'a', key: 'value' },
+            },
+          },
+        }),
+      }
+
+      expect(getInputsConnectedTo(nodeMap, 'a', 'value')).toEqual({
+        b: { a: true },
+        c: { b: true },
+      })
+      expect(getInputsConnectedTo(nodeMap, 'b', 'value')).toEqual({
+        c: { a: true },
+      })
+    })
+  })
+
+  describe('updateNodeInput', () => {
+    const nodeMap = {
+      a: createGraphNode('add_generics', { id: 'a' }),
+      b: createGraphNode('break_vector2', { id: 'b' }),
+    }
+
+    it('should return updated node map', () => {
+      expect(
+        updateNodeInput(getGraphNodeModule, nodeMap, 'a', 'b', 'b', 'x')
+      ).toEqual({
+        a: createGraphNode('add_generics', {
+          id: 'a',
+          inputs: {
+            a: { genericsType: UNIT_VALUE_TYPES.SCALER, value: 0 },
+            b: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
+              from: { id: 'b', key: 'x' },
+            },
+          },
+        }),
+      })
+    })
+  })
+
+  describe('updateMultipleNodeInput', () => {
+    const nodeMap = {
+      a: createGraphNode('add_generics', { id: 'a' }),
+      b: createGraphNode('break_vector2', { id: 'b' }),
+      c: createGraphNode('add_generics', { id: 'c' }),
+    }
+
+    it('should return updated node map', () => {
+      expect(
+        updateMultipleNodeInput(getGraphNodeModule, nodeMap, 'b', 'x', [
+          { nodeId: 'a', key: 'b' },
+          { nodeId: 'c', key: 'a' },
+          { nodeId: 'c', key: 'b' },
+        ])
+      ).toEqual({
+        a: createGraphNode('add_generics', {
+          id: 'a',
+          inputs: {
+            a: { genericsType: UNIT_VALUE_TYPES.SCALER, value: 0 },
+            b: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
+              from: { id: 'b', key: 'x' },
+            },
+          },
+        }),
+        c: createGraphNode('add_generics', {
+          id: 'c',
+          inputs: {
+            a: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
+              from: { id: 'b', key: 'x' },
+            },
+            b: {
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
+              from: { id: 'b', key: 'x' },
+            },
+          },
+        }),
+      })
     })
   })
 })

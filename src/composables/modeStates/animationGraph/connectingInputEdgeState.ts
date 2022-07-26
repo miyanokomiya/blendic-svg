@@ -22,17 +22,19 @@ import type { AnimationGraphState } from '/@/composables/modeStates/animationGra
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import {
   parseNodeEdgeInfo,
-  updateNodeInput,
-  validDraftConnection,
+  validDraftConnections,
 } from '/@/composables/modeStates/animationGraph/utils'
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
 import { usePanningState } from '/@/composables/modeStates/commons'
-import { getUpdatedNodeMapToDisconnectNodeInput } from '/@/utils/graphNodes'
+import {
+  getUpdatedNodeMapToDisconnectNodeInputs,
+  updateMultipleNodeInput,
+} from '/@/utils/graphNodes'
+import { GraphEdgeConnection } from '/@/models/graphNode'
 
 export function useConnectingInputEdgeState(options: {
-  nodeId: string
-  inputKey: string
   point: IVec2
+  inputs: GraphEdgeConnection[]
 }): AnimationGraphState {
   return {
     getLabel: () => 'ConnectingInputEdgeState',
@@ -40,7 +42,7 @@ export function useConnectingInputEdgeState(options: {
       ctx.startDragging()
       ctx.setDraftEdge({
         type: 'draft-output',
-        input: { nodeId: options.nodeId, key: options.inputKey },
+        inputs: options.inputs,
         output: options.point,
       })
     },
@@ -58,7 +60,7 @@ export function useConnectingInputEdgeState(options: {
         case 'pointerdrag':
           ctx.setDraftEdge({
             type: 'draft-output',
-            input: { nodeId: options.nodeId, key: options.inputKey },
+            inputs: options.inputs,
             output: event.data.current,
           })
           return
@@ -69,23 +71,21 @@ export function useConnectingInputEdgeState(options: {
                 const nodeMap = ctx.getNodeMap()
                 const closest = parseNodeEdgeInfo(event.target)
                 if (
-                  validDraftConnection(
+                  validDraftConnections(
                     ctx.getGraphNodeModule,
                     ctx.getNodeMap(),
-                    options.nodeId,
-                    options.inputKey,
                     closest.id,
-                    closest.key
+                    closest.key,
+                    options.inputs
                   )
                 ) {
                   ctx.updateNodes(
-                    updateNodeInput(
+                    updateMultipleNodeInput(
                       ctx.getGraphNodeModule,
                       nodeMap,
-                      options.nodeId,
-                      options.inputKey,
                       closest.id,
-                      closest.key
+                      closest.key,
+                      options.inputs
                     )
                   )
                 }
@@ -95,20 +95,23 @@ export function useConnectingInputEdgeState(options: {
                 const draftEdge = ctx.getDraftEdge()
                 if (draftEdge?.type === 'draft-output') {
                   const nodeMap = ctx.getNodeMap()
-                  const node = nodeMap[draftEdge.input.nodeId]
-                  if (node.inputs[draftEdge.input.key].from) {
+                  const node = nodeMap[draftEdge.inputs[0].nodeId]
+                  if (node.inputs[draftEdge.inputs[0].key].from) {
                     ctx.updateNodes(
-                      getUpdatedNodeMapToDisconnectNodeInput(
+                      getUpdatedNodeMapToDisconnectNodeInputs(
                         ctx.getGraphNodeModule,
                         nodeMap,
-                        node.id,
-                        draftEdge.input.key
+                        draftEdge.inputs.reduce<{
+                          [id: string]: { [key: string]: true }
+                        }>((p, input) => {
+                          p[input.nodeId] = { [input.key]: true }
+                          return p
+                        }, {})
                       )
                     )
-                  } else {
-                    return () =>
-                      useAddingNewNodeState({ point: draftEdge.output })
                   }
+                  return () =>
+                    useAddingNewNodeState({ point: draftEdge.output })
                 }
               }
             }

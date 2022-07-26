@@ -22,11 +22,11 @@ import type { AnimationGraphState } from '/@/composables/modeStates/animationGra
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import {
   parseNodeEdgeInfo,
-  updateNodeInput,
   validDraftConnection,
 } from '/@/composables/modeStates/animationGraph/utils'
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
 import { usePanningState } from '/@/composables/modeStates/commons'
+import { updateNodeInput } from '/@/utils/graphNodes'
 
 export function useConnectingOutputEdgeState(options: {
   nodeId: string

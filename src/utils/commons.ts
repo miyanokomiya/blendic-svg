@@ -462,7 +462,9 @@ export function thinOutList<T>(
   return ret
 }
 
-export function isNotNullish(v: any): v is Exclude<typeof v, undefined | null> {
+export function isNotNullish<T>(
+  v: T
+): v is Exclude<typeof v, undefined | null> {
   return v != null
 }
 

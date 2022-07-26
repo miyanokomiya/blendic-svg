@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import {
   GradientStop,
+  GraphEdgeConnection,
   GraphNode,
   GraphNodeBase,
   GraphNodeData,
@@ -1689,4 +1690,60 @@ export function getInputsConnectedTo(
     }
   })
   return ret
+}
+
+export function updateNodeInput(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: IdMap<GraphNode>,
+  inputId: string,
+  inputKey: string,
+  outputId: string,
+  outputKey: string
+): IdMap<GraphNode> {
+  if (!nodeMap[outputId] || !nodeMap[inputId]) return {}
+
+  const updated = updateInputConnection(
+    { node: nodeMap[outputId], key: outputKey },
+    { node: nodeMap[inputId], key: inputKey }
+  )
+  if (!updated) return {}
+
+  return {
+    [updated.id]: updated,
+    ...cleanEdgeGenericsGroupAt(
+      getGraphNodeModule,
+      { ...nodeMap, [updated.id]: updated },
+      { id: updated.id, key: inputKey }
+    ),
+  }
+}
+
+export function updateMultipleNodeInput(
+  getGraphNodeModule: GetGraphNodeModule,
+  nodeMap: IdMap<GraphNode>,
+  outputId: string,
+  outputKey: string,
+  inputs: GraphEdgeConnection[]
+): IdMap<GraphNode> {
+  if (inputs.length === 0) return {}
+
+  const updatedIds = new Set<string>()
+  const latestMap = { ...nodeMap }
+
+  inputs.forEach((input) => {
+    const updated = updateNodeInput(
+      getGraphNodeModule,
+      latestMap,
+      input.nodeId,
+      input.key,
+      outputId,
+      outputKey
+    )
+    for (const id in updated) {
+      latestMap[id] = updated[id]
+      updatedIds.add(id)
+    }
+  })
+
+  return mapFilter(latestMap, (_, id) => updatedIds.has(id))
 }

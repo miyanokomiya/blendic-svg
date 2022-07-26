@@ -151,6 +151,7 @@ function updateCommandExams(ctx: AnimationGraphStateContext) {
   ctx.setCommandExams([
     COMMAND_EXAM_SRC.add,
     COMMAND_EXAM_SRC.selectAll,
+    COMMAND_EXAM_SRC.reconnect,
     COMMAND_EXAM_SRC.cutEdge,
     ...(selected
       ? [

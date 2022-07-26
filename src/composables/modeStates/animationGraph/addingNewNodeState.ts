@@ -26,10 +26,6 @@ import type {
 } from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import { usePanningState } from '/@/composables/modeStates/commons'
-import {
-  updateMultipleNodeInput,
-  updateNodeInput,
-} from '/@/composables/modeStates/animationGraph/utils'
 import { PopupMenuEvent } from '/@/composables/modeStates/core'
 import { dropNullishItem } from '/@/utils/commons'
 import {
@@ -38,6 +34,8 @@ import {
   getNodeSuggestionMenuOptions,
   getOutputType,
   inheritOutputValue,
+  updateMultipleNodeInput,
+  updateNodeInput,
 } from '/@/utils/graphNodes'
 
 type Options = {

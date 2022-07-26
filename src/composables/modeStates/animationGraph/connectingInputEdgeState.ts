@@ -22,12 +22,14 @@ import type { AnimationGraphState } from '/@/composables/modeStates/animationGra
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import {
   parseNodeEdgeInfo,
-  updateMultipleNodeInput,
   validDraftConnections,
 } from '/@/composables/modeStates/animationGraph/utils'
 import { useAddingNewNodeState } from '/@/composables/modeStates/animationGraph/addingNewNodeState'
 import { usePanningState } from '/@/composables/modeStates/commons'
-import { getUpdatedNodeMapToDisconnectNodeInputs } from '/@/utils/graphNodes'
+import {
+  getUpdatedNodeMapToDisconnectNodeInputs,
+  updateMultipleNodeInput,
+} from '/@/utils/graphNodes'
 import { GraphEdgeConnection } from '/@/models/graphNode'
 
 export function useConnectingInputEdgeState(options: {

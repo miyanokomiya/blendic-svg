@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { CustomGraph, IdMap } from '/@/models'
+import { CustomGraph, getCustomGraph, IdMap, toMap } from '/@/models'
 import {
   GraphNode,
   GraphNodeBase,
@@ -27,9 +27,17 @@ import {
   GraphNodeCustomOutput,
   GraphNodeOutputMap,
   GraphNodeOutputValues,
+  GraphNodeType,
 } from '/@/models/graphNode'
-import { mapReduce, toList } from '/@/utils/commons'
-import { resolveAllNodes } from '/@/utils/graphNodes'
+import { mapFilter, mapReduce, toList } from '/@/utils/commons'
+import {
+  cleanAllEdgeGenerics,
+  createGraphNode,
+  createGraphNodeIncludeCustom,
+  GetGraphNodeModule,
+  getInputsConnectedTo,
+  resolveAllNodes,
+} from '/@/utils/graphNodes'
 import {
   NodeModule,
   NodeStruct,
@@ -296,4 +304,230 @@ export function getIndepenetCustomGraphIds(
   return Object.entries(deps)
     .filter(([id, dep]) => !dep[targetId] && id !== targetId)
     .map(([id]) => id)
+}
+
+export function makeCustomGraphFromNodes(
+  getGraphNodeModule: GetGraphNodeModule,
+  allNodeMap: IdMap<GraphNode>,
+  targetIds: string[],
+  generateId: () => string
+): {
+  customGraph: CustomGraph
+  customGraphNodes: IdMap<GraphNode>
+  customNode: GraphNode
+  updatedNodes: IdMap<GraphNode>
+  deletedNodeIds: string[]
+} {
+  const targetIdSet = new Set(targetIds)
+  const filterdTargets = mapFilter(
+    allNodeMap,
+    (node) => targetIdSet.has(node.id) && canMakeCustomGraphFrom(node)
+  )
+
+  const customGraphNodeId = generateId()
+
+  const inputInfo = convertToCustomGraphInputInterface(
+    getGraphNodeModule,
+    Object.values(filterdTargets),
+    generateId
+  )
+
+  const outputInfo = convertToCustomGraphOutputInterface(
+    getGraphNodeModule,
+    allNodeMap,
+    Object.keys(filterdTargets),
+    customGraphNodeId,
+    generateId
+  )
+
+  const tmpCustomGraphNodes = {
+    ...outputInfo.customGraphNodes,
+    ...inputInfo.customGraphNodes,
+  }
+  const customGraphNodes = {
+    ...tmpCustomGraphNodes,
+    ...cleanAllEdgeGenerics(getGraphNodeModule, tmpCustomGraphNodes),
+  }
+
+  const customGraph = getCustomGraph({
+    id: generateId(),
+    nodes: Object.keys(customGraphNodes).sort(),
+  })
+
+  const customModule = createCustomNodeModule(customGraph, customGraphNodes)
+
+  const customNode = createGraphNodeIncludeCustom(
+    { [customGraph.id]: customModule },
+    customGraph.id,
+    {
+      id: customGraphNodeId,
+      inputs: {
+        ...mapReduce(inputInfo.inputMap, (from) => ({ from })),
+      },
+    }
+  )
+
+  const nextGetGraphNodeModule = (type: GraphNodeType) => {
+    return type === customGraph.id ? customModule : getGraphNodeModule(type)
+  }
+  const nextNodeMap = mapFilter(
+    {
+      ...allNodeMap,
+      ...outputInfo.updatedNodes,
+      customNode,
+    },
+    (_, id) => !filterdTargets[id]
+  )
+  // Clean new custom node
+  const cleanedMap = cleanAllEdgeGenerics(nextGetGraphNodeModule, nextNodeMap)
+
+  return {
+    customGraph,
+    customGraphNodes,
+    customNode: cleanedMap[customNode.id] ?? customNode,
+    updatedNodes: mapReduce(
+      outputInfo.updatedNodes,
+      (node, id) => nextNodeMap[id] ?? node
+    ),
+    deletedNodeIds: Object.keys(filterdTargets),
+  }
+}
+
+/**
+ * Note: "genericsType" isn't resolvd in this function
+ */
+export function convertToCustomGraphOutputInterface(
+  getGraphNodeModule: GetGraphNodeModule,
+  allNodeMap: IdMap<GraphNode>,
+  targetIds: string[],
+  customGraphNodeId: string,
+  generateId: () => string
+): { customGraphNodes: IdMap<GraphNode>; updatedNodes: IdMap<GraphNode> } {
+  const targetIdSet = new Set(targetIds)
+  const otherNodeMap = mapFilter(allNodeMap, (_, id) => !targetIdSet.has(id))
+  const updatedNodes: IdMap<GraphNode> = {}
+  const customGraphNodes: IdMap<GraphNode> = {}
+
+  const customBeginOutput = createGraphNode('custom_begin_output', {
+    id: generateId(),
+  })
+  customGraphNodes[customBeginOutput.id] = customBeginOutput
+
+  targetIds.forEach((id) => {
+    const node = allNodeMap[id]
+    const struct = getGraphNodeModule(node.type)?.struct
+    if (!struct) return
+
+    Object.keys(struct.outputs).forEach((key) => {
+      const connections = Object.entries(
+        getInputsConnectedTo(otherNodeMap, id, key)
+      )
+      if (connections.length === 0) return
+
+      const customOutput = createGraphNode('custom_output', {
+        id: generateId(),
+        inputs: {
+          output: { from: { id: customBeginOutput.id, key: 'output' } },
+          value: { from: { id, key }, genericsType: UNIT_VALUE_TYPES.UNKNOWN },
+        },
+      })
+      customGraphNodes[customOutput.id] = customOutput
+
+      connections.forEach(([inputNodeId, inputs]) => {
+        const inputNode = allNodeMap[inputNodeId]
+        const updated = {
+          ...inputNode,
+          inputs: {
+            ...inputNode.inputs,
+            ...mapReduce(inputs, (_, key) => ({
+              ...inputNode.inputs[key],
+              from: { id: customGraphNodeId, key: customOutput.id },
+            })),
+          },
+        }
+        updatedNodes[updated.id] = updated
+      })
+    })
+  })
+
+  return { customGraphNodes, updatedNodes }
+}
+
+/**
+ * Note: "genericsType" isn't resolvd in this function
+ */
+export function convertToCustomGraphInputInterface(
+  _getGraphNodeModule: GetGraphNodeModule,
+  nodes: GraphNode[],
+  generateId: () => string
+): {
+  customGraphNodes: IdMap<GraphNode>
+  inputMap: { [key: string]: { id: string; key: string } }
+} {
+  const convertedMap = toMap(nodes)
+  const inputMap: { [key: string]: { id: string; key: string } } = {}
+
+  const inputInterfaceMap: IdMap<{
+    [key: string]: { id: string; key: string }[]
+  }> = {}
+  nodes.forEach((n) => {
+    Object.entries(n.inputs).forEach(([key, input]) => {
+      if (!input.from || convertedMap[input.from.id]) {
+        return
+      }
+
+      inputInterfaceMap[input.from.id] ??= {}
+      inputInterfaceMap[input.from.id][input.from.key] ??= []
+      inputInterfaceMap[input.from.id][input.from.key].push({ id: n.id, key })
+    })
+  })
+
+  const customBeginInput = createGraphNode('custom_begin_input', {
+    id: generateId(),
+  })
+  convertedMap[customBeginInput.id] = customBeginInput
+
+  let currentInputId = customBeginInput.id
+  Object.entries(inputInterfaceMap).forEach(([id, inputs]) => {
+    Object.entries(inputs).forEach(([key, connections]) => {
+      const customInput = createGraphNode('custom_input', {
+        id: generateId(),
+        inputs: {
+          input: {
+            from: { id: currentInputId, key: 'input' },
+          },
+        },
+      })
+      convertedMap[customInput.id] = customInput
+      currentInputId = customInput.id
+      inputMap[customInput.id] = { id, key }
+
+      connections.forEach((connection) => {
+        const target = convertedMap[connection.id]
+        convertedMap[target.id] = {
+          ...target,
+          inputs: {
+            ...target.inputs,
+            [connection.key]: {
+              ...target.inputs[connection.key],
+              from: { id: customInput.id, key: 'value' },
+            },
+          },
+        }
+      })
+    })
+  })
+
+  return { customGraphNodes: convertedMap, inputMap }
+}
+
+function canMakeCustomGraphFrom(node: Pick<GraphNode, 'type'>): boolean {
+  return ![
+    'custom_begin_input',
+    'custom_input',
+    'custom_begin_output',
+    'custom_output',
+    'get_bone',
+    'get_object',
+  ].includes(node.type as string)
 }

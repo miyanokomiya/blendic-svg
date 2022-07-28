@@ -945,6 +945,22 @@ describe('src/utils/graphNodes/index.ts', () => {
         },
       })
     })
+
+    it('should override partial data', () => {
+      expect(
+        createGraphNode('custom_input', {
+          data: {
+            default: { value: 0, genericsType: UNIT_VALUE_TYPES.SCALER },
+          } as any,
+        })
+      ).toEqual({
+        ...createGraphNode('custom_input'),
+        data: {
+          default: { value: 0, genericsType: UNIT_VALUE_TYPES.SCALER },
+          name: 'input',
+        },
+      })
+    })
   })
 
   describe('isUniqueEssentialNodeForCustomGraph', () => {

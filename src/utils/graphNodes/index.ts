@@ -664,9 +664,9 @@ export function validateNode(
 export function createGraphNodeIncludeCustom<T extends GraphNodeType>(
   customModules: { [key in GraphNodeType]: NodeModule<any> },
   type: T,
-  arg: Partial<Omit<GraphNodes[T], 'inputs'>> & {
-    inputs?: Partial<GraphNodes[T]['inputs']>
-  } = {},
+  arg: Partial<Omit<GraphNodeBase, 'inputs'>> & {
+    inputs?: Partial<GraphNodeBase['inputs']>
+  } & { data?: Partial<GraphNodeBase['data']> } = {},
   generateId = false
 ) {
   return _createGraphNode(
@@ -678,9 +678,9 @@ export function createGraphNodeIncludeCustom<T extends GraphNodeType>(
 
 export function createGraphNode<T extends GraphNodeType>(
   type: T,
-  arg: Partial<Omit<GraphNodes[T], 'inputs'>> & {
-    inputs?: Partial<GraphNodes[T]['inputs']>
-  } = {},
+  arg: Partial<Omit<GraphNodeBase, 'inputs'>> & {
+    inputs?: Partial<GraphNodeBase['inputs']>
+  } & { data?: Partial<GraphNodeBase['data']> } = {},
   generateId = false
 ): GraphNodes[T] {
   return _createGraphNode(NODE_MODULES[type], arg, generateId)
@@ -690,14 +690,17 @@ function _createGraphNode(
   module: NodeModule<any>,
   arg: Partial<Omit<GraphNodeBase, 'inputs'>> & {
     inputs?: Partial<GraphNodeBase['inputs']>
-  } = {},
+  } & { data?: Partial<GraphNodeBase['data']> } = {},
   generateId = false
 ): GraphNodeBase {
   // enable to override partial inputs
-  const { inputs, ...others } = arg
+  const { inputs, data, ...others } = arg
   const node = module.struct.create(others)
   if (inputs) {
     node.inputs = { ...node.inputs, ...arg.inputs }
+  }
+  if (data) {
+    node.data = { ...node.data, ...arg.data }
   }
   if (generateId) {
     node.id = generateUuid()

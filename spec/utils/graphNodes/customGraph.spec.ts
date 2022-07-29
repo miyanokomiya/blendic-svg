@@ -261,7 +261,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
     })
 
     describe('genericsChains', () => {
-      it('should craete genericsChains', () => {
+      it('should craete getOutputType and genericsChains', () => {
         const beginInputNode = createGraphNode('custom_begin_input', {
           id: 'begin_input',
         })
@@ -330,6 +330,19 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
           [{ key: 'input_0' }, { key: 'output_0', output: true }],
           [{ key: 'input_1' }, { key: 'output_1', output: true }],
         ])
+
+        const mockSelf = {
+          inputs: {
+            input_0: { genericsType: UNIT_VALUE_TYPES.SCALER },
+            input_1: { genericsType: UNIT_VALUE_TYPES.VECTOR2 },
+          },
+        } as any
+        expect(struct.getOutputType!(mockSelf, 'output_0')).toEqual(
+          UNIT_VALUE_TYPES.SCALER
+        )
+        expect(struct.getOutputType!(mockSelf, 'output_1')).toEqual(
+          UNIT_VALUE_TYPES.VECTOR2
+        )
       })
     })
   })

@@ -68,6 +68,7 @@ import {
   getInputsConnectedTo,
   updateNodeInput,
   updateMultipleNodeInput,
+  isGenericsResolved,
 } from '../../../src/utils/graphNodes/index'
 import { getTransform } from '/@/models'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
@@ -1909,6 +1910,14 @@ describe('src/utils/graphNodes/index.ts', () => {
           }),
         })
       })
+    })
+  })
+
+  describe('isGenericsResolved', () => {
+    it('should return true if generics is resolved', () => {
+      expect(isGenericsResolved()).toBe(false)
+      expect(isGenericsResolved(UNIT_VALUE_TYPES.GENERICS)).toBe(false)
+      expect(isGenericsResolved(UNIT_VALUE_TYPES.SCALER)).toBe(true)
     })
   })
 

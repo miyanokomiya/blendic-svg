@@ -39,6 +39,7 @@ import {
   GetGraphNodeModule,
   getInputsConnectedTo,
   getUpdatedNodeMapToDisconnectNodeInput,
+  isGenericsResolved,
   resolveAllNodes,
   updateNodeInput,
 } from '/@/utils/graphNodes'
@@ -82,6 +83,29 @@ export function createCustomNodeModule(
       })
   })
 
+  const outputChainMap = new Map(
+    chains
+      .filter((c) => c.some((item) => item.output))
+      .map((c) => {
+        const o = c.find((item) => item.output)!
+        const i = c.find((item) => !item.output)!
+        return [o.key, i.key]
+      })
+  )
+
+  const getOutputType =
+    outputChainMap.size > 0
+      ? (self: any, key: string) => {
+          const src = innerNodeMap[key]
+          const genericsType = src.inputs.value.genericsType
+          if (isGenericsResolved(genericsType)) return genericsType
+
+          const inputKey = outputChainMap.get(key)
+          if (inputKey) return self.inputs[inputKey].genericsType
+          return UNIT_VALUE_TYPES.UNKNOWN
+        }
+      : undefined
+
   return {
     struct: {
       create: (arg = {}) =>
@@ -113,6 +137,7 @@ export function createCustomNodeModule(
       color: '#ff6347',
       textColor: '#fff',
       label: `${customGraph.name}`,
+      getOutputType,
       genericsChains: chains.length > 0 ? chains : undefined,
     },
   }

@@ -29,6 +29,7 @@ import {
   CommandExam,
   EditMovement,
   PopupMenuItem,
+  ToolMenuGroup,
 } from '/@/composables/modes/types'
 import { Rectangle } from 'okanvas'
 import { IVec2 } from 'okageo'
@@ -52,6 +53,7 @@ export function useAnimationGraphMode(options: {
   setPopupMenuList: (val?: { items: PopupMenuItem[]; point: IVec2 }) => void
   getNodeItemList: () => NODE_MENU_OPTION[]
   setCommandExams: (exams?: CommandExam[]) => void
+  setToolMenuList: (val?: ToolMenuGroup[]) => void
 
   setEdgeCutter: (val: EdgeCutter | undefined) => void
   getEdgeCutter: () => EdgeCutter | undefined
@@ -81,6 +83,8 @@ export function useAnimationGraphMode(options: {
     setEditMovement: graphStore.setEditMovement,
     getDraftEdge: () => graphStore.draftEdge.value,
     setDraftEdge: graphStore.setDraftEdge,
+    makeCustomGraphFromSelectedNodes:
+      graphStore.makeCustomGraphFromSelectedNodes,
 
     startEditMovement: options.startEditMovement,
     startDragging: options.startDragging,
@@ -88,6 +92,7 @@ export function useAnimationGraphMode(options: {
 
     setPopupMenuList: options.setPopupMenuList,
     getNodeItemList: options.getNodeItemList,
+    setToolMenuList: options.setToolMenuList,
 
     setViewport: options.setViewport,
     panView: options.panView,

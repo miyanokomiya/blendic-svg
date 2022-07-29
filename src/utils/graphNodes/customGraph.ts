@@ -36,7 +36,9 @@ import {
   createGraphNodeIncludeCustom,
   GetGraphNodeModule,
   getInputsConnectedTo,
+  getUpdatedNodeMapToDisconnectNodeInput,
   resolveAllNodes,
+  updateNodeInput,
 } from '/@/utils/graphNodes'
 import {
   NodeModule,
@@ -57,6 +59,7 @@ export function createCustomNodeModule(
     struct: {
       create: (arg = {}) =>
         ({
+          position: { x: 0, y: 0 },
           ...arg,
           type: customGraph.id,
           data: {},
@@ -326,12 +329,6 @@ export function makeCustomGraphFromNodes(
 
   const customGraphNodeId = generateId()
 
-  const inputInfo = convertToCustomGraphInputInterface(
-    getGraphNodeModule,
-    Object.values(filterdTargets),
-    generateId
-  )
-
   const outputInfo = convertToCustomGraphOutputInterface(
     getGraphNodeModule,
     allNodeMap,
@@ -340,13 +337,15 @@ export function makeCustomGraphFromNodes(
     generateId
   )
 
-  const tmpCustomGraphNodes = {
-    ...outputInfo.customGraphNodes,
-    ...inputInfo.customGraphNodes,
-  }
+  const inputInfo = convertToCustomGraphInputInterface(
+    getGraphNodeModule,
+    Object.values({ ...filterdTargets, ...outputInfo.customGraphNodes }),
+    generateId
+  )
+
   const customGraphNodes = {
-    ...tmpCustomGraphNodes,
-    ...cleanAllEdgeGenerics(getGraphNodeModule, tmpCustomGraphNodes),
+    ...inputInfo.customGraphNodes,
+    ...cleanAllEdgeGenerics(getGraphNodeModule, inputInfo.customGraphNodes),
   }
 
   const customGraph = getCustomGraph({
@@ -355,46 +354,40 @@ export function makeCustomGraphFromNodes(
   })
 
   const customModule = createCustomNodeModule(customGraph, customGraphNodes)
-
-  const customNode = createGraphNodeIncludeCustom(
-    { [customGraph.id]: customModule },
-    customGraph.id,
-    {
-      id: customGraphNodeId,
-      inputs: {
-        ...mapReduce(inputInfo.inputMap, (from) => ({ from })),
-      },
-    }
-  )
-
   const nextGetGraphNodeModule = (type: GraphNodeType) => {
     return type === customGraph.id ? customModule : getGraphNodeModule(type)
   }
-  const nextNodeMap = mapFilter(
-    {
-      ...allNodeMap,
-      ...outputInfo.updatedNodes,
-      customNode,
-    },
-    (_, id) => !filterdTargets[id]
+
+  const customNodeSrc = createGraphNodeIncludeCustom(
+    { [customGraph.id]: customModule },
+    customGraph.id,
+    { id: customGraphNodeId }
   )
-  // Clean new custom node
-  const cleanedMap = cleanAllEdgeGenerics(nextGetGraphNodeModule, nextNodeMap)
+
+  let customNode = customNodeSrc
+  Object.entries(inputInfo.inputMap).forEach(([key, from]) => {
+    customNode =
+      updateNodeInput(
+        nextGetGraphNodeModule,
+        { [customNode.id]: customNode, [from.id]: allNodeMap[from.id] },
+        customNode.id,
+        key,
+        from.id,
+        from.key
+      )[customNode.id] ?? customNode
+  })
 
   return {
     customGraph,
     customGraphNodes,
-    customNode: cleanedMap[customNode.id] ?? customNode,
-    updatedNodes: mapReduce(
-      outputInfo.updatedNodes,
-      (node, id) => nextNodeMap[id] ?? node
-    ),
+    customNode,
+    updatedNodes: outputInfo.updatedNodes,
     deletedNodeIds: Object.keys(filterdTargets),
   }
 }
 
 /**
- * Note: "genericsType" isn't resolvd in this function
+ * Should execute this function before "convertToCustomGraphInputInterface"
  */
 export function convertToCustomGraphOutputInterface(
   getGraphNodeModule: GetGraphNodeModule,
@@ -406,7 +399,9 @@ export function convertToCustomGraphOutputInterface(
   const targetIdSet = new Set(targetIds)
   const otherNodeMap = mapFilter(allNodeMap, (_, id) => !targetIdSet.has(id))
   const updatedNodes: IdMap<GraphNode> = {}
-  const customGraphNodes: IdMap<GraphNode> = {}
+  const customGraphNodes: IdMap<GraphNode> = mapFilter(allNodeMap, (_, id) =>
+    targetIdSet.has(id)
+  )
 
   const customBeginOutput = createGraphNode('custom_begin_output', {
     id: generateId(),
@@ -428,10 +423,23 @@ export function convertToCustomGraphOutputInterface(
         id: generateId(),
         inputs: {
           output: { from: { id: customBeginOutput.id, key: 'output' } },
-          value: { from: { id, key }, genericsType: UNIT_VALUE_TYPES.UNKNOWN },
         },
       })
       customGraphNodes[customOutput.id] = customOutput
+
+      Object.values(
+        updateNodeInput(
+          getGraphNodeModule,
+          customGraphNodes,
+          customOutput.id,
+          'value',
+          id,
+          key
+        )
+      ).forEach((n) => {
+        customGraphNodes[n.id] = n
+      })
+      console.log(customGraphNodes[customOutput.id])
 
       connections.forEach(([inputNodeId, inputs]) => {
         const inputNode = allNodeMap[inputNodeId]
@@ -441,6 +449,7 @@ export function convertToCustomGraphOutputInterface(
             ...inputNode.inputs,
             ...mapReduce(inputs, (_, key) => ({
               ...inputNode.inputs[key],
+              value: inputNode.inputs[key].value,
               from: { id: customGraphNodeId, key: customOutput.id },
             })),
           },
@@ -453,11 +462,8 @@ export function convertToCustomGraphOutputInterface(
   return { customGraphNodes, updatedNodes }
 }
 
-/**
- * Note: "genericsType" isn't resolvd in this function
- */
 export function convertToCustomGraphInputInterface(
-  _getGraphNodeModule: GetGraphNodeModule,
+  getGraphNodeModule: GetGraphNodeModule,
   nodes: GraphNode[],
   generateId: () => string
 ): {
@@ -503,22 +509,36 @@ export function convertToCustomGraphInputInterface(
       inputMap[customInput.id] = { id, key }
 
       connections.forEach((connection) => {
-        const target = convertedMap[connection.id]
-        convertedMap[target.id] = {
-          ...target,
-          inputs: {
-            ...target.inputs,
-            [connection.key]: {
-              ...target.inputs[connection.key],
-              from: { id: customInput.id, key: 'value' },
-            },
-          },
-        }
+        Object.values(
+          getUpdatedNodeMapToDisconnectNodeInput(
+            getGraphNodeModule,
+            convertedMap,
+            connection.id,
+            connection.key
+          )
+        ).forEach((n) => {
+          convertedMap[n.id] = n
+        })
+        Object.values(
+          updateNodeInput(
+            getGraphNodeModule,
+            convertedMap,
+            connection.id,
+            connection.key,
+            customInput.id,
+            'value'
+          )
+        ).forEach((n) => {
+          convertedMap[n.id] = n
+        })
       })
     })
   })
 
-  return { customGraphNodes: convertedMap, inputMap }
+  return {
+    customGraphNodes: convertedMap,
+    inputMap,
+  }
 }
 
 function canMakeCustomGraphFrom(node: Pick<GraphNode, 'type'>): boolean {

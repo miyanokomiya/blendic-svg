@@ -413,6 +413,8 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
       )
 
       expect(result.customGraphNodes).toEqual({
+        a: expect.anything(),
+        b: expect.anything(),
         id_0: createGraphNode('custom_begin_output', { id: 'id_0' }),
         id_1: createGraphNode('custom_output', {
           id: 'id_1',
@@ -420,7 +422,8 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
             output: { from: { id: 'id_0', key: 'output' } },
             value: {
               from: { id: 'b', key: 'value' },
-              genericsType: UNIT_VALUE_TYPES.UNKNOWN,
+              genericsType: UNIT_VALUE_TYPES.VECTOR2,
+              value: { x: 0, y: 0 },
             },
           },
         }),
@@ -440,51 +443,52 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
   })
 
   describe('convertToCustomGraphInputInterface', () => {
+    const nodeMap = {
+      a: createGraphNode('make_vector2', {
+        id: 'a',
+        inputs: {
+          x: {
+            from: { id: 'p', key: 'value' },
+          },
+          y: {
+            from: { id: 'q', key: 'value' },
+          },
+        },
+      }),
+      b: createGraphNode('add_generics', {
+        id: 'b',
+        inputs: {
+          a: {
+            from: { id: 'a', key: 'vector2' },
+            genericsType: UNIT_VALUE_TYPES.VECTOR2,
+          },
+          b: {
+            value: { x: 0, y: 0 },
+            genericsType: UNIT_VALUE_TYPES.VECTOR2,
+          },
+        },
+      }),
+      c: createGraphNode('add_generics', {
+        id: 'c',
+        inputs: {
+          b: {
+            from: { id: 'b', key: 'value' },
+            genericsType: UNIT_VALUE_TYPES.VECTOR2,
+          },
+        },
+      }),
+      d: createGraphNode('make_vector2', {
+        id: 'd',
+        inputs: {
+          y: {
+            from: { id: 'p', key: 'value' },
+          },
+        },
+      }),
+    }
+
     it('should return nodes for custom graph', () => {
       let count = 0
-      const nodeMap = {
-        a: createGraphNode('make_vector2', {
-          id: 'a',
-          inputs: {
-            x: {
-              from: { id: 'p', key: 'value' },
-            },
-            y: {
-              from: { id: 'q', key: 'value' },
-            },
-          },
-        }),
-        b: createGraphNode('add_generics', {
-          id: 'b',
-          inputs: {
-            a: {
-              from: { id: 'a', key: 'vector2' },
-              genericsType: UNIT_VALUE_TYPES.VECTOR2,
-            },
-            b: {
-              value: { x: 0, y: 0 },
-              genericsType: UNIT_VALUE_TYPES.VECTOR2,
-            },
-          },
-        }),
-        c: createGraphNode('add_generics', {
-          id: 'c',
-          inputs: {
-            b: {
-              from: { id: 'b', key: 'value' },
-              genericsType: UNIT_VALUE_TYPES.VECTOR2,
-            },
-          },
-        }),
-        d: createGraphNode('make_vector2', {
-          id: 'd',
-          inputs: {
-            y: {
-              from: { id: 'p', key: 'value' },
-            },
-          },
-        }),
-      }
       const result = convertToCustomGraphInputInterface(
         getGraphNodeModule,
         [nodeMap.a, nodeMap.b, nodeMap.d],
@@ -531,7 +535,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
             input: { from: { id: 'id_0', key: 'input' } },
           },
           data: {
-            default: { value: undefined },
+            default: { value: 0, genericsType: UNIT_VALUE_TYPES.SCALER },
           },
         }),
         id_2: createGraphNode('custom_input', {
@@ -540,7 +544,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
             input: { from: { id: 'id_1', key: 'input' } },
           },
           data: {
-            default: { value: undefined },
+            default: { value: 0, genericsType: UNIT_VALUE_TYPES.SCALER },
           },
         }),
       })
@@ -549,48 +553,85 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         id_2: { id: 'q', key: 'value' },
       })
     })
-  })
 
-  describe('makeCustomGraphFromNodes', () => {
-    it('should return nodes for custom graph', () => {
+    it('generics interface: should return nodes for custom graph', () => {
       let count = 0
-      const nodeMap = {
-        a: createGraphNode('make_vector2', {
-          id: 'a',
-          inputs: {
-            x: {
-              from: { id: 'p', key: 'value' },
-            },
-            y: {
-              from: { id: 'q', key: 'value' },
-            },
-          },
-        }),
+      const result = convertToCustomGraphInputInterface(
+        getGraphNodeModule,
+        [nodeMap.b],
+        () => `id_${count++}`
+      )
+
+      expect(result.customGraphNodes).toEqual({
         b: createGraphNode('add_generics', {
           id: 'b',
           inputs: {
             a: {
-              from: { id: 'a', key: 'vector2' },
-              genericsType: UNIT_VALUE_TYPES.VECTOR2,
+              from: { id: 'id_1', key: 'value' },
             },
-            b: {
-              value: { x: 0, y: 0 },
-              genericsType: UNIT_VALUE_TYPES.VECTOR2,
-            },
+            b: {},
           },
         }),
-        c: createGraphNode('add_generics', {
-          id: 'c',
+        id_0: createGraphNode('custom_begin_input', { id: 'id_0' }),
+        id_1: createGraphNode('custom_input', {
+          id: 'id_1',
           inputs: {
-            b: {
-              from: { id: 'b', key: 'value' },
-              genericsType: UNIT_VALUE_TYPES.VECTOR2,
-            },
+            input: { from: { id: 'id_0', key: 'input' } },
+          },
+          data: {
+            default: { value: undefined },
           },
         }),
-        p: createGraphNode('scaler', { id: 'p' }),
-        q: createGraphNode('scaler', { id: 'q' }),
-      }
+      })
+      expect(result.inputMap).toEqual({
+        id_1: { id: 'a', key: 'vector2' },
+      })
+    })
+  })
+
+  describe('makeCustomGraphFromNodes', () => {
+    const nodeMap = {
+      a: createGraphNode('make_vector2', {
+        id: 'a',
+        inputs: {
+          x: {
+            from: { id: 'p', key: 'value' },
+          },
+          y: {
+            from: { id: 'q', key: 'value' },
+          },
+        },
+      }),
+      b: createGraphNode('add_generics', {
+        id: 'b',
+        inputs: {
+          a: {
+            from: { id: 'a', key: 'vector2' },
+            genericsType: UNIT_VALUE_TYPES.VECTOR2,
+            value: { x: 0, y: 0 },
+          },
+          b: {
+            value: { x: 0, y: 0 },
+            genericsType: UNIT_VALUE_TYPES.VECTOR2,
+          },
+        },
+      }),
+      c: createGraphNode('add_generics', {
+        id: 'c',
+        inputs: {
+          b: {
+            from: { id: 'b', key: 'value' },
+            genericsType: UNIT_VALUE_TYPES.VECTOR2,
+            value: { x: 0, y: 0 },
+          },
+        },
+      }),
+      p: createGraphNode('scaler', { id: 'p' }),
+      q: createGraphNode('scaler', { id: 'q' }),
+    }
+
+    it('should return nodes for custom graph', () => {
+      let count = 0
       const result = makeCustomGraphFromNodes(
         getGraphNodeModule,
         nodeMap,
@@ -603,10 +644,10 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
           id: 'a',
           inputs: {
             x: {
-              from: { id: 'id_2', key: 'value' },
+              from: { id: 'id_4', key: 'value' },
             },
             y: {
-              from: { id: 'id_3', key: 'value' },
+              from: { id: 'id_5', key: 'value' },
             },
           },
         })
@@ -618,6 +659,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
             a: {
               from: { id: 'a', key: 'vector2' },
               genericsType: UNIT_VALUE_TYPES.VECTOR2,
+              value: { x: 0, y: 0 },
             },
             b: {
               value: { x: 0, y: 0 },
@@ -626,49 +668,51 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
           },
         })
       )
+
       expect(result.customGraphNodes.id_1).toEqual(
-        createGraphNode('custom_begin_input', { id: 'id_1' })
+        createGraphNode('custom_begin_output', { id: 'id_1' })
       )
       expect(result.customGraphNodes.id_2).toEqual(
-        createGraphNode('custom_input', {
+        createGraphNode('custom_output', {
           id: 'id_2',
           inputs: {
-            input: { from: { id: 'id_1', key: 'input' } },
-          },
-          data: {
-            default: {
-              value: 0,
-              genericsType: UNIT_VALUE_TYPES.SCALER,
-            },
-          },
-        })
-      )
-      expect(result.customGraphNodes.id_3).toEqual(
-        createGraphNode('custom_input', {
-          id: 'id_3',
-          inputs: {
-            input: { from: { id: 'id_2', key: 'input' } },
-          },
-          data: {
-            default: {
-              value: 0,
-              genericsType: UNIT_VALUE_TYPES.SCALER,
-            },
-          },
-        })
-      )
-      expect(result.customGraphNodes.id_4).toEqual(
-        createGraphNode('custom_begin_output', { id: 'id_4' })
-      )
-      expect(result.customGraphNodes.id_5).toEqual(
-        createGraphNode('custom_output', {
-          id: 'id_5',
-          inputs: {
-            output: { from: { id: 'id_4', key: 'output' } },
+            output: { from: { id: 'id_1', key: 'output' } },
             value: {
               from: { id: 'b', key: 'value' },
               genericsType: UNIT_VALUE_TYPES.VECTOR2,
               value: { x: 0, y: 0 },
+            },
+          },
+        })
+      )
+
+      expect(result.customGraphNodes.id_3).toEqual(
+        createGraphNode('custom_begin_input', { id: 'id_3' })
+      )
+      expect(result.customGraphNodes.id_4).toEqual(
+        createGraphNode('custom_input', {
+          id: 'id_4',
+          inputs: {
+            input: { from: { id: 'id_3', key: 'input' } },
+          },
+          data: {
+            default: {
+              value: 0,
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        })
+      )
+      expect(result.customGraphNodes.id_5).toEqual(
+        createGraphNode('custom_input', {
+          id: 'id_5',
+          inputs: {
+            input: { from: { id: 'id_4', key: 'input' } },
+          },
+          data: {
+            default: {
+              value: 0,
+              genericsType: UNIT_VALUE_TYPES.SCALER,
             },
           },
         })
@@ -686,9 +730,10 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         data: {},
         type: 'id_6',
         inputs: {
-          id_2: { from: { id: 'p', key: 'value' } },
-          id_3: { from: { id: 'q', key: 'value' } },
+          id_4: { from: { id: 'p', key: 'value' } },
+          id_5: { from: { id: 'q', key: 'value' } },
         },
+        position: { x: 0, y: 0 },
       })
 
       expect(result.updatedNodes).toEqual({
@@ -696,14 +741,242 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
           id: 'c',
           inputs: {
             b: {
-              from: { id: 'id_0', key: 'id_5' },
+              from: { id: 'id_0', key: 'id_2' },
               genericsType: UNIT_VALUE_TYPES.VECTOR2,
+              value: { x: 0, y: 0 },
             },
           },
         }),
       })
 
       expect(result.deletedNodeIds).toEqual(['a', 'b'])
+    })
+
+    it('generics interface: should return nodes for custom graph', () => {
+      let count = 0
+      const result = makeCustomGraphFromNodes(
+        getGraphNodeModule,
+        nodeMap,
+        ['b'],
+        () => `id_${count++}`
+      )
+
+      expect(result.customGraphNodes.b).toEqual(
+        createGraphNode('add_generics', {
+          id: 'b',
+          inputs: {
+            a: { from: { id: 'id_4', key: 'value' } },
+            b: {},
+          },
+        })
+      )
+
+      expect(result.customGraphNodes.id_1).toEqual(
+        createGraphNode('custom_begin_output', { id: 'id_1' })
+      )
+      expect(result.customGraphNodes.id_2).toEqual(
+        createGraphNode('custom_output', {
+          id: 'id_2',
+          inputs: {
+            output: { from: { id: 'id_1', key: 'output' } },
+            value: { from: { id: 'b', key: 'value' } },
+          },
+        })
+      )
+
+      expect(result.customGraphNodes.id_3).toEqual(
+        createGraphNode('custom_begin_input', { id: 'id_3' })
+      )
+      expect(result.customGraphNodes.id_4).toEqual(
+        createGraphNode('custom_input', {
+          id: 'id_4',
+          inputs: {
+            input: { from: { id: 'id_3', key: 'input' } },
+          },
+          data: { default: {} },
+        })
+      )
+
+      expect(result.customGraph).toEqual(
+        getCustomGraph({
+          id: 'id_5',
+          nodes: ['b', 'id_1', 'id_2', 'id_3', 'id_4'],
+        })
+      )
+
+      expect(result.customNode).toEqual({
+        id: 'id_0',
+        data: {},
+        type: 'id_5',
+        inputs: {
+          id_4: {
+            from: { id: 'a', key: 'vector2' },
+            genericsType: UNIT_VALUE_TYPES.VECTOR2,
+            value: { x: 0, y: 0 },
+          },
+        },
+        position: { x: 0, y: 0 },
+      })
+
+      expect(result.updatedNodes).toEqual({
+        c: createGraphNode('add_generics', {
+          id: 'c',
+          inputs: {
+            b: {
+              from: { id: 'id_0', key: 'id_2' },
+              genericsType: UNIT_VALUE_TYPES.VECTOR2,
+              value: { x: 0, y: 0 },
+            },
+          },
+        }),
+      })
+
+      expect(result.deletedNodeIds).toEqual(['b'])
+    })
+  })
+
+  describe('makeCustomGraphFromNodes: use case 1', () => {
+    const nodeMap = {
+      a: createGraphNode('scaler', { id: 'a' }),
+      b: createGraphNode('add_generics', {
+        id: 'b',
+        inputs: {
+          a: {
+            from: { id: 'a', key: 'value' },
+            genericsType: UNIT_VALUE_TYPES.SCALER,
+            value: 0,
+          },
+          b: {
+            genericsType: UNIT_VALUE_TYPES.SCALER,
+            value: 0,
+          },
+        },
+      }),
+      c: createGraphNode('sub_generics', {
+        id: 'c',
+        inputs: {
+          a: {
+            from: { id: 'b', key: 'value' },
+            genericsType: UNIT_VALUE_TYPES.SCALER,
+            value: 0,
+          },
+          b: {
+            genericsType: UNIT_VALUE_TYPES.SCALER,
+            value: 0,
+          },
+        },
+      }),
+      d: createGraphNode('make_vector2', {
+        id: 'd',
+        inputs: {
+          x: {
+            from: { id: 'c', key: 'value' },
+          },
+        },
+      }),
+    }
+
+    it('should return nodes for custom graph', () => {
+      let count = 0
+      const result = makeCustomGraphFromNodes(
+        getGraphNodeModule,
+        nodeMap,
+        ['b', 'c'],
+        () => `id_${count++}`
+      )
+
+      expect(Object.keys(result.customGraphNodes).sort()).toEqual([
+        'b',
+        'c',
+        'id_1',
+        'id_2',
+        'id_3',
+        'id_4',
+      ])
+      expect(result.customGraphNodes.b).toEqual(
+        createGraphNode('add_generics', {
+          id: 'b',
+          inputs: {
+            a: {
+              from: { id: 'id_4', key: 'value' },
+            },
+          },
+        })
+      )
+      expect(result.customGraphNodes.c).toEqual(
+        createGraphNode('sub_generics', {
+          id: 'c',
+          inputs: {
+            a: {
+              from: { id: 'b', key: 'value' },
+            },
+          },
+        })
+      )
+
+      expect(result.customGraphNodes.id_1).toEqual(
+        createGraphNode('custom_begin_output', { id: 'id_1' })
+      )
+      expect(result.customGraphNodes.id_2).toEqual(
+        createGraphNode('custom_output', {
+          id: 'id_2',
+          inputs: {
+            output: { from: { id: 'id_1', key: 'output' } },
+            value: {
+              from: { id: 'c', key: 'value' },
+            },
+          },
+        })
+      )
+
+      expect(result.customGraphNodes.id_3).toEqual(
+        createGraphNode('custom_begin_input', { id: 'id_3' })
+      )
+      expect(result.customGraphNodes.id_4).toEqual(
+        createGraphNode('custom_input', {
+          id: 'id_4',
+          inputs: {
+            input: { from: { id: 'id_3', key: 'input' } },
+          },
+          data: {
+            default: {},
+          },
+        })
+      )
+
+      expect(result.customGraph).toEqual(
+        getCustomGraph({
+          id: 'id_5',
+          nodes: ['b', 'c', 'id_1', 'id_2', 'id_3', 'id_4'],
+        })
+      )
+
+      expect(result.customNode).toEqual({
+        id: 'id_0',
+        data: {},
+        type: 'id_5',
+        inputs: {
+          id_4: {
+            from: { id: 'a', key: 'value' },
+            genericsType: UNIT_VALUE_TYPES.SCALER,
+            value: 0,
+          },
+        },
+        position: { x: 0, y: 0 },
+      })
+
+      expect(result.updatedNodes).toEqual({
+        d: createGraphNode('make_vector2', {
+          id: 'd',
+          inputs: {
+            x: {
+              from: { id: 'id_0', key: 'id_2' },
+            },
+          },
+        }),
+      })
+
+      expect(result.deletedNodeIds).toEqual(['b', 'c'])
     })
   })
 })

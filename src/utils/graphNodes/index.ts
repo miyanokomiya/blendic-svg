@@ -923,7 +923,7 @@ export function getNodeEdgeTypes(
 }
 
 // this function do connect only and does not resolve generics
-// => use getAllEdgeConnectionInfo to resolve its
+// => use "cleanEdgeGenericsGroupAt" to resolve its
 export function updateInputConnection(
   fromInfo: {
     node: GraphNode
@@ -1362,6 +1362,8 @@ export function cleanAllEdgeGenerics(
     if (!struct?.genericsChains) return p
 
     const chains = struct.genericsChains
+    if (target.id === 'id_2') {
+    }
     return chains
       .filter((c) => c.length > 0)
       .reduce((q, c) => {

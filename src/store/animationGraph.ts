@@ -29,7 +29,13 @@ import {
   getCustomGraph,
   mergeMap,
 } from '../models'
-import { dropMap, extractMap, mapReduce, toList } from '../utils/commons'
+import {
+  dropMap,
+  extractMap,
+  mapFilter,
+  mapReduce,
+  toList,
+} from '../utils/commons'
 import { useHistoryStore } from './history'
 import { useEntities } from '/@/composables/stores/entities'
 import { EditMovement, SelectOptions } from '/@/composables/modes/types'
@@ -71,11 +77,13 @@ import { useValueStore } from '/@/composables/stores/valueStore'
 import {
   createCustomNodeModule,
   getIndepenetCustomGraphIds,
+  makeCustomGraphFromNodes,
 } from '/@/utils/graphNodes/customGraph'
 import { useCanvasStore } from '/@/store/canvas'
 import { DraftGraphEdge } from '/@/composables/modeStates/animationGraph/core'
 import { add, sub } from 'okageo'
 import { getGraphNodeEdgePosition } from '/@/utils/helpers'
+import { generateUuid } from '/@/utils/random'
 
 export type GraphType = 'graph' | 'custom'
 
@@ -571,6 +579,45 @@ export function createStore(
     }
   }
 
+  function makeCustomGraphFromSelectedNodes() {
+    const parent = getNodeParent()
+    if (!parent) return
+
+    const targetIds = Object.keys(selectedNodes.value)
+    const result = makeCustomGraphFromNodes(
+      getGraphNodeModuleFn.value(),
+      nodeMap.value,
+      targetIds,
+      generateUuid
+    )
+    console.log(result)
+
+    const targetIdSet = new Set(targetIds)
+
+    historyStore.dispatch(
+      nodeEntities.createAddAction(
+        toList(result.customGraphNodes).filter((n) => !targetIdSet.has(n.id))
+      ),
+      [
+        customGraphEntities.createAddAction([result.customGraph]),
+        // customGraphSelectable.createSelectAction(result.customNode.id),
+        nodeEntities.createAddAction([result.customNode]),
+        nodeEntities.createUpdateAction({
+          ...result.updatedNodes,
+          ...mapFilter(result.customGraphNodes, (_, id) => targetIdSet.has(id)),
+        }),
+        getNodeParentEntity().createUpdateAction({
+          [parent.id]: {
+            nodes: [
+              ...parent.nodes.filter((id) => !result.customGraphNodes[id]),
+              result.customNode.id,
+            ],
+          },
+        }),
+      ]
+    )
+  }
+
   function selectCustomGraph(id = '') {
     if (!customGraphSelectable.getSelectHistoryDryRun(id)) return
 
@@ -740,6 +787,7 @@ export function createStore(
     pasteNodes,
     updateNode,
     updateNodes,
+    makeCustomGraphFromSelectedNodes,
 
     selectCustomGraph,
     addCustomGraph,

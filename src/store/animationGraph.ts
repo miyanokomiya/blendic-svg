@@ -68,7 +68,7 @@ import {
   completeNodeMap,
   NODE_MENU_OPTIONS_SRC,
 } from '/@/utils/graphNodes'
-import { getNotDuplicatedName } from '/@/utils/relations'
+import { getNotDuplicatedName, sortByDependency } from '/@/utils/relations'
 import { useStore } from '/@/store'
 import { useElementStore } from '/@/store/element'
 import { createGraphNodeContext } from '/@/utils/elements'
@@ -76,6 +76,7 @@ import { useAnimationStore } from '/@/store/animation'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import {
   createCustomNodeModule,
+  getAllCustomGraphDependencies,
   getIndepenetCustomGraphIds,
   makeCustomGraphFromNodes,
 } from '/@/utils/graphNodes/customGraph'
@@ -180,23 +181,39 @@ export function createStore(
 
   const customModules = computed<IdMap<NodeModule<any>>>(() => {
     const nodeMap = nodeEntities.entities.value.byId
-    return mapReduce(toMap(customGraphs.value), (customGraph) => {
-      return createCustomNodeModule(
+    const sorted = sortByDependency(
+      getAllCustomGraphDependencies(
+        nodeEntities.entities.value.byId,
+        customGraphs.value
+      )
+    )
+
+    const customGraphMap = toMap(customGraphs.value)
+    return sorted.reduce<IdMap<NodeModule<GraphNode>>>((p, id) => {
+      const customGraph = customGraphMap[id]
+      p[id] = createCustomNodeModule(
+        createGetGraphNodeModule(p),
         customGraph,
         toMap(customGraph.nodes.map((id) => nodeMap[id]))
       )
-    })
+      return p
+    }, {})
   })
 
-  const getGraphNodeModuleFn = computed<() => GetGraphNodeModule>(() => {
-    const fn = (type: GraphNodeType) => {
-      if (customModules.value[type]) {
-        return customModules.value[type]
+  function createGetGraphNodeModule(
+    customModules: IdMap<NodeModule<GraphNode>>
+  ) {
+    return (type: GraphNodeType) => {
+      if (customModules[type]) {
+        return customModules[type]
       } else {
         return getGraphNodeModule(type)
       }
     }
-    return () => fn
+  }
+
+  const getGraphNodeModuleFn = computed<() => GetGraphNodeModule>(() => {
+    return () => createGetGraphNodeModule(customModules.value)
   })
 
   const availableCustomGraphList = computed(() => {
@@ -498,6 +515,7 @@ export function createStore(
         ...nextGraphNodeMap,
       }
       const nextStruct = createCustomNodeModule(
+        getGraphNodeModuleFn.value(),
         { ...lastSelectedCustomGraph.value, nodes: Object.keys(nextNodeMap) },
         nextNodeMap
       ).struct
@@ -548,6 +566,7 @@ export function createStore(
       // Clean custom nodes related to this custom graph
       const nextNodeMap = mergeMap(nodeMap.value, val) as IdMap<GraphNode>
       const nextStruct = createCustomNodeModule(
+        getGraphNodeModuleFn.value(),
         lastSelectedCustomGraph.value,
         nextNodeMap
       ).struct

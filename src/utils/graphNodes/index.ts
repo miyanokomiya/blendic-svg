@@ -1362,8 +1362,6 @@ export function cleanAllEdgeGenerics(
     if (!struct?.genericsChains) return p
 
     const chains = struct.genericsChains
-    if (target.id === 'id_2') {
-    }
     return chains
       .filter((c) => c.length > 0)
       .reduce((q, c) => {

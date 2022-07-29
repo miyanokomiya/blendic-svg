@@ -34,6 +34,8 @@ import {
   cleanAllEdgeGenerics,
   createGraphNode,
   createGraphNodeIncludeCustom,
+  getAllEdgeConnectionInfo,
+  getEdgeChainGroupAt,
   GetGraphNodeModule,
   getInputsConnectedTo,
   getUpdatedNodeMapToDisconnectNodeInput,
@@ -48,12 +50,37 @@ import {
 import { DependencyMap, getAllDependencies } from '/@/utils/relations'
 
 export function createCustomNodeModule(
+  getGraphNodeModule: GetGraphNodeModule,
   customGraph: CustomGraph,
   innerNodeMap: IdMap<GraphNode>
 ): NodeModule<GraphNode> {
   const customInterface = getCustomInterfaceNode(customGraph, innerNodeMap)
   const inputs = createInputsStruct(customInterface)
   const outputs = createOutputsStruct(customInterface)
+
+  const allEdgeConnectionInfo = getAllEdgeConnectionInfo(innerNodeMap)
+
+  const interfaceIdSet = new Set([
+    ...Object.keys(inputs),
+    ...Object.keys(outputs),
+  ])
+  const chains = Object.keys(inputs).map((key) => {
+    return getEdgeChainGroupAt(
+      getGraphNodeModule,
+      innerNodeMap,
+      allEdgeConnectionInfo,
+      { id: key, key: 'value', output: true }
+    )
+      .filter((item) => !item.data && interfaceIdSet.has(item.id))
+      .map((item) => {
+        const p: { key: string; output?: true } = {
+          key: item.id,
+        }
+        // Inner output becomes interface input
+        if (!item.output) p.output = true
+        return p
+      })
+  })
 
   return {
     struct: {
@@ -86,6 +113,7 @@ export function createCustomNodeModule(
       color: '#ff6347',
       textColor: '#fff',
       label: `${customGraph.name}`,
+      genericsChains: chains.length > 0 ? chains : undefined,
     },
   }
 }
@@ -353,7 +381,11 @@ export function makeCustomGraphFromNodes(
     nodes: Object.keys(customGraphNodes).sort(),
   })
 
-  const customModule = createCustomNodeModule(customGraph, customGraphNodes)
+  const customModule = createCustomNodeModule(
+    getGraphNodeModule,
+    customGraph,
+    customGraphNodes
+  )
   const nextGetGraphNodeModule = (type: GraphNodeType) => {
     return type === customGraph.id ? customModule : getGraphNodeModule(type)
   }
@@ -439,7 +471,6 @@ export function convertToCustomGraphOutputInterface(
       ).forEach((n) => {
         customGraphNodes[n.id] = n
       })
-      console.log(customGraphNodes[customOutput.id])
 
       connections.forEach(([inputNodeId, inputs]) => {
         const inputNode = allNodeMap[inputNodeId]

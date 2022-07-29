@@ -120,4 +120,20 @@ describe('utils/relations', () => {
       ).toEqual({ b: true, c: true, d: true })
     })
   })
+
+  describe('sortByDependency', () => {
+    it('should return sorted ids', () => {
+      expect(
+        target.sortByDependency({
+          a: { b: true, f: true },
+          b: { c: true, d: true },
+          c: { d: true },
+          d: { g: true, f: true },
+          e: { f: true },
+          f: { g: true },
+          g: {},
+        })
+      ).toEqual(['g', 'f', 'd', 'e', 'c', 'b', 'a'])
+    })
+  })
 })

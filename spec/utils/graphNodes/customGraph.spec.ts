@@ -55,6 +55,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         })
 
         const { struct } = createCustomNodeModule(
+          getGraphNodeModule,
           getCustomGraph({
             nodes: [beginInputNode.id, inputNode1.id, inputNode0.id],
           }),
@@ -94,6 +95,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         })
 
         const { struct } = createCustomNodeModule(
+          getGraphNodeModule,
           getCustomGraph({
             nodes: [beginInputNode.id, inputNode1.id, inputNode0.id],
           }),
@@ -131,6 +133,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         })
 
         const { struct } = createCustomNodeModule(
+          getGraphNodeModule,
           getCustomGraph({
             nodes: [beginOutputNode.id, outputNode1.id, outputNode0.id],
           }),
@@ -168,6 +171,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         })
 
         const { struct } = createCustomNodeModule(
+          getGraphNodeModule,
           getCustomGraph({
             nodes: [beginOutputNode.id, outputNode1.id, outputNode0.id],
           }),
@@ -222,6 +226,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         })
 
         const { struct } = createCustomNodeModule(
+          getGraphNodeModule,
           getCustomGraph({
             nodes: [
               beginInputNode.id,
@@ -252,6 +257,79 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         ).toEqual({
           output_0: { x: 10, y: 20 },
         })
+      })
+    })
+
+    describe('genericsChains', () => {
+      it('should craete genericsChains', () => {
+        const beginInputNode = createGraphNode('custom_begin_input', {
+          id: 'begin_input',
+        })
+        const inputNode0 = createGraphNode('custom_input', {
+          id: 'input_0',
+          data: { name: 'name_0' },
+          inputs: { input: { from: { id: beginInputNode.id, key: 'input' } } },
+        })
+        const inputNode1 = createGraphNode('custom_input', {
+          id: 'input_1',
+          data: { name: 'name_1' },
+          inputs: { input: { from: { id: inputNode0.id, key: 'input' } } },
+        })
+
+        const beginOutputNode = createGraphNode('custom_begin_output', {
+          id: 'begin_output',
+        })
+        const outputNode0 = createGraphNode('custom_output', {
+          id: 'output_0',
+          data: { name: 'name_0' },
+          inputs: {
+            output: { from: { id: beginOutputNode.id, key: 'output' } },
+            value: { from: { id: inputNode0.id, key: 'value' } },
+          },
+        })
+        const outputNode1 = createGraphNode('custom_output', {
+          id: 'output_1',
+          data: { name: 'name_1' },
+          inputs: {
+            output: { from: { id: outputNode0.id, key: 'output' } },
+            value: { from: { id: inputNode1.id, key: 'value' } },
+          },
+        })
+        const other = createGraphNode('add_generics', {
+          id: 'other',
+          inputs: {
+            a: { from: { id: inputNode1.id, key: 'value' } },
+          },
+        })
+
+        const { struct } = createCustomNodeModule(
+          getGraphNodeModule,
+          getCustomGraph({
+            nodes: [
+              beginInputNode.id,
+              inputNode1.id,
+              inputNode0.id,
+              beginOutputNode.id,
+              outputNode1.id,
+              outputNode0.id,
+              other.id,
+            ],
+          }),
+          {
+            [beginInputNode.id]: beginInputNode,
+            [inputNode1.id]: inputNode1,
+            [inputNode0.id]: inputNode0,
+            [beginOutputNode.id]: beginOutputNode,
+            [outputNode1.id]: outputNode1,
+            [outputNode0.id]: outputNode0,
+            [other.id]: other,
+          }
+        )
+
+        expect(struct.genericsChains).toEqual([
+          [{ key: 'input_0' }, { key: 'output_0', output: true }],
+          [{ key: 'input_1' }, { key: 'output_1', output: true }],
+        ])
       })
     })
   })

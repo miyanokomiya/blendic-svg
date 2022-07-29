@@ -470,6 +470,7 @@ export function convertToCustomGraphOutputInterface(
   })
   customGraphNodes[customBeginOutput.id] = customBeginOutput
 
+  let currentOutputId = customBeginOutput.id
   targetIds.forEach((id) => {
     const node = allNodeMap[id]
     const struct = getGraphNodeModule(node.type)?.struct
@@ -484,9 +485,10 @@ export function convertToCustomGraphOutputInterface(
       const customOutput = createGraphNode('custom_output', {
         id: generateId(),
         inputs: {
-          output: { from: { id: customBeginOutput.id, key: 'output' } },
+          output: { from: { id: currentOutputId, key: 'output' } },
         },
       })
+      currentOutputId = customOutput.id
       customGraphNodes[customOutput.id] = customOutput
 
       Object.values(
@@ -503,7 +505,7 @@ export function convertToCustomGraphOutputInterface(
       })
 
       connections.forEach(([inputNodeId, inputs]) => {
-        const inputNode = allNodeMap[inputNodeId]
+        const inputNode = updatedNodes[inputNodeId] ?? allNodeMap[inputNodeId]
         const updated = {
           ...inputNode,
           inputs: {

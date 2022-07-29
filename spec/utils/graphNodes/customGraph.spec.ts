@@ -21,6 +21,8 @@ import { getCustomGraph } from '/@/models'
 import { createGraphNode, getGraphNodeModule } from '/@/utils/graphNodes'
 import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
 import {
+  ajudstCustomGraphNodeLayout,
+  ajudstCustomNodePosition,
   convertToCustomGraphInputInterface,
   convertToCustomGraphOutputInterface,
   createCustomNodeModule,
@@ -1068,6 +1070,62 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
       })
 
       expect(result.deletedNodeIds).toEqual(['b', 'c'])
+    })
+  })
+
+  describe('ajudstCustomNodePosition', () => {
+    it('should adjust node layout', () => {
+      const result = ajudstCustomNodePosition(
+        {
+          a: { position: { x: 100, y: 100 } },
+          b: { position: { x: 200, y: 300 } },
+        },
+        { position: { x: 0, y: 0 } }
+      )
+
+      expect(result.position).toEqual({ x: 150, y: 200 })
+    })
+  })
+
+  describe('ajudstCustomGraphNodeLayout', () => {
+    it('should adjust node layout', () => {
+      const result = ajudstCustomGraphNodeLayout({
+        bi: createGraphNode('custom_begin_input', { id: 'bi' }),
+        i0: createGraphNode('custom_input', {
+          id: 'i0',
+          inputs: { input: { from: { id: 'bi', key: 'input' } } },
+        }),
+        i1: createGraphNode('custom_input', {
+          id: 'i1',
+          inputs: { input: { from: { id: 'i0', key: 'input' } } },
+        }),
+        bo: createGraphNode('custom_begin_output', { id: 'bo' }),
+        o0: createGraphNode('custom_output', {
+          id: 'o0',
+          inputs: { output: { from: { id: 'bo', key: 'output' } } },
+        }),
+        o1: createGraphNode('custom_output', {
+          id: 'o1',
+          inputs: { output: { from: { id: 'o0', key: 'output' } } },
+        }),
+        other0: createGraphNode('scaler', {
+          id: 'other0',
+          position: { x: 100, y: 100 },
+        }),
+        other1: createGraphNode('scaler', {
+          id: 'other1',
+          position: { x: 200, y: 300 },
+        }),
+      })
+
+      expect(result['bi'].position).toEqual({ x: -300, y: 0 })
+      expect(result['i0'].position).toEqual({ x: -300, y: 100 })
+      expect(result['i1'].position).toEqual({ x: -300, y: 200 })
+      expect(result['bo'].position).toEqual({ x: 350, y: 0 })
+      expect(result['o0'].position).toEqual({ x: 350, y: 100 })
+      expect(result['o1'].position).toEqual({ x: 350, y: 200 })
+      expect(result['other0'].position).toEqual({ x: -50, y: 0 })
+      expect(result['other1'].position).toEqual({ x: 50, y: 200 })
     })
   })
 })

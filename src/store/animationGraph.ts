@@ -75,6 +75,8 @@ import { createGraphNodeContext } from '/@/utils/elements'
 import { useAnimationStore } from '/@/store/animation'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import {
+  ajudstCustomGraphNodeLayout,
+  ajudstCustomNodePosition,
   createCustomNodeModule,
   getAllCustomGraphDependencies,
   getIndepenetCustomGraphIds,
@@ -602,34 +604,45 @@ export function createStore(
     const parent = getNodeParent()
     if (!parent) return
 
+    const allNodeMap = nodeMap.value
     const targetIds = Object.keys(selectedNodes.value)
     const result = makeCustomGraphFromNodes(
       getGraphNodeModuleFn.value(),
-      nodeMap.value,
+      allNodeMap,
       targetIds,
       generateUuid
     )
-    console.log(result)
+
+    const customNode = ajudstCustomNodePosition(
+      mapFilter(allNodeMap, (_, id) => selectedNodes.value[id]),
+      result.customNode
+    )
+    const customGraphNodes = ajudstCustomGraphNodeLayout(
+      result.customGraphNodes
+    )
+    const customGraph = {
+      ...result.customGraph,
+      name: getNewCustomGraphName(),
+    }
 
     const targetIdSet = new Set(targetIds)
 
     historyStore.dispatch(
       nodeEntities.createAddAction(
-        toList(result.customGraphNodes).filter((n) => !targetIdSet.has(n.id))
+        toList(customGraphNodes).filter((n) => !targetIdSet.has(n.id))
       ),
       [
-        customGraphEntities.createAddAction([result.customGraph]),
-        // customGraphSelectable.createSelectAction(result.customNode.id),
-        nodeEntities.createAddAction([result.customNode]),
+        customGraphEntities.createAddAction([customGraph]),
+        nodeEntities.createAddAction([customNode]),
         nodeEntities.createUpdateAction({
           ...result.updatedNodes,
-          ...mapFilter(result.customGraphNodes, (_, id) => targetIdSet.has(id)),
+          ...mapFilter(customGraphNodes, (_, id) => targetIdSet.has(id)),
         }),
         getNodeParentEntity().createUpdateAction({
           [parent.id]: {
             nodes: [
-              ...parent.nodes.filter((id) => !result.customGraphNodes[id]),
-              result.customNode.id,
+              ...parent.nodes.filter((id) => !customGraphNodes[id]),
+              customNode.id,
             ],
           },
         }),
@@ -641,6 +654,13 @@ export function createStore(
     if (!customGraphSelectable.getSelectHistoryDryRun(id)) return
 
     historyStore.dispatch(customGraphSelectable.createSelectAction(id))
+  }
+
+  function getNewCustomGraphName(src?: string) {
+    return getNotDuplicatedName(
+      src ?? 'Custom',
+      customGraphs.value.map((g) => g.name)
+    )
   }
 
   function addCustomGraph(arg: Partial<{ id: string; name: string }> = {}) {
@@ -661,10 +681,7 @@ export function createStore(
     const customGraph = getCustomGraph(
       {
         id: arg.id,
-        name: getNotDuplicatedName(
-          arg.name ?? 'Custom',
-          customGraphs.value.map((g) => g.name)
-        ),
+        name: getNewCustomGraphName(arg.name),
         nodes: [beginInputNode.id, beginOutputNode.id],
       },
       !arg.id

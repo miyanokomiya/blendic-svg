@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { add, IVec2 } from 'okageo'
 import { CustomGraph, getCustomGraph, IdMap, toMap } from '/@/models'
 import {
   GraphNode,
@@ -48,7 +49,11 @@ import {
   NodeStruct,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
-import { DependencyMap, getAllDependencies } from '/@/utils/relations'
+import {
+  DependencyMap,
+  getAllDependencies,
+  sortByDependency,
+} from '/@/utils/relations'
 
 export function createCustomNodeModule(
   getGraphNodeModule: GetGraphNodeModule,
@@ -606,4 +611,95 @@ function canMakeCustomGraphFrom(node: Pick<GraphNode, 'type'>): boolean {
     'get_bone',
     'get_object',
   ].includes(node.type as string)
+}
+
+export function ajudstCustomNodePosition<T extends Pick<GraphNode, 'position'>>(
+  srcNodes: IdMap<T>,
+  customNode: T
+) {
+  const nodes = toList(srcNodes)
+  const otherPositions =
+    nodes.length > 0 ? nodes.map((n) => n.position) : [{ x: 0, y: 0 }]
+  const minX = Math.min(...otherPositions.map((p) => p.x))
+  const maxX = Math.max(...otherPositions.map((p) => p.x))
+  const minY = Math.min(...otherPositions.map((p) => p.y))
+  const maxY = Math.max(...otherPositions.map((p) => p.y))
+  const diff = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 }
+  return { ...customNode, position: add(customNode.position, diff) }
+}
+
+export function ajudstCustomGraphNodeLayout<T extends GraphNode>(
+  nodes: IdMap<T>
+): IdMap<T> {
+  const inputs: T[] = []
+  const outputs: T[] = []
+  const others: T[] = []
+
+  Object.values(nodes).forEach((n) => {
+    switch (n.type) {
+      case 'custom_begin_input':
+      case 'custom_begin_output':
+        return
+      case 'custom_input':
+        inputs.push(n)
+        return
+      case 'custom_output':
+        outputs.push(n)
+        return
+      default:
+        others.push(n)
+        return
+    }
+  })
+
+  const inputIds = new Map(
+    sortByDependency(
+      inputs.reduce<DependencyMap>((p, n) => {
+        const from = n.inputs.input.from
+        if (from) {
+          p[n.id] = { [from.id]: true }
+        }
+        return p
+      }, {})
+    ).map((id, i) => [id, i])
+  )
+  const outputIds = new Map(
+    sortByDependency(
+      outputs.reduce<DependencyMap>((p, n) => {
+        const from = n.inputs.output.from
+        if (from) {
+          p[n.id] = { [from.id]: true }
+        }
+        return p
+      }, {})
+    ).map((id, i) => [id, i])
+  )
+
+  const otherPositions =
+    others.length > 0 ? others.map((n) => n.position) : [{ x: 0, y: 0 }]
+  const minX = Math.min(...otherPositions.map((p) => p.x))
+  const maxX = Math.max(...otherPositions.map((p) => p.x))
+  const minY = Math.min(...otherPositions.map((p) => p.y))
+  const diff = { x: -(minX + maxX) / 2, y: -minY }
+
+  // Add rough margin
+  const inputX = minX + diff.x - 250
+  const outputX = maxX + diff.x + 300
+
+  return mapReduce(nodes, (n) => {
+    let p: IVec2
+    if (n.type === 'custom_begin_input') {
+      p = { x: inputX, y: 0 }
+    } else if (n.type === 'custom_begin_output') {
+      p = { x: outputX, y: 0 }
+    } else if (inputIds.has(n.id)) {
+      p = { x: inputX, y: 100 * (inputIds.get(n.id)! + 1) }
+    } else if (outputIds.has(n.id)) {
+      p = { x: outputX, y: 100 * (outputIds.get(n.id)! + 1) }
+    } else {
+      p = add(n.position, diff)
+    }
+
+    return { ...n, position: p }
+  })
 }

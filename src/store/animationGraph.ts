@@ -634,10 +634,7 @@ export function createStore(
       [
         customGraphEntities.createAddAction([customGraph]),
         nodeEntities.createAddAction([customNode]),
-        nodeEntities.createUpdateAction({
-          ...result.updatedNodes,
-          ...mapFilter(customGraphNodes, (_, id) => targetIdSet.has(id)),
-        }),
+        nodeSelectable.createSelectAction(customNode.id),
         getNodeParentEntity().createUpdateAction({
           [parent.id]: {
             nodes: [
@@ -645,6 +642,10 @@ export function createStore(
               customNode.id,
             ],
           },
+        }),
+        nodeEntities.createUpdateAction({
+          ...result.updatedNodes,
+          ...mapFilter(customGraphNodes, (_, id) => targetIdSet.has(id)),
         }),
       ]
     )

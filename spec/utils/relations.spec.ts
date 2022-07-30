@@ -135,5 +135,20 @@ describe('utils/relations', () => {
         })
       ).toEqual(['g', 'f', 'd', 'e', 'c', 'b', 'a'])
     })
+
+    it('use case: should ignore unknown items', () => {
+      const src = {
+        bNyCW0J6Pyv6P: { bOLndZsV7VK7z: true },
+        bOLndZsV7VK7z: { buOg69I8WEF0g: true },
+        bbXTCuXiSuHW9: { bd3CTEVcoSwCI: true },
+        buOg69I8WEF0g: { bbXTCuXiSuHW9: true },
+      } as const
+      expect(target.sortByDependency(src)).toEqual([
+        'bbXTCuXiSuHW9',
+        'buOg69I8WEF0g',
+        'bOLndZsV7VK7z',
+        'bNyCW0J6Pyv6P',
+      ])
+    })
   })
 })

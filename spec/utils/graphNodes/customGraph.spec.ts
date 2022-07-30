@@ -1391,23 +1391,25 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
     it('should adjust node layout', () => {
       const result = ajudstCustomGraphNodeLayout({
         bi: createGraphNode('custom_begin_input', { id: 'bi' }),
-        i0: createGraphNode('custom_input', {
-          id: 'i0',
-          inputs: { input: { from: { id: 'bi', key: 'input' } } },
-        }),
         i1: createGraphNode('custom_input', {
           id: 'i1',
           inputs: { input: { from: { id: 'i0', key: 'input' } } },
         }),
-        bo: createGraphNode('custom_begin_output', { id: 'bo' }),
-        o0: createGraphNode('custom_output', {
-          id: 'o0',
-          inputs: { output: { from: { id: 'bo', key: 'output' } } },
+        i0: createGraphNode('custom_input', {
+          id: 'i0',
+          inputs: { input: { from: { id: 'bi', key: 'input' } } },
         }),
+
+        bo: createGraphNode('custom_begin_output', { id: 'bo' }),
         o1: createGraphNode('custom_output', {
           id: 'o1',
           inputs: { output: { from: { id: 'o0', key: 'output' } } },
         }),
+        o0: createGraphNode('custom_output', {
+          id: 'o0',
+          inputs: { output: { from: { id: 'bo', key: 'output' } } },
+        }),
+
         other0: createGraphNode('scaler', {
           id: 'other0',
           position: { x: 100, y: 100 },
@@ -1420,10 +1422,10 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
 
       expect(result['bi'].position).toEqual({ x: -300, y: 0 })
       expect(result['i0'].position).toEqual({ x: -300, y: 100 })
-      expect(result['i1'].position).toEqual({ x: -300, y: 200 })
+      expect(result['i1'].position).toEqual({ x: -300, y: 310 })
       expect(result['bo'].position).toEqual({ x: 350, y: 0 })
       expect(result['o0'].position).toEqual({ x: 350, y: 100 })
-      expect(result['o1'].position).toEqual({ x: 350, y: 200 })
+      expect(result['o1'].position).toEqual({ x: 350, y: 260 })
       expect(result['other0'].position).toEqual({ x: -50, y: 0 })
       expect(result['other1'].position).toEqual({ x: 50, y: 200 })
     })

@@ -17,7 +17,6 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { IdMap } from '/@/models'
 import { dropMap, mapFilter } from '/@/utils/commons'
 
 const suffixReg = /\.[0-9]{3,}$/
@@ -119,8 +118,20 @@ export function getAllDependencies(
 
 export function sortByDependency(depSrc: DependencyMap): string[] {
   let ret: string[] = []
-  let resolved: IdMap<boolean> = {}
+
+  const allKeys = new Set(
+    Object.values(depSrc).flatMap((dep) => Object.keys(dep))
+  )
+  const unknownKeys = Array.from(allKeys).filter((key) => !depSrc[key])
+
+  let resolved: { [key: string]: true } = unknownKeys.reduce<{
+    [key: string]: true
+  }>((p, key) => {
+    p[key] = true
+    return p
+  }, {})
   let unresolved = depSrc
+
   while (Object.keys(unresolved).length > 0) {
     const keys = sortByDependencyStep(resolved, unresolved)
     if (keys.length === 0) {
@@ -135,7 +146,7 @@ export function sortByDependency(depSrc: DependencyMap): string[] {
 }
 
 function sortByDependencyStep(
-  resolved: IdMap<boolean>,
+  resolved: { [key: string]: true },
   unresolved: DependencyMap
 ): string[] {
   return Object.keys(

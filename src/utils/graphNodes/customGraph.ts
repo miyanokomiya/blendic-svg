@@ -31,6 +31,7 @@ import {
   GraphNodeType,
 } from '/@/models/graphNode'
 import { mapFilter, mapReduce, toList } from '/@/utils/commons'
+import { gridRound } from '/@/utils/geometry'
 import {
   cleanAllEdgeGenerics,
   createGraphNode,
@@ -715,8 +716,8 @@ export function ajudstCustomGraphNodeLayout<T extends GraphNode>(
   const diff = { x: -(minX + maxX) / 2, y: -minY }
 
   // Add rough margin
-  const inputX = minX + diff.x - 250
-  const outputX = maxX + diff.x + 300
+  const inputX = gridRound(10, minX + diff.x - 250)
+  const outputX = gridRound(10, maxX + diff.x + 300)
 
   return mapReduce(nodes, (n) => {
     let p: IVec2
@@ -725,9 +726,9 @@ export function ajudstCustomGraphNodeLayout<T extends GraphNode>(
     } else if (n.type === 'custom_begin_output') {
       p = { x: outputX, y: 0 }
     } else if (inputIds.has(n.id)) {
-      p = { x: inputX, y: 100 * (inputIds.get(n.id)! + 1) }
+      p = { x: inputX, y: 210 * inputIds.get(n.id)! + 100 }
     } else if (outputIds.has(n.id)) {
-      p = { x: outputX, y: 100 * (outputIds.get(n.id)! + 1) }
+      p = { x: outputX, y: 160 * outputIds.get(n.id)! + 100 }
     } else {
       p = add(n.position, diff)
     }

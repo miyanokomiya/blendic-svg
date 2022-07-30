@@ -23,7 +23,6 @@ import {
   getConstraint,
   getDependentCountMap,
   sortBoneByHighDependency,
-  sortByDependency,
 } from '/@/utils/constraints/index'
 
 describe('src/utils/constraints/index.ts', () => {
@@ -80,28 +79,6 @@ describe('src/utils/constraints/index.ts', () => {
         b: { a: 1 },
         c: {},
       })
-    })
-  })
-
-  describe('sortByDependency', () => {
-    it('sort by dependency', () => {
-      const map = {
-        a: { b: 1 },
-        b: { c: 1, d: 1 },
-        c: { e: 1 },
-        d: { c: 1 },
-        e: {},
-      }
-      expect(sortByDependency(map)).toEqual(['e', 'c', 'd', 'b', 'a'])
-    })
-    it('give up circular dependency and sort them as string', () => {
-      const map = {
-        b: { c: 1 },
-        c: { b: 1 },
-        a: { b: 1 },
-        d: {},
-      }
-      expect(sortByDependency(map)).toEqual(['d', 'a', 'b', 'c'])
     })
   })
 })

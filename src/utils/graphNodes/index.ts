@@ -1204,7 +1204,7 @@ function _getEdgeChainGroupAt(
   ]
 }
 
-function findNotResolvedGenericsType(
+function findResolvedGenericsType(
   group: EdgeChainGroupItem[]
 ): ValueType | undefined {
   return group.find((item) => isGenericsResolved(item.type))?.type
@@ -1222,7 +1222,7 @@ export function cleanEdgeGenericsGroupAt(
     allEdgeConnectionInfo,
     item
   )
-  const type = findNotResolvedGenericsType(group)
+  const type = findResolvedGenericsType(group)
   return cleanEdgeGenericsGroupByType(getGraphNodeModule, nodeMap, group, type)
 }
 
@@ -1387,7 +1387,7 @@ export function cleanAllEdgeGenerics(
           }
         })
 
-        const type = findNotResolvedGenericsType(group)
+        const type = findResolvedGenericsType(group)
         const updated = cleanEdgeGenericsGroupByType(
           getGraphNodeModule,
           q,

@@ -70,23 +70,35 @@ export function createCustomNodeModule(
     ...Object.keys(inputs),
     ...Object.keys(outputs),
   ])
-  const chains = Object.keys(inputs).map((key) => {
-    return getEdgeChainGroupAt(
-      getGraphNodeModule,
-      innerNodeMap,
-      allEdgeConnectionInfo,
-      { id: key, key: 'value', output: true }
-    )
-      .filter((item) => !item.data && interfaceIdSet.has(item.id))
-      .map((item) => {
-        const p: { key: string; output?: true } = {
-          key: item.id,
-        }
-        // Inner output becomes interface input
-        if (!item.output) p.output = true
+  const chains = Object.keys(inputs)
+    .map((key) => {
+      return getEdgeChainGroupAt(
+        getGraphNodeModule,
+        innerNodeMap,
+        allEdgeConnectionInfo,
+        { id: key, key: 'value', output: true }
+      ).map((item) => {
+        // Inner ids becone interface keys
+        const p = { ...item, key: item.id }
+        // Inner outputs become interface inputs vice versa
+        if (!item.output && !item.data) p.output = true
+        else if (item.output) delete p.output
         return p
       })
-  })
+    })
+    // Drop resolved chains
+    .filter((chain) => chain.every((item) => !isGenericsResolved(item.type)))
+    // Drop inner items
+    .map((chain) =>
+      chain.filter((item) => !item.data && interfaceIdSet.has(item.id))
+    )
+    .map((chain) =>
+      chain.map((item) => {
+        const p: { key: string; output?: true } = { key: item.key }
+        if (item.output) p.output = true
+        return p
+      })
+    )
 
   const outputChainMap = new Map(
     chains

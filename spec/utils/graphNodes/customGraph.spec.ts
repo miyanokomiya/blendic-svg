@@ -277,6 +277,11 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
           data: { name: 'name_1' },
           inputs: { input: { from: { id: inputNode0.id, key: 'input' } } },
         })
+        const inputNode2 = createGraphNode('custom_input', {
+          id: 'input_2',
+          data: { name: 'name_2' },
+          inputs: { input: { from: { id: inputNode1.id, key: 'input' } } },
+        })
 
         const beginOutputNode = createGraphNode('custom_begin_output', {
           id: 'begin_output',
@@ -309,21 +314,23 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
           getCustomGraph({
             nodes: [
               beginInputNode.id,
-              inputNode1.id,
               inputNode0.id,
+              inputNode1.id,
+              inputNode2.id,
               beginOutputNode.id,
-              outputNode1.id,
               outputNode0.id,
+              outputNode1.id,
               other.id,
             ],
           }),
           {
             [beginInputNode.id]: beginInputNode,
-            [inputNode1.id]: inputNode1,
             [inputNode0.id]: inputNode0,
+            [inputNode1.id]: inputNode1,
+            [inputNode2.id]: inputNode2,
             [beginOutputNode.id]: beginOutputNode,
-            [outputNode1.id]: outputNode1,
             [outputNode0.id]: outputNode0,
+            [outputNode1.id]: outputNode1,
             [other.id]: other,
           }
         )
@@ -331,6 +338,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         expect(struct.genericsChains).toEqual([
           [{ key: 'input_0' }, { key: 'output_0', output: true }],
           [{ key: 'input_1' }, { key: 'output_1', output: true }],
+          [{ key: 'input_2' }],
         ])
 
         const mockSelf = {

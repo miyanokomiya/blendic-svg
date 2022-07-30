@@ -654,7 +654,9 @@ export function createStore(
   function selectCustomGraph(id = '') {
     if (!customGraphSelectable.getSelectHistoryDryRun(id)) return
 
-    historyStore.dispatch(customGraphSelectable.createSelectAction(id))
+    historyStore.dispatch(customGraphSelectable.createSelectAction(id), [
+      nodeSelectable.createClearAllAction(),
+    ])
   }
 
   function getNewCustomGraphName(src?: string) {

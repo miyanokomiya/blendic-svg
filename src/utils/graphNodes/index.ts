@@ -664,9 +664,9 @@ export function validateNode(
 export function createGraphNodeIncludeCustom<T extends GraphNodeType>(
   customModules: { [key in GraphNodeType]: NodeModule<any> },
   type: T,
-  arg: Partial<Omit<GraphNodes[T], 'inputs'>> & {
-    inputs?: Partial<GraphNodes[T]['inputs']>
-  } = {},
+  arg: Partial<Omit<GraphNodeBase, 'inputs'>> & {
+    inputs?: Partial<GraphNodeBase['inputs']>
+  } & { data?: Partial<GraphNodeBase['data']> } = {},
   generateId = false
 ) {
   return _createGraphNode(
@@ -678,9 +678,9 @@ export function createGraphNodeIncludeCustom<T extends GraphNodeType>(
 
 export function createGraphNode<T extends GraphNodeType>(
   type: T,
-  arg: Partial<Omit<GraphNodes[T], 'inputs'>> & {
-    inputs?: Partial<GraphNodes[T]['inputs']>
-  } = {},
+  arg: Partial<Omit<GraphNodeBase, 'inputs'>> & {
+    inputs?: Partial<GraphNodeBase['inputs']>
+  } & { data?: Partial<GraphNodeBase['data']> } = {},
   generateId = false
 ): GraphNodes[T] {
   return _createGraphNode(NODE_MODULES[type], arg, generateId)
@@ -690,14 +690,17 @@ function _createGraphNode(
   module: NodeModule<any>,
   arg: Partial<Omit<GraphNodeBase, 'inputs'>> & {
     inputs?: Partial<GraphNodeBase['inputs']>
-  } = {},
+  } & { data?: Partial<GraphNodeBase['data']> } = {},
   generateId = false
 ): GraphNodeBase {
   // enable to override partial inputs
-  const { inputs, ...others } = arg
+  const { inputs, data, ...others } = arg
   const node = module.struct.create(others)
   if (inputs) {
     node.inputs = { ...node.inputs, ...arg.inputs }
+  }
+  if (data) {
+    node.data = { ...node.data, ...arg.data }
   }
   if (generateId) {
     node.id = generateUuid()
@@ -920,7 +923,7 @@ export function getNodeEdgeTypes(
 }
 
 // this function do connect only and does not resolve generics
-// => use getAllEdgeConnectionInfo to resolve its
+// => use "cleanEdgeGenericsGroupAt" to resolve its
 export function updateInputConnection(
   fromInfo: {
     node: GraphNode
@@ -990,7 +993,7 @@ export function getAllEdgeConnectionInfo(
   return ret
 }
 
-function isGenericsResolved(genericsType?: ValueType): boolean {
+export function isGenericsResolved(genericsType?: ValueType): boolean {
   return !!genericsType && genericsType.type !== GRAPH_VALUE_TYPE.GENERICS
 }
 
@@ -1201,7 +1204,7 @@ function _getEdgeChainGroupAt(
   ]
 }
 
-function findNotResolvedGenericsType(
+function findResolvedGenericsType(
   group: EdgeChainGroupItem[]
 ): ValueType | undefined {
   return group.find((item) => isGenericsResolved(item.type))?.type
@@ -1219,7 +1222,7 @@ export function cleanEdgeGenericsGroupAt(
     allEdgeConnectionInfo,
     item
   )
-  const type = findNotResolvedGenericsType(group)
+  const type = findResolvedGenericsType(group)
   return cleanEdgeGenericsGroupByType(getGraphNodeModule, nodeMap, group, type)
 }
 
@@ -1384,7 +1387,7 @@ export function cleanAllEdgeGenerics(
           }
         })
 
-        const type = findNotResolvedGenericsType(group)
+        const type = findResolvedGenericsType(group)
         const updated = cleanEdgeGenericsGroupByType(
           getGraphNodeModule,
           q,

@@ -5,16 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.17.4] - 2022-07-30
 ### Added
 - Add new feature to modify bezier controls symmetrically
 - Add new feature to modify bezier controls synchronically
 - Add rectangle select feature for the keyframe graph canvas
 - Enable to use custom nodes that are independent from current custom node
 - Enable to modify edge connections by `ctrl` + dragging
+- Convert selected graph nodes to custom graph
 
 ### Fixed
 - Fix: Moving bezier controls slows down the cnavas
 - Fix: Some nodes for custom graph can't be created
+- Fix: Custom node has invalid generics structure
 
 ## [0.17.3] - 2022-07-17
 ### Added

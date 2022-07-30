@@ -70,6 +70,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       class="command-exam-panel"
       :available-command-list="availableCommandList"
     />
+    <CanvasToolMenuGroups class="tool-menus" :groups="toolMenuGroupList" />
     <PopupMenuList
       v-if="popupMenuItems.length > 0 && popupMenuListPosition"
       class="popup-menu-list"
@@ -91,6 +92,7 @@ import DotBackground from '/@/components/elements/atoms/DotBackground.vue'
 import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
 import EdgeCutterElm from '/@/components/elements/EdgeCutter.vue'
 import FocusableBlock from '/@/components/atoms/FocusableBlock.vue'
+import CanvasToolMenuGroups from '/@/components/molecules/CanvasToolMenuGroups.vue'
 import { useCanvasElement } from '/@/composables/canvasElement'
 import { useAnimationGraphMode } from '/@/composables/modes/animationGraphMode'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
@@ -98,7 +100,11 @@ import { getKeyOptions, getMouseOptions, isCtrlOrMeta } from '/@/utils/devices'
 import { parseEventTarget } from '/@/composables/modeStates/utils'
 import { PointerMovement, usePointerLock } from '/@/composables/window'
 import { useThrottle } from '/@/composables/throttle'
-import { CommandExam, PopupMenuItem } from '/@/composables/modes/types'
+import {
+  CommandExam,
+  PopupMenuItem,
+  ToolMenuGroup,
+} from '/@/composables/modes/types'
 import { IVec2 } from 'okageo'
 import { useMenuList } from '/@/composables/menuList'
 import { EdgeCutter } from '/@/composables/modeStates/animationGraph/core'
@@ -111,6 +117,7 @@ export default defineComponent({
     SelectRectangle,
     EdgeCutterElm,
     FocusableBlock,
+    CanvasToolMenuGroups,
   },
   props: {
     canvas: {
@@ -166,6 +173,18 @@ export default defineComponent({
         })) ?? []
     )
 
+    const toolMenuInfo = ref<ToolMenuGroup[]>([])
+    const toolMenuGroupList = computed(
+      () =>
+        toolMenuInfo.value.map(({ label, items }) => ({
+          label,
+          items: items.map(({ label, key }) => ({
+            label,
+            exec: key ? () => handlePopupmenuEvent(key!) : undefined,
+          })),
+        })) ?? []
+    )
+
     const commandExams = ref<CommandExam[]>()
     const edgeCutter = ref<EdgeCutter>()
 
@@ -197,6 +216,7 @@ export default defineComponent({
       setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
       getDraggedRectangle: () => props.canvas.draggedRectangle.value,
       setPopupMenuList: (val) => (popupMenuInfo.value = val),
+      setToolMenuList: (val = []) => (toolMenuInfo.value = val),
       getNodeItemList: () => graphStore.nodeItemList.value,
       setCommandExams: (val) => (commandExams.value = val),
       getEdgeCutter: () => edgeCutter.value,
@@ -283,6 +303,7 @@ export default defineComponent({
       viewBox: computed(() => props.canvas.viewBox.value),
       viewCanvasRect: computed(() => props.canvas.viewCanvasRect.value),
       popupMenuItems: computed(() => popupMenuList.list.value),
+      toolMenuGroupList,
 
       availableCommandList: computed(() => commandExams.value ?? []),
       popupMenuListPosition,
@@ -310,9 +331,14 @@ svg {
   background-color: var(--weak-border);
   border: solid 1px var(--strong-border);
 }
+.tool-menus {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+}
 .command-exam-panel {
   position: absolute;
-  top: 0;
+  bottom: 4px;
   left: 4px;
 }
 .popup-menu-list {

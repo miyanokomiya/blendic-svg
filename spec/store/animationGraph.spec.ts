@@ -52,6 +52,15 @@ describe('src/store/animationGraph.ts', () => {
     })
   })
 
+  describe('selectCustomGraph', () => {
+    it('should select a custom graph', () => {
+      target.selectCustomGraph()
+      expect(target.lastSelectedCustomGraph.value?.id).toBeUndefined()
+      target.selectCustomGraph('custom')
+      expect(target.lastSelectedCustomGraph.value?.id).toBe('custom')
+    })
+  })
+
   describe('addGraph', () => {
     it('should add new graph, select it and clear nodes selected', () => {
       target.selectNode('scaler')

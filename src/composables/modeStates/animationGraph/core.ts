@@ -18,7 +18,11 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { IVec2 } from 'okageo'
-import { EditMovement, SelectOptions } from '/@/composables/modes/types'
+import {
+  EditMovement,
+  SelectOptions,
+  ToolMenuGroup,
+} from '/@/composables/modes/types'
 import type {
   ModeStateBase,
   ModeStateEvent,
@@ -55,12 +59,14 @@ export interface AnimationGraphStateContext extends CanvasStateContext {
   pasteNodes: (val: GraphNode[]) => void
   getDraftEdge: () => DraftGraphEdge | undefined
   setDraftEdge: (val?: DraftGraphEdge) => void
+  makeCustomGraphFromSelectedNodes: () => void
 
   getNodeItemList: () => NODE_MENU_OPTION[]
 
   setEdgeCutter: (val: EdgeCutter | undefined) => void
   getEdgeCutter: () => EdgeCutter | undefined
   getEdgeSummaryMap: () => IdMap<IdMap<EdgeSummary>>
+  setToolMenuList: (val?: ToolMenuGroup[]) => void
 }
 
 export interface AnimationGraphState

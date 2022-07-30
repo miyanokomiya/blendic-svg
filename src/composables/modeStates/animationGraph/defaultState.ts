@@ -55,6 +55,7 @@ const state: AnimationGraphState = {
   getLabel: () => 'DefaultState',
   onStart: async (ctx) => {
     updateCommandExams(ctx)
+    updateToolMenus(ctx)
   },
   handleEvent: async (ctx, event) => {
     switch (event.type) {
@@ -129,6 +130,15 @@ const state: AnimationGraphState = {
           }
         }
         return
+      case 'popupmenu': {
+        switch (event.data.key) {
+          case 'create_custom_graph': {
+            ctx.makeCustomGraphFromSelectedNodes()
+            return
+          }
+        }
+        return
+      }
       case 'copy': {
         const clipboard = useGraphNodeClipboard(ctx)
         clipboard.onCopy(event.nativeEvent)
@@ -141,6 +151,7 @@ const state: AnimationGraphState = {
       }
       case 'selection':
         updateCommandExams(ctx)
+        updateToolMenus(ctx)
         return
     }
   },
@@ -162,6 +173,25 @@ function updateCommandExams(ctx: AnimationGraphStateContext) {
         ]
       : []),
     COMMAND_EXAM_SRC.paste,
+  ])
+}
+
+function updateToolMenus(ctx: AnimationGraphStateContext) {
+  const selected = ctx.getLastSelectedNodeId()
+  ctx.setToolMenuList([
+    ...(selected
+      ? [
+          {
+            label: 'Node',
+            items: [
+              {
+                label: 'Create custom graph',
+                key: 'create_custom_graph',
+              },
+            ],
+          },
+        ]
+      : []),
   ])
 }
 

@@ -121,6 +121,7 @@ export default defineComponent({
     border-radius: 0 4px 4px 4px;
     li {
       padding: 4px 0;
+      width: max-content;
     }
     hr {
       margin: 0 auto;

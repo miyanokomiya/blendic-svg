@@ -25,8 +25,9 @@ import * as copyRotation from './copyRotation'
 import * as copyLocation from './copyLocation'
 import * as copyScale from './copyScale'
 import { Bone, IdMap, toMap } from '/@/models'
-import { dropMap, mapFilter, mapReduce, sumReduce } from '/@/utils/commons'
+import { mapReduce, sumReduce } from '/@/utils/commons'
 import { generateUuid } from '/@/utils/random'
+import { sortByDependency } from '/@/utils/relations'
 
 export type BoneConstraintType =
   | 'IK'
@@ -177,7 +178,9 @@ export function sortBoneByHighDependency(
 ): Bone[] {
   const boneMap = toMap(bones)
   const dmap = getDependentCountMap(boneMap, constraintMap)
-  const sortedIds = sortByDependency(dmap)
+  const sortedIds = sortByDependency(
+    mapReduce(dmap, (map) => mapReduce(map, () => true))
+  )
   return sortedIds.map((id) => boneMap[id])
 }
 
@@ -205,33 +208,5 @@ function getDependentCountMapOfConstrain(
 ): IdMap<number> {
   return getConstraintModule(constraint.type).getDependentCountMap(
     constraint.option
-  )
-}
-
-export function sortByDependency(map: IdMap<IdMap<number>>): string[] {
-  let ret: string[] = []
-  let resolved: IdMap<boolean> = {}
-  let unresolved = map
-  while (Object.keys(unresolved).length > 0) {
-    const keys = sortByDependencyStep(resolved, unresolved)
-    if (keys.length === 0) {
-      ret = ret.concat(Object.keys(unresolved).sort())
-      break
-    }
-    ret = ret.concat(keys)
-    ;(resolved = keys.reduce((p, c) => ({ ...p, [c]: true }), resolved)),
-      (unresolved = dropMap(unresolved, resolved))
-  }
-  return ret
-}
-
-function sortByDependencyStep(
-  resolved: IdMap<boolean>,
-  unresolved: IdMap<IdMap<number>>
-): string[] {
-  return Object.keys(
-    mapFilter(unresolved, (map) => {
-      return Object.keys(map).every((key) => resolved[key])
-    })
   )
 }

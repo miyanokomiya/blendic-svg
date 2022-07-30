@@ -29,7 +29,13 @@ import {
   getCustomGraph,
   mergeMap,
 } from '../models'
-import { dropMap, extractMap, mapReduce, toList } from '../utils/commons'
+import {
+  dropMap,
+  extractMap,
+  mapFilter,
+  mapReduce,
+  toList,
+} from '../utils/commons'
 import { useHistoryStore } from './history'
 import { useEntities } from '/@/composables/stores/entities'
 import { EditMovement, SelectOptions } from '/@/composables/modes/types'
@@ -62,20 +68,25 @@ import {
   completeNodeMap,
   NODE_MENU_OPTIONS_SRC,
 } from '/@/utils/graphNodes'
-import { getNotDuplicatedName } from '/@/utils/relations'
+import { getNotDuplicatedName, sortByDependency } from '/@/utils/relations'
 import { useStore } from '/@/store'
 import { useElementStore } from '/@/store/element'
 import { createGraphNodeContext } from '/@/utils/elements'
 import { useAnimationStore } from '/@/store/animation'
 import { useValueStore } from '/@/composables/stores/valueStore'
 import {
+  ajudstCustomGraphNodeLayout,
+  ajudstCustomNodePosition,
   createCustomNodeModule,
+  getAllCustomGraphDependencies,
   getIndepenetCustomGraphIds,
+  makeCustomGraphFromNodes,
 } from '/@/utils/graphNodes/customGraph'
 import { useCanvasStore } from '/@/store/canvas'
 import { DraftGraphEdge } from '/@/composables/modeStates/animationGraph/core'
 import { add, sub } from 'okageo'
 import { getGraphNodeEdgePosition } from '/@/utils/helpers'
+import { generateUuid } from '/@/utils/random'
 
 export type GraphType = 'graph' | 'custom'
 
@@ -172,23 +183,39 @@ export function createStore(
 
   const customModules = computed<IdMap<NodeModule<any>>>(() => {
     const nodeMap = nodeEntities.entities.value.byId
-    return mapReduce(toMap(customGraphs.value), (customGraph) => {
-      return createCustomNodeModule(
+    const sorted = sortByDependency(
+      getAllCustomGraphDependencies(
+        nodeEntities.entities.value.byId,
+        customGraphs.value
+      )
+    )
+
+    const customGraphMap = toMap(customGraphs.value)
+    return sorted.reduce<IdMap<NodeModule<GraphNode>>>((p, id) => {
+      const customGraph = customGraphMap[id]
+      p[id] = createCustomNodeModule(
+        createGetGraphNodeModule(p),
         customGraph,
         toMap(customGraph.nodes.map((id) => nodeMap[id]))
       )
-    })
+      return p
+    }, {})
   })
 
-  const getGraphNodeModuleFn = computed<() => GetGraphNodeModule>(() => {
-    const fn = (type: GraphNodeType) => {
-      if (customModules.value[type]) {
-        return customModules.value[type]
+  function createGetGraphNodeModule(
+    customModules: IdMap<NodeModule<GraphNode>>
+  ) {
+    return (type: GraphNodeType) => {
+      if (customModules[type]) {
+        return customModules[type]
       } else {
         return getGraphNodeModule(type)
       }
     }
-    return () => fn
+  }
+
+  const getGraphNodeModuleFn = computed<() => GetGraphNodeModule>(() => {
+    return () => createGetGraphNodeModule(customModules.value)
   })
 
   const availableCustomGraphList = computed(() => {
@@ -490,6 +517,7 @@ export function createStore(
         ...nextGraphNodeMap,
       }
       const nextStruct = createCustomNodeModule(
+        getGraphNodeModuleFn.value(),
         { ...lastSelectedCustomGraph.value, nodes: Object.keys(nextNodeMap) },
         nextNodeMap
       ).struct
@@ -540,6 +568,7 @@ export function createStore(
       // Clean custom nodes related to this custom graph
       const nextNodeMap = mergeMap(nodeMap.value, val) as IdMap<GraphNode>
       const nextStruct = createCustomNodeModule(
+        getGraphNodeModuleFn.value(),
         lastSelectedCustomGraph.value,
         nextNodeMap
       ).struct
@@ -571,10 +600,70 @@ export function createStore(
     }
   }
 
+  function makeCustomGraphFromSelectedNodes() {
+    const parent = getNodeParent()
+    if (!parent) return
+
+    const allNodeMap = nodeMap.value
+    const targetIds = Object.keys(selectedNodes.value)
+    const result = makeCustomGraphFromNodes(
+      getGraphNodeModuleFn.value(),
+      allNodeMap,
+      targetIds,
+      generateUuid
+    )
+
+    const customNode = ajudstCustomNodePosition(
+      mapFilter(allNodeMap, (_, id) => selectedNodes.value[id]),
+      result.customNode
+    )
+    const customGraphNodes = ajudstCustomGraphNodeLayout(
+      result.customGraphNodes
+    )
+    const customGraph = {
+      ...result.customGraph,
+      name: getNewCustomGraphName(),
+    }
+
+    const targetIdSet = new Set(targetIds)
+
+    historyStore.dispatch(
+      nodeEntities.createAddAction(
+        toList(customGraphNodes).filter((n) => !targetIdSet.has(n.id))
+      ),
+      [
+        customGraphEntities.createAddAction([customGraph]),
+        nodeEntities.createAddAction([customNode]),
+        nodeSelectable.createSelectAction(customNode.id),
+        getNodeParentEntity().createUpdateAction({
+          [parent.id]: {
+            nodes: [
+              ...parent.nodes.filter((id) => !customGraphNodes[id]),
+              customNode.id,
+            ],
+          },
+        }),
+        nodeEntities.createUpdateAction({
+          ...result.updatedNodes,
+          ...mapFilter(customGraphNodes, (_, id) => targetIdSet.has(id)),
+        }),
+      ]
+    )
+  }
+
   function selectCustomGraph(id = '') {
     if (!customGraphSelectable.getSelectHistoryDryRun(id)) return
 
-    historyStore.dispatch(customGraphSelectable.createSelectAction(id))
+    historyStore.dispatch(customGraphSelectable.createSelectAction(id), [
+      nodeSelectable.createClearAllAction(),
+    ])
+  }
+
+  function getNewCustomGraphName(src?: string) {
+    return getNotDuplicatedName(
+      src ?? 'Custom',
+      customGraphs.value.map((g) => g.name)
+    )
   }
 
   function addCustomGraph(arg: Partial<{ id: string; name: string }> = {}) {
@@ -595,10 +684,7 @@ export function createStore(
     const customGraph = getCustomGraph(
       {
         id: arg.id,
-        name: getNotDuplicatedName(
-          arg.name ?? 'Custom',
-          customGraphs.value.map((g) => g.name)
-        ),
+        name: getNewCustomGraphName(arg.name),
         nodes: [beginInputNode.id, beginOutputNode.id],
       },
       !arg.id
@@ -740,6 +826,7 @@ export function createStore(
     pasteNodes,
     updateNode,
     updateNodes,
+    makeCustomGraphFromSelectedNodes,
 
     selectCustomGraph,
     addCustomGraph,

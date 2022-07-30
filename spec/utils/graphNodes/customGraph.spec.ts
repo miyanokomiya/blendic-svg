@@ -527,6 +527,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
               value: { x: 0, y: 0 },
             },
           },
+          data: { name: 'value' },
         }),
       })
       expect(result.updatedNodes).toEqual({
@@ -538,6 +539,58 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
               genericsType: UNIT_VALUE_TYPES.VECTOR2,
             },
           },
+        }),
+      })
+    })
+
+    it('should arrange output nodes by y location', () => {
+      let count = 0
+      const nodeMap = {
+        a: createGraphNode('scaler', { id: 'a', position: { x: 0, y: 10 } }),
+        b: createGraphNode('scaler', { id: 'b', position: { x: 0, y: 1 } }),
+        c: createGraphNode('make_vector2', {
+          id: 'c',
+          inputs: {
+            x: { from: { id: 'a', key: 'value' } },
+            y: { from: { id: 'b', key: 'value' } },
+          },
+        }),
+      }
+      const result = convertToCustomGraphOutputInterface(
+        getGraphNodeModule,
+        nodeMap,
+        ['a', 'b'],
+        'custom',
+        () => `id_${count++}`
+      )
+
+      expect(result.customGraphNodes).toEqual({
+        a: expect.anything(),
+        b: expect.anything(),
+        id_0: expect.anything(),
+        id_1: createGraphNode('custom_output', {
+          id: 'id_1',
+          inputs: {
+            output: expect.anything(),
+            value: {
+              from: { id: 'b', key: 'value' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
+            },
+          },
+          data: { name: 'value' },
+        }),
+        id_2: createGraphNode('custom_output', {
+          id: 'id_2',
+          inputs: {
+            output: expect.anything(),
+            value: {
+              from: { id: 'a', key: 'value' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+              value: 0,
+            },
+          },
+          data: { name: 'value' },
         }),
       })
     })
@@ -587,12 +640,18 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         },
       }),
     }
+    const allNodeMap = {
+      ...nodeMap,
+      p: createGraphNode('scaler', { id: 'p' }),
+      q: createGraphNode('scaler', { id: 'q' }),
+    }
 
     it('should return nodes for custom graph', () => {
       let count = 0
       const result = convertToCustomGraphInputInterface(
         getGraphNodeModule,
-        [nodeMap.a, nodeMap.b, nodeMap.d],
+        allNodeMap,
+        ['a', 'b', 'd'],
         () => `id_${count++}`
       )
 
@@ -659,7 +718,8 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
       let count = 0
       const result = convertToCustomGraphInputInterface(
         getGraphNodeModule,
-        [nodeMap.b],
+        allNodeMap,
+        ['b'],
         () => `id_${count++}`
       )
 
@@ -686,6 +746,50 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
       })
       expect(result.inputMap).toEqual({
         id_1: { id: 'a', key: 'vector2' },
+      })
+    })
+
+    it('should arrange output nodes by y location', () => {
+      let count = 0
+      const nodeMap = {
+        a: createGraphNode('scaler', { id: 'a', position: { x: 0, y: 10 } }),
+        b: createGraphNode('scaler', { id: 'b', position: { x: 0, y: 1 } }),
+        c: createGraphNode('make_vector2', {
+          id: 'c',
+          inputs: {
+            x: { from: { id: 'a', key: 'value' } },
+          },
+        }),
+        d: createGraphNode('make_vector2', {
+          id: 'd',
+          inputs: {
+            x: { from: { id: 'b', key: 'value' } },
+          },
+        }),
+      }
+      const result = convertToCustomGraphInputInterface(
+        getGraphNodeModule,
+        nodeMap,
+        ['c', 'd'],
+        () => `id_${count++}`
+      )
+
+      expect(result.customGraphNodes).toEqual({
+        c: createGraphNode('make_vector2', {
+          id: 'c',
+          inputs: {
+            x: { from: { id: 'id_2', key: 'value' } },
+          },
+        }),
+        d: createGraphNode('make_vector2', {
+          id: 'd',
+          inputs: {
+            x: { from: { id: 'id_1', key: 'value' } },
+          },
+        }),
+        id_0: expect.anything(),
+        id_1: expect.anything(),
+        id_2: expect.anything(),
       })
     })
   })
@@ -784,6 +888,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
               value: { x: 0, y: 0 },
             },
           },
+          data: { name: 'value' },
         })
       )
 
@@ -882,6 +987,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
             output: { from: { id: 'id_1', key: 'output' } },
             value: { from: { id: 'b', key: 'value' } },
           },
+          data: { name: 'value' },
         })
       )
 
@@ -1027,6 +1133,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
               from: { id: 'c', key: 'value' },
             },
           },
+          data: { name: 'value' },
         })
       )
 
@@ -1195,6 +1302,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
               value: { x: 0, y: 0 },
             },
           },
+          data: { name: 'vector2' },
         })
       )
       expect(result.customGraphNodes.id_3).toEqual(
@@ -1208,6 +1316,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
               value: { x: 0, y: 0 },
             },
           },
+          data: { name: 'vector2' },
         })
       )
 

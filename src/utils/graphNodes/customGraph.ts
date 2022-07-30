@@ -409,7 +409,8 @@ export function makeCustomGraphFromNodes(
 
   const inputInfo = convertToCustomGraphInputInterface(
     getGraphNodeModule,
-    Object.values({ ...filterdTargets, ...outputInfo.customGraphNodes }),
+    { ...allNodeMap, ...outputInfo.customGraphNodes },
+    Object.keys({ ...filterdTargets, ...outputInfo.customGraphNodes }),
     generateId
   )
 
@@ -470,7 +471,12 @@ export function convertToCustomGraphOutputInterface(
   customGraphNodeId: string,
   generateId: () => string
 ): { customGraphNodes: IdMap<GraphNode>; updatedNodes: IdMap<GraphNode> } {
-  const targetIdSet = new Set(targetIds)
+  const sortedTargetIds = targetIds
+    .map((id) => allNodeMap[id])
+    .sort((a, b) => a.position.y - b.position.y)
+    .map((n) => n.id)
+
+  const targetIdSet = new Set(sortedTargetIds)
   const otherNodeMap = mapFilter(allNodeMap, (_, id) => !targetIdSet.has(id))
   const updatedNodes: IdMap<GraphNode> = {}
   const customGraphNodes: IdMap<GraphNode> = mapFilter(allNodeMap, (_, id) =>
@@ -483,7 +489,7 @@ export function convertToCustomGraphOutputInterface(
   customGraphNodes[customBeginOutput.id] = customBeginOutput
 
   let currentOutputId = customBeginOutput.id
-  targetIds.forEach((id) => {
+  sortedTargetIds.forEach((id) => {
     const node = allNodeMap[id]
     const struct = getGraphNodeModule(node.type)?.struct
     if (!struct) return
@@ -498,6 +504,9 @@ export function convertToCustomGraphOutputInterface(
         id: generateId(),
         inputs: {
           output: { from: { id: currentOutputId, key: 'output' } },
+        },
+        data: {
+          name: struct.outputs[key].label ?? key,
         },
       })
       currentOutputId = customOutput.id
@@ -539,12 +548,15 @@ export function convertToCustomGraphOutputInterface(
 
 export function convertToCustomGraphInputInterface(
   getGraphNodeModule: GetGraphNodeModule,
-  nodes: GraphNode[],
+  // nodes: GraphNode[],
+  allNodeMap: IdMap<GraphNode>,
+  targetIds: string[],
   generateId: () => string
 ): {
   customGraphNodes: IdMap<GraphNode>
   inputMap: { [key: string]: { id: string; key: string } }
 } {
+  const nodes = targetIds.map((id) => allNodeMap[id])
   const convertedMap = toMap(nodes)
   const inputMap: { [key: string]: { id: string; key: string } } = {}
 
@@ -568,8 +580,14 @@ export function convertToCustomGraphInputInterface(
   })
   convertedMap[customBeginInput.id] = customBeginInput
 
+  const inputInterfaceIds = Object.keys(inputInterfaceMap)
+    .map((id) => allNodeMap[id])
+    .sort((a, b) => a.position.y - b.position.y)
+    .map((n) => n.id)
+
   let currentInputId = customBeginInput.id
-  Object.entries(inputInterfaceMap).forEach(([id, inputs]) => {
+  inputInterfaceIds.forEach((id) => {
+    const inputs = inputInterfaceMap[id]
     Object.entries(inputs).forEach(([key, connections]) => {
       const customInput = createGraphNode('custom_input', {
         id: generateId(),

@@ -205,10 +205,7 @@ export default defineComponent({
         (graphStore.graphType.value === 'graph'
           ? graphStore.lastSelectedGraph.value?.id
           : graphStore.lastSelectedCustomGraph.value?.id) ?? '',
-      set: (id: string) =>
-        graphStore.graphType.value === 'graph'
-          ? graphStore.selectGraph(id)
-          : graphStore.selectCustomGraph(id),
+      set: (id: string) => graphStore.switchGraph(id),
     })
 
     const selectedNodes = graphStore.selectedNodes

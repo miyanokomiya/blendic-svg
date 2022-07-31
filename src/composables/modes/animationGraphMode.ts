@@ -81,6 +81,7 @@ export function useAnimationGraphMode(options: {
     pasteNodes: graphStore.pasteNodes,
     getEditMovement: () => graphStore.editMovement.value,
     setEditMovement: graphStore.setEditMovement,
+    switchGraph: graphStore.switchGraph,
     getDraftEdge: () => graphStore.draftEdge.value,
     setDraftEdge: graphStore.setDraftEdge,
     makeCustomGraphFromSelectedNodes:

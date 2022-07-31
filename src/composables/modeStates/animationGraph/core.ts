@@ -44,6 +44,7 @@ export interface AnimationGraphStateContext extends CanvasStateContext {
   getCursorPoint: () => IVec2
   getEditMovement: () => EditMovement | undefined
   setEditMovement: (val?: EditMovement) => void
+  switchGraph: (id: string) => void
   getGraphNodeModule: GetGraphNodeModule
   getNodeMap: () => IdMap<GraphNode>
   updateNodes: (val: IdMap<Partial<GraphNode>>) => void

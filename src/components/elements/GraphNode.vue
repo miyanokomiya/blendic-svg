@@ -19,7 +19,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <g :transform="`translate(${node.position.x}, ${node.position.y})`">
-    <title>{{ node.type }}</title>
     <g data-type="node-body" :data-node_id="node.id">
       <path
         :d="outline"
@@ -37,13 +36,28 @@ Copyright (C) 2021, Tomoya Komiyama.
     <g>
       <text
         x="8"
-        y="3"
+        y="6"
         dominant-baseline="text-before-edge"
         font-size="16"
         :fill="textColor"
         class="view-only"
         >{{ label }}</text
       >
+    </g>
+    <g
+      v-if="isCustomNode"
+      :transform="`translate(${size.width - 28}, 6)`"
+      data-type="node-custom-anchor"
+      :data-node_type="node.type"
+      class="node-custom-anchor"
+    >
+      <rect width="18" height="18" rx="4" ry="4" fill="#eee" />
+      <path
+        d="M4 6L14 6L9 12z"
+        stroke-linejoin="round"
+        stroke="none"
+        fill="#000"
+      />
     </g>
     <g>
       <g
@@ -210,6 +224,10 @@ function getOutline(s: Size) {
 const { settings } = useSettings()
 const getGraphNodeModule = computed(injectGetGraphNodeModuleFn())
 
+const isCustomNode = computed(
+  () => getGraphNodeModule.value(props.node.type)?.struct.custom
+)
+
 const size = computed(() => {
   return helpers.getGraphNodeSize(getGraphNodeModule.value, props.node)
 })
@@ -270,6 +288,9 @@ const edgeAnchorWidth = 60
 .edge-anchor:hover {
   transition: fill 0.2s;
   fill: #ffa07a;
+}
+.node-custom-anchor:hover {
+  opacity: 0.8;
 }
 .error-message {
   background-color: var(--background);

@@ -71,6 +71,8 @@ const state: AnimationGraphState = {
                 return onDownEdgeOutput(ctx, event)
               case 'edge':
                 return
+              case 'node-custom-anchor':
+                return onDownCustomAnchor(ctx, event)
               default:
                 return onDownEmpty(ctx, event)
             }
@@ -287,6 +289,16 @@ function onDownEdgeOutput(
         outputKey: edgeInfo.key,
         point: event.data.point,
       })
+  }
+}
+
+function onDownCustomAnchor(
+  ctx: Pick<AnimationGraphStateContext, 'switchGraph'>,
+  event: PointerDownEvent
+): AnimationGraphTransitionValue {
+  const nodeType = event.target.data?.['node_type']
+  if (nodeType) {
+    ctx.switchGraph(nodeType)
   }
 }
 

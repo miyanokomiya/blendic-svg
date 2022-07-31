@@ -20,14 +20,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="animation-graph-panel-root">
     <div class="top">
-      <div class="select-graph-type">
-        <SelectField
-          :options="canvasTypeOptions"
-          :model-value="canvasType"
-          no-placeholder
-          @update:model-value="setGraphType"
-        />
-      </div>
+      <ToggleRadioButtons
+        :model-value="canvasType"
+        :options="canvasTypeOptions"
+        @update:model-value="setGraphType"
+      />
       <div class="select-graph">
         <SelectField v-model="selectedGraphId" :options="graphOptions" />
       </div>
@@ -104,6 +101,7 @@ import { useStore } from '/@/store'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import AnimationGraphCanvas from '/@/components/AnimationGraphCanvas.vue'
 import SelectField from './atoms/SelectField.vue'
+import ToggleRadioButtons from '/@/components/atoms/ToggleRadioButtons.vue'
 import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import GraphNode from '/@/components/elements/GraphNode.vue'
@@ -124,6 +122,7 @@ export default defineComponent({
   components: {
     AnimationGraphCanvas,
     SelectField,
+    ToggleRadioButtons,
     AddIcon,
     DeleteIcon,
     GraphEdge,
@@ -132,7 +131,7 @@ export default defineComponent({
   setup() {
     const canvasTypeOptions = [
       { value: 'graph', label: 'Graph' },
-      { value: 'custom', label: 'Custom Node' },
+      { value: 'custom', label: 'Custom' },
     ]
 
     const store = useStore()
@@ -322,9 +321,6 @@ export default defineComponent({
   align-items: center;
   > * {
     margin-right: 8px;
-  }
-  .select-graph-type {
-    width: 130px;
   }
   .select-graph {
     width: 160px;

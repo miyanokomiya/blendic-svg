@@ -307,7 +307,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .animation-graph-panel-root {
   display: flex;
   flex-direction: column;
@@ -319,40 +319,40 @@ export default defineComponent({
   flex: 0;
   display: flex;
   align-items: center;
-  > * {
-    margin-right: 8px;
-  }
-  .select-graph {
-    width: 160px;
-  }
-  .name-input {
-    overflow: hidden;
-  }
-  .graph-buttons {
-    display: flex;
-    align-items: center;
-    button {
-      width: 20px;
-      height: 20px;
-      & + button {
-        margin-left: 4px;
-      }
-    }
-  }
-  p {
-    white-space: nowrap;
-    overflow: hidden;
-  }
+}
+.top > * {
+  margin-right: 8px;
+}
+.top .select-graph {
+  width: 160px;
+}
+.top .name-input {
+  overflow: hidden;
+}
+.top .graph-buttons {
+  display: flex;
+  align-items: center;
+}
+.top .graph-buttons button {
+  width: 20px;
+  height: 20px;
+}
+.top .graph-buttons button + button {
+  margin-left: 4px;
+}
+.top p {
+  white-space: nowrap;
+  overflow: hidden;
 }
 .main {
   flex: 1;
   min-height: 0;
   display: flex;
-  .canvas {
-    width: calc(100% - 24px);
-  }
-  .side-bar {
-    flex-shrink: 0;
-  }
+}
+.main .canvas {
+  width: calc(100% - 24px);
+}
+.main .side-bar {
+  flex-shrink: 0;
 }
 </style>

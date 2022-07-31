@@ -88,6 +88,52 @@ describe('utils/relations', () => {
     })
   })
 
+  describe('topSort', () => {
+    it('should execute topological sort', () => {
+      expect(
+        target.topSort({
+          b: { c: true },
+          a: { b: true },
+          d: { f: true },
+          c: { d: true },
+        })
+      ).toEqual(['d', 'c', 'b', 'a'])
+      expect(
+        target.topSort({
+          a: { b: true },
+          b: { d: true },
+          c: { b: true, a: true },
+          d: { f: true },
+        })
+      ).toEqual(['d', 'b', 'a', 'c'])
+    })
+
+    it('should ignore circular dependency', () => {
+      expect(() =>
+        target.topSort({
+          a: { b: true },
+          b: { c: true },
+          c: { a: true },
+        })
+      ).not.toThrow()
+      expect(() => target.topSort({ a: { a: true } })).not.toThrow()
+    })
+
+    it('strict: should throw error if circular dependency exists', () => {
+      expect(() =>
+        target.topSort(
+          {
+            a: { b: true },
+            b: { c: true },
+            c: { a: true },
+          },
+          true
+        )
+      ).toThrow()
+      expect(() => target.topSort({ a: { a: true } }, true)).toThrow()
+    })
+  })
+
   describe('getAllDependencies', () => {
     it('should return dependency map', () => {
       expect(
@@ -127,7 +173,7 @@ describe('utils/relations', () => {
         target.sortByDependency({
           a: { b: true, f: true },
           b: { c: true, d: true },
-          c: { d: true },
+          c: { d: true, e: true },
           d: { g: true, f: true },
           e: { f: true },
           f: { g: true },

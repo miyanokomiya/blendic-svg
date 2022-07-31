@@ -73,6 +73,7 @@ export interface NodeStruct<T extends GraphNodeBase> {
   getOutputType?: (self: T, key: string) => ValueType
   genericsChains?: { key: string; output?: true; data?: true }[][]
   getErrors?: (self: T) => string[] | undefined
+  custom?: boolean
 }
 
 export interface GraphBoneSummary {

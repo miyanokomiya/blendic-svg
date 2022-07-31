@@ -39,25 +39,26 @@ describe('src/store/animationGraph.ts', () => {
       [],
       'graph'
     )
-    target.selectGraph('graph')
-    target.selectCustomGraph('custom')
+    target.switchGraph('graph')
   })
 
-  describe('selectGraph', () => {
-    it('should select a graph', () => {
-      target.selectGraph()
-      expect(target.lastSelectedGraph.value?.id).toBeUndefined()
-      target.selectGraph('graph')
-      expect(target.lastSelectedGraph.value?.id).toBe('graph')
-    })
-  })
-
-  describe('selectCustomGraph', () => {
-    it('should select a custom graph', () => {
-      target.selectCustomGraph()
-      expect(target.lastSelectedCustomGraph.value?.id).toBeUndefined()
-      target.selectCustomGraph('custom')
+  describe('switchGraph', () => {
+    it('should switch selected graph id and type', () => {
+      target.switchGraph('custom')
+      expect(target.graphType.value).toBe('custom')
       expect(target.lastSelectedCustomGraph.value?.id).toBe('custom')
+
+      target.switchGraph('')
+      expect(target.graphType.value).toBe('custom')
+      expect(target.lastSelectedCustomGraph.value).toBe(undefined)
+
+      target.switchGraph('graph')
+      expect(target.graphType.value).toBe('graph')
+      expect(target.lastSelectedGraph.value?.id).toBe('graph')
+
+      target.switchGraph('')
+      expect(target.graphType.value).toBe('graph')
+      expect(target.lastSelectedGraph.value).toBe(undefined)
     })
   })
 
@@ -151,7 +152,7 @@ describe('src/store/animationGraph.ts', () => {
       expect(target.selectedNodes.value).toEqual({ new: true })
     })
     it('should add new graph if no graph is selected', () => {
-      target.selectGraph()
+      target.switchGraph()
       expect(target.lastSelectedGraph.value).toBeUndefined()
       target.addNode('scaler', { id: 'new', data: { value: 10 } })
       expect(target.lastSelectedGraph.value).not.toBeUndefined()
@@ -189,7 +190,7 @@ describe('src/store/animationGraph.ts', () => {
         expect(target.nodeMap.value['a']).not.toBeUndefined()
       })
       it('should return false if the node is custom graph', () => {
-        target.setGraphType('custom')
+        target.switchGraph('custom')
         target.pasteNodes([createGraphNode('scaler', { id: 'a' })])
         expect(target.nodeMap.value['a']).not.toBeUndefined()
         target.pasteNodes([
@@ -265,7 +266,7 @@ describe('src/store/animationGraph.ts', () => {
         target.nodeItemList.value.find((item) => item.label === 'Custom')
       expect(getTarget()).not.toBe(undefined)
       expect(getTarget()!.children).toHaveLength(1)
-      target.setGraphType('custom')
+      target.switchGraph('custom')
       expect(getTarget()).toBe(undefined)
     })
 
@@ -275,7 +276,7 @@ describe('src/store/animationGraph.ts', () => {
       const getTarget = () =>
         target.nodeItemList.value.find((item) => item.label === 'Input/Output')
       expect(getTarget()).toBe(undefined)
-      target.setGraphType('custom')
+      target.switchGraph('custom')
       expect(getTarget()).not.toBe(undefined)
     })
   })
@@ -288,7 +289,7 @@ describe('src/store/animationGraph.ts', () => {
         name: 'new_name',
         nodes: [],
       }
-      target.setGraphType('custom')
+      target.switchGraph('custom')
       target.addCustomGraph(graph)
       expect(target.customGraphs.value).toHaveLength(2)
       expect(target.lastSelectedCustomGraph.value?.id).toBe('new_graph')
@@ -300,7 +301,7 @@ describe('src/store/animationGraph.ts', () => {
 
   describe('updateCustomGraph', () => {
     it('should update current graph', () => {
-      target.setGraphType('custom')
+      target.switchGraph('custom')
       target.updateCustomGraph({ name: 'updated' })
       expect(target.lastSelectedCustomGraph.value?.name).toBe('updated')
     })
@@ -308,7 +309,7 @@ describe('src/store/animationGraph.ts', () => {
 
   describe('deleteCustomGraph', () => {
     it('should delete current graph and clear all selected', () => {
-      target.setGraphType('custom')
+      target.switchGraph('custom')
       target.deleteCustomGraph()
       expect(target.exportState().customGraphs).toHaveLength(0)
       expect(target.exportState().nodes).toHaveLength(2)

@@ -157,6 +157,7 @@ export function createCustomNodeModule(
       label: `${customGraph.name}`,
       getOutputType,
       genericsChains: chains.length > 0 ? chains : undefined,
+      custom: true,
     },
   }
 }

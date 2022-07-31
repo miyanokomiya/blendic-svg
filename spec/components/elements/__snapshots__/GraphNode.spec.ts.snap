@@ -4,9 +4,6 @@ exports[`src/components/elements/GraphNode.vue snapshot has errors 1`] = `
 <g
   transform="translate(0, 0)"
 >
-  <title>
-    scaler
-  </title>
   <g
     data-node_id=""
     data-type="node-body"
@@ -31,11 +28,12 @@ exports[`src/components/elements/GraphNode.vue snapshot has errors 1`] = `
       fill="#ff0000"
       font-size="16"
       x="8"
-      y="3"
+      y="6"
     >
       Number
     </text>
   </g>
+  <!--v-if-->
   <g>
     
     
@@ -126,9 +124,6 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
 <g
   transform="translate(0, 0)"
 >
-  <title>
-    make_vector2
-  </title>
   <g
     data-node_id=""
     data-type="node-body"
@@ -153,11 +148,12 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
       fill="#ff0000"
       font-size="16"
       x="8"
-      y="3"
+      y="6"
     >
       Make Vector2
     </text>
   </g>
+  <!--v-if-->
   <g>
     
     <g
@@ -264,9 +260,6 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
 <g
   transform="translate(0, 0)"
 >
-  <title>
-    make_vector2
-  </title>
   <g
     data-node_id=""
     data-type="node-body"
@@ -291,11 +284,12 @@ exports[`src/components/elements/GraphNode.vue snapshot selected 1`] = `
       fill="#ff0000"
       font-size="16"
       x="8"
-      y="3"
+      y="6"
     >
       Make Vector2
     </text>
   </g>
+  <!--v-if-->
   <g>
     
     
@@ -318,9 +312,6 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
 <g
   transform="translate(0, 0)"
 >
-  <title>
-    scaler
-  </title>
   <g
     data-node_id=""
     data-type="node-body"
@@ -345,11 +336,12 @@ exports[`src/components/elements/GraphNode.vue snapshot with data fields 1`] = `
       fill="#ff0000"
       font-size="16"
       x="8"
-      y="3"
+      y="6"
     >
       Number
     </text>
   </g>
+  <!--v-if-->
   <g>
     
     

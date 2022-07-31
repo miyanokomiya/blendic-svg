@@ -87,6 +87,7 @@ import { DraftGraphEdge } from '/@/composables/modeStates/animationGraph/core'
 import { add, sub } from 'okageo'
 import { getGraphNodeEdgePosition } from '/@/utils/helpers'
 import { generateUuid } from '/@/utils/random'
+import { Action } from 'okahistory'
 
 export type GraphType = 'graph' | 'custom'
 
@@ -327,12 +328,30 @@ export function createStore(
     }
   }
 
-  function selectGraph(id: string = '') {
-    if (!graphSelectable.getSelectHistoryDryRun(id)) return
-
-    historyStore.dispatch(graphSelectable.createSelectAction(id), [
+  function switchGraph(id: string = '') {
+    const items: (Action<any> | undefined)[] = [
       nodeSelectable.createClearAllAction(),
-    ])
+    ]
+
+    const nextType = id
+      ? graphEntities.entities.value.byId[id]
+        ? 'graph'
+        : 'custom'
+      : graphType.value
+
+    if (id) {
+      if (nextType === 'graph') {
+        items.push(graphTypeStore.createUpdateAction('graph'))
+      } else {
+        items.push(graphTypeStore.createUpdateAction('custom'))
+      }
+    }
+
+    if (nextType === 'graph') {
+      historyStore.dispatch(graphSelectable.createSelectAction(id), items)
+    } else {
+      historyStore.dispatch(customGraphSelectable.createSelectAction(id), items)
+    }
   }
 
   function addGraph(arg: Partial<{ id: string; name: string }> = {}) {
@@ -651,14 +670,6 @@ export function createStore(
     )
   }
 
-  function selectCustomGraph(id = '') {
-    if (!customGraphSelectable.getSelectHistoryDryRun(id)) return
-
-    historyStore.dispatch(customGraphSelectable.createSelectAction(id), [
-      nodeSelectable.createClearAllAction(),
-    ])
-  }
-
   function getNewCustomGraphName(src?: string) {
     return getNotDuplicatedName(
       src ?? 'Custom',
@@ -813,7 +824,7 @@ export function createStore(
     completedNodeMap,
     resolvedGraph,
 
-    selectGraph,
+    switchGraph,
     addGraph,
     deleteGraph,
     updateGraph,
@@ -828,7 +839,6 @@ export function createStore(
     updateNodes,
     makeCustomGraphFromSelectedNodes,
 
-    selectCustomGraph,
     addCustomGraph,
     deleteCustomGraph,
     updateCustomGraph,

@@ -20,14 +20,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="animation-graph-panel-root">
     <div class="top">
-      <div class="select-graph-type">
-        <SelectField
-          :options="canvasTypeOptions"
-          :model-value="canvasType"
-          no-placeholder
-          @update:model-value="setGraphType"
-        />
-      </div>
+      <ToggleRadioButtons
+        :model-value="canvasType"
+        :options="canvasTypeOptions"
+        @update:model-value="setGraphType"
+      />
       <div class="select-graph">
         <SelectField v-model="selectedGraphId" :options="graphOptions" />
       </div>
@@ -104,6 +101,7 @@ import { useStore } from '/@/store'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import AnimationGraphCanvas from '/@/components/AnimationGraphCanvas.vue'
 import SelectField from './atoms/SelectField.vue'
+import ToggleRadioButtons from '/@/components/atoms/ToggleRadioButtons.vue'
 import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 import GraphNode from '/@/components/elements/GraphNode.vue'
@@ -124,6 +122,7 @@ export default defineComponent({
   components: {
     AnimationGraphCanvas,
     SelectField,
+    ToggleRadioButtons,
     AddIcon,
     DeleteIcon,
     GraphEdge,
@@ -132,7 +131,7 @@ export default defineComponent({
   setup() {
     const canvasTypeOptions = [
       { value: 'graph', label: 'Graph' },
-      { value: 'custom', label: 'Custom Node' },
+      { value: 'custom', label: 'Custom' },
     ]
 
     const store = useStore()
@@ -206,10 +205,7 @@ export default defineComponent({
         (graphStore.graphType.value === 'graph'
           ? graphStore.lastSelectedGraph.value?.id
           : graphStore.lastSelectedCustomGraph.value?.id) ?? '',
-      set: (id: string) =>
-        graphStore.graphType.value === 'graph'
-          ? graphStore.selectGraph(id)
-          : graphStore.selectCustomGraph(id),
+      set: (id: string) => graphStore.switchGraph(id),
     })
 
     const selectedNodes = graphStore.selectedNodes
@@ -308,7 +304,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .animation-graph-panel-root {
   display: flex;
   flex-direction: column;
@@ -320,43 +316,40 @@ export default defineComponent({
   flex: 0;
   display: flex;
   align-items: center;
-  > * {
-    margin-right: 8px;
-  }
-  .select-graph-type {
-    width: 130px;
-  }
-  .select-graph {
-    width: 160px;
-  }
-  .name-input {
-    overflow: hidden;
-  }
-  .graph-buttons {
-    display: flex;
-    align-items: center;
-    button {
-      width: 20px;
-      height: 20px;
-      & + button {
-        margin-left: 4px;
-      }
-    }
-  }
-  p {
-    white-space: nowrap;
-    overflow: hidden;
-  }
+}
+.top > * {
+  margin-right: 8px;
+}
+.top .select-graph {
+  width: 160px;
+}
+.top .name-input {
+  overflow: hidden;
+}
+.top .graph-buttons {
+  display: flex;
+  align-items: center;
+}
+.top .graph-buttons button {
+  width: 20px;
+  height: 20px;
+}
+.top .graph-buttons button + button {
+  margin-left: 4px;
+}
+.top p {
+  white-space: nowrap;
+  overflow: hidden;
 }
 .main {
   flex: 1;
   min-height: 0;
   display: flex;
-  .canvas {
-    width: calc(100% - 24px);
-  }
-  .side-bar {
-    flex-shrink: 0;
-  }
+}
+.main .canvas {
+  width: calc(100% - 24px);
+}
+.main .side-bar {
+  flex-shrink: 0;
 }
 </style>

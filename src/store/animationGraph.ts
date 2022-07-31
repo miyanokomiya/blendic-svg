@@ -68,7 +68,7 @@ import {
   completeNodeMap,
   NODE_MENU_OPTIONS_SRC,
 } from '/@/utils/graphNodes'
-import { getNotDuplicatedName, sortByDependency } from '/@/utils/relations'
+import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store'
 import { useElementStore } from '/@/store/element'
 import { createGraphNodeContext } from '/@/utils/elements'
@@ -78,9 +78,9 @@ import {
   ajudstCustomGraphNodeLayout,
   ajudstCustomNodePosition,
   createCustomNodeModule,
-  getAllCustomGraphDependencies,
   getIndepenetCustomGraphIds,
   makeCustomGraphFromNodes,
+  sortCustomGraphByDeps,
 } from '/@/utils/graphNodes/customGraph'
 import { useCanvasStore } from '/@/store/canvas'
 import { DraftGraphEdge } from '/@/composables/modeStates/animationGraph/core'
@@ -182,25 +182,25 @@ export function createStore(
 
   const targetArmatureId = computed(storeContext.getArmatureId)
 
+  const sortedCustomGraphByDepIds = computed(() =>
+    sortCustomGraphByDeps(nodeEntities.entities.value.byId, customGraphs.value)
+  )
+
   const customModules = computed<IdMap<NodeModule<any>>>(() => {
     const nodeMap = nodeEntities.entities.value.byId
-    const sorted = sortByDependency(
-      getAllCustomGraphDependencies(
-        nodeEntities.entities.value.byId,
-        customGraphs.value
-      )
-    )
-
     const customGraphMap = toMap(customGraphs.value)
-    return sorted.reduce<IdMap<NodeModule<GraphNode>>>((p, id) => {
-      const customGraph = customGraphMap[id]
-      p[id] = createCustomNodeModule(
-        createGetGraphNodeModule(p),
-        customGraph,
-        toMap(customGraph.nodes.map((id) => nodeMap[id]))
-      )
-      return p
-    }, {})
+    return sortedCustomGraphByDepIds.value.reduce<IdMap<NodeModule<GraphNode>>>(
+      (p, id) => {
+        const customGraph = customGraphMap[id]
+        p[id] = createCustomNodeModule(
+          createGetGraphNodeModule(p),
+          customGraph,
+          toMap(customGraph.nodes.map((id) => nodeMap[id]))
+        )
+        return p
+      },
+      {}
+    )
   })
 
   function createGetGraphNodeModule(

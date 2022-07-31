@@ -131,32 +131,32 @@ function topSortStep(
   ctx.resolve(target)
 }
 
-export function getAllDependencies(
+export function getDependencies(
   depSrc: DependencyMap,
-  targetId: string
-): { [id: string]: true } {
-  const firstSrc = depSrc[targetId]
-  if (!firstSrc) return {}
+  targetId: string,
+  strict = false
+): string[] {
+  const ret: string[] = []
+  const unresolved = new Set(Object.keys(depSrc))
+  const processed = new Set()
 
-  const ret: { [id: string]: true } = {}
-  const currentSrc = { ...depSrc }
-  delete currentSrc[targetId]
+  const ctx = {
+    resolve(id: string) {
+      if (depSrc[id] && unresolved.has(id) && id !== targetId) {
+        ret.push(id)
+      }
+      unresolved.delete(id)
+    },
+    getDeps(id: string) {
+      if (processed.has(id)) {
+        if (strict) throw new Error('Circular dependency is detected.')
+        return undefined
+      }
+      processed.add(id)
+      return depSrc[id]
+    },
+  }
 
-  Object.keys(firstSrc).forEach((firstId) => {
-    const deps = getAllDependencies(currentSrc, firstId)
-    Object.keys(deps).forEach((id) => {
-      ret[id] = true
-      delete currentSrc[id]
-    })
-    ret[firstId] = true
-    delete currentSrc[firstId]
-  })
-
-  delete ret[targetId]
-
+  topSortStep(ctx, targetId)
   return ret
-}
-
-export function sortByDependency(depSrc: DependencyMap): string[] {
-  return topSort(depSrc)
 }

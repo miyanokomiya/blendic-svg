@@ -132,45 +132,10 @@ describe('utils/relations', () => {
       ).toThrow()
       expect(() => target.topSort({ a: { a: true } }, true)).toThrow()
     })
-  })
 
-  describe('getAllDependencies', () => {
-    it('should return dependency map', () => {
+    it('use case: complex', () => {
       expect(
-        target.getAllDependencies(
-          {
-            a: { b: true, f: true },
-            b: { c: true, d: true },
-            d: { g: true },
-          },
-          'a'
-        )
-      ).toEqual({
-        b: true,
-        f: true,
-        c: true,
-        d: true,
-        g: true,
-      })
-    })
-    it('should ignore circular references', () => {
-      expect(
-        target.getAllDependencies(
-          {
-            a: { b: true },
-            b: { c: true },
-            c: { a: true, d: true },
-          },
-          'a'
-        )
-      ).toEqual({ b: true, c: true, d: true })
-    })
-  })
-
-  describe('sortByDependency', () => {
-    it('should return sorted ids', () => {
-      expect(
-        target.sortByDependency({
+        target.topSort({
           a: { b: true, f: true },
           b: { c: true, d: true },
           c: { d: true, e: true },
@@ -189,12 +154,42 @@ describe('utils/relations', () => {
         bbXTCuXiSuHW9: { bd3CTEVcoSwCI: true },
         buOg69I8WEF0g: { bbXTCuXiSuHW9: true },
       } as const
-      expect(target.sortByDependency(src)).toEqual([
+      expect(target.topSort(src)).toEqual([
         'bbXTCuXiSuHW9',
         'buOg69I8WEF0g',
         'bOLndZsV7VK7z',
         'bNyCW0J6Pyv6P',
       ])
+    })
+  })
+
+  describe('getDependencies', () => {
+    it('should return dependency map', () => {
+      expect(
+        target.getDependencies(
+          {
+            a: { b: true, f: true },
+            b: { c: true, d: true },
+            c: { d: true },
+            d: { g: true },
+          },
+          'a'
+        )
+      ).toEqual(['d', 'c', 'b'])
+    })
+    it('should ignore circular references', () => {
+      expect(
+        target
+          .getDependencies(
+            {
+              a: { b: true },
+              b: { c: true },
+              c: { a: true, d: true },
+            },
+            'a'
+          )
+          .sort()
+      ).toEqual(['b', 'c'])
     })
   })
 })

@@ -192,4 +192,96 @@ describe('utils/relations', () => {
       ).toEqual(['b', 'c'])
     })
   })
+
+  describe('findPath', () => {
+    it('should find a path', () => {
+      const src = {
+        a: { b: true, f: true },
+        d: { c: true, f: true },
+        f: { b: true },
+        b: { c: true },
+        c: {},
+      } as const
+
+      const result1 = target.findPath(src, 'a', 'c')
+      expect(result1.path).toEqual(['a', 'b', 'c'])
+      expect(result1.processed.sort()).toEqual(['a', 'b', 'c'])
+
+      const result2 = target.findPath(src, 'd', 'c')
+      expect(result2.path).toEqual(['d', 'c'])
+      expect(result2.processed).toEqual(['d', 'c'])
+    })
+    it('should avoid circular dependency', () => {
+      const result = target.findPath(
+        {
+          a: { b: true },
+          b: { a: true },
+          c: {},
+        },
+        'a',
+        'c'
+      )
+      expect(result.path).toEqual([])
+      expect(result.processed.sort()).toEqual(['a', 'b'])
+    })
+  })
+
+  describe('getAllDependentTo', () => {
+    it('should find a path', () => {
+      expect(
+        target
+          .getAllDependentTo(
+            {
+              a: { c: true, f: true },
+              b: { c: true },
+              c: {},
+              d: { c: true, f: true },
+            },
+            'a'
+          )
+          .sort()
+      ).toEqual([])
+
+      expect(
+        target
+          .getAllDependentTo(
+            {
+              a: { c: true, f: true },
+              b: { c: true },
+              c: {},
+              d: { c: true, f: true },
+            },
+            'c'
+          )
+          .sort()
+      ).toEqual(['a', 'b', 'd'])
+
+      expect(
+        target
+          .getAllDependentTo(
+            {
+              a: { g: true },
+              d: { c: true, f: true },
+              f: { b: true },
+              b: { c: true },
+              c: {},
+            },
+            'c'
+          )
+          .sort()
+      ).toEqual(['b', 'd', 'f'])
+    })
+    it('should avoid circular dependency', () => {
+      expect(
+        target.getAllDependentTo(
+          {
+            a: { b: true },
+            b: { a: true },
+            c: {},
+          },
+          'a'
+        )
+      ).toEqual(['b'])
+    })
+  })
 })

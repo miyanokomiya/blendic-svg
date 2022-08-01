@@ -26,7 +26,6 @@ import {
   convertToCustomGraphInputInterface,
   convertToCustomGraphOutputInterface,
   createCustomNodeModule,
-  getAllCustomGraphDependencies,
   getIndepenetCustomGraphIds,
   makeCustomGraphFromNodes,
   sortCustomGraphByDeps,
@@ -353,51 +352,6 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         expect(struct.getOutputType!(mockSelf, 'output_1')).toEqual(
           UNIT_VALUE_TYPES.VECTOR2
         )
-      })
-    })
-  })
-
-  describe('getAllCustomGraphDependencies', () => {
-    it('should return dependencies', () => {
-      expect(
-        getAllCustomGraphDependencies(
-          {
-            na: { type: 't_na' },
-            nb: { type: 't_nb' },
-            nc: { type: 'b' },
-            nd: { type: 'c' },
-          },
-          [
-            { id: 'a', nodes: ['na', 'nb', 'nc'] },
-            { id: 'b', nodes: ['nd'] },
-            { id: 'c', nodes: [] },
-          ]
-        )
-      ).toEqual({
-        a: { b: true, c: true },
-        b: { c: true },
-        c: {},
-      })
-    })
-
-    it('should handle circular dependencies', () => {
-      expect(
-        getAllCustomGraphDependencies(
-          {
-            nc: { type: 'b' },
-            nd: { type: 'c' },
-            ne: { type: 'a' },
-          },
-          [
-            { id: 'a', nodes: ['nc'] },
-            { id: 'b', nodes: ['nd'] },
-            { id: 'c', nodes: ['ne'] },
-          ]
-        )
-      ).toEqual({
-        a: { b: true, c: true },
-        b: { a: true, c: true },
-        c: { a: true, b: true },
       })
     })
   })

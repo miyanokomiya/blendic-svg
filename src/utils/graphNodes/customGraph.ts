@@ -50,7 +50,7 @@ import {
   NodeStruct,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
-import { DependencyMap, getDependencies, topSort } from '/@/utils/relations'
+import { DependencyMap, getAllDependentTo, topSort } from '/@/utils/relations'
 
 export function createCustomNodeModule(
   getGraphNodeModule: GetGraphNodeModule,
@@ -321,29 +321,6 @@ function stubOutputNodes(
   )
 }
 
-// FIXME: This function is ineffecient
-export function getAllCustomGraphDependencies(
-  nodeMap: IdMap<Pick<GraphNode, 'type'>>,
-  customGraphs: Pick<CustomGraph, 'id' | 'nodes'>[]
-): DependencyMap {
-  const customIds = new Set(customGraphs.map((c) => c.id))
-
-  const firstOrderDepMap = customGraphs.reduce<DependencyMap>((p, c) => {
-    p[c.id] = getCustomGraphFirstDependencies(nodeMap, customIds, c)
-    return p
-  }, {})
-
-  return Array.from(customIds).reduce<DependencyMap>((p, id) => {
-    p[id] = {}
-    getDependencies(firstOrderDepMap, id).forEach((dep) => {
-      if (id !== dep) {
-        p[id][dep] = true
-      }
-    })
-    return p
-  }, {})
-}
-
 function getCustomGraphFirstDependencies(
   nodeMap: IdMap<Pick<GraphNode, 'type'>>,
   customIds: Set<string>,
@@ -381,10 +358,16 @@ export function getIndepenetCustomGraphIds(
   customGraphs: Pick<CustomGraph, 'id' | 'nodes'>[],
   targetId: string
 ): string[] {
-  const deps = getAllCustomGraphDependencies(nodeMap, customGraphs)
-  return Object.entries(deps)
-    .filter(([id, dep]) => !dep[targetId] && id !== targetId)
-    .map(([id]) => id)
+  const customIds = new Set(customGraphs.map((c) => c.id))
+
+  const firstOrderDepMap = customGraphs.reduce<DependencyMap>((p, c) => {
+    p[c.id] = getCustomGraphFirstDependencies(nodeMap, customIds, c)
+    return p
+  }, {})
+
+  const dependents = new Set(getAllDependentTo(firstOrderDepMap, targetId))
+  dependents.add(targetId)
+  return customGraphs.filter((c) => !dependents.has(c.id)).map((c) => c.id)
 }
 
 export function makeCustomGraphFromNodes(

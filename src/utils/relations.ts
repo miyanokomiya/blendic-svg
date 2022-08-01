@@ -160,3 +160,70 @@ export function getDependencies(
   topSortStep(ctx, targetId)
   return ret
 }
+
+export function findPath(
+  depSrc: DependencyMap,
+  from: string,
+  to: string
+): { path: string[]; processed: string[] } {
+  if (!depSrc[from]) return { path: [], processed: [from] }
+  if (depSrc[from][to]) return { path: [from, to], processed: [from, to] }
+
+  let ret: string[] = []
+  const processed = new Set([from])
+
+  let queue = new Map<string, string[]>(
+    Object.keys(depSrc[from]).map((id) => [id, [from]])
+  )
+
+  while (queue.size > 0) {
+    const nextQueue = new Map<string, string[]>()
+
+    for (const [current, path] of queue) {
+      const currentDep = depSrc[current]
+      if (!currentDep || processed.has(current)) continue
+
+      processed.add(current)
+      if (currentDep[to]) {
+        ret = [...path, current, to]
+        processed.add(to)
+        nextQueue.clear()
+        break
+      } else {
+        const newPath = [...path, current]
+        Object.keys(currentDep).forEach((id) => queue.set(id, newPath))
+      }
+    }
+
+    queue = nextQueue
+  }
+
+  return { path: ret, processed: Array.from(processed.values()) }
+}
+
+export function getAllDependentTo(depSrc: DependencyMap, to: string): string[] {
+  const ret: string[] = []
+  const queue = new Set(Object.keys(depSrc))
+  const processed = new Set([to])
+  const currentDepSrc = { ...depSrc }
+  delete currentDepSrc[to]
+
+  for (const id of queue) {
+    if (processed.has(id)) continue
+
+    const pathInfo = findPath(currentDepSrc, id, to)
+    if (pathInfo.path.length > 0) {
+      pathInfo.path.forEach((p, i) => {
+        // Last item is "to"
+        if (i === pathInfo.path.length - 1) return
+        ret.push(p)
+      })
+    }
+    pathInfo.processed.forEach((p) => {
+      delete currentDepSrc[p]
+      processed.add(p)
+    })
+  }
+
+  return ret
+}

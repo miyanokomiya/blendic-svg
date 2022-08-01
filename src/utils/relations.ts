@@ -17,8 +17,6 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { dropMap, mapFilter } from '/@/utils/commons'
-
 const suffixReg = /\.[0-9]{3,}$/
 
 function increaseSuffix(src: string): string {
@@ -90,68 +88,142 @@ export interface DependencyMap {
   [id: string]: { [id: string]: true }
 }
 
-export function getAllDependencies(
-  depSrc: DependencyMap,
-  targetId: string
-): { [id: string]: true } {
-  const firstSrc = depSrc[targetId]
-  if (!firstSrc) return {}
+export function topSort(depSrc: DependencyMap, strict = false): string[] {
+  const ret: string[] = []
+  const unresolved = new Set(Object.keys(depSrc))
+  const processed = new Set()
 
-  const ret: { [id: string]: true } = {}
-  const currentSrc = { ...depSrc }
-  delete currentSrc[targetId]
-
-  Object.keys(firstSrc).forEach((firstId) => {
-    const deps = getAllDependencies(currentSrc, firstId)
-    Object.keys(deps).forEach((id) => {
-      ret[id] = true
-      delete currentSrc[id]
-    })
-    ret[firstId] = true
-    delete currentSrc[firstId]
-  })
-
-  delete ret[targetId]
-
-  return ret
-}
-
-export function sortByDependency(depSrc: DependencyMap): string[] {
-  let ret: string[] = []
-
-  const allKeys = new Set(
-    Object.values(depSrc).flatMap((dep) => Object.keys(dep))
-  )
-  const unknownKeys = Array.from(allKeys).filter((key) => !depSrc[key])
-
-  let resolved: { [key: string]: true } = unknownKeys.reduce<{
-    [key: string]: true
-  }>((p, key) => {
-    p[key] = true
-    return p
-  }, {})
-  let unresolved = depSrc
-
-  while (Object.keys(unresolved).length > 0) {
-    const keys = sortByDependencyStep(resolved, unresolved)
-    if (keys.length === 0) {
-      ret = ret.concat(Object.keys(unresolved).sort())
-      break
-    }
-    ret = ret.concat(keys)
-    ;(resolved = keys.reduce((p, c) => ({ ...p, [c]: true }), resolved)),
-      (unresolved = dropMap(unresolved, resolved))
+  const ctx = {
+    resolve(id: string) {
+      if (depSrc[id] && unresolved.has(id)) {
+        ret.push(id)
+      }
+      unresolved.delete(id)
+    },
+    getDeps(id: string) {
+      if (processed.has(id)) {
+        if (strict) throw new Error('Circular dependency is detected.')
+        return undefined
+      }
+      processed.add(id)
+      return depSrc[id]
+    },
   }
+
+  while (unresolved.size > 0) {
+    topSortStep(ctx, unresolved.values().next().value!)
+  }
+
   return ret
 }
 
-function sortByDependencyStep(
-  resolved: { [key: string]: true },
-  unresolved: DependencyMap
+function topSortStep(
+  ctx: {
+    resolve: (id: string) => void
+    getDeps: (id: string) => { [id: string]: true } | undefined
+  },
+  target: string
+) {
+  const deps = ctx.getDeps(target)
+  if (deps) {
+    Object.keys(deps).forEach((child) => topSortStep(ctx, child))
+  }
+  ctx.resolve(target)
+}
+
+export function getDependencies(
+  depSrc: DependencyMap,
+  targetId: string,
+  strict = false
 ): string[] {
-  return Object.keys(
-    mapFilter(unresolved, (map) => {
-      return Object.keys(map).every((key) => resolved[key])
-    })
+  const ret: string[] = []
+  const unresolved = new Set(Object.keys(depSrc))
+  const processed = new Set()
+
+  const ctx = {
+    resolve(id: string) {
+      if (depSrc[id] && unresolved.has(id) && id !== targetId) {
+        ret.push(id)
+      }
+      unresolved.delete(id)
+    },
+    getDeps(id: string) {
+      if (processed.has(id)) {
+        if (strict) throw new Error('Circular dependency is detected.')
+        return undefined
+      }
+      processed.add(id)
+      return depSrc[id]
+    },
+  }
+
+  topSortStep(ctx, targetId)
+  return ret
+}
+
+export function findPath(
+  depSrc: DependencyMap,
+  from: string,
+  to: string
+): { path: string[]; processed: string[] } {
+  if (!depSrc[from]) return { path: [], processed: [from] }
+  if (depSrc[from][to]) return { path: [from, to], processed: [from, to] }
+
+  let ret: string[] = []
+  const processed = new Set([from])
+
+  let queue = new Map<string, string[]>(
+    Object.keys(depSrc[from]).map((id) => [id, [from]])
   )
+
+  while (queue.size > 0) {
+    const nextQueue = new Map<string, string[]>()
+
+    for (const [current, path] of queue) {
+      const currentDep = depSrc[current]
+      if (!currentDep || processed.has(current)) continue
+
+      processed.add(current)
+      if (currentDep[to]) {
+        ret = [...path, current, to]
+        processed.add(to)
+        nextQueue.clear()
+        break
+      } else {
+        const newPath = [...path, current]
+        Object.keys(currentDep).forEach((id) => queue.set(id, newPath))
+      }
+    }
+
+    queue = nextQueue
+  }
+
+  return { path: ret, processed: Array.from(processed.values()) }
+}
+
+export function getAllDependentTo(depSrc: DependencyMap, to: string): string[] {
+  const ret: string[] = []
+  const queue = new Set(Object.keys(depSrc))
+  const processed = new Set([to])
+  const currentDepSrc = { ...depSrc }
+  delete currentDepSrc[to]
+
+  for (const id of queue) {
+    if (processed.has(id)) continue
+
+    const pathInfo = findPath(currentDepSrc, id, to)
+    if (pathInfo.path.length > 0) {
+      pathInfo.path.forEach((p, i) => {
+        // Last item is "to"
+        if (i === pathInfo.path.length - 1) return
+        ret.push(p)
+      })
+    }
+    pathInfo.processed.forEach((p) => {
+      delete currentDepSrc[p]
+      processed.add(p)
+    })
+  }
+
+  return ret
 }

@@ -88,46 +88,57 @@ describe('utils/relations', () => {
     })
   })
 
-  describe('getAllDependencies', () => {
-    it('should return dependency map', () => {
+  describe('topSort', () => {
+    it('should execute topological sort', () => {
       expect(
-        target.getAllDependencies(
-          {
-            a: { b: true, f: true },
-            b: { c: true, d: true },
-            d: { g: true },
-          },
-          'a'
-        )
-      ).toEqual({
-        b: true,
-        f: true,
-        c: true,
-        d: true,
-        g: true,
-      })
+        target.topSort({
+          b: { c: true },
+          a: { b: true },
+          d: { f: true },
+          c: { d: true },
+        })
+      ).toEqual(['d', 'c', 'b', 'a'])
+      expect(
+        target.topSort({
+          a: { b: true },
+          b: { d: true },
+          c: { b: true, a: true },
+          d: { f: true },
+        })
+      ).toEqual(['d', 'b', 'a', 'c'])
     })
-    it('should ignore circular references', () => {
-      expect(
-        target.getAllDependencies(
+
+    it('should ignore circular dependency', () => {
+      expect(() =>
+        target.topSort({
+          a: { b: true },
+          b: { c: true },
+          c: { a: true },
+        })
+      ).not.toThrow()
+      expect(() => target.topSort({ a: { a: true } })).not.toThrow()
+    })
+
+    it('strict: should throw error if circular dependency exists', () => {
+      expect(() =>
+        target.topSort(
           {
             a: { b: true },
             b: { c: true },
-            c: { a: true, d: true },
+            c: { a: true },
           },
-          'a'
+          true
         )
-      ).toEqual({ b: true, c: true, d: true })
+      ).toThrow()
+      expect(() => target.topSort({ a: { a: true } }, true)).toThrow()
     })
-  })
 
-  describe('sortByDependency', () => {
-    it('should return sorted ids', () => {
+    it('use case: complex', () => {
       expect(
-        target.sortByDependency({
+        target.topSort({
           a: { b: true, f: true },
           b: { c: true, d: true },
-          c: { d: true },
+          c: { d: true, e: true },
           d: { g: true, f: true },
           e: { f: true },
           f: { g: true },
@@ -143,12 +154,134 @@ describe('utils/relations', () => {
         bbXTCuXiSuHW9: { bd3CTEVcoSwCI: true },
         buOg69I8WEF0g: { bbXTCuXiSuHW9: true },
       } as const
-      expect(target.sortByDependency(src)).toEqual([
+      expect(target.topSort(src)).toEqual([
         'bbXTCuXiSuHW9',
         'buOg69I8WEF0g',
         'bOLndZsV7VK7z',
         'bNyCW0J6Pyv6P',
       ])
+    })
+  })
+
+  describe('getDependencies', () => {
+    it('should return dependency map', () => {
+      expect(
+        target.getDependencies(
+          {
+            a: { b: true, f: true },
+            b: { c: true, d: true },
+            c: { d: true },
+            d: { g: true },
+          },
+          'a'
+        )
+      ).toEqual(['d', 'c', 'b'])
+    })
+    it('should ignore circular references', () => {
+      expect(
+        target
+          .getDependencies(
+            {
+              a: { b: true },
+              b: { c: true },
+              c: { a: true, d: true },
+            },
+            'a'
+          )
+          .sort()
+      ).toEqual(['b', 'c'])
+    })
+  })
+
+  describe('findPath', () => {
+    it('should find a path', () => {
+      const src = {
+        a: { b: true, f: true },
+        d: { c: true, f: true },
+        f: { b: true },
+        b: { c: true },
+        c: {},
+      } as const
+
+      const result1 = target.findPath(src, 'a', 'c')
+      expect(result1.path).toEqual(['a', 'b', 'c'])
+      expect(result1.processed.sort()).toEqual(['a', 'b', 'c'])
+
+      const result2 = target.findPath(src, 'd', 'c')
+      expect(result2.path).toEqual(['d', 'c'])
+      expect(result2.processed).toEqual(['d', 'c'])
+    })
+    it('should avoid circular dependency', () => {
+      const result = target.findPath(
+        {
+          a: { b: true },
+          b: { a: true },
+          c: {},
+        },
+        'a',
+        'c'
+      )
+      expect(result.path).toEqual([])
+      expect(result.processed.sort()).toEqual(['a', 'b'])
+    })
+  })
+
+  describe('getAllDependentTo', () => {
+    it('should find a path', () => {
+      expect(
+        target
+          .getAllDependentTo(
+            {
+              a: { c: true, f: true },
+              b: { c: true },
+              c: {},
+              d: { c: true, f: true },
+            },
+            'a'
+          )
+          .sort()
+      ).toEqual([])
+
+      expect(
+        target
+          .getAllDependentTo(
+            {
+              a: { c: true, f: true },
+              b: { c: true },
+              c: {},
+              d: { c: true, f: true },
+            },
+            'c'
+          )
+          .sort()
+      ).toEqual(['a', 'b', 'd'])
+
+      expect(
+        target
+          .getAllDependentTo(
+            {
+              a: { g: true },
+              d: { c: true, f: true },
+              f: { b: true },
+              b: { c: true },
+              c: {},
+            },
+            'c'
+          )
+          .sort()
+      ).toEqual(['b', 'd', 'f'])
+    })
+    it('should avoid circular dependency', () => {
+      expect(
+        target.getAllDependentTo(
+          {
+            a: { b: true },
+            b: { a: true },
+            c: {},
+          },
+          'a'
+        )
+      ).toEqual(['b'])
     })
   })
 })

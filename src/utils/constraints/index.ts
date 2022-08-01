@@ -27,7 +27,7 @@ import * as copyScale from './copyScale'
 import { Bone, IdMap, toMap } from '/@/models'
 import { mapReduce, sumReduce } from '/@/utils/commons'
 import { generateUuid } from '/@/utils/random'
-import { sortByDependency } from '/@/utils/relations'
+import { topSort } from '/@/utils/relations'
 
 export type BoneConstraintType =
   | 'IK'
@@ -178,7 +178,7 @@ export function sortBoneByHighDependency(
 ): Bone[] {
   const boneMap = toMap(bones)
   const dmap = getDependentCountMap(boneMap, constraintMap)
-  const sortedIds = sortByDependency(
+  const sortedIds = topSort(
     mapReduce(dmap, (map) => mapReduce(map, () => true))
   )
   return sortedIds.map((id) => boneMap[id])

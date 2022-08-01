@@ -26,10 +26,9 @@ import {
   convertToCustomGraphInputInterface,
   convertToCustomGraphOutputInterface,
   createCustomNodeModule,
-  getAllCustomGraphDependencies,
-  getCustomGraphDependencies,
   getIndepenetCustomGraphIds,
   makeCustomGraphFromNodes,
+  sortCustomGraphByDeps,
 } from '/@/utils/graphNodes/customGraph'
 
 describe('src/utils/graphNodes/customGraph.ts', () => {
@@ -357,10 +356,10 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
     })
   })
 
-  describe('getAllCustomGraphDependencies', () => {
-    it('should return dependencies', () => {
+  describe('sortCustomGraphByDeps', () => {
+    it('should sort custom graphs', () => {
       expect(
-        getAllCustomGraphDependencies(
+        sortCustomGraphByDeps(
           {
             na: { type: 't_na' },
             nb: { type: 't_nb' },
@@ -368,21 +367,16 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
             nd: { type: 'c' },
           },
           [
+            { id: 'c', nodes: [] },
             { id: 'a', nodes: ['na', 'nb', 'nc'] },
             { id: 'b', nodes: ['nd'] },
-            { id: 'c', nodes: [] },
           ]
         )
-      ).toEqual({
-        a: { b: true, c: true },
-        b: { c: true },
-        c: {},
-      })
+      ).toEqual(['c', 'b', 'a'])
     })
-
-    it('should handle circular dependencies', () => {
-      expect(
-        getAllCustomGraphDependencies(
+    it('should avoid circular dependencies', () => {
+      expect(() =>
+        sortCustomGraphByDeps(
           {
             nc: { type: 'b' },
             nd: { type: 'c' },
@@ -394,50 +388,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
             { id: 'c', nodes: ['ne'] },
           ]
         )
-      ).toEqual({
-        a: { b: true, c: true },
-        b: { a: true, c: true },
-        c: { a: true, b: true },
-      })
-    })
-  })
-
-  describe('getCustomGraphDependencies', () => {
-    it('should return dependencies', () => {
-      expect(
-        getCustomGraphDependencies(
-          {
-            na: { type: 't_na' },
-            nb: { type: 't_nb' },
-            nc: { type: 'b' },
-            nd: { type: 'c' },
-          },
-          [
-            { id: 'a', nodes: ['na', 'nb', 'nc'] },
-            { id: 'b', nodes: ['nd'] },
-            { id: 'c', nodes: [] },
-          ],
-          'a'
-        )
-      ).toEqual({ b: true, c: true })
-    })
-
-    it('should ignore circular dependencies', () => {
-      expect(
-        getCustomGraphDependencies(
-          {
-            nc: { type: 'b' },
-            nd: { type: 'c' },
-            ne: { type: 'a' },
-          },
-          [
-            { id: 'a', nodes: ['nc'] },
-            { id: 'b', nodes: ['nd'] },
-            { id: 'c', nodes: ['ne'] },
-          ],
-          'a'
-        )
-      ).toEqual({ b: true, c: true })
+      ).not.toThrow()
     })
   })
 

@@ -2278,6 +2278,30 @@ describe('src/utils/graphNodes/index.ts', () => {
         },
       })
     })
+    it('should add input edges if updated interface has new ones', () => {
+      expect(
+        getUpdatedNodeMapToChangeNodeStruct(
+          getGraphNodeModule,
+          nodeMap,
+          'make_vector2',
+          {
+            ...getGraphNodeModule('make_vector2').struct,
+            inputs: {
+              ...getGraphNodeModule('make_vector2').struct.inputs,
+              z: { type: UNIT_VALUE_TYPES.BOOLEAN, default: false },
+            },
+          }
+        )
+      ).toEqual({
+        b: createGraphNode('make_vector2', {
+          id: 'b',
+          inputs: {
+            x: { from: { id: 'a', key: 'value' } },
+            z: { value: false } as any,
+          },
+        }),
+      })
+    })
     it('should disconnect output edges with updated interface', () => {
       expect(
         getUpdatedNodeMapToChangeNodeStruct(
@@ -2294,6 +2318,43 @@ describe('src/utils/graphNodes/index.ts', () => {
         )
       ).toEqual({
         c: createGraphNode('break_vector2', { id: 'c' }),
+      })
+    })
+
+    it('should keep current input if curret generics type equals next one', () => {
+      const nodeMap = {
+        a: createGraphNode('scaler', { id: 'a' }),
+        b: createGraphNode('add_generics', {
+          id: 'b',
+          inputs: {
+            a: {
+              from: { id: 'a', key: 'value' },
+              genericsType: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+        }),
+      }
+      expect(
+        getUpdatedNodeMapToChangeNodeStruct(
+          getGraphNodeModule,
+          nodeMap,
+          'add_generics',
+          {
+            ...getGraphNodeModule('add_generics').struct,
+            inputs: {
+              a: getGraphNodeModule('make_vector2').struct.inputs.x,
+              b: getGraphNodeModule('make_vector2').struct.inputs.y,
+            },
+          }
+        )
+      ).toEqual({
+        b: createGraphNode('add_generics', {
+          id: 'b',
+          inputs: {
+            a: { from: { id: 'a', key: 'value' } },
+            b: { value: 0 },
+          },
+        }),
       })
     })
   })
@@ -2345,7 +2406,79 @@ describe('src/utils/graphNodes/index.ts', () => {
           }
         )
       ).toEqual(true)
+
+      // New one added
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+            },
+            outputs: {},
+          },
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.TEXT, default: 10 },
+              b: { type: UNIT_VALUE_TYPES.BOOLEAN, default: true },
+            },
+            outputs: {},
+          }
+        )
+      ).toEqual(true)
+
+      // Current one removed
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+            },
+            outputs: {},
+          },
+          {
+            inputs: {},
+            outputs: {},
+          }
+        )
+      ).toEqual(true)
+
+      // Current one has generics type
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.GENERICS, default: undefined },
+            },
+            outputs: {},
+          },
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+            },
+            outputs: {},
+          }
+        )
+      ).toEqual(true)
+
+      // Next one has generics type
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.SCALER, default: 10 },
+            },
+            outputs: {},
+          },
+          {
+            inputs: {
+              a: { type: UNIT_VALUE_TYPES.GENERICS, default: undefined },
+            },
+            outputs: {},
+          }
+        )
+      ).toEqual(true)
     })
+
     it('should return true if some outputs are changed', () => {
       expect(
         isInterfaceChanged(
@@ -2367,6 +2500,41 @@ describe('src/utils/graphNodes/index.ts', () => {
               aa: UNIT_VALUE_TYPES.SCALER,
               bb: UNIT_VALUE_TYPES.VECTOR2,
             },
+          }
+        )
+      ).toEqual(true)
+
+      // New one added
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {},
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+          {
+            inputs: {},
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+              bb: UNIT_VALUE_TYPES.SCALER,
+            },
+          }
+        )
+      ).toEqual(true)
+
+      // Current one removed
+      expect(
+        isInterfaceChanged(
+          {
+            inputs: {},
+            outputs: {
+              aa: UNIT_VALUE_TYPES.SCALER,
+            },
+          },
+          {
+            inputs: {},
+            outputs: {},
           }
         )
       ).toEqual(true)

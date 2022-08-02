@@ -555,7 +555,7 @@ export function compute<T>(
     mapReduce(inputs, (val, key) => {
       if (val !== undefined) return val
       // use default value if the input may have an invalid connection
-      return (struct.inputs as any)[key].default
+      return (struct.inputs as any)[key]?.default
     }),
     target,
     context,
@@ -756,20 +756,20 @@ export function resetInput(
 
 export function resetInputValue(
   inputStruct: NodeStruct<any>['inputs']['any'] | undefined,
-  input: GraphNodeInput<any>
+  current: GraphNodeInput<any> | undefined
 ): GraphNodeInput<any> | undefined {
   if (!inputStruct) {
     return undefined
   }
 
-  const current = input
-  const nextInput: GraphNodeInput<any> = current.genericsType
-    ? {
-        // keep generics if it is confirmed
-        genericsType: current.genericsType,
-        value: createDefaultValueForGenerics(current.genericsType),
-      }
-    : { value: inputStruct.default }
+  const nextInput: GraphNodeInput<any> =
+    inputStruct.type.type === GRAPH_VALUE_TYPE.GENERICS && current?.genericsType
+      ? {
+          // keep generics if it is confirmed
+          genericsType: current.genericsType,
+          value: createDefaultValueForGenerics(current.genericsType),
+        }
+      : { value: inputStruct.default }
 
   return nextInput
 }
@@ -1262,25 +1262,46 @@ function cleanEdgeGenericsGroupByType(
         },
       }
     } else {
-      if (
-        getInputOriginalType(getGraphNodeModule, node.type, item.key).type !==
-        GRAPH_VALUE_TYPE.GENERICS
-      )
-        return
-
       const input = node.inputs[item.key]
-      if (isSameValueType(input.genericsType, type)) return
+      if (!input) return
 
-      ret[item.id] = {
-        ...node,
-        inputs: {
-          ...node.inputs,
-          [item.key]: {
-            ...input,
-            genericsType: type,
-            value: createDefaultValueForGenerics(type),
+      const originalType = getInputOriginalType(
+        getGraphNodeModule,
+        node.type,
+        item.key
+      ).type
+
+      if (originalType === GRAPH_VALUE_TYPE.GENERICS) {
+        if (isSameValueType(input.genericsType, type)) return
+
+        ret[item.id] = {
+          ...node,
+          inputs: {
+            ...node.inputs,
+            [item.key]: {
+              ...input,
+              genericsType: type,
+              value: createDefaultValueForGenerics(type),
+            },
           },
-        },
+        }
+      } else {
+        const inputType = getInputType(
+          getGraphNodeModule(node.type)?.struct,
+          node,
+          item.key
+        )
+        if (isSameValueType(inputType, type)) return
+
+        ret[item.id] = {
+          ...node,
+          inputs: {
+            ...node.inputs,
+            [item.key]: {
+              value: createDefaultValueForGenerics(type),
+            },
+          },
+        }
       }
     }
   })
@@ -1540,18 +1561,44 @@ export function getUpdatedNodeMapToChangeNodeStruct(
   const updatedIdSet = new Set<string>()
 
   const inputCleanedMap = mapReduce(targetTypeNodeMap, (node) => {
-    return Object.keys(node.inputs).reduce((n, key) => {
+    const next = Object.keys(node.inputs).reduce((n, key) => {
+      const currentInput = n.inputs[key]
+      const nextInputType = nextStruct.inputs[key]?.type
       if (
-        isSameValueType(
-          nextStruct.inputs[key]?.type,
-          getInputType(currentStruct, n, key)
-        )
-      )
+        nextStruct.inputs[key] &&
+        isSameValueType(nextInputType, getInputType(currentStruct, n, key))
+      ) {
+        if (
+          nextInputType.type !== GRAPH_VALUE_TYPE.GENERICS &&
+          currentInput.genericsType
+        ) {
+          updatedIdSet.add(node.id)
+          // Current genericsType equals next fixed type
+          // => Current connection can be kept
+          return {
+            ...n,
+            inputs: {
+              ...n.inputs,
+              [key]: currentInput.from
+                ? { from: currentInput.from }
+                : { value: createDefaultValueForGenerics(nextInputType) },
+            },
+          }
+        }
+
         return n
+      }
 
       updatedIdSet.add(node.id)
       return resetInput(nextStruct, n, key)
     }, node)
+
+    return Object.keys(nextStruct.inputs).reduce((n, key) => {
+      if (n.inputs[key]) return n
+
+      updatedIdSet.add(node.id)
+      return resetInput(nextStruct, n, key)
+    }, next)
   })
 
   const outputCleanedMap = mapReduce(
@@ -1577,9 +1624,22 @@ export function getUpdatedNodeMapToChangeNodeStruct(
     }
   )
 
+  const nextGetGraphNodeModule = (type: GraphNodeType) => {
+    const current = getGraphNodeModule(type)
+    return type !== nodeType
+      ? current
+      : ({
+          ...current,
+          struct: {
+            ...current?.struct,
+            ...nextStruct,
+          },
+        } as any)
+  }
+
   return {
     ...mapFilter(outputCleanedMap, (_, id) => updatedIdSet.has(id)),
-    ...cleanAllEdgeGenerics(getGraphNodeModule, outputCleanedMap),
+    ...cleanAllEdgeGenerics(nextGetGraphNodeModule, outputCleanedMap),
   }
 }
 
@@ -1587,6 +1647,16 @@ export function isInterfaceChanged(
   prevStruct: Pick<NodeStruct<any>, 'inputs' | 'outputs'>,
   nextStruct: Pick<NodeStruct<any>, 'inputs' | 'outputs'>
 ): boolean {
+  const prevInputKyes = Object.keys(prevStruct.inputs)
+  const nextInputKyes = Object.keys(nextStruct.inputs)
+  if (prevInputKyes.length !== nextInputKyes.length) return true
+  if (prevInputKyes.some((key, i) => key !== nextInputKyes[i])) return true
+
+  const prevOutputKyes = Object.keys(prevStruct.outputs)
+  const nextOutputKyes = Object.keys(nextStruct.outputs)
+  if (prevOutputKyes.length !== nextOutputKyes.length) return true
+  if (prevOutputKyes.some((key, i) => key !== nextOutputKyes[i])) return true
+
   return (
     Object.entries(prevStruct.inputs).some(([key, input]) => {
       const next = nextStruct.inputs[key]

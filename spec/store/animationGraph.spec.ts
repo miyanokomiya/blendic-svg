@@ -62,6 +62,19 @@ describe('src/store/animationGraph.ts', () => {
     })
   })
 
+  describe('selectedGraphByType', () => {
+    it('should return selected graph having selected graph type', () => {
+      target.switchGraph('custom')
+      expect(target.selectedGraphByType.value?.id).toBe('custom')
+
+      target.switchGraph('graph')
+      expect(target.selectedGraphByType.value?.id).toBe('graph')
+
+      target.switchGraph('')
+      expect(target.selectedGraphByType.value).toBe(undefined)
+    })
+  })
+
   describe('addGraph', () => {
     it('should add new graph, select it and clear nodes selected', () => {
       target.selectNode('scaler')

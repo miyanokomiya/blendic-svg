@@ -165,6 +165,8 @@ export function createStore(
     return id ? getNodeParentEntity().entities.value.byId[id] : undefined
   }
 
+  const selectedGraphByType = computed(getNodeParent)
+
   const nodeMap = computed(() => {
     const parent = getNodeParent()
     if (!parent) return {}
@@ -813,6 +815,8 @@ export function createStore(
 
     customGraphs,
     lastSelectedCustomGraph,
+
+    selectedGraphByType,
 
     nodeMap,
     lastSelectedNode,

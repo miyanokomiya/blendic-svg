@@ -151,13 +151,7 @@ export default defineComponent({
         if (!p) return
         props.canvas.setMousePoint(p)
       },
-      onEscape: () => {
-        mode.sm.handleEvent({
-          type: 'keydown',
-          data: { key: 'Escape' },
-          point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-        })
-      },
+      onEscape: handleEscape,
     })
 
     const popupMenuList = useMenuList(
@@ -227,6 +221,10 @@ export default defineComponent({
       mode.sm.handleEvent({ type: 'selection' })
     })
 
+    watch(graphStore.selectedGraphByType, () => {
+      handleEscape()
+    })
+
     function handleDownEvent(e: MouseEvent) {
       mode.sm.handleEvent({
         type: 'pointerdown',
@@ -291,6 +289,13 @@ export default defineComponent({
     }
     function handlePasteEvent(e: ClipboardEvent) {
       mode.sm.handleEvent({ type: 'paste', nativeEvent: e })
+    }
+    function handleEscape() {
+      mode.sm.handleEvent({
+        type: 'keydown',
+        data: { key: 'Escape' },
+        point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+      })
     }
 
     return {

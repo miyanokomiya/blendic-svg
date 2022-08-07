@@ -201,10 +201,7 @@ export default defineComponent({
     )
 
     const selectedGraphId = computed({
-      get: () =>
-        (graphStore.graphType.value === 'graph'
-          ? graphStore.lastSelectedGraph.value?.id
-          : graphStore.lastSelectedCustomGraph.value?.id) ?? '',
+      get: () => graphStore.selectedGraphByType.value?.id ?? '',
       set: (id: string) => graphStore.switchGraph(id),
     })
 
@@ -218,26 +215,32 @@ export default defineComponent({
         const draftEdge = graphStore.draftEdge.value
         if (!draftEdge) return undefined
 
+        const nodeMap = editedNodeMap.value
+        const positions = edgePositionMap.value
+
         if (draftEdge.type === 'draft-input') {
-          return [
-            {
-              output: add(
-                editedNodeMap.value[draftEdge.output.nodeId].position,
-                edgePositionMap.value[draftEdge.output.nodeId].outputs[
-                  draftEdge.output.key
-                ].p
-              ),
-              input: draftEdge.input,
-            },
-          ]
+          const node = nodeMap[draftEdge.output.nodeId]
+          return node
+            ? [
+                {
+                  output: add(
+                    node.position,
+                    positions[node.id].outputs[draftEdge.output.key].p
+                  ),
+                  input: draftEdge.input,
+                },
+              ]
+            : undefined
         } else {
-          return draftEdge.inputs.map((input) => ({
-            output: draftEdge.output,
-            input: add(
-              editedNodeMap.value[input.nodeId].position,
-              edgePositionMap.value[input.nodeId].inputs[input.key].p
-            ),
-          }))
+          return draftEdge.inputs
+            .filter((input) => nodeMap[input.nodeId])
+            .map((input) => ({
+              output: draftEdge.output,
+              input: add(
+                nodeMap[input.nodeId].position,
+                positions[input.nodeId].inputs[input.key].p
+              ),
+            }))
         }
       }
     )

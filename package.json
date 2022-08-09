@@ -51,7 +51,7 @@
     "jest": "^27.5.1",
     "playwright-chromium": "^1.24.2",
     "prettier": "^2.7.1",
-    "sass": "^1.53.0",
+    "sass": "^1.54.3",
     "tree-kill": "^1.2.2",
     "ts-jest": "^27.1.5",
     "tslib": "^2.4.0",

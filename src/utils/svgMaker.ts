@@ -210,7 +210,7 @@ export function serializeToAnimatedSvg(
       .join('') +
     `.${identifierMap[adjustedSvgRoot.id]} * {animation-duration:${
       duration / 1000
-    }s;animation-iteration-count:${iteration};animation-timing-function:linear;}`
+    }s;animation-iteration-count:${iteration};animation-timing-function:step-start;}`
 
   const staticAttributeOwnerIds = new Set([
     ...animTagMap.keys(),

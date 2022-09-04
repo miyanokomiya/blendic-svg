@@ -48,15 +48,15 @@ Copyright (C) 2021, Tomoya Komiyama.
         />
         <g v-if="targetExpandedMap[target.id]">
           <TimelineRow
-            v-for="(y, key) in childTopMapList[i]"
+            v-for="[key, y] in Object.entries(childTopMapList[i])"
             :key="key"
             :transform="`translate(10, ${y})`"
             :label-width="labelWidth - 10"
             :label-height="height"
-            :label="getLabel(key as string)"
-            :highlight="isSelectedProp(target.id, key as string)"
-            @click.left.exact="clickRow(target.id, key as string)"
-            @click.left.shift.exact="clickRow(target.id, key as string, true)"
+            :label="getLabel(key)"
+            :highlight="isSelectedProp(target.id, key)"
+            @click.left.exact="clickRow(target.id, key)"
+            @click.left.shift.exact="clickRow(target.id, key, true)"
           />
         </g>
       </g>
@@ -75,95 +75,79 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+import { computed, withDefaults } from 'vue'
 import { IdMap } from '/@/models'
-import TimelineRow from './atoms/TimelineRow.vue'
 import { getKeyframeTopMap, KeyframeTargetSummary } from '/@/utils/helpers'
 import { TargetPropsState } from '/@/composables/stores/targetProps'
-import { useSettings } from '/@/composables/settings'
 
-export default defineComponent({
-  components: {
-    TimelineRow,
-  },
-  props: {
-    targetList: {
-      type: Array as PropType<KeyframeTargetSummary[]>,
-      default: () => [],
-    },
-    labelWidth: {
-      type: Number,
-      default: 200,
-    },
-    height: {
-      type: Number,
-      default: 24,
-    },
-    scrollY: {
-      type: Number,
-      default: 0,
-    },
-    targetExpandedMap: {
-      type: Object as PropType<IdMap<boolean>>,
-      default: () => ({}),
-    },
-    targetTopMap: {
-      type: Object as PropType<IdMap<number>>,
-      default: () => ({}),
-    },
-    propsStateMap: {
-      type: Object as PropType<IdMap<TargetPropsState>>,
-      default: () => ({}),
-    },
-  },
-  emits: ['toggle-target-expanded', 'select'],
-  setup(props, { emit }) {
-    const { settings } = useSettings()
+function getLabel(label: string): string {
+  return (
+    {
+      translateX: 'Translate X',
+      translateY: 'Translate Y',
+      rotate: 'Rotate',
+      scaleX: 'Scale X',
+      scaleY: 'Scale Y',
+      influence: 'Influence',
+    }[label] ?? ''
+  )
+}
+</script>
 
-    function toggleBoneExpanded(targetId: string) {
-      emit('toggle-target-expanded', targetId)
-    }
+<script setup lang="ts">
+import TimelineRow from '/@/components/elements/atoms/TimelineRow.vue'
 
-    const childTopMapList = computed(() => {
-      return props.targetList.map((item) => {
-        return getKeyframeTopMap(props.height, 0, item.children)
-      })
-    })
+const props = withDefaults(
+  defineProps<{
+    targetList?: KeyframeTargetSummary[]
+    labelWidth?: number
+    height?: number
+    scrollY?: number
+    targetExpandedMap?: IdMap<boolean>
+    targetTopMap?: IdMap<number>
+    propsStateMap?: IdMap<TargetPropsState>
+  }>(),
+  {
+    targetList: () => [],
+    labelWidth: 200,
+    height: 24,
+    scrollY: 0,
+    targetExpandedMap: () => ({}),
+    targetTopMap: () => ({}),
+    propsStateMap: () => ({}),
+  }
+)
 
-    function getLabel(label: string): string {
-      return (
-        {
-          translateX: 'Translate X',
-          translateY: 'Translate Y',
-          rotate: 'Rotate',
-          scaleX: 'Scale X',
-          scaleY: 'Scale Y',
-          influence: 'Influence',
-        }[label] ?? ''
-      )
-    }
+const emits = defineEmits<{
+  (e: 'toggle-target-expanded', val: string): void
+  (
+    e: 'select',
+    val: string,
+    propsState: TargetPropsState,
+    shift?: boolean
+  ): void
+}>()
 
-    function isSelectedProp(targetId: string, propName: string): boolean {
-      return props.propsStateMap[targetId]?.props[propName] === 'selected'
-    }
+function toggleBoneExpanded(targetId: string) {
+  emits('toggle-target-expanded', targetId)
+}
 
-    function clickRow(id: string, propKey: string, shift = false) {
-      emit(
-        'select',
-        id,
-        { props: { [propKey]: 'selected' } } as TargetPropsState,
-        shift
-      )
-    }
-
-    return {
-      settings,
-      childTopMapList,
-      getLabel,
-      toggleBoneExpanded,
-      isSelectedProp,
-      clickRow,
-    }
-  },
+const childTopMapList = computed(() => {
+  return props.targetList.map((item) =>
+    getKeyframeTopMap(props.height, 0, item.children)
+  )
 })
+
+function isSelectedProp(targetId: string, propName: string): boolean {
+  return props.propsStateMap[targetId]?.props[propName] === 'selected'
+}
+
+function clickRow(id: string, propKey: string, shift = false) {
+  emits(
+    'select',
+    id,
+    { props: { [propKey]: 'selected' } } as TargetPropsState,
+    shift
+  )
+}
 </script>

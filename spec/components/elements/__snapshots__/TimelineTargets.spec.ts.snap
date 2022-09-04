@@ -1,0 +1,383 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/elements/TimelineTargets.vue snapshot status: expanded 1`] = `
+<g>
+  <rect
+    class="fill-background"
+    height="10000"
+    stroke="none"
+    width="200"
+  />
+  <line
+    class="stroke-text"
+    x1="200"
+    x2="200"
+    y1="0"
+    y2="10000"
+  />
+  <g
+    transform="translate(0, 0)"
+  >
+    
+    <g
+      transform="translate(0, 0)"
+    >
+      <g
+        class="toggle-expanded"
+      >
+        <rect
+          class="fill-background stroke-text"
+          height="24"
+          width="200"
+        />
+        <text
+          class="fill-text"
+          dominant-baseline="central"
+          x="4"
+          y="12"
+        >
+          name_a
+        </text>
+        <g
+          transform="translate(184, 6)"
+        >
+          <rect
+            class="fill-background-second"
+            height="14"
+            stroke="none"
+            width="14"
+            x="-1"
+            y="-1"
+          />
+          <g
+            class="fill-background"
+            stroke="none"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M2 9L10 9L6 3z"
+            />
+          </g>
+        </g>
+      </g>
+      <g>
+        
+        <g
+          class="toggle-expanded"
+          transform="translate(10, 72)"
+        >
+          <rect
+            class="fill-background stroke-text"
+            height="24"
+            width="190"
+          />
+          <text
+            class="fill-highlight"
+            dominant-baseline="central"
+            x="4"
+            y="12"
+          >
+            Rotate
+          </text>
+          <!--v-if-->
+        </g>
+        
+      </g>
+    </g>
+    <g
+      transform="translate(0, 100)"
+    >
+      <g
+        class="toggle-expanded"
+      >
+        <rect
+          class="fill-background stroke-text"
+          height="24"
+          width="200"
+        />
+        <text
+          class="fill-text"
+          dominant-baseline="central"
+          x="4"
+          y="12"
+        >
+          name_b
+        </text>
+        <g
+          transform="translate(184, 6)"
+        >
+          <rect
+            class="fill-background-second"
+            height="14"
+            stroke="none"
+            width="14"
+            x="-1"
+            y="-1"
+          />
+          <g
+            class="fill-background"
+            stroke="none"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M2 9L10 9L6 3z"
+            />
+          </g>
+        </g>
+      </g>
+      <g>
+        
+        <g
+          class="toggle-expanded"
+          transform="translate(10, 24)"
+        >
+          <rect
+            class="fill-background stroke-text"
+            height="24"
+            width="190"
+          />
+          <text
+            class="fill-highlight"
+            dominant-baseline="central"
+            x="4"
+            y="12"
+          >
+            Translate X
+          </text>
+          <!--v-if-->
+        </g>
+        <g
+          class="toggle-expanded"
+          transform="translate(10, 72)"
+        >
+          <rect
+            class="fill-background stroke-text"
+            height="24"
+            width="190"
+          />
+          <text
+            class="fill-highlight"
+            dominant-baseline="central"
+            x="4"
+            y="12"
+          >
+            Rotate
+          </text>
+          <!--v-if-->
+        </g>
+        <g
+          class="toggle-expanded"
+          transform="translate(10, 96)"
+        >
+          <rect
+            class="fill-background stroke-text"
+            height="24"
+            width="190"
+          />
+          <text
+            class="fill-text"
+            dominant-baseline="central"
+            x="4"
+            y="12"
+          >
+            Scale X
+          </text>
+          <!--v-if-->
+        </g>
+        
+      </g>
+    </g>
+    
+  </g>
+  <g>
+    <g
+      class="toggle-expanded"
+    >
+      <rect
+        class="fill-background stroke-text"
+        height="24"
+        width="200"
+      />
+      <text
+        class="fill-text"
+        dominant-baseline="central"
+        x="4"
+        y="12"
+      />
+      <!--v-if-->
+    </g>
+  </g>
+  <g
+    transform="translate(0, 24)"
+  >
+    <g
+      class="toggle-expanded"
+    >
+      <rect
+        class="fill-background stroke-text"
+        height="24"
+        width="200"
+      />
+      <text
+        class="fill-text"
+        dominant-baseline="central"
+        x="4"
+        y="12"
+      >
+        Summary
+      </text>
+      <!--v-if-->
+    </g>
+  </g>
+</g>
+`;
+
+exports[`src/components/elements/TimelineTargets.vue snapshot status: folded 1`] = `
+<g>
+  <rect
+    class="fill-background"
+    height="10000"
+    stroke="none"
+    width="200"
+  />
+  <line
+    class="stroke-text"
+    x1="200"
+    x2="200"
+    y1="0"
+    y2="10000"
+  />
+  <g
+    transform="translate(0, 0)"
+  >
+    
+    <g
+      transform="translate(0, 0)"
+    >
+      <g
+        class="toggle-expanded"
+      >
+        <rect
+          class="fill-background stroke-text"
+          height="24"
+          width="200"
+        />
+        <text
+          class="fill-text"
+          dominant-baseline="central"
+          x="4"
+          y="12"
+        >
+          name_a
+        </text>
+        <g
+          transform="translate(184, 6)"
+        >
+          <rect
+            class="fill-background-second"
+            height="14"
+            stroke="none"
+            width="14"
+            x="-1"
+            y="-1"
+          />
+          <g
+            class="fill-background"
+            stroke="none"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M10 3L2 3L6 9z"
+            />
+          </g>
+        </g>
+      </g>
+      <!--v-if-->
+    </g>
+    <g
+      transform="translate(0, 100)"
+    >
+      <g
+        class="toggle-expanded"
+      >
+        <rect
+          class="fill-background stroke-text"
+          height="24"
+          width="200"
+        />
+        <text
+          class="fill-text"
+          dominant-baseline="central"
+          x="4"
+          y="12"
+        >
+          name_b
+        </text>
+        <g
+          transform="translate(184, 6)"
+        >
+          <rect
+            class="fill-background-second"
+            height="14"
+            stroke="none"
+            width="14"
+            x="-1"
+            y="-1"
+          />
+          <g
+            class="fill-background"
+            stroke="none"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M10 3L2 3L6 9z"
+            />
+          </g>
+        </g>
+      </g>
+      <!--v-if-->
+    </g>
+    
+  </g>
+  <g>
+    <g
+      class="toggle-expanded"
+    >
+      <rect
+        class="fill-background stroke-text"
+        height="24"
+        width="200"
+      />
+      <text
+        class="fill-text"
+        dominant-baseline="central"
+        x="4"
+        y="12"
+      />
+      <!--v-if-->
+    </g>
+  </g>
+  <g
+    transform="translate(0, 24)"
+  >
+    <g
+      class="toggle-expanded"
+    >
+      <rect
+        class="fill-background stroke-text"
+        height="24"
+        width="200"
+      />
+      <text
+        class="fill-text"
+        dominant-baseline="central"
+        x="4"
+        y="12"
+      >
+        Summary
+      </text>
+      <!--v-if-->
+    </g>
+  </g>
+</g>
+`;

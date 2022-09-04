@@ -47,11 +47,7 @@ import {
 } from '/@/utils/attributesResolver'
 import { BoneConstraint } from '/@/utils/constraints'
 import { flatElementTree, isPlainText } from '/@/utils/elements'
-import {
-  isIdentityAffine,
-  logRoundByDigit,
-  transformToAffine,
-} from '/@/utils/geometry'
+import { logRoundByDigit, transformToAffine } from '/@/utils/geometry'
 import { splitKeyframeMapByName } from '/@/utils/keyframes'
 import { getInterpolatedTransformMapByTargetId } from '/@/utils/keyframes/keyframeBone'
 import * as keyframeConstraint from '/@/utils/keyframes/keyframeConstraint'
@@ -169,7 +165,7 @@ function getPosedAttributes(
     element,
     node
   )
-  if (matrix && !isIdentityAffine(matrix)) {
+  if (matrix) {
     ret.transform = affineToTransformTruncated(matrix)
   }
 

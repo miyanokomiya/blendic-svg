@@ -20,14 +20,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="animation-panel-root">
     <div class="top">
-      <div class="select-canvas">
-        <SelectField
-          :model-value="canvasType"
-          :options="canvasOptions"
-          no-placeholder
-          @update:model-value="setCurrentCanvas"
-        />
-      </div>
+      <ToggleRadioButtons
+        :model-value="canvasType"
+        :options="canvasOptionSrc"
+        @update:model-value="setCurrentCanvas"
+      />
       <div class="select-action">
         <SelectField v-model="selectedActionId" :options="actionOptions" />
       </div>
@@ -68,7 +65,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             :min="0"
             integer
             class="slider"
-            @update:model-value="updateEndFrame"
+            @update:model-value="setEndFrame"
           />
         </InlineField>
       </div>
@@ -89,13 +86,13 @@ Copyright (C) 2021, Tomoya Komiyama.
             <g
               :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
             >
-              <TimelineBones
+              <TimelineTargets
                 :target-list="selectedTargetSummaryList"
                 :label-width="size + 1"
                 :scroll-y="viewOrigin.y"
                 :target-expanded-map="expandedMap"
                 :target-top-map="targetTopMap"
-                :props-state-map="propsStateMap"
+                :props-state-map="visibledTargetPropsStateMap"
                 :height="labelHeight"
                 @toggle-target-expanded="toggleTargetExpanded"
                 @select="selectTargetProp"
@@ -118,23 +115,23 @@ Copyright (C) 2021, Tomoya Komiyama.
                 :canvas="currentCanvas"
                 canvas-type="action"
               >
-                <template #default="{ scale, viewOrigin, viewSize }">
-                  <g :transform="`translate(0, ${viewOrigin.y})`">
+                <template #default="p">
+                  <g :transform="`translate(0, ${p.viewOrigin.y})`">
                     <TimelineAxis
-                      :scale="scale"
-                      :origin-x="viewOrigin.x"
-                      :view-width="viewSize.width"
+                      :scale="p.scale"
+                      :origin-x="p.viewOrigin.x"
+                      :view-width="p.viewSize.width"
                       :current-frame="currentFrame"
                       :end-frame="endFrame"
                       :header-height="labelHeight"
                     >
                       <KeyframeGroup
-                        :scale="scale"
+                        :scale="p.scale"
                         :keyframe-map-by-frame="keyframeMapByFrame"
                         :target-list="selectedTargetSummaryList"
                         :target-ids="selectedTargetIdList"
                         :selected-keyframe-map="selectedKeyframeMap"
-                        :scroll-y="viewOrigin.y"
+                        :scroll-y="p.viewOrigin.y"
                         :target-expanded-map="expandedMap"
                         :target-top-map="targetTopMap"
                         :height="labelHeight"
@@ -148,33 +145,33 @@ Copyright (C) 2021, Tomoya Komiyama.
                 :canvas="currentCanvas"
                 canvas-type="graph"
               >
-                <template #default="{ scale, viewOrigin, viewSize }">
+                <template #default="p">
                   <g
                     v-if="canvasType === 'graph'"
-                    :transform="`translate(${viewOrigin.x}, 0)`"
+                    :transform="`translate(${p.viewOrigin.x}, 0)`"
                   >
                     <GraphAxis
-                      :scale="scale"
-                      :origin-y="viewOrigin.y"
-                      :view-width="viewSize.width"
-                      :view-height="viewSize.height"
+                      :scale="p.scale"
+                      :origin-y="p.viewOrigin.y"
+                      :view-width="p.viewSize.width"
+                      :view-height="p.viewSize.height"
                     />
                   </g>
-                  <g :transform="`translate(0, ${viewOrigin.y})`">
+                  <g :transform="`translate(0, ${p.viewOrigin.y})`">
                     <TimelineAxis
-                      :scale="scale"
-                      :origin-x="viewOrigin.x"
-                      :view-width="viewSize.width"
+                      :scale="p.scale"
+                      :origin-x="p.viewOrigin.x"
+                      :view-width="p.viewSize.width"
                       :current-frame="currentFrame"
                       :end-frame="endFrame"
                       :header-height="labelHeight"
                     >
-                      <g :transform="`translate(0, ${-viewOrigin.y})`">
+                      <g :transform="`translate(0, ${-p.viewOrigin.y})`">
                         <GraphKeyframes
                           :keyframe-map-by-frame="keyframeMapByFrame"
                           :selected-keyframe-map="selectedKeyframeMap"
                           :color-map="keyframePointColorMap"
-                          :props-state-map="propsStateMap"
+                          :props-state-map="visibledTargetPropsStateMap"
                         />
                       </g>
                     </TimelineAxis>
@@ -199,22 +196,9 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { useStore } from '../store'
 import { useAnimationStore } from '../store/animation'
-import SelectField from './atoms/SelectField.vue'
-import TimelineCanvas from './TimelineCanvas.vue'
-import TimelineAxis from './elements/atoms/TimelineAxis.vue'
-import GraphAxis from './elements/atoms/GraphAxis.vue'
-import TimelineBones from './elements/TimelineBones.vue'
-import KeyframeGroup from './elements/KeyframeGroup.vue'
-import GraphKeyframes from './elements/GraphKeyframes.vue'
-import AnimationController from './molecules/AnimationController.vue'
-import AddIcon from '/@/components/atoms/AddIcon.vue'
-import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
-import SliderInput from '/@/components/atoms/SliderInput.vue'
-import GraphPanel from '/@/components/panelContents/GraphPanel.vue'
-import InlineField from '/@/components/atoms/InlineField.vue'
 import {
   getKeyframeMapByFrame,
   mergeKeyframesWithDropped,
@@ -222,7 +206,6 @@ import {
 import { IVec2 } from 'okageo'
 import { toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
-import ResizableH from '/@/components/atoms/ResizableH.vue'
 import { useSvgCanvas } from '/@/composables/canvas'
 import { KeyframeBase } from '/@/models/keyframe'
 import { useBooleanMap } from '/@/composables/idMap'
@@ -238,22 +221,10 @@ import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
 const labelHeight = 24
 
 type CanvasType = 'action' | 'graph'
-const canvasOptions: { label: string; value: CanvasType }[] = [
+const canvasOptionSrc: { label: string; value: CanvasType }[] = [
   { label: 'Action', value: 'action' },
   { label: 'Graph', value: 'graph' },
 ]
-
-function useCanvasList() {
-  const canvasType = ref<CanvasType>('action')
-  function setCanvas(val: CanvasType) {
-    canvasType.value = val
-  }
-  return {
-    canvasType,
-    setCanvas,
-    canvasOptions: computed(() => canvasOptions),
-  }
-}
 
 const keyframePointColorMap = {
   translateX: 'red',
@@ -263,222 +234,207 @@ const keyframePointColorMap = {
   scaleY: 'mediumaquamarine',
   influence: 'darkviolet',
 }
-
-export default defineComponent({
-  components: {
-    SelectField,
-    TimelineCanvas,
-    TimelineAxis,
-    GraphAxis,
-    TimelineBones,
-    KeyframeGroup,
-    GraphKeyframes,
-    AnimationController,
-    SliderInput,
-    GraphPanel,
-    AddIcon,
-    DeleteIcon,
-    InlineField,
-    ResizableH,
-  },
-  setup() {
-    const store = useStore()
-    const animationStore = useAnimationStore()
-
-    const viewSize = ref<Size>({ width: 0, height: 0 })
-    const canvasOptions = {
-      scaleMin: 1,
-      ignoreNegativeY: true,
-      scaleAtFixY: true,
-      viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
-      viewSize,
-    }
-    const labelCanvas = useSvgCanvas(canvasOptions)
-    const keyframeCanvas = useSvgCanvas(canvasOptions)
-    const graphCanvas = useSvgCanvas({
-      scaleMin: 1,
-      viewOrigin: ref<IVec2>({ x: -20, y: -50 }),
-      viewSize,
-    })
-
-    const canvasList = useCanvasList()
-
-    const currentCanvas = computed(() => {
-      switch (canvasList.canvasType.value) {
-        case 'action':
-          return keyframeCanvas
-        default:
-          return graphCanvas
-      }
-    })
-
-    const selectedAction = computed(() => animationStore.selectedAction.value)
-    const selectedAllBoneIdList = computed(() =>
-      Object.keys(animationStore.selectedBoneIdMap.value)
-    )
-    const selectedAllBoneList = computed(() =>
-      toList(animationStore.selectedBoneMap.value)
-    )
-    const selectedAllConstraintIdList = computed(() =>
-      Object.keys(animationStore.selectedConstraintMap.value)
-    )
-    const selectedTargetIdList = computed(() =>
-      selectedAllBoneIdList.value.concat(selectedAllConstraintIdList.value)
-    )
-    const selectedTargetSummaryList = computed<KeyframeTargetSummary[]>(() => {
-      const keyframeMapByTargetId = animationStore.keyframeMapByTargetId.value
-      const boneMap = animationStore.selectedBoneMap.value
-      const constraintMap = animationStore.selectedConstraintMap.value
-      return [
-        ...selectedAllBoneList.value.map((b) =>
-          getKeyframeBoneSummary(
-            b,
-            getKeyframeExistedPropsMap(keyframeMapByTargetId[b.id] ?? []).props
-          )
-        ),
-        ...selectedAllConstraintIdList.value.map((id) => {
-          const c = constraintMap[id]
-          return getKeyframeConstraintSummary(
-            boneMap[c.boneId],
-            c,
-            getKeyframeExistedPropsMap(keyframeMapByTargetId[id] ?? []).props
-          )
-        }),
-      ]
-    })
-
-    const keyframeMapByFrame = computed(() => {
-      const splited = animationStore.editedKeyframeMap.value
-      if (!splited) {
-        return getKeyframeMapByFrame(
-          toList(animationStore.visibledKeyframeMap.value)
-        )
-      } else {
-        return getKeyframeMapByFrame(
-          mergeKeyframesWithDropped(
-            // fixed keyframes
-            toList({
-              ...animationStore.visibledKeyframeMap.value,
-              ...splited.notSelected,
-            }),
-            // moved keyframes
-            toList(splited.selected),
-            true
-          ).merged
-        )
-      }
-    })
-
-    const draftName = ref('')
-    watchEffect(() => {
-      draftName.value = selectedAction.value?.name ?? ''
-    })
-
-    const actionOptions = computed(() =>
-      animationStore.actions.value.map((a) => {
-        const valid = store.lastSelectedArmature.value?.id !== a.armatureId
-        return {
-          value: a.id,
-          label: `${valid ? '(x)' : ''} ${a.name}`,
-        }
-      })
-    )
-
-    const animationSeriesKey = ref<string>()
-    let animationLoop: ReturnType<typeof useAnimationLoop>
-    watchEffect(() => {
-      animationLoop?.stop()
-      if (animationStore.playing.value === 'pause') return
-
-      animationSeriesKey.value = `play_${Date.now()}`
-      animationLoop = useAnimationLoop(animationCallback, 60)
-      animationLoop.begin()
-    })
-
-    function animationCallback(tickFrame: number) {
-      animationStore.stepFrame(
-        tickFrame,
-        animationStore.playing.value === 'reverse',
-        animationSeriesKey.value
-      )
-    }
-
-    const keyframeExpandedMap = useBooleanMap(() =>
-      Object.keys(store.boneMap.value).concat(
-        Object.keys(store.constraintMap.value)
-      )
-    )
-
-    const targetTopMap = computed(() => {
-      return getTargetTopMap(
-        selectedTargetSummaryList.value,
-        keyframeExpandedMap.booleanMap.value,
-        labelHeight,
-        2
-      )
-    })
-
-    return {
-      labelCanvas,
-      currentCanvas,
-      playing: animationStore.playing,
-      selectedTargetIdList,
-      selectedTargetSummaryList,
-      propsStateMap: animationStore.visibledTargetPropsStateMap,
-      lastSelectedKeyframe: animationStore.lastSelectedKeyframe,
-      keyframeMapByFrame,
-      selectedKeyframeMap: animationStore.selectedKeyframeMap,
-      draftName,
-      changeActionName() {
-        const allNames = animationStore.actions.value.map((a) => a.name)
-        if (allNames.includes(draftName.value)) {
-          draftName.value = selectedAction.value?.name ?? ''
-        } else {
-          animationStore.updateAction({ name: draftName.value })
-        }
-      },
-      currentFrame: animationStore.currentFrame,
-      setPlaying: animationStore.setPlaying,
-      jumpStartFrame: animationStore.jumpStartFrame,
-      jumpEndFrame: animationStore.jumpEndFrame,
-      jumpNextKey: animationStore.jumpNextKey,
-      jumpPrevKey: animationStore.jumpPrevKey,
-      endFrame: computed(() => {
-        return animationStore.endFrame.value
-      }),
-      updateEndFrame(val: number, seriesKey?: string) {
-        animationStore.setEndFrame(val, seriesKey)
-      },
-      addAction: () => animationStore.addAction(),
-      deleteAction: animationStore.deleteAction,
-      actionOptions,
-      selectedActionId: computed({
-        get: () => selectedAction.value?.id ?? '',
-        set: (id: string) => animationStore.selectAction(id),
-      }),
-      expandedMap: keyframeExpandedMap.booleanMap,
-      toggleTargetExpanded: keyframeExpandedMap.toggle,
-      targetTopMap,
-      labelHeight,
-      updateKeyframe(keyframe: KeyframeBase, seriesKey?: string) {
-        animationStore.execUpdateKeyframes(
-          { [keyframe.id]: keyframe },
-          seriesKey
-        )
-      },
-      selectTargetProp: animationStore.selectTargetProp,
-
-      canvasType: canvasList.canvasType,
-      setCurrentCanvas: (val: unknown) =>
-        canvasList.setCanvas(val as CanvasType),
-      canvasOptions: canvasList.canvasOptions,
-      keyframePointColorMap,
-    }
-  },
-})
 </script>
 
-<style lang="scss" scoped>
+<script setup lang="ts">
+import SelectField from './atoms/SelectField.vue'
+import TimelineCanvas from './TimelineCanvas.vue'
+import TimelineAxis from './elements/atoms/TimelineAxis.vue'
+import GraphAxis from './elements/atoms/GraphAxis.vue'
+import TimelineTargets from './elements/TimelineTargets.vue'
+import KeyframeGroup from './elements/KeyframeGroup.vue'
+import GraphKeyframes from './elements/GraphKeyframes.vue'
+import AnimationController from './molecules/AnimationController.vue'
+import AddIcon from '/@/components/atoms/AddIcon.vue'
+import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
+import GraphPanel from '/@/components/panelContents/GraphPanel.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
+import ResizableH from '/@/components/atoms/ResizableH.vue'
+import ToggleRadioButtons from '/@/components/atoms/ToggleRadioButtons.vue'
+
+const store = useStore()
+const animationStore = useAnimationStore()
+
+const viewSize = ref<Size>({ width: 0, height: 0 })
+
+const svgCanvasOptions = {
+  scaleMin: 1,
+  ignoreNegativeY: true,
+  scaleAtFixY: true,
+  viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
+  viewSize,
+}
+
+const labelCanvas = useSvgCanvas(svgCanvasOptions)
+const keyframeCanvas = useSvgCanvas(svgCanvasOptions)
+const graphCanvas = useSvgCanvas({
+  scaleMin: 1,
+  viewOrigin: ref<IVec2>({ x: -20, y: -50 }),
+  viewSize,
+})
+
+const canvasType = ref<CanvasType>('action')
+function setCurrentCanvas(val: unknown) {
+  canvasType.value = val as CanvasType
+}
+const currentCanvas = computed(() => {
+  switch (canvasType.value) {
+    case 'action':
+      return keyframeCanvas
+    default:
+      return graphCanvas
+  }
+})
+
+const selectedAction = computed(() => animationStore.selectedAction.value)
+const selectedAllBoneIdList = computed(() =>
+  Object.keys(animationStore.selectedBoneIdMap.value)
+)
+const selectedAllBoneList = computed(() =>
+  toList(animationStore.selectedBoneMap.value)
+)
+const selectedAllConstraintIdList = computed(() =>
+  Object.keys(animationStore.selectedConstraintMap.value)
+)
+const selectedTargetIdList = computed(() =>
+  selectedAllBoneIdList.value.concat(selectedAllConstraintIdList.value)
+)
+const selectedTargetSummaryList = computed<KeyframeTargetSummary[]>(() => {
+  const keyframeMapByTargetId = animationStore.keyframeMapByTargetId.value
+  const boneMap = animationStore.selectedBoneMap.value
+  const constraintMap = animationStore.selectedConstraintMap.value
+  return [
+    ...selectedAllBoneList.value.map((b) =>
+      getKeyframeBoneSummary(
+        b,
+        getKeyframeExistedPropsMap(keyframeMapByTargetId[b.id] ?? []).props
+      )
+    ),
+    ...selectedAllConstraintIdList.value.map((id) => {
+      const c = constraintMap[id]
+      return getKeyframeConstraintSummary(
+        boneMap[c.boneId],
+        c,
+        getKeyframeExistedPropsMap(keyframeMapByTargetId[id] ?? []).props
+      )
+    }),
+  ]
+})
+
+const keyframeMapByFrame = computed(() => {
+  const splited = animationStore.editedKeyframeMap.value
+  if (!splited) {
+    return getKeyframeMapByFrame(
+      toList(animationStore.visibledKeyframeMap.value)
+    )
+  } else {
+    return getKeyframeMapByFrame(
+      mergeKeyframesWithDropped(
+        // fixed keyframes
+        toList({
+          ...animationStore.visibledKeyframeMap.value,
+          ...splited.notSelected,
+        }),
+        // moved keyframes
+        toList(splited.selected),
+        true
+      ).merged
+    )
+  }
+})
+
+const draftName = ref('')
+watchEffect(() => {
+  draftName.value = selectedAction.value?.name ?? ''
+})
+
+const actionOptions = computed(() =>
+  animationStore.actions.value.map((a) => {
+    const valid = store.lastSelectedArmature.value?.id !== a.armatureId
+    return {
+      value: a.id,
+      label: `${valid ? '(x)' : ''} ${a.name}`,
+    }
+  })
+)
+
+function changeActionName() {
+  const allNames = animationStore.actions.value.map((a) => a.name)
+  if (allNames.includes(draftName.value)) {
+    draftName.value = selectedAction.value?.name ?? ''
+  } else {
+    animationStore.updateAction({ name: draftName.value })
+  }
+}
+
+const selectedActionId = computed({
+  get: () => selectedAction.value?.id ?? '',
+  set: (id: string) => animationStore.selectAction(id),
+})
+
+const animationSeriesKey = ref<string>()
+let animationLoop: ReturnType<typeof useAnimationLoop>
+watchEffect(() => {
+  animationLoop?.stop()
+  if (animationStore.playing.value === 'pause') return
+
+  animationSeriesKey.value = `play_${Date.now()}`
+  animationLoop = useAnimationLoop(animationCallback, 60)
+  animationLoop.begin()
+})
+
+function animationCallback(tickFrame: number) {
+  animationStore.stepFrame(
+    tickFrame,
+    animationStore.playing.value === 'reverse',
+    animationSeriesKey.value
+  )
+}
+
+const keyframeExpandedMap = useBooleanMap(() =>
+  Object.keys(store.boneMap.value).concat(
+    Object.keys(store.constraintMap.value)
+  )
+)
+
+const targetTopMap = computed(() => {
+  return getTargetTopMap(
+    selectedTargetSummaryList.value,
+    keyframeExpandedMap.booleanMap.value,
+    labelHeight,
+    2
+  )
+})
+
+const {
+  playing,
+  visibledTargetPropsStateMap,
+  lastSelectedKeyframe,
+  selectedKeyframeMap,
+  currentFrame,
+  setPlaying,
+  jumpStartFrame,
+  jumpEndFrame,
+  jumpNextKey,
+  jumpPrevKey,
+  selectTargetProp,
+  endFrame,
+  setEndFrame,
+} = animationStore
+
+const addAction = () => animationStore.addAction()
+const deleteAction = () => animationStore.deleteAction()
+
+const expandedMap = keyframeExpandedMap.booleanMap
+const toggleTargetExpanded = keyframeExpandedMap.toggle
+
+function updateKeyframe(keyframe: KeyframeBase, seriesKey?: string) {
+  animationStore.execUpdateKeyframes({ [keyframe.id]: keyframe }, seriesKey)
+}
+</script>
+
+<style scoped>
 .animation-panel-root {
   display: flex;
   flex-direction: column;
@@ -490,46 +446,43 @@ export default defineComponent({
   flex: 0;
   display: flex;
   align-items: center;
-  > * {
-    margin-right: 8px;
-  }
-  .select-canvas {
-    width: 80px;
-  }
-  .select-action {
-    width: 160px;
-  }
-  .end-frame-field {
-    margin: 0 0 0 auto;
-    .slider {
-      width: 80px;
-    }
-  }
-  .action-buttons {
-    display: flex;
-    align-items: center;
-    button {
-      width: 20px;
-      height: 20px;
-      & + button {
-        margin-left: 4px;
-      }
-    }
-  }
+}
+.top > * {
+  margin-right: 8px;
+}
+.select-action {
+  width: 160px;
+}
+.end-frame-field {
+  margin: 0 0 0 auto;
+}
+.end-frame-field .slider {
+  width: 80px;
+}
+.action-buttons {
+  display: flex;
+  align-items: center;
+}
+.action-buttons button {
+  width: 20px;
+  height: 20px;
+}
+.action-buttons button + button {
+  margin-left: 4px;
 }
 .middle {
   flex: 1;
-  min-height: 0; // for flex grow
+  min-height: 0; /* for flex grow */
 }
 .label-canvas {
   overflow: hidden;
 }
 .timeline-canvas-space {
   height: 100%;
-  .timeline-canvas-inner {
-    height: 100%;
-    position: relative;
-  }
+}
+.timeline-canvas-space .timeline-canvas-inner {
+  height: 100%;
+  position: relative;
 }
 .graph-panel-space {
   height: 100%;

@@ -59,6 +59,18 @@ exports[`src/components/molecules/dialogs/AnimatedSvgSettingDialog.vue snapshot 
                   class=""
                   type="button"
                 >
+                  5
+                </button>
+                <button
+                  class=""
+                  type="button"
+                >
+                  10
+                </button>
+                <button
+                  class=""
+                  type="button"
+                >
                   20
                 </button>
                 <button
@@ -74,6 +86,35 @@ exports[`src/components/molecules/dialogs/AnimatedSvgSettingDialog.vue snapshot 
                   60
                 </button>
                 
+              </div>
+              
+            </div>
+            
+          </div>
+          <div
+            class="row-block inline-field between"
+          >
+            
+            <label>
+              FPS(Custom)
+            </label>
+            <div
+              class="inline-content"
+            >
+              
+              <div
+                class="slider-wrapper inline-slider"
+              >
+                <div
+                  class="slider-background"
+                  style="transform: scaleX(0.4915254237288136);"
+                />
+                <input
+                  type="text"
+                />
+                <div
+                  class="slider-forward"
+                />
               </div>
               
             </div>

@@ -143,6 +143,21 @@ describe('utils/helpers.ts', () => {
         opacity: '0.1',
       })
     })
+
+    it('should drop identy transform', () => {
+      expect(
+        normalizeAttributes({
+          transform: 'matrix(1,0,0,1,0,0)',
+        })
+      ).toEqual({})
+      expect(
+        normalizeAttributes({
+          transform: 'matrix(1,0,0,1,1,0)',
+        })
+      ).toEqual({
+        transform: 'matrix(1,0,0,1,1,0)',
+      })
+    })
   })
 
   describe('getKeyframeBoneSummary', () => {

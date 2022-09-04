@@ -29,6 +29,15 @@ Copyright (C) 2022, Tomoya Komiyama.
               :options="fpsOptions"
             />
           </InlineField>
+          <InlineField label="FPS(Custom)" between>
+            <SliderInput
+              v-model="draftSettings.fps"
+              :min="1"
+              :max="60"
+              integer
+              class="inline-slider"
+            />
+          </InlineField>
           <InlineField label="Range" between>
             <ToggleRadioButtons
               v-model="draftSettings.range"
@@ -124,7 +133,7 @@ const emits = defineEmits<{
   (e: 'execute', settings: AnimationExportingSettings): void
 }>()
 
-const fpsOptions = [20, 30, 60].map((value) => ({
+const fpsOptions = [5, 10, 20, 30, 60].map((value) => ({
   value,
   label: `${value}`,
 }))

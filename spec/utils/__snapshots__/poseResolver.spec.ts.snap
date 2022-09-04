@@ -3,12 +3,15 @@
 exports[`utils/poseResolver.ts bake bakeKeyframe json snapshot 1`] = `
 "{
  \\"root\\": {
-  \\"viewBox\\": \\"1 2 3 4\\"
+  \\"viewBox\\": \\"1 2 3 4\\",
+  \\"transform\\": \\"matrix(1,0,0,1,0,0)\\"
  },
  \\"elm_a\\": {
   \\"transform\\": \\"matrix(0.93969,0.34202,-0.34202,0.93969,0,0)\\"
  },
- \\"elm_b\\": {}
+ \\"elm_b\\": {
+  \\"transform\\": \\"matrix(1,0,0,1,0,0)\\"
+ }
 }"
 `;
 

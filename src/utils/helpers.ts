@@ -118,6 +118,22 @@ export function toStyle(obj: { [name: string]: string | undefined }): string {
 export function normalizeAttributes(
   attributes: ElementNodeAttributes
 ): ElementNodeAttributes {
+  return normalizeAttributeTransform(normalizeAttributeColor(attributes))
+}
+
+function normalizeAttributeTransform(
+  attributes: ElementNodeAttributes
+): ElementNodeAttributes {
+  if (attributes.transform !== 'matrix(1,0,0,1,0,0)') return attributes
+
+  const ret = { ...attributes }
+  delete ret.transform
+  return ret
+}
+
+function normalizeAttributeColor(
+  attributes: ElementNodeAttributes
+): ElementNodeAttributes {
   if (!attributes.fill && !attributes.stroke) return attributes
 
   return {

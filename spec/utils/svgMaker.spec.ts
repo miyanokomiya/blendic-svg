@@ -160,8 +160,8 @@ describe('utils/svgMaker.ts', () => {
           ],
         }),
         [
-          { svg_1: { offset: '0' }, g_1: { transform: 'm(1,0,0,1,0,0)' } },
-          { svg_1: { offset: '1' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
+          { svg_1: { offset: '0' }, g_1: { transform: 'matrix(1,0,0,1,0,0)' } },
+          { svg_1: { offset: '1' }, g_1: { transform: 'matrix(2,0,0,1,0,0)' } },
         ],
         2000,
         3
@@ -226,8 +226,8 @@ describe('utils/svgMaker.ts', () => {
           ],
         }),
         [
-          { svg_1: { offset: '1' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
-          { svg_1: { offset: '1' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
+          { svg_1: { offset: '1' }, g_1: { transform: 'matrix(2,0,0,1,0,0)' } },
+          { svg_1: { offset: '1' }, g_1: { transform: 'matrix(2,0,0,1,0,0)' } },
         ],
         2000,
         3
@@ -237,6 +237,38 @@ describe('utils/svgMaker.ts', () => {
       const style = svg.getElementsByTagName('style')[0]
       expect(style.innerHTML).not.toContain('offset')
       expect(style.innerHTML).not.toContain('transform')
+      expect(svg.innerHTML).toContain('transform')
+    })
+
+    it('should drop transform when an element has identy transform throughout the animation', () => {
+      const svg = serializeToAnimatedSvg(
+        'test',
+        getElementNode({
+          id: 'svg_1',
+          tag: 'svg',
+          children: [
+            getElementNode({
+              id: 'g_1',
+              tag: 'g',
+              children: [],
+            }),
+          ],
+        }),
+        [
+          {
+            svg_1: { transform: 'matrix(1,0,0,1,0,0)' },
+            g_1: { transform: 'matrix(1,0,0,1,0,0)' },
+          },
+          {
+            svg_1: { transform: 'matrix(1,0,0,1,0,0)' },
+            g_1: { transform: 'matrix(1,0,0,1,0,0)' },
+          },
+        ],
+        2000,
+        3
+      )
+
+      expect(svg.innerHTML).not.toContain('transform')
     })
 
     it('should complete edge animated attributes', () => {
@@ -255,8 +287,8 @@ describe('utils/svgMaker.ts', () => {
         }),
         [
           {},
-          { svg_1: { offset: '1' }, g_1: { transform: 'm(1,0,0,1,0,0)' } },
-          { svg_1: { offset: '2' }, g_1: { transform: 'm(2,0,0,1,0,0)' } },
+          { svg_1: { offset: '1' }, g_1: { transform: 'matrix(1,0,0,1,0,0)' } },
+          { svg_1: { offset: '2' }, g_1: { transform: 'matrix(2,0,0,1,0,0)' } },
           {},
         ],
         2000,
@@ -268,8 +300,8 @@ describe('utils/svgMaker.ts', () => {
       expect(animateG.innerHTML).toContain('keyTimes="0;0.25;0.5;1"')
       const style = svg.getElementsByTagName('style')[0]
       expect(style.innerHTML).not.toContain('offset')
-      expect(style.innerHTML).toContain('0%{transform:m(1')
-      expect(style.innerHTML).toContain('100%{transform:m(2')
+      expect(style.innerHTML).toContain('0%{transform:matrix(1')
+      expect(style.innerHTML).toContain('100%{transform:matrix(2')
     })
 
     it('should not add animated identifier to elements not having any animated attributes', () => {

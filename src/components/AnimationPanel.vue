@@ -477,7 +477,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .animation-panel-root {
   display: flex;
   flex-direction: column;
@@ -489,43 +489,43 @@ export default defineComponent({
   flex: 0;
   display: flex;
   align-items: center;
-  > * {
-    margin-right: 8px;
-  }
-  .select-action {
-    width: 160px;
-  }
-  .end-frame-field {
-    margin: 0 0 0 auto;
-    .slider {
-      width: 80px;
-    }
-  }
-  .action-buttons {
-    display: flex;
-    align-items: center;
-    button {
-      width: 20px;
-      height: 20px;
-      & + button {
-        margin-left: 4px;
-      }
-    }
-  }
+}
+.top > * {
+  margin-right: 8px;
+}
+.select-action {
+  width: 160px;
+}
+.end-frame-field {
+  margin: 0 0 0 auto;
+}
+.end-frame-field .slider {
+  width: 80px;
+}
+.action-buttons {
+  display: flex;
+  align-items: center;
+}
+.action-buttons button {
+  width: 20px;
+  height: 20px;
+}
+.action-buttons button + button {
+  margin-left: 4px;
 }
 .middle {
   flex: 1;
-  min-height: 0; // for flex grow
+  min-height: 0; /* for flex grow */
 }
 .label-canvas {
   overflow: hidden;
 }
 .timeline-canvas-space {
   height: 100%;
-  .timeline-canvas-inner {
-    height: 100%;
-    position: relative;
-  }
+}
+.timeline-canvas-space .timeline-canvas-inner {
+  height: 100%;
+  position: relative;
 }
 .graph-panel-space {
   height: 100%;

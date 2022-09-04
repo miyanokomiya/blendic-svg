@@ -86,7 +86,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             <g
               :transform="`translate(${viewOrigin.x}, ${viewOrigin.y}) scale(${scale})`"
             >
-              <TimelineBones
+              <TimelineTargets
                 :target-list="selectedTargetSummaryList"
                 :label-width="size + 1"
                 :scroll-y="viewOrigin.y"
@@ -241,7 +241,7 @@ import SelectField from './atoms/SelectField.vue'
 import TimelineCanvas from './TimelineCanvas.vue'
 import TimelineAxis from './elements/atoms/TimelineAxis.vue'
 import GraphAxis from './elements/atoms/GraphAxis.vue'
-import TimelineBones from './elements/TimelineBones.vue'
+import TimelineTargets from './elements/TimelineTargets.vue'
 import KeyframeGroup from './elements/KeyframeGroup.vue'
 import GraphKeyframes from './elements/GraphKeyframes.vue'
 import AnimationController from './molecules/AnimationController.vue'

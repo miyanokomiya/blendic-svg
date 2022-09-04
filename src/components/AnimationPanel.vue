@@ -20,14 +20,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="animation-panel-root">
     <div class="top">
-      <div class="select-canvas">
-        <SelectField
-          :model-value="canvasType"
-          :options="canvasOptions"
-          no-placeholder
-          @update:model-value="setCurrentCanvas"
-        />
-      </div>
+      <ToggleRadioButtons
+        :model-value="canvasType"
+        :options="canvasOptions"
+        @update:model-value="setCurrentCanvas"
+      />
       <div class="select-action">
         <SelectField v-model="selectedActionId" :options="actionOptions" />
       </div>
@@ -223,6 +220,7 @@ import { IVec2 } from 'okageo'
 import { toList } from '/@/utils/commons'
 import { useAnimationLoop } from '../composables/animationLoop'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
+import ToggleRadioButtons from '/@/components/atoms/ToggleRadioButtons.vue'
 import { useSvgCanvas } from '/@/composables/canvas'
 import { KeyframeBase } from '/@/models/keyframe'
 import { useBooleanMap } from '/@/composables/idMap'
@@ -280,6 +278,7 @@ export default defineComponent({
     DeleteIcon,
     InlineField,
     ResizableH,
+    ToggleRadioButtons,
   },
   setup() {
     const store = useStore()
@@ -492,9 +491,6 @@ export default defineComponent({
   align-items: center;
   > * {
     margin-right: 8px;
-  }
-  .select-canvas {
-    width: 80px;
   }
   .select-action {
     width: 160px;

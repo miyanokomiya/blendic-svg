@@ -22,7 +22,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <div class="top">
       <ToggleRadioButtons
         :model-value="canvasType"
-        :options="canvasOptions"
+        :options="canvasOptionSrc"
         @update:model-value="setCurrentCanvas"
       />
       <div class="select-action">
@@ -226,18 +226,6 @@ const canvasOptionSrc: { label: string; value: CanvasType }[] = [
   { label: 'Graph', value: 'graph' },
 ]
 
-function useCanvasList() {
-  const canvasType = ref<CanvasType>('action')
-  function setCanvas(val: CanvasType) {
-    canvasType.value = val
-  }
-  return {
-    canvasType,
-    setCanvas,
-    canvasOptions: computed(() => canvasOptionSrc),
-  }
-}
-
 const keyframePointColorMap = {
   translateX: 'red',
   translateY: 'green',
@@ -245,20 +233,6 @@ const keyframePointColorMap = {
   scaleX: 'hotpink',
   scaleY: 'mediumaquamarine',
   influence: 'darkviolet',
-}
-
-const store = useStore()
-const animationStore = useAnimationStore()
-
-const viewSize = ref<Size>({ width: 0, height: 0 })
-const canvasList = useCanvasList()
-
-const svgCanvasOptions = {
-  scaleMin: 1,
-  ignoreNegativeY: true,
-  scaleAtFixY: true,
-  viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
-  viewSize,
 }
 </script>
 
@@ -279,6 +253,19 @@ import InlineField from '/@/components/atoms/InlineField.vue'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 import ToggleRadioButtons from '/@/components/atoms/ToggleRadioButtons.vue'
 
+const store = useStore()
+const animationStore = useAnimationStore()
+
+const viewSize = ref<Size>({ width: 0, height: 0 })
+
+const svgCanvasOptions = {
+  scaleMin: 1,
+  ignoreNegativeY: true,
+  scaleAtFixY: true,
+  viewOrigin: ref<IVec2>({ x: -20, y: 0 }),
+  viewSize,
+}
+
 const labelCanvas = useSvgCanvas(svgCanvasOptions)
 const keyframeCanvas = useSvgCanvas(svgCanvasOptions)
 const graphCanvas = useSvgCanvas({
@@ -287,8 +274,12 @@ const graphCanvas = useSvgCanvas({
   viewSize,
 })
 
+const canvasType = ref<CanvasType>('action')
+function setCurrentCanvas(val: unknown) {
+  canvasType.value = val as CanvasType
+}
 const currentCanvas = computed(() => {
-  switch (canvasList.canvasType.value) {
+  switch (canvasType.value) {
     case 'action':
       return keyframeCanvas
     default:
@@ -368,6 +359,20 @@ const actionOptions = computed(() =>
   })
 )
 
+function changeActionName() {
+  const allNames = animationStore.actions.value.map((a) => a.name)
+  if (allNames.includes(draftName.value)) {
+    draftName.value = selectedAction.value?.name ?? ''
+  } else {
+    animationStore.updateAction({ name: draftName.value })
+  }
+}
+
+const selectedActionId = computed({
+  get: () => selectedAction.value?.id ?? '',
+  set: (id: string) => animationStore.selectAction(id),
+})
+
 const animationSeriesKey = ref<string>()
 let animationLoop: ReturnType<typeof useAnimationLoop>
 watchEffect(() => {
@@ -424,26 +429,9 @@ const deleteAction = () => animationStore.deleteAction()
 const expandedMap = keyframeExpandedMap.booleanMap
 const toggleTargetExpanded = keyframeExpandedMap.toggle
 
-const canvasType = canvasList.canvasType
-const canvasOptions = canvasList.canvasOptions
-
-function changeActionName() {
-  const allNames = animationStore.actions.value.map((a) => a.name)
-  if (allNames.includes(draftName.value)) {
-    draftName.value = selectedAction.value?.name ?? ''
-  } else {
-    animationStore.updateAction({ name: draftName.value })
-  }
-}
-const selectedActionId = computed({
-  get: () => selectedAction.value?.id ?? '',
-  set: (id: string) => animationStore.selectAction(id),
-})
 function updateKeyframe(keyframe: KeyframeBase, seriesKey?: string) {
   animationStore.execUpdateKeyframes({ [keyframe.id]: keyframe }, seriesKey)
 }
-const setCurrentCanvas = (val: unknown) =>
-  canvasList.setCanvas(val as CanvasType)
 </script>
 
 <style scoped>

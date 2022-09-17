@@ -17,8 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ref } from '@vue/reactivity'
-import { watch } from '@vue/runtime-core'
+import { ref, watch } from 'vue'
 import { IdMap } from '/@/models'
 import { mapFilter } from '/@/utils/commons'
 

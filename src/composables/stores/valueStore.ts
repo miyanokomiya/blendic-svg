@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { computed, Ref, ref } from '@vue/runtime-core'
+import { computed, Ref, ref } from 'vue'
 import * as okahistory from 'okahistory'
 
 export function useValueStore<T>(

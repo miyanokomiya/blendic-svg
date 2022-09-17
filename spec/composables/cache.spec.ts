@@ -17,8 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ref } from '@vue/reactivity'
-import { nextTick } from '@vue/runtime-core'
+import { ref, nextTick } from 'vue'
 import { shallowMount } from '@vue/test-utils'
 import {
   useCache,

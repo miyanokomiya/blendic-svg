@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { nextTick } from '@vue/runtime-core'
+import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/molecules/DropdownMenu.vue'
 

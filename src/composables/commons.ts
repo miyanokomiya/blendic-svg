@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { Ref } from '@vue/reactivity'
+import { Ref } from 'vue'
 
 export function makeAccessors<T>(target: { value: T }): {
   get(): T

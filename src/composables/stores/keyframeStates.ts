@@ -17,8 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { ref } from '@vue/reactivity'
-import { computed } from '@vue/runtime-core'
+import { ref, computed } from 'vue'
 import { IdMap } from '/@/models'
 import { KeyframeSelectedState } from '/@/models/keyframe'
 import {

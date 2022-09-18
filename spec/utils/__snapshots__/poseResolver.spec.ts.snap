@@ -2,25 +2,25 @@
 
 exports[`utils/poseResolver.ts bake bakeKeyframe json snapshot 1`] = `
 "{
- \\"root\\": {
-  \\"viewBox\\": \\"1 2 3 4\\",
-  \\"transform\\": \\"matrix(1,0,0,1,0,0)\\"
+ "root": {
+  "viewBox": "1 2 3 4",
+  "transform": "matrix(1,0,0,1,0,0)"
  },
- \\"elm_a\\": {
-  \\"transform\\": \\"matrix(0.93969,0.34202,-0.34202,0.93969,0,0)\\"
+ "elm_a": {
+  "transform": "matrix(0.93969,0.34202,-0.34202,0.93969,0,0)"
  },
- \\"elm_b\\": {
-  \\"transform\\": \\"matrix(1,0,0,1,0,0)\\"
+ "elm_b": {
+  "transform": "matrix(1,0,0,1,0,0)"
  }
 }"
 `;
 
 exports[`utils/poseResolver.ts getPosedElementMatrixMap get matrix tree 1`] = `
 "{
- \\"root\\": \\"matrix(1,0,0,1,0,0)\\",
- \\"elm_a\\": \\"matrix(-0.70711,2.12132,-0.70711,4.94975,-0.70711,7.77817)\\",
- \\"elm_b\\": \\"matrix(0.98481,0.17365,-0.17365,0.98481,7.21285,-4.4433)\\",
- \\"elm_c\\": \\"matrix(1,0,0,1,0,0)\\",
- \\"elm_d\\": \\"matrix(1,2,3,4,5,6)\\"
+ "root": "matrix(1,0,0,1,0,0)",
+ "elm_a": "matrix(-0.70711,2.12132,-0.70711,4.94975,-0.70711,7.77817)",
+ "elm_b": "matrix(0.98481,0.17365,-0.17365,0.98481,7.21285,-4.4433)",
+ "elm_c": "matrix(1,0,0,1,0,0)",
+ "elm_d": "matrix(1,2,3,4,5,6)"
 }"
 `;

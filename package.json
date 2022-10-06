@@ -21,7 +21,7 @@
     "okanvas": "^0.0.4",
     "okaselect": "^0.0.12",
     "ress": "^5.0.2",
-    "vue": "^3.2.39"
+    "vue": "^3.2.40"
   },
   "devDependencies": {
     "@babel/core": "^7.19.1",

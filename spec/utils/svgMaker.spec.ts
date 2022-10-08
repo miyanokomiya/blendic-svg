@@ -143,6 +143,7 @@ describe('utils/svgMaker.ts', () => {
       expect(animateG.innerHTML).toContain('offset')
       expect(animateG.innerHTML).toContain('repeatCount="3"')
       expect(animateG.innerHTML).toContain('dur="2s"')
+      expect(animateG.innerHTML).toContain('calcMode="discrete"')
     })
 
     it('should create animation styles', () => {
@@ -177,6 +178,35 @@ describe('utils/svgMaker.ts', () => {
       expect(style.innerHTML).toContain(
         '.test-0 * {animation-duration:2s;animation-iteration-count:3;animation-timing-function:step-start;}'
       )
+    })
+
+    it('should apply interpolation option', () => {
+      const svg = serializeToAnimatedSvg(
+        'test',
+        getElementNode({
+          id: 'svg_1',
+          tag: 'svg',
+          children: [
+            getElementNode({
+              id: 'g_1',
+              tag: 'g',
+              children: [],
+            }),
+          ],
+        }),
+        [
+          { svg_1: { offset: '0' }, g_1: { transform: 'matrix(1,0,0,1,0,0)' } },
+          { svg_1: { offset: '1' }, g_1: { transform: 'matrix(2,0,0,1,0,0)' } },
+        ],
+        2000,
+        3,
+        'linear'
+      )
+
+      const style = svg.getElementsByTagName('style')[0]
+      expect(style.innerHTML).toContain('animation-timing-function:linear')
+      const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
+      expect(animateG.innerHTML).not.toContain('calcMode="discrete"')
     })
 
     it('should translate viewBox to transform', () => {

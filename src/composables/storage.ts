@@ -452,6 +452,7 @@ export function useStorage() {
       attributesMapPerFrameByGraph,
       duration,
       'infinite',
+      animSettings.interpolation,
       animSettings.fps / 60
     )
 

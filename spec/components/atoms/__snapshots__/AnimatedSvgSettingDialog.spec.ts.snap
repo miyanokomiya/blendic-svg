@@ -125,6 +125,39 @@ exports[`src/components/molecules/dialogs/AnimatedSvgSettingDialog.vue snapshot 
           >
             
             <label>
+              Interpolation
+            </label>
+            <div
+              class="inline-content"
+            >
+              
+              <div
+                class="toggle-buttons"
+              >
+                
+                <button
+                  class=""
+                  type="button"
+                >
+                  Discrete
+                </button>
+                <button
+                  class=""
+                  type="button"
+                >
+                  Linear
+                </button>
+                
+              </div>
+              
+            </div>
+            
+          </div>
+          <div
+            class="row-block inline-field between"
+          >
+            
+            <label>
               Range
             </label>
             <div

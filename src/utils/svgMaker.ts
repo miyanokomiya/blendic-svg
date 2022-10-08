@@ -474,7 +474,8 @@ export function createAnimationTagsForElement(
   elementId: string,
   attrsPerFrame: (ElementNodeAttributes | undefined)[],
   duration: number,
-  iteration: number | 'infinite' = 'infinite'
+  iteration: number | 'infinite' = 'infinite',
+  interplocation: 'discrete' | 'linear' = 'discrete'
 ): string {
   const attrPerFrameMap = mapFilter(
     toPerFrameAttrMap(attrsPerFrame),
@@ -488,7 +489,8 @@ export function createAnimationTagsForElement(
         key,
         attrPerFrameMap[key],
         duration,
-        iteration
+        iteration,
+        interplocation
       )
     )
     .join('')
@@ -514,7 +516,8 @@ function createAnimationTag(
   attributeName: string,
   attrPerFrame: (string | undefined)[],
   duration: number,
-  iteration: number | 'infinite' = 'infinite'
+  iteration: number | 'infinite' = 'infinite',
+  interplocation: 'discrete' | 'linear' = 'discrete'
 ): string {
   const steps = getStepList(attrPerFrame.length)
   const keyTimes: string[] = []
@@ -529,6 +532,7 @@ function createAnimationTag(
   if (keyTimes.length === 0) return ''
 
   const animateAttrs: string[] = [
+    ...(interplocation !== 'linear' ? [['calcMode', interplocation]] : []),
     ['repeatCount', typeof iteration === 'string' ? 'indefinite' : iteration],
     ['dur', `${duration / 1000}s`],
     ['href', `#${elementId}`],

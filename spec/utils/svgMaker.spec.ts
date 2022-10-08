@@ -453,6 +453,7 @@ describe('utils/svgMaker.ts', () => {
         )
       ).toBe(
         `<animate ${[
+          'calcMode="discrete"',
           `repeatCount="indefinite"`,
           `dur="1s"`,
           `href="#elm"`,
@@ -475,6 +476,7 @@ describe('utils/svgMaker.ts', () => {
         )
       ).toBe(
         `<animate ${[
+          'calcMode="discrete"',
           `repeatCount="indefinite"`,
           `dur="1s"`,
           `href="#elm"`,
@@ -483,6 +485,7 @@ describe('utils/svgMaker.ts', () => {
           `keyTimes="0;1"`,
           `values="M0,0;M0,4"`,
         ].join(' ')}/><animate ${[
+          'calcMode="discrete"',
           `repeatCount="indefinite"`,
           `dur="1s"`,
           `href="#elm"`,
@@ -490,6 +493,33 @@ describe('utils/svgMaker.ts', () => {
           `attributeName="offset"`,
           `keyTimes="0;1"`,
           `values="10;20"`,
+        ].join(' ')}/>`
+      )
+    })
+    it('should apply options: "repeatCount", "calcMode"', () => {
+      expect(
+        createAnimationTagsForElement(
+          'elm',
+          [
+            { d: 'M0,0' },
+            { d: 'M0,1' },
+            { d: 'M0,2' },
+            { d: 'M0,3' },
+            { d: 'M0,4' },
+          ],
+          1000,
+          3,
+          'linear'
+        )
+      ).toBe(
+        `<animate ${[
+          `repeatCount="3"`,
+          `dur="1s"`,
+          `href="#elm"`,
+          `xlink:href="#elm"`,
+          `attributeName="d"`,
+          `keyTimes="0;0.25;0.5;0.75;1"`,
+          `values="M0,0;M0,1;M0,2;M0,3;M0,4"`,
         ].join(' ')}/>`
       )
     })

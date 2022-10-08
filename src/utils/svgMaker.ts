@@ -120,6 +120,7 @@ export function serializeToAnimatedSvg(
   attributesMapPerFrame: IdMap<ElementNodeAttributes>[],
   duration: number,
   iteration: number | 'infinite' = 'infinite',
+  interplocation: 'discrete' | 'linear' = 'discrete',
   quolity = 1
 ): SVGElement {
   const thinnedOutAttributesMapPerFrame = thinOutList(
@@ -191,7 +192,8 @@ export function serializeToAnimatedSvg(
               id,
               animatedAttributes[id],
               duration,
-              iteration
+              iteration,
+              interplocation
             ),
           ] as [string, string]
       )
@@ -210,7 +212,9 @@ export function serializeToAnimatedSvg(
       .join('') +
     `.${identifierMap[adjustedSvgRoot.id]} * {animation-duration:${
       duration / 1000
-    }s;animation-iteration-count:${iteration};animation-timing-function:step-start;}`
+    }s;animation-iteration-count:${iteration};animation-timing-function:${getAnimationTimingValue(
+      interplocation
+    )};}`
 
   const staticAttributeOwnerIds = new Set([
     ...animTagMap.keys(),
@@ -532,7 +536,7 @@ function createAnimationTag(
   if (keyTimes.length === 0) return ''
 
   const animateAttrs: string[] = [
-    ...(interplocation !== 'linear' ? [['calcMode', interplocation]] : []),
+    ...(interplocation !== 'linear' ? [['calcMode', interplocation]] : []), // 'linear' can be omitted
     ['repeatCount', typeof iteration === 'string' ? 'indefinite' : iteration],
     ['dur', `${duration / 1000}s`],
     ['href', `#${elementId}`],
@@ -625,6 +629,17 @@ function hideElement(elm: ElementNode): ElementNode {
       stroke: 'none',
     },
     children: elm.children.map((c) => (isPlainText(c) ? c : hideElement(c))),
+  }
+}
+
+function getAnimationTimingValue(
+  interplocation: 'discrete' | 'linear' = 'discrete'
+): string {
+  switch (interplocation) {
+    case 'linear':
+      return 'linear'
+    default:
+      return 'step-start'
   }
 }
 

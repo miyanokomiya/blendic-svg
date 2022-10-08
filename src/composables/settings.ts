@@ -21,6 +21,7 @@ import { reactive, watchEffect } from 'vue'
 
 export interface AnimationExportingSettings {
   fps: 20 | 30 | 60
+  interpolation: 'discrete' | 'linear'
   range: 'auto' | 'custom'
   customRange: { from: number; to: number }
   size: 'auto' | 'custom'
@@ -42,6 +43,7 @@ function getDefaultValue() {
     graphValueWidth: 5,
     animationExportingSettings: {
       fps: 30,
+      interpolation: 'discrete',
       range: 'auto',
       customRange: { from: 0, to: 60 },
       size: 'auto',

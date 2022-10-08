@@ -38,6 +38,12 @@ Copyright (C) 2022, Tomoya Komiyama.
               class="inline-slider"
             />
           </InlineField>
+          <InlineField label="Interpolation" between>
+            <ToggleRadioButtons
+              v-model="draftSettings.interpolation"
+              :options="interpolationOptions"
+            />
+          </InlineField>
           <InlineField label="Range" between>
             <ToggleRadioButtons
               v-model="draftSettings.range"
@@ -137,6 +143,11 @@ const fpsOptions = [5, 10, 20, 30, 60].map((value) => ({
   value,
   label: `${value}`,
 }))
+
+const interpolationOptions = [
+  { value: 'discrete', label: 'Discrete' },
+  { value: 'linear', label: 'Linear' },
+]
 
 const autoCustomOptions = [
   { value: 'auto', label: 'Auto' },

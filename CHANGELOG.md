@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Fix: Disable SMIL interpolation like CSS animation
+- Fix: Inaccurate animation duration
 
 ## [0.17.4] - 2022-07-30
 ### Added

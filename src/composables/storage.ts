@@ -453,7 +453,8 @@ export function useStorage() {
       duration,
       'infinite',
       animSettings.interpolation,
-      animSettings.fps / 60
+      animSettings.fps / 60,
+      animSettings.size === 'custom' ? animSettings.customSize : undefined
     )
 
     if (animSettings.size === 'custom') {

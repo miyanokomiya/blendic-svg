@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import type { Size } from 'okanvas'
 import { reactive, watchEffect } from 'vue'
 
 export interface AnimationExportingSettings {
@@ -25,7 +26,7 @@ export interface AnimationExportingSettings {
   range: 'auto' | 'custom'
   customRange: { from: number; to: number }
   size: 'auto' | 'custom'
-  customSize: { width: number; height: number }
+  customSize: Size
   duration: 'auto' | 'custom'
   customDuration: number
 }

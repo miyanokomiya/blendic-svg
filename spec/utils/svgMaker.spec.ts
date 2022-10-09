@@ -209,36 +209,74 @@ describe('utils/svgMaker.ts', () => {
       expect(animateG.innerHTML).not.toContain('calcMode="discrete"')
     })
 
-    it('should translate viewBox to transform', () => {
-      const svg = serializeToAnimatedSvg(
-        'test',
-        getElementNode({
-          id: 'svg_1',
-          tag: 'svg',
-          attributes: { viewBox: '0 0 100 100' },
-          children: [
-            getElementNode({
-              id: 'g_1',
-              tag: 'g',
-              children: [],
-            }),
+    describe('should convert viewBox to transform', () => {
+      it('Use fixed size when "size" is not elaborated', () => {
+        const svg = serializeToAnimatedSvg(
+          'test',
+          getElementNode({
+            id: 'svg_1',
+            tag: 'svg',
+            attributes: { viewBox: '0 0 100 100' },
+            children: [
+              getElementNode({
+                id: 'g_1',
+                tag: 'g',
+                children: [],
+              }),
+            ],
+          }),
+          [
+            { svg_1: { viewBox: '0 0 100 100' } },
+            { svg_1: { viewBox: '0 0 50 50' } },
           ],
-        }),
-        [
-          { svg_1: { viewBox: '0 0 100 100' } },
-          { svg_1: { viewBox: '0 0 50 50' } },
-        ],
-        2000,
-        'infinite'
-      )
+          2000
+        )
 
-      expect(svg).toBeInstanceOf(SVGElement)
-      expect(svg.children[2].id).not.toBe('g_1')
-      expect(svg.children[2].children[0].tagName).toBe('g')
-      const style = svg.getElementsByTagName('style')[0]
-      expect(style.innerHTML).toContain('matrix(2,0,0,2,0,0)')
-      const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
-      expect(animateG.innerHTML).not.toContain('viewBox')
+        expect(svg).toBeInstanceOf(SVGElement)
+        expect(svg.children[2].id).not.toBe('g_1')
+        expect(svg.children[2].children[0].tagName).toBe('g')
+        const style = svg.getElementsByTagName('style')[0]
+        expect(style.innerHTML).toContain('matrix(1,0,0,1,0,0)')
+        expect(style.innerHTML).toContain('matrix(2,0,0,2,0,0)')
+        const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
+        expect(animateG.innerHTML).not.toContain('viewBox')
+      })
+
+      it('Use custom size when "size" is elaborated', () => {
+        const svg = serializeToAnimatedSvg(
+          'test',
+          getElementNode({
+            id: 'svg_1',
+            tag: 'svg',
+            attributes: { viewBox: '0 0 100 100' },
+            children: [
+              getElementNode({
+                id: 'g_1',
+                tag: 'g',
+                children: [],
+              }),
+            ],
+          }),
+          [
+            { svg_1: { viewBox: '0 0 100 100' } },
+            { svg_1: { viewBox: '0 0 50 50' } },
+          ],
+          2000,
+          undefined,
+          undefined,
+          undefined,
+          { width: 200, height: 100 }
+        )
+
+        expect(svg).toBeInstanceOf(SVGElement)
+        expect(svg.children[2].id).not.toBe('g_1')
+        expect(svg.children[2].children[0].tagName).toBe('g')
+        const style = svg.getElementsByTagName('style')[0]
+        expect(style.innerHTML).toContain('matrix(1,0,0,1,50,0)')
+        expect(style.innerHTML).toContain('matrix(2,0,0,2,50,0)')
+        const animateG = svg.getElementsByClassName('blendic-anim-group')[0]
+        expect(animateG.innerHTML).not.toContain('viewBox')
+      })
     })
 
     it('should not animate static attributes', () => {

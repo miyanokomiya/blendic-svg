@@ -17,7 +17,6 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { affineToTransform } from 'okageo'
 import { Size } from 'okanvas'
 import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
 import {
@@ -33,6 +32,7 @@ import {
 } from '/@/utils/elements'
 import { logRound } from '/@/utils/geometry'
 import { normalizeAttributes } from '/@/utils/helpers'
+import { affineToTransformTruncated } from '/@/utils/poseResolver'
 
 export function makeSvg(
   svgNode: ElementNode,
@@ -304,7 +304,7 @@ function createTransformFromViewbox(
   const paddingX = (size.width - viewBox.width * minScale) / 2
   const paddingY = (size.height - viewBox.height * minScale) / 2
 
-  return affineToTransform([
+  return affineToTransformTruncated([
     minScale,
     0,
     0,

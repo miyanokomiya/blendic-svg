@@ -17,7 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { affineToTransform } from 'okageo'
+import { Size } from 'okanvas'
 import { ElementNode, ElementNodeAttributes, IdMap } from '/@/models'
 import {
   mapFilter,
@@ -32,6 +32,7 @@ import {
 } from '/@/utils/elements'
 import { logRound } from '/@/utils/geometry'
 import { normalizeAttributes } from '/@/utils/helpers'
+import { affineToTransformTruncated } from '/@/utils/poseResolver'
 
 export function makeSvg(
   svgNode: ElementNode,
@@ -121,7 +122,8 @@ export function serializeToAnimatedSvg(
   duration: number,
   iteration: number | 'infinite' = 'infinite',
   interplocation: 'discrete' | 'linear' = 'discrete',
-  quolity = 1
+  quolity = 1,
+  size?: Size
 ): SVGElement {
   const thinnedOutAttributesMapPerFrame = thinOutList(
     attributesMapPerFrame,
@@ -129,11 +131,12 @@ export function serializeToAnimatedSvg(
     true
   )
 
-  const adjustedSvgRoot = immigrateViewBox(svgRoot)
+  const adjustedSvgRoot = immigrateViewBox(svgRoot, size)
   const adjustedAttributesMapPerFrame: IdMap<ElementNodeAttributes>[] =
     immigrateViewBoxPerFrame(
       adjustedSvgRoot.id,
-      thinnedOutAttributesMapPerFrame
+      thinnedOutAttributesMapPerFrame,
+      size
     )
 
   const allElements = flatElementTree([adjustedSvgRoot])
@@ -239,10 +242,10 @@ export function serializeToAnimatedSvg(
  * Translate `viewBox` of <svg> to `transform` of <g> in order to use CSS animation
  * => <g> element is inserted between <svg> and its children
  */
-function immigrateViewBox(svgRoot: ElementNode): ElementNode {
+function immigrateViewBox(svgRoot: ElementNode, size?: Size): ElementNode {
   return {
     ...svgRoot,
-    attributes: resetSvgViewBoxAttributes(svgRoot.attributes),
+    attributes: resetSvgViewBoxAttributes(svgRoot.attributes, size),
     children: [
       {
         id: VIEWBOX_G_ID,
@@ -259,14 +262,15 @@ function immigrateViewBox(svgRoot: ElementNode): ElementNode {
  */
 function immigrateViewBoxPerFrame(
   svgId: string,
-  attributesMapPerFrame: IdMap<ElementNodeAttributes>[]
+  attributesMapPerFrame: IdMap<ElementNodeAttributes>[],
+  size?: Size
 ) {
   return attributesMapPerFrame.map((attrsMap) => {
     return {
       ...attrsMap,
-      [svgId]: resetSvgViewBoxAttributes(attrsMap[svgId]),
+      [svgId]: resetSvgViewBoxAttributes(attrsMap[svgId], size),
       [VIEWBOX_G_ID]: {
-        transform: createTransformFromViewbox(attrsMap[svgId]?.viewBox),
+        transform: createTransformFromViewbox(attrsMap[svgId]?.viewBox, size),
       } as ElementNodeAttributes,
     }
   })
@@ -275,28 +279,32 @@ function immigrateViewBoxPerFrame(
 const BASE_VIEW_SIZE = 100
 
 function resetSvgViewBoxAttributes(
-  attrs: ElementNodeAttributes
+  attrs: ElementNodeAttributes,
+  size: Size = { width: BASE_VIEW_SIZE, height: BASE_VIEW_SIZE }
 ): ElementNodeAttributes {
   const svgAttrs = { ...attrs }
-  svgAttrs.viewBox = `0 0 ${BASE_VIEW_SIZE} ${BASE_VIEW_SIZE}`
+  svgAttrs.viewBox = `0 0 ${size.width} ${size.height}`
   // Original aspect ratio cannot be kept by viewBox transforming
   delete svgAttrs.width
   delete svgAttrs.height
   return svgAttrs
 }
 
-function createTransformFromViewbox(viewBoxStr: string) {
+function createTransformFromViewbox(
+  viewBoxStr: string,
+  size: Size = { width: BASE_VIEW_SIZE, height: BASE_VIEW_SIZE }
+) {
   const viewBox = parseViewBoxFromStr(viewBoxStr)
   if (!viewBox) return ''
 
-  const scaleX = BASE_VIEW_SIZE / viewBox.width
-  const scaleY = BASE_VIEW_SIZE / viewBox.height
+  const scaleX = size.width / viewBox.width
+  const scaleY = size.height / viewBox.height
 
   const minScale = Math.min(scaleX, scaleY)
-  const paddingX = (BASE_VIEW_SIZE - viewBox.width * minScale) / 2
-  const paddingY = (BASE_VIEW_SIZE - viewBox.height * minScale) / 2
+  const paddingX = (size.width - viewBox.width * minScale) / 2
+  const paddingY = (size.height - viewBox.height * minScale) / 2
 
-  return affineToTransform([
+  return affineToTransformTruncated([
     minScale,
     0,
     0,

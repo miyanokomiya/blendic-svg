@@ -443,7 +443,7 @@ export function useStorage() {
     const graph = graphStore.lastSelectedGraph.value
     const duration =
       animSettings.duration === 'auto'
-        ? (frameCount * 100) / 6 // Reduce round-off error, e.g. frameCount * (1000 / 60)
+        ? ((frameCount - 1) * 100) / 6 // Reduce round-off error, e.g. X * (1000 / 60)
         : animSettings.customDuration
 
     const svgElm = serializeToAnimatedSvg(
@@ -453,7 +453,8 @@ export function useStorage() {
       duration,
       'infinite',
       animSettings.interpolation,
-      animSettings.fps / 60
+      animSettings.fps / 60,
+      animSettings.size === 'custom' ? animSettings.customSize : undefined
     )
 
     if (animSettings.size === 'custom') {

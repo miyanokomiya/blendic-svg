@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Make animated SVG size flexible
+- Add new config UI for choosing interpolation type
+
+### Fixed
+- Fix: Disable SMIL interpolation like CSS animation
+- Fix: Inaccurate animation duration
 
 ## [0.17.4] - 2022-07-30
 ### Added

@@ -85,7 +85,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             :key="i"
             :from="edge.output"
             :to="edge.input"
-            selected
+            :status="edge.connected ? 'connected' : 'connecting'"
           />
         </g>
       </AnimationGraphCanvas>
@@ -210,40 +210,42 @@ export default defineComponent({
     const editedNodeMap = graphStore.editedNodeMap
     const edgePositionMap = graphStore.edgePositionMap
 
-    const draftEdges = computed<{ output: IVec2; input: IVec2 }[] | undefined>(
-      () => {
-        const draftEdge = graphStore.draftEdge.value
-        if (!draftEdge) return undefined
+    const draftEdges = computed<
+      { output: IVec2; input: IVec2; connected?: boolean }[] | undefined
+    >(() => {
+      const draftEdge = graphStore.draftEdge.value
+      if (!draftEdge) return undefined
 
-        const nodeMap = editedNodeMap.value
-        const positions = edgePositionMap.value
+      const nodeMap = editedNodeMap.value
+      const positions = edgePositionMap.value
 
-        if (draftEdge.type === 'draft-input') {
-          const node = nodeMap[draftEdge.output.nodeId]
-          return node
-            ? [
-                {
-                  output: add(
-                    node.position,
-                    positions[node.id].outputs[draftEdge.output.key].p
-                  ),
-                  input: draftEdge.input,
-                },
-              ]
-            : undefined
-        } else {
-          return draftEdge.inputs
-            .filter((input) => nodeMap[input.nodeId])
-            .map((input) => ({
-              output: draftEdge.output,
-              input: add(
-                nodeMap[input.nodeId].position,
-                positions[input.nodeId].inputs[input.key].p
-              ),
-            }))
-        }
+      if (draftEdge.type === 'draft-input') {
+        const node = nodeMap[draftEdge.output.nodeId]
+        return node
+          ? [
+              {
+                output: add(
+                  node.position,
+                  positions[node.id].outputs[draftEdge.output.key].p
+                ),
+                input: draftEdge.input,
+                connected: draftEdge.connected,
+              },
+            ]
+          : undefined
+      } else {
+        return draftEdge.inputs
+          .filter((input) => nodeMap[input.nodeId])
+          .map((input) => ({
+            output: draftEdge.output,
+            input: add(
+              nodeMap[input.nodeId].position,
+              positions[input.nodeId].inputs[input.key].p
+            ),
+            connected: draftEdge.connected,
+          }))
       }
-    )
+    })
 
     provideGetObjectOptions(() => {
       const actor = elementStore.lastSelectedActor.value

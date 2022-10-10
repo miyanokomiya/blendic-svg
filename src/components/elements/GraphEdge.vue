@@ -20,22 +20,23 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <g
     class="edge"
-    :class="{ selected }"
     data-type="edge"
     :data-input_id="inputId"
     :data-input_key="inputKey"
     :data-output_id="outputId"
     :data-output_key="outputKey"
+    :stroke-opacity="status === 'connecting' ? 0.5 : 1"
   >
     <path :d="pathD" :stroke="stroke" :stroke-width="3 * scale" fill="none" />
     <path
+      v-if="!status"
       class="highlight"
       :d="pathD"
       :stroke="stroke"
       :stroke-width="9 * scale"
       fill="none"
     />
-    <g v-if="selected" fill="none" :stroke="selectedColor" stroke-width="5">
+    <g v-if="status" fill="none" :stroke="selectedColor" stroke-width="5">
       <circle :cx="from.x" :cy="from.y" r="7" />
       <circle :cx="to.x" :cy="to.y" r="7" />
     </g>
@@ -55,14 +56,14 @@ const props = withDefaults(
   defineProps<{
     from: IVec2
     to: IVec2
-    selected?: boolean
+    status?: 'connecting' | 'connected'
     inputId?: string
     inputKey?: string
     outputId?: string
     outputKey?: string
   }>(),
   {
-    selected: false,
+    status: undefined,
     inputId: undefined,
     inputKey: undefined,
     outputId: undefined,
@@ -75,13 +76,10 @@ const { settings } = useSettings()
 const scale = computed(injectScale())
 
 const selectedColor = computed(() => settings.selectedColor)
-const stroke = computed(() =>
-  props.selected ? settings.selectedColor : '#888'
-)
+const stroke = computed(() => (props.status ? settings.selectedColor : '#888'))
 </script>
 
 <style scoped>
-.edge.selected .highlight,
 .edge:not(:hover) .highlight {
   display: none;
 }

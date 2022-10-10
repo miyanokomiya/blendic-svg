@@ -194,6 +194,9 @@ export default defineComponent({
         pointerLock.exitPointerLock()
         props.canvas.endMoving()
       },
+      getScale: () => {
+        return props.canvas.scale.value
+      },
       startEditMovement: () => {
         graphStore.setEditMovement({
           start: props.canvas.viewToCanvas(props.canvas.mousePoint.value),

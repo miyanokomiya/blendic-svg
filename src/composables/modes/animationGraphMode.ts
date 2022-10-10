@@ -41,6 +41,7 @@ export function useAnimationGraphMode(options: {
   requestPointerLock: () => void
   exitPointerLock: () => void
 
+  getScale: () => number
   startEditMovement: () => void
   startDragging: () => void
   getCursorPoint: () => IVec2
@@ -67,6 +68,7 @@ export function useAnimationGraphMode(options: {
     getTimestamp: () => Date.now(),
     getGraphNodeModule: (type) => graphStore.getGraphNodeModuleFn.value()(type),
     getNodeMap: () => graphStore.nodeMap.value,
+    getEdgePositionMap: () => graphStore.edgePositionMap.value,
     updateNodes: graphStore.updateNodes,
     getSelectedNodeMap: () =>
       mapReduce(
@@ -87,6 +89,7 @@ export function useAnimationGraphMode(options: {
     makeCustomGraphFromSelectedNodes:
       graphStore.makeCustomGraphFromSelectedNodes,
 
+    getScale: options.getScale,
     startEditMovement: options.startEditMovement,
     startDragging: options.startDragging,
     getCursorPoint: options.getCursorPoint,

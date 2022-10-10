@@ -28,9 +28,23 @@ describe('src/components/elements/GraphEdge.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('selected', () => {
+    it('connecting', () => {
       const wrapper = mount(Target, {
-        props: { from: { x: 1, y: 2 }, to: { x: 10, y: 20 }, selected: true },
+        props: {
+          from: { x: 1, y: 2 },
+          to: { x: 10, y: 20 },
+          status: 'connecting',
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
+    it('connected', () => {
+      const wrapper = mount(Target, {
+        props: {
+          from: { x: 1, y: 2 },
+          to: { x: 10, y: 20 },
+          status: 'connected',
+        },
       })
       expect(wrapper.element).toMatchSnapshot()
     })

@@ -35,11 +35,13 @@ import {
   EdgeSummary,
   GraphEdgeConnection,
   GraphNode,
+  GraphNodeEdgePositions,
   GraphNodeType,
 } from '/@/models/graphNode'
 import { GetGraphNodeModule, NODE_MENU_OPTION } from '/@/utils/graphNodes'
 
 export interface AnimationGraphStateContext extends CanvasStateContext {
+  getScale: () => number
   startEditMovement: () => void
   getCursorPoint: () => IVec2
   getEditMovement: () => EditMovement | undefined
@@ -47,6 +49,7 @@ export interface AnimationGraphStateContext extends CanvasStateContext {
   switchGraph: (id: string) => void
   getGraphNodeModule: GetGraphNodeModule
   getNodeMap: () => IdMap<GraphNode>
+  getEdgePositionMap: () => IdMap<GraphNodeEdgePositions>
   updateNodes: (val: IdMap<Partial<GraphNode>>) => void
   getSelectedNodeMap: () => IdMap<GraphNode>
   getLastSelectedNodeId: () => string | undefined
@@ -89,11 +92,13 @@ export type DraftGraphEdge =
       type: 'draft-input'
       output: GraphEdgeConnection
       input: IVec2
+      connected?: boolean
     }
   | {
       type: 'draft-output'
       output: IVec2
       inputs: GraphEdgeConnection[]
+      connected?: boolean
     }
 
 export type EdgeCutter = {

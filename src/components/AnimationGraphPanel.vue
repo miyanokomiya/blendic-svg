@@ -95,7 +95,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, watchEffect, computed, ref } from 'vue'
+import { defineComponent, watchEffect, watch, computed, ref } from 'vue'
 import { useSvgCanvas } from '/@/composables/canvas'
 import { useStore } from '/@/store'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
@@ -117,6 +117,8 @@ import {
   provideGetGraphNodeModuleFn,
   provideGetObjectOptions,
 } from '/@/composables/animationGraph'
+import { getGraphNodeRect } from '/@/utils/helpers'
+import { getWrapperRect } from '/@/utils/geometry'
 
 export default defineComponent({
   components: {
@@ -148,6 +150,43 @@ export default defineComponent({
 
     const selectedArmature = computed(() => store.lastSelectedArmature.value)
     const selectedGraph = computed(() => graphStore.parentGraph.value)
+
+    const viewportCache = ref<Record<string, { scale: number; origin: IVec2 }>>(
+      {}
+    )
+    watch(selectedGraph, (to, from) => {
+      if (from) {
+        viewportCache.value = {
+          ...viewportCache.value,
+          [from.id]: {
+            scale: canvas.scale.value,
+            origin: canvas.viewOrigin.value,
+          },
+        }
+      }
+
+      if (to) {
+        const cache = viewportCache.value[to.id]
+        if (cache) {
+          canvas.scale.value = cache.scale
+          canvas.viewOrigin.value = cache.origin
+        } else {
+          const nodes = Object.values(graphStore.nodeMap.value)
+          canvas.setViewport(
+            nodes.length
+              ? getWrapperRect(
+                  nodes.map((node) =>
+                    getGraphNodeRect(
+                      graphStore.getGraphNodeModuleFn.value(),
+                      node
+                    )
+                  )
+                )
+              : undefined
+          )
+        }
+      }
+    })
 
     const allNames = computed(() =>
       graphStore.parentGraphs.value.map((g) => g.name)

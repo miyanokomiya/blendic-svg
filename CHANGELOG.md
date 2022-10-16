@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Make animated SVG size flexible
 - Add new config UI for choosing interpolation type
 - Make edge connecting more explicit
+- Keep individual viewport on the animation graph cnavas
 
 ### Fixed
 - Fix: Disable SMIL interpolation like CSS animation

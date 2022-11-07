@@ -18,7 +18,7 @@
     "nanoid": "^3.3.4",
     "okageo": "^3.0.1",
     "okahistory": "^0.0.9",
-    "okanvas": "^0.0.4",
+    "okanvas": "^0.1.1",
     "okaselect": "^0.0.12",
     "ress": "^5.0.2",
     "vue": "^3.2.41"

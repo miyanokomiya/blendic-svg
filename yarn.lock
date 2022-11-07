@@ -4516,10 +4516,10 @@ okahistory@^0.0.9:
   resolved "https://registry.yarnpkg.com/okahistory/-/okahistory-0.0.9.tgz#68c6a52366302431684137065f781597a8afae98"
   integrity sha512-JvijOP2yIom9wIKq7lx3m57oP+nZBZd1D2cOqhu79GfLLc3XzT7YzeUjnpSJvqNYrYyAvD6YW84lKFNvQSODXw==
 
-okanvas@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/okanvas/-/okanvas-0.0.4.tgz#5c0eb0e9ffba9ec03ef2810e7467216b5ee3cf89"
-  integrity sha512-jMvfnODVQQ+NObgTO8dQ8/MG4izZ0Rf4IQrVWJOFAHCsfo8hjxX/y7o4/NmVNgaMM/SBb1Qd9qyP7/1no1jpXQ==
+okanvas@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/okanvas/-/okanvas-0.1.1.tgz#edd4edde63950e5583b2e47ef453bd0345c5e3d5"
+  integrity sha512-8QXqFEOtIrMgg/gKIsabGDzJXJqkOZbAVxSK24ClZtykhv+6FfFMFqDpSgsFwSuHLSLRFBdV4LflwovQ+uhIuw==
 
 okaselect@^0.0.12:
   version "0.0.12"

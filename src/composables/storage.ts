@@ -487,9 +487,12 @@ function saveJson(json: string, filename: string) {
   )
 }
 
+const XML_PROLONG = '<?xml version = "1.0" standalone = "no"?>'
 function saveSvg(svg: string, filename: string) {
   saveFileInWeb(
-    URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })),
+    URL.createObjectURL(
+      new Blob([`${XML_PROLONG}\n${svg}`], { type: 'image/svg+xml' })
+    ),
     filename
   )
 }

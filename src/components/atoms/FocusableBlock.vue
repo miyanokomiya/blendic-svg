@@ -65,7 +65,9 @@ function onPaste(e: ClipboardEvent) {
 }
 
 function onEnter() {
-  root.value?.focus()
+  if (!document.activeElement?.getAttribute('data-keep-focus')) {
+    root.value?.focus()
+  }
 }
 
 function onKeydown(e: KeyboardEvent) {

@@ -185,6 +185,7 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with search field 1
       class="input-wrapper"
     >
       <input
+        data-keep-focus="true"
         type="text"
       />
       <!--v-if-->

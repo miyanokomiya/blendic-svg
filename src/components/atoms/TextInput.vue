@@ -24,6 +24,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       v-model="draftValue"
       type="text"
       :disabled="disabled"
+      :data-keep-focus="keepFocus"
       @change="input"
       @focus="onFocus"
       @blur="onBlur"
@@ -47,6 +48,10 @@ export default defineComponent({
       default: false,
     },
     realtime: {
+      type: Boolean,
+      default: false,
+    },
+    keepFocus: {
       type: Boolean,
       default: false,
     },

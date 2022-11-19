@@ -20,9 +20,12 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="popup-menu-list-wrapper" :style="{ transform }">
     <div v-if="enabledSearch" class="keyword-block">
-      <TextInput v-model="keyword" realtime autofocus />
+      <TextInput v-model="keyword" realtime autofocus keep-focus />
     </div>
-    <ul>
+    <div v-if="keyword && filteredList.length === 0" class="not-found">
+      <p>Not found</p>
+    </div>
+    <ul v-else>
       <li v-for="item in filteredList" :key="item.label">
         <button
           type="button"
@@ -135,5 +138,11 @@ li > button {
 }
 .keyword-block {
   width: 140px;
+}
+.not-found {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
 }
 </style>

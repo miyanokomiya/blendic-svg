@@ -65,6 +65,19 @@ describe('src/components/molecules/PopupMenuList.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
+    it('with search field', () => {
+      const wrapper = mount(Target, {
+        props: {
+          popupMenuList: [
+            { label: 'item1', exec() {} },
+            { label: 'item2', exec() {} },
+            { label: 'item3', exec() {} },
+          ],
+          enabledSearch: true,
+        },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 
   describe('click a item', () => {

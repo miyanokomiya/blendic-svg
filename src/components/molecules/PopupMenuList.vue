@@ -19,8 +19,11 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div class="popup-menu-list-wrapper" :style="{ transform }">
+    <div v-if="enabledSearch" class="keyword-block">
+      <TextInput v-model="keyword" realtime autofocus />
+    </div>
     <ul>
-      <li v-for="item in popupMenuList" :key="item.label">
+      <li v-for="item in filteredList" :key="item.label">
         <button
           type="button"
           :data-test-id="item.label"
@@ -42,7 +45,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, withDefaults } from 'vue'
+import { ref, computed, withDefaults } from 'vue'
 import { UIPopupMenuItem } from '/@/composables/menuList'
 
 const ITEM_HEIGHT = 26
@@ -50,12 +53,16 @@ const ITEM_HEIGHT = 26
 
 <script setup lang="ts">
 import UpIcon from '/@/components/atoms/UpIcon.vue'
+import TextInput from '/@/components/atoms/TextInput.vue'
 
 const props = withDefaults(
   defineProps<{
     popupMenuList: UIPopupMenuItem[]
+    enabledSearch?: boolean
   }>(),
-  {}
+  {
+    enabledSearch: false,
+  }
 )
 
 const focusedIndex = computed(() =>
@@ -72,6 +79,21 @@ const chldrenTop = computed(() => {
   // -1 makes top line well
   return openedIndex.value * ITEM_HEIGHT - 1
 })
+
+const keyword = ref('')
+
+const filteredList = computed(() => {
+  if (!keyword.value) return props.popupMenuList
+
+  const value = keyword.value.toLowerCase()
+  return props.popupMenuList
+    .flatMap((item) => {
+      return [item, ...(item.children ?? [])].filter(
+        (n) => n.exec && !n.children && n.label.toLowerCase().includes(value)
+      )
+    })
+    .sort((a, b) => a.label.length - b.label.length)
+})
 </script>
 
 <style scoped>
@@ -79,10 +101,11 @@ const chldrenTop = computed(() => {
   position: relative;
   border: solid 1px var(--weak-border);
   background-color: var(--background);
+  width: max-content;
 }
 ul {
   list-style: none;
-  width: max-content;
+  width: 100%;
 }
 li {
   min-width: 100px;
@@ -109,5 +132,8 @@ li > button {
   margin-left: 10px;
   width: 16px;
   height: 16px;
+}
+.keyword-block {
+  width: 140px;
 }
 </style>

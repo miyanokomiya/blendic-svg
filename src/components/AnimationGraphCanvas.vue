@@ -74,6 +74,7 @@ Copyright (C) 2021, Tomoya Komiyama.
     <PopupMenuList
       v-if="popupMenuItems.length > 0 && popupMenuListPosition"
       class="popup-menu-list"
+      enabled-search
       :popup-menu-list="popupMenuItems"
       :style="{
         left: `${popupMenuListPosition.x - 20}px`,

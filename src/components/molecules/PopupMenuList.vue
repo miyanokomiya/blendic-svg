@@ -42,47 +42,39 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
-import UpIcon from '/@/components/atoms/UpIcon.vue'
+import { computed, withDefaults } from 'vue'
 import { UIPopupMenuItem } from '/@/composables/menuList'
 
 const ITEM_HEIGHT = 26
+</script>
 
-export default defineComponent({
-  name: 'PopupMenuList',
-  components: { UpIcon },
-  props: {
-    popupMenuList: {
-      type: Array as PropType<UIPopupMenuItem[]>,
-      required: true,
-    },
-  },
-  setup(props) {
-    const focusedIndex = computed(() =>
-      props.popupMenuList.findIndex((p) => p.focus)
-    )
-    const transform = computed(() => {
-      const index = focusedIndex.value
-      return index !== -1 ? `translateY(-${index * ITEM_HEIGHT}px)` : ''
-    })
-    const openedIndex = computed(() =>
-      props.popupMenuList.findIndex((p) => p.opened)
-    )
-    const chldrenTop = computed(() => {
-      // -1 makes top line well
-      return openedIndex.value * ITEM_HEIGHT - 1
-    })
+<script setup lang="ts">
+import UpIcon from '/@/components/atoms/UpIcon.vue'
 
-    return {
-      focusedIndex,
-      transform,
-      chldrenTop,
-    }
-  },
+const props = withDefaults(
+  defineProps<{
+    popupMenuList: UIPopupMenuItem[]
+  }>(),
+  {}
+)
+
+const focusedIndex = computed(() =>
+  props.popupMenuList.findIndex((p) => p.focus)
+)
+const transform = computed(() => {
+  const index = focusedIndex.value
+  return index !== -1 ? `translateY(-${index * ITEM_HEIGHT}px)` : ''
+})
+const openedIndex = computed(() =>
+  props.popupMenuList.findIndex((p) => p.opened)
+)
+const chldrenTop = computed(() => {
+  // -1 makes top line well
+  return openedIndex.value * ITEM_HEIGHT - 1
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .popup-menu-list-wrapper {
   position: relative;
   border: solid 1px var(--weak-border);
@@ -96,18 +88,18 @@ li {
   min-width: 100px;
   display: flex;
   align-items: center;
-  &:hover {
-    background-color: var(--background-second);
-  }
-  > button {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    height: 26px;
-    padding: 0 10px;
-    text-align: left;
-  }
+}
+li:hover {
+  background-color: var(--background-second);
+}
+li > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 26px;
+  padding: 0 10px;
+  text-align: left;
 }
 .children {
   position: absolute;

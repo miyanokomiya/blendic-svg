@@ -24,6 +24,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       v-model="draftValue"
       type="text"
       :disabled="disabled"
+      :data-keep-focus="keepFocus"
       @change="input"
       @focus="onFocus"
       @blur="onBlur"
@@ -33,7 +34,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, watchEffect, onMounted } from 'vue'
+import { defineComponent, ref, watchEffect, onMounted, watch } from 'vue'
 
 export default defineComponent({
   props: {
@@ -43,6 +44,14 @@ export default defineComponent({
       default: false,
     },
     autofocus: {
+      type: Boolean,
+      default: false,
+    },
+    realtime: {
+      type: Boolean,
+      default: false,
+    },
+    keepFocus: {
       type: Boolean,
       default: false,
     },
@@ -58,10 +67,16 @@ export default defineComponent({
       draftValue.value = props.modelValue
     })
 
-    function input() {
-      if (draftValue.value === props.modelValue) return
+    watch(draftValue, () => {
+      if (props.realtime) {
+        emit('update:model-value', draftValue.value)
+      }
+    })
 
-      emit('update:model-value', draftValue.value)
+    function input() {
+      if (draftValue.value === props.modelValue) {
+        emit('update:model-value', draftValue.value)
+      }
     }
 
     function onClick() {

@@ -198,6 +198,7 @@ exports[`src/components/atoms/GraphNodeDataField.vue snapshot TEXT 1`] = `
     class="input-wrapper"
   >
     <input
+      data-keep-focus="false"
       type="text"
     />
     <div

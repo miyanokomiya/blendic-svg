@@ -79,6 +79,7 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
         class="input-wrapper"
       >
         <input
+          data-keep-focus="false"
           type="text"
         />
         <div
@@ -459,6 +460,7 @@ exports[`/@/src/components/molecules/constraints/ConstraintList.vue snapshot 1`]
         class="input-wrapper"
       >
         <input
+          data-keep-focus="false"
           type="text"
         />
         <div

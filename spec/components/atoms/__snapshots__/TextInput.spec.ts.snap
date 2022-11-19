@@ -5,6 +5,7 @@ exports[`src/components/atoms/TextInput.vue snapshot default 1`] = `
   class="input-wrapper"
 >
   <input
+    data-keep-focus="false"
     type="text"
   />
   <div
@@ -18,6 +19,7 @@ exports[`src/components/atoms/TextInput.vue snapshot disabled 1`] = `
   class="input-wrapper"
 >
   <input
+    data-keep-focus="false"
     disabled=""
     type="text"
   />

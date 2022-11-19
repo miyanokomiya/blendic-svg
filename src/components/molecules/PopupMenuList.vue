@@ -19,8 +19,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div class="popup-menu-list-wrapper" :style="{ transform }">
-    <ul>
-      <li v-for="item in popupMenuList" :key="item.label">
+    <div v-if="enabledSearch" class="keyword-block">
+      <TextInput v-model="keyword" realtime autofocus keep-focus />
+    </div>
+    <div v-if="keyword && filteredList.length === 0" class="not-found">
+      <p>Not found</p>
+    </div>
+    <ul v-else>
+      <li v-for="item in filteredList" :key="item.label">
         <button
           type="button"
           :data-test-id="item.label"
@@ -42,72 +48,84 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
-import UpIcon from '/@/components/atoms/UpIcon.vue'
+import { ref, computed, withDefaults } from 'vue'
 import { UIPopupMenuItem } from '/@/composables/menuList'
 
 const ITEM_HEIGHT = 26
+</script>
 
-export default defineComponent({
-  name: 'PopupMenuList',
-  components: { UpIcon },
-  props: {
-    popupMenuList: {
-      type: Array as PropType<UIPopupMenuItem[]>,
-      required: true,
-    },
-  },
-  setup(props) {
-    const focusedIndex = computed(() =>
-      props.popupMenuList.findIndex((p) => p.focus)
-    )
-    const transform = computed(() => {
-      const index = focusedIndex.value
-      return index !== -1 ? `translateY(-${index * ITEM_HEIGHT}px)` : ''
-    })
-    const openedIndex = computed(() =>
-      props.popupMenuList.findIndex((p) => p.opened)
-    )
-    const chldrenTop = computed(() => {
-      // -1 makes top line well
-      return openedIndex.value * ITEM_HEIGHT - 1
-    })
+<script setup lang="ts">
+import UpIcon from '/@/components/atoms/UpIcon.vue'
+import TextInput from '/@/components/atoms/TextInput.vue'
 
-    return {
-      focusedIndex,
-      transform,
-      chldrenTop,
-    }
-  },
+const props = withDefaults(
+  defineProps<{
+    popupMenuList: UIPopupMenuItem[]
+    enabledSearch?: boolean
+  }>(),
+  {
+    enabledSearch: false,
+  }
+)
+
+const focusedIndex = computed(() =>
+  props.popupMenuList.findIndex((p) => p.focus)
+)
+const transform = computed(() => {
+  const index = focusedIndex.value
+  return index !== -1 ? `translateY(-${index * ITEM_HEIGHT}px)` : ''
+})
+const openedIndex = computed(() =>
+  props.popupMenuList.findIndex((p) => p.opened)
+)
+const chldrenTop = computed(() => {
+  // -1 makes top line well
+  return openedIndex.value * ITEM_HEIGHT - 1
+})
+
+const keyword = ref('')
+
+const filteredList = computed(() => {
+  if (!keyword.value) return props.popupMenuList
+
+  const value = keyword.value.toLowerCase()
+  return props.popupMenuList
+    .flatMap((item) => {
+      return [item, ...(item.children ?? [])].filter(
+        (n) => n.exec && !n.children && n.label.toLowerCase().includes(value)
+      )
+    })
+    .sort((a, b) => a.label.length - b.label.length)
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .popup-menu-list-wrapper {
   position: relative;
   border: solid 1px var(--weak-border);
   background-color: var(--background);
+  width: max-content;
 }
 ul {
   list-style: none;
-  width: max-content;
+  width: 100%;
 }
 li {
   min-width: 100px;
   display: flex;
   align-items: center;
-  &:hover {
-    background-color: var(--background-second);
-  }
-  > button {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    height: 26px;
-    padding: 0 10px;
-    text-align: left;
-  }
+}
+li:hover {
+  background-color: var(--background-second);
+}
+li > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 26px;
+  padding: 0 10px;
+  text-align: left;
 }
 .children {
   position: absolute;
@@ -117,5 +135,14 @@ li {
   margin-left: 10px;
   width: 16px;
   height: 16px;
+}
+.keyword-block {
+  width: 140px;
+}
+.not-found {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
 }
 </style>

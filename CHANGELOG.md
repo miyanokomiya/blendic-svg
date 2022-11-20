@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add new config UI for choosing interpolation type
 - Make edge connecting more explicit
 - Keep individual viewport on the animation graph cnavas
+- Add search field to new graph new popup menu
 
 ### Fixed
 - Fix: Disable SMIL interpolation like CSS animation

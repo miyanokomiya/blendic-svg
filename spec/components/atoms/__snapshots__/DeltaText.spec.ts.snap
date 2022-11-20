@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/atoms/DeltaText.vue snapshot highlight 1`] = `
+<p>
+  
+  <span
+    class=""
+  >
+    ab
+  </span>
+  <span
+    class="hit"
+  >
+    ab
+  </span>
+  <span
+    class=""
+  >
+    ab
+  </span>
+  
+</p>
+`;

@@ -12,7 +12,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot default 1`] = `
         data-test-id="item1"
         type="button"
       >
-        item1 
+        <p>
+          item1
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->
@@ -22,7 +24,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot default 1`] = `
         data-test-id="item2"
         type="button"
       >
-        item2 
+        <p>
+          item2
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->
@@ -32,7 +36,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot default 1`] = `
         data-test-id="item3"
         type="button"
       >
-        item3 
+        <p>
+          item3
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->
@@ -55,7 +61,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot focused item 1`] = 
         data-test-id="item1"
         type="button"
       >
-        item1 
+        <p>
+          item1
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->
@@ -65,7 +73,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot focused item 1`] = 
         data-test-id="item2"
         type="button"
       >
-        item2 
+        <p>
+          item2
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->
@@ -75,7 +85,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot focused item 1`] = 
         data-test-id="item3"
         type="button"
       >
-        item3 
+        <p>
+          item3
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->
@@ -97,7 +109,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with children 1`] =
         data-test-id="item1"
         type="button"
       >
-        item1 
+        <p>
+          item1
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->
@@ -107,7 +121,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with children 1`] =
         data-test-id="item2"
         type="button"
       >
-        item2 
+        <p>
+          item2
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->
@@ -117,7 +133,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with children 1`] =
         data-test-id="item3"
         type="button"
       >
-        item3 
+        <p>
+          item3
+        </p>
         <svg
           class="right-arrow"
           transform="rotate(90) scale(1, 1)"
@@ -150,7 +168,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with children 1`] =
               data-test-id="child1"
               type="button"
             >
-              child1 
+              <p>
+                child1
+              </p>
               <!--v-if-->
             </button>
             <!--v-if-->
@@ -160,7 +180,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with children 1`] =
               data-test-id="child2"
               type="button"
             >
-              child2 
+              <p>
+                child2
+              </p>
               <!--v-if-->
             </button>
             <!--v-if-->
@@ -174,7 +196,81 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with children 1`] =
 </div>
 `;
 
-exports[`src/components/molecules/PopupMenuList.vue snapshot with search field 1`] = `
+exports[`src/components/molecules/PopupMenuList.vue snapshot with search field keyword hits nothing 1`] = `
+<div
+  class="popup-menu-list-wrapper"
+>
+  <div
+    class="keyword-block"
+  >
+    <div
+      class="input-wrapper"
+    >
+      <input
+        data-keep-focus="true"
+        type="text"
+      />
+      <!--v-if-->
+    </div>
+  </div>
+  <div
+    class="not-found"
+  >
+    <p>
+      Not found
+    </p>
+  </div>
+</div>
+`;
+
+exports[`src/components/molecules/PopupMenuList.vue snapshot with search field keyword hits something 1`] = `
+<div
+  class="popup-menu-list-wrapper"
+>
+  <div
+    class="keyword-block"
+  >
+    <div
+      class="input-wrapper"
+    >
+      <input
+        data-keep-focus="true"
+        type="text"
+      />
+      <!--v-if-->
+    </div>
+  </div>
+  <ul>
+    
+    <li>
+      <button
+        data-test-id="item2"
+        type="button"
+      >
+        <p>
+          
+          <span
+            class=""
+          >
+            ite
+          </span>
+          <span
+            class="hit"
+          >
+            m2
+          </span>
+          
+        </p>
+        <!--v-if-->
+      </button>
+      <!--v-if-->
+    </li>
+    
+  </ul>
+</div>
+`;
+
+exports[`src/components/molecules/PopupMenuList.vue snapshot with search field keyword is empty 1`] = `
 <div
   class="popup-menu-list-wrapper"
 >
@@ -198,7 +294,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with search field 1
         data-test-id="item1"
         type="button"
       >
-        item1 
+        <p>
+          item1
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->
@@ -208,7 +306,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with search field 1
         data-test-id="item2"
         type="button"
       >
-        item2 
+        <p>
+          item2
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->
@@ -218,7 +318,9 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with search field 1
         data-test-id="item3"
         type="button"
       >
-        item3 
+        <p>
+          item3
+        </p>
         <!--v-if-->
       </button>
       <!--v-if-->

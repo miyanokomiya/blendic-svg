@@ -12,6 +12,9 @@
   --dialog-button-primary: #4169e1;
 
   --icon-base: #888;
+
+  --text-highlight-color: #2c3e50;
+  --text-highlight-background-color: #ffd500;
 }
 
 @media (prefers-color-scheme: dark) {

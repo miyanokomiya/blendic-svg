@@ -65,18 +65,30 @@ describe('src/components/molecules/PopupMenuList.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('with search field', () => {
-      const wrapper = mount(Target, {
-        props: {
-          popupMenuList: [
-            { label: 'item1', exec() {} },
-            { label: 'item2', exec() {} },
-            { label: 'item3', exec() {} },
-          ],
-          enabledSearch: true,
-        },
+    describe('with search field', () => {
+      const props = {
+        popupMenuList: [
+          { label: 'item1', exec() {} },
+          { label: 'item2', exec() {} },
+          { label: 'item3', exec() {} },
+        ],
+        enabledSearch: true,
+      }
+
+      it('keyword is empty', () => {
+        const wrapper = mount(Target, { props })
+        expect(wrapper.element).toMatchSnapshot()
       })
-      expect(wrapper.element).toMatchSnapshot()
+      it('keyword hits something', async () => {
+        const wrapper = mount(Target, { props })
+        await wrapper.find('input').setValue('m2')
+        expect(wrapper.element).toMatchSnapshot()
+      })
+      it('keyword hits nothing', async () => {
+        const wrapper = mount(Target, { props })
+        await wrapper.find('input').setValue('mmm')
+        expect(wrapper.element).toMatchSnapshot()
+      })
     })
   })
 

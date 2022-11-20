@@ -33,7 +33,13 @@ Copyright (C) 2021, Tomoya Komiyama.
           @click="item.exec"
           @mousemove="item.hover"
         >
-          {{ item.label }}
+          <DeltaText
+            v-if="keyword"
+            :delta-list="splitByKeyword(keyword, item.label)"
+          />
+          <p v-else>
+            {{ item.label }}
+          </p>
           <UpIcon v-if="item.children" right class="right-arrow" />
         </button>
         <PopupMenuList
@@ -57,6 +63,8 @@ const ITEM_HEIGHT = 26
 <script setup lang="ts">
 import UpIcon from '/@/components/atoms/UpIcon.vue'
 import TextInput from '/@/components/atoms/TextInput.vue'
+import DeltaText from '/@/components/atoms/DeltaText.vue'
+import { splitByKeyword } from '/@/utils/textSearch'
 
 const props = withDefaults(
   defineProps<{

@@ -21,6 +21,7 @@ Copyright (C) 2022, Tomoya Komiyama.
   <div
     ref="root"
     tabindex="-1"
+    @mousedown="onDown"
     @mouseenter="onEnter"
     @keydown="onKeydown"
     @keyup="onKeyup"
@@ -62,6 +63,10 @@ function onCopy(e: ClipboardEvent) {
 
 function onPaste(e: ClipboardEvent) {
   emit('paste', e)
+}
+
+function onDown() {
+  root.value?.focus()
 }
 
 function onEnter() {

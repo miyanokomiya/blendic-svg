@@ -52,7 +52,7 @@ export function useDefaultState(): AnimationGraphState {
 }
 
 const state: AnimationGraphState = {
-  getLabel: () => 'DefaultState',
+  getLabel: () => 'Default',
   onStart: async (ctx) => {
     updateCommandExams(ctx)
     updateToolMenus(ctx)

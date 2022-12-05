@@ -21,7 +21,7 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="file-panel">
     <h3>Project</h3>
     <div class="menu-list">
-      <button type="button" @click="openFile">Open</button>
+      <button type="button" @click="loadProjectFile">Open</button>
       <button type="button" @click="overrideProjectFile">Save</button>
       <button v-if="fileSystemEnable" type="button" @click="saveProjectFile">
         Save as..
@@ -41,7 +41,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       >
         Baked Action
       </button>
-      <button type="button" @click="exportSvg">Posed SVG</button>
+      <button type="button" @click="bakeSvg">Posed SVG</button>
       <button type="button" @click="showAnimatedSvgSettingDialog">
         Animated SVG
       </button>
@@ -67,103 +67,88 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useStorage } from '/@/composables/storage'
 import { useAnimationStore } from '/@/store/animation'
 import { useStore } from '/@/store'
-import InlineField from '/@/components/atoms/InlineField.vue'
-import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
-import ToggleRadioButtons from '/@/components/atoms/ToggleRadioButtons.vue'
-import BakingConfigDialog from '/@/components/molecules/dialogs/BakingConfigDialog.vue'
-import AnimatedSvgSettingDialog from '/@/components/molecules/dialogs/AnimatedSvgSettingDialog.vue'
 import {
   AnimationExportingSettings,
   ColorTheme,
   useSettings,
 } from '/@/composables/settings'
 
-export default defineComponent({
-  components: {
-    InlineField,
-    CheckboxInput,
-    ToggleRadioButtons,
-    BakingConfigDialog,
-    AnimatedSvgSettingDialog,
+const storage = useStorage()
+const store = useStore()
+const animationStore = useAnimationStore()
+</script>
+
+<script setup lang="ts">
+import InlineField from '/@/components/atoms/InlineField.vue'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
+import ToggleRadioButtons from '/@/components/atoms/ToggleRadioButtons.vue'
+import BakingConfigDialog from '/@/components/molecules/dialogs/BakingConfigDialog.vue'
+import AnimatedSvgSettingDialog from '/@/components/molecules/dialogs/AnimatedSvgSettingDialog.vue'
+
+const isInheritWeight = ref(true)
+
+const showSelectActionDialogFlag = ref(false)
+const selectedActionIds = ref<string[]>([])
+
+const exportableActions = computed(() => {
+  return animationStore.actions.value.filter((a) => {
+    return store.lastSelectedArmature.value?.id === a.armatureId
+  })
+})
+
+function bakeAction(actionIds: string[]) {
+  showSelectActionDialogFlag.value = false
+  selectedActionIds.value = actionIds
+  storage.bakeAction(actionIds)
+}
+
+const showAnimatedSvgSettingDialogFlag = ref(false)
+const { settings } = useSettings()
+function exportAnimatedSvg(val: AnimationExportingSettings) {
+  settings.animationExportingSettings = val
+  storage.bakeAndSaveAnimatedSvg(val)
+  showAnimatedSvgSettingDialogFlag.value = false
+}
+
+const colorThemeOptions = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+]
+const colorTheme = computed({
+  get() {
+    return settings.colorTheme
   },
-  emits: [],
-  setup() {
-    const storage = useStorage()
-    const isInheritWeight = ref(true)
-
-    const store = useStore()
-    const animationStore = useAnimationStore()
-    const showSelectActionDialogFlag = ref(false)
-    const selectedActionIds = ref<string[]>([])
-
-    const exportableActions = computed(() => {
-      return animationStore.actions.value.filter((a) => {
-        return store.lastSelectedArmature.value?.id === a.armatureId
-      })
-    })
-
-    function bakeAction(actionIds: string[]) {
-      showSelectActionDialogFlag.value = false
-      selectedActionIds.value = actionIds
-      storage.bakeAction(actionIds)
-    }
-
-    const showAnimatedSvgSettingDialogFlag = ref(false)
-    const { settings } = useSettings()
-    function exportAnimatedSvg(val: AnimationExportingSettings) {
-      settings.animationExportingSettings = val
-      storage.bakeAnimatedSvg()
-      showAnimatedSvgSettingDialogFlag.value = false
-    }
-
-    const colorThemeOptions = [
-      { value: 'auto', label: 'Auto' },
-      { value: 'light', label: 'Light' },
-      { value: 'dark', label: 'Dark' },
-    ]
-    const colorTheme = computed({
-      get() {
-        return settings.colorTheme
-      },
-      set(val: ColorTheme) {
-        settings.colorTheme = val
-      },
-    })
-
-    return {
-      appVersion: process.env.APP_VERSION,
-
-      fileSystemEnable: storage.fileSystemEnable,
-      openFile: storage.loadProjectFile,
-      saveProjectFile: storage.saveProjectFile,
-      overrideProjectFile: storage.overrideProjectFile,
-
-      isInheritWeight,
-      importSvg() {
-        storage.loadSvgFile(isInheritWeight.value)
-      },
-      exportSvg: storage.bakeSvg,
-
-      bakeAction,
-      exportableActions,
-      showSelectActionDialogFlag,
-      showSelectActionDialog: () => (showSelectActionDialogFlag.value = true),
-
-      settings,
-      showAnimatedSvgSettingDialogFlag,
-      exportAnimatedSvg,
-      showAnimatedSvgSettingDialog: () =>
-        (showAnimatedSvgSettingDialogFlag.value = true),
-
-      colorThemeOptions,
-      colorTheme,
-    }
+  set(val: ColorTheme) {
+    settings.colorTheme = val
   },
 })
+
+const appVersion = process.env.APP_VERSION
+
+const {
+  fileSystemEnable,
+  loadProjectFile,
+  saveProjectFile,
+  overrideProjectFile,
+  bakeSvg,
+} = storage
+
+function importSvg() {
+  storage.loadSvgFile(isInheritWeight.value)
+}
+
+function showSelectActionDialog() {
+  showSelectActionDialogFlag.value = true
+}
+
+function showAnimatedSvgSettingDialog() {
+  showAnimatedSvgSettingDialogFlag.value = true
+}
 </script>
 
 <style scoped>

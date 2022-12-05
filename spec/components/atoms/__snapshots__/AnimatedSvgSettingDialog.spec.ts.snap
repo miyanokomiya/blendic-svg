@@ -37,342 +37,365 @@ exports[`src/components/molecules/dialogs/AnimatedSvgSettingDialog.vue snapshot 
         <div
           class="content"
         >
-          <h3>
-            Animation Settings
-          </h3>
           <div
-            class="row-block inline-field between"
+            class="settings"
           >
-            
-            <label>
-              FPS
-            </label>
+            <h3>
+              Animation Settings
+            </h3>
             <div
-              class="inline-content"
+              class="row-block inline-field between"
             >
               
+              <label>
+                FPS
+              </label>
               <div
-                class="toggle-buttons"
+                class="inline-content"
               >
                 
-                <button
-                  class=""
-                  type="button"
+                <div
+                  class="toggle-buttons"
                 >
-                  5
-                </button>
-                <button
-                  class=""
-                  type="button"
-                >
-                  10
-                </button>
-                <button
-                  class=""
-                  type="button"
-                >
-                  20
-                </button>
-                <button
-                  class="selected"
-                  type="button"
-                >
-                  30
-                </button>
-                <button
-                  class=""
-                  type="button"
-                >
-                  60
-                </button>
+                  
+                  <button
+                    class=""
+                    type="button"
+                  >
+                    5
+                  </button>
+                  <button
+                    class=""
+                    type="button"
+                  >
+                    10
+                  </button>
+                  <button
+                    class=""
+                    type="button"
+                  >
+                    20
+                  </button>
+                  <button
+                    class="selected"
+                    type="button"
+                  >
+                    30
+                  </button>
+                  <button
+                    class=""
+                    type="button"
+                  >
+                    60
+                  </button>
+                  
+                </div>
                 
               </div>
               
             </div>
-            
+            <div
+              class="row-block inline-field between"
+            >
+              
+              <label>
+                FPS(Custom)
+              </label>
+              <div
+                class="inline-content"
+              >
+                
+                <div
+                  class="slider-wrapper inline-slider"
+                >
+                  <div
+                    class="slider-background"
+                    style="transform: scaleX(0.4915254237288136);"
+                  />
+                  <input
+                    type="text"
+                  />
+                  <div
+                    class="slider-forward"
+                  />
+                </div>
+                
+              </div>
+              
+            </div>
+            <div
+              class="row-block inline-field between"
+            >
+              
+              <label>
+                Interpolation
+              </label>
+              <div
+                class="inline-content"
+              >
+                
+                <div
+                  class="toggle-buttons"
+                >
+                  
+                  <button
+                    class=""
+                    type="button"
+                  >
+                    Discrete
+                  </button>
+                  <button
+                    class=""
+                    type="button"
+                  >
+                    Linear
+                  </button>
+                  
+                </div>
+                
+              </div>
+              
+            </div>
+            <div
+              class="row-block inline-field between"
+            >
+              
+              <label>
+                Range
+              </label>
+              <div
+                class="inline-content"
+              >
+                
+                <div
+                  class="toggle-buttons"
+                >
+                  
+                  <button
+                    class="selected"
+                    type="button"
+                  >
+                    Auto
+                  </button>
+                  <button
+                    class=""
+                    type="button"
+                  >
+                    Custom
+                  </button>
+                  
+                </div>
+                
+              </div>
+              
+            </div>
+            <div
+              class="row-block inline-field between"
+            >
+              
+              <label>
+                Custom Range
+              </label>
+              <div
+                class="inline-content"
+              >
+                
+                <div
+                  class="slider-wrapper inline-slider"
+                >
+                  <div
+                    class="slider-background"
+                    style="transform: scaleX(0);"
+                  />
+                  <input
+                    disabled=""
+                    type="text"
+                  />
+                  <!--v-if-->
+                </div>
+                <span
+                  class="slider-between"
+                >
+                  to
+                </span>
+                <div
+                  class="slider-wrapper inline-slider"
+                >
+                  <div
+                    class="slider-background"
+                    style="transform: scaleX(0);"
+                  />
+                  <input
+                    disabled=""
+                    type="text"
+                  />
+                  <!--v-if-->
+                </div>
+                
+              </div>
+              
+            </div>
+            <div
+              class="row-block inline-field between"
+            >
+              
+              <label>
+                Duration
+              </label>
+              <div
+                class="inline-content"
+              >
+                
+                <div
+                  class="toggle-buttons"
+                >
+                  
+                  <button
+                    class=""
+                    type="button"
+                  >
+                    Auto
+                  </button>
+                  <button
+                    class=""
+                    type="button"
+                  >
+                    Custom
+                  </button>
+                  
+                </div>
+                
+              </div>
+              
+            </div>
+            <div
+              class="row-block inline-field between"
+            >
+              
+              <label>
+                Custom Duration (s)
+              </label>
+              <div
+                class="inline-content"
+              >
+                
+                <div
+                  class="slider-wrapper inline-slider"
+                >
+                  <div
+                    class="slider-background"
+                    style="transform: scaleX(0);"
+                  />
+                  <input
+                    disabled=""
+                    type="text"
+                  />
+                  <!--v-if-->
+                </div>
+                
+              </div>
+              
+            </div>
+            <div
+              class="row-block inline-field between"
+            >
+              
+              <label>
+                Size
+              </label>
+              <div
+                class="inline-content"
+              >
+                
+                <div
+                  class="toggle-buttons"
+                >
+                  
+                  <button
+                    class=""
+                    type="button"
+                  >
+                    Auto
+                  </button>
+                  <button
+                    class="selected"
+                    type="button"
+                  >
+                    Custom
+                  </button>
+                  
+                </div>
+                
+              </div>
+              
+            </div>
+            <div
+              class="row-block inline-field between"
+            >
+              
+              <label>
+                Custom Size (px)
+              </label>
+              <div
+                class="inline-content"
+              >
+                
+                <div
+                  class="slider-wrapper inline-slider"
+                >
+                  <div
+                    class="slider-background"
+                    style="transform: scaleX(0);"
+                  />
+                  <input
+                    type="text"
+                  />
+                  <div
+                    class="slider-forward"
+                  />
+                </div>
+                <span
+                  class="slider-between"
+                >
+                  x
+                </span>
+                <div
+                  class="slider-wrapper inline-slider"
+                >
+                  <div
+                    class="slider-background"
+                    style="transform: scaleX(0);"
+                  />
+                  <input
+                    type="text"
+                  />
+                  <div
+                    class="slider-forward"
+                  />
+                </div>
+                
+              </div>
+              
+            </div>
           </div>
           <div
-            class="row-block inline-field between"
+            class="preview"
           >
-            
-            <label>
-              FPS(Custom)
-            </label>
-            <div
-              class="inline-content"
+            <button
+              class="default"
+              type="button"
             >
               
-              <div
-                class="slider-wrapper inline-slider"
-              >
-                <div
-                  class="slider-background"
-                  style="transform: scaleX(0.4915254237288136);"
-                />
-                <input
-                  type="text"
-                />
-                <div
-                  class="slider-forward"
-                />
-              </div>
+              Preview
               
-            </div>
-            
-          </div>
-          <div
-            class="row-block inline-field between"
-          >
-            
-            <label>
-              Interpolation
-            </label>
+            </button>
             <div
-              class="inline-content"
+              class="preview-outer"
             >
-              
-              <div
-                class="toggle-buttons"
-              >
-                
-                <button
-                  class=""
-                  type="button"
-                >
-                  Discrete
-                </button>
-                <button
-                  class=""
-                  type="button"
-                >
-                  Linear
-                </button>
-                
-              </div>
-              
+              <p>
+                None
+              </p>
             </div>
-            
-          </div>
-          <div
-            class="row-block inline-field between"
-          >
-            
-            <label>
-              Range
-            </label>
-            <div
-              class="inline-content"
-            >
-              
-              <div
-                class="toggle-buttons"
-              >
-                
-                <button
-                  class="selected"
-                  type="button"
-                >
-                  Auto
-                </button>
-                <button
-                  class=""
-                  type="button"
-                >
-                  Custom
-                </button>
-                
-              </div>
-              
-            </div>
-            
-          </div>
-          <div
-            class="row-block inline-field between"
-          >
-            
-            <label>
-              Custom Range
-            </label>
-            <div
-              class="inline-content"
-            >
-              
-              <div
-                class="slider-wrapper inline-slider"
-              >
-                <div
-                  class="slider-background"
-                  style="transform: scaleX(0);"
-                />
-                <input
-                  disabled=""
-                  type="text"
-                />
-                <!--v-if-->
-              </div>
-              <span
-                class="slider-between"
-              >
-                to
-              </span>
-              <div
-                class="slider-wrapper inline-slider"
-              >
-                <div
-                  class="slider-background"
-                  style="transform: scaleX(0);"
-                />
-                <input
-                  disabled=""
-                  type="text"
-                />
-                <!--v-if-->
-              </div>
-              
-            </div>
-            
-          </div>
-          <div
-            class="row-block inline-field between"
-          >
-            
-            <label>
-              Duration
-            </label>
-            <div
-              class="inline-content"
-            >
-              
-              <div
-                class="toggle-buttons"
-              >
-                
-                <button
-                  class=""
-                  type="button"
-                >
-                  Auto
-                </button>
-                <button
-                  class=""
-                  type="button"
-                >
-                  Custom
-                </button>
-                
-              </div>
-              
-            </div>
-            
-          </div>
-          <div
-            class="row-block inline-field between"
-          >
-            
-            <label>
-              Custom Duration (s)
-            </label>
-            <div
-              class="inline-content"
-            >
-              
-              <div
-                class="slider-wrapper inline-slider"
-              >
-                <div
-                  class="slider-background"
-                  style="transform: scaleX(0);"
-                />
-                <input
-                  disabled=""
-                  type="text"
-                />
-                <!--v-if-->
-              </div>
-              
-            </div>
-            
-          </div>
-          <div
-            class="row-block inline-field between"
-          >
-            
-            <label>
-              Size
-            </label>
-            <div
-              class="inline-content"
-            >
-              
-              <div
-                class="toggle-buttons"
-              >
-                
-                <button
-                  class=""
-                  type="button"
-                >
-                  Auto
-                </button>
-                <button
-                  class="selected"
-                  type="button"
-                >
-                  Custom
-                </button>
-                
-              </div>
-              
-            </div>
-            
-          </div>
-          <div
-            class="row-block inline-field between"
-          >
-            
-            <label>
-              Custom Size (px)
-            </label>
-            <div
-              class="inline-content"
-            >
-              
-              <div
-                class="slider-wrapper inline-slider"
-              >
-                <div
-                  class="slider-background"
-                  style="transform: scaleX(0);"
-                />
-                <input
-                  type="text"
-                />
-                <div
-                  class="slider-forward"
-                />
-              </div>
-              <span
-                class="slider-between"
-              >
-                x
-              </span>
-              <div
-                class="slider-wrapper inline-slider"
-              >
-                <div
-                  class="slider-background"
-                  style="transform: scaleX(0);"
-                />
-                <input
-                  type="text"
-                />
-                <div
-                  class="slider-forward"
-                />
-              </div>
-              
-            </div>
-            
           </div>
         </div>
         

@@ -5,12 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.17.5] - 2022-12-05
 ### Added
 - Make animated SVG size flexible
 - Add new config UI for choosing interpolation type
 - Make edge connecting more explicit
 - Keep individual viewport on the animation graph cnavas
 - Add search field to new graph new popup menu
+- Add preview UI for animated SVG into the setting dialog
 
 ### Fixed
 - Fix: Disable SMIL interpolation like CSS animation

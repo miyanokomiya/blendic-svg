@@ -21,9 +21,9 @@ Copyright (C) 2022, Tomoya Komiyama.
   <teleport to="body">
     <DialogBase :open="open" @update:open="updateOpen">
       <template #default>
+        <h3>Animation Settings</h3>
         <div class="content">
           <div class="settings">
-            <h3>Animation Settings</h3>
             <InlineField label="FPS" between>
               <ToggleRadioButtons
                 v-model="draftSettings.fps"
@@ -104,11 +104,21 @@ Copyright (C) 2022, Tomoya Komiyama.
             </InlineField>
           </div>
           <div class="preview">
-            <DialogButton @click="updatePreview">Preview</DialogButton>
+            <div>
+              <DialogButton @click="updatePreview">{{
+                previewSrc ? 'Reset' : 'Preview'
+              }}</DialogButton>
+            </div>
             <div class="preview-outer">
-              <img v-if="previewSrc" :src="previewSrc" alt="Preview" />
+              <img v-if="previewSrc" :src="previewSrc.src" alt="Preview" />
               <p v-else>None</p>
             </div>
+            <p>
+              <span>Size(b): </span>
+              <span>{{
+                previewSrc ? previewSrc.size.toLocaleString() : '-'
+              }}</span>
+            </p>
           </div>
         </div>
       </template>
@@ -183,16 +193,17 @@ const customDuration = computed({
   },
 })
 
-const previewSrc = ref<string>()
+const previewSrc = ref<{ src: string; size: number }>()
 function updatePreview() {
   const svg = storage.bakeAnimatedSvg(draftSettings.value)
   if (!svg) return
 
-  previewSrc.value =
-    'data:image/svg+xml;base64,' +
-    btoa(
-      unescape(encodeURIComponent(new XMLSerializer().serializeToString(svg)))
-    )
+  const text = new XMLSerializer().serializeToString(svg)
+  previewSrc.value = {
+    src:
+      'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(text))),
+    size: new Blob([text]).size,
+  }
 }
 
 watch(
@@ -204,17 +215,16 @@ watch(
 </script>
 
 <style scoped>
+h3 {
+  margin-bottom: 16px;
+}
 .content {
   display: flex;
-  align-items: center;
   justify-content: center;
   gap: 16px;
 }
 .settings {
   width: 350px;
-}
-h3 {
-  margin-bottom: 16px;
 }
 .inline-slider {
   width: 60px;
@@ -225,7 +235,7 @@ h3 {
 .preview {
   height: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   flex-direction: column;
   gap: 8px;
@@ -234,8 +244,8 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 300px;
-  height: 300px;
+  width: 280px;
+  height: 280px;
   border: 1px solid var(--strong-border);
 }
 .preview-outer img {

@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
+import { getDistance } from 'okageo'
 import type { AnimationGraphState } from '/@/composables/modeStates/animationGraph/core'
 import { useDefaultState } from '/@/composables/modeStates/animationGraph/defaultState'
 import {
@@ -30,7 +31,7 @@ export function useMovingNodeState(options: {
   let startedAt = 0
 
   return {
-    getLabel: () => 'MovingNodeState',
+    getLabel: () => 'MovingNode',
     onStart: (ctx) => {
       ctx.startEditMovement()
       ctx.startDragging()
@@ -47,7 +48,10 @@ export function useMovingNodeState(options: {
         case 'pointerup': {
           if (event.data.options.button === 0) {
             const editMovement = ctx.getEditMovement()
-            if (editMovement) {
+            if (
+              editMovement &&
+              getDistance(editMovement.start, editMovement.current) > 0
+            ) {
               ctx.updateNodes(
                 getEditedNodeMap(
                   ctx.getSelectedNodeMap(),
@@ -62,7 +66,7 @@ export function useMovingNodeState(options: {
         }
         case 'keydown':
           switch (event.data.key) {
-            case 'escape':
+            case 'Escape':
               ctx.setEditMovement()
               return useDefaultState
           }

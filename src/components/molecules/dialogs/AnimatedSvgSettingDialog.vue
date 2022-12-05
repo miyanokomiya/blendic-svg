@@ -22,85 +22,94 @@ Copyright (C) 2022, Tomoya Komiyama.
     <DialogBase :open="open" @update:open="updateOpen">
       <template #default>
         <div class="content">
-          <h3>Animation Settings</h3>
-          <InlineField label="FPS" between>
-            <ToggleRadioButtons
-              v-model="draftSettings.fps"
-              :options="fpsOptions"
-            />
-          </InlineField>
-          <InlineField label="FPS(Custom)" between>
-            <SliderInput
-              v-model="draftSettings.fps"
-              :min="1"
-              :max="60"
-              integer
-              class="inline-slider"
-            />
-          </InlineField>
-          <InlineField label="Interpolation" between>
-            <ToggleRadioButtons
-              v-model="draftSettings.interpolation"
-              :options="interpolationOptions"
-            />
-          </InlineField>
-          <InlineField label="Range" between>
-            <ToggleRadioButtons
-              v-model="draftSettings.range"
-              :options="autoCustomOptions"
-            />
-          </InlineField>
-          <InlineField label="Custom Range" between>
-            <SliderInput
-              v-model="draftSettings.customRange.from"
-              :min="0"
-              :disabled="draftSettings.range !== 'custom'"
-              class="inline-slider"
-            />
-            <span class="slider-between">to</span>
-            <SliderInput
-              v-model="draftSettings.customRange.to"
-              :min="0"
-              :disabled="draftSettings.range !== 'custom'"
-              class="inline-slider"
-            />
-          </InlineField>
-          <InlineField label="Duration" between>
-            <ToggleRadioButtons
-              v-model="draftSettings.duration"
-              :options="autoCustomOptions"
-            />
-          </InlineField>
-          <InlineField label="Custom Duration (s)" between>
-            <SliderInput
-              v-model="customDuration"
-              :min="0"
-              :step="0.1"
-              :disabled="draftSettings.duration !== 'custom'"
-              class="inline-slider"
-            />
-          </InlineField>
-          <InlineField label="Size" between>
-            <ToggleRadioButtons
-              v-model="draftSettings.size"
-              :options="autoCustomOptions"
-            />
-          </InlineField>
-          <InlineField label="Custom Size (px)" between>
-            <SliderInput
-              v-model="draftSettings.customSize.width"
-              :min="0"
-              :disabled="draftSettings.size !== 'custom'"
-              class="inline-slider"
-            />
-            <span class="slider-between">x</span>
-            <SliderInput
-              v-model="draftSettings.customSize.height"
-              :min="0"
-              :disabled="draftSettings.size !== 'custom'"
-              class="inline-slider"
-            />
-          </InlineField>
+          <div class="settings">
+            <h3>Animation Settings</h3>
+            <InlineField label="FPS" between>
+              <ToggleRadioButtons
+                v-model="draftSettings.fps"
+                :options="fpsOptions"
+              />
+            </InlineField>
+            <InlineField label="FPS(Custom)" between>
+              <SliderInput
+                v-model="draftSettings.fps"
+                :min="1"
+                :max="60"
+                integer
+                class="inline-slider"
+              />
+            </InlineField>
+            <InlineField label="Interpolation" between>
+              <ToggleRadioButtons
+                v-model="draftSettings.interpolation"
+                :options="interpolationOptions"
+              />
+            </InlineField>
+            <InlineField label="Range" between>
+              <ToggleRadioButtons
+                v-model="draftSettings.range"
+                :options="autoCustomOptions"
+              />
+            </InlineField>
+            <InlineField label="Custom Range" between>
+              <SliderInput
+                v-model="draftSettings.customRange.from"
+                :min="0"
+                :disabled="draftSettings.range !== 'custom'"
+                class="inline-slider"
+              />
+              <span class="slider-between">to</span>
+              <SliderInput
+                v-model="draftSettings.customRange.to"
+                :min="0"
+                :disabled="draftSettings.range !== 'custom'"
+                class="inline-slider"
+              />
+            </InlineField>
+            <InlineField label="Duration" between>
+              <ToggleRadioButtons
+                v-model="draftSettings.duration"
+                :options="autoCustomOptions"
+              />
+            </InlineField>
+            <InlineField label="Custom Duration (s)" between>
+              <SliderInput
+                v-model="customDuration"
+                :min="0"
+                :step="0.1"
+                :disabled="draftSettings.duration !== 'custom'"
+                class="inline-slider"
+              />
+            </InlineField>
+            <InlineField label="Size" between>
+              <ToggleRadioButtons
+                v-model="draftSettings.size"
+                :options="autoCustomOptions"
+              />
+            </InlineField>
+            <InlineField label="Custom Size (px)" between>
+              <SliderInput
+                v-model="draftSettings.customSize.width"
+                :min="0"
+                :disabled="draftSettings.size !== 'custom'"
+                class="inline-slider"
+              />
+              <span class="slider-between">x</span>
+              <SliderInput
+                v-model="draftSettings.customSize.height"
+                :min="0"
+                :disabled="draftSettings.size !== 'custom'"
+                class="inline-slider"
+              />
+            </InlineField>
+          </div>
+          <div class="preview">
+            <DialogButton @click="updatePreview">Preview</DialogButton>
+            <div class="preview-outer">
+              <img v-if="previewSrc" :src="previewSrc" alt="Preview" />
+              <p v-else>None</p>
+            </div>
+          </div>
         </div>
       </template>
       <template #buttons>
@@ -112,8 +121,11 @@ Copyright (C) 2022, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { AnimationExportingSettings } from '/@/composables/settings'
+import { useStorage } from '/@/composables/storage'
+
+const storage = useStorage()
 </script>
 
 <script setup lang="ts">
@@ -170,10 +182,35 @@ const customDuration = computed({
     draftSettings.value.customDuration = val * 1000
   },
 })
+
+const previewSrc = ref<string>()
+function updatePreview() {
+  const svg = storage.bakeAnimatedSvg(draftSettings.value)
+  if (!svg) return
+
+  previewSrc.value =
+    'data:image/svg+xml;base64,' +
+    btoa(
+      unescape(encodeURIComponent(new XMLSerializer().serializeToString(svg)))
+    )
+}
+
+watch(
+  () => props.open,
+  () => {
+    previewSrc.value = undefined
+  }
+)
 </script>
 
 <style scoped>
 .content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.settings {
   width: 350px;
 }
 h3 {
@@ -184,5 +221,25 @@ h3 {
 }
 .slider-between {
   margin: 0 10px;
+}
+.preview {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+}
+.preview-outer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 300px;
+  height: 300px;
+  border: 1px solid var(--strong-border);
+}
+.preview-outer img {
+  width: 100%;
+  height: 100%;
 }
 </style>

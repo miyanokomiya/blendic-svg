@@ -53,7 +53,7 @@ import {
   getResolvedBoneMap,
   bakeKeyframeFromResolvedBoneMap,
 } from '../utils/poseResolver'
-import { useSettings } from '/@/composables/settings'
+import { AnimationExportingSettings } from '/@/composables/settings'
 import { initialize, StorageRoot } from '/@/models/storage'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { mapReduce, toList } from '/@/utils/commons'
@@ -342,15 +342,17 @@ export function useStorage() {
     const action = animationStore.selectedAction.value
     const graph = graphStore.lastSelectedGraph.value
     const name = [action?.name, graph?.name].filter((n) => !!n).join('_')
-    saveSvg(makeSvg(svgElementNode).outerHTML, `${name}.svg`)
+    saveSvg(
+      new XMLSerializer().serializeToString(makeSvg(svgElementNode)),
+      `${name}.svg`
+    )
   }
 
-  function bakeAnimatedSvg() {
+  function bakeAnimatedSvg(
+    animSettings: AnimationExportingSettings
+  ): SVGElement | undefined {
     const actor = elementStore.lastSelectedActor.value
     if (!actor) return
-
-    const { settings } = useSettings()
-    const animSettings = settings.animationExportingSettings
 
     const [startFrame, endFrame] =
       animSettings.range === 'auto'
@@ -462,10 +464,19 @@ export function useStorage() {
       svgElm.setAttribute('height', `${animSettings.customSize.height}px`)
     }
 
+    return svgElm
+  }
+
+  function bakeAndSaveAnimatedSvg(animSettings: AnimationExportingSettings) {
+    const svg = bakeAnimatedSvg(animSettings)
+    if (!svg) return
+
+    const action = animationStore.selectedAction.value
+    const graph = graphStore.lastSelectedGraph.value
     const name = [action?.name, graph?.name, 'anim']
       .filter((n) => !!n)
       .join('-')
-    saveSvg(svgElm.outerHTML, `${name}.svg`)
+    saveSvg(new XMLSerializer().serializeToString(svg), `${name}.svg`)
   }
 
   return {
@@ -477,6 +488,7 @@ export function useStorage() {
     bakeAction,
     bakeSvg,
     bakeAnimatedSvg,
+    bakeAndSaveAnimatedSvg,
   }
 }
 

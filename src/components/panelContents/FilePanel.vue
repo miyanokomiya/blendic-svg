@@ -110,7 +110,7 @@ const showAnimatedSvgSettingDialogFlag = ref(false)
 const { settings } = useSettings()
 function exportAnimatedSvg(val: AnimationExportingSettings) {
   settings.animationExportingSettings = val
-  storage.bakeAnimatedSvg()
+  storage.bakeAndSaveAnimatedSvg(val)
   showAnimatedSvgSettingDialogFlag.value = false
 }
 

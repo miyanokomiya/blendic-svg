@@ -126,7 +126,7 @@ describe('utils/helpers.ts', () => {
   })
 
   describe('normalizeAttributes', () => {
-    it('should override styles including the attributes', () => {
+    it('should drop styles that are included in the attributes', () => {
       const ret = normalizeAttributes({
         style: 'fill:black;opacity:0.1;stroke:black;',
         fill: 'red',
@@ -138,8 +138,6 @@ describe('utils/helpers.ts', () => {
         stroke: 'green',
       })
       expect(parseStyle(ret.style)).toEqual({
-        fill: 'red',
-        stroke: 'green',
         opacity: '0.1',
       })
     })

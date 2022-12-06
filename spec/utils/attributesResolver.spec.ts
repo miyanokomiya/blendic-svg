@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { getBElement, getBone, getElementNode, getTransform } from '/@/models'
 import {
+  dropColorStyles,
   getPosedAttributesWithoutTransform,
   posedHsva,
 } from '/@/utils/attributesResolver'
@@ -109,5 +110,42 @@ describe('getPosedAttributesWithoutTransform', () => {
         )
       ).toEqual({ h: 400, s: 1, v: 0, a: 1 })
     })
+  })
+})
+
+describe('dropColorStyles', () => {
+  it('should drop color styles if the element has color attributes', () => {
+    expect(
+      dropColorStyles({
+        fill: 'blue',
+        stroke: 'green',
+        style: 'fill:red;stroke:red;fill-opacity:0.5;stroke-opacity:0.6;',
+      })
+    ).toEqual({
+      fill: 'blue',
+      stroke: 'green',
+      style: 'fill-opacity:0.5;stroke-opacity:0.6;',
+    })
+
+    expect(
+      dropColorStyles({
+        'fill-opacity': '0',
+        'stroke-opacity': '1',
+        style: 'fill:red;stroke:red;fill-opacity:0.5;stroke-opacity:0.6;',
+      })
+    ).toEqual({
+      'fill-opacity': '0',
+      'stroke-opacity': '1',
+      style: 'fill:red;stroke:red;',
+    })
+  })
+
+  it('should drop style attribute if it no longer has value', () => {
+    expect(
+      dropColorStyles({
+        fill: 'blue',
+        style: 'fill:red;',
+      })
+    ).toEqual({ fill: 'blue' })
   })
 })

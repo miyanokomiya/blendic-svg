@@ -29,7 +29,7 @@ import {
   ValueTypeScaler,
 } from '/@/models/graphNode'
 import { getGraphValueEnumKey } from '/@/models/graphNodeEnums'
-import { posedHsva } from '/@/utils/attributesResolver'
+import { posedHsva, dropColorStyles } from '/@/utils/attributesResolver'
 import { hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { BoneConstraint } from '/@/utils/constraints'
 import { logRound } from '/@/utils/geometry'
@@ -118,7 +118,7 @@ export function toStyle(obj: { [name: string]: string | undefined }): string {
 export function normalizeAttributes(
   attributes: ElementNodeAttributes
 ): ElementNodeAttributes {
-  return normalizeAttributeTransform(normalizeAttributeColor(attributes))
+  return normalizeAttributeTransform(dropColorStyles(attributes))
 }
 
 function normalizeAttributeTransform(
@@ -129,21 +129,6 @@ function normalizeAttributeTransform(
   const ret = { ...attributes }
   delete ret.transform
   return ret
-}
-
-function normalizeAttributeColor(
-  attributes: ElementNodeAttributes
-): ElementNodeAttributes {
-  if (!attributes.fill && !attributes.stroke) return attributes
-
-  return {
-    ...attributes,
-    style: toStyle({
-      ...parseStyle(attributes.style),
-      ...(attributes.fill ? { fill: attributes.fill } : {}),
-      ...(attributes.stroke ? { stroke: attributes.stroke } : {}),
-    }),
-  }
 }
 
 export function getKeyframeTopMap(

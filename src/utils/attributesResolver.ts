@@ -30,6 +30,7 @@ import { HSVA, hsvaToRgba, rednerRGBA, rednerRGBByHSV } from '/@/utils/color'
 import { parseViewBoxFromStr } from '/@/utils/elements'
 import { circleClamp, clamp } from 'okageo'
 import { transformRect } from '/@/utils/geometry'
+import { parseStyle, toStyle } from './helpers'
 
 export function getPosedAttributesWithoutTransform(
   boneMap: IdMap<Bone>,
@@ -68,6 +69,28 @@ export function getPosedAttributesWithoutTransform(
     }
   }
 
+  return dropColorStyles(ret)
+}
+
+const COLOR_ATTRUBTES = ['fill', 'stroke', 'fill-opacity', 'stroke-opacity']
+
+export function dropColorStyles(
+  src: ElementNodeAttributes
+): ElementNodeAttributes {
+  if (!src.style) return src
+
+  const parsed = parseStyle(src.style)
+  COLOR_ATTRUBTES.filter((name) => parsed[name] && src[name]).forEach(
+    (name) => delete parsed[name]
+  )
+  const style = toStyle(parsed)
+
+  const ret = { ...src }
+  if (style) {
+    ret.style = style
+  } else {
+    delete ret.style
+  }
   return ret
 }
 

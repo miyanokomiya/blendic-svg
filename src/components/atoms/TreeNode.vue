@@ -34,7 +34,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         v-if="editingName"
         :model-value="node.name"
         autofocus
-        @update:model-value="updateName"
+        @update:model-value="updateNameHandler"
         @blur="endEditingName"
       />
       <a
@@ -47,7 +47,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       >
     </div>
     <div v-if="!closed" class="children-space">
-      <TreeNode
+      <TreeNodeVue
         v-for="c in children"
         :key="c.id"
         :node="c"
@@ -58,91 +58,81 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import {
-  computed,
-  ComputedRef,
-  defineComponent,
-  inject,
-  PropType,
-  ref,
-} from 'vue'
-import UpIcon from '/@/components/atoms/UpIcon.vue'
+import { computed, ComputedRef, inject, ref, withDefaults } from 'vue'
 import { TreeNode } from '/@/utils/relations'
-import TextInput from '/@/components/atoms/TextInput.vue'
 import { SelectOptions } from '/@/composables/modes/types'
 import { getMouseOptions } from '/@/utils/devices'
 
-export default defineComponent({
-  name: 'TreeNode',
-  components: { UpIcon, TextInput },
-  props: {
-    node: {
-      type: Object as PropType<TreeNode>,
-      required: true,
-    },
-    nestIndex: {
-      type: Number,
-      default: 0,
-    },
-  },
-  setup(props) {
-    const children = computed(() => {
-      return props.node.children
-    })
-
-    // eslint-disable-next-line no-unused-vars
-    const onClickElement = inject<
-      (id: string, options?: SelectOptions) => void
-    >('onClickElement', () => {})
-
-    const selectedMap = inject<ComputedRef<{ [id: string]: boolean }>>(
-      'selectedMap',
-      computed(() => ({}))
-    )
-
-    const selected = computed(() => {
-      return !!selectedMap.value[props.node.id]
-    })
-
-    const closed = ref(false)
-    function toggleClosed() {
-      closed.value = !closed.value
-    }
-
-    const editingName = ref(false)
-    const updateName = inject<(id: string, name: string) => void>(
-      'updateName',
-      () => {}
-    )
-    const getEditable = inject<() => boolean>('getEditable', () => false)
-    const editable = computed(getEditable)
-
-    return {
-      hasChildren: computed(() => props.node.children.length > 0),
-      closed,
-      toggleClosed,
-      children,
-      click: (e: MouseEvent) =>
-        onClickElement(props.node.id, getMouseOptions(e)),
-      selected,
-
-      editingName,
-      startEditingName: () => {
-        if (!editable.value) return
-        editingName.value = true
-      },
-      endEditingName: () => (editingName.value = false),
-      updateName(name: string) {
-        if (!editable.value) return
-        updateName(props.node.id, name)
-        editingName.value = false
-      },
-    }
-  },
-})
+export default {
+  name: 'TreeNodeVue',
+}
 </script>
 
-<style lang="scss" scoped>
+<script setup lang="ts">
+import UpIcon from '/@/components/atoms/UpIcon.vue'
+import TextInput from '/@/components/atoms/TextInput.vue'
+
+const props = withDefaults(
+  defineProps<{
+    node: TreeNode
+    nestIndex?: number
+  }>(),
+  { nestIndex: 0 }
+)
+
+const children = computed(() => {
+  return props.node.children
+})
+
+const onClickElement = inject<(id: string, options?: SelectOptions) => void>(
+  'onClickElement',
+  () => {}
+)
+
+const selectedMap = inject<ComputedRef<{ [id: string]: boolean }>>(
+  'selectedMap',
+  computed(() => ({}))
+)
+
+const selected = computed(() => {
+  return !!selectedMap.value[props.node.id]
+})
+
+const closed = ref(false)
+function toggleClosed() {
+  closed.value = !closed.value
+}
+
+const editingName = ref(false)
+const updateName = inject<(id: string, name: string) => void>(
+  'updateName',
+  () => {}
+)
+const getEditable = inject<() => boolean>('getEditable', () => false)
+const editable = computed(getEditable)
+
+const hasChildren = computed(() => props.node.children.length > 0)
+
+const click = (e: MouseEvent) =>
+  onClickElement(props.node.id, getMouseOptions(e))
+
+function startEditingName() {
+  if (!editable.value) return
+  editingName.value = true
+}
+
+function endEditingName() {
+  editingName.value = false
+}
+
+function updateNameHandler(name: string) {
+  if (!editable.value) return
+  updateName(props.node.id, name)
+  editingName.value = false
+}
+</script>
+
+<style scoped>
 .tree-node {
   width: 100%;
   display: flex;
@@ -151,11 +141,11 @@ export default defineComponent({
   font-size: 16px;
   background-color: var(--background);
   user-select: none;
-  &.has-children {
-    border: solid 1px var(--weak-border);
-    border-right: none;
-    background-color: var(--background-slight);
-  }
+}
+.tree-node.has-children {
+  border: solid 1px var(--weak-border);
+  border-right: none;
+  background-color: var(--background-slight);
 }
 .node-view {
   padding: 2px;
@@ -172,9 +162,9 @@ export default defineComponent({
   align-items: center;
   border-radius: 2px;
   overflow: hidden;
-  > * {
-    height: 14px;
-  }
+}
+.toggle-closed > * {
+  height: 14px;
 }
 .node-name {
   flex-grow: 1;
@@ -183,11 +173,11 @@ export default defineComponent({
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
-  &:hover {
-    opacity: 0.7;
-  }
-  &.selected {
-    color: orange;
-  }
+}
+.node-name:hover {
+  opacity: 0.7;
+}
+.node-name.selected {
+  color: orange;
 }
 </style>

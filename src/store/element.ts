@@ -169,6 +169,7 @@ export function createStore(historyStore: HistoryStore) {
     elementMap,
     selectedElements,
     lastSelectedElement,
+    lastSelectedElementId,
 
     initState,
     exportState,

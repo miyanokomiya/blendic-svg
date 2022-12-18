@@ -20,16 +20,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="file-panel">
     <h3>{{ treeType }}</h3>
-    <div v-if="treeRoot" class="tree-view">
+    <div v-if="treeRoot" ref="treeViewElm" class="tree-view">
       <TreeNode :node="treeRoot" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, provide } from 'vue'
+import { ref, computed, provide, watch } from 'vue'
 import { useElementStore } from '/@/store/element'
-import TreeNode from '/@/components/atoms/TreeNode.vue'
 import { useCanvasStore } from '/@/store/canvas'
 import { getTreeFromElementNode } from '/@/utils/elements'
 import { useStore } from '/@/store'
@@ -37,117 +36,134 @@ import { mapReduce } from '/@/utils/commons'
 import { getTree } from '/@/utils/armatures'
 import { SelectOptions } from '/@/composables/modes/types'
 
-export default defineComponent({
-  components: { TreeNode },
-  setup() {
-    const elementStore = useElementStore()
-    const canvasStore = useCanvasStore()
-    const store = useStore()
+const elementStore = useElementStore()
+const canvasStore = useCanvasStore()
+const store = useStore()
+</script>
 
-    const treeType = computed(() => {
-      switch (canvasStore.canvasMode.value) {
-        case 'object':
-        case 'edit':
-        case 'pose':
-          return 'Armature Tree'
-        case 'weight':
-          return 'Element Tree'
-        default:
-          return ''
-      }
-    })
+<script setup lang="ts">
+import TreeNode from '/@/components/atoms/TreeNode.vue'
 
-    const targetActor = computed(() => {
-      return elementStore.lastSelectedActor.value
-    })
-
-    const treeRoot = computed(() => {
-      switch (canvasStore.canvasMode.value) {
-        case 'object':
-        case 'edit':
-        case 'pose':
-          if (!store.lastSelectedArmature.value) return undefined
-          return {
-            id: store.lastSelectedArmature.value.id,
-            name: store.lastSelectedArmature.value.name,
-            children: getTree(store.boneMap.value),
-          }
-        case 'weight':
-          if (!targetActor.value) return
-          return getTreeFromElementNode(targetActor.value.svgTree)
-        default:
-          return undefined
-      }
-    })
-
-    const selectedMap = computed(() => {
-      switch (canvasStore.canvasMode.value) {
-        case 'edit':
-        case 'pose':
-          return mapReduce(store.selectedBones.value, () => true)
-        case 'weight':
-          return elementStore.selectedElements.value
-        default:
-          return {}
-      }
-    })
-
-    function clickElement(id: string, options?: SelectOptions) {
-      switch (canvasStore.canvasMode.value) {
-        case 'edit':
-        case 'pose':
-          if (!store.lastSelectedArmature.value) return
-
-          if (id === store.lastSelectedArmature.value.id) {
-            store.selectAllBones()
-          } else {
-            store.selectBone(
-              id,
-              { head: true, tail: true },
-              options,
-              canvasStore.canvasMode.value === 'pose'
-            )
-          }
-          return
-        case 'weight':
-          elementStore.selectElement(id, options)
-          return
-        default:
-          return
-      }
-    }
-
-    function updateName(id: string, name: string) {
-      if (!name) return
-
-      switch (canvasStore.canvasMode.value) {
-        case 'object':
-        case 'edit':
-        case 'pose':
-          if (!store.lastSelectedArmature.value) return
-
-          if (id === store.lastSelectedArmature.value.id) {
-            store.updateArmatureName(name)
-          } else {
-            store.updateBone({ name })
-          }
-          return
-        default:
-          return
-      }
-    }
-
-    provide('onClickElement', clickElement)
-    provide('selectedMap', selectedMap)
-    provide('updateName', updateName)
-    provide('getEditable', () => canvasStore.canvasMode.value !== 'weight')
-
-    return {
-      treeType,
-      treeRoot,
-    }
-  },
+const treeType = computed(() => {
+  switch (canvasStore.canvasMode.value) {
+    case 'object':
+    case 'edit':
+    case 'pose':
+      return 'Armature Tree'
+    case 'weight':
+      return 'Element Tree'
+    default:
+      return ''
+  }
 })
+
+const targetActor = computed(() => {
+  return elementStore.lastSelectedActor.value
+})
+
+const treeRoot = computed(() => {
+  switch (canvasStore.canvasMode.value) {
+    case 'object':
+    case 'edit':
+    case 'pose':
+      if (!store.lastSelectedArmature.value) return undefined
+      return {
+        id: store.lastSelectedArmature.value.id,
+        name: store.lastSelectedArmature.value.name,
+        children: getTree(store.boneMap.value),
+      }
+    case 'weight':
+      if (!targetActor.value) return
+      return getTreeFromElementNode(targetActor.value.svgTree)
+    default:
+      return undefined
+  }
+})
+
+const selectedMap = computed(() => {
+  switch (canvasStore.canvasMode.value) {
+    case 'edit':
+    case 'pose':
+      return mapReduce(store.selectedBones.value, () => true)
+    case 'weight':
+      return elementStore.selectedElements.value
+    default:
+      return {}
+  }
+})
+
+const lastselectedId = computed(() => {
+  switch (canvasStore.canvasMode.value) {
+    case 'object':
+      return store.lastSelectedArmatureId.value
+    case 'edit':
+    case 'pose':
+      return store.lastSelectedBoneId.value
+    case 'weight':
+      return elementStore.lastSelectedElementId.value
+    default:
+      return undefined
+  }
+})
+
+const treeViewElm = ref<HTMLElement>()
+watch(lastselectedId, (to) => {
+  if (to && treeViewElm.value) {
+    treeViewElm.value
+      .querySelector(`[data-scroll_anchor="${to}"]`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+})
+
+function clickElement(id: string, options?: SelectOptions) {
+  switch (canvasStore.canvasMode.value) {
+    case 'edit':
+    case 'pose':
+      if (!store.lastSelectedArmature.value) return
+
+      if (id === store.lastSelectedArmature.value.id) {
+        store.selectAllBones()
+      } else {
+        store.selectBone(
+          id,
+          { head: true, tail: true },
+          options,
+          canvasStore.canvasMode.value === 'pose'
+        )
+      }
+      return
+    case 'weight':
+      elementStore.selectElement(id, options)
+      return
+    default:
+      return
+  }
+}
+
+function updateName(id: string, name: string) {
+  if (!name) return
+
+  switch (canvasStore.canvasMode.value) {
+    case 'object':
+    case 'edit':
+    case 'pose':
+      if (!store.lastSelectedArmature.value) return
+
+      if (id === store.lastSelectedArmature.value.id) {
+        store.updateArmatureName(name)
+      } else {
+        store.updateBone({ name })
+      }
+      return
+    default:
+      return
+  }
+}
+
+provide('onClickElement', clickElement)
+provide('getSelectedMap', () => selectedMap.value)
+provide('updateName', updateName)
+provide('getEditable', () => canvasStore.canvasMode.value !== 'weight')
 </script>
 
 <style scoped>

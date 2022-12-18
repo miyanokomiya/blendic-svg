@@ -57,7 +57,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .dialog-wrapper {
   position: fixed;
   top: 0;
@@ -111,8 +111,8 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  > :deep(*) {
-    margin-left: 8px;
-  }
+}
+.buttons > :deep(*) {
+  margin-left: 8px;
 }
 </style>

@@ -163,12 +163,12 @@ function updateInfluence(val: number, seriesKey?: string) {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .inline {
   display: flex;
   align-items: center;
-  > * + * {
-    margin-left: 10px;
-  }
+}
+.inline > * + * {
+  margin-left: 10px;
 }
 </style>

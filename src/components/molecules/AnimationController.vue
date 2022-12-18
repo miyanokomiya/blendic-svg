@@ -91,7 +91,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .animation-controller {
   display: flex;
   align-items: center;
@@ -100,17 +100,17 @@ button {
   width: 20px;
   height: 20px;
   overflow: hidden;
-  &:first-child {
-    border-radius: 4px 0 0 4px;
-  }
-  &:last-child {
-    border-radius: 0 4px 4px 0;
-  }
-  & + button {
-    margin-left: 2px;
-  }
-  &.pause-button {
-    width: 42px;
-  }
+}
+button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+button + button {
+  margin-left: 2px;
+}
+button.pause-button {
+  width: 42px;
 }
 </style>

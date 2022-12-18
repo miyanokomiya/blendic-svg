@@ -40,19 +40,19 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 button {
   padding: 6px 16px;
   border: solid 1px var(--weak-border);
   border-radius: 4px;
   font-size: 14px;
-  &:hover {
-    opacity: 0.7;
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
+}
+button:hover {
+  opacity: 0.7;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 .primary {
   background-color: var(--dialog-button-primary);

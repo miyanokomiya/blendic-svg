@@ -119,7 +119,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .resizable-v-wrapper {
   display: flex;
   flex-direction: column;
@@ -137,12 +137,12 @@ export default defineComponent({
   padding: 4px 0;
   width: 100%;
   cursor: row-resize;
-  > div {
-    height: 1px;
-  }
-  &:hover > div {
-    background-color: var(--weak-border);
-  }
+}
+.anchor > div {
+  height: 1px;
+}
+.anchor:hover > div {
+  background-color: var(--weak-border);
 }
 .anchor-dence {
   position: absolute;

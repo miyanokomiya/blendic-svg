@@ -162,12 +162,12 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .inline {
   display: flex;
   align-items: center;
-  > * + * {
-    margin-left: 10px;
-  }
+}
+.inline > * + * {
+  margin-left: 10px;
 }
 </style>

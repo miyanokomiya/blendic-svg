@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Scroll to the selected tree node automatically
 
+### Refactor
+- Remove SASS dependency
+
 ## [0.17.5] - 2022-12-05
 ### Added
 - Make animated SVG size flexible

@@ -178,38 +178,37 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
-$size: 200px;
-
+<style scoped>
 .color-picker-wrapper {
+  --size: 200px;
   padding: 2px;
   background-color: var(--background);
 }
 .color-picker-inner {
   position: relative;
-  width: $size;
+  width: var(--size);
 }
 .color-rect {
-  $margin: 44px;
+  --margin: 44px;
   position: absolute;
   top: 0;
   left: 0;
-  margin: $margin;
-  width: calc(#{$size} - #{$margin * 2});
-  height: calc(#{$size} - #{$margin * 2});
+  margin: var(--margin);
+  width: calc(var(--size) - var(--margin) * 2);
+  height: calc(var(--size) - var(--margin) * 2);
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgb(0, 0, 0)),
     linear-gradient(to right, rgb(255, 255, 255), rgba(255, 255, 255, 0));
-  .cursor {
-    position: absolute;
-    > div {
-      transform: translate(-50%, -50%);
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background-color: var(--background);
-      border: solid 1px var(--strong-border);
-    }
-  }
+}
+.color-rect .cursor {
+  position: absolute;
+}
+.color-rect .cursor > div {
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--background);
+  border: solid 1px var(--strong-border);
 }
 .input-block {
   padding-left: 8px;

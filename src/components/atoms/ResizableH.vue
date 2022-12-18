@@ -135,7 +135,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .resizable-h-wrapper {
   display: flex;
   align-items: stretch;
@@ -144,13 +144,13 @@ export default defineComponent({
 .anchor {
   padding: 0 4px;
   cursor: col-resize;
-  > div {
-    width: 1px;
-    height: 100%;
-  }
-  &:hover > div {
-    background-color: var(--weak-border);
-  }
+}
+.anchor > div {
+  width: 1px;
+  height: 100%;
+}
+.anchor:hover > div {
+  background-color: var(--weak-border);
 }
 .right {
   position: relative;

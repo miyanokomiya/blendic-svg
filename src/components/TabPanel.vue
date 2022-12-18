@@ -61,7 +61,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .tab-panel-root {
   height: 100%;
   display: flex;
@@ -73,21 +73,21 @@ ul {
   list-style: none;
   display: flex;
   align-items: center;
-  > li {
-    margin-right: 4px;
-    padding: 2px 4px;
-    border: solid 1px var(--weak-border);
-    border-radius: 4px 4px 0 0;
-    border-bottom: none;
-    &.current {
-      background-color: var(--input-value-selected-weak);
-    }
-    > a {
-      text-decoration: none;
-      color: var(--text);
-      font-size: 14px;
-    }
-  }
+}
+ul > li {
+  margin-right: 4px;
+  padding: 2px 4px;
+  border: solid 1px var(--weak-border);
+  border-radius: 4px 4px 0 0;
+  border-bottom: none;
+}
+ul > li.current {
+  background-color: var(--input-value-selected-weak);
+}
+ul > li > a {
+  text-decoration: none;
+  color: var(--text);
+  font-size: 14px;
 }
 .panels {
   flex: 1;

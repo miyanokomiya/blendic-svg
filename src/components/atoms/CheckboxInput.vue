@@ -49,21 +49,21 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 label {
   display: flex;
   align-items: center;
   cursor: pointer;
-  > span {
-    margin-left: 10px;
-    text-align: left;
-    user-select: none;
-  }
-  &.disabled {
-    cursor: default;
-    > span {
-      color: var(--weak-border);
-    }
-  }
+}
+label > span {
+  margin-left: 10px;
+  text-align: left;
+  user-select: none;
+}
+label.disabled {
+  cursor: default;
+}
+label.disabled > span {
+  color: var(--weak-border);
 }
 </style>

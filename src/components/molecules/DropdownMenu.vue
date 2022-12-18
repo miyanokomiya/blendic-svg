@@ -83,61 +83,61 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .dropdown-menu {
   position: relative;
   font-size: 12px;
-  > button {
-    position: relative;
-    padding: 2px 18px 2px 10px;
-    border: solid 1px var(--strong-border);
-    border-radius: 4px;
-    background-color: var(--background);
-    &.selected {
-      background-color: var(--input-value-selected-weak);
-    }
-    &::after {
-      display: block;
-      content: ' ';
-      position: absolute;
-      top: 7px;
-      right: 4px;
-      width: 0;
-      height: 0;
-      pointer-events: none;
-      border-top: solid 6px var(--strong-border);
-      border-left: solid 5px transparent;
-      border-right: solid 5px transparent;
-    }
-  }
-  > ul {
-    position: absolute;
-    top: 20px;
-    left: 1px;
-    list-style: none;
-    border: solid 1px var(--weak-border);
-    background-color: var(--background);
-    min-width: 100px;
-    border-radius: 0 4px 4px 4px;
-    li {
-      padding: 4px 0;
-      width: max-content;
-    }
-    hr {
-      margin: 0 auto;
-      width: calc(100% - 10px);
-      border: none;
-      border-top: solid 1px var(--weak-border);
-    }
-    button {
-      display: block;
-      width: 100%;
-      padding: 4px 10px;
-      text-align: left;
-      &:hover {
-        background-color: var(--background-second);
-      }
-    }
-  }
+}
+.dropdown-menu > button {
+  position: relative;
+  padding: 2px 18px 2px 10px;
+  border: solid 1px var(--strong-border);
+  border-radius: 4px;
+  background-color: var(--background);
+}
+.dropdown-menu > button.selected {
+  background-color: var(--input-value-selected-weak);
+}
+.dropdown-menu > button::after {
+  display: block;
+  content: ' ';
+  position: absolute;
+  top: 7px;
+  right: 4px;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  border-top: solid 6px var(--strong-border);
+  border-left: solid 5px transparent;
+  border-right: solid 5px transparent;
+}
+.dropdown-menu > ul {
+  position: absolute;
+  top: 20px;
+  left: 1px;
+  list-style: none;
+  border: solid 1px var(--weak-border);
+  background-color: var(--background);
+  min-width: 100px;
+  border-radius: 0 4px 4px 4px;
+}
+.dropdown-menu > ul li {
+  padding: 4px 0;
+  width: max-content;
+}
+.dropdown-menu > ul hr {
+  margin: 0 auto;
+  width: calc(100% - 10px);
+  border: none;
+  border-top: solid 1px var(--weak-border);
+}
+.dropdown-menu > ul button {
+  display: block;
+  width: 100%;
+  padding: 4px 10px;
+  text-align: left;
+}
+.dropdown-menu > ul button:hover {
+  background-color: var(--background-second);
 }
 </style>

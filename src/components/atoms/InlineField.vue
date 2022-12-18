@@ -47,30 +47,30 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .inline-field {
   width: 100%;
   display: flex;
   align-items: center;
-  & + .inline-field {
-    margin-top: 10px;
-  }
-  > label {
-    margin-right: 10px;
-    text-align: left;
-  }
-  .inline-content {
-    flex: 1;
-    min-width: 50px; // a magic to fix flex width
-    display: flex;
-    align-items: center;
-  }
-  &.between {
-    justify-content: space-between;
-    .inline-content {
-      flex: initial;
-      min-width: auto;
-    }
-  }
+}
+.inline-field + .inline-field {
+  margin-top: 10px;
+}
+.inline-field > label {
+  margin-right: 10px;
+  text-align: left;
+}
+.inline-field .inline-content {
+  flex: 1;
+  min-width: 50px; /* a magic to fix flex width */
+  display: flex;
+  align-items: center;
+}
+.inline-field.between {
+  justify-content: space-between;
+}
+.inline-field.between .inline-content {
+  flex: initial;
+  min-width: auto;
 }
 </style>

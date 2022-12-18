@@ -23,10 +23,8 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<style lang="scss" scoped>
-.row-block {
-  & + .row-block {
-    margin-top: 10px;
-  }
+<style scoped>
+.row-block + .row-block {
+  margin-top: 10px;
 }
 </style>

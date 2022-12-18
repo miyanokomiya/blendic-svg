@@ -60,29 +60,29 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .side-bar {
   position: relative;
 }
 .tab-list {
   list-style: none;
-  > li {
-    margin-bottom: 4px;
-    padding: 4px 2px;
-    border: solid 1px var(--weak-border);
-    border-right: none;
-    border-radius: 4px 0 0 4px;
-    writing-mode: vertical-lr;
-    transform: scale(-1);
-    &.current {
-      background-color: var(--input-value-selected-weak);
-    }
-    > a {
-      text-decoration: none;
-      color: var(--text);
-      font-size: 14px;
-    }
-  }
+}
+.tab-list > li {
+  margin-bottom: 4px;
+  padding: 4px 2px;
+  border: solid 1px var(--weak-border);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  writing-mode: vertical-lr;
+  transform: scale(-1);
+}
+.tab-list > li.current {
+  background-color: var(--input-value-selected-weak);
+}
+.tab-list > li > a {
+  text-decoration: none;
+  color: var(--text);
+  font-size: 14px;
 }
 .tab-content {
   position: absolute;

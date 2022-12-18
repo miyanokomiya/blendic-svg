@@ -161,7 +161,7 @@ function updateName(id: string, name: string) {
 }
 
 provide('onClickElement', clickElement)
-provide('selectedMap', selectedMap)
+provide('getSelectedMap', () => selectedMap.value)
 provide('updateName', updateName)
 provide('getEditable', () => canvasStore.canvasMode.value !== 'weight')
 </script>

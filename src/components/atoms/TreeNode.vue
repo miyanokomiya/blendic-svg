@@ -58,7 +58,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, ComputedRef, inject, ref, withDefaults } from 'vue'
+import { computed, inject, ref, withDefaults } from 'vue'
 import { TreeNode } from '/@/utils/relations'
 import { SelectOptions } from '/@/composables/modes/types'
 import { getMouseOptions } from '/@/utils/devices'
@@ -89,13 +89,13 @@ const onClickElement = inject<(id: string, options?: SelectOptions) => void>(
   () => {}
 )
 
-const selectedMap = inject<ComputedRef<{ [id: string]: boolean }>>(
-  'selectedMap',
-  computed(() => ({}))
+const getSelectedMap = inject<() => { [id: string]: boolean }>(
+  'getSelectedMap',
+  () => ({})
 )
 
 const selected = computed(() => {
-  return !!selectedMap.value[props.node.id]
+  return !!getSelectedMap()[props.node.id]
 })
 
 const closed = ref(false)

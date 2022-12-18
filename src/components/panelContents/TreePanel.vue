@@ -20,14 +20,14 @@ Copyright (C) 2021, Tomoya Komiyama.
 <template>
   <div class="file-panel">
     <h3>{{ treeType }}</h3>
-    <div v-if="treeRoot" class="tree-view">
+    <div v-if="treeRoot" ref="treeViewElm" class="tree-view">
       <TreeNode :node="treeRoot" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, provide } from 'vue'
+import { ref, computed, defineComponent, provide, watch } from 'vue'
 import { useElementStore } from '/@/store/element'
 import TreeNode from '/@/components/atoms/TreeNode.vue'
 import { useCanvasStore } from '/@/store/canvas'
@@ -92,6 +92,29 @@ export default defineComponent({
       }
     })
 
+    const lastselectedId = computed(() => {
+      switch (canvasStore.canvasMode.value) {
+        case 'object':
+          return store.lastSelectedArmatureId.value
+        case 'edit':
+        case 'pose':
+          return store.lastSelectedBoneId.value
+        case 'weight':
+          return elementStore.lastSelectedElementId.value
+        default:
+          return undefined
+      }
+    })
+
+    const treeViewElm = ref<HTMLElement>()
+    watch(lastselectedId, (to) => {
+      if (to && treeViewElm.value) {
+        treeViewElm.value
+          .querySelector(`[data-scroll_anchor="${to}"]`)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    })
+
     function clickElement(id: string, options?: SelectOptions) {
       switch (canvasStore.canvasMode.value) {
         case 'edit':
@@ -145,6 +168,7 @@ export default defineComponent({
     return {
       treeType,
       treeRoot,
+      treeViewElm,
     }
   },
 })

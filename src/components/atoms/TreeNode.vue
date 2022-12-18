@@ -19,7 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <template>
   <div class="tree-node" :class="{ 'has-children': hasChildren }">
-    <div class="node-view">
+    <div :data-scroll_anchor="node.id" class="node-view">
       <div class="spacer" :style="{ width: `${nestIndex * 8}px` }" />
       <button
         v-if="hasChildren"

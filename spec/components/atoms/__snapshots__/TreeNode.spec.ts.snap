@@ -6,6 +6,7 @@ exports[`src/components/atoms/TreeNode.vue snapshot closed nested tree 1`] = `
 >
   <div
     class="node-view"
+    data-scroll_anchor="a"
   >
     <div
       class="spacer"
@@ -49,6 +50,7 @@ exports[`src/components/atoms/TreeNode.vue snapshot closed nested tree 1`] = `
     >
       <div
         class="node-view"
+        data-scroll_anchor="aa"
       >
         <div
           class="spacer"
@@ -76,6 +78,7 @@ exports[`src/components/atoms/TreeNode.vue snapshot closed nested tree 1`] = `
     >
       <div
         class="node-view"
+        data-scroll_anchor="bb"
       >
         <div
           class="spacer"
@@ -109,6 +112,7 @@ exports[`src/components/atoms/TreeNode.vue snapshot nested tree 1`] = `
 >
   <div
     class="node-view"
+    data-scroll_anchor="a"
   >
     <div
       class="spacer"
@@ -152,6 +156,7 @@ exports[`src/components/atoms/TreeNode.vue snapshot nested tree 1`] = `
     >
       <div
         class="node-view"
+        data-scroll_anchor="aa"
       >
         <div
           class="spacer"
@@ -179,6 +184,7 @@ exports[`src/components/atoms/TreeNode.vue snapshot nested tree 1`] = `
     >
       <div
         class="node-view"
+        data-scroll_anchor="bb"
       >
         <div
           class="spacer"

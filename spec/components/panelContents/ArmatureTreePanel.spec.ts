@@ -18,17 +18,19 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { mount } from '@vue/test-utils'
-import Target from '/@/components/panelContents/ElementTreePanel.vue'
-import { useElementStore } from '/@/store/element'
+import Target from '/@/components/panelContents/ArmatureTreePanel.vue'
+import { useStore } from '/@/store'
+import { useCanvasStore } from '/@/store/canvas'
 
-describe('src/components/panelContents/ElementTreePanel.vue', () => {
+describe('src/components/panelContents/ArmatureTreePanel.vue', () => {
   describe('snapshot', () => {
     it('defalut', () => {
       const wrapper = mount(Target)
       expect(wrapper.element).toMatchSnapshot()
     })
     it('tree view', () => {
-      useElementStore().createDefaultEntities()
+      useStore().createDefaultEntities()
+      useCanvasStore().changeCanvasMode('edit')
       const wrapper = mount(Target)
       expect(wrapper.element).toMatchSnapshot()
     })

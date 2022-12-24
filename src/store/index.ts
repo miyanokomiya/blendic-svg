@@ -146,7 +146,11 @@ export function createStore(historyStore: HistoryStore) {
   }
 
   function createDefaultEntities() {
-    const bone = getBone({ name: 'bone', tail: { x: 0, y: 100 } }, true)
+    const bone = getBone({
+      id: 'initial-bone',
+      name: 'bone',
+      tail: { x: 0, y: 100 },
+    })
     const armature = getArmature({
       id: 'initial-armature',
       name: 'armature',

@@ -18,17 +18,24 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { mount } from '@vue/test-utils'
-import Target from '/@/components/panelContents/ElementTreePanel.vue'
+import Target from '/@/components/panelContents/TreePanel.vue'
+import { useStore } from '/@/store'
+import { useCanvasStore } from '/@/store/canvas'
 import { useElementStore } from '/@/store/element'
 
-describe('src/components/panelContents/ElementTreePanel.vue', () => {
+describe('src/components/panelContents/TreePanel.vue', () => {
   describe('snapshot', () => {
-    it('defalut', () => {
+    it('armature', () => {
+      useStore().createDefaultEntities()
+      useElementStore().createDefaultEntities()
+      useCanvasStore().changeCanvasMode('edit')
       const wrapper = mount(Target)
       expect(wrapper.element).toMatchSnapshot()
     })
-    it('tree view', () => {
+    it('weight', () => {
+      useStore().createDefaultEntities()
       useElementStore().createDefaultEntities()
+      useCanvasStore().changeCanvasMode('weight')
       const wrapper = mount(Target)
       expect(wrapper.element).toMatchSnapshot()
     })

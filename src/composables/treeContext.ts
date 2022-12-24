@@ -26,10 +26,18 @@ export function provideTreeContext(options: {
   updateName?: (id: string, name: string) => void
   onClickElement?: (id: string, options?: SelectOptions) => void
 }) {
-  provide('getSelectedMap', options.getSelectedMap)
-  provide('getEditable', () => options.getEditable)
-  provide('updateName', () => options.updateName)
-  provide('onClickElement', options.onClickElement)
+  if (options.getSelectedMap) {
+    provide('getSelectedMap', options.getSelectedMap)
+  }
+  if (options.getEditable) {
+    provide('getEditable', options.getEditable)
+  }
+  if (options.updateName) {
+    provide('updateName', options.updateName)
+  }
+  if (options.onClickElement) {
+    provide('onClickElement', options.onClickElement)
+  }
 }
 
 export function injectTreeContext() {

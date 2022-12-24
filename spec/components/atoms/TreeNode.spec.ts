@@ -38,7 +38,7 @@ describe('src/components/atoms/TreeNode.vue', () => {
       expect(wrapper.element).toMatchSnapshot()
     })
     it('closed nested tree', () => {
-      const wrapper = mount(Target, {
+      const wrapper = mount<any>(Target, {
         props: {
           node: {
             id: 'a',

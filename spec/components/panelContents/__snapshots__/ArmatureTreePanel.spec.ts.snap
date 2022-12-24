@@ -1,0 +1,87 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/panelContents/ArmatureTreePanel.vue snapshot defalut 1`] = `<!--v-if-->`;
+
+exports[`src/components/panelContents/ArmatureTreePanel.vue snapshot tree view 1`] = `
+<div
+  class="tree-view"
+>
+  
+  <div
+    class="tree-node has-children"
+  >
+    <div
+      class="node-view"
+      data-scroll_anchor="initial-armature"
+    >
+      <div
+        class="spacer"
+        style="width: 0px;"
+      />
+      <button
+        class="toggle-closed"
+        type="button"
+      >
+        <svg
+          transform="rotate(0) scale(1, -1)"
+          viewBox="0 0 10 10"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            class="fill-background-second"
+            height="10"
+            stroke="none"
+            width="10"
+          />
+          <path
+            class="fill-background"
+            d="M2 7L8 7L5 2z"
+            stroke="none"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <a
+        class="node-name"
+      >
+        armature
+      </a>
+    </div>
+    <div
+      class="children-space"
+    >
+      
+      <div
+        class="tree-node"
+      >
+        <div
+          class="node-view"
+          data-scroll_anchor="initial-bone"
+        >
+          <div
+            class="spacer"
+            style="width: 8px;"
+          />
+          <div
+            class="spacer"
+            style="width: 16px;"
+          />
+          <a
+            class="node-name"
+          >
+            bone
+          </a>
+        </div>
+        <div
+          class="children-space"
+        >
+          
+          
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+</div>
+`;

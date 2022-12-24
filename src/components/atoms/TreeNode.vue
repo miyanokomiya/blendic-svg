@@ -58,10 +58,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, inject, ref, withDefaults } from 'vue'
+import { computed, ref, withDefaults } from 'vue'
 import { TreeNode } from '/@/utils/relations'
-import { SelectOptions } from '/@/composables/modes/types'
 import { getMouseOptions } from '/@/utils/devices'
+import { injectTreeContext } from '/@/composables/treeContext'
 
 export default {
   name: 'TreeNodeVue',
@@ -84,15 +84,8 @@ const children = computed(() => {
   return props.node.children
 })
 
-const onClickElement = inject<(id: string, options?: SelectOptions) => void>(
-  'onClickElement',
-  () => {}
-)
-
-const getSelectedMap = inject<() => { [id: string]: boolean }>(
-  'getSelectedMap',
-  () => ({})
-)
+const { getEditable, getSelectedMap, updateName, onClickElement } =
+  injectTreeContext()
 
 const selected = computed(() => {
   return !!getSelectedMap()[props.node.id]
@@ -104,11 +97,6 @@ function toggleClosed() {
 }
 
 const editingName = ref(false)
-const updateName = inject<(id: string, name: string) => void>(
-  'updateName',
-  () => {}
-)
-const getEditable = inject<() => boolean>('getEditable', () => false)
 const editable = computed(getEditable)
 
 const hasChildren = computed(() => props.node.children.length > 0)

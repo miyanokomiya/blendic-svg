@@ -14,43 +14,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 
-Copyright (C) 2021, Tomoya Komiyama.
+Copyright (C) 2022, Tomoya Komiyama.
 -->
 
 <template>
-  <div>
-    <h3>{{ treeType }}</h3>
-    <ElementTreePanel v-if="mode === 'weight'" />
-    <ArmatureTreePanel v-else />
+  <div ref="scrollContainer">
+    <slot />
   </div>
 </template>
 
 <script lang="ts">
-import { computed } from 'vue'
-import { useCanvasStore } from '/@/store/canvas'
-
-const canvasStore = useCanvasStore()
+import { ref, watchEffect } from 'vue'
 </script>
 
 <script setup lang="ts">
-import ArmatureTreePanel from '/@/components/panelContents/ArmatureTreePanel.vue'
-import ElementTreePanel from '/@/components/panelContents/ElementTreePanel.vue'
+const props = defineProps<{ scrollTarget?: string }>()
 
-const mode = canvasStore.canvasMode
-
-const treeType = computed(() => {
-  switch (mode.value) {
-    case 'weight':
-      return 'Element Tree'
-    default:
-      return 'Armature Tree'
+const scrollContainer = ref<HTMLElement>()
+watchEffect(() => {
+  if (props.scrollTarget && scrollContainer.value) {
+    scrollContainer.value
+      .querySelector(`[data-scroll_anchor="${props.scrollTarget}"]`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 })
 </script>
-
-<style scoped>
-h3 {
-  margin-bottom: 10px;
-  text-align: left;
-}
-</style>

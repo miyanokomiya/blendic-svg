@@ -74,7 +74,7 @@ export default defineComponent({
     })
 
     function input() {
-      if (draftValue.value === props.modelValue) {
+      if (draftValue.value !== props.modelValue) {
         emit('update:model-value', draftValue.value)
       }
     }

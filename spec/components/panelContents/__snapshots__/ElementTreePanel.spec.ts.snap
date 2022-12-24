@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`src/components/panelContents/ElementTreePanel.vue snapshot defalut 1`] = `<!--v-if-->`;
+
+exports[`src/components/panelContents/ElementTreePanel.vue snapshot tree view 1`] = `
+<div
+  class="tree-view"
+>
+  
+  <div
+    class="tree-node"
+  >
+    <div
+      class="node-view"
+      data-scroll_anchor="svg"
+    >
+      <div
+        class="spacer"
+        style="width: 0px;"
+      />
+      <div
+        class="spacer"
+        style="width: 16px;"
+      />
+      <a
+        class="node-name"
+      >
+        svg #svg
+      </a>
+    </div>
+    <div
+      class="children-space"
+    >
+      
+      
+    </div>
+  </div>
+  
+</div>
+`;

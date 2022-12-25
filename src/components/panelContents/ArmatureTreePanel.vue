@@ -82,7 +82,7 @@ function updateName(id: string, name: string) {
   }
 }
 
-provideTreeContext({
+provideTreeContext('armature', {
   onClickElement,
   getSelectedMap: () => mapReduce(store.selectedBones.value, () => true),
   getEditable: () => true,

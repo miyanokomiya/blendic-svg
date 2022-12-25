@@ -50,7 +50,7 @@ const lastselectedId = computed(() => {
   return elementStore.lastSelectedElementId.value
 })
 
-provideTreeContext({
+provideTreeContext('element', {
   onClickElement: elementStore.selectElement,
   getSelectedMap: () => elementStore.selectedElements.value,
 })

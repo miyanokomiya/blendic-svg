@@ -17,42 +17,72 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2022, Tomoya Komiyama.
 */
 
-import { inject, provide } from 'vue'
+import { inject, provide, Ref, ref } from 'vue'
 import { SelectOptions } from '/@/composables/modes/types'
 
-export function provideTreeContext(options: {
-  getSelectedMap?: () => { [id: string]: boolean }
-  getEditable?: () => boolean
-  updateName?: (id: string, name: string) => void
-  onClickElement?: (id: string, options?: SelectOptions) => void
-}) {
-  if (options.getSelectedMap) {
-    provide('getSelectedMap', options.getSelectedMap)
-  }
-  if (options.getEditable) {
-    provide('getEditable', options.getEditable)
-  }
-  if (options.updateName) {
-    provide('updateName', options.updateName)
-  }
-  if (options.onClickElement) {
-    provide('onClickElement', options.onClickElement)
-  }
+const closedState: { [key: string]: Ref<{ [id: string]: boolean }> } = {}
+
+export function clearClosedState() {
+  Object.keys(closedState).forEach((k) => delete closedState[k])
 }
 
-export function injectTreeContext() {
+export function provideTreeContext(
+  key: string,
+  options: {
+    getSelectedMap?: () => { [id: string]: boolean }
+    getEditable?: () => boolean
+    updateName?: (id: string, name: string) => void
+    onClickElement?: (id: string, options?: SelectOptions) => void
+    provide?: (key: string, value: any) => void
+  }
+) {
+  const _provide = options.provide ?? provide
+
+  if (options.getSelectedMap) {
+    _provide('getSelectedMap', options.getSelectedMap)
+  }
+  if (options.getEditable) {
+    _provide('getEditable', options.getEditable)
+  }
+  if (options.updateName) {
+    _provide('updateName', options.updateName)
+  }
+  if (options.onClickElement) {
+    _provide('onClickElement', options.onClickElement)
+  }
+
+  closedState[key] ??= ref<{ [id: string]: boolean }>({})
+  _provide('getClosedMap', () => closedState[key].value)
+  _provide('setClosed', (id: string, value: boolean) => {
+    if (value) {
+      closedState[key].value[id] = value
+    } else {
+      delete closedState[key].value[id]
+    }
+  })
+}
+
+export function injectTreeContext(_inject = inject) {
   return {
-    getSelectedMap: inject<() => { [id: string]: boolean }>(
+    getSelectedMap: _inject<() => { [id: string]: boolean }>(
       'getSelectedMap',
       () => ({})
     ),
-    getEditable: inject<() => boolean>('getEditable', () => false),
-    updateName: inject<(id: string, name: string) => void>(
+    getEditable: _inject<() => boolean>('getEditable', () => false),
+    updateName: _inject<(id: string, name: string) => void>(
       'updateName',
       () => {}
     ),
-    onClickElement: inject<(id: string, options?: SelectOptions) => void>(
+    onClickElement: _inject<(id: string, options?: SelectOptions) => void>(
       'onClickElement',
+      () => {}
+    ),
+    getClosedMap: _inject<() => { [id: string]: boolean }>(
+      'getClosedMap',
+      () => ({})
+    ),
+    setClosed: _inject<(id: string, value: boolean) => void>(
+      'setClosed',
       () => {}
     ),
   }

@@ -46,19 +46,20 @@ Copyright (C) 2021, Tomoya Komiyama.
         >{{ node.name }}</a
       >
     </div>
-    <div v-if="!closed" class="children-space">
+    <div v-show="!closed" class="children-space">
       <TreeNodeVue
         v-for="c in children"
         :key="c.id"
         :node="c"
         :nest-index="nestIndex + 1"
+        @expand-all="expandAll"
       />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, ref, withDefaults } from 'vue'
+import { computed, watch, ref, withDefaults } from 'vue'
 import { TreeNode } from '/@/utils/relations'
 import { getMouseOptions } from '/@/utils/devices'
 import { injectTreeContext } from '/@/composables/treeContext'
@@ -80,20 +81,39 @@ const props = withDefaults(
   { nestIndex: 0 }
 )
 
+const emits = defineEmits<{
+  (e: 'expand-all'): void
+}>()
+
 const children = computed(() => {
   return props.node.children
 })
 
-const { getEditable, getSelectedMap, updateName, onClickElement } =
-  injectTreeContext()
+const {
+  getEditable,
+  getSelectedMap,
+  updateName,
+  onClickElement,
+  getClosedMap,
+  setClosed,
+} = injectTreeContext()
 
 const selected = computed(() => {
   return !!getSelectedMap()[props.node.id]
 })
+watch(selected, (to, from) => {
+  if (to && !from) {
+    emits('expand-all')
+  }
+})
+function expandAll() {
+  setClosed(props.node.id, false)
+  emits('expand-all')
+}
 
-const closed = ref(false)
+const closed = computed(() => !!getClosedMap()[props.node.id])
 function toggleClosed() {
-  closed.value = !closed.value
+  setClosed(props.node.id, !closed.value)
 }
 
 const editingName = ref(false)

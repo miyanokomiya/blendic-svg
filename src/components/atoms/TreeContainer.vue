@@ -24,17 +24,18 @@ Copyright (C) 2022, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { ref, watchEffect } from 'vue'
+import { nextTick, ref, watchEffect } from 'vue'
 </script>
 
 <script setup lang="ts">
 const props = defineProps<{ scrollTarget?: string }>()
 
 const scrollContainer = ref<HTMLElement>()
-watchEffect(() => {
+watchEffect(async () => {
   if (props.scrollTarget && scrollContainer.value) {
+    await nextTick()
     scrollContainer.value
-      .querySelector(`[data-scroll_anchor="${props.scrollTarget}"]`)
+      ?.querySelector(`[data-scroll_anchor="${props.scrollTarget}"]`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 })

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Scroll to the selected tree node automatically
+- Expand tree node when it's selected
 
 ### Refactor
 - Remove SASS dependency

@@ -48,5 +48,6 @@ export default defineConfig({
   base: process.env.BASE_PATH || '/',
   define: {
     'process.env.APP_VERSION': JSON.stringify(process.env.npm_package_version),
+    __VUE_OPTIONS_API__: false,
   },
 })

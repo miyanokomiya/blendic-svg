@@ -106,7 +106,57 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, onMounted, onUnmounted } from 'vue'
+import { computed } from 'vue'
+import { useStore } from '/@/store/index'
+import { useCanvasStore } from './store/canvas'
+import { useHistoryStore } from './store/history'
+import { useAnimationStore } from './store/animation'
+import { useStorage } from './composables/storage'
+import { useElementStore } from './store/element'
+import { isCtrlOrMeta } from '/@/utils/devices'
+import { useGlobalKeydown } from '/@/composables/window'
+
+const store = useStore()
+const canvasStore = useCanvasStore()
+const animationStore = useAnimationStore()
+const historyStore = useHistoryStore()
+const elementStore = useElementStore()
+const storage = useStorage()
+
+store.createDefaultEntities()
+elementStore.createDefaultEntities()
+
+function onGlobalKeyDown(e: KeyboardEvent) {
+  if (
+    ['input', 'textarea'].includes((e.target as Element)?.tagName.toLowerCase())
+  )
+    return
+
+  if (isCtrlOrMeta(e) && e.key.toLowerCase() === 'z') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      historyStore.redo()
+    } else {
+      historyStore.undo()
+    }
+  } else if (e.key.toLowerCase() === ' ') {
+    e.preventDefault()
+    animationStore.togglePlaying()
+  } else if (isCtrlOrMeta(e) && e.key.toLowerCase() === 's') {
+    e.preventDefault()
+    storage.overrideProjectFile()
+  } else if (isCtrlOrMeta(e) && e.key.toLowerCase() === 'o') {
+    e.preventDefault()
+    if (e.shiftKey) {
+      storage.loadSvgFile()
+    } else {
+      storage.loadProjectFile()
+    }
+  }
+}
+</script>
+
+<script setup lang="ts">
 import AppCanvas from './components/AppCanvas.vue'
 import SidePanel from './components/SidePanel.vue'
 import AnimationGraphPanel from './components/AnimationGraphPanel.vue'
@@ -116,128 +166,42 @@ import ArmatureElm from './components/elements/ArmatureElm.vue'
 import CanvasSideBar from '/@/components/CanvasSideBar.vue'
 import BoneLayer from '/@/components/elements/BoneLayer.vue'
 import SpaceAxis from '/@/components/elements/atoms/SpaceAxis.vue'
-import { useStore } from '/@/store/index'
-import { useCanvasStore } from './store/canvas'
-import { useHistoryStore } from './store/history'
-import { useAnimationStore } from './store/animation'
-import { useStorage } from './composables/storage'
-import { useElementStore } from './store/element'
-import { isCtrlOrMeta } from '/@/utils/devices'
 import ResizableV from '/@/components/atoms/ResizableV.vue'
 import ResizableH from '/@/components/atoms/ResizableH.vue'
 
-export default defineComponent({
-  components: {
-    AppCanvas,
-    ArmatureElm,
-    SidePanel,
-    AnimationGraphPanel,
-    AnimationPanel,
-    CanvasSideBar,
-    ElementLayer,
-    BoneLayer,
-    ResizableV,
-    ResizableH,
-    SpaceAxis,
-  },
-  setup() {
-    const store = useStore()
-    const canvasStore = useCanvasStore()
-    const animationStore = useAnimationStore()
-    const historyStore = useHistoryStore()
-    const elementStore = useElementStore()
+useGlobalKeydown(onGlobalKeyDown)
 
-    store.createDefaultEntities()
-    elementStore.createDefaultEntities()
-
-    const viewBox = computed(() => {
-      return elementStore.lastSelectedActor.value?.viewBox
-    })
-
-    const canvasMode = canvasStore.canvasMode
-
-    const otherArmatures = computed(() =>
-      store.armatures.value.filter(
-        (a) => a.id !== store.lastSelectedArmature.value?.id
-      )
-    )
-
-    const posedBoneMap = canvasStore.posedBoneMap
-    const visibledBoneMap = canvasStore.visibledBoneMap
-    const lastSelectedBoneSpace = canvasStore.lastSelectedBoneSpace
-
-    const storage = useStorage()
-
-    function onGlobalKeyDown(e: KeyboardEvent) {
-      if (
-        ['input', 'textarea'].includes(
-          (e.target as Element)?.tagName.toLowerCase()
-        )
-      )
-        return
-
-      if (isCtrlOrMeta(e) && e.key.toLowerCase() === 'z') {
-        e.preventDefault()
-        if (e.shiftKey) {
-          historyStore.redo()
-        } else {
-          historyStore.undo()
-        }
-      } else if (e.key.toLowerCase() === ' ') {
-        e.preventDefault()
-        animationStore.togglePlaying()
-      } else if (isCtrlOrMeta(e) && e.key.toLowerCase() === 's') {
-        e.preventDefault()
-        storage.overrideProjectFile()
-      } else if (isCtrlOrMeta(e) && e.key.toLowerCase() === 'o') {
-        e.preventDefault()
-        if (e.shiftKey) {
-          storage.loadSvgFile()
-        } else {
-          storage.loadProjectFile()
-        }
-      }
-    }
-
-    onMounted(() => {
-      document.addEventListener('keydown', onGlobalKeyDown)
-    })
-    onUnmounted(() => {
-      document.removeEventListener('keydown', onGlobalKeyDown)
-    })
-
-    const selectedBones = computed(() => {
-      if (canvasMode.value === 'weight') {
-        // hilight parent bone for weight paiting
-        const selectedElement = elementStore.lastSelectedElement.value
-        if (selectedElement?.boneId) {
-          return {
-            [selectedElement.boneId]: { head: true, tail: true } as const,
-          }
-        } else {
-          return {}
-        }
-      } else {
-        return store.selectedBones.value
-      }
-    })
-
-    return {
-      viewBox,
-      armatures: store.armatures,
-      otherArmatures,
-      lastSelectedArmatureId: computed(
-        () => store.lastSelectedArmature.value?.id
-      ),
-      bonesByArmatureId: store.bonesByArmatureId,
-      posedBoneMap,
-      lastSelectedBoneSpace,
-      visibledBoneMap,
-      selectedBones,
-      canvasMode,
-    }
-  },
+const viewBox = computed(() => {
+  return elementStore.lastSelectedActor.value?.viewBox
 })
+
+const canvasMode = canvasStore.canvasMode
+
+const armatures = store.armatures
+const otherArmatures = computed(() =>
+  armatures.value.filter((a) => a.id !== store.lastSelectedArmature.value?.id)
+)
+
+const posedBoneMap = canvasStore.posedBoneMap
+const visibledBoneMap = canvasStore.visibledBoneMap
+const lastSelectedBoneSpace = canvasStore.lastSelectedBoneSpace
+
+const selectedBones = computed(() => {
+  if (canvasMode.value === 'weight') {
+    // hilight parent bone for weight paiting
+    const selectedElement = elementStore.lastSelectedElement.value
+    return selectedElement?.boneId
+      ? { [selectedElement.boneId]: { head: true, tail: true } as const }
+      : {}
+  } else {
+    return store.selectedBones.value
+  }
+})
+
+const lastSelectedArmatureId = computed(
+  () => store.lastSelectedArmature.value?.id
+)
+const bonesByArmatureId = store.bonesByArmatureId
 </script>
 
 <style scoped>

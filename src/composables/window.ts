@@ -43,7 +43,6 @@ export function useGlobalScroll(fn: () => void, capture = false) {
   onUnmounted(() => {
     window.removeEventListener('scroll', fn, capture)
   })
-  return {}
 }
 
 export function useGlobalClick(fn: (e: MouseEvent) => void, capture = false) {
@@ -53,7 +52,6 @@ export function useGlobalClick(fn: (e: MouseEvent) => void, capture = false) {
   onUnmounted(() => {
     window.removeEventListener('click', fn, capture)
   })
-  return {}
 }
 
 export function useGlobalMousemove(fn: (e: MouseEvent) => void) {
@@ -63,7 +61,6 @@ export function useGlobalMousemove(fn: (e: MouseEvent) => void) {
   onUnmounted(() => {
     window.removeEventListener('mousemove', fn)
   })
-  return {}
 }
 
 export function useGlobalMouseup(fn: (e: MouseEvent) => void) {
@@ -75,7 +72,15 @@ export function useGlobalMouseup(fn: (e: MouseEvent) => void) {
     window.removeEventListener('mouseup', fn)
     window.removeEventListener('mouseleave', fn)
   })
-  return {}
+}
+
+export function useGlobalKeydown(fn: (e: KeyboardEvent) => void) {
+  onMounted(() => {
+    window.addEventListener('keydown', fn)
+  })
+  onUnmounted(() => {
+    window.removeEventListener('keydown', fn)
+  })
 }
 
 export type PointerType = 'move' | 'move-v' | 'move-h'

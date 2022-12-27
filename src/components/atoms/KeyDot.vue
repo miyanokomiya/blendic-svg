@@ -40,45 +40,45 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from 'vue'
+import { withDefaults, computed } from 'vue'
 import type { KeyframeStatus } from '/@/models/keyframe'
+</script>
 
-export default defineComponent({
-  props: {
-    status: {
-      type: String as PropType<KeyframeStatus>,
-      default: 'none',
-    },
-    updated: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['create', 'delete'],
-  setup(props, { emit }) {
-    function toggle() {
-      if (props.updated) {
-        emit('create')
-        return
-      }
+<script setup lang="ts">
+const props = withDefaults(
+  defineProps<{
+    status?: KeyframeStatus
+    updated?: boolean
+  }>(),
+  {
+    status: 'none',
+    updated: false,
+  }
+)
 
-      switch (props.status) {
-        case 'none':
-        case 'others':
-          emit('create')
-          return
-        case 'self':
-          emit('delete')
-          return
-      }
-    }
+const emits = defineEmits<{
+  (e: 'create'): void
+  (e: 'delete'): void
+}>()
 
-    return {
-      toggle,
-      color: computed(() => (props.updated ? '#ffc0cb' : '#aaa')),
-    }
-  },
-})
+function toggle() {
+  if (props.updated) {
+    emits('create')
+    return
+  }
+
+  switch (props.status) {
+    case 'none':
+    case 'others':
+      emits('create')
+      return
+    case 'self':
+      emits('delete')
+      return
+  }
+}
+
+const color = computed(() => (props.updated ? '#ffc0cb' : '#aaa'))
 </script>
 
 <style scoped>

@@ -54,11 +54,11 @@ Copyright (C) 2021, Tomoya Komiyama.
       :create-keyframe="createKeyframe(i)"
       :delete-keyframe="deleteKeyframe(i)"
       @update:model-value="
-        (option, seriesKey) => updateConstraint(i, option, seriesKey)
+        (option: any, seriesKey: any) => updateConstraint(i, option, seriesKey)
       "
-      @add-keyframe="(key) => addKeyframe(i, key)"
-      @remove-keyframe="(key) => removeKeyframe(i, key)"
-      @start-pick-bone="($event) => $emit('start-pick-bone', $event)"
+      @add-keyframe="(key: any) => addKeyframe(i, key)"
+      @remove-keyframe="(key: any) => removeKeyframe(i, key)"
+      @start-pick-bone="($event: any) => $emit('start-pick-bone', $event)"
     />
   </div>
 </template>

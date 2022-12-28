@@ -49,9 +49,7 @@ export interface BoneConstraintOptions {
 }
 
 export type BoneConstraintOption =
-  BoneConstraintOptions[keyof BoneConstraintOptions] & {
-    influence: number
-  }
+  BoneConstraintOptions[keyof BoneConstraintOptions]
 
 interface _BoneConstraint<N extends BoneConstraintType> {
   id: string
@@ -165,10 +163,10 @@ export function getConstraint(
   }
 }
 
-export function getOptionByType(
-  type: BoneConstraintType,
+export function getOptionByType<T extends BoneConstraintType>(
+  type: T,
   src: Partial<BoneConstraintOption> = {}
-): BoneConstraintOption {
+): BoneConstraintOptions[T] {
   return getConstraintModule(type).getOption(src)
 }
 

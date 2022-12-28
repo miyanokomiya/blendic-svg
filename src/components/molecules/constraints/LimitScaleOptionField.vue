@@ -99,9 +99,10 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { BoneConstraintOptions } from '/@/utils/constraints'
 import { SpaceType } from '/@/models'
-import { getProps } from '/@/components/molecules/constraints/common'
-
-const propsDef = getProps<BoneConstraintOptions['LIMIT_SCALE']>()
+import {
+  KeyframeConstraintPropKey,
+  KeyframePropsStatus,
+} from '/@/models/keyframe.js'
 </script>
 
 <script setup lang="ts">
@@ -112,7 +113,25 @@ import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
 import { spaceTypeOptions } from '/@/components/molecules/constraints/common'
 
-defineProps(propsDef)
+withDefaults(
+  defineProps<{
+    modelValue: BoneConstraintOptions['LIMIT_SCALE']
+    propsUpdatedStatus?: Partial<{
+      [key in KeyframeConstraintPropKey]: boolean
+    }>
+    boneOptions?: { value: string; label: string }[]
+    keyframeStatusMap?: KeyframePropsStatus['props']
+    createKeyframe?: (key: KeyframeConstraintPropKey) => void
+    deleteKeyframe?: (key: KeyframeConstraintPropKey) => void
+  }>(),
+  {
+    propsUpdatedStatus: () => ({}),
+    boneOptions: () => [],
+    keyframeStatusMap: () => ({}),
+    createKeyframe: () => {},
+    deleteKeyframe: () => {},
+  }
+)
 
 const emits = defineEmits<{
   (

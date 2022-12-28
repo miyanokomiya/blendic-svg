@@ -68,7 +68,7 @@ describe('src/components/elements/molecules/KeyPointGroup.vue', () => {
           }),
           childMap,
           expanded: true,
-          sameRangeWidth: getKeyframeDefaultPropsMap(() => 1),
+          sameRangeWidth: getKeyframeDefaultPropsMap(() => 1).props,
         },
       })
       expect(wrapper.element).toMatchSnapshot()

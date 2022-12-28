@@ -25,7 +25,11 @@ describe('src/components/SideBar.vue', () => {
     it('defalut', () => {
       const wrapper = mount(Target, {
         props: {
-          tabs: ['a', 'b', 'c'],
+          tabs: [
+            { key: 'a', label: 'aa' },
+            { key: 'b', label: 'bb' },
+            { key: 'c', label: 'cc' },
+          ],
           defaultTab: 'b',
         },
         slots: {

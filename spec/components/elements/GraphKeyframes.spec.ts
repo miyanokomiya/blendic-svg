@@ -22,24 +22,28 @@ import Target from '/@/components/elements/GraphKeyframes.vue'
 import { getCurve, getKeyframeBone, getKeyframePoint } from '/@/models/keyframe'
 
 const keyframeMapByFrame = {
-  1: getKeyframeBone({
-    id: 'a',
-    points: {
-      translateX: getKeyframePoint({
-        value: 1,
-        curve: getCurve('linear'),
-      }),
-    },
-  }),
-  2: getKeyframeBone({
-    id: 'b',
-    points: {
-      translateX: getKeyframePoint({
-        value: 10,
-        curve: getCurve('bezier3'),
-      }),
-    },
-  }),
+  1: [
+    getKeyframeBone({
+      id: 'a',
+      points: {
+        translateX: getKeyframePoint({
+          value: 1,
+          curve: getCurve('linear'),
+        }),
+      },
+    }),
+  ],
+  2: [
+    getKeyframeBone({
+      id: 'b',
+      points: {
+        translateX: getKeyframePoint({
+          value: 10,
+          curve: getCurve('bezier3'),
+        }),
+      },
+    }),
+  ],
 }
 
 describe('src/components/elements/GraphKeyframes.vue', () => {

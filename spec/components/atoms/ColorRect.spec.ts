@@ -30,14 +30,14 @@ describe('src/components/atoms/ColorRect.vue', () => {
       const wrapper = mount(Target, {
         props: { hsva },
       })
-      expect(wrapper.vm.color).toBe(rednerRGBA(hsvaToRgba(hsva)))
+      expect((wrapper.vm as any).color).toBe(rednerRGBA(hsvaToRgba(hsva)))
       expect(wrapper.element).toMatchSnapshot()
     })
     it('props: transform', () => {
       const wrapper = mount(Target, {
         props: { transform },
       })
-      expect(wrapper.vm.color).toBe(rednerRGBA(hsvaToRgba(hsva)))
+      expect((wrapper.vm as any).color).toBe(rednerRGBA(hsvaToRgba(hsva)))
       expect(wrapper.element).toMatchSnapshot()
     })
   })

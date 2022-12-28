@@ -47,9 +47,9 @@ describe('src/components/elements/atoms/OutlineRect.vue', () => {
           default: '<text>abc</text>',
         },
       })
-      wrapper.vm.size = { width: 10, height: 100 }
+      ;(wrapper.vm as any).size = { width: 10, height: 100 }
       await wrapper.setProps({ dep: 1 })
-      expect(wrapper.vm.size).toEqual({ width: 2, height: 40 })
+      expect((wrapper.vm as any).size).toEqual({ width: 2, height: 40 })
     })
     it('if marginSize is updated', async () => {
       const wrapper = mount(Target, {
@@ -64,7 +64,7 @@ describe('src/components/elements/atoms/OutlineRect.vue', () => {
       await wrapper.setProps({
         marginSize: { width: 100, height: 200 },
       })
-      expect(wrapper.vm.size).toEqual({ width: 200, height: 400 })
+      expect((wrapper.vm as any).size).toEqual({ width: 200, height: 400 })
     })
   })
 })

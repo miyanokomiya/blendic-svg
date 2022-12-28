@@ -65,7 +65,7 @@ describe('src/components/atoms/GraphNodeDataField.vue', () => {
           },
         })
         expect(wrapper.element).toMatchSnapshot()
-        expect(wrapper.vm.valueScale).toBe(0.2)
+        expect((wrapper.vm as any).valueScale).toBe(0.2)
       })
     })
     it('BONE', () => {

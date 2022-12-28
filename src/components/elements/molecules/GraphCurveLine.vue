@@ -39,8 +39,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       <CurveBezier3Vue
         v-if="curve.name === 'bezier3'"
         :c0="curve.from"
-        :c1="curve.fixedC1"
-        :c2="curve.fixedC2"
+        :c1="curve.fixedC1!"
+        :c2="curve.fixedC2!"
         :c3="curve.to"
         :color="color"
         :scale="scale"

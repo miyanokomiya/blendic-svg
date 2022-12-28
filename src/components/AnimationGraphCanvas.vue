@@ -32,7 +32,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         :viewBox="viewBox"
         :width="viewSize.width"
         :height="viewSize.height"
-        @wheel.prevent="wheel"
+        @wheel.prevent="canvas.wheel"
         @mousedown.prevent="handleDownEvent"
         @mouseup.prevent="handleUpEvent"
         @mousemove="handleNativeMoveEvent"
@@ -84,9 +84,7 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, computed, PropType, ref, watch } from 'vue'
-import { provideScale, useSvgCanvas } from '../composables/canvas'
+<script lang="ts" setup>
 import PopupMenuList from '/@/components/molecules/PopupMenuList.vue'
 import CommandExamPanel from '/@/components/molecules/CommandExamPanel.vue'
 import DotBackground from '/@/components/elements/atoms/DotBackground.vue'
@@ -94,6 +92,8 @@ import SelectRectangle from '/@/components/elements/atoms/SelectRectangle.vue'
 import EdgeCutterElm from '/@/components/elements/EdgeCutter.vue'
 import FocusableBlock from '/@/components/atoms/FocusableBlock.vue'
 import CanvasToolMenuGroups from '/@/components/molecules/CanvasToolMenuGroups.vue'
+import { onMounted, computed, ref, watch } from 'vue'
+import { provideScale, useSvgCanvas } from '../composables/canvas'
 import { useCanvasElement } from '/@/composables/canvasElement'
 import { useAnimationGraphMode } from '/@/composables/modes/animationGraphMode'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
@@ -110,225 +110,194 @@ import { IVec2 } from 'okageo'
 import { useMenuList } from '/@/composables/menuList'
 import { EdgeCutter } from '/@/composables/modeStates/animationGraph/core'
 
-export default defineComponent({
-  components: {
-    PopupMenuList,
-    CommandExamPanel,
-    DotBackground,
-    SelectRectangle,
-    EdgeCutterElm,
-    FocusableBlock,
-    CanvasToolMenuGroups,
-  },
-  props: {
-    canvas: {
-      type: Object as PropType<ReturnType<typeof useSvgCanvas>>,
-      required: true,
-    },
-  },
-  setup(props) {
-    const { wrapper, svg, addRootPosition, removeRootPosition } =
-      useCanvasElement(() => props.canvas)
+const props = defineProps<{
+  canvas: ReturnType<typeof useSvgCanvas>
+}>()
 
-    provideScale(() => props.canvas.scale.value)
+const { wrapper, svg, addRootPosition, removeRootPosition } = useCanvasElement(
+  () => props.canvas
+)
 
-    onMounted(() => {
-      props.canvas.adjustToCenter()
-    })
+provideScale(() => props.canvas.scale.value)
 
-    const popupMenuInfo = ref<{ items: PopupMenuItem[]; point: IVec2 }>()
-    const popupMenuListPosition = computed(() => {
-      return popupMenuInfo.value
-        ? addRootPosition(props.canvas.canvasToView(popupMenuInfo.value.point))
-        : undefined
-    })
-
-    const throttleMousemove = useThrottle(handleMoveEvent, 1000 / 60, true)
-    const pointerLock = usePointerLock({
-      onMove: throttleMousemove,
-      onGlobalMove: (arg) => {
-        if (!svg.value) return
-        const p = removeRootPosition(arg.p)
-        if (!p) return
-        props.canvas.setMousePoint(p)
-      },
-      onEscape: handleEscape,
-    })
-
-    const popupMenuList = useMenuList(
-      () =>
-        popupMenuInfo.value?.items.map(({ label, children }) => ({
-          label,
-          children: children?.map(({ label, key, data }) => ({
-            label,
-            exec: key
-              ? () => handlePopupmenuEvent(key as string, data)
-              : undefined,
-          })),
-        })) ?? []
-    )
-
-    const toolMenuInfo = ref<ToolMenuGroup[]>([])
-    const toolMenuGroupList = computed(
-      () =>
-        toolMenuInfo.value.map(({ label, items }) => ({
-          label,
-          items: items.map(({ label, key }) => ({
-            label,
-            exec: key ? () => handlePopupmenuEvent(key!) : undefined,
-          })),
-        })) ?? []
-    )
-
-    const commandExams = ref<CommandExam[]>()
-    const edgeCutter = ref<EdgeCutter>()
-
-    const graphStore = useAnimationGraphStore()
-    const mode = useAnimationGraphMode({
-      graphStore,
-      requestPointerLock: () => {
-        if (!svg.value) return
-        props.canvas.startMoving()
-        pointerLock.requestPointerLockFromElement(svg.value)
-      },
-      exitPointerLock: () => {
-        pointerLock.exitPointerLock()
-        props.canvas.endMoving()
-      },
-      getScale: () => {
-        return props.canvas.scale.value
-      },
-      startEditMovement: () => {
-        graphStore.setEditMovement({
-          start: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-          ctrl: false,
-          scale: props.canvas.scale.value,
-        })
-      },
-      startDragging: () => props.canvas.startDragging(),
-      getCursorPoint: () =>
-        props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-      setViewport: (val) => props.canvas.setViewport(val),
-      panView: (val) => props.canvas.viewMove(val),
-      setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
-      getDraggedRectangle: () => props.canvas.draggedRectangle.value,
-      setPopupMenuList: (val) => (popupMenuInfo.value = val),
-      setToolMenuList: (val = []) => (toolMenuInfo.value = val),
-      getNodeItemList: () => graphStore.nodeItemList.value,
-      setCommandExams: (val) => (commandExams.value = val),
-      getEdgeCutter: () => edgeCutter.value,
-      setEdgeCutter: (val: EdgeCutter | undefined) => (edgeCutter.value = val),
-    })
-
-    watch(graphStore.selectedNodes, () => {
-      mode.sm.handleEvent({ type: 'selection' })
-    })
-
-    watch(graphStore.selectedGraphByType, () => {
-      handleEscape()
-    })
-
-    function handleDownEvent(e: MouseEvent) {
-      mode.sm.handleEvent({
-        type: 'pointerdown',
-        target: parseEventTarget(e),
-        data: {
-          point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-          options: getMouseOptions(e),
-        },
-      })
-    }
-    function handleUpEvent(e: MouseEvent) {
-      props.canvas.endMoving()
-      mode.sm.handleEvent({
-        type: 'pointerup',
-        target: parseEventTarget(e),
-        data: {
-          point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-          options: getMouseOptions(e),
-        },
-      })
-    }
-    function handleMoveEvent(e: PointerMovement) {
-      if (!props.canvas.editStartPoint.value) return
-      mode.sm.handleEvent({
-        type: 'pointermove',
-        data: {
-          start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
-          current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-          ctrl: e.ctrl,
-          scale: props.canvas.scale.value,
-        },
-      })
-    }
-    function handleNativeMoveEvent(e: MouseEvent) {
-      if (props.canvas.dragged.value && props.canvas.editStartPoint.value) {
-        mode.sm.handleEvent({
-          type: 'pointerdrag',
-          data: {
-            start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
-            current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-            ctrl: isCtrlOrMeta(e),
-            scale: props.canvas.scale.value,
-          },
-        })
-      }
-    }
-    function handleKeydownEvent(e: KeyboardEvent) {
-      mode.sm.handleEvent({
-        type: 'keydown',
-        data: getKeyOptions(e),
-        point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-      })
-    }
-    function handlePopupmenuEvent(
-      key: string,
-      data: { [key: string]: string } = {}
-    ) {
-      mode.sm.handleEvent({ type: 'popupmenu', data: { key, ...data } })
-    }
-    function handleCopyEvent(e: ClipboardEvent) {
-      mode.sm.handleEvent({ type: 'copy', nativeEvent: e })
-    }
-    function handlePasteEvent(e: ClipboardEvent) {
-      mode.sm.handleEvent({ type: 'paste', nativeEvent: e })
-    }
-    function handleEscape() {
-      mode.sm.handleEvent({
-        type: 'keydown',
-        data: { key: 'Escape' },
-        point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
-      })
-    }
-
-    return {
-      wrapper,
-      svg,
-
-      scale: computed(() => props.canvas.scale.value),
-      viewOrigin: computed(() => props.canvas.viewOrigin.value),
-      viewSize: computed(() => props.canvas.viewSize.value),
-      viewBox: computed(() => props.canvas.viewBox.value),
-      viewCanvasRect: computed(() => props.canvas.viewCanvasRect.value),
-      popupMenuItems: computed(() => popupMenuList.list.value),
-      toolMenuGroupList,
-
-      availableCommandList: computed(() => commandExams.value ?? []),
-      popupMenuListPosition,
-      draggedRectangle: computed(() => props.canvas.draggedRectangle.value),
-      edgeCutter: computed(() => edgeCutter.value),
-
-      onCopy: handleCopyEvent,
-      onPaste: handlePasteEvent,
-      wheel: props.canvas.wheel,
-      handleDownEvent,
-      handleUpEvent,
-      handleNativeMoveEvent,
-      handleKeydownEvent,
-    }
-  },
+onMounted(() => {
+  props.canvas.adjustToCenter()
 })
+
+const popupMenuInfo = ref<{ items: PopupMenuItem[]; point: IVec2 }>()
+const popupMenuListPosition = computed(() => {
+  return popupMenuInfo.value
+    ? addRootPosition(props.canvas.canvasToView(popupMenuInfo.value.point))
+    : undefined
+})
+
+const throttleMousemove = useThrottle(handleMoveEvent, 1000 / 60, true)
+const pointerLock = usePointerLock({
+  onMove: throttleMousemove,
+  onGlobalMove: (arg) => {
+    if (!svg.value) return
+    const p = removeRootPosition(arg.p)
+    if (!p) return
+    props.canvas.setMousePoint(p)
+  },
+  onEscape: handleEscape,
+})
+
+const popupMenuList = useMenuList(
+  () =>
+    popupMenuInfo.value?.items.map(({ label, children }) => ({
+      label,
+      children: children?.map(({ label, key, data }) => ({
+        label,
+        exec: key ? () => handlePopupmenuEvent(key as string, data) : undefined,
+      })),
+    })) ?? []
+)
+
+const toolMenuInfo = ref<ToolMenuGroup[]>([])
+const toolMenuGroupList = computed(
+  () =>
+    toolMenuInfo.value.map(({ label, items }) => ({
+      label,
+      items: items.map(({ label, key }) => ({
+        label,
+        exec: key ? () => handlePopupmenuEvent(key!) : undefined,
+      })),
+    })) ?? []
+)
+
+const commandExams = ref<CommandExam[]>()
+const edgeCutter = ref<EdgeCutter>()
+
+const graphStore = useAnimationGraphStore()
+const mode = useAnimationGraphMode({
+  graphStore,
+  requestPointerLock: () => {
+    if (!svg.value) return
+    props.canvas.startMoving()
+    pointerLock.requestPointerLockFromElement(svg.value)
+  },
+  exitPointerLock: () => {
+    pointerLock.exitPointerLock()
+    props.canvas.endMoving()
+  },
+  getScale: () => {
+    return props.canvas.scale.value
+  },
+  startEditMovement: () => {
+    graphStore.setEditMovement({
+      start: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+      current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+      ctrl: false,
+      scale: props.canvas.scale.value,
+    })
+  },
+  startDragging: () => props.canvas.startDragging(),
+  getCursorPoint: () =>
+    props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+  setViewport: (val) => props.canvas.setViewport(val),
+  panView: (val) => props.canvas.viewMove(val),
+  setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
+  getDraggedRectangle: () => props.canvas.draggedRectangle.value,
+  setPopupMenuList: (val) => (popupMenuInfo.value = val),
+  setToolMenuList: (val = []) => (toolMenuInfo.value = val),
+  getNodeItemList: () => graphStore.nodeItemList.value,
+  setCommandExams: (val) => (commandExams.value = val),
+  getEdgeCutter: () => edgeCutter.value,
+  setEdgeCutter: (val: EdgeCutter | undefined) => (edgeCutter.value = val),
+})
+
+watch(graphStore.selectedNodes, () => {
+  mode.sm.handleEvent({ type: 'selection' })
+})
+
+watch(graphStore.selectedGraphByType, () => {
+  handleEscape()
+})
+
+function handleDownEvent(e: MouseEvent) {
+  mode.sm.handleEvent({
+    type: 'pointerdown',
+    target: parseEventTarget(e),
+    data: {
+      point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+      options: getMouseOptions(e),
+    },
+  })
+}
+function handleUpEvent(e: MouseEvent) {
+  props.canvas.endMoving()
+  mode.sm.handleEvent({
+    type: 'pointerup',
+    target: parseEventTarget(e),
+    data: {
+      point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+      options: getMouseOptions(e),
+    },
+  })
+}
+function handleMoveEvent(e: PointerMovement) {
+  if (!props.canvas.editStartPoint.value) return
+  mode.sm.handleEvent({
+    type: 'pointermove',
+    data: {
+      start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
+      current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+      ctrl: e.ctrl,
+      scale: props.canvas.scale.value,
+    },
+  })
+}
+function handleNativeMoveEvent(e: MouseEvent) {
+  if (props.canvas.dragged.value && props.canvas.editStartPoint.value) {
+    mode.sm.handleEvent({
+      type: 'pointerdrag',
+      data: {
+        start: props.canvas.viewToCanvas(props.canvas.editStartPoint.value),
+        current: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+        ctrl: isCtrlOrMeta(e),
+        scale: props.canvas.scale.value,
+      },
+    })
+  }
+}
+function handleKeydownEvent(e: KeyboardEvent) {
+  mode.sm.handleEvent({
+    type: 'keydown',
+    data: getKeyOptions(e),
+    point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+  })
+}
+function handlePopupmenuEvent(
+  key: string,
+  data: { [key: string]: string } = {}
+) {
+  mode.sm.handleEvent({ type: 'popupmenu', data: { key, ...data } })
+}
+function handleCopyEvent(e: ClipboardEvent) {
+  mode.sm.handleEvent({ type: 'copy', nativeEvent: e })
+}
+function handlePasteEvent(e: ClipboardEvent) {
+  mode.sm.handleEvent({ type: 'paste', nativeEvent: e })
+}
+function handleEscape() {
+  mode.sm.handleEvent({
+    type: 'keydown',
+    data: { key: 'Escape' },
+    point: props.canvas.viewToCanvas(props.canvas.mousePoint.value),
+  })
+}
+
+const scale = computed(() => props.canvas.scale.value)
+const viewOrigin = computed(() => props.canvas.viewOrigin.value)
+const viewSize = computed(() => props.canvas.viewSize.value)
+const viewBox = computed(() => props.canvas.viewBox.value)
+const viewCanvasRect = computed(() => props.canvas.viewCanvasRect.value)
+const popupMenuItems = computed(() => popupMenuList.list.value)
+const availableCommandList = computed(() => commandExams.value ?? [])
+const draggedRectangle = computed(() => props.canvas.draggedRectangle.value)
+const onCopy = handleCopyEvent
+const onPaste = handlePasteEvent
 </script>
 
 <style scoped>

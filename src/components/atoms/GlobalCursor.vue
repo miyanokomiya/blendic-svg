@@ -52,85 +52,80 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 <script lang="ts">
 import { IVec2, circleClamp } from 'okageo'
-import { computed, defineComponent, PropType, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { PointerType, useWindow } from '/@/composables/window'
 
 const margin = 13
+</script>
 
-export default defineComponent({
-  props: {
-    p: {
-      type: Object as PropType<IVec2>,
-      default: undefined,
-    },
-    cursor: {
-      type: String as PropType<PointerType>,
-      default: 'move',
-    },
-    rotate: {
-      type: Number,
-      default: 0,
-    },
-  },
-  setup(props) {
-    const windowState = useWindow()
+<script lang="ts" setup>
+const props = withDefaults(
+  defineProps<{
+    p?: IVec2
+    cursor?: PointerType
+    rotate?: number
+  }>(),
+  {
+    p: undefined,
+    cursor: 'move',
+    rotate: 0,
+  }
+)
 
-    const adjustedP = computed(() => {
-      if (!props.p) return
-      return {
-        x: circleClamp(0, windowState.state.size.width, props.p.x),
-        y: circleClamp(0, windowState.state.size.height, props.p.y),
-      }
-    })
+const windowState = useWindow()
 
-    const origin = ref<IVec2>()
-    let timer: any = 0
+const adjustedP = computed(() => {
+  if (!props.p) return
+  return {
+    x: circleClamp(0, windowState.state.size.width, props.p.x),
+    y: circleClamp(0, windowState.state.size.height, props.p.y),
+  }
+})
 
-    watch(
-      () => props.p,
-      (to, from) => {
-        if (!from && to) {
-          origin.value = to
-          clearTimeout(timer)
-        } else if (from && !to) {
-          timer = setTimeout(() => {
-            origin.value = undefined
-          }, 200)
-        }
-      }
-    )
+const origin = ref<IVec2>()
+let timer: any = 0
 
-    return {
-      originTransform: computed(() => {
-        if (!origin.value) return
-        return `translate(${origin.value.x - margin}px, ${
-          origin.value.y - margin
-        }px)`
-      }),
-      transform: computed(() => {
-        if (!adjustedP.value) {
-          if (!origin.value) return
-          return `translate(${origin.value.x - margin}px, ${
-            origin.value.y - margin
-          }px)`
-        }
-        return `translate(${adjustedP.value.x - margin}px, ${
-          adjustedP.value.y - margin
-        }px)`
-      }),
-      rotateList: computed(() => {
-        switch (props.cursor) {
-          case 'move':
-            return [0, 90]
-          case 'move-h':
-            return [0]
-          case 'move-v':
-            return [90]
-        }
-        return []
-      }),
+watch(
+  () => props.p,
+  (to, from) => {
+    if (!from && to) {
+      origin.value = to
+      clearTimeout(timer)
+    } else if (from && !to) {
+      timer = setTimeout(() => {
+        origin.value = undefined
+      }, 200)
     }
-  },
+  }
+)
+
+const originTransform = computed(() => {
+  if (!origin.value) return
+  return `translate(${origin.value.x - margin}px, ${origin.value.y - margin}px)`
+})
+
+const transform = computed(() => {
+  if (!adjustedP.value) {
+    if (!origin.value) return
+    return `translate(${origin.value.x - margin}px, ${
+      origin.value.y - margin
+    }px)`
+  }
+  return `translate(${adjustedP.value.x - margin}px, ${
+    adjustedP.value.y - margin
+  }px)`
+})
+
+const rotateList = computed(() => {
+  switch (props.cursor) {
+    case 'move':
+      return [0, 90]
+    case 'move-h':
+      return [0]
+    case 'move-v':
+      return [90]
+  }
+  return []
 })
 </script>
 

@@ -64,18 +64,13 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+import { computed } from 'vue'
 import {
   BoneConstraint,
   BoneConstraintType,
   BoneConstraintOption,
   getConstraint,
 } from '/@/utils/constraints'
-import SelectButton from '/@/components/atoms/SelectButton.vue'
-import TextInput from '/@/components/atoms/TextInput.vue'
-import UpIcon from '/@/components/atoms/UpIcon.vue'
-import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
-import InlineField from '/@/components/atoms/InlineField.vue'
 import IKOptionField from '/@/components/molecules/constraints/IKOptionField.vue'
 import LimitLocationOptionField from '/@/components/molecules/constraints/LimitLocationOptionField.vue'
 import LimitRotationOptionField from '/@/components/molecules/constraints/LimitRotationOptionField.vue'
@@ -116,172 +111,139 @@ const componentMap = {
   COPY_ROTATION: CopyRotationOptionField,
   COPY_SCALE: CopyScaleOptionField,
 }
+</script>
 
-export default defineComponent({
-  components: {
-    SelectButton,
-    TextInput,
-    UpIcon,
-    DeleteIcon,
-    InlineField,
-  },
-  props: {
-    constraints: {
-      type: Array as PropType<BoneConstraint[]>,
-      required: true,
-    },
-    originalConstraints: {
-      type: Object as PropType<IdMap<BoneConstraint>>,
-      default: () => ({}),
-    },
-    boneOptions: {
-      type: Array as PropType<{ value: string; label: string }[]>,
-      required: true,
-    },
-    pickBone: {
-      type: Function as PropType<
-        (key: string, callback: (id: string) => void) => void
-      >,
-      default: undefined,
-    },
-    constraintKeyframeMap: {
-      type: Object as PropType<IdMap<KeyframeConstraint[]>>,
-      default: () => ({}),
-    },
-    currentFrame: {
-      type: Number,
-      default: 0,
-    },
-  },
-  emits: [
-    'update',
-    'update-item',
-    'add-keyframe',
-    'remove-keyframe',
-    'start-pick-bone',
-  ],
-  setup(props, { emit }) {
-    const constraintMap = computed(() => toMap(props.constraints))
+<script lang="ts" setup>
+import SelectButton from '/@/components/atoms/SelectButton.vue'
+import TextInput from '/@/components/atoms/TextInput.vue'
+import UpIcon from '/@/components/atoms/UpIcon.vue'
+import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
 
-    const constraintOptions = computed<
-      { value: BoneConstraintType; label: string }[]
-    >(() => {
-      return Object.keys(constraintNameMap).map((key) => ({
-        value: key as BoneConstraintType,
-        label: constraintNameMap[key as BoneConstraintType],
-      }))
-    })
+const props = withDefaults(
+  defineProps<{
+    constraints: BoneConstraint[]
+    originalConstraints?: IdMap<BoneConstraint>
+    boneOptions: { value: string; label: string }[]
+    pickBone?: (key: string, callback: (id: string) => void) => void
+    constraintKeyframeMap?: IdMap<KeyframeConstraint[]>
+    currentFrame?: number
+  }>(),
+  {
+    originalConstraints: () => ({}),
+    pickBone: undefined,
+    constraintKeyframeMap: () => ({}),
+    currentFrame: 0,
+  }
+)
 
-    function getKeyframeStatus(id: string) {
-      const keyframes = props.constraintKeyframeMap[id]
-      if (!keyframes) return
+const emit = defineEmits<{
+  (e: 'update', ...values: any): void
+  (e: 'update-item', ...values: any): void
+  (e: 'add-keyframe', ...values: any): void
+  (e: 'remove-keyframe', ...values: any): void
+  (e: 'start-pick-bone', ...values: any): void
+}>()
 
-      return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
-        return list.some((k) => k.frame === props.currentFrame)
-          ? 'self'
-          : 'others'
-      })
-    }
+const constraintMap = computed(() => toMap(props.constraints))
 
-    function getKeyframeUpdatedStatus(
-      id: string
-    ): Partial<{ [key in KeyframeConstraintPropKey]: boolean }> {
-      const origin = props.originalConstraints[id]
-      const current = constraintMap.value[id]
-      if (!origin || !current) return {}
-
-      return {
-        influence: origin.option.influence !== current.option.influence,
-      }
-    }
-
-    function setBoneConstraintType(val: BoneConstraintType) {
-      if (!val) return
-      addConstraint(val)
-    }
-
-    function update(constraints: BoneConstraint[], seriesKey?: string) {
-      emit('update', constraints, seriesKey)
-    }
-
-    function addConstraint(type: BoneConstraintType) {
-      const created = getConstraint({ type }, true)
-      created.name = getNotDuplicatedName(
-        constraintNameMap[created.type],
-        props.constraints.map((c) => c.name)
-      )
-      update([...props.constraints, created])
-    }
-
-    function updateConstraint(
-      index: number,
-      option: BoneConstraintOption,
-      seriesKey?: string
-    ) {
-      const target = props.constraints[index]
-      emit('update-item', { ...target, option }, seriesKey)
-    }
-
-    function deleteConstraint(index: number) {
-      const constraints = props.constraints.concat()
-      constraints.splice(index, 1)
-      update(constraints)
-    }
-
-    function updateName(index: number, name: string) {
-      update(updateNameInList(props.constraints, index, name))
-    }
-
-    function upConstraint(index: number) {
-      update(unshiftInList(props.constraints, index))
-    }
-
-    function downConstraint(index: number) {
-      update(shiftInList(props.constraints, index))
-    }
-
-    function addKeyframe(index: number, key: KeyframeConstraintPropKey) {
-      const target = props.constraints[index]
-      if (!target) return
-      emit('add-keyframe', target.id, key)
-    }
-
-    function removeKeyframe(index: number, key: KeyframeConstraintPropKey) {
-      const target = props.constraints[index]
-      if (!target) return
-      emit('remove-keyframe', target.id, key)
-    }
-
-    function createKeyframe(index: number) {
-      return (key: KeyframeConstraintPropKey) => {
-        addKeyframe(index, key)
-      }
-    }
-    function deleteKeyframe(index: number) {
-      return (key: KeyframeConstraintPropKey) => {
-        removeKeyframe(index, key)
-      }
-    }
-
-    return {
-      componentMap,
-      constraintOptions,
-      getKeyframeStatus,
-      setBoneConstraintType,
-      deleteConstraint,
-      updateName,
-      updateConstraint,
-      upConstraint,
-      downConstraint,
-
-      getKeyframeUpdatedStatus,
-      addKeyframe,
-      removeKeyframe,
-      createKeyframe,
-      deleteKeyframe,
-    }
-  },
+const constraintOptions = computed<
+  { value: BoneConstraintType; label: string }[]
+>(() => {
+  return Object.keys(constraintNameMap).map((key) => ({
+    value: key as BoneConstraintType,
+    label: constraintNameMap[key as BoneConstraintType],
+  }))
 })
+
+function getKeyframeStatus(id: string) {
+  const keyframes = props.constraintKeyframeMap[id]
+  if (!keyframes) return
+
+  return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
+    return list.some((k) => k.frame === props.currentFrame) ? 'self' : 'others'
+  })
+}
+
+function getKeyframeUpdatedStatus(
+  id: string
+): Partial<{ [key in KeyframeConstraintPropKey]: boolean }> {
+  const origin = props.originalConstraints[id]
+  const current = constraintMap.value[id]
+  if (!origin || !current) return {}
+
+  return {
+    influence: origin.option.influence !== current.option.influence,
+  }
+}
+
+function setBoneConstraintType(val: BoneConstraintType) {
+  if (!val) return
+  addConstraint(val)
+}
+
+function update(constraints: BoneConstraint[], seriesKey?: string) {
+  emit('update', constraints, seriesKey)
+}
+
+function addConstraint(type: BoneConstraintType) {
+  const created = getConstraint({ type }, true)
+  created.name = getNotDuplicatedName(
+    constraintNameMap[created.type],
+    props.constraints.map((c) => c.name)
+  )
+  update([...props.constraints, created])
+}
+
+function updateConstraint(
+  index: number,
+  option: BoneConstraintOption,
+  seriesKey?: string
+) {
+  const target = props.constraints[index]
+  emit('update-item', { ...target, option }, seriesKey)
+}
+
+function deleteConstraint(index: number) {
+  const constraints = props.constraints.concat()
+  constraints.splice(index, 1)
+  update(constraints)
+}
+
+function updateName(index: number, name: string) {
+  update(updateNameInList(props.constraints, index, name))
+}
+
+function upConstraint(index: number) {
+  update(unshiftInList(props.constraints, index))
+}
+
+function downConstraint(index: number) {
+  update(shiftInList(props.constraints, index))
+}
+
+function addKeyframe(index: number, key: KeyframeConstraintPropKey) {
+  const target = props.constraints[index]
+  if (!target) return
+  emit('add-keyframe', target.id, key)
+}
+
+function removeKeyframe(index: number, key: KeyframeConstraintPropKey) {
+  const target = props.constraints[index]
+  if (!target) return
+  emit('remove-keyframe', target.id, key)
+}
+
+function createKeyframe(index: number) {
+  return (key: KeyframeConstraintPropKey) => {
+    addKeyframe(index, key)
+  }
+}
+function deleteKeyframe(index: number) {
+  return (key: KeyframeConstraintPropKey) => {
+    removeKeyframe(index, key)
+  }
+}
 </script>
 
 <style scoped>

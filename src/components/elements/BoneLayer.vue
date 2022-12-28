@@ -32,50 +32,43 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
-import { Bone, BoneSelectedState, IdMap } from '/@/models'
+<script lang="ts" setup>
 import BoneElm from '/@/components/elements/BoneElm.vue'
+import { computed } from 'vue'
+import { Bone, BoneSelectedState, IdMap } from '/@/models'
 import { CanvasMode, SelectOptions } from '/@/composables/modes/types'
 import { sortBoneBySize } from '/@/utils/armatures'
 import { toList } from '/@/utils/commons'
 import { injectScale } from '/@/composables/canvas'
 
-export default defineComponent({
-  components: { BoneElm },
-  props: {
-    boneMap: {
-      type: Object as PropType<IdMap<Bone>>,
-      default: () => ({}),
-    },
-    selectedBones: {
-      type: Object as PropType<IdMap<BoneSelectedState>>,
-      default: () => ({}),
-    },
-    canvasMode: {
-      type: String as PropType<CanvasMode>,
-      default: 'object',
-    },
-  },
-  emits: ['select'],
-  setup(props, { emit }) {
-    const sortedBoneMap = computed(() => {
-      return sortBoneBySize(toList(props.boneMap))
-    })
+const props = withDefaults(
+  defineProps<{
+    boneMap?: IdMap<Bone>
+    selectedBones?: IdMap<BoneSelectedState>
+    canvasMode?: CanvasMode
+  }>(),
+  {
+    boneMap: () => ({}),
+    selectedBones: () => ({}),
+    canvasMode: 'object',
+  }
+)
 
-    const scale = computed(injectScale())
+const emit = defineEmits<{
+  (e: 'select', ...values: any): void
+}>()
 
-    return {
-      scale,
-      sortedBoneMap,
-      selectBone(
-        boneId: string,
-        state: BoneSelectedState,
-        options?: SelectOptions
-      ) {
-        emit('select', boneId, state, options)
-      },
-    }
-  },
+const sortedBoneMap = computed(() => {
+  return sortBoneBySize(toList(props.boneMap))
 })
+
+const scale = computed(injectScale())
+
+function selectBone(
+  boneId: string,
+  state: BoneSelectedState,
+  options?: SelectOptions
+) {
+  emit('select', boneId, state, options)
+}
 </script>

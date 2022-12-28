@@ -158,20 +158,7 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import {
-  computed,
-  defineComponent,
-  reactive,
-  ref,
-  watchEffect,
-  watch,
-} from 'vue'
-import { Bone, getTransform, IdMap, Transform } from '/@/models'
-import { useStore } from '/@/store'
-import { useAnimationStore } from '/@/store/animation'
-import { useCanvasStore } from '/@/store/canvas'
-import { addPoseTransform, editTransform } from '/@/utils/armatures'
+<script lang="ts" setup>
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import WeightPanel from '/@/components/panelContents/WeightPanel.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
@@ -180,254 +167,221 @@ import ColorRect from '/@/components/atoms/ColorRect.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
 import FixedContainer from '/@/components/atoms/FixedContainer.vue'
 import OutsideEventContainer from '/@/components/atoms/OutsideEventContainer.vue'
+import { computed, reactive, ref, watchEffect, watch } from 'vue'
+import { Bone, getTransform, IdMap, Transform } from '/@/models'
+import { useStore } from '/@/store'
+import { useAnimationStore } from '/@/store/animation'
+import { useCanvasStore } from '/@/store/canvas'
+import { addPoseTransform, editTransform } from '/@/utils/armatures'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
 import { mapReduce } from '/@/utils/commons'
 import { KeyframeBonePropKey, KeyframeStatus } from '/@/models/keyframe'
 
-export default defineComponent({
-  components: {
-    SliderInput,
-    WeightPanel,
-    InlineField,
-    ColorPicker,
-    ColorRect,
-    KeyDot,
-    FixedContainer,
-    OutsideEventContainer,
-  },
-  setup() {
-    const store = useStore()
-    const animationStore = useAnimationStore()
-    const canvasStore = useCanvasStore()
+const store = useStore()
+const animationStore = useAnimationStore()
+const canvasStore = useCanvasStore()
 
-    const draftTransform = reactive({
-      translateX: 0,
-      translateY: 0,
-      rotate: 0,
-      scaleX: 0,
-      scaleY: 0,
-    })
-
-    const draftBone = reactive({
-      headX: 0,
-      headY: 0,
-      tailX: 0,
-      tailY: 0,
-    })
-
-    const targetBone = computed((): Bone | undefined => {
-      if (canvasStore.canvasMode.value === 'object') {
-        return undefined
-      }
-
-      const original = store.lastSelectedBone.value
-      if (!original) return undefined
-
-      if (canvasStore.canvasMode.value === 'edit') {
-        return editTransform(
-          original,
-          canvasStore.getEditTransforms(original.id),
-          store.selectedBones.value[original.id] || {}
-        )
-      }
-
-      return store.lastSelectedBone.value
-    })
-
-    const connected = computed(() => {
-      return targetBone.value?.connected
-    })
-
-    const targetTransform = computed((): Transform | undefined => {
-      if (!targetBone.value) return undefined
-      if (canvasStore.canvasMode.value !== 'pose') return undefined
-
-      return addPoseTransform(
-        animationStore.getCurrentSelfTransforms(targetBone.value.id),
-        canvasStore.getEditPoseTransforms(targetBone.value.id)
-      )
-    })
-    watch(targetTransform, (to) => {
-      // In order to reduce blinking
-      if (!to) showColorPicker.value = false
-    })
-
-    const showColorPicker = ref(false)
-    function toggleShowColorPicker() {
-      showColorPicker.value = !showColorPicker.value
-    }
-
-    const hsva = computed(() => {
-      if (!targetTransform.value) return undefined
-      return posedHsva(targetTransform.value)
-    })
-    function updatePoseByColor(hsva: HSVA, seriesKey?: string) {
-      if (!targetTransform.value) return
-
-      const t = hsvaToTransform(hsva)
-      draftTransform.translateX = t.translate.x
-      draftTransform.translateY = t.translate.y
-      draftTransform.rotate = t.rotate
-      draftTransform.scaleX = t.scale.x
-      changeTransform(seriesKey)
-    }
-
-    function changeBoneHeadX(val: number, seriesKey?: string) {
-      draftBone.headX = val
-      changeBone(seriesKey)
-    }
-    function changeBoneHeadY(val: number, seriesKey?: string) {
-      draftBone.headY = val
-      changeBone(seriesKey)
-    }
-    function changeBoneTailX(val: number, seriesKey?: string) {
-      draftBone.tailX = val
-      changeBone(seriesKey)
-    }
-    function changeBoneTailY(val: number, seriesKey?: string) {
-      draftBone.tailY = val
-      changeBone(seriesKey)
-    }
-    function changeBone(seriesKey?: string) {
-      if (!targetBone.value) return
-      store.updateBones(
-        {
-          [targetBone.value.id]: {
-            head: { x: draftBone.headX, y: draftBone.headY },
-            tail: { x: draftBone.tailX, y: draftBone.tailY },
-          },
-        },
-        seriesKey
-      )
-    }
-
-    function changeTranslateX(val: number, seriesKey?: string) {
-      draftTransform.translateX = val
-      changeTransform(seriesKey)
-    }
-    function changeTranslateY(val: number, seriesKey?: string) {
-      draftTransform.translateY = val
-      changeTransform(seriesKey)
-    }
-    function changeRotate(val: number, seriesKey?: string) {
-      draftTransform.rotate = val
-      changeTransform(seriesKey)
-    }
-    function changeScaleX(val: number, seriesKey?: string) {
-      draftTransform.scaleX = val
-      changeTransform(seriesKey)
-    }
-    function changeScaleY(val: number, seriesKey?: string) {
-      draftTransform.scaleY = val
-      changeTransform(seriesKey)
-    }
-
-    function changeTransform(seriesKey?: string) {
-      if (!targetBone.value) return
-      animationStore.pastePoses(
-        {
-          [targetBone.value.id]: getTransform({
-            translate: {
-              x: draftTransform.translateX,
-              y: draftTransform.translateY,
-            },
-            rotate: draftTransform.rotate,
-            scale: { x: draftTransform.scaleX, y: draftTransform.scaleY },
-          }),
-        },
-        seriesKey
-      )
-    }
-
-    const posePropsUpdatedStatus = computed<
-      Partial<{ [key in KeyframeBonePropKey]: boolean }>
-    >(() => {
-      const target = targetBone.value
-      if (!target) return {}
-
-      const editedTransform = animationStore.getBoneEditedTransforms(
-        targetBone.value!.id
-      )
-      return {
-        translateX: editedTransform.translate.x !== 0,
-        translateY: editedTransform.translate.y !== 0,
-        scaleX: editedTransform.scale.x !== 0,
-        scaleY: editedTransform.scale.y !== 0,
-        rotate: editedTransform.rotate !== 0,
-      }
-    })
-
-    const keyframeStatusMap = computed<IdMap<KeyframeStatus>>(() => {
-      if (!targetBone.value) return {}
-
-      const keyframes =
-        animationStore.keyframeMapByTargetId.value[targetBone.value.id]
-      if (!keyframes) return {}
-
-      const currentFrame = animationStore.currentFrame.value
-      return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
-        return list.some((k) => k.frame === currentFrame) ? 'self' : 'others'
-      })
-    })
-
-    function createKeyframe(key: KeyframeBonePropKey) {
-      if (!targetBone.value) return
-      animationStore.execInsertKeyframe({ [key]: true })
-    }
-    function deleteKeyframe(key: KeyframeBonePropKey) {
-      if (!targetBone.value) return
-      animationStore.execDeleteTargetKeyframe(targetBone.value.id, key)
-    }
-
-    watchEffect(() => {
-      if (!targetBone.value) return
-
-      draftBone.headX = targetBone.value.head.x
-      draftBone.headY = targetBone.value.head.y
-      draftBone.tailX = targetBone.value.tail.x
-      draftBone.tailY = targetBone.value.tail.y
-    })
-    watchEffect(() => {
-      if (!targetTransform.value) return
-
-      draftTransform.translateX = targetTransform.value.translate.x
-      draftTransform.translateY = targetTransform.value.translate.y
-      draftTransform.rotate = targetTransform.value.rotate
-      draftTransform.scaleX = targetTransform.value.scale.x
-      draftTransform.scaleY = targetTransform.value.scale.y
-    })
-
-    return {
-      labelWidth: '20px',
-      canvasMode: canvasStore.canvasMode,
-      targetBone,
-      hsva,
-      draftBone,
-      changeBoneHeadX,
-      changeBoneHeadY,
-      changeBoneTailX,
-      changeBoneTailY,
-      targetTransform,
-      draftTransform,
-      changeTranslateX,
-      changeTranslateY,
-      changeRotate,
-      changeScaleX,
-      changeScaleY,
-      connected,
-      showColorPicker,
-      toggleShowColorPicker,
-      updatePoseByColor,
-
-      keyframeStatusMap,
-      posePropsUpdatedStatus,
-      createKeyframe,
-      deleteKeyframe,
-    }
-  },
+const draftTransform = reactive({
+  translateX: 0,
+  translateY: 0,
+  rotate: 0,
+  scaleX: 0,
+  scaleY: 0,
 })
+
+const draftBone = reactive({
+  headX: 0,
+  headY: 0,
+  tailX: 0,
+  tailY: 0,
+})
+
+const targetBone = computed((): Bone | undefined => {
+  if (canvasStore.canvasMode.value === 'object') {
+    return undefined
+  }
+
+  const original = store.lastSelectedBone.value
+  if (!original) return undefined
+
+  if (canvasStore.canvasMode.value === 'edit') {
+    return editTransform(
+      original,
+      canvasStore.getEditTransforms(original.id),
+      store.selectedBones.value[original.id] || {}
+    )
+  }
+
+  return store.lastSelectedBone.value
+})
+
+const connected = computed(() => {
+  return targetBone.value?.connected
+})
+
+const targetTransform = computed((): Transform | undefined => {
+  if (!targetBone.value) return undefined
+  if (canvasStore.canvasMode.value !== 'pose') return undefined
+
+  return addPoseTransform(
+    animationStore.getCurrentSelfTransforms(targetBone.value.id),
+    canvasStore.getEditPoseTransforms(targetBone.value.id)
+  )
+})
+watch(targetTransform, (to) => {
+  // In order to reduce blinking
+  if (!to) showColorPicker.value = false
+})
+
+const showColorPicker = ref(false)
+function toggleShowColorPicker() {
+  showColorPicker.value = !showColorPicker.value
+}
+
+const hsva = computed(() => {
+  if (!targetTransform.value) return undefined
+  return posedHsva(targetTransform.value)
+})
+function updatePoseByColor(hsva: HSVA, seriesKey?: string) {
+  if (!targetTransform.value) return
+
+  const t = hsvaToTransform(hsva)
+  draftTransform.translateX = t.translate.x
+  draftTransform.translateY = t.translate.y
+  draftTransform.rotate = t.rotate
+  draftTransform.scaleX = t.scale.x
+  changeTransform(seriesKey)
+}
+
+function changeBoneHeadX(val: number, seriesKey?: string) {
+  draftBone.headX = val
+  changeBone(seriesKey)
+}
+function changeBoneHeadY(val: number, seriesKey?: string) {
+  draftBone.headY = val
+  changeBone(seriesKey)
+}
+function changeBoneTailX(val: number, seriesKey?: string) {
+  draftBone.tailX = val
+  changeBone(seriesKey)
+}
+function changeBoneTailY(val: number, seriesKey?: string) {
+  draftBone.tailY = val
+  changeBone(seriesKey)
+}
+function changeBone(seriesKey?: string) {
+  if (!targetBone.value) return
+  store.updateBones(
+    {
+      [targetBone.value.id]: {
+        head: { x: draftBone.headX, y: draftBone.headY },
+        tail: { x: draftBone.tailX, y: draftBone.tailY },
+      },
+    },
+    seriesKey
+  )
+}
+
+function changeTranslateX(val: number, seriesKey?: string) {
+  draftTransform.translateX = val
+  changeTransform(seriesKey)
+}
+function changeTranslateY(val: number, seriesKey?: string) {
+  draftTransform.translateY = val
+  changeTransform(seriesKey)
+}
+function changeRotate(val: number, seriesKey?: string) {
+  draftTransform.rotate = val
+  changeTransform(seriesKey)
+}
+function changeScaleX(val: number, seriesKey?: string) {
+  draftTransform.scaleX = val
+  changeTransform(seriesKey)
+}
+function changeScaleY(val: number, seriesKey?: string) {
+  draftTransform.scaleY = val
+  changeTransform(seriesKey)
+}
+
+function changeTransform(seriesKey?: string) {
+  if (!targetBone.value) return
+  animationStore.pastePoses(
+    {
+      [targetBone.value.id]: getTransform({
+        translate: {
+          x: draftTransform.translateX,
+          y: draftTransform.translateY,
+        },
+        rotate: draftTransform.rotate,
+        scale: { x: draftTransform.scaleX, y: draftTransform.scaleY },
+      }),
+    },
+    seriesKey
+  )
+}
+
+const posePropsUpdatedStatus = computed<
+  Partial<{ [key in KeyframeBonePropKey]: boolean }>
+>(() => {
+  const target = targetBone.value
+  if (!target) return {}
+
+  const editedTransform = animationStore.getBoneEditedTransforms(
+    targetBone.value!.id
+  )
+  return {
+    translateX: editedTransform.translate.x !== 0,
+    translateY: editedTransform.translate.y !== 0,
+    scaleX: editedTransform.scale.x !== 0,
+    scaleY: editedTransform.scale.y !== 0,
+    rotate: editedTransform.rotate !== 0,
+  }
+})
+
+const keyframeStatusMap = computed<IdMap<KeyframeStatus>>(() => {
+  if (!targetBone.value) return {}
+
+  const keyframes =
+    animationStore.keyframeMapByTargetId.value[targetBone.value.id]
+  if (!keyframes) return {}
+
+  const currentFrame = animationStore.currentFrame.value
+  return mapReduce(getKeyframeExistedPropsMap(keyframes).props, (list) => {
+    return list.some((k) => k.frame === currentFrame) ? 'self' : 'others'
+  })
+})
+
+function createKeyframe(key: KeyframeBonePropKey) {
+  if (!targetBone.value) return
+  animationStore.execInsertKeyframe({ [key]: true })
+}
+function deleteKeyframe(key: KeyframeBonePropKey) {
+  if (!targetBone.value) return
+  animationStore.execDeleteTargetKeyframe(targetBone.value.id, key)
+}
+
+watchEffect(() => {
+  if (!targetBone.value) return
+
+  draftBone.headX = targetBone.value.head.x
+  draftBone.headY = targetBone.value.head.y
+  draftBone.tailX = targetBone.value.tail.x
+  draftBone.tailY = targetBone.value.tail.y
+})
+watchEffect(() => {
+  if (!targetTransform.value) return
+
+  draftTransform.translateX = targetTransform.value.translate.x
+  draftTransform.translateY = targetTransform.value.translate.y
+  draftTransform.rotate = targetTransform.value.rotate
+  draftTransform.scaleX = targetTransform.value.scale.x
+  draftTransform.scaleY = targetTransform.value.scale.y
+})
+
+const labelWidth = '20px'
+const canvasMode = canvasStore.canvasMode
 </script>
 
 <style scoped>

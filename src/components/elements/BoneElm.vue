@@ -78,7 +78,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from 'vue'
+import { computed } from 'vue'
 import { Bone, BoneSelectedState } from '../../models/index'
 import { d } from '../../utils/helpers'
 import { IVec2, add, sub, multi, rotate, getDistance } from 'okageo'
@@ -98,98 +98,90 @@ function getCircleR(head: IVec2, tail: IVec2, scale: number): number {
   // keep minimal scaled anchor to select
   return Math.max(getDistance(head, tail) * 0.04, 2 * scale)
 }
+</script>
 
-export default defineComponent({
-  props: {
-    bone: {
-      type: Object as PropType<Bone>,
-      required: true,
-    },
-    parent: {
-      type: Object as PropType<Bone | undefined>,
-      default: undefined,
-    },
-    opacity: { type: Number, default: 1 },
-    scale: { type: Number, default: 1 },
-    selectedState: {
-      type: Object as PropType<BoneSelectedState>,
-      default: () => ({}),
-    },
-    poseMode: {
-      type: Boolean,
-      default: false,
-    },
-    readOnly: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['select'],
-  setup(props, { emit }) {
-    const { settings } = useSettings()
+<script lang="ts" setup>
+const props = withDefaults(
+  defineProps<{
+    bone: Bone
+    parent?: Bone | undefined
+    opacity?: number
+    scale?: number
+    selectedState?: BoneSelectedState
+    poseMode?: boolean
+    readOnly?: boolean
+  }>(),
+  {
+    parent: undefined,
+    opacity: 1,
+    scale: 1,
+    selectedState: () => ({}),
+    poseMode: false,
+    readOnly: false,
+  }
+)
 
-    const head = computed(() => {
-      return props.bone.head
-    })
-    const tail = computed(() => {
-      return props.bone.tail
-    })
-    const side1 = computed(() =>
-      d1(head.value, tail.value, props.bone.transform.scale.x)
-    )
-    const side2 = computed(() =>
-      d1(head.value, tail.value, props.bone.transform.scale.x, true)
-    )
+const emit = defineEmits<{
+  (e: 'select', ...values: any): void
+}>()
 
-    const selectedAll = computed(() => {
-      if (props.poseMode) {
-        return props.selectedState.head || props.selectedState.tail
-      } else {
-        return props.selectedState.head && props.selectedState.tail
-      }
-    })
+const { settings } = useSettings()
 
-    const circleR = computed(() =>
-      getCircleR(head.value, tail.value, props.scale)
-    )
-
-    const strokeWidth = computed(() =>
-      Math.min(1.2 * Math.min(props.scale, 1), 3)
-    )
-
-    return {
-      adjustedOpacity: computed(() => props.opacity * settings.boneOpacity),
-      name: computed(() => (settings.showBoneName ? props.bone.name : '')),
-      circleR,
-      head,
-      tail,
-      headPath: computed(() => d([head.value, side1.value, side2.value], true)),
-      tailPath: computed(() => d([tail.value, side1.value, side2.value], true)),
-      fill: computed(() =>
-        selectedAll.value ? settings.selectedColor : '#ddd'
-      ),
-      fillDark: computed(() =>
-        selectedAll.value ? settings.selectedColor : '#bbb'
-      ),
-      fillHead: computed(() =>
-        props.selectedState.head ? settings.selectedColor : ''
-      ),
-      fillTail: computed(() =>
-        props.selectedState.tail ? settings.selectedColor : ''
-      ),
-      strokeWidth,
-      click: (e: MouseEvent, state: BoneSelectedState) => {
-        const stateForMode = props.poseMode ? { head: true, tail: true } : state
-
-        switchClick(e, {
-          plain: () => emit('select', stateForMode),
-          shift: () => emit('select', stateForMode, { shift: true }),
-          ctrl: () => emit('select', stateForMode, { ctrl: true }),
-        })
-      },
-    }
-  },
+const head = computed(() => {
+  return props.bone.head
 })
+const tail = computed(() => {
+  return props.bone.tail
+})
+const side1 = computed(() =>
+  d1(head.value, tail.value, props.bone.transform.scale.x)
+)
+const side2 = computed(() =>
+  d1(head.value, tail.value, props.bone.transform.scale.x, true)
+)
+
+const selectedAll = computed(() => {
+  if (props.poseMode) {
+    return props.selectedState.head || props.selectedState.tail
+  } else {
+    return props.selectedState.head && props.selectedState.tail
+  }
+})
+
+const circleR = computed(() => getCircleR(head.value, tail.value, props.scale))
+
+const strokeWidth = computed(() => Math.min(1.2 * Math.min(props.scale, 1), 3))
+
+const adjustedOpacity = computed(() => props.opacity * settings.boneOpacity)
+const name = computed(() => (settings.showBoneName ? props.bone.name : ''))
+const headPath = computed(() => d([head.value, side1.value, side2.value], true))
+const tailPath = computed(() => d([tail.value, side1.value, side2.value], true))
+
+const fill = computed(() =>
+  selectedAll.value ? settings.selectedColor : '#ddd'
+)
+
+const fillDark = computed(() =>
+  selectedAll.value ? settings.selectedColor : '#bbb'
+)
+
+const fillHead = computed(() =>
+  props.selectedState.head ? settings.selectedColor : ''
+)
+
+const fillTail = computed(() =>
+  props.selectedState.tail ? settings.selectedColor : ''
+)
+
+const click = (e: MouseEvent, state: BoneSelectedState) => {
+  const stateForMode = props.poseMode ? { head: true, tail: true } : state
+
+  switchClick(e, {
+    plain: () => emit('select', stateForMode),
+    shift: () => emit('select', stateForMode, { shift: true }),
+    ctrl: () => emit('select', stateForMode, { ctrl: true }),
+  })
+}
 </script>
 
 <style scoped>

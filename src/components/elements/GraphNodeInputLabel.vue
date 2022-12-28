@@ -33,15 +33,8 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import {
-  defineComponent,
-  nextTick,
-  onMounted,
-  ref,
-  PropType,
-  computed,
-} from 'vue'
+<script lang="ts" setup>
+import { nextTick, onMounted, ref, computed } from 'vue'
 import { injectScale } from '/@/composables/canvas'
 import {
   GraphNodeInput,
@@ -50,49 +43,30 @@ import {
 } from '/@/models/graphNode'
 import { getInputValuePreviewText } from '/@/utils/helpers'
 
-export default defineComponent({
-  props: {
-    inputKey: {
-      type: String,
-      required: true,
-    },
-    input: {
-      type: Object as PropType<GraphNodeInput<any>>,
-      required: true,
-    },
-    type: {
-      type: Object as PropType<ValueType>,
-      required: true,
-    },
-  },
-  setup(props) {
-    const textRef = ref<SVGTextElement>()
-    const width = ref(0)
+const props = defineProps<{
+  inputKey: string
+  input: GraphNodeInput<any>
+  type: ValueType
+}>()
 
-    const getScale = injectScale()
+const textRef = ref<SVGTextElement>()
+const width = ref(0)
 
-    onMounted(async () => {
-      await nextTick()
-      if (!textRef.value) return 0
-      width.value = textRef.value.getBoundingClientRect().width * getScale()
-    })
+const getScale = injectScale()
 
-    const valueLabel = computed<string>(() => {
-      if (props.input.from) return ''
+onMounted(async () => {
+  await nextTick()
+  if (!textRef.value) return 0
+  width.value = textRef.value.getBoundingClientRect().width * getScale()
+})
 
-      return getInputValuePreviewText(props.type, props.input.value)
-    })
+const valueLabel = computed<string>(() => {
+  if (props.input.from) return ''
 
-    const isColor = computed(() => {
-      return props.type.type === GRAPH_VALUE_TYPE.COLOR
-    })
+  return getInputValuePreviewText(props.type, props.input.value)
+})
 
-    return {
-      textRef,
-      valueLabel,
-      isColor,
-      width,
-    }
-  },
+const isColor = computed(() => {
+  return props.type.type === GRAPH_VALUE_TYPE.COLOR
 })
 </script>

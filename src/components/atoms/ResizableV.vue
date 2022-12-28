@@ -32,91 +32,77 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { DragArgs, useDrag } from 'okanvas'
 import { clamp } from 'okageo'
-import { computed, defineComponent, ref, nextTick } from 'vue'
+import { computed, ref, nextTick } from 'vue'
 import { useResizableStorage } from '/@/composables/stateStorage'
 import { useThrottle } from '/@/composables/throttle'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import { logRound } from '/@/utils/geometry'
 
-export default defineComponent({
-  props: {
-    initialRate: {
-      type: Number,
-      default: 0.5,
-    },
-    minRate: {
-      type: Number,
-      default: 0.1,
-    },
-    maxRate: {
-      type: Number,
-      default: 0.9,
-    },
-    dense: {
-      type: Boolean,
-      default: false,
-    },
-    storageKey: {
-      type: String,
-      default: '',
-    },
-  },
-  setup(props) {
-    const resizableStorage = useResizableStorage(
-      props.storageKey,
-      props.initialRate
-    )
+const props = withDefaults(
+  defineProps<{
+    initialRate?: number
+    minRate?: number
+    maxRate?: number
+    dense?: boolean
+    storageKey?: string
+  }>(),
+  {
+    initialRate: 0.5,
+    minRate: 0.1,
+    maxRate: 0.9,
+    dense: false,
+    storageKey: '',
+  }
+)
 
-    const root = ref<Element>()
-    const rate = ref(resizableStorage.restoredRate)
-    const anchorSize = computed(() => (props.dense ? 0 : 9))
+const resizableStorage = useResizableStorage(
+  props.storageKey,
+  props.initialRate
+)
 
-    const topSize = computed(() => {
-      return `calc((100% - ${anchorSize.value}px) * ${rate.value})`
-    })
-    const bottomSize = computed(() => {
-      return `calc((100% - ${anchorSize.value}px) * ${1 - rate.value})`
-    })
+const root = ref<Element>()
+const rate = ref(resizableStorage.restoredRate)
+const anchorSize = computed(() => (props.dense ? 0 : 9))
 
-    async function onDrag(arg: DragArgs) {
-      if (!root.value) return
-
-      const rootRect = root.value.getBoundingClientRect()
-      rate.value = logRound(
-        -5,
-        clamp(
-          props.minRate,
-          props.maxRate,
-          (arg.p.y - rootRect.top) / rootRect.height
-        )
-      )
-      resizableStorage.setDirty(true)
-      await nextTick()
-      window.dispatchEvent(new Event('resize'))
-    }
-    const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
-
-    const drag = useDrag(throttleDrag)
-    useGlobalMousemove((e) => {
-      e.preventDefault()
-      drag.onMove(e)
-    })
-    useGlobalMouseup(() => {
-      resizableStorage.save(rate.value)
-      drag.onUp()
-    })
-
-    return {
-      root,
-      topSize,
-      bottomSize,
-      onDown: drag.onDown,
-    }
-  },
+const topSize = computed(() => {
+  return `calc((100% - ${anchorSize.value}px) * ${rate.value})`
 })
+const bottomSize = computed(() => {
+  return `calc((100% - ${anchorSize.value}px) * ${1 - rate.value})`
+})
+
+async function onDrag(arg: DragArgs) {
+  if (!root.value) return
+
+  const rootRect = root.value.getBoundingClientRect()
+  rate.value = logRound(
+    -5,
+    clamp(
+      props.minRate,
+      props.maxRate,
+      (arg.p.y - rootRect.top) / rootRect.height
+    )
+  )
+  resizableStorage.setDirty(true)
+  await nextTick()
+  window.dispatchEvent(new Event('resize'))
+}
+const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
+
+const drag = useDrag(throttleDrag)
+useGlobalMousemove((e) => {
+  e.preventDefault()
+  drag.onMove(e)
+})
+useGlobalMouseup(() => {
+  resizableStorage.save(rate.value)
+  drag.onUp()
+})
+
+const onDown = drag.onDown
 </script>
 
 <style scoped>

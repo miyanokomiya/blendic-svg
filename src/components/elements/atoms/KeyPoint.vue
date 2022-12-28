@@ -44,43 +44,37 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from 'vue'
+<script lang="ts" setup>
+import { computed } from 'vue'
 import { useSettings } from '/@/composables/settings'
 
-export default defineComponent({
-  props: {
-    top: {
-      type: Number,
-      required: true,
-    },
-    selected: {
-      type: Boolean,
-      default: false,
-    },
-    sameRangeWidth: {
-      type: Number,
-      default: 0,
-    },
-    tooltip: {
-      type: String,
-      default: '',
-    },
-  },
-  emits: ['select', 'shift-select'],
-  setup(_props, { emit }) {
-    const { settings } = useSettings()
-    const selectedColor = computed(() => settings.selectedColor)
+withDefaults(
+  defineProps<{
+    top: number
+    selected?: boolean
+    sameRangeWidth?: number
+    tooltip?: string
+  }>(),
+  {
+    selected: false,
+    sameRangeWidth: 0,
+    tooltip: '',
+  }
+)
 
-    return {
-      selectedColor,
-      select() {
-        emit('select')
-      },
-      shiftSelect() {
-        emit('shift-select')
-      },
-    }
-  },
-})
+const emit = defineEmits<{
+  (e: 'select', ...values: any): void
+  (e: 'shift-select', ...values: any): void
+}>()
+
+const { settings } = useSettings()
+const selectedColor = computed(() => settings.selectedColor)
+
+function select() {
+  emit('select')
+}
+
+function shiftSelect() {
+  emit('shift-select')
+}
 </script>

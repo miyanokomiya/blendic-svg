@@ -41,182 +41,163 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, PropType, ref, watchEffect } from 'vue'
+<script lang="ts" setup>
+import { computed, ref, watchEffect } from 'vue'
 import { clamp } from 'okageo'
 import { useThrottle } from '/@/composables/throttle'
 import { PointerMovement, usePointerLock } from '/@/composables/window'
 import { logRound } from '/@/utils/geometry'
 
-export default defineComponent({
-  props: {
-    modelValue: { type: Number, default: 0 },
-    integer: {
-      type: Boolean,
-      default: false,
-    },
-    min: {
-      type: Number as PropType<number | undefined>,
-      default: undefined,
-    },
-    max: {
-      type: Number as PropType<number | undefined>,
-      default: undefined,
-    },
-    step: {
-      type: Number,
-      default: 1,
-    },
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['update:model-value'],
-  setup(props, { emit }) {
-    const el = ref<Element>()
-    const inputEl = ref<HTMLInputElement>()
-    const dragStartValue = ref(0)
-    const focused = ref(false)
-    const dragged = ref(false)
-    const seriesKey = ref<string>()
+const props = withDefaults(
+  defineProps<{
+    modelValue?: number
+    integer?: boolean
+    min?: number | undefined
+    max?: number | undefined
+    step?: number
+    disabled?: boolean
+  }>(),
+  {
+    modelValue: 0,
+    integer: false,
+    min: undefined,
+    max: undefined,
+    step: 1,
+    disabled: false,
+  }
+)
 
-    const range = computed<number | undefined>(() => {
-      if (props.min !== undefined && props.max !== undefined) {
-        return props.max - props.min
-      } else {
-        return undefined
-      }
-    })
+const emit = defineEmits<{
+  (e: 'update:model-value', ...values: any): void
+}>()
 
-    const stepLog = computed(() =>
-      Math.round(Math.log(props.step) / Math.log(10))
+const el = ref<Element>()
+const inputEl = ref<HTMLInputElement>()
+const dragStartValue = ref(0)
+const focused = ref(false)
+const dragged = ref(false)
+const seriesKey = ref<string>()
+
+const range = computed<number | undefined>(() => {
+  if (props.min !== undefined && props.max !== undefined) {
+    return props.max - props.min
+  } else {
+    return undefined
+  }
+})
+
+const stepLog = computed(() => Math.round(Math.log(props.step) / Math.log(10)))
+
+const draftValue = ref('0')
+
+watchEffect(() => {
+  draftValue.value = props.modelValue.toString()
+})
+
+const parseDraftValue = computed(() => {
+  if (props.integer) {
+    return parseInt(draftValue.value)
+  } else {
+    return parseFloat(draftValue.value)
+  }
+})
+
+function getRate(value: number): number {
+  if (!range.value) return 0
+  if (props.max === props.min) return 0
+  return (value - props.min!) / (props.max! - props.min!)
+}
+
+const rate = computed(() => {
+  return getRate(props.modelValue)
+})
+
+const dragStartRate = computed(() => {
+  return getRate(dragStartValue.value)
+})
+
+const scaleX = computed(() => {
+  return clamp(0, 1, rate.value)
+})
+
+function onUpForward() {
+  document.exitPointerLock()
+  // focus and select the input element if not dragged
+  if (!dragged.value) {
+    focused.value = true
+    inputEl.value?.select()
+  }
+}
+
+function onDrag(arg: PointerMovement) {
+  if (!el.value) return
+  const width = el.value.getBoundingClientRect().width
+  if (width === 0) return
+
+  const rateDiff = (arg.p.x - arg.base.x) / width
+  if (Math.abs(rateDiff) > 0) {
+    dragged.value = true
+  }
+
+  if (range.value) {
+    const val = logRound(
+      -2,
+      clamp(0, 1, dragStartRate.value + rateDiff) * range.value + props.min!
     )
+    draftValue.value = clampValue(
+      props.integer ? Math.round(val) : val
+    ).toString()
+  } else {
+    // the same speed as pixel is too high to slide
+    const diffX = (arg.p.x - arg.base.x) * 0.4
+    draftValue.value = logRound(
+      stepLog.value,
+      clampValue(dragStartValue.value + diffX * props.step)
+    ).toString()
+  }
 
-    const draftValue = ref('0')
+  input()
+}
+const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
 
-    watchEffect(() => {
-      draftValue.value = props.modelValue.toString()
-    })
-
-    const parseDraftValue = computed(() => {
-      if (props.integer) {
-        return parseInt(draftValue.value)
-      } else {
-        return parseFloat(draftValue.value)
-      }
-    })
-
-    function getRate(value: number): number {
-      if (!range.value) return 0
-      if (props.max === props.min) return 0
-      return (value - props.min!) / (props.max! - props.min!)
-    }
-
-    const rate = computed(() => {
-      return getRate(props.modelValue)
-    })
-
-    const dragStartRate = computed(() => {
-      return getRate(dragStartValue.value)
-    })
-
-    const scaleX = computed(() => {
-      return clamp(0, 1, rate.value)
-    })
-
-    function onUpForward() {
-      document.exitPointerLock()
-      // focus and select the input element if not dragged
-      if (!dragged.value) {
-        focused.value = true
-        inputEl.value?.select()
-      }
-    }
-
-    function onDrag(arg: PointerMovement) {
-      if (!el.value) return
-      const width = el.value.getBoundingClientRect().width
-      if (width === 0) return
-
-      const rateDiff = (arg.p.x - arg.base.x) / width
-      if (Math.abs(rateDiff) > 0) {
-        dragged.value = true
-      }
-
-      if (range.value) {
-        const val = logRound(
-          -2,
-          clamp(0, 1, dragStartRate.value + rateDiff) * range.value + props.min!
-        )
-        draftValue.value = clampValue(
-          props.integer ? Math.round(val) : val
-        ).toString()
-      } else {
-        // the same speed as pixel is too high to slide
-        const diffX = (arg.p.x - arg.base.x) * 0.4
-        draftValue.value = logRound(
-          stepLog.value,
-          clampValue(dragStartValue.value + diffX * props.step)
-        ).toString()
-      }
-
-      input()
-    }
-    const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
-
-    const pointerLock = usePointerLock({
-      onMove: throttleDrag,
-      onEscape: () => {
-        dragged.value = false
-        seriesKey.value = undefined
-      },
-    })
-
-    function clampValue(val: number) {
-      let ret = val
-      if (props.min !== undefined) {
-        ret = Math.max(ret, props.min)
-      }
-      if (props.max !== undefined) {
-        ret = Math.min(ret, props.max)
-      }
-      return ret
-    }
-
-    function input() {
-      if (isNaN(parseDraftValue.value)) {
-        draftValue.value = props.modelValue.toString()
-        return
-      }
-      if (parseDraftValue.value === props.modelValue) return
-
-      emit(
-        'update:model-value',
-        clampValue(parseDraftValue.value),
-        seriesKey.value
-      )
-    }
-
-    return {
-      focused,
-      onFocus: () => (focused.value = true),
-      onBlur: () => (focused.value = false),
-      draftValue,
-      el,
-      inputEl,
-      onDown: (e: MouseEvent) => {
-        dragged.value = false
-        seriesKey.value = `slider_${Date.now()}`
-        dragStartValue.value = props.modelValue
-        pointerLock.requestPointerLock(e, 'move-h')
-      },
-      onUpForward,
-      input,
-      scaleX,
-    }
+const pointerLock = usePointerLock({
+  onMove: throttleDrag,
+  onEscape: () => {
+    dragged.value = false
+    seriesKey.value = undefined
   },
 })
+
+function clampValue(val: number) {
+  let ret = val
+  if (props.min !== undefined) {
+    ret = Math.max(ret, props.min)
+  }
+  if (props.max !== undefined) {
+    ret = Math.min(ret, props.max)
+  }
+  return ret
+}
+
+function input() {
+  if (isNaN(parseDraftValue.value)) {
+    draftValue.value = props.modelValue.toString()
+    return
+  }
+  if (parseDraftValue.value === props.modelValue) return
+
+  emit('update:model-value', clampValue(parseDraftValue.value), seriesKey.value)
+}
+
+const onFocus = () => (focused.value = true)
+const onBlur = () => (focused.value = false)
+
+const onDown = (e: MouseEvent) => {
+  dragged.value = false
+  seriesKey.value = `slider_${Date.now()}`
+  dragStartValue.value = props.modelValue
+  pointerLock.requestPointerLock(e, 'move-h')
+}
 </script>
 
 <style scoped>

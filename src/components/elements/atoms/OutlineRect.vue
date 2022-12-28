@@ -29,45 +29,36 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { Size } from 'okanvas'
-import { defineComponent, PropType, ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useGetBBox } from '/@/composables/canvas'
 
-export default defineComponent({
-  props: {
-    dep: {
-      type: null,
-      required: true,
-    },
-    marginSize: {
-      type: Object as PropType<Size>,
-      default: () => ({ width: 0, height: 0 }),
-    },
-  },
-  setup(props) {
-    const target = ref<SVGGraphicsElement>()
-    const size = ref({ width: 0, height: 0 })
+const props = withDefaults(
+  defineProps<{
+    dep: any
+    marginSize?: Size
+  }>(),
+  {
+    marginSize: () => ({ width: 0, height: 0 }),
+  }
+)
 
-    const getBBox = useGetBBox()
+const target = ref<SVGGraphicsElement>()
+const size = ref({ width: 0, height: 0 })
 
-    function calcSize() {
-      if (!target.value) return
-      const rect = getBBox(target.value)
-      size.value = {
-        width: rect.width + props.marginSize.width * 2,
-        height: rect.height + props.marginSize.height * 2,
-      }
-    }
+const getBBox = useGetBBox()
 
-    watch(() => props.dep, calcSize)
-    watch(() => props.marginSize, calcSize)
-    onMounted(calcSize)
+function calcSize() {
+  if (!target.value) return
+  const rect = getBBox(target.value)
+  size.value = {
+    width: rect.width + props.marginSize.width * 2,
+    height: rect.height + props.marginSize.height * 2,
+  }
+}
 
-    return {
-      target,
-      size,
-    }
-  },
-})
+watch(() => props.dep, calcSize)
+watch(() => props.marginSize, calcSize)
+onMounted(calcSize)
 </script>

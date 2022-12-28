@@ -33,54 +33,47 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType, ref, watch } from 'vue'
+<script lang="ts" setup>
+import { ref, watch } from 'vue'
 import { ToolMenuItem } from '/@/composables/modes/types'
 
-export default defineComponent({
-  props: {
-    label: {
-      type: String,
-      required: true,
-    },
-    items: {
-      type: Array as PropType<ToolMenuItem[]>,
-      default: () => [],
-    },
-  },
-  setup() {
-    const root = ref<Element>()
-    const opened = ref(false)
+withDefaults(
+  defineProps<{
+    label: string
+    items?: ToolMenuItem[]
+  }>(),
+  {
+    items: () => [],
+  }
+)
 
-    function mousemove(e: MouseEvent) {
-      if (e.target instanceof Element) {
-        if (!root.value?.contains(e.target)) {
-          opened.value = false
-        }
-      }
+const root = ref<Element>()
+const opened = ref(false)
+
+function mousemove(e: MouseEvent) {
+  if (e.target instanceof Element) {
+    if (!root.value?.contains(e.target)) {
+      opened.value = false
     }
+  }
+}
 
-    watch(opened, (to) => {
-      if (to) {
-        window.addEventListener('mousemove', mousemove)
-      } else {
-        window.removeEventListener('mousemove', mousemove)
-      }
-    })
-
-    return {
-      root,
-      opened,
-      toggle() {
-        opened.value = !opened.value
-      },
-      exec(fn?: () => void) {
-        fn?.()
-        opened.value = false
-      },
-    }
-  },
+watch(opened, (to) => {
+  if (to) {
+    window.addEventListener('mousemove', mousemove)
+  } else {
+    window.removeEventListener('mousemove', mousemove)
+  }
 })
+
+function toggle() {
+  opened.value = !opened.value
+}
+
+function exec(fn?: () => void) {
+  fn?.()
+  opened.value = false
+}
 </script>
 
 <style scoped>

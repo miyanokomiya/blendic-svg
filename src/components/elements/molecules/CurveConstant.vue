@@ -24,32 +24,21 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { IVec2 } from 'okageo'
-import { defineComponent, PropType } from 'vue'
 
-export default defineComponent({
-  props: {
-    from: {
-      type: Object as PropType<IVec2>,
-      required: true,
-    },
-    to: {
-      type: Object as PropType<IVec2>,
-      required: true,
-    },
-    color: {
-      type: String,
-      default: '#fff',
-    },
-    scale: {
-      type: Number,
-      default: 1,
-    },
-    lineWidth: {
-      type: Number,
-      default: 1,
-    },
-  },
-})
+withDefaults(
+  defineProps<{
+    from: IVec2
+    to: IVec2
+    color?: string
+    scale?: number
+    lineWidth?: number
+  }>(),
+  {
+    color: '#fff',
+    scale: 1,
+    lineWidth: 1,
+  }
+)
 </script>

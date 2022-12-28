@@ -44,72 +44,47 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+<script lang="ts" setup>
 import KeyPoint from '/@/components/elements/atoms/KeyPoint.vue'
+import { computed } from 'vue'
 import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
 import { mapFilter } from '/@/utils/commons'
 import { getKeyframeTopMap } from '/@/utils/helpers'
 import { getKeyframeDefaultPropsMap, isAnySelected } from '/@/utils/keyframes'
 
-export default defineComponent({
-  components: { KeyPoint },
-  props: {
-    keyFrame: {
-      type: Object as PropType<KeyframeBase>,
-      required: true,
-    },
+const props = withDefaults(
+  defineProps<{
+    keyFrame: KeyframeBase
     childMap: {
-      type: Object as PropType<{
-        [key: string]: number
-      }>,
-      required: true,
-    },
-    top: {
-      type: Number,
-      default: 0,
-    },
-    selectedState: {
-      type: Object as PropType<KeyframeSelectedState>,
-      default: () => ({ name: '', props: {} }),
-    },
-    expanded: {
-      type: Boolean,
-      default: false,
-    },
-    sameRangeWidth: {
-      type: Object as PropType<{ [key: string]: number }>,
-      default: () => getKeyframeDefaultPropsMap(() => 0),
-    },
-    height: {
-      type: Number,
-      default: 24,
-    },
-    scrollY: {
-      type: Number,
-      default: 0,
-    },
-  },
-  emits: ['select', 'shift-select'],
-  setup(props) {
-    function isVisible(top: number): boolean {
-      return top > props.scrollY + props.height * 1.5
+      [key: string]: number
     }
+    top?: number
+    selectedState?: KeyframeSelectedState
+    expanded?: boolean
+    sameRangeWidth?: { [key: string]: number }
+    height?: number
+    scrollY?: number
+  }>(),
+  {
+    top: 0,
+    selectedState: () => ({ name: '', props: {} }),
+    expanded: false,
+    sameRangeWidth: () => getKeyframeDefaultPropsMap(() => 0).props,
+    height: 24,
+    scrollY: 0,
+  }
+)
 
-    const selectedAny = computed(() => isAnySelected(props.selectedState))
+function isVisible(top: number): boolean {
+  return top > props.scrollY + props.height * 1.5
+}
 
-    const childTopMap = computed(() => {
-      return mapFilter(
-        getKeyframeTopMap(props.height, props.top, props.childMap),
-        (top, key) => key in props.keyFrame.points && isVisible(top)
-      )
-    })
+const selectedAny = computed(() => isAnySelected(props.selectedState))
 
-    return {
-      isVisible,
-      childTopMap,
-      selectedAny,
-    }
-  },
+const childTopMap = computed(() => {
+  return mapFilter(
+    getKeyframeTopMap(props.height, props.top, props.childMap),
+    (top, key) => key in props.keyFrame.points && isVisible(top)
+  )
 })
 </script>

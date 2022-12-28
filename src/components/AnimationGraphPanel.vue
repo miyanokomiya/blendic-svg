@@ -94,23 +94,23 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, watchEffect, watch, computed, ref } from 'vue'
-import { useSvgCanvas } from '/@/composables/canvas'
-import { useStore } from '/@/store'
-import { useAnimationGraphStore } from '/@/store/animationGraph'
+<script lang="ts" setup>
 import AnimationGraphCanvas from '/@/components/AnimationGraphCanvas.vue'
 import SelectField from './atoms/SelectField.vue'
 import ToggleRadioButtons from '/@/components/atoms/ToggleRadioButtons.vue'
 import AddIcon from '/@/components/atoms/AddIcon.vue'
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
+import GraphEdge from '/@/components/elements/GraphEdge.vue'
+import GraphSideBar from '/@/components/GraphSideBar.vue'
+import { watchEffect, watch, computed, ref } from 'vue'
+import { useSvgCanvas } from '/@/composables/canvas'
+import { useStore } from '/@/store'
+import { useAnimationGraphStore } from '/@/store/animationGraph'
 import GraphNode from '/@/components/elements/GraphNode.vue'
 import GraphNodeReroute from '/@/components/elements/GraphNodeReroute.vue'
-import GraphEdge from '/@/components/elements/GraphEdge.vue'
 import { toMap } from '/@/models'
 import { add, IVec2 } from 'okageo'
 import { useElementStore } from '/@/store/element'
-import GraphSideBar from '/@/components/GraphSideBar.vue'
 import { flatElementTree, getElementLabel } from '/@/utils/elements'
 import {
   provideGetBoneOptions,
@@ -120,232 +120,187 @@ import {
 import { getGraphNodeRect } from '/@/utils/helpers'
 import { getWrapperRect } from '/@/utils/geometry'
 
-export default defineComponent({
-  components: {
-    AnimationGraphCanvas,
-    SelectField,
-    ToggleRadioButtons,
-    AddIcon,
-    DeleteIcon,
-    GraphEdge,
-    GraphSideBar,
-  },
-  setup() {
-    const canvasTypeOptions = [
-      { value: 'graph', label: 'Graph' },
-      { value: 'custom', label: 'Custom' },
-    ]
+const canvasTypeOptions = [
+  { value: 'graph', label: 'Graph' },
+  { value: 'custom', label: 'Custom' },
+]
 
-    const store = useStore()
-    const elementStore = useElementStore()
-    const graphStore = useAnimationGraphStore()
-    const currentGraph = computed(() => graphStore.lastSelectedGraph.value)
+const store = useStore()
+const elementStore = useElementStore()
+const graphStore = useAnimationGraphStore()
+const currentGraph = computed(() => graphStore.lastSelectedGraph.value)
 
-    const canvas = useSvgCanvas()
+const canvas = useSvgCanvas()
 
-    const getGraphNodeModule = computed(() =>
-      graphStore.getGraphNodeModuleFn.value()
-    )
-    provideGetGraphNodeModuleFn(() => getGraphNodeModule.value)
+const getGraphNodeModule = computed(() =>
+  graphStore.getGraphNodeModuleFn.value()
+)
+provideGetGraphNodeModuleFn(() => getGraphNodeModule.value)
 
-    const selectedArmature = computed(() => store.lastSelectedArmature.value)
-    const selectedGraph = computed(() => graphStore.parentGraph.value)
+const selectedArmature = computed(() => store.lastSelectedArmature.value)
+const selectedGraph = computed(() => graphStore.parentGraph.value)
 
-    const viewportCache = ref<Record<string, { scale: number; origin: IVec2 }>>(
-      {}
-    )
-    watch(selectedGraph, (to, from) => {
-      if (from) {
-        viewportCache.value = {
-          ...viewportCache.value,
-          [from.id]: {
-            scale: canvas.scale.value,
-            origin: canvas.viewOrigin.value,
-          },
-        }
-      }
-
-      if (to) {
-        const cache = viewportCache.value[to.id]
-        if (cache) {
-          canvas.scale.value = cache.scale
-          canvas.viewOrigin.value = cache.origin
-        } else {
-          const nodes = Object.values(graphStore.nodeMap.value)
-          canvas.setViewport(
-            nodes.length
-              ? getWrapperRect(
-                  nodes.map((node) =>
-                    getGraphNodeRect(
-                      graphStore.getGraphNodeModuleFn.value(),
-                      node
-                    )
-                  )
-                )
-              : undefined
-          )
-        }
-      }
-    })
-
-    const allNames = computed(() =>
-      graphStore.parentGraphs.value.map((g) => g.name)
-    )
-
-    const draftName = ref('')
-    watchEffect(() => {
-      draftName.value = selectedGraph.value?.name ?? ''
-    })
-
-    function addParentGraph() {
-      if (graphStore.graphType.value === 'graph') {
-        graphStore.addGraph()
-      } else {
-        graphStore.addCustomGraph()
-      }
+const viewportCache = ref<Record<string, { scale: number; origin: IVec2 }>>({})
+watch(selectedGraph, (to, from) => {
+  if (from) {
+    viewportCache.value = {
+      ...viewportCache.value,
+      [from.id]: {
+        scale: canvas.scale.value,
+        origin: canvas.viewOrigin.value,
+      },
     }
+  }
 
-    function deleteParentGraph() {
-      if (graphStore.graphType.value === 'graph') {
-        graphStore.deleteGraph()
-      } else {
-        graphStore.deleteCustomGraph()
-      }
-    }
-
-    function changeGraphName() {
-      if (allNames.value.includes(draftName.value)) {
-        draftName.value = selectedGraph.value?.name ?? ''
-      } else {
-        if (graphStore.graphType.value === 'graph') {
-          graphStore.updateGraph({ name: draftName.value })
-        } else {
-          graphStore.updateCustomGraph({ name: draftName.value })
-        }
-      }
-    }
-
-    const graphOptions = computed(() =>
-      graphStore.graphType.value === 'graph'
-        ? graphStore.graphs.value.map((g) => {
-            const valid = selectedArmature.value?.id !== g.armatureId
-            return {
-              value: g.id,
-              label: `${valid ? '(x)' : ''} ${g.name}`,
-            }
-          })
-        : graphStore.customGraphs.value.map((g) => {
-            return { value: g.id, label: g.name }
-          })
-    )
-
-    const selectedGraphId = computed({
-      get: () => graphStore.selectedGraphByType.value?.id ?? '',
-      set: (id: string) => graphStore.switchGraph(id),
-    })
-
-    const selectedNodes = graphStore.selectedNodes
-
-    const editedNodeMap = graphStore.editedNodeMap
-    const edgePositionMap = graphStore.edgePositionMap
-
-    const draftEdges = computed<
-      { output: IVec2; input: IVec2; connected?: boolean }[] | undefined
-    >(() => {
-      const draftEdge = graphStore.draftEdge.value
-      if (!draftEdge) return undefined
-
-      const nodeMap = editedNodeMap.value
-      const positions = edgePositionMap.value
-
-      if (draftEdge.type === 'draft-input') {
-        const node = nodeMap[draftEdge.output.nodeId]
-        return node
-          ? [
-              {
-                output: add(
-                  node.position,
-                  positions[node.id].outputs[draftEdge.output.key].p
-                ),
-                input: draftEdge.input,
-                connected: draftEdge.connected,
-              },
-            ]
+  if (to) {
+    const cache = viewportCache.value[to.id]
+    if (cache) {
+      canvas.scale.value = cache.scale
+      canvas.viewOrigin.value = cache.origin
+    } else {
+      const nodes = Object.values(graphStore.nodeMap.value)
+      canvas.setViewport(
+        nodes.length
+          ? getWrapperRect(
+              nodes.map((node) =>
+                getGraphNodeRect(graphStore.getGraphNodeModuleFn.value(), node)
+              )
+            )
           : undefined
-      } else {
-        return draftEdge.inputs
-          .filter((input) => nodeMap[input.nodeId])
-          .map((input) => ({
-            output: draftEdge.output,
-            input: add(
-              nodeMap[input.nodeId].position,
-              positions[input.nodeId].inputs[input.key].p
-            ),
-            connected: draftEdge.connected,
-          }))
-      }
-    })
-
-    provideGetObjectOptions(() => {
-      const actor = elementStore.lastSelectedActor.value
-      if (
-        graphStore.graphType.value !== 'graph' ||
-        !actor ||
-        !currentGraph.value
       )
-        return []
-      if (actor.armatureId !== currentGraph.value.armatureId) return []
-
-      const nativeElementMap = toMap(flatElementTree([actor.svgTree]))
-      return actor.elements.map((id) => {
-        return { value: id, label: getElementLabel(nativeElementMap[id]) }
-      })
-    })
-
-    provideGetBoneOptions(() => {
-      const armature = store.lastSelectedArmature.value
-      if (
-        graphStore.graphType.value !== 'graph' ||
-        !armature ||
-        !currentGraph.value
-      )
-        return []
-      if (armature.id !== currentGraph.value.armatureId) return []
-
-      return Object.values(store.boneMap.value).map((bone) => {
-        return { value: bone.id, label: bone.name }
-      })
-    })
-
-    return {
-      GraphNode,
-      GraphNodeReroute,
-
-      canvasType: graphStore.graphType,
-      setGraphType: (val: any) => graphStore.setGraphType(val),
-      canvasTypeOptions,
-      canvas,
-
-      selectedArmature,
-      editedNodeMap,
-      edgePositionMap,
-      edgeSummaryMap: graphStore.edgeSummaryMap,
-      draftEdges,
-      nodeErrorMessagesMap: graphStore.nodeErrorMessagesMap,
-
-      draftName,
-      changeGraphName,
-
-      selectedGraphId,
-      graphOptions,
-
-      addParentGraph,
-      deleteParentGraph,
-
-      selectedNodes,
     }
-  },
+  }
 })
+
+const allNames = computed(() =>
+  graphStore.parentGraphs.value.map((g) => g.name)
+)
+
+const draftName = ref('')
+watchEffect(() => {
+  draftName.value = selectedGraph.value?.name ?? ''
+})
+
+function addParentGraph() {
+  if (graphStore.graphType.value === 'graph') {
+    graphStore.addGraph()
+  } else {
+    graphStore.addCustomGraph()
+  }
+}
+
+function deleteParentGraph() {
+  if (graphStore.graphType.value === 'graph') {
+    graphStore.deleteGraph()
+  } else {
+    graphStore.deleteCustomGraph()
+  }
+}
+
+function changeGraphName() {
+  if (allNames.value.includes(draftName.value)) {
+    draftName.value = selectedGraph.value?.name ?? ''
+  } else {
+    if (graphStore.graphType.value === 'graph') {
+      graphStore.updateGraph({ name: draftName.value })
+    } else {
+      graphStore.updateCustomGraph({ name: draftName.value })
+    }
+  }
+}
+
+const graphOptions = computed(() =>
+  graphStore.graphType.value === 'graph'
+    ? graphStore.graphs.value.map((g) => {
+        const valid = selectedArmature.value?.id !== g.armatureId
+        return {
+          value: g.id,
+          label: `${valid ? '(x)' : ''} ${g.name}`,
+        }
+      })
+    : graphStore.customGraphs.value.map((g) => {
+        return { value: g.id, label: g.name }
+      })
+)
+
+const selectedGraphId = computed({
+  get: () => graphStore.selectedGraphByType.value?.id ?? '',
+  set: (id: string) => graphStore.switchGraph(id),
+})
+
+const selectedNodes = graphStore.selectedNodes
+
+const editedNodeMap = graphStore.editedNodeMap
+const edgePositionMap = graphStore.edgePositionMap
+
+const draftEdges = computed<
+  { output: IVec2; input: IVec2; connected?: boolean }[] | undefined
+>(() => {
+  const draftEdge = graphStore.draftEdge.value
+  if (!draftEdge) return undefined
+
+  const nodeMap = editedNodeMap.value
+  const positions = edgePositionMap.value
+
+  if (draftEdge.type === 'draft-input') {
+    const node = nodeMap[draftEdge.output.nodeId]
+    return node
+      ? [
+          {
+            output: add(
+              node.position,
+              positions[node.id].outputs[draftEdge.output.key].p
+            ),
+            input: draftEdge.input,
+            connected: draftEdge.connected,
+          },
+        ]
+      : undefined
+  } else {
+    return draftEdge.inputs
+      .filter((input) => nodeMap[input.nodeId])
+      .map((input) => ({
+        output: draftEdge.output,
+        input: add(
+          nodeMap[input.nodeId].position,
+          positions[input.nodeId].inputs[input.key].p
+        ),
+        connected: draftEdge.connected,
+      }))
+  }
+})
+
+provideGetObjectOptions(() => {
+  const actor = elementStore.lastSelectedActor.value
+  if (graphStore.graphType.value !== 'graph' || !actor || !currentGraph.value)
+    return []
+  if (actor.armatureId !== currentGraph.value.armatureId) return []
+
+  const nativeElementMap = toMap(flatElementTree([actor.svgTree]))
+  return actor.elements.map((id) => {
+    return { value: id, label: getElementLabel(nativeElementMap[id]) }
+  })
+})
+
+provideGetBoneOptions(() => {
+  const armature = store.lastSelectedArmature.value
+  if (
+    graphStore.graphType.value !== 'graph' ||
+    !armature ||
+    !currentGraph.value
+  )
+    return []
+  if (armature.id !== currentGraph.value.armatureId) return []
+
+  return Object.values(store.boneMap.value).map((bone) => {
+    return { value: bone.id, label: bone.name }
+  })
+})
+
+const canvasType = graphStore.graphType
+const setGraphType = (val: any) => graphStore.setGraphType(val)
+const edgeSummaryMap = graphStore.edgeSummaryMap
+const nodeErrorMessagesMap = graphStore.nodeErrorMessagesMap
 </script>
 
 <style scoped>

@@ -21,49 +21,28 @@ Copyright (C) 2021, Tomoya Komiyama.
   <path :d="d" :stroke="color" :stroke-width="lineWidth * scale" />
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { IVec2 } from 'okageo'
-import { computed, defineComponent, PropType } from 'vue'
+import { computed } from 'vue'
 
-export default defineComponent({
-  props: {
-    c0: {
-      type: Object as PropType<IVec2>,
-      required: true,
-    },
-    c1: {
-      type: Object as PropType<IVec2>,
-      required: true,
-    },
-    c2: {
-      type: Object as PropType<IVec2>,
-      required: true,
-    },
-    c3: {
-      type: Object as PropType<IVec2>,
-      required: true,
-    },
-    color: {
-      type: String,
-      default: '#fff',
-    },
-    scale: {
-      type: Number,
-      default: 1,
-    },
-    lineWidth: {
-      type: Number,
-      default: 1,
-    },
-  },
-  setup(props) {
-    const d = computed(() => {
-      return `M ${props.c0.x},${props.c0.y} C ${props.c1.x},${props.c1.y} ${props.c2.x},${props.c2.y} ${props.c3.x},${props.c3.y}`
-    })
+const props = withDefaults(
+  defineProps<{
+    c0: IVec2
+    c1: IVec2
+    c2: IVec2
+    c3: IVec2
+    color?: string
+    scale?: number
+    lineWidth?: number
+  }>(),
+  {
+    color: '#fff',
+    scale: 1,
+    lineWidth: 1,
+  }
+)
 
-    return {
-      d,
-    }
-  },
+const d = computed(() => {
+  return `M ${props.c0.x},${props.c0.y} C ${props.c1.x},${props.c1.y} ${props.c2.x},${props.c2.y} ${props.c3.x},${props.c3.y}`
 })
 </script>

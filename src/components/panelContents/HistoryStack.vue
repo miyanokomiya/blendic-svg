@@ -32,19 +32,12 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup>
 import { useHistoryStore } from '/@/store/history'
 
-export default defineComponent({
-  setup() {
-    const historyStore = useHistoryStore()
+const historyStore = useHistoryStore()
 
-    return {
-      historySummaries: historyStore.historySummaries,
-    }
-  },
-})
+const historySummaries = historyStore.historySummaries
 </script>
 
 <style scoped>

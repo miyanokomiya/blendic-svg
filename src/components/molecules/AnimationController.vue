@@ -60,35 +60,31 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script lang="ts" setup>
 import PlayIcon from '/@/components/atoms/PlayIcon.vue'
 import PauseIcon from '/@/components/atoms/PauseIcon.vue'
 import JumpKeyIcon from '/@/components/atoms/JumpKeyIcon.vue'
 import JumpEndIcon from '/@/components/atoms/JumpEndIcon.vue'
 import { PlayState } from '/@/models'
 
-export default defineComponent({
-  components: { PlayIcon, PauseIcon, JumpKeyIcon, JumpEndIcon },
-  props: {
-    playing: {
-      type: String as PropType<PlayState>,
-      default: 'pause',
-    },
-  },
-  emits: [
-    'jump-end',
-    'jump-start',
-    'play',
-    'pause',
-    'reverse',
-    'jump-next',
-    'jump-prev',
-  ],
-  setup(_props, { emit }) {
-    return { emit }
-  },
-})
+withDefaults(
+  defineProps<{
+    playing?: PlayState
+  }>(),
+  {
+    playing: 'pause',
+  }
+)
+
+const emit = defineEmits<{
+  (e: 'jump-end', ...values: any): void
+  (e: 'jump-start', ...values: any): void
+  (e: 'play', ...values: any): void
+  (e: 'pause', ...values: any): void
+  (e: 'reverse', ...values: any): void
+  (e: 'jump-next', ...values: any): void
+  (e: 'jump-prev', ...values: any): void
+}>()
 </script>
 
 <style scoped>

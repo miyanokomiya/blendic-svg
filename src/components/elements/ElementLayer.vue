@@ -41,9 +41,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, provide } from 'vue'
+import { computed, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
-import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
 import { Bone, ElementNode, IdMap } from '/@/models'
 import {
   getGraphResolvedElementTree,
@@ -61,102 +60,91 @@ function getId(elm: ElementNode | string): string {
   if (isPlainText(elm)) return elm
   return elm.id
 }
+</script>
 
-export default defineComponent({
-  components: { NativeElement },
-  props: {
-    boneMap: {
-      type: Object as PropType<IdMap<Bone>>,
-      default: () => ({}),
-    },
-    canvasMode: {
-      type: String as PropType<CanvasMode>,
-      default: 'object',
-    },
-  },
-  setup(props) {
-    const store = useStore()
-    const graphStore = useAnimationGraphStore()
-    const elementStore = useElementStore()
-    const canvasStore = useCanvasStore()
-    const { settings } = useSettings()
+<script lang="ts" setup>
+import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
 
-    const selectedMap = computed(() => {
-      if (props.canvasMode !== 'weight') return {}
-      return elementStore.selectedElements.value
-    })
-    provide('selectedMap', selectedMap)
+const props = withDefaults(
+  defineProps<{
+    boneMap?: IdMap<Bone>
+    canvasMode?: CanvasMode
+  }>(),
+  {
+    boneMap: () => ({}),
+    canvasMode: 'object',
+  }
+)
 
-    const boneMap = computed(() => {
-      if (!['pose', 'weight'].includes(props.canvasMode)) return {}
+const store = useStore()
+const graphStore = useAnimationGraphStore()
+const elementStore = useElementStore()
+const canvasStore = useCanvasStore()
+const { settings } = useSettings()
 
-      return props.boneMap
-    })
-
-    const graphEnabled = computed(() => {
-      if (!store.lastSelectedArmature.value) return false
-      if (!elementStore.lastSelectedActor.value) return false
-      if (!graphStore.lastSelectedGraph.value) return false
-      if (canvasStore.canvasMode.value === 'edit') return false
-
-      const id = store.lastSelectedArmature.value.id
-      return (
-        id === elementStore.lastSelectedActor.value.armatureId &&
-        id === graphStore.lastSelectedGraph.value.armatureId
-      )
-    })
-
-    const posedElementRoot = computed(() => {
-      if (!elementStore.lastSelectedActor.value) return
-      return getPosedElementTree(
-        boneMap.value,
-        elementStore.elementMap.value,
-        elementStore.lastSelectedActor.value.svgTree
-      )
-    })
-
-    const graphResolvedElement = computed(() => {
-      if (
-        !posedElementRoot.value ||
-        !graphEnabled.value ||
-        !graphStore.resolvedGraph.value
-      )
-        return posedElementRoot.value
-
-      // TODO: try-catch is just for debug
-      try {
-        const graphObjectMap =
-          graphStore.resolvedGraph.value.context.getObjectMap()
-        return getGraphResolvedElementTree(
-          graphObjectMap,
-          posedElementRoot.value
-        )
-      } catch (e) {
-        console.warn(e)
-        return posedElementRoot.value
-      }
-    })
-
-    const viewBox = computed(() => {
-      if (!graphResolvedElement.value) return
-
-      return parseViewBoxFromStr(graphResolvedElement.value.attributes.viewBox)
-    })
-
-    const scale = computed(injectScale())
-    const viewboxStrokeWidth = computed(() => scale.value)
-    const viewboxStrokeDasharray = computed(() =>
-      [2, 2].map((n) => n * scale.value).join(' ')
-    )
-
-    return {
-      elementRoot: graphResolvedElement,
-      getId,
-      viewBox,
-      settings,
-      viewboxStrokeWidth,
-      viewboxStrokeDasharray,
-    }
-  },
+const selectedMap = computed(() => {
+  if (props.canvasMode !== 'weight') return {}
+  return elementStore.selectedElements.value
 })
+provide('selectedMap', selectedMap)
+
+const boneMap = computed(() => {
+  if (!['pose', 'weight'].includes(props.canvasMode)) return {}
+
+  return props.boneMap
+})
+
+const graphEnabled = computed(() => {
+  if (!store.lastSelectedArmature.value) return false
+  if (!elementStore.lastSelectedActor.value) return false
+  if (!graphStore.lastSelectedGraph.value) return false
+  if (canvasStore.canvasMode.value === 'edit') return false
+
+  const id = store.lastSelectedArmature.value.id
+  return (
+    id === elementStore.lastSelectedActor.value.armatureId &&
+    id === graphStore.lastSelectedGraph.value.armatureId
+  )
+})
+
+const posedElementRoot = computed(() => {
+  if (!elementStore.lastSelectedActor.value) return
+  return getPosedElementTree(
+    boneMap.value,
+    elementStore.elementMap.value,
+    elementStore.lastSelectedActor.value.svgTree
+  )
+})
+
+const graphResolvedElement = computed(() => {
+  if (
+    !posedElementRoot.value ||
+    !graphEnabled.value ||
+    !graphStore.resolvedGraph.value
+  )
+    return posedElementRoot.value
+
+  // TODO: try-catch is just for debug
+  try {
+    const graphObjectMap = graphStore.resolvedGraph.value.context.getObjectMap()
+    return getGraphResolvedElementTree(graphObjectMap, posedElementRoot.value)
+  } catch (e) {
+    console.warn(e)
+    return posedElementRoot.value
+  }
+})
+
+const viewBox = computed(() => {
+  if (!graphResolvedElement.value) return
+
+  return parseViewBoxFromStr(graphResolvedElement.value.attributes.viewBox)
+})
+
+const scale = computed(injectScale())
+const viewboxStrokeWidth = computed(() => scale.value)
+const viewboxStrokeDasharray = computed(() =>
+  [2, 2].map((n) => n * scale.value).join(' ')
+)
+
+const elementRoot = graphResolvedElement
 </script>

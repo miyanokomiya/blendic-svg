@@ -61,7 +61,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { IVec2, sub, clamp } from 'okageo'
 import { DragArgs, getPagePosition, useDrag } from 'okanvas'
-import { computed, defineComponent, PropType, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import {
   HSVA,
@@ -70,112 +70,101 @@ import {
   rednerRGBA,
   rgbaToHsva,
 } from '/@/utils/color'
-import SliderInput from '/@/components/atoms/SliderInput.vue'
-import InlineField from '/@/components/atoms/InlineField.vue'
-import HueCiclePicker from '/@/components/atoms/HueCiclePicker.vue'
 import { useThrottle } from '/@/composables/throttle'
 
 const RECT_SIZE = 110
+</script>
 
-export default defineComponent({
-  components: { SliderInput, InlineField, HueCiclePicker },
-  props: {
-    modelValue: {
-      type: [String, Object] as PropType<string | HSVA>,
-      default: '',
-    },
-    extraHue: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['update:model-value'],
-  setup(props, { emit }) {
-    const colorRect = ref<Element>()
-    const dragged = ref(false)
-    const seriesKey = ref<string>()
+<script lang="ts" setup>
+import SliderInput from '/@/components/atoms/SliderInput.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
+import HueCiclePicker from '/@/components/atoms/HueCiclePicker.vue'
 
-    const localHsva = computed(() => {
-      if (typeof props.modelValue !== 'string') return props.modelValue
+const props = withDefaults(
+  defineProps<{
+    modelValue?: string | HSVA
+    extraHue?: boolean
+  }>(),
+  {
+    modelValue: '',
+    extraHue: false,
+  }
+)
 
-      const rgba = parseRGBA(props.modelValue)
-      if (!rgba) return { h: 0, s: 0, v: 0, a: 1 }
-      return rgbaToHsva(rgba)
-    })
-    const rateInRect = computed(() => {
-      return { x: localHsva.value.s, y: 1 - localHsva.value.v }
-    })
+const emit = defineEmits<{
+  (e: 'update:model-value', ...values: any): void
+}>()
 
-    const baseColor = computed(() => {
-      return rednerRGBA(hsvaToRgba({ h: localHsva.value.h, s: 1, v: 1, a: 1 }))
-    })
+const colorRect = ref<Element>()
+const dragged = ref(false)
+const seriesKey = ref<string>()
 
-    function update(hsva: HSVA, seriesKey?: string) {
-      emit(
-        'update:model-value',
-        typeof props.modelValue === 'string'
-          ? rednerRGBA(hsvaToRgba(hsva))
-          : hsva,
-        seriesKey
-      )
-    }
+const localHsva = computed(() => {
+  if (typeof props.modelValue !== 'string') return props.modelValue
 
-    function updateHue(val: number, seriesKey?: string) {
-      update({ ...localHsva.value, h: val }, seriesKey)
-    }
-    function updateAlpha(val: number, seriesKey?: string) {
-      update({ ...localHsva.value, a: val }, seriesKey)
-    }
-
-    function updateByRect(windowP: IVec2) {
-      if (!colorRect.value) return
-      const rect = colorRect.value.getBoundingClientRect()
-
-      const pointInRect = sub(windowP, { x: rect.left, y: rect.top })
-      const next = {
-        x: pointInRect.x / RECT_SIZE,
-        y: pointInRect.y / RECT_SIZE,
-      }
-
-      const sv = {
-        s: clamp(0, 1, next.x),
-        v: 1 - clamp(0, 1, next.y),
-      }
-      update({ ...localHsva.value, s: sv.s, v: sv.v }, seriesKey.value)
-    }
-
-    function onDrag(arg: DragArgs) {
-      updateByRect(arg.p)
-    }
-    const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
-
-    const drag = useDrag(throttleDrag)
-    useGlobalMousemove(drag.onMove)
-    useGlobalMouseup(() => {
-      drag.onUp()
-      dragged.value = false
-      seriesKey.value = undefined
-    })
-
-    function onDown(e: MouseEvent) {
-      dragged.value = false
-      seriesKey.value = `color_${Date.now()}`
-      updateByRect(getPagePosition(e))
-      drag.onDown(e)
-    }
-
-    return {
-      RECT_SIZE,
-      colorRect,
-      baseColor,
-      localHsva,
-      onDown,
-      updateHue,
-      updateAlpha,
-      rateInRect,
-    }
-  },
+  const rgba = parseRGBA(props.modelValue)
+  if (!rgba) return { h: 0, s: 0, v: 0, a: 1 }
+  return rgbaToHsva(rgba)
 })
+const rateInRect = computed(() => {
+  return { x: localHsva.value.s, y: 1 - localHsva.value.v }
+})
+
+const baseColor = computed(() => {
+  return rednerRGBA(hsvaToRgba({ h: localHsva.value.h, s: 1, v: 1, a: 1 }))
+})
+
+function update(hsva: HSVA, seriesKey?: string) {
+  emit(
+    'update:model-value',
+    typeof props.modelValue === 'string' ? rednerRGBA(hsvaToRgba(hsva)) : hsva,
+    seriesKey
+  )
+}
+
+function updateHue(val: number, seriesKey?: string) {
+  update({ ...localHsva.value, h: val }, seriesKey)
+}
+function updateAlpha(val: number, seriesKey?: string) {
+  update({ ...localHsva.value, a: val }, seriesKey)
+}
+
+function updateByRect(windowP: IVec2) {
+  if (!colorRect.value) return
+  const rect = colorRect.value.getBoundingClientRect()
+
+  const pointInRect = sub(windowP, { x: rect.left, y: rect.top })
+  const next = {
+    x: pointInRect.x / RECT_SIZE,
+    y: pointInRect.y / RECT_SIZE,
+  }
+
+  const sv = {
+    s: clamp(0, 1, next.x),
+    v: 1 - clamp(0, 1, next.y),
+  }
+  update({ ...localHsva.value, s: sv.s, v: sv.v }, seriesKey.value)
+}
+
+function onDrag(arg: DragArgs) {
+  updateByRect(arg.p)
+}
+const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
+
+const drag = useDrag(throttleDrag)
+useGlobalMousemove(drag.onMove)
+useGlobalMouseup(() => {
+  drag.onUp()
+  dragged.value = false
+  seriesKey.value = undefined
+})
+
+function onDown(e: MouseEvent) {
+  dragged.value = false
+  seriesKey.value = `color_${Date.now()}`
+  updateByRect(getPagePosition(e))
+  drag.onDown(e)
+}
 </script>
 
 <style scoped>

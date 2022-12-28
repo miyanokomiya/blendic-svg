@@ -79,16 +79,16 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { ComputedRef, defineComponent, computed } from 'vue'
-import { useStore } from '/@/store/index'
+<script lang="ts" setup>
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
-import { BoneConstraint } from '/@/utils/constraints'
 import ConstraintList from '/@/components/panelContents/ConstraintList.vue'
-import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import TextInput from '/@/components/atoms/TextInput.vue'
 import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
+import { ComputedRef, computed } from 'vue'
+import { useStore } from '/@/store/index'
+import { BoneConstraint } from '/@/utils/constraints'
+import { getBoneIdsWithoutDescendants } from '/@/utils/armatures'
 import {
   KeyframeConstraint,
   KeyframeConstraintPropKey,
@@ -99,182 +99,158 @@ import { IdMap } from '/@/models'
 import { PickerOptions } from '/@/composables/modes/types'
 import { useCanvasStore } from '/@/store/canvas'
 
-export default defineComponent({
-  components: {
-    CheckboxInput,
-    ConstraintList,
-    InlineField,
-    TextInput,
-    SelectWithPicker,
+const store = useStore()
+const animationStore = useAnimationStore()
+const canvasStore = useCanvasStore()
+
+const lastSelectedBone = computed(() => {
+  return store.lastSelectedBone.value
+})
+
+const constraintKeyframeMapByTargetId =
+  animationStore.keyframeMapByTargetId as ComputedRef<
+    IdMap<KeyframeConstraint[]>
+  >
+const currentFrame = animationStore.currentFrame
+
+const otherBoneOptions = computed(() => {
+  if (!lastSelectedBone.value) return []
+
+  const boneMap = store.boneMap.value
+  return getBoneIdsWithoutDescendants(boneMap, lastSelectedBone.value.id).map(
+    (id) => ({ value: id, label: boneMap[id].name })
+  )
+})
+
+const constraintList = computed(() => {
+  if (!lastSelectedBone.value) return []
+
+  return lastSelectedBone.value.constraints.map(
+    (cid) => animationStore.currentInterpolatedConstraintMap.value[cid]
+  )
+})
+
+const selectedObjectType = computed((): 'bone' | 'armature' | '' => {
+  if (lastSelectedBone.value && canvasStore.canvasMode.value !== 'object')
+    return 'bone'
+  if (store.lastSelectedArmature.value) return 'armature'
+  return ''
+})
+
+function getKeyframeConstraint(
+  constraintId: string
+): KeyframeConstraint | undefined {
+  return constraintKeyframeMapByTargetId.value[constraintId].find(
+    (k) => k.frame === currentFrame.value
+  ) as KeyframeConstraint | undefined
+}
+
+function updateConstraints(constraints: BoneConstraint[], seriesKey?: string) {
+  if (!lastSelectedBone.value) return
+
+  store.updateBoneConstraints(constraints, seriesKey)
+}
+
+function updateConstraint(constraint: BoneConstraint, seriesKey?: string) {
+  if (!lastSelectedBone.value) return
+
+  const index = constraintList.value.findIndex((c) => c.id === constraint.id)
+  const current = constraintList.value[index]
+  const existedProps =
+    getKeyframeExistedPropsMap(
+      constraintKeyframeMapByTargetId.value[constraint.id] ?? []
+    ).props ?? {}
+
+  // TODO only 'influence' supported now
+  if (
+    existedProps.influence &&
+    current.option.influence !== constraint.option.influence
+  ) {
+    // update edited parameters
+    animationStore.applyEditedConstraint(
+      {
+        [constraint.id]: { influence: constraint.option.influence },
+      },
+      seriesKey
+    )
+  } else {
+    const next = constraintList.value.concat()
+    next[index] = constraint
+    store.updateBoneConstraints(next, seriesKey)
+  }
+}
+
+function addKeyframeConstraint(
+  constraintId: string,
+  key: KeyframeConstraintPropKey
+) {
+  animationStore.execInsertKeyframeConstraint(constraintId, { [key]: true })
+}
+
+function removeKeyframeConstraint(
+  constraintId: string,
+  key: KeyframeConstraintPropKey
+) {
+  const target = getKeyframeConstraint(constraintId)
+  if (!target) return
+  animationStore.execDeleteKeyframeConstraint(target.id, { [key]: true })
+}
+
+function startPickBone(val?: PickerOptions) {
+  canvasStore.dispatchCanvasEvent({
+    type: 'state',
+    data: { name: 'pick-bone', options: val },
+  })
+}
+
+const lastSelectedArmature = store.lastSelectedArmature
+
+const connected = computed({
+  get(): boolean {
+    return lastSelectedBone.value?.connected ?? false
   },
-  setup() {
-    const store = useStore()
-    const animationStore = useAnimationStore()
-    const canvasStore = useCanvasStore()
-
-    const lastSelectedBone = computed(() => {
-      return store.lastSelectedBone.value
-    })
-
-    const constraintKeyframeMapByTargetId =
-      animationStore.keyframeMapByTargetId as ComputedRef<
-        IdMap<KeyframeConstraint[]>
-      >
-    const currentFrame = animationStore.currentFrame
-
-    const otherBoneOptions = computed(() => {
-      if (!lastSelectedBone.value) return []
-
-      const boneMap = store.boneMap.value
-      return getBoneIdsWithoutDescendants(
-        boneMap,
-        lastSelectedBone.value.id
-      ).map((id) => ({ value: id, label: boneMap[id].name }))
-    })
-
-    const constraintList = computed(() => {
-      if (!lastSelectedBone.value) return []
-
-      return lastSelectedBone.value.constraints.map(
-        (cid) => animationStore.currentInterpolatedConstraintMap.value[cid]
-      )
-    })
-
-    const selectedObjectType = computed((): 'bone' | 'armature' | '' => {
-      if (lastSelectedBone.value && canvasStore.canvasMode.value !== 'object')
-        return 'bone'
-      if (store.lastSelectedArmature.value) return 'armature'
-      return ''
-    })
-
-    function getKeyframeConstraint(
-      constraintId: string
-    ): KeyframeConstraint | undefined {
-      return constraintKeyframeMapByTargetId.value[constraintId].find(
-        (k) => k.frame === currentFrame.value
-      ) as KeyframeConstraint | undefined
-    }
-
-    function updateConstraints(
-      constraints: BoneConstraint[],
-      seriesKey?: string
-    ) {
-      if (!lastSelectedBone.value) return
-
-      store.updateBoneConstraints(constraints, seriesKey)
-    }
-
-    function updateConstraint(constraint: BoneConstraint, seriesKey?: string) {
-      if (!lastSelectedBone.value) return
-
-      const index = constraintList.value.findIndex(
-        (c) => c.id === constraint.id
-      )
-      const current = constraintList.value[index]
-      const existedProps =
-        getKeyframeExistedPropsMap(
-          constraintKeyframeMapByTargetId.value[constraint.id] ?? []
-        ).props ?? {}
-
-      // TODO only 'influence' supported now
-      if (
-        existedProps.influence &&
-        current.option.influence !== constraint.option.influence
-      ) {
-        // update edited parameters
-        animationStore.applyEditedConstraint(
-          {
-            [constraint.id]: { influence: constraint.option.influence },
-          },
-          seriesKey
-        )
-      } else {
-        const next = constraintList.value.concat()
-        next[index] = constraint
-        store.updateBoneConstraints(next, seriesKey)
-      }
-    }
-
-    function addKeyframeConstraint(
-      constraintId: string,
-      key: KeyframeConstraintPropKey
-    ) {
-      animationStore.execInsertKeyframeConstraint(constraintId, { [key]: true })
-    }
-
-    function removeKeyframeConstraint(
-      constraintId: string,
-      key: KeyframeConstraintPropKey
-    ) {
-      const target = getKeyframeConstraint(constraintId)
-      if (!target) return
-      animationStore.execDeleteKeyframeConstraint(target.id, { [key]: true })
-    }
-
-    function startPickBone(val?: PickerOptions) {
-      canvasStore.dispatchCanvasEvent({
-        type: 'state',
-        data: { name: 'pick-bone', options: val },
-      })
-    }
-
-    return {
-      lastSelectedArmature: store.lastSelectedArmature,
-      lastSelectedBone,
-      constraintList,
-      constraintKeyframeMapByTargetId,
-      currentFrame,
-      otherBoneOptions,
-      selectedObjectType,
-      connected: computed({
-        get(): boolean {
-          return lastSelectedBone.value?.connected ?? false
-        },
-        set(val: boolean) {
-          store.updateBone({ connected: val })
-        },
-      }),
-      inheritRotation: computed({
-        get(): boolean {
-          return lastSelectedBone.value?.inheritRotation ?? false
-        },
-        set(val: boolean) {
-          store.updateBone({ inheritRotation: val })
-        },
-      }),
-      inheritScale: computed({
-        get(): boolean {
-          return lastSelectedBone.value?.inheritScale ?? false
-        },
-        set(val: boolean) {
-          store.updateBone({ inheritScale: val })
-        },
-      }),
-      parentId: computed({
-        get(): string {
-          return lastSelectedBone.value?.parentId ?? ''
-        },
-        set(val: string) {
-          store.updateBone({ parentId: val })
-        },
-      }),
-      changeArmatureName(name: string) {
-        store.updateArmatureName(name)
-      },
-      changeBoneName(name: string) {
-        store.updateBoneName(name)
-      },
-
-      originalInterpolatedConstraintMap:
-        animationStore.originalInterpolatedConstraintMap,
-      updateConstraints,
-      updateConstraint,
-      addKeyframeConstraint,
-      removeKeyframeConstraint,
-      startPickBone,
-    }
+  set(val: boolean) {
+    store.updateBone({ connected: val })
   },
 })
+
+const inheritRotation = computed({
+  get(): boolean {
+    return lastSelectedBone.value?.inheritRotation ?? false
+  },
+  set(val: boolean) {
+    store.updateBone({ inheritRotation: val })
+  },
+})
+
+const inheritScale = computed({
+  get(): boolean {
+    return lastSelectedBone.value?.inheritScale ?? false
+  },
+  set(val: boolean) {
+    store.updateBone({ inheritScale: val })
+  },
+})
+
+const parentId = computed({
+  get(): string {
+    return lastSelectedBone.value?.parentId ?? ''
+  },
+  set(val: string) {
+    store.updateBone({ parentId: val })
+  },
+})
+
+function changeArmatureName(name: string) {
+  store.updateArmatureName(name)
+}
+
+function changeBoneName(name: string) {
+  store.updateBoneName(name)
+}
+
+const originalInterpolatedConstraintMap =
+  animationStore.originalInterpolatedConstraintMap
 </script>
 
 <style scoped>

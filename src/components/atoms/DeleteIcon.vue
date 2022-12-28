@@ -35,15 +35,13 @@ Copyright (C) 2021, Tomoya Komiyama.
   </svg>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  props: {
-    float: {
-      type: Boolean,
-      default: false,
-    },
-  },
-})
+<script lang="ts" setup>
+withDefaults(
+  defineProps<{
+    float?: boolean
+  }>(),
+  {
+    float: false,
+  }
+)
 </script>

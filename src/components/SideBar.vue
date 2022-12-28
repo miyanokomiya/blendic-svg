@@ -34,30 +34,25 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, PropType } from 'vue'
+<script lang="ts" setup>
+import { ref } from 'vue'
 
-export default defineComponent({
-  props: {
-    tabs: {
-      type: Array as PropType<{ key: string; label: string }[]>,
-      default: () => [],
-    },
-    defaultTab: {
-      type: String,
-      default: '',
-    },
-  },
-  setup(props) {
-    const currentTab = ref(props.defaultTab)
+const props = withDefaults(
+  defineProps<{
+    tabs?: { key: string; label: string }[]
+    defaultTab?: string
+  }>(),
+  {
+    tabs: () => [],
+    defaultTab: '',
+  }
+)
 
-    function toggleTab(tab: string) {
-      currentTab.value = currentTab.value === tab ? '' : tab
-    }
+const currentTab = ref(props.defaultTab)
 
-    return { currentTab, toggleTab }
-  },
-})
+function toggleTab(tab: string) {
+  currentTab.value = currentTab.value === tab ? '' : tab
+}
 </script>
 
 <style scoped>

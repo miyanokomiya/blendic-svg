@@ -46,17 +46,10 @@ Copyright (C) 2021, Tomoya Komiyama.
   </OutlineRect>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script lang="ts" setup>
 import OutlineRect from '/@/components/elements/atoms/OutlineRect.vue'
 
-export default defineComponent({
-  components: { OutlineRect },
-  props: {
-    errors: {
-      type: Array as PropType<string[]>,
-      required: true,
-    },
-  },
-})
+defineProps<{
+  errors: string[]
+}>()
 </script>

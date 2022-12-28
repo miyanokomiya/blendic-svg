@@ -32,64 +32,44 @@ Copyright (C) 2021, Tomoya Komiyama.
   </foreignObject>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType, computed } from 'vue'
-import { GRAPH_VALUE_TYPE, ValueType } from '/@/models/graphNode'
+<script lang="ts" setup>
 import ColorRect from '/@/components/atoms/ColorRect.vue'
+import { computed } from 'vue'
+import { GRAPH_VALUE_TYPE, ValueType } from '/@/models/graphNode'
 import { IVec2 } from 'okageo'
 import { truncate } from '/@/utils/helpers'
 import { injectGetBoneOptions } from '/@/composables/animationGraph'
 import { toKeyMap } from '/@/utils/commons'
 
-export default defineComponent({
-  components: {
-    ColorRect,
-  },
-  props: {
-    modelValue: { type: null, required: true },
-    label: { type: String, required: true },
-    type: {
-      type: Object as PropType<ValueType>,
-      required: true,
-    },
-  },
-  emits: ['update:model-value'],
-  setup(props, { emit }) {
-    function update(val: any, seriesKey?: string) {
-      emit('update:model-value', val, seriesKey)
+const props = defineProps<{
+  modelValue: any
+  label: string
+  type: ValueType
+}>()
+
+const inputType = computed(() => props.type.type)
+
+const boneOptions = computed(() => {
+  return toKeyMap(injectGetBoneOptions()(), 'value')
+})
+
+const valueText = computed(() => {
+  switch (props.type.type) {
+    case GRAPH_VALUE_TYPE.TEXT:
+    case GRAPH_VALUE_TYPE.SCALER:
+    case GRAPH_VALUE_TYPE.BOOLEAN:
+      return truncate(`${props.modelValue}`, 6)
+    case GRAPH_VALUE_TYPE.BONE: {
+      const name = boneOptions.value[props.modelValue]?.label ?? ''
+      return truncate(`${name}`, 10)
     }
-
-    const inputType = computed(() => props.type.type)
-
-    const boneOptions = computed(() => {
-      return toKeyMap(injectGetBoneOptions()(), 'value')
-    })
-
-    const valueText = computed(() => {
-      switch (props.type.type) {
-        case GRAPH_VALUE_TYPE.TEXT:
-        case GRAPH_VALUE_TYPE.SCALER:
-        case GRAPH_VALUE_TYPE.BOOLEAN:
-          return truncate(`${props.modelValue}`, 6)
-        case GRAPH_VALUE_TYPE.BONE: {
-          const name = boneOptions.value[props.modelValue]?.label ?? ''
-          return truncate(`${name}`, 10)
-        }
-        case GRAPH_VALUE_TYPE.VECTOR2: {
-          const v = props.modelValue as IVec2
-          return `(${truncate(v.x, 4)},${truncate(v.y, 4)})`
-        }
-        default:
-          return ''
-      }
-    })
-
-    return {
-      update,
-      inputType,
-      valueText,
+    case GRAPH_VALUE_TYPE.VECTOR2: {
+      const v = props.modelValue as IVec2
+      return `(${truncate(v.x, 4)},${truncate(v.y, 4)})`
     }
-  },
+    default:
+      return ''
+  }
 })
 </script>
 

@@ -13,21 +13,27 @@ exports[`src/components/SideBar.vue snapshot defalut 1`] = `
     >
       <a
         href="#"
-      />
+      >
+        aa
+      </a>
+    </li>
+    <li
+      class="current"
+    >
+      <a
+        href="#"
+      >
+        bb
+      </a>
     </li>
     <li
       class=""
     >
       <a
         href="#"
-      />
-    </li>
-    <li
-      class=""
-    >
-      <a
-        href="#"
-      />
+      >
+        cc
+      </a>
     </li>
     
   </ul>

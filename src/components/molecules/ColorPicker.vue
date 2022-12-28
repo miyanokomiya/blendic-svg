@@ -63,13 +63,7 @@ import { IVec2, sub, clamp } from 'okageo'
 import { DragArgs, getPagePosition, useDrag } from 'okanvas'
 import { computed, ref } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
-import {
-  HSVA,
-  hsvaToRgba,
-  parseRGBA,
-  rednerRGBA,
-  rgbaToHsva,
-} from '/@/utils/color'
+import { HSVA, hsvaToRgba, rednerRGBA } from '/@/utils/color'
 import { useThrottle } from '/@/composables/throttle'
 
 const RECT_SIZE = 110
@@ -82,17 +76,17 @@ import HueCiclePicker from '/@/components/atoms/HueCiclePicker.vue'
 
 const props = withDefaults(
   defineProps<{
-    modelValue?: string | HSVA
+    modelValue?: HSVA
     extraHue?: boolean
   }>(),
   {
-    modelValue: '',
+    modelValue: () => ({ h: 0, s: 0, v: 0, a: 1 }),
     extraHue: false,
   }
 )
 
 const emit = defineEmits<{
-  (e: 'update:model-value', ...values: any): void
+  (e: 'update:model-value', hsva: HSVA, seriesKey?: string): void
 }>()
 
 const colorRect = ref<Element>()
@@ -100,11 +94,7 @@ const dragged = ref(false)
 const seriesKey = ref<string>()
 
 const localHsva = computed(() => {
-  if (typeof props.modelValue !== 'string') return props.modelValue
-
-  const rgba = parseRGBA(props.modelValue)
-  if (!rgba) return { h: 0, s: 0, v: 0, a: 1 }
-  return rgbaToHsva(rgba)
+  return props.modelValue
 })
 const rateInRect = computed(() => {
   return { x: localHsva.value.s, y: 1 - localHsva.value.v }
@@ -115,11 +105,7 @@ const baseColor = computed(() => {
 })
 
 function update(hsva: HSVA, seriesKey?: string) {
-  emit(
-    'update:model-value',
-    typeof props.modelValue === 'string' ? rednerRGBA(hsvaToRgba(hsva)) : hsva,
-    seriesKey
-  )
+  emit('update:model-value', hsva, seriesKey)
 }
 
 function updateHue(val: number, seriesKey?: string) {

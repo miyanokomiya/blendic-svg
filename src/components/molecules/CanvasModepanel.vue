@@ -58,7 +58,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'change-mode', ...values: any): void
+  (e: 'change-mode', canvasMode: CanvasMode): void
 }>()
 
 function changeMode(canvasMode: CanvasMode) {

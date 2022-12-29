@@ -175,8 +175,8 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'update:model-value', ...values: any): void
-  (e: 'start-pick-bone', ...values: any): void
+  (e: 'update:model-value', val: any, seriesKey?: string): void
+  (e: 'start-pick-bone', val?: PickerOptions): void
 }>()
 
 function update(val: any, seriesKey?: string) {

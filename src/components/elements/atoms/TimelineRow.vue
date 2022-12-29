@@ -70,7 +70,7 @@ withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'toggle-expanded', ...values: any): void
+  (e: 'toggle-expanded'): void
 }>()
 
 function toggleExpanded() {

@@ -84,6 +84,7 @@ import { d } from '../../utils/helpers'
 import { IVec2, add, sub, multi, rotate, getDistance } from 'okageo'
 import { useSettings } from '../../composables/settings'
 import { switchClick } from '/@/utils/devices'
+import { SelectOptions } from '/@/composables/modes/types'
 
 function d1(head: IVec2, tail: IVec2, scaleX: number, invert = false): IVec2 {
   const v = multi(sub(tail, head), 0.15)
@@ -122,7 +123,7 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'select', ...values: any): void
+  (e: 'select', state: BoneSelectedState, options?: SelectOptions): void
 }>()
 
 const { settings } = useSettings()
@@ -174,7 +175,9 @@ const fillTail = computed(() =>
 )
 
 const click = (e: MouseEvent, state: BoneSelectedState) => {
-  const stateForMode = props.poseMode ? { head: true, tail: true } : state
+  const stateForMode = props.poseMode
+    ? ({ head: true, tail: true } as const)
+    : state
 
   switchClick(e, {
     plain: () => emit('select', stateForMode),

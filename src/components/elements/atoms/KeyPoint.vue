@@ -63,8 +63,8 @@ withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'select', ...values: any): void
-  (e: 'shift-select', ...values: any): void
+  (e: 'select'): void
+  (e: 'shift-select'): void
 }>()
 
 const { settings } = useSettings()

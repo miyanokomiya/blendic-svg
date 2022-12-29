@@ -77,13 +77,13 @@ withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'jump-end', ...values: any): void
-  (e: 'jump-start', ...values: any): void
-  (e: 'play', ...values: any): void
-  (e: 'pause', ...values: any): void
-  (e: 'reverse', ...values: any): void
-  (e: 'jump-next', ...values: any): void
-  (e: 'jump-prev', ...values: any): void
+  (e: 'jump-end'): void
+  (e: 'jump-start'): void
+  (e: 'play'): void
+  (e: 'pause'): void
+  (e: 'reverse'): void
+  (e: 'jump-next'): void
+  (e: 'jump-prev'): void
 }>()
 </script>
 

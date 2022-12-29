@@ -91,6 +91,7 @@ import {
 import { IdMap, toMap } from '/@/models'
 import { getKeyframeExistedPropsMap } from '/@/utils/keyframes'
 import { mapReduce } from '/@/utils/commons'
+import { PickerOptions } from '/@/composables/modes/types.js'
 
 const constraintNameMap: { [key in BoneConstraintType]: string } = {
   IK: 'IK',
@@ -138,11 +139,11 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'update', ...values: any): void
-  (e: 'update-item', ...values: any): void
-  (e: 'add-keyframe', ...values: any): void
-  (e: 'remove-keyframe', ...values: any): void
-  (e: 'start-pick-bone', ...values: any): void
+  (e: 'update', constraints: BoneConstraint[], seriesKey?: string): void
+  (e: 'update-item', item: BoneConstraint, seriesKey?: string): void
+  (e: 'add-keyframe', id: string, key: KeyframeConstraintPropKey): void
+  (e: 'remove-keyframe', id: string, key: KeyframeConstraintPropKey): void
+  (e: 'start-pick-bone', val?: PickerOptions): void
 }>()
 
 const constraintMap = computed(() => toMap(props.constraints))
@@ -177,9 +178,9 @@ function getKeyframeUpdatedStatus(
   }
 }
 
-function setBoneConstraintType(val: BoneConstraintType) {
+function setBoneConstraintType(val?: any) {
   if (!val) return
-  addConstraint(val)
+  addConstraint(val as BoneConstraintType)
 }
 
 function update(constraints: BoneConstraint[], seriesKey?: string) {

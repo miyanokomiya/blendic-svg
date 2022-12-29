@@ -72,7 +72,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update', ...values: any): void
+  (e: 'update', keyframe: KeyframeBase, seriesKey?: string): void
 }>()
 
 const selectedKey = computed(() => {

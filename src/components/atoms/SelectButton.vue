@@ -40,7 +40,7 @@ withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'select', ...values: any): void
+  (e: 'select', value?: number | string): void
 }>()
 
 const localValue = ref<number | string>()

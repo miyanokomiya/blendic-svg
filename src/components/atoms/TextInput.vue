@@ -54,8 +54,8 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'update:model-value', ...values: any): void
-  (e: 'blur', ...values: any): void
+  (e: 'update:model-value', value: string): void
+  (e: 'blur'): void
 }>()
 
 const inputEl = ref<HTMLInputElement>()

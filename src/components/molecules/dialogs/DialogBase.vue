@@ -44,7 +44,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:open', ...values: any): void
+  (e: 'update:open', value: boolean): void
 }>()
 
 const close = () => emit('update:open', false)

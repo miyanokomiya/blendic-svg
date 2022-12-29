@@ -41,7 +41,7 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'update:model-value', ...values: any): void
+  (e: 'update:model-value', val: boolean): void
 }>()
 
 const value = computed({

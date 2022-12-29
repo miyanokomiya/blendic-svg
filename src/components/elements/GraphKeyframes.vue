@@ -96,9 +96,14 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'select', ...values: any): void
-  (e: 'shift-select', ...values: any): void
-  (e: 'down-control', ...values: any): void
+  (e: 'select', keyframeId: string, state: KeyframeSelectedState): void
+  (e: 'shift-select', keyframeId: string, state: KeyframeSelectedState): void
+  (
+    e: 'down-control',
+    keyframeId: string,
+    pointKey: string,
+    state: CurveSelectedState
+  ): void
 }>()
 
 const keyframeMapByTargetId = computed(() => {

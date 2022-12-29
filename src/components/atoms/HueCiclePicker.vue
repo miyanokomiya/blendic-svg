@@ -51,7 +51,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:model-value', ...values: any): void
+  (e: 'update:model-value', val: number, seriesKey?: string): void
 }>()
 
 function radToP(rad: number) {

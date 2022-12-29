@@ -59,7 +59,7 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'select', ...values: any): void
+  (e: 'select'): void
 }>()
 
 const sortedBoneMap = computed(() => {

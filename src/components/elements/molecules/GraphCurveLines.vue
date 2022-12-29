@@ -32,31 +32,22 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script lang="ts" setup>
 import GraphCurveLine from '/@/components/elements/molecules/GraphCurveLine.vue'
 import { IdMap } from '/@/models'
 import { CurveInfo } from '/@/utils/graphCurves'
 
-export default defineComponent({
-  components: { GraphCurveLine },
-  props: {
-    curves: {
-      type: Object as PropType<IdMap<CurveInfo>>,
-      required: true,
-    },
-    color: {
-      type: String,
-      default: '#fff',
-    },
-    scale: {
-      type: Number,
-      default: 1,
-    },
-    lineWidth: {
-      type: Number,
-      default: 1,
-    },
-  },
-})
+withDefaults(
+  defineProps<{
+    curves: IdMap<CurveInfo>
+    color?: string
+    scale?: number
+    lineWidth?: number
+  }>(),
+  {
+    color: '#fff',
+    scale: 1,
+    lineWidth: 1,
+  }
+)
 </script>

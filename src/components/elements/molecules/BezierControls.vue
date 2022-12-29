@@ -78,47 +78,27 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { IVec2 } from 'okageo'
-import { computed, defineComponent, PropType } from 'vue'
+import { computed } from 'vue'
 
-export default defineComponent({
-  props: {
-    pointId: {
-      type: String,
-      required: true,
-    },
-    pointKey: {
-      type: String,
-      required: true,
-    },
-    c0: {
-      type: Object as PropType<IVec2>,
-      required: true,
-    },
-    controlIn: {
-      type: Object as PropType<IVec2 | undefined>,
-      default: undefined,
-    },
-    controlOut: {
-      type: Object as PropType<IVec2 | undefined>,
-      default: undefined,
-    },
-    color: {
-      type: String,
-      default: '#fff',
-    },
-    scale: {
-      type: Number,
-      default: 1,
-    },
-  },
-  setup(props) {
-    const rectSize = computed(() => 10 * props.scale)
+const props = withDefaults(
+  defineProps<{
+    pointId: string
+    pointKey: string
+    c0: IVec2
+    controlIn?: IVec2 | undefined
+    controlOut?: IVec2 | undefined
+    color?: string
+    scale?: number
+  }>(),
+  {
+    controlIn: undefined,
+    controlOut: undefined,
+    color: '#fff',
+    scale: 1,
+  }
+)
 
-    return {
-      rectSize,
-    }
-  },
-})
+const rectSize = computed(() => 10 * props.scale)
 </script>

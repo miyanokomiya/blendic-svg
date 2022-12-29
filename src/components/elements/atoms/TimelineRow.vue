@@ -51,49 +51,31 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup>
+withDefaults(
+  defineProps<{
+    labelWidth?: number
+    labelHeight?: number
+    label: string
+    expanded?: boolean
+    showExpanded?: boolean
+    selected?: boolean
+    highlight?: boolean
+  }>(),
+  {
+    labelWidth: 100,
+    labelHeight: 24,
+    highlight: false,
+  }
+)
 
-export default defineComponent({
-  props: {
-    labelWidth: {
-      type: Number,
-      default: 100,
-    },
-    labelHeight: {
-      type: Number,
-      default: 24,
-    },
-    label: {
-      type: String,
-      required: true,
-    },
-    expanded: {
-      type: Boolean,
-      required: false,
-    },
-    showExpanded: {
-      type: Boolean,
-      required: false,
-    },
-    selected: {
-      type: Boolean,
-      required: false,
-    },
-    highlight: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['toggle-expanded'],
-  setup(_props, { emit }) {
-    return {
-      toggleExpanded() {
-        emit('toggle-expanded')
-      },
-    }
-  },
-})
+const emit = defineEmits<{
+  (e: 'toggle-expanded'): void
+}>()
+
+function toggleExpanded() {
+  emit('toggle-expanded')
+}
 </script>
 
 <style scoped>

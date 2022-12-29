@@ -32,62 +32,50 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from 'vue'
+<script lang="ts" setup>
+import { computed } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import * as animations from '/@/utils/animations'
 
-export default defineComponent({
-  props: {
-    scale: {
-      type: Number,
-      default: 1,
-    },
-    originY: {
-      type: Number,
-      default: 0,
-    },
-    viewWidth: {
-      type: Number,
-      default: 100,
-    },
-    viewHeight: {
-      type: Number,
-      default: 100,
-    },
-  },
-  setup(props) {
-    const { settings } = useSettings()
+const props = withDefaults(
+  defineProps<{
+    scale?: number
+    originY?: number
+    viewWidth?: number
+    viewHeight?: number
+  }>(),
+  {
+    scale: 1,
+    originY: 0,
+    viewWidth: 100,
+    viewHeight: 100,
+  }
+)
 
-    const valueInterval = computed(() => {
-      return animations.getValueInterval(settings.graphValueWidth, props.scale)
-    })
-    const visibledValueStart = computed(() => {
-      return animations.visibledValueStart(
-        settings.graphValueWidth,
-        valueInterval.value,
-        props.originY
-      )
-    })
-    const visibledFrameRange = computed(() => {
-      return Math.ceil(
-        (props.viewHeight * props.scale) / settings.graphValueWidth
-      )
-    })
-    const count = computed(() => {
-      // add a few count to prevent early overflow
-      return Math.ceil(visibledFrameRange.value / valueInterval.value) + 3
-    })
-    const values = computed((): number[] => {
-      return [...Array(count.value)].map((_, i) => {
-        return i * valueInterval.value + visibledValueStart.value
-      })
-    })
+const { settings } = useSettings()
 
-    return {
-      values,
-      valueWidth: computed(() => settings.graphValueWidth),
-    }
-  },
+const valueInterval = computed(() => {
+  return animations.getValueInterval(settings.graphValueWidth, props.scale)
 })
+const visibledValueStart = computed(() => {
+  return animations.visibledValueStart(
+    settings.graphValueWidth,
+    valueInterval.value,
+    props.originY
+  )
+})
+const visibledFrameRange = computed(() => {
+  return Math.ceil((props.viewHeight * props.scale) / settings.graphValueWidth)
+})
+const count = computed(() => {
+  // add a few count to prevent early overflow
+  return Math.ceil(visibledFrameRange.value / valueInterval.value) + 3
+})
+const values = computed((): number[] => {
+  return [...Array(count.value)].map((_, i) => {
+    return i * valueInterval.value + visibledValueStart.value
+  })
+})
+
+const valueWidth = computed(() => settings.graphValueWidth)
 </script>

@@ -50,26 +50,20 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script lang="ts" setup>
 import { CanvasMode } from '/@/composables/modes/types'
 
-export default defineComponent({
-  props: {
-    canvasMode: {
-      type: String as PropType<CanvasMode>,
-      required: true,
-    },
-  },
-  emits: ['change-mode'],
-  setup(_, { emit }) {
-    return {
-      changeMode(canvasMode: CanvasMode) {
-        emit('change-mode', canvasMode)
-      },
-    }
-  },
-})
+defineProps<{
+  canvasMode: CanvasMode
+}>()
+
+const emit = defineEmits<{
+  (e: 'change-mode', canvasMode: CanvasMode): void
+}>()
+
+function changeMode(canvasMode: CanvasMode) {
+  emit('change-mode', canvasMode)
+}
 </script>
 
 <style scoped>

@@ -113,85 +113,66 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from 'vue'
+<script lang="ts" setup>
+import { computed } from 'vue'
 import { frameWidth } from '/@/models'
 import * as animations from '/@/utils/animations'
 
-export default defineComponent({
-  props: {
-    scale: {
-      type: Number,
-      default: 1,
-    },
-    originX: {
-      type: Number,
-      default: 0,
-    },
-    viewWidth: {
-      type: Number,
-      default: 100,
-    },
-    currentFrame: {
-      type: Number,
-      default: 0,
-    },
-    endFrame: {
-      type: Number,
-      default: 60,
-    },
-    headerHeight: {
-      type: Number,
-      default: 24,
-    },
-  },
-  setup(props) {
-    const frameInterval = computed(() => {
-      return animations.getFrameInterval(props.scale)
-    })
-    const visibledFrameStart = computed(() => {
-      return animations.visibledFrameStart(frameInterval.value, props.originX)
-    })
-    const visibledFrameRange = computed(() => {
-      return Math.ceil((props.viewWidth * props.scale) / frameWidth)
-    })
-    const count = computed(() => {
-      // add a few count to prevent early overflow
-      return Math.ceil(visibledFrameRange.value / frameInterval.value) + 3
-    })
-    const frames = computed(
-      (): {
-        f: number
-        labelSize: number
-        strokeWidth: number
-      }[] => {
-        return [...Array(count.value)].map((_, i) => {
-          const f = i * frameInterval.value + visibledFrameStart.value
-          return {
-            f,
-            labelSize: f % 10 === 0 ? 14 : f % 5 === 0 ? 11 : 0,
-            strokeWidth: f % 10 === 0 ? 2 : 1,
-          }
-        })
-      }
-    )
-    const currentFrameX = computed(() => {
-      return props.currentFrame * frameWidth
-    })
-    const currentFrameLabelWidth = computed(() => {
-      return Math.max(props.currentFrame.toString().length, 2) * 10 + 2
-    })
-    const endFrameX = computed(() => {
-      return props.endFrame * frameWidth
-    })
+const props = withDefaults(
+  defineProps<{
+    scale?: number
+    originX?: number
+    viewWidth?: number
+    currentFrame?: number
+    endFrame?: number
+    headerHeight?: number
+  }>(),
+  {
+    scale: 1,
+    originX: 0,
+    viewWidth: 100,
+    currentFrame: 0,
+    endFrame: 60,
+    headerHeight: 24,
+  }
+)
 
-    return {
-      frames,
-      frameWidth,
-      currentFrameX,
-      endFrameX,
-      currentFrameLabelWidth,
-    }
-  },
+const frameInterval = computed(() => {
+  return animations.getFrameInterval(props.scale)
+})
+const visibledFrameStart = computed(() => {
+  return animations.visibledFrameStart(frameInterval.value, props.originX)
+})
+const visibledFrameRange = computed(() => {
+  return Math.ceil((props.viewWidth * props.scale) / frameWidth)
+})
+const count = computed(() => {
+  // add a few count to prevent early overflow
+  return Math.ceil(visibledFrameRange.value / frameInterval.value) + 3
+})
+const frames = computed(
+  (): {
+    f: number
+    labelSize: number
+    strokeWidth: number
+  }[] => {
+    return [...Array(count.value)].map((_, i) => {
+      const f = i * frameInterval.value + visibledFrameStart.value
+      return {
+        f,
+        labelSize: f % 10 === 0 ? 14 : f % 5 === 0 ? 11 : 0,
+        strokeWidth: f % 10 === 0 ? 2 : 1,
+      }
+    })
+  }
+)
+const currentFrameX = computed(() => {
+  return props.currentFrame * frameWidth
+})
+const currentFrameLabelWidth = computed(() => {
+  return Math.max(props.currentFrame.toString().length, 2) * 10 + 2
+})
+const endFrameX = computed(() => {
+  return props.endFrame * frameWidth
 })
 </script>

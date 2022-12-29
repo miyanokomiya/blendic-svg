@@ -36,29 +36,23 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType, ref } from 'vue'
+<script lang="ts" setup>
+import { ref } from 'vue'
 
-export default defineComponent({
-  props: {
-    tabs: {
-      type: Array as PropType<{ key: string; label: string }[]>,
-      default: () => [],
-    },
-    initialTab: {
-      type: String,
-      default: undefined,
-    },
-  },
-  setup(props) {
-    const current = ref<string>(props.initialTab ?? props.tabs[0]?.key ?? '')
+const props = withDefaults(
+  defineProps<{
+    tabs?: { key: string; label: string }[]
+    initialTab?: string
+  }>(),
+  {
+    tabs: () => [],
+    initialTab: undefined,
+  }
+)
 
-    return {
-      current,
-      setTab: (key: string) => (current.value = key),
-    }
-  },
-})
+const current = ref<string>(props.initialTab ?? props.tabs[0]?.key ?? '')
+
+const setTab = (key: string) => (current.value = key)
 </script>
 
 <style scoped>

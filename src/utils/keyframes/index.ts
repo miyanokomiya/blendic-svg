@@ -37,7 +37,7 @@ import * as keyframeBoneModule from '/@/utils/keyframes/keyframeBone'
 import * as keyframeConstraintModule from '/@/utils/keyframes/keyframeConstraint'
 
 interface KeyframeModule {
-  getKeyframeDefaultPropsMap<T>(val: () => T): Required<KeyframeBaseProps<T>>
+  getKeyframeDefaultPropsMap<T>(val: () => T): KeyframeBaseProps<T>
 }
 
 export function getKeyframeModule(name: KeyframeName): KeyframeModule {
@@ -190,7 +190,7 @@ export function getKeyframeExistedPropsMap(
 export function getKeyframeDefaultPropsMap<T>(
   val: () => T,
   name: KeyframeName = 'bone'
-): Required<KeyframeBaseProps<T>> {
+): KeyframeBaseProps<T> {
   return getKeyframeModule(name).getKeyframeDefaultPropsMap(val)
 }
 

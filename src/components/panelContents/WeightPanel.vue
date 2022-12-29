@@ -69,126 +69,103 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from 'vue'
-import { useStore } from '/@/store'
-import { useCanvasStore } from '/@/store/canvas'
+<script lang="ts" setup>
 import SelectField from '/@/components/atoms/SelectField.vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
 import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
+import { computed } from 'vue'
+import { useStore } from '/@/store'
+import { useCanvasStore } from '/@/store/canvas'
 import { useElementStore } from '/@/store/element'
 import { sortByValue } from '/@/utils/commons'
 import { PickerOptions } from '/@/composables/modes/types'
 
-export default defineComponent({
-  components: {
-    SelectField,
-    BlockField,
-    SelectWithPicker,
+const store = useStore()
+const canvasStore = useCanvasStore()
+const elementStore = useElementStore()
+
+const canvasMode = canvasStore.canvasMode
+
+const targetActor = computed(() => {
+  return elementStore.lastSelectedActor.value
+})
+
+const targetElement = computed(() => {
+  return elementStore.lastSelectedElement.value
+})
+
+const armatureId = computed({
+  get(): string {
+    return elementStore.lastSelectedActor.value?.armatureId ?? ''
   },
-  setup() {
-    const store = useStore()
-    const canvasStore = useCanvasStore()
-    const elementStore = useElementStore()
-
-    const canvasMode = canvasStore.canvasMode
-
-    const targetActor = computed(() => {
-      return elementStore.lastSelectedActor.value
-    })
-
-    const targetElement = computed(() => {
-      return elementStore.lastSelectedElement.value
-    })
-
-    const armatureId = computed({
-      get(): string {
-        return elementStore.lastSelectedActor.value?.armatureId ?? ''
-      },
-      set(val: string) {
-        elementStore.updateArmatureId(val)
-      },
-    })
-
-    const currentArmature = computed(() => {
-      return store.armatures.value.find((a) => a.id === armatureId.value)
-    })
-
-    const armatureOptions = computed(() => {
-      return sortByValue(
-        store.armatures.value.map((a) => ({ value: a.id, label: a.name })),
-        'label'
-      )
-    })
-
-    const boneId = computed({
-      get(): string {
-        return targetElement.value?.boneId ?? ''
-      },
-      set(val: string) {
-        elementStore.updateElement({ boneId: val })
-      },
-    })
-    const fillBoneId = computed({
-      get(): string {
-        return targetElement.value?.fillBoneId ?? ''
-      },
-      set(val: string) {
-        elementStore.updateElement({ fillBoneId: val })
-      },
-    })
-    const strokeBoneId = computed({
-      get(): string {
-        return targetElement.value?.strokeBoneId ?? ''
-      },
-      set(val: string) {
-        elementStore.updateElement({ strokeBoneId: val })
-      },
-    })
-
-    const viewBoxBoneId = computed({
-      get(): string {
-        return targetElement.value?.viewBoxBoneId ?? ''
-      },
-      set(val: string) {
-        elementStore.updateElement({ viewBoxBoneId: val })
-      },
-    })
-
-    const boneOptions = computed(() => {
-      if (!currentArmature.value) return []
-
-      return sortByValue(
-        store.getBonesByArmatureId(currentArmature.value.id).map((b) => ({
-          value: b.id,
-          label: b.name,
-        })),
-        'label'
-      )
-    })
-
-    function startPickBone(val?: PickerOptions) {
-      canvasStore.dispatchCanvasEvent({
-        type: 'state',
-        data: { name: 'pick-bone', options: val },
-      })
-    }
-
-    return {
-      canvasMode,
-      targetActor,
-      targetElement,
-      armatureId,
-      armatureOptions,
-      boneOptions,
-      boneId,
-      fillBoneId,
-      strokeBoneId,
-      viewBoxBoneId,
-      startPickBone,
-    }
+  set(val: string) {
+    elementStore.updateArmatureId(val)
   },
 })
+
+const currentArmature = computed(() => {
+  return store.armatures.value.find((a) => a.id === armatureId.value)
+})
+
+const armatureOptions = computed(() => {
+  return sortByValue(
+    store.armatures.value.map((a) => ({ value: a.id, label: a.name })),
+    'label'
+  )
+})
+
+const boneId = computed({
+  get(): string {
+    return targetElement.value?.boneId ?? ''
+  },
+  set(val: string) {
+    elementStore.updateElement({ boneId: val })
+  },
+})
+const fillBoneId = computed({
+  get(): string {
+    return targetElement.value?.fillBoneId ?? ''
+  },
+  set(val: string) {
+    elementStore.updateElement({ fillBoneId: val })
+  },
+})
+const strokeBoneId = computed({
+  get(): string {
+    return targetElement.value?.strokeBoneId ?? ''
+  },
+  set(val: string) {
+    elementStore.updateElement({ strokeBoneId: val })
+  },
+})
+
+const viewBoxBoneId = computed({
+  get(): string {
+    return targetElement.value?.viewBoxBoneId ?? ''
+  },
+  set(val: string) {
+    elementStore.updateElement({ viewBoxBoneId: val })
+  },
+})
+
+const boneOptions = computed(() => {
+  if (!currentArmature.value) return []
+
+  return sortByValue(
+    store.getBonesByArmatureId(currentArmature.value.id).map((b) => ({
+      value: b.id,
+      label: b.name,
+    })),
+    'label'
+  )
+})
+
+function startPickBone(val?: PickerOptions) {
+  canvasStore.dispatchCanvasEvent({
+    type: 'state',
+    data: { name: 'pick-bone', options: val },
+  })
+}
 </script>
 
 <style scoped>

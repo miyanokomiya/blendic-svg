@@ -17,91 +17,78 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 -->
 
+<template>
+  <component :is="element.tag" v-bind="attributes">
+    <template v-for="c in element.children">
+      <template v-if="isPlainText(c)">{{ c }}</template>
+      <NativeElement
+        v-else
+        :key="c.id"
+        :element="c"
+        :group-selected="childGroupSelected"
+      />
+    </template>
+  </component>
+</template>
+
 <script lang="ts">
-import {
-  computed,
-  ComputedRef,
-  defineComponent,
-  h,
-  inject,
-  PropType,
-} from 'vue'
+import { computed, ComputedRef, inject } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { ElementNode } from '/@/models'
-import { isPlainText, testEditableTag } from '/@/utils/elements'
+import { testEditableTag } from '/@/utils/elements'
 import { normalizeAttributes } from '/@/utils/helpers'
 
-const NativeElement: any = defineComponent({
-  props: {
-    element: {
-      type: Object as PropType<ElementNode>,
-      required: true,
-    },
-    groupSelected: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  setup(props) {
-    const { settings } = useSettings()
+const { settings } = useSettings()
+</script>
 
-    const selectedMap = inject<ComputedRef<{ [id: string]: boolean }>>(
-      'selectedMap',
-      computed(() => ({}))
-    )
+<script setup lang="ts">
+import { isPlainText } from '/@/utils/elements'
 
-    const overrideAttrs = computed<{ [name: string]: string } | undefined>(
-      () => {
-        if (selectedMap.value[props.element.id] || props.groupSelected) {
-          return {
-            fill: settings.selectedColor,
-            stroke: settings.selectedColor,
-          }
-        } else {
-          return undefined
-        }
-      }
-    )
+const props = withDefaults(
+  defineProps<{
+    element: ElementNode
+    groupSelected?: boolean
+  }>(),
+  {
+    groupSelected: false,
+  }
+)
 
-    const element = computed(() => props.element as ElementNode)
+const selectedMap = inject<ComputedRef<{ [id: string]: boolean }>>(
+  'selectedMap',
+  computed(() => ({}))
+)
 
-    const groupSelected = computed(() => {
-      return props.groupSelected || selectedMap.value[element.value.id]
-    })
-
-    const attributes = computed(() => {
-      return {
-        ...normalizeAttributes({
-          ...element.value.attributes,
-          ...(overrideAttrs.value ?? {}),
-          ...(testEditableTag(element.value.tag)
-            ? {
-                'data-type': 'element',
-                'data-id': element.value.id,
-              }
-            : {}),
-        }),
-        key: props.element.id,
-      }
-    })
-
-    const children = computed(() => {
-      return element.value.children.map((c) => {
-        if (isPlainText(c)) return c
-        return h(NativeElement, {
-          element: c,
-          groupSelected: groupSelected.value,
-          key: c.id,
-        })
-      })
-    })
-
-    return () => {
-      return h(element.value.tag, attributes.value, children.value)
+const overrideAttrs = computed<{ [name: string]: string } | undefined>(() => {
+  if (selectedMap.value[props.element.id] || props.groupSelected) {
+    return {
+      fill: settings.selectedColor,
+      stroke: settings.selectedColor,
     }
-  },
+  } else {
+    return undefined
+  }
 })
-export default NativeElement
+
+const childGroupSelected = computed(() => {
+  return props.groupSelected || selectedMap.value[props.element.id]
+})
+
+const attributes = computed(() => {
+  return {
+    ...normalizeAttributes({
+      ...props.element.attributes,
+      ...(overrideAttrs.value ?? {}),
+      ...(testEditableTag(props.element.tag)
+        ? {
+            'data-type': 'element',
+            'data-id': props.element.id,
+          }
+        : {}),
+    }),
+    key: props.element.id,
+  }
+})
 </script>
 
 <style scoped>

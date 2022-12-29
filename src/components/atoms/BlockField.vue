@@ -24,19 +24,17 @@ Copyright (C) 2021, Tomoya Komiyama.
   </RowBlock>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup>
 import RowBlock from '/@/components/atoms/RowBlock.vue'
 
-export default defineComponent({
-  components: { RowBlock },
-  props: {
-    label: {
-      type: String,
-      default: '',
-    },
-  },
-})
+withDefaults(
+  defineProps<{
+    label?: string
+  }>(),
+  {
+    label: '',
+  }
+)
 </script>
 
 <style scoped>

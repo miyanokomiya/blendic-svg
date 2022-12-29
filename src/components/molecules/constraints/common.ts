@@ -17,44 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { PropType } from 'vue'
 import { SpaceType } from '/@/models'
-import type {
-  KeyframeConstraintPropKey,
-  KeyframePropsStatus,
-} from '/@/models/keyframe'
-import { BoneConstraintOption } from '/@/utils/constraints'
-
-export function getProps<T extends BoneConstraintOption>() {
-  return {
-    modelValue: {
-      type: Object as PropType<T>,
-      required: true,
-    },
-    propsUpdatedStatus: {
-      type: Object as PropType<
-        Partial<{ [key in KeyframeConstraintPropKey]: boolean }>
-      >,
-      default: () => ({}),
-    },
-    boneOptions: {
-      type: Array as PropType<{ value: string; label: string }[]>,
-      default: () => [],
-    },
-    keyframeStatusMap: {
-      type: Object as PropType<KeyframePropsStatus['props']>,
-      default: () => ({}),
-    },
-    createKeyframe: {
-      type: Function as PropType<(key: KeyframeConstraintPropKey) => void>,
-      default: () => {},
-    },
-    deleteKeyframe: {
-      type: Function as PropType<(key: KeyframeConstraintPropKey) => void>,
-      default: () => {},
-    },
-  } as const
-}
 
 export const spaceTypeOptions: { value: SpaceType; label: string }[] = [
   { value: 'world', label: 'World' },

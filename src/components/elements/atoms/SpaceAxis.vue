@@ -30,28 +30,17 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { IVec2 } from 'okageo'
-import { defineComponent, PropType, computed } from 'vue'
+import { computed } from 'vue'
 import { injectScale } from '/@/composables/canvas'
 
-export default defineComponent({
-  props: {
-    origin: {
-      type: Object as PropType<IVec2>,
-      required: true,
-    },
-    radian: {
-      type: Number,
-      required: true,
-    },
-  },
-  setup(props) {
-    const scale = computed(injectScale())
-    return {
-      scale,
-      rotate: computed(() => (props.radian * 180) / Math.PI),
-    }
-  },
-})
+const props = defineProps<{
+  origin: IVec2
+  radian: number
+}>()
+
+const scale = computed(injectScale())
+
+const rotate = computed(() => (props.radian * 180) / Math.PI)
 </script>

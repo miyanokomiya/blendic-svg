@@ -61,68 +61,47 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
-import { IdMap } from '/@/models'
-import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
+<script lang="ts" setup>
 import BezierControls from '/@/components/elements/molecules/BezierControls.vue'
 import GraphCurveLines from '/@/components/elements/molecules/GraphCurveLines.vue'
+import { computed } from 'vue'
+import { IdMap } from '/@/models'
+import { KeyframeBase, KeyframeSelectedState } from '/@/models/keyframe'
 import { useSettings } from '/@/composables/settings'
 import { getCurves } from '/@/utils/graphCurves'
 import { injectScale } from '/@/composables/canvas'
 
-export default defineComponent({
-  components: {
-    BezierControls,
-    GraphCurveLines,
-  },
-  props: {
-    pointKey: {
-      type: String,
-      required: true,
-    },
-    keyframes: {
-      type: Array as PropType<KeyframeBase[]>,
-      required: true,
-    },
-    selectedStateMap: {
-      type: Object as PropType<IdMap<KeyframeSelectedState>>,
-      default: () => ({}),
-    },
-    color: {
-      type: String,
-      default: '#fff',
-    },
-    focused: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['select', 'shift-select', 'down-control'],
-  setup(props) {
-    const { settings } = useSettings()
+const props = withDefaults(
+  defineProps<{
+    pointKey: string
+    keyframes: KeyframeBase[]
+    selectedStateMap?: IdMap<KeyframeSelectedState>
+    color?: string
+    focused?: boolean
+  }>(),
+  {
+    selectedStateMap: () => ({}),
+    color: '#fff',
+    focused: false,
+  }
+)
 
-    const curves = computed(() =>
-      getCurves({
-        keyframes: props.keyframes,
-        selectedStateMap: props.selectedStateMap,
-        pointKey: props.pointKey,
-        valueWidth: settings.graphValueWidth,
-      })
-    )
+const { settings } = useSettings()
 
-    const getScale = injectScale()
+const curves = computed(() =>
+  getCurves({
+    keyframes: props.keyframes,
+    selectedStateMap: props.selectedStateMap,
+    pointKey: props.pointKey,
+    valueWidth: settings.graphValueWidth,
+  })
+)
 
-    const radius = computed(() => (props.focused ? 6.5 : 5))
-    const lineWidth = computed(() => (props.focused ? 2.5 : 1))
+const getScale = injectScale()
 
-    return {
-      scale: computed(getScale),
-      radius,
-      lineWidth,
-      selectedColor: computed(() => settings.selectedColor),
-      curves,
-    }
-  },
-})
+const radius = computed(() => (props.focused ? 6.5 : 5))
+const lineWidth = computed(() => (props.focused ? 2.5 : 1))
+
+const scale = computed(getScale)
+const selectedColor = computed(() => settings.selectedColor)
 </script>

@@ -29,22 +29,18 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { computed } from 'vue'
+
+type TabName = '' | 'item' | 'view'
+</script>
+
+<script lang="ts" setup>
 import SideBar from '/@/components/SideBar.vue'
 import ItemPanel from '/@/components/panelContents/ItemPanel.vue'
 import ViewPanel from '/@/components/panelContents/ViewPanel.vue'
 
-type TabName = '' | 'item' | 'view'
-
-export default defineComponent({
-  components: { SideBar, ItemPanel, ViewPanel },
-  setup() {
-    const tabs = computed((): { key: TabName; label: string }[] => [
-      { key: 'item', label: 'Item' },
-      { key: 'view', label: 'View' },
-    ])
-
-    return { tabs }
-  },
-})
+const tabs = computed((): { key: TabName; label: string }[] => [
+  { key: 'item', label: 'Item' },
+  { key: 'view', label: 'View' },
+])
 </script>

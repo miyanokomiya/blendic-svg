@@ -110,9 +110,6 @@ Copyright (C) 2021, Tomoya Komiyama.
           :label="key"
           :type="data.type"
           :model-value="data.value"
-          @update:model-value="
-            (val, seriesKey) => updateData(key, val, seriesKey)
-          "
         />
       </g>
     </g>
@@ -190,15 +187,6 @@ const props = withDefaults(
   }
 )
 
-const emit = defineEmits<{
-  (
-    e: 'update:data',
-    id: string,
-    data: GraphNode['data'],
-    seriesKey?: string
-  ): void
-}>()
-
 function getHeadOutline(s: Size) {
   const r = 14
   return `M${0},${
@@ -258,15 +246,6 @@ const dataMap = computed(() => {
     }
   })
 })
-
-function updateData(key: string, val: any, seriesKey?: string) {
-  emit(
-    'update:data',
-    props.node.id,
-    { ...props.node.data, [key]: val },
-    seriesKey
-  )
-}
 
 const inputTypeMap = computed(() => {
   return getInputTypes(nodeStruct.value, props.node)

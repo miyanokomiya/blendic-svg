@@ -39,14 +39,18 @@ describe('src/components/atoms/SliderInput.vue', () => {
   describe('scaleX', () => {
     it('should be clamped between 0 to 1', () => {
       expect(
-        mount(Target, {
-          props: { modelValue: -2, min: 0, max: 10 },
-        }).vm.scaleX
+        (
+          mount(Target, {
+            props: { odelValue: -2, min: 0, max: 10 },
+          }).vm as any
+        ).scaleX
       ).toBe(0)
       expect(
-        mount(Target, {
-          props: { modelValue: 12, min: 0, max: 10 },
-        }).vm.scaleX
+        (
+          mount(Target, {
+            props: { modelValue: 12, min: 0, max: 10 },
+          }).vm as any
+        ).scaleX
       ).toBe(1)
     })
   })

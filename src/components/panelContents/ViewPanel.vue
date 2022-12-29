@@ -42,24 +42,14 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-import { useSettings } from '/@/composables/settings'
+<script lang="ts" setup>
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
+import { useSettings } from '/@/composables/settings'
 
-export default defineComponent({
-  components: { CheckboxInput, InlineField, BlockField, SliderInput },
-  setup() {
-    const { settings } = useSettings()
-
-    return {
-      settings,
-    }
-  },
-})
+const { settings } = useSettings()
 </script>
 
 <style scoped>

@@ -37,88 +37,82 @@ Copyright (C) 2021, Tomoya Komiyama.
   </svg>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
+import HueCicle from '/@/components/atoms/HueCicle.vue'
 import { getRadian, IVec2, sub } from 'okageo'
 import { DragArgs, getPagePosition, useDrag } from 'okanvas'
-import { computed, defineComponent, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useGlobalMousemove, useGlobalMouseup } from '/@/composables/window'
 import { getContinuousRadDiff } from '/@/utils/geometry'
-import HueCicle from '/@/components/atoms/HueCicle.vue'
 import { useThrottle } from '/@/composables/throttle'
 
-export default defineComponent({
-  components: { HueCicle },
-  props: {
-    modelValue: {
-      type: Number,
-      default: undefined,
-    },
-  },
-  emits: ['update:model-value'],
-  setup(props, { emit }) {
-    function radToP(rad: number) {
-      return {
-        x: Math.cos(rad) * 50,
-        y: Math.sin(rad) * 50,
-      }
-    }
+const props = defineProps<{
+  modelValue?: number
+}>()
 
-    const modelRad = computed(() => {
-      if (props.modelValue === undefined) return 0
-      return (props.modelValue * Math.PI) / 180
-    })
+const emit = defineEmits<{
+  (e: 'update:model-value', val: number, seriesKey?: string): void
+}>()
 
-    const cursorP = computed(() => {
-      if (props.modelValue === undefined) return
-      return radToP(modelRad.value)
-    })
+function radToP(rad: number) {
+  return {
+    x: Math.cos(rad) * 50,
+    y: Math.sin(rad) * 50,
+  }
+}
 
-    const dragged = ref(false)
-    const seriesKey = ref<string>()
-    const svg = ref<Element>()
-
-    function update(val: number) {
-      emit('update:model-value', val, seriesKey.value)
-    }
-
-    function getHueByPoint(pageP: IVec2): number | undefined {
-      if (!svg.value) return
-
-      const rect = svg.value.getBoundingClientRect()
-      const p = sub(pageP, {
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2,
-      })
-      const rad =
-        modelRad.value + getContinuousRadDiff(modelRad.value, getRadian(p))
-      return Math.round((rad * 180) / Math.PI)
-    }
-
-    function onDrag(arg: DragArgs) {
-      const h = getHueByPoint(arg.p)
-      if (h === undefined) return
-      update(h)
-    }
-    const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
-
-    const drag = useDrag(throttleDrag)
-    useGlobalMousemove(drag.onMove)
-    useGlobalMouseup(() => {
-      drag.onUp()
-      dragged.value = false
-      seriesKey.value = undefined
-    })
-
-    function onDown(e: MouseEvent) {
-      dragged.value = false
-      seriesKey.value = `color_${Date.now()}`
-      const h = getHueByPoint(getPagePosition(e))
-      if (h === undefined) return
-      update(h)
-      drag.onDown(e)
-    }
-
-    return { cursorP, svg, onDown }
-  },
+const modelRad = computed(() => {
+  if (props.modelValue === undefined) return 0
+  return (props.modelValue * Math.PI) / 180
 })
+
+const cursorP = computed(() => {
+  if (props.modelValue === undefined) return
+  return radToP(modelRad.value)
+})
+
+const dragged = ref(false)
+const seriesKey = ref<string>()
+const svg = ref<Element>()
+
+function update(val: number) {
+  emit('update:model-value', val, seriesKey.value)
+}
+
+function getHueByPoint(pageP: IVec2): number | undefined {
+  if (!svg.value) return
+
+  const rect = svg.value.getBoundingClientRect()
+  const p = sub(pageP, {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  })
+  const rad =
+    modelRad.value + getContinuousRadDiff(modelRad.value, getRadian(p))
+  return Math.round((rad * 180) / Math.PI)
+}
+
+function onDrag(arg: DragArgs) {
+  const h = getHueByPoint(arg.p)
+  if (h === undefined) return
+  update(h)
+}
+const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
+
+const drag = useDrag(throttleDrag)
+useGlobalMousemove(drag.onMove)
+useGlobalMouseup(() => {
+  drag.onUp()
+  dragged.value = false
+  seriesKey.value = undefined
+})
+
+function onDown(e: MouseEvent) {
+  dragged.value = false
+  seriesKey.value = `color_${Date.now()}`
+  const h = getHueByPoint(getPagePosition(e))
+  if (h === undefined) return
+  update(h)
+  drag.onDown(e)
+}
 </script>

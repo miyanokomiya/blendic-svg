@@ -78,59 +78,82 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-import { BoneConstraintOptions } from '/@/utils/constraints'
+<script lang="ts" setup>
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
 import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
-import { getProps } from '/@/components/molecules/constraints/common'
+import { BoneConstraintOptions } from '/@/utils/constraints'
 import { PickerOptions } from '/@/composables/modes/types'
+import {
+  KeyframeConstraintPropKey,
+  KeyframePropsStatus,
+} from '/@/models/keyframe'
 
-export default defineComponent({
-  components: {
-    SliderInput,
-    InlineField,
-    KeyDot,
-    SelectWithPicker,
-    CheckboxInput,
-  },
-  props: getProps<BoneConstraintOptions['IK']>(),
-  emits: ['update:model-value', 'start-pick-bone'],
-  setup(props, { emit }) {
-    function emitUpdated(
-      val: Partial<BoneConstraintOptions['IK']>,
-      seriesKey?: string
-    ) {
-      emit('update:model-value', { ...props.modelValue, ...val }, seriesKey)
-    }
+const props = withDefaults(
+  defineProps<{
+    modelValue: BoneConstraintOptions['IK']
+    propsUpdatedStatus?: Partial<{
+      [key in KeyframeConstraintPropKey]: boolean
+    }>
+    boneOptions?: { value: string; label: string }[]
+    keyframeStatusMap?: KeyframePropsStatus['props']
+    createKeyframe?: (key: KeyframeConstraintPropKey) => void
+    deleteKeyframe?: (key: KeyframeConstraintPropKey) => void
+  }>(),
+  {
+    propsUpdatedStatus: () => ({}),
+    boneOptions: () => [],
+    keyframeStatusMap: () => ({}),
+    createKeyframe: () => {},
+    deleteKeyframe: () => {},
+  }
+)
 
-    return {
-      labelWidth: '100px',
-      updateTargetId(val: string) {
-        emitUpdated({ targetId: val })
-      },
-      updatePoleTargetId(val: string) {
-        emitUpdated({ poleTargetId: val })
-      },
-      updateSmoothJoint(val: boolean) {
-        emitUpdated({ smoothJoint: val })
-      },
-      updateChainLength(val: number, seriesKey?: string) {
-        emitUpdated({ chainLength: val }, seriesKey)
-      },
-      updateIterations(val: number, seriesKey?: string) {
-        emitUpdated({ iterations: val }, seriesKey)
-      },
-      updateInfluence(val: number, seriesKey?: string) {
-        emitUpdated({ influence: val }, seriesKey)
-      },
-      startPickBone(val?: PickerOptions) {
-        emit('start-pick-bone', val)
-      },
-    }
-  },
-})
+const emit = defineEmits<{
+  (
+    e: 'update:model-value',
+    val: Partial<BoneConstraintOptions['IK']>,
+    seriesKey?: string
+  ): void
+  (e: 'start-pick-bone', val?: PickerOptions): void
+}>()
+
+function emitUpdated(
+  val: Partial<BoneConstraintOptions['IK']>,
+  seriesKey?: string
+) {
+  emit('update:model-value', { ...props.modelValue, ...val }, seriesKey)
+}
+
+const labelWidth = '100px'
+
+function updateTargetId(val: string) {
+  emitUpdated({ targetId: val })
+}
+
+function updatePoleTargetId(val: string) {
+  emitUpdated({ poleTargetId: val })
+}
+
+function updateSmoothJoint(val: boolean) {
+  emitUpdated({ smoothJoint: val })
+}
+
+function updateChainLength(val: number, seriesKey?: string) {
+  emitUpdated({ chainLength: val }, seriesKey)
+}
+
+function updateIterations(val: number, seriesKey?: string) {
+  emitUpdated({ iterations: val }, seriesKey)
+}
+
+function updateInfluence(val: number, seriesKey?: string) {
+  emitUpdated({ influence: val }, seriesKey)
+}
+
+function startPickBone(val?: PickerOptions) {
+  emit('start-pick-bone', val)
+}
 </script>

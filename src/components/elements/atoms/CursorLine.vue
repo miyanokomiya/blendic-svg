@@ -35,31 +35,21 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { getRadian, IVec2 } from 'okageo'
-import { defineComponent, PropType, computed } from 'vue'
+import { computed } from 'vue'
 import { injectScale } from '/@/composables/canvas'
 
-export default defineComponent({
-  props: {
-    origin: {
-      type: Object as PropType<IVec2>,
-      required: true,
-    },
-    current: {
-      type: Object as PropType<IVec2>,
-      required: true,
-    },
-  },
-  setup(props) {
-    const getScale = injectScale()
+const props = defineProps<{
+  origin: IVec2
+  current: IVec2
+}>()
 
-    return {
-      scale: computed(getScale),
-      rotate: computed(
-        () => (getRadian(props.current, props.origin) / Math.PI) * 180
-      ),
-    }
-  },
-})
+const getScale = injectScale()
+
+const scale = computed(getScale)
+
+const rotate = computed(
+  () => (getRadian(props.current, props.origin) / Math.PI) * 180
+)
 </script>

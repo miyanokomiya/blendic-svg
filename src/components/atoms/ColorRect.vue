@@ -21,28 +21,21 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="color-rect" :style="{ 'background-color': color }" />
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType, computed } from 'vue'
+<script lang="ts" setup>
+import { computed } from 'vue'
 import { Transform } from '/@/models'
 import { posedColor } from '/@/utils/attributesResolver'
 import { HSVA, hsvaToRgba, rednerRGBA } from '/@/utils/color'
 
-export default defineComponent({
-  props: {
-    hsva: { type: Object as PropType<HSVA>, default: undefined },
-    transform: { type: Object as PropType<Transform>, default: undefined },
-  },
-  setup(props) {
-    const color = computed(() => {
-      if (props.hsva) return rednerRGBA(hsvaToRgba(props.hsva))
-      if (props.transform) return posedColor(props.transform)
-      return '#000'
-    })
+const props = defineProps<{
+  hsva?: HSVA
+  transform?: Transform
+}>()
 
-    return {
-      color,
-    }
-  },
+const color = computed(() => {
+  if (props.hsva) return rednerRGBA(hsvaToRgba(props.hsva))
+  if (props.transform) return posedColor(props.transform)
+  return '#000'
 })
 </script>
 

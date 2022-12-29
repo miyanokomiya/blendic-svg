@@ -39,8 +39,8 @@ Copyright (C) 2021, Tomoya Komiyama.
       <CurveBezier3Vue
         v-if="curve.name === 'bezier3'"
         :c0="curve.from"
-        :c1="curve.fixedC1"
-        :c2="curve.fixedC2"
+        :c1="curve.fixedC1!"
+        :c2="curve.fixedC2!"
         :c3="curve.to"
         :color="color"
         :scale="scale"
@@ -67,39 +67,26 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script lang="ts" setup>
 import CurveBezier3Vue from '/@/components/elements/molecules/CurveBezier3.vue'
 import CurveConstant from '/@/components/elements/molecules/CurveConstant.vue'
 import { CurveInfo } from '/@/utils/graphCurves'
 
-export default defineComponent({
-  components: { CurveBezier3Vue, CurveConstant },
-  props: {
-    curve: {
-      type: Object as PropType<CurveInfo>,
-      required: true,
-    },
-    first: {
-      type: Boolean,
-      default: false,
-    },
-    last: {
-      type: Boolean,
-      default: false,
-    },
-    color: {
-      type: String,
-      default: '#fff',
-    },
-    scale: {
-      type: Number,
-      default: 1,
-    },
-    lineWidth: {
-      type: Number,
-      default: 1,
-    },
-  },
-})
+withDefaults(
+  defineProps<{
+    curve: CurveInfo
+    first?: boolean
+    last?: boolean
+    color?: string
+    scale?: number
+    lineWidth?: number
+  }>(),
+  {
+    first: false,
+    last: false,
+    color: '#fff',
+    scale: 1,
+    lineWidth: 1,
+  }
+)
 </script>

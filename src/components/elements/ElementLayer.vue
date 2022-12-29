@@ -32,8 +32,8 @@ Copyright (C) 2021, Tomoya Komiyama.
     ></rect>
     <g :id="elementRoot.id">
       <NativeElement
-        v-for="node in elementRoot.children"
-        :key="getId(node)"
+        v-for="node in elemntChildren"
+        :key="node.id"
         :element="node"
       />
     </g>
@@ -41,122 +41,111 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType, provide } from 'vue'
+import { computed, provide } from 'vue'
 import { useElementStore } from '/@/store/element'
-import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
 import { Bone, ElementNode, IdMap } from '/@/models'
 import {
   getGraphResolvedElementTree,
   getPosedElementTree,
 } from '/@/utils/poseResolver'
-import { isPlainText, parseViewBoxFromStr } from '/@/utils/elements'
+import { parseViewBoxFromStr } from '/@/utils/elements'
 import { useSettings } from '/@/composables/settings'
 import type { CanvasMode } from '/@/composables/modes/types'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { useCanvasStore } from '/@/store/canvas'
 import { useStore } from '/@/store'
 import { injectScale } from '/@/composables/canvas'
+</script>
 
-function getId(elm: ElementNode | string): string {
-  if (isPlainText(elm)) return elm
-  return elm.id
-}
+<script lang="ts" setup>
+import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
+import { isPlainText } from '/@/utils/elements'
 
-export default defineComponent({
-  components: { NativeElement },
-  props: {
-    boneMap: {
-      type: Object as PropType<IdMap<Bone>>,
-      default: () => ({}),
-    },
-    canvasMode: {
-      type: String as PropType<CanvasMode>,
-      default: 'object',
-    },
-  },
-  setup(props) {
-    const store = useStore()
-    const graphStore = useAnimationGraphStore()
-    const elementStore = useElementStore()
-    const canvasStore = useCanvasStore()
-    const { settings } = useSettings()
+const props = withDefaults(
+  defineProps<{
+    boneMap?: IdMap<Bone>
+    canvasMode?: CanvasMode
+  }>(),
+  {
+    boneMap: () => ({}),
+    canvasMode: 'object',
+  }
+)
 
-    const selectedMap = computed(() => {
-      if (props.canvasMode !== 'weight') return {}
-      return elementStore.selectedElements.value
-    })
-    provide('selectedMap', selectedMap)
+const store = useStore()
+const graphStore = useAnimationGraphStore()
+const elementStore = useElementStore()
+const canvasStore = useCanvasStore()
+const { settings } = useSettings()
 
-    const boneMap = computed(() => {
-      if (!['pose', 'weight'].includes(props.canvasMode)) return {}
-
-      return props.boneMap
-    })
-
-    const graphEnabled = computed(() => {
-      if (!store.lastSelectedArmature.value) return false
-      if (!elementStore.lastSelectedActor.value) return false
-      if (!graphStore.lastSelectedGraph.value) return false
-      if (canvasStore.canvasMode.value === 'edit') return false
-
-      const id = store.lastSelectedArmature.value.id
-      return (
-        id === elementStore.lastSelectedActor.value.armatureId &&
-        id === graphStore.lastSelectedGraph.value.armatureId
-      )
-    })
-
-    const posedElementRoot = computed(() => {
-      if (!elementStore.lastSelectedActor.value) return
-      return getPosedElementTree(
-        boneMap.value,
-        elementStore.elementMap.value,
-        elementStore.lastSelectedActor.value.svgTree
-      )
-    })
-
-    const graphResolvedElement = computed(() => {
-      if (
-        !posedElementRoot.value ||
-        !graphEnabled.value ||
-        !graphStore.resolvedGraph.value
-      )
-        return posedElementRoot.value
-
-      // TODO: try-catch is just for debug
-      try {
-        const graphObjectMap =
-          graphStore.resolvedGraph.value.context.getObjectMap()
-        return getGraphResolvedElementTree(
-          graphObjectMap,
-          posedElementRoot.value
-        )
-      } catch (e) {
-        console.warn(e)
-        return posedElementRoot.value
-      }
-    })
-
-    const viewBox = computed(() => {
-      if (!graphResolvedElement.value) return
-
-      return parseViewBoxFromStr(graphResolvedElement.value.attributes.viewBox)
-    })
-
-    const scale = computed(injectScale())
-    const viewboxStrokeWidth = computed(() => scale.value)
-    const viewboxStrokeDasharray = computed(() =>
-      [2, 2].map((n) => n * scale.value).join(' ')
-    )
-
-    return {
-      elementRoot: graphResolvedElement,
-      getId,
-      viewBox,
-      settings,
-      viewboxStrokeWidth,
-      viewboxStrokeDasharray,
-    }
-  },
+const selectedMap = computed(() => {
+  if (props.canvasMode !== 'weight') return {}
+  return elementStore.selectedElements.value
 })
+provide('selectedMap', selectedMap)
+
+const boneMap = computed(() => {
+  if (!['pose', 'weight'].includes(props.canvasMode)) return {}
+
+  return props.boneMap
+})
+
+const graphEnabled = computed(() => {
+  if (!store.lastSelectedArmature.value) return false
+  if (!elementStore.lastSelectedActor.value) return false
+  if (!graphStore.lastSelectedGraph.value) return false
+  if (canvasStore.canvasMode.value === 'edit') return false
+
+  const id = store.lastSelectedArmature.value.id
+  return (
+    id === elementStore.lastSelectedActor.value.armatureId &&
+    id === graphStore.lastSelectedGraph.value.armatureId
+  )
+})
+
+const posedElementRoot = computed(() => {
+  if (!elementStore.lastSelectedActor.value) return
+  return getPosedElementTree(
+    boneMap.value,
+    elementStore.elementMap.value,
+    elementStore.lastSelectedActor.value.svgTree
+  )
+})
+
+const graphResolvedElement = computed(() => {
+  if (
+    !posedElementRoot.value ||
+    !graphEnabled.value ||
+    !graphStore.resolvedGraph.value
+  )
+    return posedElementRoot.value
+
+  // TODO: try-catch is just for debug
+  try {
+    const graphObjectMap = graphStore.resolvedGraph.value.context.getObjectMap()
+    return getGraphResolvedElementTree(graphObjectMap, posedElementRoot.value)
+  } catch (e) {
+    console.warn(e)
+    return posedElementRoot.value
+  }
+})
+
+const viewBox = computed(() => {
+  if (!graphResolvedElement.value) return
+
+  return parseViewBoxFromStr(graphResolvedElement.value.attributes.viewBox)
+})
+
+const scale = computed(injectScale())
+const viewboxStrokeWidth = computed(() => scale.value)
+const viewboxStrokeDasharray = computed(() =>
+  [2, 2].map((n) => n * scale.value).join(' ')
+)
+
+const elementRoot = graphResolvedElement
+// Plain text shouldn't exist right under the SVG root
+const elemntChildren = computed(
+  () =>
+    elementRoot.value?.children.filter((c) => !isPlainText(c)) as ElementNode[]
+)
 </script>

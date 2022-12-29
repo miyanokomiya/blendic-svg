@@ -57,9 +57,9 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+<script lang="ts" setup>
 import KeyPointGroup from '/@/components/elements/molecules/KeyPointGroup.vue'
+import { computed } from 'vue'
 import { useSettings } from '/@/composables/settings'
 import { IdMap, frameWidth, toMap } from '/@/models'
 import {
@@ -72,124 +72,96 @@ import { mapReduce } from '/@/utils/commons'
 import { KeyframeTargetSummary } from '/@/utils/helpers'
 import { getSamePropRangeFrameMapById } from '/@/utils/keyframes'
 
-export default defineComponent({
-  components: { KeyPointGroup },
-  props: {
-    scale: {
-      type: Number,
-      default: 1,
-    },
-    keyframeMapByFrame: {
-      type: Object as PropType<IdMap<KeyframeBase[]>>,
-      default: () => ({}),
-    },
-    targetList: {
-      type: Array as PropType<KeyframeTargetSummary[]>,
-      default: () => [],
-    },
-    selectedKeyframeMap: {
-      type: Object as PropType<IdMap<KeyframeSelectedState>>,
-      default: () => ({}),
-    },
-    scrollY: {
-      type: Number,
-      default: 0,
-    },
-    height: {
-      type: Number,
-      default: 24,
-    },
-    targetExpandedMap: {
-      type: Object as PropType<IdMap<boolean>>,
-      default: () => ({}),
-    },
-    targetTopMap: {
-      type: Object as PropType<IdMap<number>>,
-      default: () => ({}),
-    },
-  },
-  emits: ['select', 'shift-select', 'select-frame', 'shift-select-frame'],
-  setup(props) {
-    const { settings } = useSettings()
+const props = withDefaults(
+  defineProps<{
+    scale?: number
+    keyframeMapByFrame?: IdMap<KeyframeBase[]>
+    targetList?: KeyframeTargetSummary[]
+    selectedKeyframeMap?: IdMap<KeyframeSelectedState>
+    scrollY?: number
+    height?: number
+    targetExpandedMap?: IdMap<boolean>
+    targetTopMap?: IdMap<number>
+  }>(),
+  {
+    scale: 1,
+    keyframeMapByFrame: () => ({}),
+    targetList: () => [],
+    selectedKeyframeMap: () => ({}),
+    scrollY: 0,
+    height: 24,
+    targetExpandedMap: () => ({}),
+    targetTopMap: () => ({}),
+  }
+)
 
-    const targetIds = computed(() => props.targetList.map((t) => t.id))
+const { settings } = useSettings()
 
-    const targetIndexMap = computed((): IdMap<number> => {
-      return targetIds.value.reduce<IdMap<number>>((p, id, i) => {
-        p[id] = i
-        return p
-      }, {})
-    })
+const targetIds = computed(() => props.targetList.map((t) => t.id))
 
-    const indexMap = computed(() => {
-      return targetIndexMap.value
-    })
-
-    const sortedKeyframeMapByFrame = computed(() => {
-      return Object.keys(props.keyframeMapByFrame).reduce<
-        IdMap<KeyframeBase[]>
-      >((p, frame) => {
-        p[frame] = sortAndFilterKeyframesByTargetId(
-          props.keyframeMapByFrame[frame]
-        )
-        return p
-      }, {})
-    })
-
-    const keyframeMapByTargetId = computed(() => {
-      return getKeyframeMapByTargetId(
-        Object.keys(props.keyframeMapByFrame).flatMap((frame) => {
-          return props.keyframeMapByFrame[frame]
-        })
-      )
-    })
-
-    const sameRangeFrameMapByTargetId = computed(() => {
-      return getSamePropRangeFrameMapById(keyframeMapByTargetId.value)
-    })
-
-    function getSameRangeFrame(
-      targetId: string,
-      frame: number
-    ): KeyframeBaseSameRange['props'] | undefined {
-      const map = sameRangeFrameMapByTargetId.value[targetId]?.[frame]
-      if (!map) return
-      const ret = mapReduce(
-        map.props,
-        (val) => (val * frameWidth) / props.scale
-      )
-      ret.all = Math.min(...Object.keys(ret).map((key) => ret[key]))
-      return ret
-    }
-
-    const selectedFrameMap = computed(() => {
-      return mapReduce(props.keyframeMapByFrame, (keyframes) => {
-        return keyframes.some(
-          (keyframe) => props.selectedKeyframeMap[keyframe.id]
-        )
-      })
-    })
-
-    const targetMap = computed(() => {
-      return toMap(props.targetList)
-    })
-
-    function sortAndFilterKeyframesByTargetId(
-      keyframes: KeyframeBase[]
-    ): KeyframeBase[] {
-      return keyframes
-        .filter((k) => indexMap.value[k.targetId] > -1)
-        .sort((a, b) => indexMap.value[a.targetId] - indexMap.value[b.targetId])
-    }
-
-    return {
-      frameWidth,
-      sortedKeyframeMapByFrame,
-      targetMap,
-      getSameRangeFrame,
-      selectedFrameMap,
-      selectedColor: settings.selectedColor,
-    }
-  },
+const targetIndexMap = computed((): IdMap<number> => {
+  return targetIds.value.reduce<IdMap<number>>((p, id, i) => {
+    p[id] = i
+    return p
+  }, {})
 })
+
+const indexMap = computed(() => {
+  return targetIndexMap.value
+})
+
+const sortedKeyframeMapByFrame = computed(() => {
+  return Object.keys(props.keyframeMapByFrame).reduce<IdMap<KeyframeBase[]>>(
+    (p, frame) => {
+      p[frame] = sortAndFilterKeyframesByTargetId(
+        props.keyframeMapByFrame[frame]
+      )
+      return p
+    },
+    {}
+  )
+})
+
+const keyframeMapByTargetId = computed(() => {
+  return getKeyframeMapByTargetId(
+    Object.keys(props.keyframeMapByFrame).flatMap((frame) => {
+      return props.keyframeMapByFrame[frame]
+    })
+  )
+})
+
+const sameRangeFrameMapByTargetId = computed(() => {
+  return getSamePropRangeFrameMapById(keyframeMapByTargetId.value)
+})
+
+function getSameRangeFrame(
+  targetId: string,
+  frame: number
+): KeyframeBaseSameRange['props'] | undefined {
+  const map = sameRangeFrameMapByTargetId.value[targetId]?.[frame]
+  if (!map) return
+  const ret = mapReduce(map.props, (val) => (val * frameWidth) / props.scale)
+  ret.all = Math.min(...Object.keys(ret).map((key) => ret[key]))
+  return ret
+}
+
+const selectedFrameMap = computed(() => {
+  return mapReduce(props.keyframeMapByFrame, (keyframes) => {
+    return keyframes.some((keyframe) => props.selectedKeyframeMap[keyframe.id])
+  })
+})
+
+const targetMap = computed(() => {
+  return toMap(props.targetList)
+})
+
+function sortAndFilterKeyframesByTargetId(
+  keyframes: KeyframeBase[]
+): KeyframeBase[] {
+  return keyframes
+    .filter((k) => indexMap.value[k.targetId] > -1)
+    .sort((a, b) => indexMap.value[a.targetId] - indexMap.value[b.targetId])
+}
+
+const selectedColor = settings.selectedColor
 </script>

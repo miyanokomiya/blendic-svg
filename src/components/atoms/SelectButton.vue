@@ -26,30 +26,28 @@ Copyright (C) 2021, Tomoya Komiyama.
   />
 </template>
 
-<script lang="ts">
-import { defineComponent, nextTick, PropType, ref } from 'vue'
+<script lang="ts" setup>
 import SelectField from '/@/components/atoms/SelectField.vue'
+import { nextTick, ref } from 'vue'
 
-export default defineComponent({
-  components: { SelectField },
-  props: {
-    options: {
-      type: Array as PropType<{ value: number | string; label: string }[]>,
-      default: () => [],
-    },
-  },
-  emits: ['select'],
-  setup(_props, { emit }) {
-    const localValue = ref<number | string>()
+withDefaults(
+  defineProps<{
+    options?: { value: number | string; label: string }[]
+  }>(),
+  {
+    options: () => [],
+  }
+)
 
-    return {
-      localValue,
-      async update() {
-        emit('select', localValue.value)
-        await nextTick()
-        localValue.value = undefined
-      },
-    }
-  },
-})
+const emit = defineEmits<{
+  (e: 'select', value?: number | string): void
+}>()
+
+const localValue = ref<number | string>()
+
+async function update() {
+  emit('select', localValue.value)
+  await nextTick()
+  localValue.value = undefined
+}
 </script>

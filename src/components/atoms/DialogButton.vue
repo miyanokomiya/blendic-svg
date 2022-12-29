@@ -23,21 +23,17 @@ Copyright (C) 2021, Tomoya Komiyama.
   </button>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
-
-export default defineComponent({
-  props: {
-    type: {
-      type: String as PropType<'default' | 'primary'>,
-      default: 'default',
-    },
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-  },
-})
+<script lang="ts" setup>
+withDefaults(
+  defineProps<{
+    type?: 'default' | 'primary'
+    disabled?: boolean
+  }>(),
+  {
+    type: 'default',
+    disabled: false,
+  }
+)
 </script>
 
 <style scoped>

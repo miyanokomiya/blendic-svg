@@ -43,7 +43,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, PropType } from 'vue'
+import { computed } from 'vue'
 import {
   CurveName,
   getCurve,
@@ -51,9 +51,6 @@ import {
   KeyframePoint,
   KeyframeSelectedState,
 } from '/@/models/keyframe'
-import BlockField from '/@/components/atoms/BlockField.vue'
-import SelectField from '/@/components/atoms/SelectField.vue'
-import SliderInput from '/@/components/atoms/SliderInput.vue'
 import { curveItems } from '/@/utils/keyframes/core'
 import { updatePoints } from '/@/utils/keyframes'
 import { useSettings } from '/@/composables/settings'
@@ -62,78 +59,69 @@ const curveOptions = curveItems.map((item) => ({
   label: item.label,
   value: item.name,
 }))
+</script>
 
-export default defineComponent({
-  components: { BlockField, SelectField, SliderInput },
-  props: {
-    keyframe: {
-      type: Object as PropType<KeyframeBase | undefined>,
-      default: undefined,
-    },
-    selectedState: {
-      type: Object as PropType<KeyframeSelectedState | undefined>,
-      default: undefined,
-    },
+<script lang="ts" setup>
+import BlockField from '/@/components/atoms/BlockField.vue'
+import SelectField from '/@/components/atoms/SelectField.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
+
+const props = defineProps<{
+  keyframe?: KeyframeBase | undefined
+  selectedState?: KeyframeSelectedState | undefined
+}>()
+
+const emit = defineEmits<{
+  (e: 'update', keyframe: KeyframeBase, seriesKey?: string): void
+}>()
+
+const selectedKey = computed(() => {
+  if (!props.selectedState) return
+  return Object.keys(props.selectedState.props)[0]
+})
+
+const targetPoint = computed(() => {
+  if (!selectedKey.value) return
+  return props.keyframe?.points[selectedKey.value]
+})
+
+function updateCurve(
+  updateFn: (p: KeyframePoint) => KeyframePoint,
+  seriesKey?: string
+) {
+  if (!props.keyframe || !props.selectedState) return
+  emit(
+    'update',
+    updatePoints(props.keyframe, props.selectedState, updateFn),
+    seriesKey
+  )
+}
+
+function updateCurveName(curveName: unknown) {
+  updateCurve((p) => ({
+    ...p,
+    curve: getCurve(curveName as CurveName),
+  }))
+}
+
+function updateCurveValue(value: number, seriesKey?: string) {
+  updateCurve(
+    (p) => ({
+      ...p,
+      value,
+    }),
+    seriesKey
+  )
+}
+
+const { settings } = useSettings()
+
+const valueWidth = computed({
+  get(): number {
+    return settings.graphValueWidth
   },
-  emits: ['update'],
-  setup(props, { emit }) {
-    const selectedKey = computed(() => {
-      if (!props.selectedState) return
-      return Object.keys(props.selectedState.props)[0]
-    })
-
-    const targetPoint = computed(() => {
-      if (!selectedKey.value) return
-      return props.keyframe?.points[selectedKey.value]
-    })
-
-    function updateCurve(
-      updateFn: (p: KeyframePoint) => KeyframePoint,
-      seriesKey?: string
-    ) {
-      if (!props.keyframe || !props.selectedState) return
-      emit(
-        'update',
-        updatePoints(props.keyframe, props.selectedState, updateFn),
-        seriesKey
-      )
-    }
-
-    function updateCurveName(curveName: unknown) {
-      updateCurve((p) => ({
-        ...p,
-        curve: getCurve(curveName as CurveName),
-      }))
-    }
-
-    function updateCurveValue(value: number, seriesKey?: string) {
-      updateCurve(
-        (p) => ({
-          ...p,
-          value,
-        }),
-        seriesKey
-      )
-    }
-
-    const { settings } = useSettings()
-
-    const valueWidth = computed({
-      get(): number {
-        return settings.graphValueWidth
-      },
-      set(val: number) {
-        settings.graphValueWidth = val
-      },
-    })
-
-    return {
-      targetPoint,
-      curveOptions,
-      updateCurveName,
-      updateCurveValue,
-      valueWidth,
-    }
+  set(val: number) {
+    settings.graphValueWidth = val
   },
 })
 </script>

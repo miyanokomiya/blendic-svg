@@ -33,6 +33,7 @@ describe('src/components/elements/GraphNodeReroute.vue', () => {
             type: GRAPH_VALUE_TYPE.VECTOR2,
             struct: GRAPH_VALUE_STRUCT.UNIT,
           },
+          label: 'value',
         },
       },
       outputs: {
@@ -42,6 +43,7 @@ describe('src/components/elements/GraphNodeReroute.vue', () => {
             type: GRAPH_VALUE_TYPE.VECTOR2,
             struct: GRAPH_VALUE_STRUCT.UNIT,
           },
+          label: 'value',
         },
       },
     }

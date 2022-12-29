@@ -26,20 +26,16 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { computed } from 'vue'
+
+type TabName = '' | 'item'
+</script>
+
+<script lang="ts" setup>
 import SideBar from '/@/components/SideBar.vue'
 import GraphItemPanel from '/@/components/panelContents/GraphItemPanel.vue'
 
-type TabName = '' | 'item'
-
-export default defineComponent({
-  components: { SideBar, GraphItemPanel },
-  setup() {
-    const tabs = computed((): { key: TabName; label: string }[] => [
-      { key: 'item', label: 'Item' },
-    ])
-
-    return { tabs }
-  },
-})
+const tabs = computed((): { key: TabName; label: string }[] => [
+  { key: 'item', label: 'Item' },
+])
 </script>

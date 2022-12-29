@@ -59,8 +59,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
-import BlockField from '/@/components/atoms/BlockField.vue'
+import { computed } from 'vue'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import {
   getDataTypeAndValue,
@@ -68,7 +67,6 @@ import {
   updateDataField,
 } from '/@/utils/graphNodes'
 import { mapReduce } from '/@/utils/commons'
-import GraphNodeDataField from '/@/components/atoms/GraphNodeDataField.vue'
 import { ValueType } from '/@/models/graphNode'
 import { injectGetGraphNodeModuleFn } from '/@/composables/animationGraph'
 import { PickerOptions } from '/@/composables/modes/types'
@@ -80,114 +78,101 @@ interface DataInfo {
   label: string
   disabled?: boolean
 }
+</script>
 
-export default defineComponent({
-  components: {
-    BlockField,
-    GraphNodeDataField,
-  },
-  setup() {
-    const canvasStore = useCanvasStore()
-    const graphStore = useAnimationGraphStore()
-    const targetNode = graphStore.lastSelectedNode
+<script lang="ts" setup>
+import BlockField from '/@/components/atoms/BlockField.vue'
+import GraphNodeDataField from '/@/components/atoms/GraphNodeDataField.vue'
 
-    const getGraphNodeModule = computed(injectGetGraphNodeModuleFn())
-    const struct = computed(() => {
-      if (!targetNode.value) return
-      return getGraphNodeModule.value(targetNode.value.type)?.struct
-    })
+const canvasStore = useCanvasStore()
+const graphStore = useAnimationGraphStore()
+const targetNode = graphStore.lastSelectedNode
 
-    const dataMap = computed<{
-      [key: string]: DataInfo
-    }>(() => {
-      const node = targetNode.value
-      if (!node || !struct.value) return {}
-      return mapReduce(node.data, (_, key) => ({
-        ...getDataTypeAndValue(getGraphNodeModule.value, node, key),
-        label: key,
-      }))
-    })
-    function updateData(key: string, val: any, seriesKey?: string) {
-      const node = targetNode.value
-      if (!node) return
-
-      graphStore.updateNode(
-        node.id,
-        {
-          data: {
-            ...node.data,
-            [key]: updateDataField(
-              getGraphNodeModule.value,
-              node.type,
-              key,
-              node.data[key],
-              val
-            ),
-          },
-        },
-        seriesKey
-      )
-    }
-
-    const inputsMap = computed<{
-      [key: string]: DataInfo
-    }>(() => {
-      if (!targetNode.value || !struct.value) return {}
-
-      const inputs = targetNode.value.inputs
-      const types = getInputTypes(
-        getGraphNodeModule.value(targetNode.value.type)?.struct,
-        targetNode.value
-      )
-      const resolvedNodeMap = graphStore.resolvedGraph.value?.nodeMap ?? {}
-      struct.value.inputs
-
-      return mapReduce(inputs, (value, key) => {
-        const label = struct.value?.inputs[key]?.label ?? key
-        return value.from
-          ? {
-              type: types[key],
-              value: resolvedNodeMap[value.from.id]?.[value.from.key] ?? '',
-              disabled: true,
-              label,
-            }
-          : { type: types[key], value: value.value, label }
-      })
-    })
-    function updateInput(key: string, value: any, seriesKey?: string) {
-      if (!targetNode.value) return
-
-      graphStore.updateNode(
-        targetNode.value.id,
-        {
-          inputs: {
-            ...targetNode.value.inputs,
-            [key]: { ...targetNode.value.inputs[key], value },
-          },
-        },
-        seriesKey
-      )
-    }
-    const hasInput = computed(() => Object.keys(inputsMap.value).length > 0)
-
-    function startPickBone(val?: PickerOptions) {
-      canvasStore.dispatchCanvasEvent({
-        type: 'state',
-        data: { name: 'pick-bone', options: val },
-      })
-    }
-
-    return {
-      targetNode,
-      dataMap,
-      updateData,
-      inputsMap,
-      updateInput,
-      hasInput,
-      startPickBone,
-    }
-  },
+const getGraphNodeModule = computed(injectGetGraphNodeModuleFn())
+const struct = computed(() => {
+  if (!targetNode.value) return
+  return getGraphNodeModule.value(targetNode.value.type)?.struct
 })
+
+const dataMap = computed<{
+  [key: string]: DataInfo
+}>(() => {
+  const node = targetNode.value
+  if (!node || !struct.value) return {}
+  return mapReduce(node.data, (_, key) => ({
+    ...getDataTypeAndValue(getGraphNodeModule.value, node, key),
+    label: key,
+  }))
+})
+function updateData(key: string, val: any, seriesKey?: string) {
+  const node = targetNode.value
+  if (!node) return
+
+  graphStore.updateNode(
+    node.id,
+    {
+      data: {
+        ...node.data,
+        [key]: updateDataField(
+          getGraphNodeModule.value,
+          node.type,
+          key,
+          node.data[key],
+          val
+        ),
+      },
+    },
+    seriesKey
+  )
+}
+
+const inputsMap = computed<{
+  [key: string]: DataInfo
+}>(() => {
+  if (!targetNode.value || !struct.value) return {}
+
+  const inputs = targetNode.value.inputs
+  const types = getInputTypes(
+    getGraphNodeModule.value(targetNode.value.type)?.struct,
+    targetNode.value
+  )
+  const resolvedNodeMap = graphStore.resolvedGraph.value?.nodeMap ?? {}
+  struct.value.inputs
+
+  return mapReduce(inputs, (value, key) => {
+    const label = struct.value?.inputs[key]?.label ?? key
+    return value.from
+      ? {
+          type: types[key],
+          value: resolvedNodeMap[value.from.id]?.[value.from.key] ?? '',
+          disabled: true,
+          label,
+        }
+      : { type: types[key], value: value.value, label }
+  })
+})
+function updateInput(key: string, value: any, seriesKey?: string) {
+  if (!targetNode.value) return
+
+  graphStore.updateNode(
+    targetNode.value.id,
+    {
+      inputs: {
+        ...targetNode.value.inputs,
+        [key]: { ...targetNode.value.inputs[key], value },
+      },
+    },
+    seriesKey
+  )
+}
+const hasInput = computed(() => Object.keys(inputsMap.value).length > 0)
+
+function startPickBone(val?: PickerOptions) {
+  canvasStore.dispatchCanvasEvent({
+    type: 'state',
+    data: { name: 'pick-bone', options: val },
+  })
+}
 </script>
 
 <style scoped>

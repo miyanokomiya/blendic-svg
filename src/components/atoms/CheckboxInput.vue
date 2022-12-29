@@ -24,27 +24,32 @@ Copyright (C) 2021, Tomoya Komiyama.
   </label>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from 'vue'
+<script lang="ts" setup>
+import { computed } from 'vue'
 
-export default defineComponent({
-  props: {
-    modelValue: { type: Boolean, default: false },
-    label: { type: String, default: '' },
-    disabled: { type: Boolean, default: false },
+const props = withDefaults(
+  defineProps<{
+    modelValue?: boolean
+    label?: string
+    disabled?: boolean
+  }>(),
+  {
+    modelValue: false,
+    label: '',
+    disabled: false,
+  }
+)
+
+const emit = defineEmits<{
+  (e: 'update:model-value', val: boolean): void
+}>()
+
+const value = computed({
+  get() {
+    return props.modelValue
   },
-  emits: ['update:model-value'],
-  setup(props, { emit }) {
-    return {
-      value: computed({
-        get() {
-          return props.modelValue
-        },
-        set(val: boolean) {
-          emit('update:model-value', val)
-        },
-      }),
-    }
+  set(val: boolean) {
+    emit('update:model-value', val)
   },
 })
 </script>

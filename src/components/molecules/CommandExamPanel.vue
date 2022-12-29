@@ -30,18 +30,17 @@ Copyright (C) 2021, Tomoya Komiyama.
   </Transition>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script lang="ts" setup>
 import { CommandExam } from '/@/composables/modes/types'
 
-export default defineComponent({
-  props: {
-    availableCommandList: {
-      type: Array as PropType<CommandExam[]>,
-      default: () => [],
-    },
-  },
-})
+withDefaults(
+  defineProps<{
+    availableCommandList?: CommandExam[]
+  }>(),
+  {
+    availableCommandList: () => [],
+  }
+)
 </script>
 
 <style scoped>

@@ -33,80 +33,70 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, watchEffect, onMounted, watch } from 'vue'
+<script lang="ts" setup>
+import { ref, watchEffect, onMounted, watch } from 'vue'
 
-export default defineComponent({
-  props: {
-    modelValue: { type: String, default: '' },
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-    autofocus: {
-      type: Boolean,
-      default: false,
-    },
-    realtime: {
-      type: Boolean,
-      default: false,
-    },
-    keepFocus: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['update:model-value', 'blur'],
-  setup(props, { emit }) {
-    const inputEl = ref<HTMLInputElement>()
-    const focused = ref(props.autofocus)
+const props = withDefaults(
+  defineProps<{
+    modelValue?: string
+    disabled?: boolean
+    autofocus?: boolean
+    realtime?: boolean
+    keepFocus?: boolean
+  }>(),
+  {
+    modelValue: '',
+    disabled: false,
+    autofocus: false,
+    realtime: false,
+    keepFocus: false,
+  }
+)
 
-    const draftValue = ref('')
+const emit = defineEmits<{
+  (e: 'update:model-value', value: string): void
+  (e: 'blur'): void
+}>()
 
-    watchEffect(() => {
-      draftValue.value = props.modelValue
-    })
+const inputEl = ref<HTMLInputElement>()
+const focused = ref(props.autofocus)
 
-    watch(draftValue, () => {
-      if (props.realtime) {
-        emit('update:model-value', draftValue.value)
-      }
-    })
+const draftValue = ref('')
 
-    function input() {
-      if (draftValue.value !== props.modelValue) {
-        emit('update:model-value', draftValue.value)
-      }
-    }
-
-    function onClick() {
-      inputEl.value?.focus()
-      inputEl.value?.select()
-    }
-
-    onMounted(() => {
-      if (props.autofocus) {
-        inputEl.value?.focus()
-        inputEl.value?.select()
-      }
-    })
-
-    function onBlur() {
-      focused.value = false
-      emit('blur')
-    }
-
-    return {
-      focused,
-      onFocus: () => (focused.value = true),
-      onBlur,
-      draftValue,
-      inputEl,
-      input,
-      onClick,
-    }
-  },
+watchEffect(() => {
+  draftValue.value = props.modelValue
 })
+
+watch(draftValue, () => {
+  if (props.realtime) {
+    emit('update:model-value', draftValue.value)
+  }
+})
+
+function input() {
+  if (draftValue.value !== props.modelValue) {
+    emit('update:model-value', draftValue.value)
+  }
+}
+
+function onClick() {
+  inputEl.value?.focus()
+  inputEl.value?.select()
+}
+
+onMounted(() => {
+  if (props.autofocus) {
+    inputEl.value?.focus()
+    inputEl.value?.select()
+  }
+})
+
+function onBlur() {
+  focused.value = false
+  emit('blur')
+}
+
+const onFocus = () => (focused.value = true)
 </script>
 
 <style scoped>

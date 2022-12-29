@@ -37,49 +37,43 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType, computed } from 'vue'
+<script lang="ts" setup>
+import BoneElm from '/@/components/elements/BoneElm.vue'
+import { computed } from 'vue'
 import { Armature, Bone, toMap } from '/@/models/index'
 import { getTnansformStr } from '/@/utils/helpers'
-import BoneElm from '/@/components/elements/BoneElm.vue'
 import { sortBoneBySize } from '/@/utils/armatures'
 import { injectScale } from '/@/composables/canvas'
 
-export default defineComponent({
-  components: { BoneElm },
-  props: {
-    armature: {
-      type: Object as PropType<Armature>,
-      required: true,
-    },
-    bones: {
-      type: Array as PropType<Bone[]>,
-      required: true,
-    },
-    opacity: { type: Number, default: 0.8 },
-    selected: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['select'],
-  setup(props, { emit }) {
-    const sortedBoneMap = computed(() => {
-      return sortBoneBySize(props.bones)
-    })
+const props = withDefaults(
+  defineProps<{
+    armature: Armature
+    bones: Bone[]
+    opacity?: number
+    selected?: boolean
+  }>(),
+  {
+    opacity: 0.8,
+    selected: false,
+  }
+)
 
-    const scale = computed(injectScale())
+const emit = defineEmits<{
+  (e: 'select'): void
+}>()
 
-    return {
-      scale,
-      sortedBoneMap,
-      boneMap: computed(() => toMap(props.bones)),
-      transform: computed(() => getTnansformStr(props.armature.transform)),
-      boneSelectedState: computed(() =>
-        props.selected ? ({ head: true, tail: true } as const) : undefined
-      ),
-      click: () => emit('select'),
-    }
-  },
+const sortedBoneMap = computed(() => {
+  return sortBoneBySize(props.bones)
 })
+
+const scale = computed(injectScale())
+
+const boneMap = computed(() => toMap(props.bones))
+const transform = computed(() => getTnansformStr(props.armature.transform))
+
+const boneSelectedState = computed(() =>
+  props.selected ? ({ head: true, tail: true } as const) : undefined
+)
+
+const click = () => emit('select')
 </script>

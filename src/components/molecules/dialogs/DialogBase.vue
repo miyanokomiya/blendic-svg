@@ -36,25 +36,18 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang="ts" setup>
 import DeleteIcon from '/@/components/atoms/DeleteIcon.vue'
 
-export default defineComponent({
-  components: { DeleteIcon },
-  props: {
-    open: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  emits: ['update:open'],
-  setup(_, { emit }) {
-    return {
-      close: () => emit('update:open', false),
-    }
-  },
-})
+defineProps<{
+  open: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:open', value: boolean): void
+}>()
+
+const close = () => emit('update:open', false)
 </script>
 
 <style scoped>

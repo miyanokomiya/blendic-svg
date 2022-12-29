@@ -41,12 +41,13 @@ Copyright (C) 2021, Tomoya Komiyama.
   </svg>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  props: {
-    flipped: { type: Boolean, default: false },
-  },
-})
+<script lang="ts" setup>
+withDefaults(
+  defineProps<{
+    flipped?: boolean
+  }>(),
+  {
+    flipped: false,
+  }
+)
 </script>

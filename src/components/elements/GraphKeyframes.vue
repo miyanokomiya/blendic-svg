@@ -63,8 +63,9 @@ Copyright (C) 2021, Tomoya Komiyama.
   </g>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, PropType, watch } from 'vue'
+<script lang="ts" setup>
+import GraphKeyPoints from '/@/components/elements/molecules/GraphKeyPoints.vue'
+import { computed, watch } from 'vue'
 import { IdMap, toMap } from '/@/models'
 import {
   CurveSelectedState,
@@ -74,132 +75,118 @@ import {
   KeyframeSelectedState,
 } from '/@/models/keyframe'
 import { getKeyframeMapByTargetId } from '/@/utils/animations'
-import GraphKeyPoints from '/@/components/elements/molecules/GraphKeyPoints.vue'
 import { getKeyframePropsMap, splitKeyframeProps } from '/@/utils/keyframes'
 import { flatKeyListMap, getFirstProp } from '/@/utils/commons'
 import { useKeysCache } from '/@/composables/cache'
 import { TargetPropsState } from '/@/composables/stores/targetProps'
 
-export default defineComponent({
-  components: {
-    GraphKeyPoints,
-  },
-  props: {
-    keyframeMapByFrame: {
-      type: Object as PropType<IdMap<KeyframeBase[]>>,
-      default: () => ({}),
-    },
-    selectedKeyframeMap: {
-      type: Object as PropType<IdMap<KeyframeSelectedState>>,
-      default: () => ({}),
-    },
-    colorMap: {
-      type: Object as PropType<{ [key: string]: string }>,
-      default: () => ({}),
-    },
-    propsStateMap: {
-      type: Object as PropType<IdMap<TargetPropsState>>,
-      default: () => ({}),
-    },
-  },
-  emits: ['select', 'shift-select', 'down-control'],
-  setup(props, { emit }) {
-    const keyframeMapByTargetId = computed(() => {
-      return getKeyframeMapByTargetId(
-        Object.keys(props.keyframeMapByFrame).flatMap((frame) => {
-          return props.keyframeMapByFrame[frame]
-        })
-      )
+const props = withDefaults(
+  defineProps<{
+    keyframeMapByFrame?: IdMap<KeyframeBase[]>
+    selectedKeyframeMap?: IdMap<KeyframeSelectedState>
+    colorMap?: { [key: string]: string }
+    propsStateMap?: IdMap<TargetPropsState>
+  }>(),
+  {
+    keyframeMapByFrame: () => ({}),
+    selectedKeyframeMap: () => ({}),
+    colorMap: () => ({}),
+    propsStateMap: () => ({}),
+  }
+)
+
+const emit = defineEmits<{
+  (e: 'select', keyframeId: string, state: KeyframeSelectedState): void
+  (e: 'shift-select', keyframeId: string, state: KeyframeSelectedState): void
+  (
+    e: 'down-control',
+    keyframeId: string,
+    pointKey: string,
+    state: CurveSelectedState
+  ): void
+}>()
+
+const keyframeMapByTargetId = computed(() => {
+  return getKeyframeMapByTargetId(
+    Object.keys(props.keyframeMapByFrame).flatMap((frame) => {
+      return props.keyframeMapByFrame[frame]
     })
-
-    const keyframePointsMapByTargetId = computed(() => {
-      return Object.keys(keyframeMapByTargetId.value).reduce<
-        IdMap<KeyframeBaseProps<KeyframeBase[]>>
-      >((p, c) => {
-        const list = keyframeMapByTargetId.value[c]
-        p[c] = getKeyframePropsMap(
-          list,
-          getFirstProp(list, 'name', 'bone' as KeyframeName)
-        )
-        p[c].props = Object.keys(p[c].props).reduce<{
-          [key: string]: KeyframeBase[]
-        }>((props, key) => {
-          if (p[c].props[key].length > 0) props[key] = p[c].props[key]
-          return props
-        }, {})
-        return p
-      }, {})
-    })
-
-    const keyframePointsMapByTargetIdFilteredFocused = computed(() => {
-      return splitKeyframeProps(
-        keyframePointsMapByTargetId.value,
-        isFocusedProp
-      )
-    })
-
-    function isFocusedProp(targetId: string, key: string): boolean {
-      return props.propsStateMap[targetId]?.props[key] === 'selected'
-    }
-
-    function select(keyframeId: string, state: KeyframeSelectedState) {
-      emit('select', keyframeId, state)
-    }
-    function shiftSelect(keyframeId: string, state: KeyframeSelectedState) {
-      emit('shift-select', keyframeId, state)
-    }
-
-    function downControl(
-      keyframeId: string,
-      pointKey: string,
-      state: CurveSelectedState
-    ) {
-      emit('down-control', keyframeId, pointKey, state)
-    }
-
-    // Cache unselected keyframes
-    // => These keyframes are needless to update and improve performance to rendering.
-    const keyframePointsMapByTargetIdCache = useKeysCache(
-      () => toMap(flatKeyListMap(props.keyframeMapByFrame)),
-      keyframePointsMapByTargetId
-    )
-    watch(
-      () => props.selectedKeyframeMap,
-      keyframePointsMapByTargetIdCache.updateCache
-    )
-
-    function isSelected(targetId: string, key: string): boolean {
-      return keyframePointsMapByTargetId.value[targetId].props[key].some(
-        (k) => props.selectedKeyframeMap[k.id]?.props[key]
-      )
-    }
-    function getKeyframes(targetId: string, key: string): KeyframeBase[] {
-      if (isSelected(targetId, key)) {
-        return keyframePointsMapByTargetId.value[targetId].props[key]
-      }
-
-      const list =
-        keyframePointsMapByTargetIdCache.cache.value?.[targetId]?.props[key]
-
-      if (!list) {
-        console.warn(
-          `Invalid cache for id: ${targetId} key: ${key}: Fallback to original data.`
-        )
-        return keyframePointsMapByTargetId.value![targetId].props[key]
-      }
-
-      return list
-    }
-
-    return {
-      keyframePointsMapByTargetId,
-      keyframePointsMapByTargetIdFilteredFocused,
-      select,
-      shiftSelect,
-      downControl,
-      getKeyframes,
-      isFocusedProp,
-    }
-  },
+  )
 })
+
+const keyframePointsMapByTargetId = computed(() => {
+  return Object.keys(keyframeMapByTargetId.value).reduce<
+    IdMap<KeyframeBaseProps<KeyframeBase[]>>
+  >((p, c) => {
+    const list = keyframeMapByTargetId.value[c]
+    p[c] = getKeyframePropsMap(
+      list,
+      getFirstProp(list, 'name', 'bone' as KeyframeName)
+    )
+    p[c].props = Object.keys(p[c].props).reduce<{
+      [key: string]: KeyframeBase[]
+    }>((props, key) => {
+      if (p[c].props[key].length > 0) props[key] = p[c].props[key]
+      return props
+    }, {})
+    return p
+  }, {})
+})
+
+const keyframePointsMapByTargetIdFilteredFocused = computed(() => {
+  return splitKeyframeProps(keyframePointsMapByTargetId.value, isFocusedProp)
+})
+
+function isFocusedProp(targetId: string, key: string): boolean {
+  return props.propsStateMap[targetId]?.props[key] === 'selected'
+}
+
+function select(keyframeId: string, state: KeyframeSelectedState) {
+  emit('select', keyframeId, state)
+}
+function shiftSelect(keyframeId: string, state: KeyframeSelectedState) {
+  emit('shift-select', keyframeId, state)
+}
+
+function downControl(
+  keyframeId: string,
+  pointKey: string,
+  state: CurveSelectedState
+) {
+  emit('down-control', keyframeId, pointKey, state)
+}
+
+// Cache unselected keyframes
+// => These keyframes are needless to update and improve performance to rendering.
+const keyframePointsMapByTargetIdCache = useKeysCache(
+  () => toMap(flatKeyListMap(props.keyframeMapByFrame)),
+  keyframePointsMapByTargetId
+)
+watch(
+  () => props.selectedKeyframeMap,
+  keyframePointsMapByTargetIdCache.updateCache
+)
+
+function isSelected(targetId: string, key: string): boolean {
+  return keyframePointsMapByTargetId.value[targetId].props[key].some(
+    (k) => props.selectedKeyframeMap[k.id]?.props[key]
+  )
+}
+function getKeyframes(targetId: string, key: string): KeyframeBase[] {
+  if (isSelected(targetId, key)) {
+    return keyframePointsMapByTargetId.value[targetId].props[key]
+  }
+
+  const list =
+    keyframePointsMapByTargetIdCache.cache.value?.[targetId]?.props[key]
+
+  if (!list) {
+    console.warn(
+      `Invalid cache for id: ${targetId} key: ${key}: Fallback to original data.`
+    )
+    return keyframePointsMapByTargetId.value![targetId].props[key]
+  }
+
+  return list
+}
 </script>

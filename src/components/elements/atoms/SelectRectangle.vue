@@ -29,27 +29,19 @@ Copyright (C) 2021, Tomoya Komiyama.
   />
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  props: {
-    x: {
-      type: Number,
-      default: 0,
-    },
-    y: {
-      type: Number,
-      default: 0,
-    },
-    width: {
-      type: Number,
-      default: 100,
-    },
-    height: {
-      type: Number,
-      default: 100,
-    },
-  },
-})
+<script lang="ts" setup>
+withDefaults(
+  defineProps<{
+    x?: number
+    y?: number
+    width?: number
+    height?: number
+  }>(),
+  {
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  }
+)
 </script>

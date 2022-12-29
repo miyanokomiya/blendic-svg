@@ -126,19 +126,8 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { GRAPH_VALUE_TYPE, ValueType } from '/@/models/graphNode'
-import TextInput from '/@/components/atoms/TextInput.vue'
-import SliderInput from '/@/components/atoms/SliderInput.vue'
-import SelectField from '/@/components/atoms/SelectField.vue'
-import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
-import InlineField from '/@/components/atoms/InlineField.vue'
-import ColorPicker from '/@/components/molecules/ColorPicker.vue'
-import ColorRect from '/@/components/atoms/ColorRect.vue'
-import FixedContainer from '/@/components/atoms/FixedContainer.vue'
-import OutsideEventContainer from '/@/components/atoms/OutsideEventContainer.vue'
-import GraphNodeDataFieldTransform from '/@/components/atoms/GraphNodeDataFieldTransform.vue'
-import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import { HSVA, hsvaToTransform } from '/@/utils/color'
 import { posedHsva } from '/@/utils/attributesResolver'
 import { GraphEnumMap, GraphEnumMapKey } from '/@/models/graphNodeEnums'
@@ -158,84 +147,73 @@ const editableTypes: { [key in keyof typeof GRAPH_VALUE_TYPE]?: boolean } = {
   [GRAPH_VALUE_TYPE.TEXT]: true,
   [GRAPH_VALUE_TYPE.TRANSFORM]: true,
 }
+</script>
 
-export default defineComponent({
-  components: {
-    TextInput,
-    SliderInput,
-    SelectField,
-    CheckboxInput,
-    InlineField,
-    ColorPicker,
-    ColorRect,
-    FixedContainer,
-    OutsideEventContainer,
-    GraphNodeDataFieldTransform,
-    SelectWithPicker,
-  },
-  props: {
-    modelValue: { type: null, required: true },
-    label: { type: String, required: true },
-    type: {
-      type: Object as PropType<ValueType>,
-      required: true,
-    },
-    disabled: { type: Boolean, default: false },
-  },
-  emits: ['update:model-value', 'start-pick-bone'],
-  setup(props, { emit }) {
-    function update(val: any, seriesKey?: string) {
-      emit('update:model-value', val, seriesKey)
-    }
+<script lang="ts" setup>
+import TextInput from '/@/components/atoms/TextInput.vue'
+import SliderInput from '/@/components/atoms/SliderInput.vue'
+import SelectField from '/@/components/atoms/SelectField.vue'
+import CheckboxInput from '/@/components/atoms/CheckboxInput.vue'
+import InlineField from '/@/components/atoms/InlineField.vue'
+import ColorPicker from '/@/components/molecules/ColorPicker.vue'
+import ColorRect from '/@/components/atoms/ColorRect.vue'
+import FixedContainer from '/@/components/atoms/FixedContainer.vue'
+import OutsideEventContainer from '/@/components/atoms/OutsideEventContainer.vue'
+import GraphNodeDataFieldTransform from '/@/components/atoms/GraphNodeDataFieldTransform.vue'
+import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 
-    const objectOptions = computed(injectGetObjectOptions())
-    const boneOptions = computed(injectGetBoneOptions())
+const props = withDefaults(
+  defineProps<{
+    modelValue: any
+    label: string
+    type: ValueType
+    disabled?: boolean
+  }>(),
+  {
+    disabled: false,
+  }
+)
 
-    const showColorPicker = ref(false)
-    function toggleShowColorPicker() {
-      showColorPicker.value = !showColorPicker.value
-    }
-    function updateByColor(hsva: HSVA, seriesKey?: string) {
-      update(hsvaToTransform(hsva), seriesKey)
-    }
-    const valueTypeKey = computed(() => props.type.type)
-    const valueScale = computed(() => (props.type as any).scale ?? 1)
-    const valueEnumKey = computed<GraphEnumMapKey>(
-      () => (props.type as any).enumKey
-    )
-    const valueEnumOptions = computed(() => {
-      return (GraphEnumMap[valueEnumKey.value] ?? []).map((item) => ({
-        label: `${item.value}: ${item.key}`,
-        value: item.value,
-      }))
-    })
+const emit = defineEmits<{
+  (e: 'update:model-value', val: any, seriesKey?: string): void
+  (e: 'start-pick-bone', val?: PickerOptions): void
+}>()
 
-    const hsva = computed(() => {
-      return valueTypeKey.value === 'COLOR'
-        ? posedHsva(props.modelValue)
-        : undefined
-    })
+function update(val: any, seriesKey?: string) {
+  emit('update:model-value', val, seriesKey)
+}
 
-    return {
-      editableTypes,
-      update,
-      objectOptions,
-      boneOptions,
-      valueEnumOptions,
-      valueTypeKey,
-      valueScale,
-      valueEnumKey,
+const objectOptions = computed(injectGetObjectOptions())
+const boneOptions = computed(injectGetBoneOptions())
 
-      showColorPicker,
-      toggleShowColorPicker,
-      updateByColor,
-      hsva,
-      startPickBone(val?: PickerOptions) {
-        emit('start-pick-bone', val)
-      },
-    }
-  },
+const showColorPicker = ref(false)
+function toggleShowColorPicker() {
+  showColorPicker.value = !showColorPicker.value
+}
+function updateByColor(hsva: HSVA, seriesKey?: string) {
+  update(hsvaToTransform(hsva), seriesKey)
+}
+const valueTypeKey = computed(() => props.type.type)
+const valueScale = computed(() => (props.type as any).scale ?? 1)
+const valueEnumKey = computed<GraphEnumMapKey>(
+  () => (props.type as any).enumKey
+)
+const valueEnumOptions = computed(() => {
+  return (GraphEnumMap[valueEnumKey.value] ?? []).map((item) => ({
+    label: `${item.value}: ${item.key}`,
+    value: item.value,
+  }))
 })
+
+const hsva = computed(() => {
+  return valueTypeKey.value === 'COLOR'
+    ? posedHsva(props.modelValue)
+    : undefined
+})
+
+function startPickBone(val?: PickerOptions) {
+  emit('start-pick-bone', val)
+}
 </script>
 
 <style scoped>

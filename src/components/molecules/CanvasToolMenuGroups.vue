@@ -29,20 +29,18 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
+<script lang="ts" setup>
 import DropdownMenu from '/@/components/molecules/DropdownMenu.vue'
 import { ToolMenuGroup } from '/@/composables/modes/types'
 
-export default defineComponent({
-  components: { DropdownMenu },
-  props: {
-    groups: {
-      type: Array as PropType<ToolMenuGroup[]>,
-      default: () => [],
-    },
-  },
-})
+withDefaults(
+  defineProps<{
+    groups?: ToolMenuGroup[]
+  }>(),
+  {
+    groups: () => [],
+  }
+)
 </script>
 
 <style scoped>

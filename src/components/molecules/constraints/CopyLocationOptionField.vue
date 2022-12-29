@@ -67,92 +67,113 @@ Copyright (C) 2021, Tomoya Komiyama.
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, computed } from 'vue'
-import { BoneConstraintOptions } from '/@/utils/constraints'
+<script lang="ts" setup>
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import SelectField from '/@/components/atoms/SelectField.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'
 import KeyDot from '/@/components/atoms/KeyDot.vue'
 import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import ToggleButtons from '/@/components/atoms/ToggleButtons.vue'
+import { computed } from 'vue'
+import { BoneConstraintOptions } from '/@/utils/constraints'
 import { SpaceType } from '/@/models'
-import {
-  getProps,
-  spaceTypeOptions,
-} from '/@/components/molecules/constraints/common'
+import { spaceTypeOptions } from '/@/components/molecules/constraints/common'
 import { PickerOptions } from '/@/composables/modes/types'
+import {
+  KeyframeConstraintPropKey,
+  KeyframePropsStatus,
+} from '/@/models/keyframe'
 
-export default defineComponent({
-  components: {
-    SliderInput,
-    SelectField,
-    InlineField,
-    KeyDot,
-    SelectWithPicker,
-    ToggleButtons,
+const props = withDefaults(
+  defineProps<{
+    modelValue: BoneConstraintOptions['COPY_LOCATION']
+    propsUpdatedStatus?: Partial<{
+      [key in KeyframeConstraintPropKey]: boolean
+    }>
+    boneOptions?: { value: string; label: string }[]
+    keyframeStatusMap?: KeyframePropsStatus['props']
+    createKeyframe?: (key: KeyframeConstraintPropKey) => void
+    deleteKeyframe?: (key: KeyframeConstraintPropKey) => void
+  }>(),
+  {
+    propsUpdatedStatus: () => ({}),
+    boneOptions: () => [],
+    keyframeStatusMap: () => ({}),
+    createKeyframe: () => {},
+    deleteKeyframe: () => {},
+  }
+)
+
+const emit = defineEmits<{
+  (
+    e: 'update:model-value',
+    val: Partial<BoneConstraintOptions['COPY_LOCATION']>,
+    seriesKey?: string
+  ): void
+  (e: 'start-pick-bone', val?: PickerOptions): void
+}>()
+
+function emitUpdated(
+  val: Partial<BoneConstraintOptions['COPY_LOCATION']>,
+  seriesKey?: string
+) {
+  emit('update:model-value', { ...props.modelValue, ...val }, seriesKey)
+}
+
+const labelWidth = '100px'
+
+function updateTargetId(val: string) {
+  emitUpdated({ targetId: val })
+}
+
+function updateTargetSpaceType(val: SpaceType) {
+  emitUpdated({ targetSpaceType: val })
+}
+
+function updateOwnerSpaceType(val: SpaceType) {
+  emitUpdated({ ownerSpaceType: val })
+}
+
+function updateInfluence(val: number, seriesKey?: string) {
+  emitUpdated({ influence: val }, seriesKey)
+}
+
+const axesOptions = [
+  { value: 'x', label: 'X' },
+  { value: 'y', label: 'Y' },
+]
+
+const copyAxes = computed({
+  get() {
+    return [
+      props.modelValue.copyX ? 'x' : '',
+      props.modelValue.copyY ? 'y' : '',
+    ].filter((v) => v)
   },
-  props: getProps<BoneConstraintOptions['COPY_LOCATION']>(),
-  emits: ['update:model-value', 'start-pick-bone'],
-  setup(props, { emit }) {
-    function emitUpdated(
-      val: Partial<BoneConstraintOptions['COPY_LOCATION']>,
-      seriesKey?: string
-    ) {
-      emit('update:model-value', { ...props.modelValue, ...val }, seriesKey)
-    }
-
-    return {
-      labelWidth: '100px',
-      spaceTypeOptions,
-      updateTargetId(val: string) {
-        emitUpdated({ targetId: val })
-      },
-      updateTargetSpaceType(val: SpaceType) {
-        emitUpdated({ targetSpaceType: val })
-      },
-      updateOwnerSpaceType(val: SpaceType) {
-        emitUpdated({ ownerSpaceType: val })
-      },
-      updateInfluence(val: number, seriesKey?: string) {
-        emitUpdated({ influence: val }, seriesKey)
-      },
-      axesOptions: [
-        { value: 'x', label: 'X' },
-        { value: 'y', label: 'Y' },
-      ],
-      copyAxes: computed({
-        get() {
-          return [
-            props.modelValue.copyX ? 'x' : '',
-            props.modelValue.copyY ? 'y' : '',
-          ].filter((v) => v)
-        },
-        set(val: string[]) {
-          emitUpdated({
-            copyX: val.includes('x'),
-            copyY: val.includes('y'),
-          })
-        },
-      }),
-      invertAxes: computed({
-        get() {
-          return [
-            props.modelValue.invertX ? 'x' : '',
-            props.modelValue.invertY ? 'y' : '',
-          ].filter((v) => v)
-        },
-        set(val: string[]) {
-          emitUpdated({
-            invertX: val.includes('x'),
-            invertY: val.includes('y'),
-          })
-        },
-      }),
-      startPickBone(val?: PickerOptions) {
-        emit('start-pick-bone', val)
-      },
-    }
+  set(val: string[]) {
+    emitUpdated({
+      copyX: val.includes('x'),
+      copyY: val.includes('y'),
+    })
   },
 })
+
+const invertAxes = computed({
+  get() {
+    return [
+      props.modelValue.invertX ? 'x' : '',
+      props.modelValue.invertY ? 'y' : '',
+    ].filter((v) => v)
+  },
+  set(val: string[]) {
+    emitUpdated({
+      invertX: val.includes('x'),
+      invertY: val.includes('y'),
+    })
+  },
+})
+
+function startPickBone(val?: PickerOptions) {
+  emit('start-pick-bone', val)
+}
 </script>

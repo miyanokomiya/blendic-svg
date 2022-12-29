@@ -32,8 +32,8 @@ Copyright (C) 2021, Tomoya Komiyama.
     ></rect>
     <g :id="elementRoot.id">
       <NativeElement
-        v-for="node in elementRoot.children"
-        :key="getId(node)"
+        v-for="node in elemntChildren"
+        :key="node.id"
         :element="node"
       />
     </g>
@@ -48,22 +48,18 @@ import {
   getGraphResolvedElementTree,
   getPosedElementTree,
 } from '/@/utils/poseResolver'
-import { isPlainText, parseViewBoxFromStr } from '/@/utils/elements'
+import { parseViewBoxFromStr } from '/@/utils/elements'
 import { useSettings } from '/@/composables/settings'
 import type { CanvasMode } from '/@/composables/modes/types'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import { useCanvasStore } from '/@/store/canvas'
 import { useStore } from '/@/store'
 import { injectScale } from '/@/composables/canvas'
-
-function getId(elm: ElementNode | string): string {
-  if (isPlainText(elm)) return elm
-  return elm.id
-}
 </script>
 
 <script lang="ts" setup>
 import NativeElement from '/@/components/elements/atoms/NativeElement.vue'
+import { isPlainText } from '/@/utils/elements'
 
 const props = withDefaults(
   defineProps<{
@@ -147,4 +143,9 @@ const viewboxStrokeDasharray = computed(() =>
 )
 
 const elementRoot = graphResolvedElement
+// Plain text shouldn't exist right under the SVG root
+const elemntChildren = computed(
+  () =>
+    elementRoot.value?.children.filter((c) => !isPlainText(c)) as ElementNode[]
+)
 </script>

@@ -18,9 +18,52 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { shallowMount } from '@vue/test-utils'
-import { useGetBBox } from '/@/composables/canvas'
+import { centerizeView, useGetBBox } from '/@/composables/canvas'
 
 describe('src/composables/canvas.ts', () => {
+  describe('centerizeView', () => {
+    it('should return view parameters to centerize the rectangle', () => {
+      const viewRect = { width: 100, height: 100 } as const
+      expect(
+        centerizeView({ x: 50, y: 50, width: 40, height: 20 }, viewRect)
+      ).toEqual({
+        viewOrigin: { x: 50, y: 40 },
+        scale: 0.4,
+      })
+      expect(
+        centerizeView({ x: 50, y: 50, width: 20, height: 40 }, viewRect)
+      ).toEqual({
+        viewOrigin: { x: 40, y: 50 },
+        scale: 0.4,
+      })
+      expect(
+        centerizeView({ x: 50, y: 50, width: 200, height: 120 }, viewRect)
+      ).toEqual({
+        viewOrigin: { x: 50, y: 10 },
+        scale: 2,
+      })
+      expect(
+        centerizeView({ x: 50, y: 50, width: 120, height: 200 }, viewRect)
+      ).toEqual({
+        viewOrigin: { x: 10, y: 50 },
+        scale: 2,
+      })
+    })
+    it('should apply scale reducer if it is supplied', () => {
+      const viewRect = { width: 100, height: 100 } as const
+      expect(
+        centerizeView(
+          { x: 0, y: 0, width: 100, height: 100 },
+          viewRect,
+          () => 2
+        )
+      ).toEqual({
+        viewOrigin: { x: -50, y: -50 },
+        scale: 2,
+      })
+    })
+  })
+
   describe('useGetBBox', () => {
     it('should use getBBox if the method is found', () => {
       const wrapper = shallowMount(

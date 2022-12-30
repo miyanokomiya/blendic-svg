@@ -18,7 +18,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 */
 
 import { ref, computed, Ref, provide, inject } from 'vue'
-import { IVec2, multi, sub, add, getRectCenter, IRectangle } from 'okageo'
+import {
+  IVec2,
+  multi,
+  sub,
+  add,
+  getRectCenter,
+  IRectangle,
+  clamp,
+} from 'okageo'
 import * as helpers from '/@/utils/helpers'
 import { scaleRate } from '../models'
 import { expandRect, getNormalRectangle } from '/@/utils/geometry'
@@ -32,41 +40,31 @@ export interface MoveInfo {
 
 export type Dragtype = '' | 'rect-select'
 
-function centerizeView(
+export function centerizeView(
   targetRect: IRectangle,
   viewSize: {
     width: number
     height: number
-  }
+  },
+  reduceScale: (val: number) => number = (v) => v
 ): {
   viewOrigin: IVec2
   scale: number
 } {
   const rateW = viewSize.width / targetRect.width
   const rateH = viewSize.height / targetRect.height
+  const scale = rateW < rateH ? reduceScale(1 / rateW) : reduceScale(1 / rateH)
 
-  if (rateW < rateH) {
-    const scale = 1 / rateW
-    return {
-      viewOrigin: {
-        x: targetRect.x,
-        y:
-          targetRect.y +
-          ((targetRect.height / scale - viewSize.height) / 2) * scale,
-      },
-      scale,
-    }
-  } else {
-    const scale = 1 / rateH
-    return {
-      viewOrigin: {
-        x:
-          targetRect.x +
-          ((targetRect.width / scale - viewSize.width) / 2) * scale,
-        y: targetRect.y,
-      },
-      scale,
-    }
+  return {
+    viewOrigin: {
+      x:
+        targetRect.x +
+        ((targetRect.width / scale - viewSize.width) / 2) * scale,
+      y:
+        targetRect.y +
+        ((targetRect.height / scale - viewSize.height) / 2) * scale,
+    },
+    scale,
   }
 }
 
@@ -104,6 +102,9 @@ export function useSvgCanvas(
     viewSize?: Ref<Size>
   } = {}
 ) {
+  const scaleMin = options.scaleMin ?? 0.1
+  const scaleMax = options.scaleMax ?? 10
+
   const scale = options.scale ?? ref(1)
   const viewOrigin = options.viewOrigin ?? ref<IVec2>({ x: 0, y: 0 })
 
@@ -229,9 +230,9 @@ export function useSvgCanvas(
       scale.value = Math.min(
         Math.max(
           scale.value * Math.pow(scaleRate, e.deltaY > 0 ? 1 : -1),
-          options.scaleMin ?? 0
+          scaleMin
         ),
-        options.scaleMax ?? 10
+        scaleMax
       )
 
       if (options.scaleAtFixY) {
@@ -265,7 +266,8 @@ export function useSvgCanvas(
 
       const ret = centerizeView(
         expandRect(rect, 10 / scale.value),
-        viewSize.value
+        viewSize.value,
+        (v) => clamp(1, scaleMax, v)
       )
       scale.value = ret.scale
       viewOrigin.value = fixOrigin(ret.viewOrigin)

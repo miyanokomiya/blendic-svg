@@ -133,6 +133,16 @@ export function createStore(historyStore: HistoryStore) {
     constraintEntities.init(fromEntityList(constraints))
     armatureSelectable.restore(armatureSelectad)
     boneSelectable.restore(boneSelectad)
+
+    // Make sure to have an armature and select it
+    if (armatureEntities.entities.value.allIds.length === 0) {
+      createDefaultEntities()
+    }
+    if (!lastSelectedArmatureId.value) {
+      armatureSelectable.restore([
+        [armatureEntities.entities.value.allIds[0], true],
+      ])
+    }
   }
 
   function exportState() {

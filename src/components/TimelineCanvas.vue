@@ -266,6 +266,6 @@ svg {
 .command-exam-panel {
   position: absolute;
   bottom: 4px;
-  right: 8px;
+  left: 4px;
 }
 </style>

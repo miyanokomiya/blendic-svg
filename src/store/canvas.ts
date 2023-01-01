@@ -59,14 +59,11 @@ export function createStore(
   elementStore: ElementStore,
   animationStore: AnimationStore
 ) {
-  const canvasModeStore = useValueStore<CanvasMode>(
-    'Canvas Mode',
-    () => 'object'
-  )
+  const canvasModeStore = useValueStore<CanvasMode>('Canvas Mode', () => 'edit')
 
   historyStore.defineReducers(canvasModeStore.reducers)
 
-  const pastCanvasMode = ref<CanvasMode>('edit')
+  const pastCanvasMode = ref<CanvasMode>('pose')
   const axisGridInfo = ref<AxisGridInfo>()
   const lastSelectedBoneSpace = ref<{ radian: number; origin: IVec2 }>()
   const editTransform = ref<Transform>()
@@ -81,7 +78,7 @@ export function createStore(
 
   function initState(canvasMode: CanvasMode) {
     canvasModeStore.restore(canvasMode)
-    pastCanvasMode.value = canvasMode !== 'edit' ? 'edit' : 'object'
+    pastCanvasMode.value = canvasMode !== 'edit' ? 'edit' : 'pose'
     axisGridInfo.value = undefined
     lastSelectedBoneSpace.value = undefined
   }
@@ -164,26 +161,11 @@ export function createStore(
 
   const axisGridLine = computed(() => axisGridInfo.value)
 
-  function toggleCanvasMode(ctrl = false): boolean {
-    if (ctrl) {
-      return ctrlToggleCanvasMode()
-    } else if (canvasMode.value === 'edit') {
+  function toggleCanvasMode(_ctrl = false): boolean {
+    if (canvasMode.value === 'edit') {
       return changeCanvasMode(pastCanvasMode.value)
     } else {
       return changeCanvasMode('edit')
-    }
-  }
-  function ctrlToggleCanvasMode(): boolean {
-    if (canvasMode.value === 'edit') {
-      if (pastCanvasMode.value === 'object') {
-        return changeCanvasMode('pose')
-      } else {
-        return changeCanvasMode('object')
-      }
-    } else if (canvasMode.value === 'object') {
-      return changeCanvasMode('pose')
-    } else {
-      return changeCanvasMode('object')
     }
   }
   function setCanvasMode(canvasMode: CanvasMode) {
@@ -210,11 +192,7 @@ export function createStore(
         setCanvasMode(canvasMode)
       }
     } else {
-      if (indexStore.lastSelectedArmature.value) {
-        setCanvasMode(canvasMode)
-      } else {
-        setCanvasMode('object')
-      }
+      setCanvasMode(canvasMode)
     }
 
     return canvasMode === canvasModeStore.state.value

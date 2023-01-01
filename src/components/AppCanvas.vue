@@ -398,7 +398,7 @@ const commandExamList = canvasStore.commandExamList
 }
 .command-exam-panel {
   position: absolute;
-  top: 24px;
+  bottom: 4px;
   left: 4px;
 }
 svg {

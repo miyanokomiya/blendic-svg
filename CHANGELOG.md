@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.18.0] - 2023-01-01
+### Breaking
+- Stop multiple armature support
+
 ### Added
 - Scroll to the selected tree node automatically
 - Expand tree node when it's selected

@@ -56,18 +56,8 @@ describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
     })
   })
 
-  describe('handle state: object', () => {
-    it('should move to ObjectGroupState', async () => {
-      const ctx = getMockCtx()
-      const sm = useModeStateMachine(ctx, useWeightGroupState)
-      await sm.ready
-      await sm.handleEvent({
-        type: 'state',
-        data: { name: 'object' },
-      })
-      expect(sm.getStateSummary().label).toBe('Object:Default')
-    })
-    it('should move to EditGroupState', async () => {
+  describe('handle state', () => {
+    it('edit: should move to EditGroupState', async () => {
       const ctx = getMockCtx()
       const sm = useModeStateMachine(ctx, useWeightGroupState)
       await sm.ready
@@ -77,7 +67,7 @@ describe('src/composables/modeStates/appCanvas/editGroupState.ts', () => {
       })
       expect(sm.getStateSummary().label).toBe('Edit:Default')
     })
-    it('should move to PoseGroupState', async () => {
+    it('pose: should move to PoseGroupState', async () => {
       const ctx = getMockCtx()
       const sm = useModeStateMachine(ctx, useWeightGroupState)
       await sm.ready

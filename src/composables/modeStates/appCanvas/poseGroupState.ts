@@ -18,7 +18,6 @@ Copyright (C) 2022, Tomoya Komiyama.
 */
 
 import { useGroupState } from '/@/composables/modeStates/core'
-import { useObjectGroupState } from '/@/composables/modeStates/appCanvas/objectGroupState'
 import { useDefaultState } from '/@/composables/modeStates/appCanvas/poseMode/defaultState'
 import {
   AppCanvasEvent,
@@ -47,8 +46,6 @@ const state: AppCanvasGroupState = {
     switch (e.type) {
       case 'state':
         switch (e.data.name) {
-          case 'object':
-            return useObjectGroupState
           case 'edit':
             return useEditGroupState
           case 'weight':

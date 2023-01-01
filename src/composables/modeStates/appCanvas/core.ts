@@ -19,7 +19,6 @@ Copyright (C) 2022, Tomoya Komiyama.
 
 import { PickerOptions } from '/@/composables/modes/types'
 import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/core'
-import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
 import { PoseStateContext } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { WeightStateContext } from '/@/composables/modeStates/appCanvas/weightMode/core'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
@@ -39,7 +38,6 @@ export interface AppCanvasState
   extends ModeStateBase<AppCanvasStateContext, AppCanvasEvent> {}
 
 export interface AppCanvasGroupStateContext extends ModeStateContextBase {
-  getObjectContext: () => ObjectStateContext
   getEditContext: () => EditStateContext
   getPoseContext: () => PoseStateContext
   getWeightContext: () => WeightStateContext

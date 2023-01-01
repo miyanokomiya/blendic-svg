@@ -19,10 +19,27 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { createStore } from '/@/store/index'
 import { useHistoryStore } from '/@/composables/stores/history'
-import { getBone } from '/@/models'
+import { getArmature, getBone } from '/@/models'
 import { getConstraint } from '/@/utils/constraints'
 
 describe('src/store/index.ts', () => {
+  describe('initState', () => {
+    it('should create initial armature if no armature supplied', () => {
+      const target = createStore(useHistoryStore())
+      target.initState([], [], [], [], [])
+      expect(target.armatures.value.map((a) => a.id)).toEqual([
+        'initial-armature',
+      ])
+      expect(target.lastSelectedArmatureId.value).toBe('initial-armature')
+    })
+
+    it('should select an armature if no armature selected', () => {
+      const target = createStore(useHistoryStore())
+      target.initState([getArmature({ id: 'a' })], [], [], [], [])
+      expect(target.lastSelectedArmatureId.value).toBe('a')
+    })
+  })
+
   describe('bonesByArmatureId', () => {
     it('should return bones by armature id', () => {
       const target = createStore(useHistoryStore())

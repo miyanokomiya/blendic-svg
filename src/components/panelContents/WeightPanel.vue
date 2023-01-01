@@ -21,9 +21,6 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="weight-panel">
     <h4>Weight Paint</h4>
     <form v-if="canvasMode === 'weight' && targetActor" @submit.prevent>
-      <BlockField label="Armature">
-        <SelectField v-model="armatureId" :options="armatureOptions" />
-      </BlockField>
       <template v-if="targetElement">
         <template v-if="targetElement.tag === 'svg'">
           <BlockField label="Viewbox">
@@ -70,7 +67,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts" setup>
-import SelectField from '/@/components/atoms/SelectField.vue'
 import BlockField from '/@/components/atoms/BlockField.vue'
 import SelectWithPicker from '/@/components/molecules/SelectWithPicker.vue'
 import { computed } from 'vue'
@@ -94,23 +90,9 @@ const targetElement = computed(() => {
   return elementStore.lastSelectedElement.value
 })
 
-const armatureId = computed({
-  get(): string {
-    return elementStore.lastSelectedActor.value?.armatureId ?? ''
-  },
-  set(val: string) {
-    elementStore.updateArmatureId(val)
-  },
-})
-
 const currentArmature = computed(() => {
-  return store.armatures.value.find((a) => a.id === armatureId.value)
-})
-
-const armatureOptions = computed(() => {
-  return sortByValue(
-    store.armatures.value.map((a) => ({ value: a.id, label: a.name })),
-    'label'
+  return store.armatures.value.find(
+    (a) => a.id === elementStore.lastSelectedActor.value?.armatureId
   )
 })
 

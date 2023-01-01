@@ -3,9 +3,8 @@ import {
   AppCanvasEvent,
   AppCanvasGroupStateContext,
 } from '/@/composables/modeStates/appCanvas/core'
+import { useEditGroupState } from '/@/composables/modeStates/appCanvas/editGroupState'
 import { EditStateContext } from '/@/composables/modeStates/appCanvas/editMode/core'
-import { useObjectGroupState } from '/@/composables/modeStates/appCanvas/objectGroupState'
-import { ObjectStateContext } from '/@/composables/modeStates/appCanvas/objectMode/core'
 import { PoseStateContext } from '/@/composables/modeStates/appCanvas/poseMode/core'
 import { WeightStateContext } from '/@/composables/modeStates/appCanvas/weightMode/core'
 import { CanvasStateContext } from '/@/composables/modeStates/commons'
@@ -44,14 +43,12 @@ type Option = {
 }
 
 export function useCanvasStateMachine(options: Option) {
-  const objectCtx = createObjectContext(options)
   const editCtx = createEditContext(options)
   const poseCtx = createPoseContext(options)
   const weightCtx = createWeightContext(options)
 
   const ctx: AppCanvasGroupStateContext = {
     ...createBaseContext(options),
-    getObjectContext: () => objectCtx,
     getEditContext: () => editCtx,
     getPoseContext: () => poseCtx,
     getWeightContext: () => weightCtx,
@@ -60,7 +57,7 @@ export function useCanvasStateMachine(options: Option) {
 
   const sm = useModeStateMachine<AppCanvasGroupStateContext, AppCanvasEvent>(
     ctx,
-    useObjectGroupState
+    useEditGroupState
   )
   return { sm }
 }
@@ -70,33 +67,6 @@ function createBaseContext(options: Option): ModeStateContextBase {
     requestPointerLock: options.requestPointerLock,
     exitPointerLock: options.exitPointerLock,
     getTimestamp: () => Date.now(),
-  }
-}
-
-function createObjectContext(options: Option): ObjectStateContext {
-  const { indexStore, canvasStore } = options
-  return {
-    ...createBaseContext(options),
-
-    getArmatures: () => toMap(indexStore.armatures.value),
-    getLastSelectedArmaturesId: () => indexStore.lastSelectedArmatureId.value,
-    selectArmature: indexStore.selectArmature,
-    selectAllArmatures: indexStore.selectAllArmature,
-    addArmature: indexStore.addArmature,
-    deleteArmatures: indexStore.deleteArmature,
-
-    generateUuid: generateUuid,
-
-    setViewport: options.setViewport,
-    panView: options.panView,
-    startDragging: options.startDragging,
-    setRectangleDragging: options.setRectangleDragging,
-    getDraggedRectangle: options.getDraggedRectangle,
-
-    setPopupMenuList: canvasStore.setPopupMenuList,
-    setCommandExams: canvasStore.setCommandExams,
-    pickBone: indexStore.pickBone,
-    startPickBone: indexStore.setBonePicker,
   }
 }
 

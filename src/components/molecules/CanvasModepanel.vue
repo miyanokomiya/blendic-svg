@@ -21,13 +21,6 @@ Copyright (C) 2021, Tomoya Komiyama.
   <div class="cnavas-mode-panel">
     <button
       type="button"
-      :class="{ selected: canvasMode === 'object' }"
-      @click="changeMode('object')"
-    >
-      Object
-    </button>
-    <button
-      type="button"
       :class="{ selected: canvasMode === 'edit' }"
       @click="changeMode('edit')"
     >

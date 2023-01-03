@@ -1519,13 +1519,13 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@playwright/test@^1.28.0":
-  version "1.28.0"
-  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.28.0.tgz#8de83f9d2291bba3f37883e33431b325661720d9"
-  integrity sha512-vrHs5DFTPwYox5SGKq/7TDn/S4q6RA1zArd7uhO6EyP9hj3XgZBBM12ktMbnDQNxh/fL1IUKsTNLxihmsU38lQ==
+"@playwright/test@^1.29.1":
+  version "1.29.1"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.29.1.tgz#f2ed4dc143b9c7825a7ad2703b2f1ac4354e1145"
+  integrity sha512-iQxk2DX5U9wOGV3+/Jh9OHPsw5H3mleUL2S4BgQuwtlAfK3PnKvn38m4Rg9zIViGHVW24opSm99HQm/UFLEy6w==
   dependencies:
     "@types/node" "*"
-    playwright-core "1.28.0"
+    playwright-core "1.29.1"
 
 "@sinclair/typebox@^0.24.1":
   version "0.24.42"
@@ -4462,17 +4462,17 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-playwright-chromium@^1.28.0:
-  version "1.28.0"
-  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.28.0.tgz#9fafa0827607f5594361d1bc707afaee731711b4"
-  integrity sha512-5IUBJShMJMaK6NmRj/7KWdvVqd7J8DqLH0wVdXBs/4MfZUAvByBB35y5v6B33NjlJg3SZGX5alR8TANrcKaJNA==
+playwright-chromium@^1.29.1:
+  version "1.29.1"
+  resolved "https://registry.yarnpkg.com/playwright-chromium/-/playwright-chromium-1.29.1.tgz#405e1e27de82a2b87e366d29d535701e4adeb581"
+  integrity sha512-Mdt15dIcYyM3MBBBKYQPBWzqcjrMcJ0n9v567DmHYgJk4XfJlQ2jQVzdQ1OyM1oKaOZ70CuC60f1fZtH8KglMA==
   dependencies:
-    playwright-core "1.28.0"
+    playwright-core "1.29.1"
 
-playwright-core@1.28.0:
-  version "1.28.0"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.28.0.tgz#61df5c714f45139cca07095eccb4891e520e06f2"
-  integrity sha512-nJLknd28kPBiCNTbqpu6Wmkrh63OEqJSFw9xOfL9qxfNwody7h6/L3O2dZoWQ6Oxcm0VOHjWmGiCUGkc0X3VZA==
+playwright-core@1.29.1:
+  version "1.29.1"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.29.1.tgz#9ec15d61c4bd2f386ddf6ce010db53a030345a47"
+  integrity sha512-20Ai3d+lMkWpI9YZYlxk8gxatfgax5STW8GaMozAHwigLiyiKQrdkt7gaoT9UQR8FIVDg6qVXs9IoZUQrDjIIg==
 
 postcss-selector-parser@^6.0.9:
   version "6.0.10"

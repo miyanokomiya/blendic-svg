@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Add new node to get the length of SVG path
+- Add new node to get the point at the length of SVG path
 
 ## [0.18.0] - 2023-01-01
 ### Breaking

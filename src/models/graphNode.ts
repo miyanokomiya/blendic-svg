@@ -185,6 +185,9 @@ export interface GraphNodes {
   create_object_text: GraphNodeCreateObjectText
   create_object_path: GraphNodeCreateObjectPath
 
+  graph_node_get_path_length: GraphNodeGetPathLength
+  graph_node_get_path_point_at: GraphNodeGetPathPointAt
+
   make_path_m: GraphNodeMakePathM
   make_path_l: GraphNodeMakePathL
   make_path_h: GraphNodeMakePathH
@@ -504,6 +507,21 @@ export interface GraphNodeCreateObjectPath extends GraphNodeBase {
     d: GraphNodeInput<string[]>
   } & {
     [key in keyof GraphNodeCreateObjectInputsBase]: GraphNodeCreateObjectInputsBase[key]
+  }
+}
+
+export interface GraphNodeGetPathLength extends GraphNodeBase {
+  type: 'get_path_length'
+  inputs: {
+    d: GraphNodeInput<string[]>
+  }
+}
+
+export interface GraphNodeGetPathPointAt extends GraphNodeBase {
+  type: 'get_path_point_at'
+  inputs: {
+    d: GraphNodeInput<string[]>
+    distance: GraphNodeInput<number>
   }
 }
 

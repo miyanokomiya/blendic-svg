@@ -17,7 +17,14 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
-import { getDistance, IRectangle } from 'okageo'
+import {
+  getDistance,
+  getPathLengthStructs,
+  getPathPointAtLengthFromStructs,
+  getPathTotalLengthFromStructs,
+  IRectangle,
+  IVec2,
+} from 'okageo'
 import {
   Actor,
   GraphObject,
@@ -36,7 +43,7 @@ import {
   Bone,
 } from '../models'
 import { extractMap, mapReduce, toKeyListMap, toList } from './commons'
-import { useCache, useJITMap } from '/@/composables/cache'
+import { useCache, useJITMap, useMapCache } from '/@/composables/cache'
 import { GraphNodeMap } from '/@/models/graphNode'
 import { multiPoseTransform, posedTransform } from '/@/utils/armatures'
 import { getBoneXRadian } from '/@/utils/geometry'
@@ -356,7 +363,28 @@ export function createGraphNodeContext(
     return namespaces.length > 0 ? `${namespaces.join('-')}-${id}` : id
   }
 
+  const pathLengthCache = useMapCache(
+    (d) => d,
+    (d: string) => getPathLengthStructs(d, 100)
+  )
+
+  function getPathLength(d: string): number {
+    return d ? getPathTotalLengthFromStructs(pathLengthCache.getValue(d)) : 0
+  }
+
+  function getPathPointAt(d: string, distance: number): IVec2 {
+    return d
+      ? getPathPointAtLengthFromStructs(pathLengthCache.getValue(d), distance)
+      : { x: 0, y: 0 }
+  }
+
   return {
+    beginNamespace<T>(name: string, operation: () => T): T {
+      namespaces.push(name)
+      const result = operation()
+      namespaces.pop()
+      return result
+    },
     setTransform(objectId, transform, inherit = false) {
       const target = graphElementMap[objectId]
       if (!target) return
@@ -456,12 +484,8 @@ export function createGraphNodeContext(
       addElement(created)
       return created.id
     },
-    beginNamespace<T>(name: string, operation: () => T): T {
-      namespaces.push(name)
-      const result = operation()
-      namespaces.pop()
-      return result
-    },
+    getPathLength,
+    getPathPointAt,
   }
 }
 

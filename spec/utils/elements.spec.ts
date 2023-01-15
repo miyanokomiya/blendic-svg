@@ -1033,6 +1033,25 @@ describe('utils/elements.ts', () => {
         })
       })
     })
+
+    describe('should return a context to getPathLength', () => {
+      it('to get the lenght of a path', () => {
+        const context = createGraphNodeContext({}, {}, frameInfo)
+        expect(context.getPathLength('')).toEqual(0)
+        expect(context.getPathLength('M0,0 L3,0 L3,4')).toEqual(7)
+      })
+    })
+
+    describe('should return a context to getPathPointAt', () => {
+      it('to get the point at the length of a path', () => {
+        const context = createGraphNodeContext({}, {}, frameInfo)
+        expect(context.getPathPointAt('', 10)).toEqual({ x: 0, y: 0 })
+        expect(context.getPathPointAt('M0,0 L3,0 L3,4', 2)).toEqual({
+          x: 2,
+          y: 0,
+        })
+      })
+    })
   })
 
   describe('isPlainText', () => {

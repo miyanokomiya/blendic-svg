@@ -17,6 +17,7 @@ along with Blendic SVG.  If not, see <https://www.gnu.org/licenses/>.
 Copyright (C) 2021, Tomoya Komiyama.
 */
 
+import { IVec2 } from 'okageo'
 import {
   getTransform,
   GraphObject,
@@ -83,6 +84,7 @@ export interface GraphBoneSummary {
 }
 
 export interface NodeContext<T> {
+  beginNamespace: <T>(prefix: string, operation: () => T) => T
   setTransform: (
     objectId: string,
     transform: Transform | undefined,
@@ -104,7 +106,8 @@ export interface NodeContext<T> {
   cloneObject: (objectId: string, arg?: Partial<T>, idPref?: string) => string
   createCloneGroupObject: (objectId: string, arg?: Partial<T>) => string
   createObject: (tag: string, arg?: Partial<T>) => string
-  beginNamespace: <T>(prefix: string, operation: () => T) => T
+  getPathLength: (d: string) => number
+  getPathPointAt: (d: string, distance: number) => IVec2
 }
 
 export function createBaseNode(

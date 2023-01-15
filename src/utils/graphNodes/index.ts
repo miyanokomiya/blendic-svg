@@ -111,6 +111,9 @@ import * as make_path_s from './nodes/makePathS'
 import * as make_path_a from './nodes/makePathA'
 import * as make_path_z from './nodes/makePathZ'
 
+import * as get_path_length from './nodes/getPathLength'
+import * as get_path_point_at from './nodes/getPathPointAt'
+
 import * as create_object_clip_path from './nodes/createObjectClipPath'
 import * as set_clip_path from './nodes/setClipPath'
 
@@ -210,6 +213,8 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   make_path_s,
   make_path_a,
   make_path_z,
+  get_path_length,
+  get_path_point_at,
 
   not,
   and,
@@ -253,6 +258,8 @@ const MAKE_PATH_SRC: NODE_MENU_OPTION = {
     { label: 'S (Bezier3)', type: 'make_path_s' },
     { label: 'A (Arc)', type: 'make_path_a' },
     { label: 'Z (Close)', type: 'make_path_z' },
+    { label: 'Get Path Length', type: 'get_path_length' },
+    { label: 'Get Path Point At', type: 'get_path_point_at' },
   ],
 }
 
@@ -1339,10 +1346,11 @@ export function createDefaultUnitValueForGenerics(
     case GRAPH_VALUE_TYPE.TEXT:
     case GRAPH_VALUE_TYPE.BONE:
     case GRAPH_VALUE_TYPE.OBJECT:
-    case GRAPH_VALUE_TYPE.D:
     case GRAPH_VALUE_TYPE.INPUT:
     case GRAPH_VALUE_TYPE.OUTPUT:
       return ''
+    case GRAPH_VALUE_TYPE.D:
+      return []
     case GRAPH_VALUE_TYPE.GENERICS:
     case GRAPH_VALUE_TYPE.UNKNOWN:
       return undefined

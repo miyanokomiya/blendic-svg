@@ -1325,6 +1325,7 @@ describe('src/utils/graphNodes/index.ts', () => {
       expect(
         createDefaultUnitValueForGenerics(GRAPH_VALUE_TYPE.VECTOR2)
       ).toEqual({ x: 0, y: 0 })
+      expect(createDefaultUnitValueForGenerics(GRAPH_VALUE_TYPE.D)).toEqual([])
 
       // should cover all types
       Object.values(GRAPH_VALUE_TYPE).forEach((type) => {

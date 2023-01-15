@@ -22,7 +22,6 @@ import { GraphNodeGetPathPointAt } from '/@/models/graphNode'
 import {
   createBaseNode,
   NodeStruct,
-  nodeToCreateObjectProps,
   UNIT_VALUE_TYPES,
 } from '/@/utils/graphNodes/core'
 
@@ -42,7 +41,6 @@ export const struct: NodeStruct<GraphNodeGetPathPointAt> = {
   },
   data: {},
   inputs: {
-    ...nodeToCreateObjectProps.inputs,
     d: {
       type: UNIT_VALUE_TYPES.D,
       default: [],

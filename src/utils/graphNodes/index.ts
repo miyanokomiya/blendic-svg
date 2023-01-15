@@ -1346,10 +1346,11 @@ export function createDefaultUnitValueForGenerics(
     case GRAPH_VALUE_TYPE.TEXT:
     case GRAPH_VALUE_TYPE.BONE:
     case GRAPH_VALUE_TYPE.OBJECT:
-    case GRAPH_VALUE_TYPE.D:
     case GRAPH_VALUE_TYPE.INPUT:
     case GRAPH_VALUE_TYPE.OUTPUT:
       return ''
+    case GRAPH_VALUE_TYPE.D:
+      return []
     case GRAPH_VALUE_TYPE.GENERICS:
     case GRAPH_VALUE_TYPE.UNKNOWN:
       return undefined

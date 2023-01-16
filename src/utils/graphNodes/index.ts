@@ -51,6 +51,7 @@ import * as make_vector2 from './nodes/makeVector2'
 import * as break_vector2 from './nodes/breakVector2'
 import * as make_transform from './nodes/makeTransform'
 import * as break_transform from './nodes/breakTransform'
+import * as apply_transform from './nodes/applyTransform'
 import * as color from './nodes/color'
 import * as make_color from './nodes/makeColor'
 import * as break_color from './nodes/breakColor'
@@ -152,6 +153,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   break_vector2,
   make_transform,
   break_transform,
+  apply_transform,
   color,
   make_color,
   break_color,
@@ -273,6 +275,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Break Vector2', type: 'break_vector2' },
       { label: 'Make Transform', type: 'make_transform' },
       { label: 'Break Transform', type: 'break_transform' },
+      { label: 'Apply Transform', type: 'apply_transform' },
       { label: 'Color', type: 'color' },
       { label: 'Make Color', type: 'make_color' },
       { label: 'Break Color', type: 'break_color' },

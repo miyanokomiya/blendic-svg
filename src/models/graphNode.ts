@@ -189,6 +189,8 @@ export interface GraphNodes {
   graph_node_get_path_length: GraphNodeGetPathLength
   graph_node_get_path_point_at: GraphNodeGetPathPointAt
 
+  graph_node_transform_path: GraphNodeTransformPath
+
   make_path_m: GraphNodeMakePathM
   make_path_l: GraphNodeMakePathL
   make_path_h: GraphNodeMakePathH
@@ -531,6 +533,14 @@ export interface GraphNodeGetPathPointAt extends GraphNodeBase {
   inputs: {
     d: GraphNodeInput<string[]>
     distance: GraphNodeInput<number>
+  }
+}
+
+export interface GraphNodeTransformPath extends GraphNodeBase {
+  type: 'transform_path'
+  inputs: {
+    d: GraphNodeInput<string[]>
+    transform: GraphNodeInput<Transform>
   }
 }
 

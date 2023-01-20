@@ -4238,10 +4238,10 @@ object.values@^1.1.5:
     define-properties "^1.1.3"
     es-abstract "^1.19.1"
 
-okageo@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/okageo/-/okageo-3.0.4.tgz#aa716ecee8a6b434aa78a9e5aca00830fc1012db"
-  integrity sha512-4GBG680qZu2cEZQfr0pvCg3SYX7kh6EHsQ/oH7D9YJTRgbnJL6TPIk1cK4Sk/VCQjB4zNebwsFe5DswnB46/rQ==
+okageo@^3.0.5:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/okageo/-/okageo-3.0.5.tgz#7302c5b4873a4e51c75066128d79f22ef4d70823"
+  integrity sha512-4z8Q9pGRP+PZ/e3l1EzrvEDGrZ4eqz3w5SBjYJOEnoDoSycESTJ2hG8Z1cF7KVnk8/uQDCsLgzjxwnHumenkCw==
 
 okahistory@^0.0.9:
   version "0.0.9"

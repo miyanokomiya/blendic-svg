@@ -21,7 +21,7 @@ import { IVec2, splitD } from 'okageo'
 
 export type PathDCommand =
   | {
-      command: 'M' | 'm' | 'L' | 'l'
+      command: 'M' | 'm' | 'L' | 'l' | 'T' | 't'
       p: IVec2
     }
   | {
@@ -33,23 +33,14 @@ export type PathDCommand =
       y: number
     }
   | {
-      command: 'Q' | 'q'
+      command: 'Q' | 'q' | 'S' | 's'
       c1: IVec2
-      p: IVec2
-    }
-  | {
-      command: 'T' | 't'
       p: IVec2
     }
   | {
       command: 'C' | 'c'
       c1: IVec2
       c2: IVec2
-      p: IVec2
-    }
-  | {
-      command: 'S' | 's'
-      c1: IVec2
       p: IVec2
     }
   | {

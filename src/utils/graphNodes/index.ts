@@ -115,6 +115,10 @@ import * as make_path_z from './nodes/makePathZ'
 import * as get_path_length from './nodes/getPathLength'
 import * as get_path_point_at from './nodes/getPathPointAt'
 
+import * as transform_path from './nodes/transformPath'
+import * as reverse_path from './nodes/reversePath'
+import * as join_path from './nodes/joinPath'
+
 import * as create_object_clip_path from './nodes/createObjectClipPath'
 import * as set_clip_path from './nodes/setClipPath'
 
@@ -217,6 +221,9 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   make_path_z,
   get_path_length,
   get_path_point_at,
+  transform_path,
+  reverse_path,
+  join_path,
 
   not,
   and,
@@ -248,7 +255,7 @@ export interface NODE_MENU_OPTION {
 }
 
 const MAKE_PATH_SRC: NODE_MENU_OPTION = {
-  label: 'Make Path',
+  label: 'Path',
   children: [
     { label: 'M (Move)', type: 'make_path_m' },
     { label: 'L (Line)', type: 'make_path_l' },
@@ -260,6 +267,9 @@ const MAKE_PATH_SRC: NODE_MENU_OPTION = {
     { label: 'S (Bezier3)', type: 'make_path_s' },
     { label: 'A (Arc)', type: 'make_path_a' },
     { label: 'Z (Close)', type: 'make_path_z' },
+    { label: 'Transform Path', type: 'transform_path' },
+    { label: 'Reverse Path', type: 'reverse_path' },
+    { label: 'Join Path', type: 'join_path' },
     { label: 'Get Path Length', type: 'get_path_length' },
     { label: 'Get Path Point At', type: 'get_path_point_at' },
   ],

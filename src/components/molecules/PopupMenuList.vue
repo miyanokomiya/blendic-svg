@@ -58,6 +58,7 @@ import { ref, computed, withDefaults } from 'vue'
 import { UIPopupMenuItem } from '/@/composables/menuList'
 
 const ITEM_HEIGHT = 26
+const SEARCH_FIELD_HEIGHT = 26
 </script>
 
 <script setup lang="ts">
@@ -81,14 +82,22 @@ const focusedIndex = computed(() =>
 )
 const transform = computed(() => {
   const index = focusedIndex.value
-  return index !== -1 ? `translateY(-${index * ITEM_HEIGHT}px)` : ''
+  return index !== -1
+    ? `translateY(-${index * ITEM_HEIGHT + SEARCH_FIELD_HEIGHT}px)`
+    : ''
 })
 const openedIndex = computed(() =>
   props.popupMenuList.findIndex((p) => p.opened)
 )
 const chldrenTop = computed(() => {
+  const children = props.popupMenuList[openedIndex.value]?.children
+  if (!children) return 0
+
+  const centralized = Math.ceil(children.length / 2) - 1
   // -1 makes top line well
-  return openedIndex.value * ITEM_HEIGHT - 1
+  return (
+    (openedIndex.value - centralized) * ITEM_HEIGHT + SEARCH_FIELD_HEIGHT - 1
+  )
 })
 
 const keyword = ref('')
@@ -134,6 +143,7 @@ li > button {
   height: 26px;
   padding: 0 10px;
   text-align: left;
+  background-color: initial;
 }
 .children {
   position: absolute;

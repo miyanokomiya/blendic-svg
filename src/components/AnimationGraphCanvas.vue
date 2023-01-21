@@ -77,7 +77,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       enabled-search
       :popup-menu-list="popupMenuItems"
       :style="{
-        left: `${popupMenuListPosition.x - 20}px`,
+        left: `${popupMenuListPosition.x - 80}px`,
         top: `${popupMenuListPosition.y - 10}px`,
       }"
     />
@@ -199,7 +199,10 @@ const mode = useAnimationGraphMode({
   panView: (val) => props.canvas.viewMove(val),
   setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
   getDraggedRectangle: () => props.canvas.draggedRectangle.value,
-  setPopupMenuList: (val) => (popupMenuInfo.value = val),
+  setPopupMenuList: (val) => {
+    popupMenuInfo.value = val
+    popupMenuList.clearOpened()
+  },
   setToolMenuList: (val = []) => (toolMenuInfo.value = val),
   getNodeItemList: () => graphStore.nodeItemList.value,
   setCommandExams: (val) => (commandExams.value = val),

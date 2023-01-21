@@ -51,7 +51,7 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot default 1`] = `
 exports[`src/components/molecules/PopupMenuList.vue snapshot focused item 1`] = `
 <div
   class="popup-menu-list-wrapper"
-  style="transform: translateY(-26px);"
+  style="transform: translateY(-52px);"
 >
   <!--v-if-->
   <ul>
@@ -158,7 +158,7 @@ exports[`src/components/molecules/PopupMenuList.vue snapshot with children 1`] =
       </button>
       <div
         class="popup-menu-list-wrapper children"
-        style="top: 51px;"
+        style="top: 77px;"
       >
         <!--v-if-->
         <ul>

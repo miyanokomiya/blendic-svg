@@ -77,7 +77,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       enabled-search
       :popup-menu-list="popupMenuItems"
       :style="{
-        left: `${popupMenuListPosition.x - 20}px`,
+        left: `${popupMenuListPosition.x - 80}px`,
         top: `${popupMenuListPosition.y - 10}px`,
       }"
     />

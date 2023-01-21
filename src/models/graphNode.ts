@@ -190,6 +190,7 @@ export interface GraphNodes {
   graph_node_get_path_point_at: GraphNodeGetPathPointAt
 
   graph_node_transform_path: GraphNodeTransformPath
+  reverse_path: GraphNodeReversePath
   join_path: GraphNodeJoinPath
 
   make_path_m: GraphNodeMakePathM
@@ -542,6 +543,13 @@ export interface GraphNodeTransformPath extends GraphNodeBase {
   inputs: {
     d: GraphNodeInput<string[]>
     transform: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeReversePath extends GraphNodeBase {
+  type: 'reverse_path'
+  inputs: {
+    d: GraphNodeInput<string[]>
   }
 }
 

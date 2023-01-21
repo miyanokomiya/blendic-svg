@@ -68,7 +68,7 @@ export function useMenuList(getSrcList: () => PopupMenuItem[]) {
   })
 
   function clearOpened() {
-    openedParent.value = ''
+    openedParent.value = lastSelectedItem.value
   }
 
   return { list, clearOpened }

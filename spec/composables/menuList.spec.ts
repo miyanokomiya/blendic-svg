@@ -41,5 +41,22 @@ describe('src/composables/menuList.ts', () => {
       expect(srcList[1].exec).toHaveReturnedTimes(1)
       expect(ret.list.value[1].focus).toBe(true)
     })
+    it('should set lastSelectedItem to openedParent when clearOpened is called', () => {
+      const srcList = [
+        { label: 'a', exec: jest.fn(), children: [{ label: 'aa' }] },
+        { label: 'b', exec: jest.fn(), children: [{ label: 'bb' }] },
+        { label: 'c', exec: jest.fn(), children: [{ label: 'cc' }] },
+      ]
+      const ret = useMenuList(() => srcList)
+      ret.list.value[1].exec?.()
+      ret.list.value[2].hover?.()
+      expect(ret.list.value[1].focus).toBe(true)
+      expect(ret.list.value[1].opened).toBe(false)
+      expect(ret.list.value[2].opened).toBe(true)
+      ret.clearOpened()
+      expect(ret.list.value[1].focus).toBe(true)
+      expect(ret.list.value[1].opened).toBe(true)
+      expect(ret.list.value[2].opened).toBe(false)
+    })
   })
 })

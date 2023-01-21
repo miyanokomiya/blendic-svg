@@ -90,8 +90,14 @@ const openedIndex = computed(() =>
   props.popupMenuList.findIndex((p) => p.opened)
 )
 const chldrenTop = computed(() => {
+  const children = props.popupMenuList[openedIndex.value]?.children
+  if (!children) return 0
+
+  const centralized = Math.ceil(children.length / 2) - 1
   // -1 makes top line well
-  return openedIndex.value * ITEM_HEIGHT + SEARCH_FIELD_HEIGHT - 1
+  return (
+    (openedIndex.value - centralized) * ITEM_HEIGHT + SEARCH_FIELD_HEIGHT - 1
+  )
 })
 
 const keyword = ref('')

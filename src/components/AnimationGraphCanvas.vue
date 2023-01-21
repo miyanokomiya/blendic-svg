@@ -199,7 +199,10 @@ const mode = useAnimationGraphMode({
   panView: (val) => props.canvas.viewMove(val),
   setRectangleDragging: (val) => props.canvas.setRectangleDragging(val),
   getDraggedRectangle: () => props.canvas.draggedRectangle.value,
-  setPopupMenuList: (val) => (popupMenuInfo.value = val),
+  setPopupMenuList: (val) => {
+    popupMenuInfo.value = val
+    popupMenuList.clearOpened()
+  },
   setToolMenuList: (val = []) => (toolMenuInfo.value = val),
   getNodeItemList: () => graphStore.nodeItemList.value,
   setCommandExams: (val) => (commandExams.value = val),

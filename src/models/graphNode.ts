@@ -190,6 +190,7 @@ export interface GraphNodes {
   graph_node_get_path_point_at: GraphNodeGetPathPointAt
 
   graph_node_transform_path: GraphNodeTransformPath
+  join_path: GraphNodeJoinPath
 
   make_path_m: GraphNodeMakePathM
   make_path_l: GraphNodeMakePathL
@@ -541,6 +542,14 @@ export interface GraphNodeTransformPath extends GraphNodeBase {
   inputs: {
     d: GraphNodeInput<string[]>
     transform: GraphNodeInput<Transform>
+  }
+}
+
+export interface GraphNodeJoinPath extends GraphNodeBase {
+  type: 'join_path'
+  inputs: {
+    a: GraphNodeInput<string[]>
+    b: GraphNodeInput<string[]>
   }
 }
 

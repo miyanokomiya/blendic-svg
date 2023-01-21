@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Add new node to get the length of SVG path
 - Add new node to get the point at the length of SVG path
+- Add new node to transform SVG path
 - Add new node to apply a transform to a vector
 
 ## [0.18.0] - 2023-01-01

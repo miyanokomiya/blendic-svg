@@ -116,6 +116,7 @@ import * as get_path_length from './nodes/getPathLength'
 import * as get_path_point_at from './nodes/getPathPointAt'
 
 import * as transform_path from './nodes/transformPath'
+import * as join_path from './nodes/joinPath'
 
 import * as create_object_clip_path from './nodes/createObjectClipPath'
 import * as set_clip_path from './nodes/setClipPath'
@@ -220,6 +221,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   get_path_length,
   get_path_point_at,
   transform_path,
+  join_path,
 
   not,
   and,
@@ -266,6 +268,7 @@ const MAKE_PATH_SRC: NODE_MENU_OPTION = {
     { label: 'Get Path Length', type: 'get_path_length' },
     { label: 'Get Path Point At', type: 'get_path_point_at' },
     { label: 'Transform Path', type: 'transform_path' },
+    { label: 'Join Path', type: 'join_path' },
   ],
 }
 

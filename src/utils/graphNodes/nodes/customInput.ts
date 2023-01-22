@@ -33,7 +33,7 @@ export const struct: NodeStruct<GraphNodeCustomInput> = {
           name: 'input',
           default: { value: undefined },
         },
-        inputs: { input: { value: undefined } },
+        inputs: { input: { value: undefined }, output: { value: undefined } },
         ...arg,
       }),
       type: 'custom_input',
@@ -52,6 +52,10 @@ export const struct: NodeStruct<GraphNodeCustomInput> = {
   inputs: {
     input: {
       type: UNIT_VALUE_TYPES.INPUT,
+      default: '',
+    },
+    output: {
+      type: UNIT_VALUE_TYPES.OUTPUT,
       default: '',
     },
   },

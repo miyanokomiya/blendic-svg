@@ -29,6 +29,7 @@ import {
   GraphNodeOutputMap,
   GraphNodeOutputValues,
   GraphNodeType,
+  ValueType,
 } from '/@/models/graphNode'
 import { mapFilter, mapReduce, toList } from '/@/utils/commons'
 import { gridRound } from '/@/utils/geometry'
@@ -46,6 +47,7 @@ import {
   updateNodeInput,
 } from '/@/utils/graphNodes'
 import {
+  isSameValueType,
   NodeModule,
   NodeStruct,
   UNIT_VALUE_TYPES,
@@ -58,20 +60,48 @@ export function createCustomNodeModule(
   innerNodeMap: IdMap<GraphNode>
 ): NodeModule<GraphNode> {
   const customInterface = getCustomInterfaceNode(customGraph, innerNodeMap)
-  const inputs = createInputsStruct(customInterface)
-  const outputs = createOutputsStruct(customInterface)
 
-  const allEdgeConnectionInfo = getAllEdgeConnectionInfo(innerNodeMap)
+  const defaultMaxLoop = Math.max(
+    customInterface.beginOutputNode?.data.max_loop ?? 1,
+    1
+  )
+
+  // Pick loop struct information from inner nodes
+  const loopStruct = Object.entries(customInterface.inputNodes).reduce<{
+    [id: string]: string
+  }>((p, [id, c]) => {
+    const output = c.inputs.output.from?.id
+    if (output) {
+      p[id] = output
+    }
+    return p
+  }, {})
+
+  // Remove loop struct from inner nodes
+  const innerNodeMapWithoutLoopStruct = mapReduce(innerNodeMap, (n) => {
+    if (n.type !== 'custom_input') return n
+
+    const ret = { ...n, inputs: { ...n.inputs } }
+    delete ret.inputs.output
+    return ret
+  })
+
+  const inputsStruct = createInputsStruct(customInterface)
+  const outputsStruct = createOutputsStruct(customInterface)
+
+  const allEdgeConnectionInfo = getAllEdgeConnectionInfo(
+    innerNodeMapWithoutLoopStruct
+  )
 
   const interfaceIdSet = new Set([
-    ...Object.keys(inputs),
-    ...Object.keys(outputs),
+    ...Object.keys(inputsStruct),
+    ...Object.keys(outputsStruct),
   ])
-  const chains = Object.keys(inputs)
+  const chains = Object.keys(inputsStruct)
     .map((key) => {
       return getEdgeChainGroupAt(
         getGraphNodeModule,
-        innerNodeMap,
+        innerNodeMapWithoutLoopStruct,
         allEdgeConnectionInfo,
         { id: key, key: 'value', output: true }
       ).map((item) => {
@@ -109,8 +139,8 @@ export function createCustomNodeModule(
 
   const getOutputType =
     outputChainMap.size > 0
-      ? (self: any, key: string) => {
-          const src = innerNodeMap[key]
+      ? (self: any, key: string): ValueType => {
+          const src = innerNodeMapWithoutLoopStruct[key]
           const genericsType = src.inputs.value.genericsType
           if (isGenericsResolved(genericsType)) return genericsType
 
@@ -120,6 +150,17 @@ export function createCustomNodeModule(
         }
       : undefined
 
+  const isSameInputOutputType = (
+    self: GraphNode,
+    inputId: string,
+    outputId: string
+  ): boolean => {
+    return isSameValueType(
+      getOutputType?.(self, outputId) ?? outputsStruct[outputId],
+      inputsStruct[inputId].type ?? self.inputs[inputId].genericsType
+    )
+  }
+
   return {
     struct: {
       create: (arg = {}) =>
@@ -127,25 +168,52 @@ export function createCustomNodeModule(
           position: { x: 0, y: 0 },
           ...arg,
           type: customGraph.id,
-          data: {},
-          inputs: mapReduce(inputs, (input) => ({
+          data: { max_loop: defaultMaxLoop },
+          inputs: mapReduce(inputsStruct, (input) => ({
             value: input.default,
           })),
         } as GraphNodeBase),
-      data: {},
-      inputs,
-      outputs,
+      data: {
+        max_loop: {
+          type: UNIT_VALUE_TYPES.SCALER,
+          default: defaultMaxLoop,
+        },
+      },
+      inputs: inputsStruct,
+      outputs: outputsStruct,
       computation: (inputs, self, context, getGraphNodeModule) => {
-        return context.beginNamespace(self.id, () => {
-          return stubOutputNodes(
-            customInterface.outputNodes,
-            resolveAllNodes(
+        const maxLoop = (self.data.max_loop as number) ?? 1
+        let result: GraphNodeOutputValues
+        let resolved: GraphNodeOutputMap
+        let nextInputs = inputs
+        let loop = true
+        let count = 0
+
+        const filteredLoopStruct = mapFilter(loopStruct, (outputId, inputId) =>
+          isSameInputOutputType(self, inputId, outputId)
+        )
+
+        while (loop && count < maxLoop) {
+          result = context.beginNamespace(`${self.id}-l${count}`, () => {
+            // Have to run in the namespace
+            resolved = resolveAllNodes(
               getGraphNodeModule!,
               context,
-              stubInputNodes(innerNodeMap, inputs)
+              stubInputNodes(innerNodeMapWithoutLoopStruct, nextInputs)
             )
-          )
-        })
+            return stubOutputNodes(customInterface.outputNodes, resolved)
+          })
+          loop = customInterface.beginOutputNode
+            ? cumputeLoopResult(customInterface.beginOutputNode, resolved!)
+            : false
+          nextInputs = mapReduce(nextInputs, (value, key) => {
+            const outputId = filteredLoopStruct[key]
+            return outputId ? result[outputId] : value
+          })
+          count++
+        }
+
+        return result!
       },
       width: 140,
       color: '#ff6347',
@@ -153,6 +221,20 @@ export function createCustomNodeModule(
       label: `${customGraph.name}`,
       getOutputType,
       genericsChains: chains.length > 0 ? chains : undefined,
+      getErrors: (self) => {
+        const errors = Object.entries(loopStruct)
+          .filter(
+            ([inputId, outputId]) =>
+              !isSameInputOutputType(self, inputId, outputId)
+          )
+          .map(
+            ([inputId, outputId]) =>
+              `Type of "${
+                inputsStruct[inputId].label ?? inputId
+              }" doesn't match "${outputsStruct[outputId].label ?? outputId}"`
+          )
+        return errors.length > 0 ? errors : undefined
+      },
       custom: true,
     },
   }
@@ -319,6 +401,19 @@ function stubOutputNodes(
     },
     {}
   )
+}
+
+function cumputeLoopResult(
+  beginOutputNode: GraphNodeCustomBeginOutput,
+  nodeOutputValueMap: GraphNodeOutputMap
+): boolean {
+  const loopInput = beginOutputNode.inputs.loop
+  if (loopInput.from) {
+    const connectedValues = nodeOutputValueMap[loopInput.from.id]
+    return !!connectedValues[loopInput.from.key]
+  } else {
+    return !!loopInput.value
+  }
 }
 
 function getCustomGraphFirstDependencies(

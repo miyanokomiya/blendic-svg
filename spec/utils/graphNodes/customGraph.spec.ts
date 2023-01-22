@@ -251,12 +251,262 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
         expect(
           struct.computation(
             { input_0: 10 },
-            { id: 'a' } as any,
+            { id: 'a', data: {} } as any,
             { beginNamespace } as any,
             getGraphNodeModule
           )
         ).toEqual({
           output_0: { x: 10, y: 20 },
+        })
+      })
+
+      describe('loop computation', () => {
+        function prepare() {
+          const beginInputNode = createGraphNode('custom_begin_input', {
+            id: 'begin_input',
+          })
+          const inputNode0 = createGraphNode('custom_input', {
+            id: 'input_0',
+            data: {
+              name: 'input_0',
+              default: {
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+                value: 0,
+              },
+            },
+            inputs: {
+              input: { from: { id: 'begin_input', key: 'input' } },
+              output: { from: { id: 'output_0', key: 'output' } },
+            },
+          })
+          const beginOutputNode = createGraphNode('custom_begin_output', {
+            id: 'begin_output',
+            data: { max_loop: 10 },
+            inputs: {
+              loop: { from: { id: 'less_than', key: 'value' } },
+            },
+          })
+          const outputNode0 = createGraphNode('custom_output', {
+            id: 'output_0',
+            data: { name: 'name_0' },
+            inputs: {
+              output: { from: { id: 'begin_output', key: 'output' } },
+              value: {
+                from: { id: 'add_generics', key: 'value' },
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+            },
+          })
+          const addGenerics = createGraphNode('add_generics', {
+            id: 'add_generics',
+            inputs: {
+              a: {
+                from: { id: 'input_0', key: 'value' },
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+              b: { value: 1, genericsType: UNIT_VALUE_TYPES.SCALER },
+            },
+          })
+          const lessThan = createGraphNode('less_than', {
+            id: 'less_than',
+            inputs: {
+              a: { from: { id: 'add_generics', key: 'value' } },
+              b: { value: 5 },
+            },
+          })
+
+          return {
+            beginInputNode,
+            inputNode0,
+            beginOutputNode,
+            outputNode0,
+            addGenerics,
+            lessThan,
+          }
+        }
+
+        it('should craete computation struct with loop', () => {
+          const {
+            beginInputNode,
+            inputNode0,
+            beginOutputNode,
+            outputNode0,
+            addGenerics,
+            lessThan,
+          } = prepare()
+
+          const { struct } = createCustomNodeModule(
+            getGraphNodeModule,
+            getCustomGraph({
+              nodes: [
+                beginInputNode.id,
+                inputNode0.id,
+                beginOutputNode.id,
+                outputNode0.id,
+                addGenerics.id,
+                lessThan.id,
+              ],
+            }),
+            {
+              [beginInputNode.id]: beginInputNode,
+              [inputNode0.id]: inputNode0,
+              [beginOutputNode.id]: beginOutputNode,
+              [outputNode0.id]: outputNode0,
+              [addGenerics.id]: addGenerics,
+              [lessThan.id]: lessThan,
+            }
+          )
+
+          const beginNamespace = (_: any, val: any) => val()
+
+          expect(
+            struct.computation(
+              { input_0: 3 },
+              {
+                id: 'a',
+                data: { max_loop: 10 },
+                inputs: { input_0: { genericsType: UNIT_VALUE_TYPES.SCALER } },
+              } as any,
+              { beginNamespace } as any,
+              getGraphNodeModule
+            )
+          ).toEqual({ output_0: 5 })
+        })
+
+        it('should apply maximum loop count limitation', () => {
+          const {
+            beginInputNode,
+            inputNode0,
+            beginOutputNode,
+            outputNode0,
+            addGenerics,
+          } = prepare()
+
+          const lessThan = createGraphNode('less_than', {
+            id: 'less_than',
+            inputs: {
+              a: { from: { id: 'add_generics', key: 'value' } },
+              b: { value: 100 },
+            },
+          })
+
+          const { struct } = createCustomNodeModule(
+            getGraphNodeModule,
+            getCustomGraph({
+              nodes: [
+                beginInputNode.id,
+                inputNode0.id,
+                beginOutputNode.id,
+                outputNode0.id,
+                addGenerics.id,
+                lessThan.id,
+              ],
+            }),
+            {
+              [beginInputNode.id]: beginInputNode,
+              [inputNode0.id]: inputNode0,
+              [beginOutputNode.id]: beginOutputNode,
+              [outputNode0.id]: outputNode0,
+              [addGenerics.id]: addGenerics,
+              [lessThan.id]: lessThan,
+            }
+          )
+
+          const beginNamespace = (_: any, val: any) => val()
+          const self = {
+            id: 'a',
+            data: { max_loop: 20 },
+            inputs: { input_0: { genericsType: UNIT_VALUE_TYPES.SCALER } },
+          } as any
+
+          expect(
+            struct.computation(
+              { input_0: 3 },
+              self,
+              { beginNamespace } as any,
+              getGraphNodeModule
+            )
+          ).toEqual({ output_0: 23 })
+
+          expect(struct.getErrors!(self)).toEqual(undefined)
+        })
+
+        it('should not pass invalid typed valued from output to input', () => {
+          const {
+            beginInputNode,
+            inputNode0,
+            beginOutputNode,
+            addGenerics,
+            lessThan,
+          } = prepare()
+
+          const outputNode0 = createGraphNode('custom_output', {
+            id: 'output_0',
+            data: { name: 'name_0' },
+            inputs: {
+              output: { from: { id: 'begin_output', key: 'output' } },
+              value: {
+                from: { id: 'less_than', key: 'value' },
+                genericsType: UNIT_VALUE_TYPES.BOOLEAN,
+              },
+            },
+          })
+          const outputNode1 = createGraphNode('custom_output', {
+            id: 'output_1',
+            data: { name: 'name_1' },
+            inputs: {
+              output: { from: { id: 'output_0', key: 'output' } },
+              value: {
+                from: { id: 'add_generics', key: 'value' },
+                genericsType: UNIT_VALUE_TYPES.SCALER,
+              },
+            },
+          })
+
+          const { struct } = createCustomNodeModule(
+            getGraphNodeModule,
+            getCustomGraph({
+              nodes: [
+                beginInputNode.id,
+                inputNode0.id,
+                beginOutputNode.id,
+                outputNode0.id,
+                outputNode1.id,
+                addGenerics.id,
+                lessThan.id,
+              ],
+            }),
+            {
+              [beginInputNode.id]: beginInputNode,
+              [inputNode0.id]: inputNode0,
+              [beginOutputNode.id]: beginOutputNode,
+              [outputNode0.id]: outputNode0,
+              [outputNode1.id]: outputNode1,
+              [addGenerics.id]: addGenerics,
+              [lessThan.id]: lessThan,
+            }
+          )
+
+          const beginNamespace = (_: any, val: any) => val()
+          const self = {
+            id: 'a',
+            data: { max_loop: 10 },
+            inputs: { input_0: { genericsType: UNIT_VALUE_TYPES.SCALER } },
+          } as any
+
+          expect(
+            struct.computation(
+              { input_0: 0 },
+              self,
+              { beginNamespace } as any,
+              getGraphNodeModule
+            )
+          ).toEqual({ output_0: true, output_1: 1 })
+
+          // Should return error message from "getErrors"
+          expect(struct.getErrors!(self)).toEqual([
+            'Type of "input_0" doesn\'t match "name_0"',
+          ])
         })
       })
     })
@@ -884,7 +1134,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
 
       expect(result.customNode).toEqual({
         id: 'id_0',
-        data: {},
+        data: { max_loop: 10 },
         type: 'id_6',
         inputs: {
           id_4: { from: { id: 'p', key: 'value' } },
@@ -964,7 +1214,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
 
       expect(result.customNode).toEqual({
         id: 'id_0',
-        data: {},
+        data: { max_loop: 10 },
         type: 'id_5',
         inputs: {
           id_4: {
@@ -1112,7 +1362,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
 
       expect(result.customNode).toEqual({
         id: 'id_0',
-        data: {},
+        data: { max_loop: 10 },
         type: 'id_5',
         inputs: {
           id_4: {
@@ -1298,7 +1548,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
 
       expect(result.customNode).toEqual({
         id: 'id_0',
-        data: {},
+        data: { max_loop: 10 },
         type: 'id_6',
         inputs: {
           id_5: { from: { id: 'a', key: 'value' } },

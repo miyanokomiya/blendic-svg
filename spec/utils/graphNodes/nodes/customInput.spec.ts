@@ -25,7 +25,7 @@ describe('src/utils/graphNodes/nodes/customInput.ts', () => {
     it('should return output values', () => {
       expect(
         target.struct.computation(
-          { input: 'input_val' },
+          { input: 'input_val', output: '' },
           target.struct.create({
             data: { default: { value: 0 }, name: '' },
           }),

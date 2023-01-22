@@ -554,7 +554,9 @@ function getCircularRefIds(
     [targetId]: true,
   }
 
-  const fromOutputMap = getInputFromIds(target.inputs ?? {}).reduce((p, id) => {
+  const fromOutputMap = getInputFromIds(
+    getInputsWithoutLoopStruct(target)
+  ).reduce((p, id) => {
     return getCircularRefIds(nodeMap, p, id, nextPathMap, setCircularRefIds)
   }, doneMap)
 
@@ -625,6 +627,18 @@ export function getInputFromIds(inputs: GraphNodeInputs): string[] {
       return input.from?.id
     })
     .filter((id): id is string => !!id)
+}
+
+/**
+ * Ignore permitted and intended circular reference
+ * e.g. 'output' of custom_input
+ */
+function getInputsWithoutLoopStruct(target: GraphNode): GraphNodeInputs {
+  if (target.type !== 'custom_input') return target.inputs
+
+  const ret = { ...target.inputs }
+  delete ret.output
+  return ret
 }
 
 export function validateAllNodes(
@@ -1013,7 +1027,9 @@ export function getAllEdgeConnectionInfo(
   return ret
 }
 
-export function isGenericsResolved(genericsType?: ValueType): boolean {
+export function isGenericsResolved(
+  genericsType?: ValueType
+): genericsType is ValueType {
   return !!genericsType && genericsType.type !== GRAPH_VALUE_TYPE.GENERICS
 }
 

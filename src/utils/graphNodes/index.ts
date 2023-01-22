@@ -1027,7 +1027,9 @@ export function getAllEdgeConnectionInfo(
   return ret
 }
 
-export function isGenericsResolved(genericsType?: ValueType): boolean {
+export function isGenericsResolved(
+  genericsType?: ValueType
+): genericsType is ValueType {
   return !!genericsType && genericsType.type !== GRAPH_VALUE_TYPE.GENERICS
 }
 

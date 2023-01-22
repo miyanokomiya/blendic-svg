@@ -29,6 +29,7 @@ import {
   GraphNodeOutputMap,
   GraphNodeOutputValues,
   GraphNodeType,
+  ValueType,
 } from '/@/models/graphNode'
 import { mapFilter, mapReduce, toList } from '/@/utils/commons'
 import { gridRound } from '/@/utils/geometry'
@@ -46,6 +47,7 @@ import {
   updateNodeInput,
 } from '/@/utils/graphNodes'
 import {
+  isSameValueType,
   NodeModule,
   NodeStruct,
   UNIT_VALUE_TYPES,
@@ -84,18 +86,18 @@ export function createCustomNodeModule(
     return ret
   })
 
-  const inputs = createInputsStruct(customInterface)
-  const outputs = createOutputsStruct(customInterface)
+  const inputsStruct = createInputsStruct(customInterface)
+  const outputsStruct = createOutputsStruct(customInterface)
 
   const allEdgeConnectionInfo = getAllEdgeConnectionInfo(
     innerNodeMapWithoutLoopStruct
   )
 
   const interfaceIdSet = new Set([
-    ...Object.keys(inputs),
-    ...Object.keys(outputs),
+    ...Object.keys(inputsStruct),
+    ...Object.keys(outputsStruct),
   ])
-  const chains = Object.keys(inputs)
+  const chains = Object.keys(inputsStruct)
     .map((key) => {
       return getEdgeChainGroupAt(
         getGraphNodeModule,
@@ -137,7 +139,7 @@ export function createCustomNodeModule(
 
   const getOutputType =
     outputChainMap.size > 0
-      ? (self: any, key: string) => {
+      ? (self: any, key: string): ValueType => {
           const src = innerNodeMapWithoutLoopStruct[key]
           const genericsType = src.inputs.value.genericsType
           if (isGenericsResolved(genericsType)) return genericsType
@@ -148,6 +150,17 @@ export function createCustomNodeModule(
         }
       : undefined
 
+  const isSameInputOutputType = (
+    self: GraphNode,
+    inputId: string,
+    outputId: string
+  ): boolean => {
+    return isSameValueType(
+      getOutputType?.(self, outputId) ?? outputsStruct[outputId],
+      inputsStruct[inputId].type ?? self.inputs[inputId].genericsType
+    )
+  }
+
   return {
     struct: {
       create: (arg = {}) =>
@@ -156,7 +169,7 @@ export function createCustomNodeModule(
           ...arg,
           type: customGraph.id,
           data: { max_loop: defaultMaxLoop },
-          inputs: mapReduce(inputs, (input) => ({
+          inputs: mapReduce(inputsStruct, (input) => ({
             value: input.default,
           })),
         } as GraphNodeBase),
@@ -166,8 +179,8 @@ export function createCustomNodeModule(
           default: defaultMaxLoop,
         },
       },
-      inputs,
-      outputs,
+      inputs: inputsStruct,
+      outputs: outputsStruct,
       computation: (inputs, self, context, getGraphNodeModule) => {
         const maxLoop = (self.data.max_loop as number) ?? 1
         let result: GraphNodeOutputValues
@@ -175,6 +188,10 @@ export function createCustomNodeModule(
         let nextInputs = inputs
         let loop = true
         let count = 0
+
+        const filteredLoopStruct = mapFilter(loopStruct, (outputId, inputId) =>
+          isSameInputOutputType(self, inputId, outputId)
+        )
 
         while (loop && count < maxLoop) {
           result = context.beginNamespace(`${self.id}-l${count}`, () => {
@@ -190,7 +207,7 @@ export function createCustomNodeModule(
             ? cumputeLoopResult(customInterface.beginOutputNode, resolved!)
             : false
           nextInputs = mapReduce(nextInputs, (value, key) => {
-            const outputId = loopStruct[key]
+            const outputId = filteredLoopStruct[key]
             return outputId ? result[outputId] : value
           })
           count++
@@ -204,6 +221,20 @@ export function createCustomNodeModule(
       label: `${customGraph.name}`,
       getOutputType,
       genericsChains: chains.length > 0 ? chains : undefined,
+      getErrors: (self) => {
+        const errors = Object.entries(loopStruct)
+          .filter(
+            ([inputId, outputId]) =>
+              !isSameInputOutputType(self, inputId, outputId)
+          )
+          .map(
+            ([inputId, outputId]) =>
+              `Type of "${
+                inputsStruct[inputId].label ?? inputId
+              }" doesn't match "${outputsStruct[outputId].label ?? outputId}"`
+          )
+        return errors.length > 0 ? errors : undefined
+      },
       custom: true,
     },
   }

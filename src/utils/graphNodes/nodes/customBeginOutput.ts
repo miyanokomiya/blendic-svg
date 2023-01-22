@@ -26,13 +26,15 @@ import {
 
 export const struct: NodeStruct<GraphNodeCustomBeginOutput> = {
   create(arg = {}) {
-    return {
-      ...createBaseNode(arg),
+    return createBaseNode({
+      data: { max_loop: 10 },
+      inputs: { loop: { value: false } },
+      ...arg,
       type: 'custom_begin_output',
-    } as GraphNodeCustomBeginOutput
+    }) as GraphNodeCustomBeginOutput
   },
-  data: {},
-  inputs: {},
+  data: { max_loop: { type: UNIT_VALUE_TYPES.SCALER, default: 10 } },
+  inputs: { loop: { type: UNIT_VALUE_TYPES.BOOLEAN, default: false } },
   outputs: {
     output: UNIT_VALUE_TYPES.OUTPUT,
   },

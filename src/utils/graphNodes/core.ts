@@ -53,7 +53,9 @@ export interface NodeStruct<T extends GraphNodeBase> {
     }
   }
   inputs: {
-    [key in keyof T['inputs']]: { type: ValueType; label?: string } & {
+    [key in keyof T['inputs']]: {
+      type: ValueType
+      label?: string
       default: Required<T['inputs'][key]>['value']
     }
   }

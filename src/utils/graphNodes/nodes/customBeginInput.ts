@@ -26,10 +26,10 @@ import {
 
 export const struct: NodeStruct<GraphNodeCustomBeginInput> = {
   create(arg = {}) {
-    return {
-      ...createBaseNode(arg),
+    return createBaseNode({
+      ...arg,
       type: 'custom_begin_input',
-    } as GraphNodeCustomBeginInput
+    }) as GraphNodeCustomBeginInput
   },
   data: {},
   inputs: {},

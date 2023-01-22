@@ -889,12 +889,14 @@ export interface GraphNodeCustomBeginInput extends GraphNodeBase {
 
 export interface GraphNodeCustomInput extends GraphNodeBase {
   type: 'custom_input'
-  inputs: { input: GraphNodeInput<string> }
+  inputs: { input: GraphNodeInput<string>; output: GraphNodeInput<string> }
   data: { name: string; default: GraphNodeData<unknown> }
 }
 
 export interface GraphNodeCustomBeginOutput extends GraphNodeBase {
   type: 'custom_begin_output'
+  inputs: { loop: GraphNodeInput<boolean> }
+  data: { max_loop: number }
 }
 
 export interface GraphNodeCustomOutput extends GraphNodeBase {

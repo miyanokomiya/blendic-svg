@@ -23,7 +23,11 @@ describe('src/utils/graphNodes/nodes/customBeginOutput.ts', () => {
   describe('computation', () => {
     it('should return output values', () => {
       expect(
-        target.struct.computation({}, target.struct.create(), {} as any)
+        target.struct.computation(
+          { loop: false },
+          target.struct.create(),
+          {} as any
+        )
       ).toEqual({ output: '' })
     })
   })

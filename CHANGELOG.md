@@ -5,12 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.18.1] - 2023-01-22
 ### Added
 - Add new node to get the length of SVG path
 - Add new node to get the point at the length of SVG path
 - Add new node to transform SVG path
 - Add new node to reverse SVG path
 - Add new node to apply a transform to a vector
+- Implement loop structure for the animation graph
 
 ## [0.18.0] - 2023-01-01
 ### Breaking

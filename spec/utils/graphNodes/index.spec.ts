@@ -465,6 +465,31 @@ describe('src/utils/graphNodes/index.ts', () => {
       })
       expect(map).toEqual({ cir_a: true, cir_b: true })
     })
+
+    it('should ignore output-input circular references', () => {
+      const map = getAllCircularRefIds({
+        ...nodes,
+        input_0: createGraphNode('custom_input', {
+          id: 'input_0',
+          inputs: {
+            output: { from: { id: 'output_0', key: 'output' } },
+          },
+        }),
+        input_1: createGraphNode('custom_input', {
+          id: 'input_1',
+          inputs: {
+            output: { from: { id: 'output_0', key: 'output' } },
+          },
+        }),
+        output_0: createGraphNode('custom_output', {
+          id: 'output_0',
+          inputs: {
+            value: { from: { id: 'input_0', key: 'value' } },
+          },
+        }),
+      })
+      expect(map).toEqual({})
+    })
   })
 
   describe('compute', () => {

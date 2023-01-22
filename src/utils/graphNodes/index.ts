@@ -629,6 +629,10 @@ export function getInputFromIds(inputs: GraphNodeInputs): string[] {
     .filter((id): id is string => !!id)
 }
 
+/**
+ * Ignore permitted and intended circular reference
+ * e.g. 'output' of custom_input
+ */
 function getInputsWithoutLoopStruct(target: GraphNode): GraphNodeInputs {
   if (target.type !== 'custom_input') return target.inputs
 

@@ -1045,7 +1045,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
 
       expect(result.customNode).toEqual({
         id: 'id_0',
-        data: {},
+        data: { max_loop: 10 },
         type: 'id_6',
         inputs: {
           id_4: { from: { id: 'p', key: 'value' } },
@@ -1125,7 +1125,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
 
       expect(result.customNode).toEqual({
         id: 'id_0',
-        data: {},
+        data: { max_loop: 10 },
         type: 'id_5',
         inputs: {
           id_4: {
@@ -1273,7 +1273,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
 
       expect(result.customNode).toEqual({
         id: 'id_0',
-        data: {},
+        data: { max_loop: 10 },
         type: 'id_5',
         inputs: {
           id_4: {
@@ -1459,7 +1459,7 @@ describe('src/utils/graphNodes/customGraph.ts', () => {
 
       expect(result.customNode).toEqual({
         id: 'id_0',
-        data: {},
+        data: { max_loop: 10 },
         type: 'id_6',
         inputs: {
           id_5: { from: { id: 'a', key: 'value' } },

@@ -60,6 +60,7 @@ import * as add_generics from './nodes/addGenerics'
 import * as sub_generics from './nodes/subGenerics'
 import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
+import * as remainder from './nodes/remainder'
 import * as sin from './nodes/sin'
 import * as cos from './nodes/cos'
 import * as polar_coord from './nodes/polarCoord'
@@ -166,6 +167,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   sub_generics,
   multi_scaler,
   divide_scaler,
+  remainder,
   sin,
   cos,
   polar_coord,
@@ -298,6 +300,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: '(-)', type: 'sub_generics' },
       { label: '(x) Number', type: 'multi_scaler' },
       { label: '(/) Number', type: 'divide_scaler' },
+      { label: '(%) Number', type: 'remainder' },
       { label: 'Sin', type: 'sin' },
       { label: 'Cos', type: 'cos' },
       { label: 'Polar Coord', type: 'polar_coord' },

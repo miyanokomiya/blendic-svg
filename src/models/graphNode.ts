@@ -216,6 +216,7 @@ export interface GraphNodes {
   sub_generics: GraphNodeSubGenerics
   multi_scaler: GraphNodeMultiScaler
   divide_scaler: GraphNodeDivideScaler
+  remainder: GraphNodeRemainder
   sin: GraphNodeSin
   cos: GraphNodeCos
   polar_coord: GraphNodePolarCoord
@@ -738,6 +739,11 @@ export interface GraphNodeMultiScaler extends GraphNodeBase {
 
 export interface GraphNodeDivideScaler extends GraphNodeBase {
   type: 'divide_scaler'
+  inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
+}
+
+export interface GraphNodeRemainder extends GraphNodeBase {
+  type: 'remainder'
   inputs: { a: GraphNodeInput<number>; b: GraphNodeInput<number> }
 }
 

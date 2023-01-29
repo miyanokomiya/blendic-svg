@@ -27,7 +27,8 @@ Copyright (C) 2021, Tomoya Komiyama.
     :data-output_key="outputKey"
     :stroke-opacity="status === 'connecting' ? 0.5 : 1"
   >
-    <path :d="pathD" :stroke="stroke" :stroke-width="3 * scale" fill="none" />
+    <path :d="pathD" stroke="#222" :stroke-width="5 * scale" fill="none" />
+    <path :d="pathD" :stroke="stroke" :stroke-width="4 * scale" fill="none" />
     <path
       v-if="!status"
       class="highlight"
@@ -82,8 +83,5 @@ const stroke = computed(() => (props.status ? settings.selectedColor : '#888'))
 <style scoped>
 .edge:not(:hover) .highlight {
   display: none;
-}
-.highlight {
-  cursor: pointer;
 }
 </style>

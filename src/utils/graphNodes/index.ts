@@ -60,6 +60,7 @@ import * as add_generics from './nodes/addGenerics'
 import * as sub_generics from './nodes/subGenerics'
 import * as multi_scaler from './nodes/multiScaler'
 import * as divide_scaler from './nodes/divideScaler'
+import * as remainder from './nodes/remainder'
 import * as sin from './nodes/sin'
 import * as cos from './nodes/cos'
 import * as polar_coord from './nodes/polarCoord'
@@ -166,6 +167,7 @@ const NODE_MODULES: { [key in GraphNodeType]: NodeModule<any> } = {
   sub_generics,
   multi_scaler,
   divide_scaler,
+  remainder,
   sin,
   cos,
   polar_coord,
@@ -254,27 +256,6 @@ export interface NODE_MENU_OPTION {
   children: NodeMenuOption[]
 }
 
-const MAKE_PATH_SRC: NODE_MENU_OPTION = {
-  label: 'Path',
-  children: [
-    { label: 'M (Move)', type: 'make_path_m' },
-    { label: 'L (Line)', type: 'make_path_l' },
-    { label: 'H (Horizon)', type: 'make_path_h' },
-    { label: 'V (Vertical)', type: 'make_path_v' },
-    { label: 'Q (Bezier2)', type: 'make_path_q' },
-    { label: 'T (Bezier2)', type: 'make_path_t' },
-    { label: 'C (Bezier3)', type: 'make_path_c' },
-    { label: 'S (Bezier3)', type: 'make_path_s' },
-    { label: 'A (Arc)', type: 'make_path_a' },
-    { label: 'Z (Close)', type: 'make_path_z' },
-    { label: 'Transform Path', type: 'transform_path' },
-    { label: 'Reverse Path', type: 'reverse_path' },
-    { label: 'Join Path', type: 'join_path' },
-    { label: 'Get Path Length', type: 'get_path_length' },
-    { label: 'Get Path Point At', type: 'get_path_point_at' },
-  ],
-}
-
 export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
   {
     label: 'Primitive',
@@ -298,6 +279,7 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: '(-)', type: 'sub_generics' },
       { label: '(x) Number', type: 'multi_scaler' },
       { label: '(/) Number', type: 'divide_scaler' },
+      { label: '(%) Number', type: 'remainder' },
       { label: 'Sin', type: 'sin' },
       { label: 'Cos', type: 'cos' },
       { label: 'Polar Coord', type: 'polar_coord' },
@@ -332,8 +314,19 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Get Bone', type: 'get_bone' },
       { label: 'Get Object', type: 'get_object' },
       { label: 'Get Child', type: 'get_child' },
-      { label: 'Get Transform', type: 'get_transform' },
 
+      { label: 'Clone Object', type: 'clone_object' },
+      { label: 'Group Clone Object', type: 'group_clone_object' },
+      { label: 'Circle Clone Object', type: 'circle_clone_object' },
+      { label: 'Grid Clone Object', type: 'grid_clone_object' },
+      { label: 'Tornado Clone Object', type: 'tornado_clone_object' },
+    ],
+  },
+  {
+    label: 'Attribute',
+    children: [
+      { label: 'Hide Object', type: 'hide_object' },
+      { label: 'Get Transform', type: 'get_transform' },
       { label: 'Set Transform', type: 'set_transform' },
       { label: 'Add Transform', type: 'add_transform' },
       { label: 'Set Fill', type: 'set_fill' },
@@ -342,13 +335,6 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Set Gradient', type: 'set_gradient' },
       { label: 'Set Clip Path', type: 'set_clip_path' },
       { label: 'Set Viewbox', type: 'set_viewbox' },
-      { label: 'Hide Object', type: 'hide_object' },
-
-      { label: 'Clone Object', type: 'clone_object' },
-      { label: 'Group Clone Object', type: 'group_clone_object' },
-      { label: 'Circle Clone Object', type: 'circle_clone_object' },
-      { label: 'Grid Clone Object', type: 'grid_clone_object' },
-      { label: 'Tornado Clone Object', type: 'tornado_clone_object' },
     ],
   },
   {
@@ -365,7 +351,26 @@ export const NODE_MENU_OPTIONS_SRC: NODE_MENU_OPTION[] = [
       { label: 'Clip Path', type: 'create_object_clip_path' },
     ],
   },
-  MAKE_PATH_SRC,
+  {
+    label: 'Path',
+    children: [
+      { label: 'M (Move)', type: 'make_path_m' },
+      { label: 'L (Line)', type: 'make_path_l' },
+      { label: 'H (Horizon)', type: 'make_path_h' },
+      { label: 'V (Vertical)', type: 'make_path_v' },
+      { label: 'Q (Bezier2)', type: 'make_path_q' },
+      { label: 'T (Bezier2)', type: 'make_path_t' },
+      { label: 'C (Bezier3)', type: 'make_path_c' },
+      { label: 'S (Bezier3)', type: 'make_path_s' },
+      { label: 'A (Arc)', type: 'make_path_a' },
+      { label: 'Z (Close)', type: 'make_path_z' },
+      { label: 'Transform Path', type: 'transform_path' },
+      { label: 'Reverse Path', type: 'reverse_path' },
+      { label: 'Join Path', type: 'join_path' },
+      { label: 'Get Path Length', type: 'get_path_length' },
+      { label: 'Get Path Point At', type: 'get_path_point_at' },
+    ],
+  },
   {
     label: 'Etc',
     children: [{ label: 'Reroute', type: 'reroute' }],

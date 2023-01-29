@@ -9,8 +9,14 @@ exports[`src/components/elements/GraphEdge.vue snapshot connected 1`] = `
   <path
     d="M6,2 C25,2 -14,20 5,20"
     fill="none"
+    stroke="#222"
+    stroke-width="5"
+  />
+  <path
+    d="M6,2 C25,2 -14,20 5,20"
+    fill="none"
     stroke="orange"
-    stroke-width="3"
+    stroke-width="4"
   />
   <!--v-if-->
   <g
@@ -41,8 +47,14 @@ exports[`src/components/elements/GraphEdge.vue snapshot connecting 1`] = `
   <path
     d="M6,2 C25,2 -14,20 5,20"
     fill="none"
+    stroke="#222"
+    stroke-width="5"
+  />
+  <path
+    d="M6,2 C25,2 -14,20 5,20"
+    fill="none"
     stroke="orange"
-    stroke-width="3"
+    stroke-width="4"
   />
   <!--v-if-->
   <g
@@ -73,8 +85,14 @@ exports[`src/components/elements/GraphEdge.vue snapshot initial 1`] = `
   <path
     d="M6,2 C25,2 -14,20 5,20"
     fill="none"
+    stroke="#222"
+    stroke-width="5"
+  />
+  <path
+    d="M6,2 C25,2 -14,20 5,20"
+    fill="none"
     stroke="#888"
-    stroke-width="3"
+    stroke-width="4"
   />
   <path
     class="highlight"

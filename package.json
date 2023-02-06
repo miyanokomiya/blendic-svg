@@ -19,7 +19,7 @@
     "okageo": "^3.0.7",
     "okahistory": "^0.0.9",
     "okanvas": "^0.1.1",
-    "okaselect": "^0.0.12",
+    "okaselect": "^0.1.0",
     "ress": "^5.0.2",
     "vue": "^3.2.45"
   },

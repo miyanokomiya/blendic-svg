@@ -4435,10 +4435,10 @@ okanvas@^0.1.1:
   resolved "https://registry.yarnpkg.com/okanvas/-/okanvas-0.1.1.tgz#edd4edde63950e5583b2e47ef453bd0345c5e3d5"
   integrity sha512-8QXqFEOtIrMgg/gKIsabGDzJXJqkOZbAVxSK24ClZtykhv+6FfFMFqDpSgsFwSuHLSLRFBdV4LflwovQ+uhIuw==
 
-okaselect@^0.0.12:
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/okaselect/-/okaselect-0.0.12.tgz#af9623424a9b29d3e15929333a000ece6b3aa2e6"
-  integrity sha512-yL96zr8psVdpz8Sb9Z2SL5W60VwBeLjLojOFOjBIzzP/Re5Vym70REIc4XWj4k5yzz6mHtAI/nqOH4PK90cE3w==
+okaselect@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/okaselect/-/okaselect-0.1.0.tgz#f44bb77d99ab5e0b2ecd9bd07e3b889e572236c3"
+  integrity sha512-/bTs+CiYzniAK7dY4o3udnTxrJbzBJHw0B6CS9PwCuX6I9krrE/Qeujg1eNn+8sFOvT2Db9w3zMPWZ31D5pUWg==
 
 once@^1.3.0:
   version "1.4.0"

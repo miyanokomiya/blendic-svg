@@ -4522,20 +4522,20 @@ object.values@^1.1.6:
     define-properties "^1.1.4"
     es-abstract "^1.20.4"
 
-okageo@^3.0.7:
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/okageo/-/okageo-3.0.7.tgz#f716f041da04c2353df4cb8f3bf3b990fa2a3eb2"
-  integrity sha512-47fm0ALQQR2Td54XSnDcebFbhsljg8iqWoqjjBuc5sX1OgwoyX4xKmgySfDJLWrVAogrqCjeFgSSve99ta5XYw==
+okageo@^3.0.8:
+  version "3.0.8"
+  resolved "https://registry.yarnpkg.com/okageo/-/okageo-3.0.8.tgz#19d9c84b5f21d196b27690d0225f05b33bacb7fb"
+  integrity sha512-k9ILN+wbpUF0Zwk/+uWDBboIqU/hj7Y/VwNXc4WPr2o6ilKRx3F63s1pIzuJ7tv6hlTTUQsL/2NFQki5DodUzQ==
 
-okahistory@^0.0.9:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/okahistory/-/okahistory-0.0.9.tgz#68c6a52366302431684137065f781597a8afae98"
-  integrity sha512-JvijOP2yIom9wIKq7lx3m57oP+nZBZd1D2cOqhu79GfLLc3XzT7YzeUjnpSJvqNYrYyAvD6YW84lKFNvQSODXw==
+okahistory@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/okahistory/-/okahistory-0.1.0.tgz#b83193ec36f17eb740d08e503f94c35e938d629e"
+  integrity sha512-284NK5gHNUFF4tfousgJyY20WxydTtXZE9mGNjqkhmv5aO7aB0dRDCQZqj4w29EJTUq1xrXh1EV+h0fIQtEYSA==
 
-okanvas@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/okanvas/-/okanvas-0.1.1.tgz#edd4edde63950e5583b2e47ef453bd0345c5e3d5"
-  integrity sha512-8QXqFEOtIrMgg/gKIsabGDzJXJqkOZbAVxSK24ClZtykhv+6FfFMFqDpSgsFwSuHLSLRFBdV4LflwovQ+uhIuw==
+okanvas@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/okanvas/-/okanvas-0.1.2.tgz#b1532a0fd8a99cd8f22d5138db748809627d4f94"
+  integrity sha512-kBeUcAfsZGhW++k4p2Rcidw577uMIVidtOe/51IAiL++uSwgftVBMrcGakKhWTbfX8DSy/9EZzvKmaIBGDxFQg==
 
 okaselect@^0.1.0:
   version "0.1.0"

@@ -92,12 +92,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           stroke="none"
           class="edge-anchor"
         />
-        <circle
-          r="5"
-          :fill="GRAPH_NODE_TYPE_COLOR[edge.type.type]"
-          stroke="none"
-          class="view-only"
-        />
+        <EdgeAnchorMale :type="edge.type" class="view-only" />
       </g>
     </g>
     <g class="view-only">
@@ -144,10 +139,9 @@ Copyright (C) 2021, Tomoya Komiyama.
           stroke="none"
           class="edge-anchor"
         />
-        <circle
-          r="5"
-          :fill="GRAPH_NODE_TYPE_COLOR[edge.type.type]"
-          stroke="none"
+        <EdgeAnchorFemale
+          :type="edge.type"
+          :connected="!!node.inputs[key].from"
           class="view-only"
         />
       </g>
@@ -163,9 +157,6 @@ import { computed, withDefaults } from 'vue'
 import { useSettings } from '../../composables/settings'
 import { GraphNode, GraphNodeEdgePositions } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
-import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
-import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
-import ErrorText from '/@/components/elements/atoms/ErrorText.vue'
 import { mapReduce } from '/@/utils/commons'
 import { getDataTypeAndValue, getInputTypes } from '/@/utils/graphNodes'
 import { Size } from 'okanvas'
@@ -173,6 +164,12 @@ import { injectGetGraphNodeModuleFn } from '/@/composables/animationGraph'
 </script>
 
 <script setup lang="ts">
+import ErrorText from '/@/components/elements/atoms/ErrorText.vue'
+import GraphNodeDataField from '/@/components/elements/GraphNodeDataField.vue'
+import GraphNodeInputLabel from '/@/components/elements/GraphNodeInputLabel.vue'
+import EdgeAnchorMale from '/@/components/elements/atoms/EdgeAnchorMale.vue'
+import EdgeAnchorFemale from '/@/components/elements/atoms/EdgeAnchorFemale.vue'
+
 const props = withDefaults(
   defineProps<{
     node: GraphNode
@@ -251,7 +248,6 @@ const inputTypeMap = computed(() => {
   return getInputTypes(nodeStruct.value, props.node)
 })
 
-const GRAPH_NODE_TYPE_COLOR = helpers.GRAPH_NODE_TYPE_COLOR
 const GRAPH_NODE_ROW_HEIGHT = helpers.GRAPH_NODE_ROW_HEIGHT
 
 const outlineStroke = computed(() =>

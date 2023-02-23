@@ -37,9 +37,17 @@ Copyright (C) 2021, Tomoya Komiyama.
       :stroke-width="9 * scale"
       fill="none"
     />
-    <g v-if="status" fill="none" :stroke="selectedColor" stroke-width="5">
-      <circle :cx="from.x" :cy="from.y" r="7" />
-      <circle :cx="to.x" :cy="to.y" r="7" />
+    <g
+      v-if="type && inputMarkerPoint"
+      :transform="`translate(${inputMarkerPoint.x},${inputMarkerPoint.y})`"
+    >
+      <EdgeAnchorFemale :type="type" />
+    </g>
+    <g
+      v-if="type && outputMarkerPoint"
+      :transform="`translate(${outputMarkerPoint.x},${outputMarkerPoint.y})`"
+    >
+      <EdgeAnchorMale :type="type" />
     </g>
   </g>
 </template>
@@ -50,9 +58,13 @@ import { IVec2 } from 'okageo'
 import { useSettings } from '/@/composables/settings'
 import { injectScale } from '/@/composables/canvas'
 import { getGraphNodeEdgePath } from '/@/utils/helpers'
+import { ValueType } from '/@/models/graphNode'
 </script>
 
 <script setup lang="ts">
+import EdgeAnchorMale from '/@/components/elements/atoms/EdgeAnchorMale.vue'
+import EdgeAnchorFemale from '/@/components/elements/atoms/EdgeAnchorFemale.vue'
+
 const props = withDefaults(
   defineProps<{
     from: IVec2
@@ -62,8 +74,12 @@ const props = withDefaults(
     inputKey?: string
     outputId?: string
     outputKey?: string
+    type?: ValueType
+    inputMarker?: boolean
+    outputMarker?: boolean
   }>(),
   {
+    type: undefined,
     status: undefined,
     inputId: undefined,
     inputKey: undefined,
@@ -75,9 +91,24 @@ const props = withDefaults(
 const pathD = computed(() => getGraphNodeEdgePath(props.from, props.to))
 const { settings } = useSettings()
 const scale = computed(injectScale())
-
-const selectedColor = computed(() => settings.selectedColor)
 const stroke = computed(() => (props.status ? settings.selectedColor : '#888'))
+
+const inputMarkerPoint = computed(() =>
+  props.inputMarker
+    ? {
+        x: props.from.x + (props.status === 'connected' ? 8 : 0),
+        y: props.from.y,
+      }
+    : undefined
+)
+const outputMarkerPoint = computed(() =>
+  props.outputMarker
+    ? {
+        x: props.to.x - (props.status === 'connected' ? 8 : 0),
+        y: props.to.y,
+      }
+    : undefined
+)
 </script>
 
 <style scoped>

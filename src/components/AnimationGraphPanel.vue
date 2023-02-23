@@ -85,7 +85,10 @@ Copyright (C) 2021, Tomoya Komiyama.
             :key="i"
             :from="edge.output"
             :to="edge.input"
+            :type="edge.type"
             :status="edge.connected ? 'connected' : 'connecting'"
+            :input-marker="edge.draftOutput"
+            :output-marker="!edge.draftOutput"
           />
         </g>
       </AnimationGraphCanvas>
@@ -119,6 +122,8 @@ import {
 } from '/@/composables/animationGraph'
 import { getGraphNodeRect } from '/@/utils/helpers'
 import { getWrapperRect } from '/@/utils/geometry'
+import { ValueType } from '/@/models/graphNode'
+import { getInputType, getOutputType } from '/@/utils/graphNodes'
 
 const canvasTypeOptions = [
   { value: 'graph', label: 'Graph' },
@@ -234,7 +239,14 @@ const editedNodeMap = graphStore.editedNodeMap
 const edgePositionMap = graphStore.edgePositionMap
 
 const draftEdges = computed<
-  { output: IVec2; input: IVec2; connected?: boolean }[] | undefined
+  | {
+      output: IVec2
+      input: IVec2
+      type: ValueType
+      draftOutput?: boolean
+      connected?: boolean
+    }[]
+  | undefined
 >(() => {
   const draftEdge = graphStore.draftEdge.value
   if (!draftEdge) return undefined
@@ -244,6 +256,11 @@ const draftEdges = computed<
 
   if (draftEdge.type === 'draft-input') {
     const node = nodeMap[draftEdge.output.nodeId]
+    const type = getOutputType(
+      getGraphNodeModule.value(node.type)?.struct,
+      node,
+      draftEdge.output.key
+    )
     return node
       ? [
           {
@@ -252,11 +269,18 @@ const draftEdges = computed<
               positions[node.id].outputs[draftEdge.output.key].p
             ),
             input: draftEdge.input,
+            type,
             connected: draftEdge.connected,
           },
         ]
       : undefined
   } else {
+    const indexInput = draftEdge.inputs[0]
+    const type = getInputType(
+      getGraphNodeModule.value(nodeMap[indexInput.nodeId].type)?.struct,
+      nodeMap[indexInput.nodeId],
+      indexInput.key
+    )
     return draftEdge.inputs
       .filter((input) => nodeMap[input.nodeId])
       .map((input) => ({
@@ -265,7 +289,9 @@ const draftEdges = computed<
           nodeMap[input.nodeId].position,
           positions[input.nodeId].inputs[input.key].p
         ),
+        type,
         connected: draftEdge.connected,
+        draftOutput: true,
       }))
   }
 })

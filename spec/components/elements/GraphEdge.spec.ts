@@ -19,6 +19,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 
 import { mount } from '@vue/test-utils'
 import Target from '/@/components/elements/GraphEdge.vue'
+import { UNIT_VALUE_TYPES } from '/@/utils/graphNodes/core'
 
 describe('src/components/elements/GraphEdge.vue', () => {
   describe('snapshot', () => {
@@ -34,6 +35,8 @@ describe('src/components/elements/GraphEdge.vue', () => {
           from: { x: 1, y: 2 },
           to: { x: 10, y: 20 },
           status: 'connecting',
+          type: UNIT_VALUE_TYPES.SCALER,
+          inputMarker: true,
         },
       })
       expect(wrapper.element).toMatchSnapshot()
@@ -44,6 +47,8 @@ describe('src/components/elements/GraphEdge.vue', () => {
           from: { x: 1, y: 2 },
           to: { x: 10, y: 20 },
           status: 'connected',
+          type: UNIT_VALUE_TYPES.SCALER,
+          outputMarker: true,
         },
       })
       expect(wrapper.element).toMatchSnapshot()

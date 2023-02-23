@@ -58,41 +58,58 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <div class="main">
       <AnimationGraphCanvas class="canvas" :canvas="canvas">
-        <g v-for="(edgeMapOfNode, id) in edgeSummaryMap" :key="id">
-          <GraphEdge
-            v-for="(edge, key) in edgeMapOfNode"
-            :key="key"
-            :from="edge.from"
-            :to="edge.to"
-            :input-id="edge.inputId"
-            :input-key="edge.inputKey"
-            :output-id="edge.outputId"
-            :output-key="edge.outputKey"
-            :type="edge.type"
-            input-marker
-            output-marker
-          />
+        <g v-for="(edgeMapOfNode, id) in edgeSummaryMap" :key="`edge_${id}`">
+          <g v-for="(edge, key) in edgeMapOfNode" :key="key">
+            <GraphEdge
+              :key="key"
+              :from="edge.from"
+              :to="edge.to"
+              :input-id="edge.inputId"
+              :input-key="edge.inputKey"
+              :output-id="edge.outputId"
+              :output-key="edge.outputKey"
+            />
+            <EdgeAnchorMale
+              :type="edge.type"
+              :transform="`translate(${edge.to.x - 8},${edge.to.y})`"
+            />
+            <EdgeAnchorFemale
+              :type="edge.type"
+              :transform="`translate(${edge.from.x + 8},${edge.from.y})`"
+            />
+          </g>
         </g>
         <component
           :is="node.type === 'reroute' ? GraphNodeReroute : GraphNode"
           v-for="node in editedNodeMap"
-          :key="node.id"
+          :key="`node_${node.id}`"
           :node="node"
           :edge-positions="edgePositionMap[node.id]"
           :selected="selectedNodes[node.id]"
           :errors="nodeErrorMessagesMap[node.id]"
         />
         <g v-if="draftEdges">
-          <GraphEdge
-            v-for="(edge, i) in draftEdges"
-            :key="i"
-            :from="edge.output"
-            :to="edge.input"
-            :status="edge.connected ? 'connected' : 'connecting'"
-            :type="edge.type"
-            :input-marker="edge.draftOutput"
-            :output-marker="!edge.draftOutput"
-          />
+          <g v-for="(edge, i) in draftEdges" :key="`draft-edge_${i}`">
+            <GraphEdge
+              :from="edge.output"
+              :to="edge.input"
+              :status="edge.connected ? 'connected' : 'connecting'"
+            />
+            <EdgeAnchorMale
+              v-if="!edge.draftOutput || edge.connected"
+              :type="edge.type"
+              :transform="`translate(${
+                edge.input.x - (edge.connected ? 8 : 0)
+              },${edge.input.y})`"
+            />
+            <EdgeAnchorFemale
+              v-if="edge.draftOutput || edge.connected"
+              :type="edge.type"
+              :transform="`translate(${
+                edge.output.x + (edge.connected ? 8 : 0)
+              },${edge.output.y})`"
+            />
+          </g>
         </g>
       </AnimationGraphCanvas>
       <GraphSideBar class="side-bar" />
@@ -127,6 +144,8 @@ import { getGraphNodeRect } from '/@/utils/helpers'
 import { getWrapperRect } from '/@/utils/geometry'
 import { ValueType } from '/@/models/graphNode'
 import { getInputType, getOutputType } from '/@/utils/graphNodes'
+import EdgeAnchorMale from '/@/components/elements/atoms/EdgeAnchorMale.vue'
+import EdgeAnchorFemale from '/@/components/elements/atoms/EdgeAnchorFemale.vue'
 
 const canvasTypeOptions = [
   { value: 'graph', label: 'Graph' },

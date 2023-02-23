@@ -19,20 +19,6 @@ exports[`src/components/elements/GraphEdge.vue snapshot connected 1`] = `
     stroke-width="4"
   />
   <!--v-if-->
-  <!--v-if-->
-  <g
-    transform="translate(2,20)"
-  >
-    <g
-      fill="#aaa"
-      stroke="#333"
-    >
-      <path
-        d="M-6,-8 l6,0 l6,8 l-6,8 l-6,0z"
-        stroke-linejoin="round"
-      />
-    </g>
-  </g>
 </g>
 `;
 
@@ -54,20 +40,6 @@ exports[`src/components/elements/GraphEdge.vue snapshot connecting 1`] = `
     stroke="orange"
     stroke-width="4"
   />
-  <!--v-if-->
-  <g
-    transform="translate(1,2)"
-  >
-    <g
-      fill="#aaa"
-      stroke="#333"
-    >
-      <path
-        d="M-8,-8 l12,0 l0,16 l-12,0 l6,-8z"
-        stroke-linejoin="round"
-      />
-    </g>
-  </g>
   <!--v-if-->
 </g>
 `;
@@ -97,7 +69,5 @@ exports[`src/components/elements/GraphEdge.vue snapshot initial 1`] = `
     stroke="#888"
     stroke-width="9"
   />
-  <!--v-if-->
-  <!--v-if-->
 </g>
 `;

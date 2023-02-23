@@ -68,6 +68,9 @@ Copyright (C) 2021, Tomoya Komiyama.
             :input-key="edge.inputKey"
             :output-id="edge.outputId"
             :output-key="edge.outputKey"
+            :type="edge.type"
+            input-marker
+            output-marker
           />
         </g>
         <component
@@ -85,8 +88,8 @@ Copyright (C) 2021, Tomoya Komiyama.
             :key="i"
             :from="edge.output"
             :to="edge.input"
-            :type="edge.type"
             :status="edge.connected ? 'connected' : 'connecting'"
+            :type="edge.type"
             :input-marker="edge.draftOutput"
             :output-marker="!edge.draftOutput"
           />

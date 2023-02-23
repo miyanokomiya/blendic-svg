@@ -19,34 +19,20 @@ Copyright (C) 2023, Tomoya Komiyama.
 
 <template>
   <g :fill="fill" stroke="#333">
-    <g v-if="d">
-      <path :d="d" stroke-linejoin="round" />
-      <EdgeAnchorMale
-        v-if="connected"
-        :type="type"
-        transform="translate(-8,0)"
-      />
-    </g>
-    <circle v-else r="5" />
+    <path :d="d" stroke-linejoin="round" />
   </g>
 </template>
 
 <script lang="ts">
-import { computed, withDefaults } from 'vue'
+import { computed } from 'vue'
 import { GRAPH_VALUE_TYPE, ValueType } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
 </script>
 
 <script setup lang="ts">
-import EdgeAnchorMale from '/@/components/elements/atoms/EdgeAnchorMale.vue'
-
-const props = withDefaults(
-  defineProps<{
-    type: ValueType
-    connected?: boolean
-  }>(),
-  { connected: false }
-)
+const props = defineProps<{
+  type: ValueType
+}>()
 
 const fill = computed(() => helpers.GRAPH_NODE_TYPE_COLOR[props.type.type])
 
@@ -66,7 +52,7 @@ const d = computed(() => {
     case GRAPH_VALUE_TYPE.D:
       return 'M-8,-8 l12,0 l0,16 l-12,0 l0,-3 a6,8,0,0,0,6,-8 l-6,0z'
     default:
-      return ''
+      return 'M-8,-8 l12,0 l0,16 l-12,0 l6,-8z'
   }
 })
 </script>

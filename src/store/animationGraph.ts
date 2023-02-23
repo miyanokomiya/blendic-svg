@@ -67,6 +67,7 @@ import {
   getNodeErrors,
   completeNodeMap,
   NODE_MENU_OPTIONS_SRC,
+  getInputType,
 } from '/@/utils/graphNodes'
 import { getNotDuplicatedName } from '/@/utils/relations'
 import { useStore } from '/@/store'
@@ -770,6 +771,7 @@ export function createStore(
 
     return mapReduce(allNodes, (node) => {
       const inputsPositions = edgePositionMap.value[node.id].inputs
+      const struct = getGraphNodeModuleFn.value()(node.type)?.struct
       return Object.entries(node.inputs).reduce<IdMap<EdgeSummary>>(
         (p, [key, input]) => {
           if (
@@ -791,6 +793,7 @@ export function createStore(
             inputKey: key,
             outputId: input.from.id,
             outputKey: input.from.key,
+            type: getInputType(struct, node, key),
           }
           return p
         },

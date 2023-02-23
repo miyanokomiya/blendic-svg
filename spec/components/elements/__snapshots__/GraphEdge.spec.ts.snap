@@ -62,13 +62,10 @@ exports[`src/components/elements/GraphEdge.vue snapshot connecting 1`] = `
       fill="#aaa"
       stroke="#333"
     >
-      <g>
-        <path
-          d="M-8,-8 l12,0 l0,16 l-12,0 l6,-8z"
-          stroke-linejoin="round"
-        />
-        <!--v-if-->
-      </g>
+      <path
+        d="M-8,-8 l12,0 l0,16 l-12,0 l6,-8z"
+        stroke-linejoin="round"
+      />
     </g>
   </g>
   <!--v-if-->

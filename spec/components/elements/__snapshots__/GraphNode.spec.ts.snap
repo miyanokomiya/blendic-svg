@@ -252,13 +252,10 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
         fill="#daa520"
         stroke="#333"
       >
-        <g>
-          <path
-            d="M-8,-8 l12,0 l0,16 l-12,0 l6,-4 l-6,-4 l6,-4z"
-            stroke-linejoin="round"
-          />
-          <!--v-if-->
-        </g>
+        <path
+          d="M-8,-8 l12,0 l0,16 l-12,0 l6,-4 l-6,-4 l6,-4z"
+          stroke-linejoin="round"
+        />
       </g>
     </g>
     

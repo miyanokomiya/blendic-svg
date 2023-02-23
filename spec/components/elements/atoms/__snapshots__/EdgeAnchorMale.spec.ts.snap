@@ -5,8 +5,9 @@ exports[`src/components/elements/atoms/EdgeAnchorMale.vue snapshot: BONE 1`] = `
   fill="#4b0082"
   stroke="#333"
 >
-  <circle
-    r="5"
+  <path
+    d="M-6,-8 l6,0 l6,8 l-6,8 l-6,0z"
+    stroke-linejoin="round"
   />
 </g>
 `;
@@ -28,8 +29,9 @@ exports[`src/components/elements/atoms/EdgeAnchorMale.vue snapshot: COLOR 1`] = 
   fill="#32cd32"
   stroke="#333"
 >
-  <circle
-    r="5"
+  <path
+    d="M-6,-8 l6,0 l6,8 l-6,8 l-6,0z"
+    stroke-linejoin="round"
   />
 </g>
 `;
@@ -51,8 +53,9 @@ exports[`src/components/elements/atoms/EdgeAnchorMale.vue snapshot: GENERICS 1`]
   fill="#b0c4de"
   stroke="#333"
 >
-  <circle
-    r="5"
+  <path
+    d="M-6,-8 l6,0 l6,8 l-6,8 l-6,0z"
+    stroke-linejoin="round"
   />
 </g>
 `;
@@ -62,8 +65,9 @@ exports[`src/components/elements/atoms/EdgeAnchorMale.vue snapshot: INPUT 1`] = 
   fill="#ff7f50"
   stroke="#333"
 >
-  <circle
-    r="5"
+  <path
+    d="M-6,-8 l6,0 l6,8 l-6,8 l-6,0z"
+    stroke-linejoin="round"
   />
 </g>
 `;
@@ -85,8 +89,9 @@ exports[`src/components/elements/atoms/EdgeAnchorMale.vue snapshot: OUTPUT 1`] =
   fill="#df7698"
   stroke="#333"
 >
-  <circle
-    r="5"
+  <path
+    d="M-6,-8 l6,0 l6,8 l-6,8 l-6,0z"
+    stroke-linejoin="round"
   />
 </g>
 `;
@@ -108,8 +113,9 @@ exports[`src/components/elements/atoms/EdgeAnchorMale.vue snapshot: STOP 1`] = `
   fill="#8b008b"
   stroke="#333"
 >
-  <circle
-    r="5"
+  <path
+    d="M-6,-8 l6,0 l6,8 l-6,8 l-6,0z"
+    stroke-linejoin="round"
   />
 </g>
 `;
@@ -119,8 +125,9 @@ exports[`src/components/elements/atoms/EdgeAnchorMale.vue snapshot: TEXT 1`] = `
   fill="#808000"
   stroke="#333"
 >
-  <circle
-    r="5"
+  <path
+    d="M-6,-8 l6,0 l6,8 l-6,8 l-6,0z"
+    stroke-linejoin="round"
   />
 </g>
 `;
@@ -142,8 +149,9 @@ exports[`src/components/elements/atoms/EdgeAnchorMale.vue snapshot: UNKNOWN 1`] 
   fill="#fff"
   stroke="#333"
 >
-  <circle
-    r="5"
+  <path
+    d="M-6,-8 l6,0 l6,8 l-6,8 l-6,0z"
+    stroke-linejoin="round"
   />
 </g>
 `;

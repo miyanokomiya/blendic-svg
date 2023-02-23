@@ -19,24 +19,20 @@ Copyright (C) 2023, Tomoya Komiyama.
 
 <template>
   <g :fill="fill" stroke="#333">
-    <path v-if="d" :d="d" stroke-linejoin="round" />
-    <circle v-else r="5" />
+    <path :d="d" stroke-linejoin="round" />
   </g>
 </template>
 
 <script lang="ts">
-import { computed, withDefaults } from 'vue'
+import { computed } from 'vue'
 import { GRAPH_VALUE_TYPE, ValueType } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
 </script>
 
 <script setup lang="ts">
-const props = withDefaults(
-  defineProps<{
-    type: ValueType
-  }>(),
-  {}
-)
+const props = defineProps<{
+  type: ValueType
+}>()
 
 const fill = computed(() => helpers.GRAPH_NODE_TYPE_COLOR[props.type.type])
 
@@ -55,7 +51,7 @@ const d = computed(() => {
     case GRAPH_VALUE_TYPE.D:
       return 'M-6,-8 l6,0 l0,5 l6,0 a6,8,0,0,1,-6,8 l0,3 l-6,0z'
     default:
-      return ''
+      return 'M-6,-8 l6,0 l6,8 l-6,8 l-6,0z'
   }
 })
 </script>

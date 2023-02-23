@@ -25,9 +25,6 @@ describe('src/components/elements/atoms/EdgeAnchorFemale.vue', () => {
   it('snapshot', () => {
     Object.entries(UNIT_VALUE_TYPES).forEach(([key, type]) => {
       expect(mount(Target, { props: { type } }).element).toMatchSnapshot(key)
-      expect(
-        mount(Target, { props: { type, connected: true } }).element
-      ).toMatchSnapshot(`${key}: connected`)
     })
   })
 })

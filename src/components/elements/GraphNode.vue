@@ -139,11 +139,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           stroke="none"
           class="edge-anchor"
         />
-        <EdgeAnchorFemale
-          :type="edge.type"
-          :connected="!!node.inputs[key].from"
-          class="view-only"
-        />
+        <EdgeAnchorFemale :type="edge.type" class="view-only" />
       </g>
     </g>
     <g v-if="errors" :transform="`translate(0, ${size.height})`">

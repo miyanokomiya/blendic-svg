@@ -96,7 +96,7 @@ const stroke = computed(() => (props.status ? settings.selectedColor : '#888'))
 const inputMarkerPoint = computed(() =>
   props.inputMarker
     ? {
-        x: props.from.x + (props.status === 'connected' ? 8 : 0),
+        x: props.from.x + (props?.status === 'connecting' ? 0 : 8),
         y: props.from.y,
       }
     : undefined
@@ -104,7 +104,7 @@ const inputMarkerPoint = computed(() =>
 const outputMarkerPoint = computed(() =>
   props.outputMarker
     ? {
-        x: props.to.x - (props.status === 'connected' ? 8 : 0),
+        x: props.to.x - (props?.status === 'connecting' ? 0 : 8),
         y: props.to.y,
       }
     : undefined

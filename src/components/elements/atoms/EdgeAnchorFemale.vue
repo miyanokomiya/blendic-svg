@@ -57,6 +57,14 @@ const d = computed(() => {
       return 'M-8,-8 l12,0 l0,16 l-12,0 l6,-8z'
     case GRAPH_VALUE_TYPE.VECTOR2:
       return 'M-8,-8 l12,0 l0,16 l-12,0 l6,-4 l-6,-4 l6,-4z'
+    case GRAPH_VALUE_TYPE.TRANSFORM:
+      return 'M-8,-8 l12,0 l0,16 l-12,0 l0,-4 l6,0 l0,-8 l-6,0z'
+    case GRAPH_VALUE_TYPE.BOOLEAN:
+      return 'M-8,-8 l12,0 l0,16 l-12,0 l0,-3 l6,-8 l-6,0z'
+    case GRAPH_VALUE_TYPE.OBJECT:
+      return 'M-8,-8 l12,0 l0,16 l-12,0 l0,-4 a5,5,0,1,0,0,-8z'
+    case GRAPH_VALUE_TYPE.D:
+      return 'M-8,-8 l12,0 l0,16 l-12,0 l0,-3 a6,8,0,0,0,6,-8 l-6,0z'
     default:
       return ''
   }

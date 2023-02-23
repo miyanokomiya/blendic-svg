@@ -27,9 +27,13 @@ exports[`src/components/elements/atoms/EdgeAnchorFemale.vue snapshot: BOOLEAN 1`
   fill="#b22222"
   stroke="#333"
 >
-  <circle
-    r="5"
-  />
+  <g>
+    <path
+      d="M-8,-8 l12,0 l0,16 l-12,0 l0,-3 l6,-8 l-6,0z"
+      stroke-linejoin="round"
+    />
+    <!--v-if-->
+  </g>
 </g>
 `;
 
@@ -38,9 +42,22 @@ exports[`src/components/elements/atoms/EdgeAnchorFemale.vue snapshot: BOOLEAN: c
   fill="#b22222"
   stroke="#333"
 >
-  <circle
-    r="5"
-  />
+  <g>
+    <path
+      d="M-8,-8 l12,0 l0,16 l-12,0 l0,-3 l6,-8 l-6,0z"
+      stroke-linejoin="round"
+    />
+    <g
+      fill="#b22222"
+      stroke="#333"
+      transform="translate(-8,0)"
+    >
+      <path
+        d="M-6,-8 l6,0 l0,3 l6,0 l0,2 l-6,8 l0,3 l-6,0z"
+        stroke-linejoin="round"
+      />
+    </g>
+  </g>
 </g>
 `;
 
@@ -71,9 +88,13 @@ exports[`src/components/elements/atoms/EdgeAnchorFemale.vue snapshot: D 1`] = `
   fill="#00bfff"
   stroke="#333"
 >
-  <circle
-    r="5"
-  />
+  <g>
+    <path
+      d="M-8,-8 l12,0 l0,16 l-12,0 l0,-3 a6,8,0,0,0,6,-8 l-6,0z"
+      stroke-linejoin="round"
+    />
+    <!--v-if-->
+  </g>
 </g>
 `;
 
@@ -82,9 +103,22 @@ exports[`src/components/elements/atoms/EdgeAnchorFemale.vue snapshot: D: connect
   fill="#00bfff"
   stroke="#333"
 >
-  <circle
-    r="5"
-  />
+  <g>
+    <path
+      d="M-8,-8 l12,0 l0,16 l-12,0 l0,-3 a6,8,0,0,0,6,-8 l-6,0z"
+      stroke-linejoin="round"
+    />
+    <g
+      fill="#00bfff"
+      stroke="#333"
+      transform="translate(-8,0)"
+    >
+      <path
+        d="M-6,-8 l6,0 l0,5 l6,0 a6,8,0,0,1,-6,8 l0,3 l-6,0z"
+        stroke-linejoin="round"
+      />
+    </g>
+  </g>
 </g>
 `;
 
@@ -137,9 +171,13 @@ exports[`src/components/elements/atoms/EdgeAnchorFemale.vue snapshot: OBJECT 1`]
   fill="#ee82ee"
   stroke="#333"
 >
-  <circle
-    r="5"
-  />
+  <g>
+    <path
+      d="M-8,-8 l12,0 l0,16 l-12,0 l0,-4 a5,5,0,1,0,0,-8z"
+      stroke-linejoin="round"
+    />
+    <!--v-if-->
+  </g>
 </g>
 `;
 
@@ -148,9 +186,22 @@ exports[`src/components/elements/atoms/EdgeAnchorFemale.vue snapshot: OBJECT: co
   fill="#ee82ee"
   stroke="#333"
 >
-  <circle
-    r="5"
-  />
+  <g>
+    <path
+      d="M-8,-8 l12,0 l0,16 l-12,0 l0,-4 a5,5,0,1,0,0,-8z"
+      stroke-linejoin="round"
+    />
+    <g
+      fill="#ee82ee"
+      stroke="#333"
+      transform="translate(-8,0)"
+    >
+      <path
+        d="M-6,-8 l6,0 l0,4 a5,5,0,1,1,0,8 l0,4 l-6,0z"
+        stroke-linejoin="round"
+      />
+    </g>
+  </g>
 </g>
 `;
 
@@ -264,9 +315,13 @@ exports[`src/components/elements/atoms/EdgeAnchorFemale.vue snapshot: TRANSFORM 
   fill="#a0522d"
   stroke="#333"
 >
-  <circle
-    r="5"
-  />
+  <g>
+    <path
+      d="M-8,-8 l12,0 l0,16 l-12,0 l0,-4 l6,0 l0,-8 l-6,0z"
+      stroke-linejoin="round"
+    />
+    <!--v-if-->
+  </g>
 </g>
 `;
 
@@ -275,9 +330,22 @@ exports[`src/components/elements/atoms/EdgeAnchorFemale.vue snapshot: TRANSFORM:
   fill="#a0522d"
   stroke="#333"
 >
-  <circle
-    r="5"
-  />
+  <g>
+    <path
+      d="M-8,-8 l12,0 l0,16 l-12,0 l0,-4 l6,0 l0,-8 l-6,0z"
+      stroke-linejoin="round"
+    />
+    <g
+      fill="#a0522d"
+      stroke="#333"
+      transform="translate(-8,0)"
+    >
+      <path
+        d="M-6,-8 l6,0 l0,4 l6,0 l0,8 l-6,0 l0,4 l-6,0z"
+        stroke-linejoin="round"
+      />
+    </g>
+  </g>
 </g>
 `;
 

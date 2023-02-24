@@ -58,36 +58,47 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <div class="main">
       <AnimationGraphCanvas class="canvas" :canvas="canvas">
-        <g v-for="(edgeMapOfNode, id) in edgeSummaryMap" :key="`edge_${id}`">
-          <g v-for="(edge, key) in edgeMapOfNode" :key="key">
-            <GraphEdge
-              :key="key"
-              :from="edge.from"
-              :to="edge.to"
-              :input-id="edge.inputId"
-              :input-key="edge.inputKey"
-              :output-id="edge.outputId"
-              :output-key="edge.outputKey"
-            />
-            <EdgeAnchorMale
-              :type="edge.type"
-              :transform="`translate(${edge.to.x - 8},${edge.to.y})`"
-            />
-            <EdgeAnchorFemale
-              :type="edge.type"
-              :transform="`translate(${edge.from.x + 8},${edge.from.y})`"
-            />
+        <g>
+          <g v-for="(edgeMapOfNode, id) in edgeSummaryMap" :key="`edge_${id}`">
+            <g v-for="(edge, key) in edgeMapOfNode" :key="key">
+              <GraphEdge
+                :key="key"
+                :from="edge.from"
+                :to="edge.to"
+                :input-id="edge.inputId"
+                :input-key="edge.inputKey"
+                :output-id="edge.outputId"
+                :output-key="edge.outputKey"
+              />
+            </g>
+          </g>
+          <g
+            v-for="(edgeMapOfNode, id) in edgeSummaryMap"
+            :key="`connector_${id}`"
+          >
+            <g v-for="(edge, key) in edgeMapOfNode" :key="key">
+              <EdgeAnchorMale
+                :type="edge.type"
+                :transform="`translate(${edge.to.x - 8},${edge.to.y})`"
+              />
+              <EdgeAnchorFemale
+                :type="edge.type"
+                :transform="`translate(${edge.from.x + 8},${edge.from.y})`"
+              />
+            </g>
           </g>
         </g>
-        <component
-          :is="node.type === 'reroute' ? GraphNodeReroute : GraphNode"
-          v-for="node in editedNodeMap"
-          :key="`node_${node.id}`"
-          :node="node"
-          :edge-positions="edgePositionMap[node.id]"
-          :selected="selectedNodes[node.id]"
-          :errors="nodeErrorMessagesMap[node.id]"
-        />
+        <g>
+          <component
+            :is="node.type === 'reroute' ? GraphNodeReroute : GraphNode"
+            v-for="node in editedNodeMap"
+            :key="`node_${node.id}`"
+            :node="node"
+            :edge-positions="edgePositionMap[node.id]"
+            :selected="selectedNodes[node.id]"
+            :errors="nodeErrorMessagesMap[node.id]"
+          />
+        </g>
         <g v-if="draftEdges">
           <g v-for="(edge, i) in draftEdges" :key="`draft-edge_${i}`">
             <GraphEdge

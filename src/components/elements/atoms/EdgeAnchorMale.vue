@@ -25,8 +25,9 @@ Copyright (C) 2023, Tomoya Komiyama.
 
 <script lang="ts">
 import { computed } from 'vue'
-import { GRAPH_VALUE_TYPE, ValueType } from '/@/models/graphNode'
+import { ValueType } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'
+import { getSurface } from '/@/components/elements/atoms/edgeAnchor'
 </script>
 
 <script setup lang="ts">
@@ -35,23 +36,5 @@ const props = defineProps<{
 }>()
 
 const fill = computed(() => helpers.GRAPH_NODE_TYPE_COLOR[props.type.type])
-
-const d = computed(() => {
-  switch (props.type.type) {
-    case GRAPH_VALUE_TYPE.SCALER:
-      return 'M-6,-8 l6,0 l6,8 l-6,8 l-6,0z'
-    case GRAPH_VALUE_TYPE.VECTOR2:
-      return 'M-6,-8 l6,0 l6,4 l-6,4 l6,4 l-6,4 l-6,0z'
-    case GRAPH_VALUE_TYPE.TRANSFORM:
-      return 'M-6,-8 l6,0 l0,4 l6,0 l0,8 l-6,0 l0,4 l-6,0z'
-    case GRAPH_VALUE_TYPE.BOOLEAN:
-      return 'M-6,-8 l6,0 l0,3 l6,0 l0,2 l-6,8 l0,3 l-6,0z'
-    case GRAPH_VALUE_TYPE.OBJECT:
-      return 'M-6,-8 l6,0 l0,4 a5,5,0,1,1,0,8 l0,4 l-6,0z'
-    case GRAPH_VALUE_TYPE.D:
-      return 'M-6,-8 l6,0 l0,5 l6,0 a6,8,0,0,1,-6,8 l0,3 l-6,0z'
-    default:
-      return 'M-6,-8 l6,0 l6,8 l-6,8 l-6,0z'
-  }
-})
+const d = computed(() => `M-6,-8 l6,0 ${getSurface(props.type)} l-6,0z`)
 </script>

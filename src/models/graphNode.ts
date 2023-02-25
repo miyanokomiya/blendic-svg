@@ -143,6 +143,7 @@ export type EdgeSummary = {
   inputKey: string
   outputId: string
   outputKey: string
+  type: ValueType
 }
 
 ////

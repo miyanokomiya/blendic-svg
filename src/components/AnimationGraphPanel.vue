@@ -58,35 +58,69 @@ Copyright (C) 2021, Tomoya Komiyama.
     </div>
     <div class="main">
       <AnimationGraphCanvas class="canvas" :canvas="canvas">
-        <g v-for="(edgeMapOfNode, id) in edgeSummaryMap" :key="id">
-          <GraphEdge
-            v-for="(edge, key) in edgeMapOfNode"
-            :key="key"
-            :from="edge.from"
-            :to="edge.to"
-            :input-id="edge.inputId"
-            :input-key="edge.inputKey"
-            :output-id="edge.outputId"
-            :output-key="edge.outputKey"
+        <g>
+          <g v-for="(edgeMapOfNode, id) in edgeSummaryMap" :key="`edge_${id}`">
+            <g v-for="(edge, key) in edgeMapOfNode" :key="key">
+              <GraphEdge
+                :key="key"
+                :from="edge.from"
+                :to="edge.to"
+                :input-id="edge.inputId"
+                :input-key="edge.inputKey"
+                :output-id="edge.outputId"
+                :output-key="edge.outputKey"
+              />
+            </g>
+          </g>
+          <g
+            v-for="(edgeMapOfNode, id) in edgeSummaryMap"
+            :key="`connector_${id}`"
+          >
+            <g v-for="(edge, key) in edgeMapOfNode" :key="key">
+              <EdgeAnchorMale
+                :type="edge.type"
+                :transform="`translate(${edge.to.x - 8},${edge.to.y})`"
+              />
+              <EdgeAnchorFemale
+                :type="edge.type"
+                :transform="`translate(${edge.from.x + 8},${edge.from.y})`"
+              />
+            </g>
+          </g>
+        </g>
+        <g>
+          <component
+            :is="node.type === 'reroute' ? GraphNodeReroute : GraphNode"
+            v-for="node in editedNodeMap"
+            :key="`node_${node.id}`"
+            :node="node"
+            :edge-positions="edgePositionMap[node.id]"
+            :selected="selectedNodes[node.id]"
+            :errors="nodeErrorMessagesMap[node.id]"
           />
         </g>
-        <component
-          :is="node.type === 'reroute' ? GraphNodeReroute : GraphNode"
-          v-for="node in editedNodeMap"
-          :key="node.id"
-          :node="node"
-          :edge-positions="edgePositionMap[node.id]"
-          :selected="selectedNodes[node.id]"
-          :errors="nodeErrorMessagesMap[node.id]"
-        />
         <g v-if="draftEdges">
-          <GraphEdge
-            v-for="(edge, i) in draftEdges"
-            :key="i"
-            :from="edge.output"
-            :to="edge.input"
-            :status="edge.connected ? 'connected' : 'connecting'"
-          />
+          <g v-for="(edge, i) in draftEdges" :key="`draft-edge_${i}`">
+            <GraphEdge
+              :from="edge.output"
+              :to="edge.input"
+              :status="edge.connected ? 'connected' : 'connecting'"
+            />
+            <EdgeAnchorMale
+              v-if="!edge.draftOutput || edge.connected"
+              :type="edge.type"
+              :transform="`translate(${
+                edge.input.x - (edge.connected ? 8 : 0)
+              },${edge.input.y})`"
+            />
+            <EdgeAnchorFemale
+              v-if="edge.draftOutput || edge.connected"
+              :type="edge.type"
+              :transform="`translate(${
+                edge.output.x + (edge.connected ? 8 : 0)
+              },${edge.output.y})`"
+            />
+          </g>
         </g>
       </AnimationGraphCanvas>
       <GraphSideBar class="side-bar" />
@@ -119,6 +153,10 @@ import {
 } from '/@/composables/animationGraph'
 import { getGraphNodeRect } from '/@/utils/helpers'
 import { getWrapperRect } from '/@/utils/geometry'
+import { ValueType } from '/@/models/graphNode'
+import { getInputType, getOutputType } from '/@/utils/graphNodes'
+import EdgeAnchorMale from '/@/components/elements/atoms/EdgeAnchorMale.vue'
+import EdgeAnchorFemale from '/@/components/elements/atoms/EdgeAnchorFemale.vue'
 
 const canvasTypeOptions = [
   { value: 'graph', label: 'Graph' },
@@ -234,7 +272,14 @@ const editedNodeMap = graphStore.editedNodeMap
 const edgePositionMap = graphStore.edgePositionMap
 
 const draftEdges = computed<
-  { output: IVec2; input: IVec2; connected?: boolean }[] | undefined
+  | {
+      output: IVec2
+      input: IVec2
+      type: ValueType
+      draftOutput?: boolean
+      connected?: boolean
+    }[]
+  | undefined
 >(() => {
   const draftEdge = graphStore.draftEdge.value
   if (!draftEdge) return undefined
@@ -244,6 +289,11 @@ const draftEdges = computed<
 
   if (draftEdge.type === 'draft-input') {
     const node = nodeMap[draftEdge.output.nodeId]
+    const type = getOutputType(
+      getGraphNodeModule.value(node.type)?.struct,
+      node,
+      draftEdge.output.key
+    )
     return node
       ? [
           {
@@ -252,11 +302,18 @@ const draftEdges = computed<
               positions[node.id].outputs[draftEdge.output.key].p
             ),
             input: draftEdge.input,
+            type,
             connected: draftEdge.connected,
           },
         ]
       : undefined
   } else {
+    const indexInput = draftEdge.inputs[0]
+    const type = getInputType(
+      getGraphNodeModule.value(nodeMap[indexInput.nodeId].type)?.struct,
+      nodeMap[indexInput.nodeId],
+      indexInput.key
+    )
     return draftEdge.inputs
       .filter((input) => nodeMap[input.nodeId])
       .map((input) => ({
@@ -265,7 +322,9 @@ const draftEdges = computed<
           nodeMap[input.nodeId].position,
           positions[input.nodeId].inputs[input.key].p
         ),
+        type,
         connected: draftEdge.connected,
+        draftOutput: true,
       }))
   }
 })

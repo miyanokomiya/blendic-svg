@@ -189,12 +189,16 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
         r="10"
         stroke="none"
       />
-      <circle
+      <g
         class="view-only"
         fill="#daa520"
-        r="5"
-        stroke="none"
-      />
+        stroke="#333"
+      >
+        <path
+          d="M-6,-8 l6,0 l6,4 l-6,4 l6,4 l-6,4 l-6,0z"
+          stroke-linejoin="round"
+        />
+      </g>
     </g>
     
   </g>
@@ -243,12 +247,16 @@ exports[`src/components/elements/GraphNode.vue snapshot initial 1`] = `
         r="10"
         stroke="none"
       />
-      <circle
+      <g
         class="view-only"
         fill="#daa520"
-        r="5"
-        stroke="none"
-      />
+        stroke="#333"
+      >
+        <path
+          d="M-8,-8 l6,4 l-6,4 l6,4 l-6,4 l12,0 l0,-16z"
+          stroke-linejoin="round"
+        />
+      </g>
     </g>
     
   </g>

@@ -413,7 +413,7 @@ function getGraphNodeDataUnitHeight(
 export const GRAPH_NODE_TYPE_COLOR: { [key in GRAPH_VALUE_TYPE_KEY]: string } =
   {
     BOOLEAN: '#b22222',
-    SCALER: '#555',
+    SCALER: '#aaa',
     VECTOR2: '#daa520',
     TRANSFORM: '#a0522d',
     BONE: '#4b0082',

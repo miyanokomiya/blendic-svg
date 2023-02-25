@@ -37,10 +37,6 @@ Copyright (C) 2021, Tomoya Komiyama.
       :stroke-width="9 * scale"
       fill="none"
     />
-    <g v-if="status" fill="none" :stroke="selectedColor" stroke-width="5">
-      <circle :cx="from.x" :cy="from.y" r="7" />
-      <circle :cx="to.x" :cy="to.y" r="7" />
-    </g>
   </g>
 </template>
 
@@ -75,8 +71,6 @@ const props = withDefaults(
 const pathD = computed(() => getGraphNodeEdgePath(props.from, props.to))
 const { settings } = useSettings()
 const scale = computed(injectScale())
-
-const selectedColor = computed(() => settings.selectedColor)
 const stroke = computed(() => (props.status ? settings.selectedColor : '#888'))
 </script>
 

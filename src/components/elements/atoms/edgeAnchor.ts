@@ -27,6 +27,8 @@ export function getSurface(type: ValueType) {
       return 'l6,4 l-6,4 l6,4 l-6,4'
     case GRAPH_VALUE_TYPE.TRANSFORM:
       return 'l0,4 l6,0 l0,8 l-6,0 l0,4'
+    case GRAPH_VALUE_TYPE.COLOR:
+      return 'l0,4 l4,0 l0,2 l3,0 l0,4 l-3,0 l0,2 l-4,0 l0,4'
     case GRAPH_VALUE_TYPE.BOOLEAN:
       return 'l0,3 l6,0 l0,2 l-6,8 l0,3'
     case GRAPH_VALUE_TYPE.OBJECT:
@@ -35,7 +37,11 @@ export function getSurface(type: ValueType) {
       return 'l0,5 l6,0 a6,8,0,0,1,-6,8 l0,3'
     case GRAPH_VALUE_TYPE.GENERICS:
       return 'a10 10 0 0 1 0,16'
+    case GRAPH_VALUE_TYPE.INPUT:
+      return 'l0,4 l8,0 l0,8 l-3,0 l0,-2 l-5,0 l0,6'
+    case GRAPH_VALUE_TYPE.OUTPUT:
+      return 'l0,6 l5,0 l0,-2 l3,0 l0,8 l-8,0 l0,4'
     default:
-      return 'l6,8 l-6,8'
+      return 'a10 10 0 0 1 0,16'
   }
 }

@@ -37,7 +37,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       >
         <circle r="8" fill="transparent" stroke="none" />
       </g>
-      <circle r="4.5" :fill="typeColor" stroke="none" class="view-only" />
+      <EdgeAnchorMale :type="outputEdge.type" class="view-only" />
     </g>
     <g :transform="`translate(${inputEdge.p.x}, ${inputEdge.p.y})`">
       <g
@@ -48,7 +48,7 @@ Copyright (C) 2021, Tomoya Komiyama.
       >
         <circle r="8" fill="transparent" stroke="none" />
       </g>
-      <circle r="4.5" :fill="typeColor" stroke="none" class="view-only" />
+      <EdgeAnchorFemale :type="inputEdge.type" class="view-only" />
     </g>
   </g>
 </template>
@@ -56,13 +56,15 @@ Copyright (C) 2021, Tomoya Komiyama.
 <script lang="ts">
 import { computed, withDefaults } from 'vue'
 import { GraphNodeEdgePositions, GraphNodeReroute } from '/@/models/graphNode'
-import * as helpers from '/@/utils/helpers'
 import { useSettings } from '/@/composables/settings'
 
 const { settings } = useSettings()
 </script>
 
 <script setup lang="ts">
+import EdgeAnchorMale from '/@/components/elements/atoms/EdgeAnchorMale.vue'
+import EdgeAnchorFemale from '/@/components/elements/atoms/EdgeAnchorFemale.vue'
+
 const props = withDefaults(
   defineProps<{
     node: GraphNodeReroute
@@ -83,10 +85,6 @@ const outputEdge = computed(() => {
   return props.edgePositions.outputs.value
 })
 
-const typeColor = computed(
-  () =>
-    helpers.GRAPH_NODE_TYPE_COLOR[props.edgePositions.inputs.value.type.type]
-)
 const outline = computed(() => {
   const w = outputEdge.value.p.x - inputEdge.value.p.x
   return `M0,-2 Q${w},-2 ${w},10 T${0},22 z`

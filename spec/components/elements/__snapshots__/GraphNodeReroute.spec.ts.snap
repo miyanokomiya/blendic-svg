@@ -33,12 +33,16 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot initial 1`] = `
         stroke="none"
       />
     </g>
-    <circle
+    <g
       class="view-only"
       fill="#daa520"
-      r="4.5"
-      stroke="none"
-    />
+      stroke="#333"
+    >
+      <path
+        d="M-6,-8 l6,0 l6,4 l-6,4 l6,4 l-6,4 l-6,0z"
+        stroke-linejoin="round"
+      />
+    </g>
   </g>
   <g
     transform="translate(1, 2)"
@@ -55,12 +59,16 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot initial 1`] = `
         stroke="none"
       />
     </g>
-    <circle
+    <g
       class="view-only"
       fill="#daa520"
-      r="4.5"
-      stroke="none"
-    />
+      stroke="#333"
+    >
+      <path
+        d="M-8,-8 l6,4 l-6,4 l6,4 l-6,4 l12,0 l0,-16z"
+        stroke-linejoin="round"
+      />
+    </g>
   </g>
 </g>
 `;
@@ -98,12 +106,16 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot selected 1`] = `
         stroke="none"
       />
     </g>
-    <circle
+    <g
       class="view-only"
       fill="#daa520"
-      r="4.5"
-      stroke="none"
-    />
+      stroke="#333"
+    >
+      <path
+        d="M-6,-8 l6,0 l6,4 l-6,4 l6,4 l-6,4 l-6,0z"
+        stroke-linejoin="round"
+      />
+    </g>
   </g>
   <g
     transform="translate(1, 2)"
@@ -120,12 +132,16 @@ exports[`src/components/elements/GraphNodeReroute.vue snapshot selected 1`] = `
         stroke="none"
       />
     </g>
-    <circle
+    <g
       class="view-only"
       fill="#daa520"
-      r="4.5"
-      stroke="none"
-    />
+      stroke="#333"
+    >
+      <path
+        d="M-8,-8 l6,4 l-6,4 l6,4 l-6,4 l12,0 l0,-16z"
+        stroke-linejoin="round"
+      />
+    </g>
   </g>
 </g>
 `;

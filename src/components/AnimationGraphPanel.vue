@@ -72,32 +72,35 @@ Copyright (C) 2021, Tomoya Komiyama.
               />
             </g>
           </g>
-          <g
-            v-for="(edgeMapOfNode, id) in edgeSummaryMap"
-            :key="`connector_${id}`"
-          >
-            <g v-for="(edge, key) in edgeMapOfNode" :key="key">
+        </g>
+        <g>
+          <g v-for="node in editedNodeMap" :key="`node_${node.id}`">
+            <component
+              :is="node.type === 'reroute' ? GraphNodeReroute : GraphNode"
+              :node="node"
+              :edge-positions="edgePositionMap[node.id]"
+              :selected="selectedNodes[node.id]"
+              :errors="nodeErrorMessagesMap[node.id]"
+            />
+            <g
+              v-for="(edge, key) in edgeAnchorsByNode[node.id].inputs"
+              :key="`input_${key}`"
+            >
               <EdgeAnchorMale
                 :type="edge.type"
-                :transform="`translate(${edge.to.x - 8},${edge.to.y})`"
+                :transform="`translate(${edge.p.x - 8},${edge.p.y})`"
               />
+            </g>
+            <g
+              v-for="(edge, key) in edgeAnchorsByNode[node.id].outputs"
+              :key="`output_${key}`"
+            >
               <EdgeAnchorFemale
                 :type="edge.type"
-                :transform="`translate(${edge.from.x + 8},${edge.from.y})`"
+                :transform="`translate(${edge.p.x + 8},${edge.p.y})`"
               />
             </g>
           </g>
-        </g>
-        <g>
-          <component
-            :is="node.type === 'reroute' ? GraphNodeReroute : GraphNode"
-            v-for="node in editedNodeMap"
-            :key="`node_${node.id}`"
-            :node="node"
-            :edge-positions="edgePositionMap[node.id]"
-            :selected="selectedNodes[node.id]"
-            :errors="nodeErrorMessagesMap[node.id]"
-          />
         </g>
         <g v-if="draftEdges">
           <g v-for="(edge, i) in draftEdges" :key="`draft-edge_${i}`">
@@ -142,7 +145,7 @@ import { useStore } from '/@/store'
 import { useAnimationGraphStore } from '/@/store/animationGraph'
 import GraphNode from '/@/components/elements/GraphNode.vue'
 import GraphNodeReroute from '/@/components/elements/GraphNodeReroute.vue'
-import { toMap } from '/@/models'
+import { IdMap, toMap } from '/@/models'
 import { add, IVec2 } from 'okageo'
 import { useElementStore } from '/@/store/element'
 import { flatElementTree, getElementLabel } from '/@/utils/elements'
@@ -157,6 +160,7 @@ import { ValueType } from '/@/models/graphNode'
 import { getInputType, getOutputType } from '/@/utils/graphNodes'
 import EdgeAnchorMale from '/@/components/elements/atoms/EdgeAnchorMale.vue'
 import EdgeAnchorFemale from '/@/components/elements/atoms/EdgeAnchorFemale.vue'
+import { mapReduce } from '/@/utils/commons'
 
 const canvasTypeOptions = [
   { value: 'graph', label: 'Graph' },
@@ -360,6 +364,32 @@ const canvasType = graphStore.graphType
 const setGraphType = (val: any) => graphStore.setGraphType(val)
 const edgeSummaryMap = graphStore.edgeSummaryMap
 const nodeErrorMessagesMap = graphStore.nodeErrorMessagesMap
+
+type EdgeAnchor = {
+  inputs: { [key: string]: { p: IVec2; type: ValueType } }
+  outputs: { [key: string]: { p: IVec2; type: ValueType } }
+}
+const edgeAnchorsByNode = computed<IdMap<EdgeAnchor>>(() => {
+  const ret: IdMap<EdgeAnchor> = mapReduce(edgeSummaryMap.value, () => ({
+    inputs: {},
+    outputs: {},
+  }))
+
+  Object.values(edgeSummaryMap.value).forEach((info) => {
+    Object.values(info).forEach((edge) => {
+      ret[edge.inputId].inputs[edge.inputKey] ??= {
+        p: edge.to,
+        type: edge.type,
+      }
+      ret[edge.outputId].outputs[edge.outputKey] ??= {
+        p: edge.from,
+        type: edge.type,
+      }
+    })
+  })
+
+  return ret
+})
 </script>
 
 <style scoped>

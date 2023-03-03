@@ -115,6 +115,7 @@ export function useSvgCanvas(
 
   const moveType = ref<'move' | 'drag'>()
   const dragged = computed(() => moveType.value === 'drag')
+  const moving = computed(() => !!moveType.value)
 
   const editStartPoint = ref<IVec2>()
   const editStartViewOrigin = ref<IVec2>()
@@ -213,6 +214,7 @@ export function useSvgCanvas(
     scale,
     viewOrigin,
 
+    moving,
     dragged,
     endMoving,
     startMoving,

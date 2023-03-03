@@ -40,5 +40,16 @@ describe('src/components/SideBar.vue', () => {
       })
       expect(wrapper.element).toMatchSnapshot()
     })
+    it('delighlight', () => {
+      const wrapper = mount(Target, {
+        props: {
+          tabs: [{ key: 'a', label: 'aa' }],
+          defaultTab: 'a',
+          delighlight: true,
+        },
+        slots: { a: '<div>aaa</div>' },
+      })
+      expect(wrapper.element).toMatchSnapshot()
+    })
   })
 })

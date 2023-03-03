@@ -18,7 +18,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 -->
 
 <template>
-  <SideBar :tabs="tabs" default-tab="item">
+  <SideBar :delighlight="delighlight" :tabs="tabs" default-tab="item">
     <template #item>
       <GraphItemPanel />
     </template>
@@ -34,6 +34,8 @@ type TabName = '' | 'item'
 <script lang="ts" setup>
 import SideBar from '/@/components/SideBar.vue'
 import GraphItemPanel from '/@/components/panelContents/GraphItemPanel.vue'
+
+defineProps<{ delighlight?: boolean }>()
 
 const tabs = computed((): { key: TabName; label: string }[] => [
   { key: 'item', label: 'Item' },

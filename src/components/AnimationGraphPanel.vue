@@ -126,7 +126,7 @@ Copyright (C) 2021, Tomoya Komiyama.
           </g>
         </g>
       </AnimationGraphCanvas>
-      <GraphSideBar class="side-bar" />
+      <GraphSideBar :delighlight="moving" class="side-bar" />
     </div>
   </div>
 </template>
@@ -173,6 +173,7 @@ const graphStore = useAnimationGraphStore()
 const currentGraph = computed(() => graphStore.lastSelectedGraph.value)
 
 const canvas = useSvgCanvas()
+const moving = computed(() => canvas.moving.value)
 
 const getGraphNodeModule = computed(() =>
   graphStore.getGraphNodeModuleFn.value()

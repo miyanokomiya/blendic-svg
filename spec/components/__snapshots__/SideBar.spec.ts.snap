@@ -48,3 +48,34 @@ exports[`src/components/SideBar.vue snapshot defalut 1`] = `
   </div>
 </div>
 `;
+
+exports[`src/components/SideBar.vue snapshot delighlight 1`] = `
+<div
+  class="side-bar"
+>
+  <ul
+    class="tab-list"
+  >
+    
+    <li
+      class="current"
+    >
+      <a
+        href="#"
+      >
+        aa
+      </a>
+    </li>
+    
+  </ul>
+  <div
+    class="tab-content delighlight"
+  >
+    
+    <div>
+      aaa
+    </div>
+    
+  </div>
+</div>
+`;

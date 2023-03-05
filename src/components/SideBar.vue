@@ -28,7 +28,7 @@ Copyright (C) 2021, Tomoya Komiyama.
         <a href="#" @click.prevent="toggleTab(tab.key)">{{ tab.label }}</a>
       </li>
     </ul>
-    <div v-if="currentTab !== ''" class="tab-content">
+    <div v-if="currentTab !== ''" class="tab-content" :class="{ delighlight }">
       <slot :name="currentTab" />
     </div>
   </div>
@@ -41,10 +41,12 @@ const props = withDefaults(
   defineProps<{
     tabs?: { key: string; label: string }[]
     defaultTab?: string
+    delighlight?: boolean
   }>(),
   {
     tabs: () => [],
     defaultTab: '',
+    delighlight: false,
   }
 )
 
@@ -91,5 +93,11 @@ function toggleTab(tab: string) {
   max-width: 140px;
   max-height: 100%;
   overflow: auto;
+  transition: opacity 0.1s;
+}
+.tab-content.delighlight {
+  pointer-events: none;
+  opacity: 0.4;
+  transition: none;
 }
 </style>

@@ -40,7 +40,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { withDefaults, computed } from 'vue'
+import { computed } from 'vue'
 import type { KeyframeStatus } from '/@/models/keyframe'
 </script>
 

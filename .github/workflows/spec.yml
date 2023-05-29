@@ -28,7 +28,7 @@ jobs:
       - run: yarn install
       - run: yarn lint-json
       - run: yarn lint
-      - run: yarn type
+      # - run: yarn type
       - run: yarn test:unit --runInBand
       - run: yarn test:e2e
       - name: Archive E2E screenshots

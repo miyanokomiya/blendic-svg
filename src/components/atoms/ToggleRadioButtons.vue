@@ -22,7 +22,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 </template>
 
 <script setup lang="ts">
-import { withDefaults, computed } from 'vue'
+import { computed } from 'vue'
 import ToggleButtons from '/@/components/atoms/ToggleButtons.vue'
 
 const props = withDefaults(

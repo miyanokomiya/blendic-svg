@@ -54,7 +54,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, withDefaults } from 'vue'
+import { computed } from 'vue'
 import { GraphNodeEdgePositions, GraphNodeReroute } from '/@/models/graphNode'
 import { useSettings } from '/@/composables/settings'
 

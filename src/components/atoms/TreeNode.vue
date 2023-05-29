@@ -59,7 +59,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, watch, ref, withDefaults } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { TreeNode } from '/@/utils/relations'
 import { getMouseOptions } from '/@/utils/devices'
 import { injectTreeContext } from '/@/composables/treeContext'

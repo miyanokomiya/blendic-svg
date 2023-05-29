@@ -37,8 +37,6 @@ Copyright (C) 2022, Tomoya Komiyama.
 </template>
 
 <script setup lang="ts">
-import { withDefaults } from 'vue'
-
 withDefaults(defineProps<{ highlight: boolean }>(), {
   highlight: false,
 })

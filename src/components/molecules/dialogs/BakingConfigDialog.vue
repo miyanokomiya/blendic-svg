@@ -43,7 +43,7 @@ Copyright (C) 2022, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { ref, computed, withDefaults } from 'vue'
+import { ref, computed } from 'vue'
 import { Action } from '/@/models'
 import { mapFilter, toMapFromString } from '/@/utils/commons'
 </script>

@@ -75,7 +75,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, withDefaults } from 'vue'
+import { computed } from 'vue'
 import { IdMap } from '/@/models'
 import { getKeyframeTopMap, KeyframeTargetSummary } from '/@/utils/helpers'
 import { TargetPropsState } from '/@/composables/stores/targetProps'

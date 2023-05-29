@@ -149,7 +149,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { computed, withDefaults } from 'vue'
+import { computed } from 'vue'
 import { useSettings } from '../../composables/settings'
 import { GraphNode, GraphNodeEdgePositions } from '/@/models/graphNode'
 import * as helpers from '/@/utils/helpers'

@@ -35,7 +35,6 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script setup lang="ts">
-import { withDefaults } from 'vue'
 import TabPanel from './TabPanel.vue'
 import HistoryStack from '/@/components/panelContents/HistoryStack.vue'
 import FilePanel from '/@/components/panelContents/FilePanel.vue'

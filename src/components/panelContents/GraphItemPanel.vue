@@ -27,9 +27,7 @@ Copyright (C) 2021, Tomoya Komiyama.
             :label="key as string"
             :type="data.type"
             :model-value="data.value"
-            @update:model-value="
-              (val, seriesKey) => updateData(key as string, val, seriesKey)
-            "
+            @update:model-value="updateDataMap[key]"
             @start-pick-bone="startPickBone"
           />
         </BlockField>
@@ -43,9 +41,7 @@ Copyright (C) 2021, Tomoya Komiyama.
               :type="input.type"
               :model-value="input.value"
               :disabled="input.disabled"
-              @update:model-value="
-                (val, seriesKey) => updateInput(key as string, val, seriesKey)
-              "
+              @update:model-value="updateInputMap[key]"
               @start-pick-bone="startPickBone"
             />
           </BlockField>
@@ -104,6 +100,15 @@ const dataMap = computed<{
     label: key,
   }))
 })
+
+const updateDataMap = computed(() =>
+  mapReduce(
+    dataMap.value,
+    (_, key) => (val: any, seriesKey?: string) =>
+      updateData(key, val, seriesKey)
+  )
+)
+
 function updateData(key: string, val: any, seriesKey?: string) {
   const node = targetNode.value
   if (!node) return
@@ -151,6 +156,15 @@ const inputsMap = computed<{
       : { type: types[key], value: value.value, label }
   })
 })
+
+const updateInputMap = computed(() =>
+  mapReduce(
+    inputsMap.value,
+    (_, key) => (val: any, seriesKey?: string) =>
+      updateInput(key, val, seriesKey)
+  )
+)
+
 function updateInput(key: string, value: any, seriesKey?: string) {
   if (!targetNode.value) return
 

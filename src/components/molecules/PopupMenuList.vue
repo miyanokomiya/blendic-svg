@@ -54,7 +54,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { ref, computed, withDefaults } from 'vue'
+import { ref, computed } from 'vue'
 import { UIPopupMenuItem } from '/@/composables/menuList'
 
 const ITEM_HEIGHT = 26

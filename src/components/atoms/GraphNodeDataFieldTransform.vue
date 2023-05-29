@@ -82,7 +82,6 @@ Copyright (C) 2022, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { withDefaults } from 'vue'
 import { Transform } from '/@/models'
 import SliderInput from '/@/components/atoms/SliderInput.vue'
 import InlineField from '/@/components/atoms/InlineField.vue'

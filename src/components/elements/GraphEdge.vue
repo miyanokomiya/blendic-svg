@@ -41,7 +41,7 @@ Copyright (C) 2021, Tomoya Komiyama.
 </template>
 
 <script lang="ts">
-import { withDefaults, computed } from 'vue'
+import { computed } from 'vue'
 import { IVec2 } from 'okageo'
 import { useSettings } from '/@/composables/settings'
 import { injectScale } from '/@/composables/canvas'

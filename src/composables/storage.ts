@@ -565,7 +565,7 @@ interface FileHandleOptions {
       accept: {
         [mime: string]: string[]
       }
-    }
+    },
   ]
 }
 

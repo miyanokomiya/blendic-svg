@@ -172,7 +172,7 @@ export function createCustomNodeModule(
           inputs: mapReduce(inputsStruct, (input) => ({
             value: input.default,
           })),
-        } as GraphNodeBase),
+        }) as GraphNodeBase,
       data: {
         max_loop: {
           type: UNIT_VALUE_TYPES.SCALER,

@@ -184,10 +184,10 @@ export function createStore(
 
   const selectedTargetIdMap = computed(() => {
     return {
-      ...mapReduce(selectedBoneIdMap.value, () => ({ type: 'bone' } as const)),
+      ...mapReduce(selectedBoneIdMap.value, () => ({ type: 'bone' }) as const),
       ...mapReduce(
         selectedConstraintMap.value,
-        () => ({ type: 'constraint' } as const)
+        () => ({ type: 'constraint' }) as const
       ),
     }
   })

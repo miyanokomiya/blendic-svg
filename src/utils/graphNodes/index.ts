@@ -683,9 +683,8 @@ export function validateNode(
       // connected but the target not found
       p[key] = false
     } else {
-      const outputStruct = getGraphNodeModule(
-        nodeMap[input.from.id].type
-      )?.struct
+      const outputStruct = getGraphNodeModule(nodeMap[input.from.id].type)
+        ?.struct
 
       if (inputStruct && outputStruct) {
         p[key] = isSameValueType(

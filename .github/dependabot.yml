@@ -9,3 +9,15 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+    groups:
+       vue:
+         patterns:
+           - "vue"
+           - "@vue/compiler-sfc"
+       dev-linters:
+         patterns:
+           - "*prettier*"
+           - "*eslint*"
+       dev-types:
+         patterns:
+           - "@types/*"

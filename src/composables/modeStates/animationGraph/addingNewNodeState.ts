@@ -108,9 +108,8 @@ function setupPopupMenuListForEdge(
   const [edge, point] = forOutput
     ? [draft.output, draft.input]
     : [draft.inputs[0], draft.output]
-  const struct = ctx.getGraphNodeModule(
-    ctx.getNodeMap()[edge.nodeId].type
-  )?.struct
+  const struct = ctx.getGraphNodeModule(ctx.getNodeMap()[edge.nodeId].type)
+    ?.struct
   const node = ctx.getNodeMap()[edge.nodeId]
   const suggestions = getNodeSuggestionMenuOptions(
     ctx.getGraphNodeModule,

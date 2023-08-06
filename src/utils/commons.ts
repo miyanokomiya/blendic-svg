@@ -212,7 +212,7 @@ export function getUnduplicatedNameMap(
 
 export function sortByValue<
   K extends string,
-  T extends { [key in K]: string | number }
+  T extends { [key in K]: string | number },
 >(items: T[], key: K): T[] {
   const orderMap = items
     .map((b) => b[key])

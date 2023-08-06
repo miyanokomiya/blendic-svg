@@ -347,7 +347,7 @@ export function getPosedBoneHeadsOrigin(boneMap: IdMap<Bone>): IVec2 {
 }
 
 export function getTree<
-  T extends { id: string; name: string; parentId: string }
+  T extends { id: string; name: string; parentId: string },
 >(idMap: IdMap<T>): TreeNode[] {
   const noParents: T[] = []
   const parentMap: IdMap<T[]> = Object.keys(idMap).reduce<IdMap<T[]>>(
@@ -371,7 +371,7 @@ export function getTree<
 }
 
 function getChildNodes<
-  T extends { id: string; name: string; parentId: string }
+  T extends { id: string; name: string; parentId: string },
 >(parentMap: IdMap<T[]>, parentId: string): TreeNode[] {
   return (
     parentMap[parentId]?.map((b) => {

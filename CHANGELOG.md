@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - Add new node to get division remainder
+- Add `linecap` and `linejoin` attributes to `set_stroke` graph node
 
 ## [0.18.1] - 2023-01-22
 ### Added

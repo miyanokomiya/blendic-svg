@@ -373,6 +373,8 @@ export interface GraphNodeSetStroke extends GraphNodeBase {
   inputs: {
     object: GraphNodeInput<string>
     color: GraphNodeInput<Transform>
+    linecap: GraphNodeInput<number>
+    linejoin: GraphNodeInput<number>
   }
 }
 

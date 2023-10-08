@@ -421,6 +421,8 @@ const STRING_ATTRIBUTES_KEYS: { [key: string]: boolean } = {
   spreadMethod: true,
   clipPathUnits: true,
   'clip-path': true,
+  'stroke-linecap': true,
+  'stroke-linejoin': true,
 }
 
 function getGraphResolvedAttributes(

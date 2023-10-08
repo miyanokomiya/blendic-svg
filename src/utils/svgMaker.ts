@@ -702,5 +702,7 @@ const VALID_ANIMATION_CSS_ATTR_KYES = new Set([
   'spreadMethod',
   'stop-color',
   'stop-opacity',
+  'stroke-linecap',
+  'stroke-linejoin',
 ])
 const VALID_ANIMATION_ATTR_KYES = new Set(['d', 'offset'])

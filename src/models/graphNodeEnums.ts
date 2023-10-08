@@ -1,4 +1,5 @@
 import { clamp } from 'okageo'
+import { Linecap, Linejoin } from '/@/models'
 
 type GraphEnumItem<T extends string> = {
   key: T
@@ -18,9 +19,25 @@ export const SPACE_UNITS: GraphEnumItem<SPACE_UNITS_KEY>[] = [
   { key: 'objectBoundingBox', value: 1 },
 ]
 
+export const LINECAP: GraphEnumItem<Linecap>[] = [
+  { key: 'butt', value: 0 },
+  { key: 'round', value: 1 },
+  { key: 'square', value: 2 },
+]
+
+export const LINEJOIN: GraphEnumItem<Linejoin>[] = [
+  { key: 'arcs', value: 0 },
+  { key: 'round', value: 1 },
+  { key: 'bevel', value: 2 },
+  { key: 'miter', value: 3 },
+  { key: 'miter-clip', value: 4 },
+]
+
 export const GraphEnumMap = {
   SPREAD_METHOD,
   SPACE_UNITS,
+  LINECAP,
+  LINEJOIN,
 }
 export type GraphEnumMapKey = keyof typeof GraphEnumMap
 

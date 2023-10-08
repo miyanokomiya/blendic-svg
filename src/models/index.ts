@@ -191,7 +191,12 @@ export interface GraphObjectAttributes {
   spreadMethod?: 'pad' | 'reflect' | 'repeat'
   clipPathUnits?: SpaceUnits
   'clip-path'?: string
+  'stroke-linecap'?: Linecap
+  'stroke-linejoin'?: Linejoin
 }
+
+export type Linecap = 'butt' | 'round' | 'square'
+export type Linejoin = 'arcs' | 'round' | 'bevel' | 'miter' | 'miter-clip'
 
 export function getGraphObject(
   arg: Partial<GraphObject> = {},

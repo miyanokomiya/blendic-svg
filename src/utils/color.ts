@@ -114,10 +114,10 @@ export function rgbaToHsva(rgba: RGBA): HSVA {
     c === 0
       ? c
       : v === r
-      ? (g - b) / c
-      : v === g
-      ? 2 + (b - r) / c
-      : 4 + (r - g) / c
+        ? (g - b) / c
+        : v === g
+          ? 2 + (b - r) / c
+          : 4 + (r - g) / c
   return {
     h: clamp(0, 360, 60 * (h < 0 ? h + 6 : h)),
     s: clamp(0, 1, v === 0 ? v : c / v),
@@ -167,10 +167,10 @@ function svToSl(s: number, v: number): { s: number; l: number } {
     l === 0
       ? s
       : l === 1
-      ? 0
-      : l < 0.5
-      ? (s * v) / (l * 2)
-      : (s * v) / (2 - l * 2)
+        ? 0
+        : l < 0.5
+          ? (s * v) / (l * 2)
+          : (s * v) / (2 - l * 2)
 
   return { s: ss, l }
 }

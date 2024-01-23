@@ -5,9 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.18.2] - 2024-01-23
 ### Added
 - Add new node to get division remainder
 - Add `linecap` and `linejoin` attributes to `set_stroke` graph node
+
+### Changed
+- Introduce corepack and use yarn v4
 
 ## [0.18.1] - 2023-01-22
 ### Added

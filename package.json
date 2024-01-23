@@ -2,6 +2,7 @@
   "name": "blendic-svg",
   "version": "0.18.1",
   "license": "SEE LICENSE IN README.md",
+  "packageManager": "yarn@4.0.2",
   "scripts": {
     "dev": "vite",
     "type": "yarn vue-tsc --noEmit",

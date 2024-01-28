@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- Fix: Text dragging didn't work because of "preventDefault" in global "mousemove" handlers
 
 ## [0.18.2] - 2024-01-23
 ### Added

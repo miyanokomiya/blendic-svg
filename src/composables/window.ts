@@ -54,7 +54,12 @@ export function useGlobalClick(fn: (e: MouseEvent) => void, capture = false) {
   })
 }
 
-export function useGlobalMousemove(fn: (e: MouseEvent) => void) {
+/**
+ * Don't call "preventDefault" or anything related to the event can be broken.
+ */
+export function useGlobalMousemove(
+  fn: (e: Omit<MouseEvent, 'preventDefault'>) => void
+) {
   onMounted(() => {
     window.addEventListener('mousemove', fn)
   })

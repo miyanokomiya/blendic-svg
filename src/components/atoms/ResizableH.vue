@@ -104,8 +104,7 @@ const throttleDrag = useThrottle(onDrag, 1000 / 60, true)
 
 const drag = useDrag(throttleDrag)
 useGlobalMousemove((e) => {
-  e.preventDefault()
-  drag.onMove(e)
+  drag.onMove(e as any)
 })
 useGlobalMouseup(() => {
   resizableStorage.save(rate.value)

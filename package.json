@@ -22,7 +22,7 @@
     "okanvas": "^0.1.2",
     "okaselect": "^0.1.0",
     "ress": "^5.0.2",
-    "vue": "^3.4.15"
+    "vue": "^3.4.19"
   },
   "devDependencies": {
     "@babel/core": "^7.21.3",
@@ -36,7 +36,7 @@
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
     "@vitejs/plugin-vue": "^4.2.3",
-    "@vue/compiler-sfc": "^3.4.15",
+    "@vue/compiler-sfc": "^3.4.19",
     "@vue/eslint-config-typescript": "^12.0.0",
     "@vue/test-utils": "^2.4.1",
     "@vue/vue3-jest": "^29.2.6",
